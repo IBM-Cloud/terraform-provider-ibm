@@ -42,7 +42,7 @@ type DetailedResponse struct {
 	// objects.
 	//
 	// If the operation was successful and the response body contains a non-JSON response,
-	// the Result field will be an instance of io.ReadCloser that can be used by generated SDK code 
+	// the Result field will be an instance of io.ReadCloser that can be used by generated SDK code
 	// (or the application) to read the response data.
 	//
 	// If the operation was unsuccessful and the response body contains a JSON error response,

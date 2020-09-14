@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.12.0-64fe8d3f-20200820-144050
+ */
+
 // Package vpcv1 : Operations and models for the VpcV1 service
 package vpcv1
 
@@ -23,14 +27,14 @@ import (
 	"reflect"
 
 	"github.com/IBM/go-sdk-core/v4/core"
-	common "github.com/IBM/vpc-go-sdk/common"
 	"github.com/go-openapi/strfmt"
+	common "github.com/IBM/vpc-go-sdk/common"
 )
 
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage
 // infrastructure resources, including virtual server instances, subnets, volumes, and load balancers.
 //
-// Version: 2020-07-28
+// Version: 2020-08-25
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -107,7 +111,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2020-07-28")
+		options.Version = core.StringPtr("2020-08-25")
 	}
 
 	if options.URL != "" {
@@ -131,16 +135,17 @@ func (vpc *VpcV1) SetServiceURL(url string) error {
 	return vpc.Service.SetServiceURL(url)
 }
 
-// ListFloatingIps : List all floating IPs
-// This request retrieves all floating IPs in the region. Floating IPs allow inbound and outbound traffic from the
-// Internet to an instance.
-func (vpc *VpcV1) ListFloatingIps(listFloatingIpsOptions *ListFloatingIpsOptions) (result *FloatingIPCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateStruct(listFloatingIpsOptions, "listFloatingIpsOptions")
+// ListVpcs : List all VPCs
+// This request lists all VPCs. A VPC is a virtual network that belongs to an account and provides logical isolation
+// from other networks. A VPC is made up of resources in one or more zones. VPCs are regional, and each VPC can contain
+// resources in multiple zones in a region.
+func (vpc *VpcV1) ListVpcs(listVpcsOptions *ListVpcsOptions) (result *VPCCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listVpcsOptions, "listVpcsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"floating_ips"}
+	pathSegments := []string{"vpcs"}
 	pathParameters := []string{}
 
 	builder := core.NewRequestBuilder(core.GET)
@@ -149,11 +154,11 @@ func (vpc *VpcV1) ListFloatingIps(listFloatingIpsOptions *ListFloatingIpsOptions
 		return
 	}
 
-	for headerName, headerValue := range listFloatingIpsOptions.Headers {
+	for headerName, headerValue := range listVpcsOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListFloatingIps")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVpcs")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -161,14 +166,17 @@ func (vpc *VpcV1) ListFloatingIps(listFloatingIpsOptions *ListFloatingIpsOptions
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-	if listFloatingIpsOptions.Start != nil {
-		builder.AddQuery("start", fmt.Sprint(*listFloatingIpsOptions.Start))
+	if listVpcsOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listVpcsOptions.Start))
 	}
-	if listFloatingIpsOptions.Limit != nil {
-		builder.AddQuery("limit", fmt.Sprint(*listFloatingIpsOptions.Limit))
+	if listVpcsOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listVpcsOptions.Limit))
 	}
-	if listFloatingIpsOptions.ResourceGroupID != nil {
-		builder.AddQuery("resource_group.id", fmt.Sprint(*listFloatingIpsOptions.ResourceGroupID))
+	if listVpcsOptions.ResourceGroupID != nil {
+		builder.AddQuery("resource_group.id", fmt.Sprint(*listVpcsOptions.ResourceGroupID))
+	}
+	if listVpcsOptions.ClassicAccess != nil {
+		builder.AddQuery("classic_access", fmt.Sprint(*listVpcsOptions.ClassicAccess))
 	}
 
 	request, err := builder.Build()
@@ -181,7 +189,7 @@ func (vpc *VpcV1) ListFloatingIps(listFloatingIpsOptions *ListFloatingIpsOptions
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFloatingIPCollection)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPCCollection)
 	if err != nil {
 		return
 	}
@@ -190,19 +198,16 @@ func (vpc *VpcV1) ListFloatingIps(listFloatingIpsOptions *ListFloatingIpsOptions
 	return
 }
 
-// CreateFloatingIP : Reserve a floating IP
-// This request reserves a new floating IP.
-func (vpc *VpcV1) CreateFloatingIP(createFloatingIPOptions *CreateFloatingIPOptions) (result *FloatingIP, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(createFloatingIPOptions, "createFloatingIPOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(createFloatingIPOptions, "createFloatingIPOptions")
+// CreateVPC : Create a VPC
+// This request creates a new VPC from a VPC prototype object. The prototype object is structured in the same way as a
+// retrieved VPC, and contains the information necessary to create the new VPC.
+func (vpc *VpcV1) CreateVPC(createVPCOptions *CreateVPCOptions) (result *VPC, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(createVPCOptions, "createVPCOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"floating_ips"}
+	pathSegments := []string{"vpcs"}
 	pathParameters := []string{}
 
 	builder := core.NewRequestBuilder(core.POST)
@@ -211,11 +216,11 @@ func (vpc *VpcV1) CreateFloatingIP(createFloatingIPOptions *CreateFloatingIPOpti
 		return
 	}
 
-	for headerName, headerValue := range createFloatingIPOptions.Headers {
+	for headerName, headerValue := range createVPCOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateFloatingIP")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateVPC")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -225,7 +230,20 @@ func (vpc *VpcV1) CreateFloatingIP(createFloatingIPOptions *CreateFloatingIPOpti
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
-	_, err = builder.SetBodyContentJSON(createFloatingIPOptions.FloatingIPPrototype)
+	body := make(map[string]interface{})
+	if createVPCOptions.Name != nil {
+		body["name"] = createVPCOptions.Name
+	}
+	if createVPCOptions.AddressPrefixManagement != nil {
+		body["address_prefix_management"] = createVPCOptions.AddressPrefixManagement
+	}
+	if createVPCOptions.ClassicAccess != nil {
+		body["classic_access"] = createVPCOptions.ClassicAccess
+	}
+	if createVPCOptions.ResourceGroup != nil {
+		body["resource_group"] = createVPCOptions.ResourceGroup
+	}
+	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
 		return
 	}
@@ -240,7 +258,7 @@ func (vpc *VpcV1) CreateFloatingIP(createFloatingIPOptions *CreateFloatingIPOpti
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFloatingIP)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPC)
 	if err != nil {
 		return
 	}
@@ -249,21 +267,23 @@ func (vpc *VpcV1) CreateFloatingIP(createFloatingIPOptions *CreateFloatingIPOpti
 	return
 }
 
-// DeleteFloatingIP : Release the specified floating IP
-// This request disassociates (if associated) and releases a floating IP. This operation cannot be reversed. For this
-// request to succeed, the floating IP must not be required by another resource, such as a public gateway.
-func (vpc *VpcV1) DeleteFloatingIP(deleteFloatingIPOptions *DeleteFloatingIPOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deleteFloatingIPOptions, "deleteFloatingIPOptions cannot be nil")
+// DeleteVPC : Delete specified VPC
+// This request deletes a VPC. This operation cannot be reversed. For this request to succeed, the VPC must not contain
+// any instances, subnets, or public gateways. All security groups and network ACLs associated with the VPC are
+// automatically deleted. All flow log collectors with `auto_delete` set to `true` targeting the VPC or any resource in
+// the VPC are automatically deleted.
+func (vpc *VpcV1) DeleteVPC(deleteVPCOptions *DeleteVPCOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteVPCOptions, "deleteVPCOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(deleteFloatingIPOptions, "deleteFloatingIPOptions")
+	err = core.ValidateStruct(deleteVPCOptions, "deleteVPCOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"floating_ips"}
-	pathParameters := []string{*deleteFloatingIPOptions.ID}
+	pathSegments := []string{"vpcs"}
+	pathParameters := []string{*deleteVPCOptions.ID}
 
 	builder := core.NewRequestBuilder(core.DELETE)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -271,11 +291,11 @@ func (vpc *VpcV1) DeleteFloatingIP(deleteFloatingIPOptions *DeleteFloatingIPOpti
 		return
 	}
 
-	for headerName, headerValue := range deleteFloatingIPOptions.Headers {
+	for headerName, headerValue := range deleteVPCOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteFloatingIP")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteVPC")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -293,20 +313,20 @@ func (vpc *VpcV1) DeleteFloatingIP(deleteFloatingIPOptions *DeleteFloatingIPOpti
 	return
 }
 
-// GetFloatingIP : Retrieve the specified floating IP
-// This request retrieves a single floating IP specified by the identifier in the URL.
-func (vpc *VpcV1) GetFloatingIP(getFloatingIPOptions *GetFloatingIPOptions) (result *FloatingIP, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getFloatingIPOptions, "getFloatingIPOptions cannot be nil")
+// GetVPC : Retrieve specified VPC
+// This request retrieves a single VPC specified by the identifier in the URL.
+func (vpc *VpcV1) GetVPC(getVPCOptions *GetVPCOptions) (result *VPC, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getVPCOptions, "getVPCOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(getFloatingIPOptions, "getFloatingIPOptions")
+	err = core.ValidateStruct(getVPCOptions, "getVPCOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"floating_ips"}
-	pathParameters := []string{*getFloatingIPOptions.ID}
+	pathSegments := []string{"vpcs"}
+	pathParameters := []string{*getVPCOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -314,11 +334,11 @@ func (vpc *VpcV1) GetFloatingIP(getFloatingIPOptions *GetFloatingIPOptions) (res
 		return
 	}
 
-	for headerName, headerValue := range getFloatingIPOptions.Headers {
+	for headerName, headerValue := range getVPCOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetFloatingIP")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVPC")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -337,7 +357,7 @@ func (vpc *VpcV1) GetFloatingIP(getFloatingIPOptions *GetFloatingIPOptions) (res
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFloatingIP)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPC)
 	if err != nil {
 		return
 	}
@@ -346,20 +366,20 @@ func (vpc *VpcV1) GetFloatingIP(getFloatingIPOptions *GetFloatingIPOptions) (res
 	return
 }
 
-// UpdateFloatingIP : Update the specified floating IP
-// This request updates a floating IP's name and/or target.
-func (vpc *VpcV1) UpdateFloatingIP(updateFloatingIPOptions *UpdateFloatingIPOptions) (result *FloatingIP, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateFloatingIPOptions, "updateFloatingIPOptions cannot be nil")
+// UpdateVPC : Update specified VPC
+// This request updates a VPC's name.
+func (vpc *VpcV1) UpdateVPC(updateVPCOptions *UpdateVPCOptions) (result *VPC, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateVPCOptions, "updateVPCOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(updateFloatingIPOptions, "updateFloatingIPOptions")
+	err = core.ValidateStruct(updateVPCOptions, "updateVPCOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"floating_ips"}
-	pathParameters := []string{*updateFloatingIPOptions.ID}
+	pathSegments := []string{"vpcs"}
+	pathParameters := []string{*updateVPCOptions.ID}
 
 	builder := core.NewRequestBuilder(core.PATCH)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -367,11 +387,11 @@ func (vpc *VpcV1) UpdateFloatingIP(updateFloatingIPOptions *UpdateFloatingIPOpti
 		return
 	}
 
-	for headerName, headerValue := range updateFloatingIPOptions.Headers {
+	for headerName, headerValue := range updateVPCOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateFloatingIP")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateVPC")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -382,11 +402,8 @@ func (vpc *VpcV1) UpdateFloatingIP(updateFloatingIPOptions *UpdateFloatingIPOpti
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
-	if updateFloatingIPOptions.Name != nil {
-		body["name"] = updateFloatingIPOptions.Name
-	}
-	if updateFloatingIPOptions.Target != nil {
-		body["target"] = updateFloatingIPOptions.Target
+	if updateVPCOptions.Name != nil {
+		body["name"] = updateVPCOptions.Name
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -403,7 +420,7 @@ func (vpc *VpcV1) UpdateFloatingIP(updateFloatingIPOptions *UpdateFloatingIPOpti
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFloatingIP)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPC)
 	if err != nil {
 		return
 	}
@@ -412,17 +429,21 @@ func (vpc *VpcV1) UpdateFloatingIP(updateFloatingIPOptions *UpdateFloatingIPOpti
 	return
 }
 
-// ListFlowLogCollectors : List all flow log collectors
-// This request retrieves all flow log collectors in the region. A flow log collector summarizes data sent over one or
-// more network interfaces within a VPC, depending on the chosen target.
-func (vpc *VpcV1) ListFlowLogCollectors(listFlowLogCollectorsOptions *ListFlowLogCollectorsOptions) (result *FlowLogCollectorCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateStruct(listFlowLogCollectorsOptions, "listFlowLogCollectorsOptions")
+// GetVPCDefaultNetworkACL : Retrieve a VPC's default network ACL
+// This request retrieves the default network ACL for the VPC specified by the identifier in the URL. The default
+// network ACL is applied to any new subnets in the VPC which do not specify a network ACL.
+func (vpc *VpcV1) GetVPCDefaultNetworkACL(getVPCDefaultNetworkACLOptions *GetVPCDefaultNetworkACLOptions) (result *DefaultNetworkACL, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getVPCDefaultNetworkACLOptions, "getVPCDefaultNetworkACLOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getVPCDefaultNetworkACLOptions, "getVPCDefaultNetworkACLOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"flow_log_collectors"}
-	pathParameters := []string{}
+	pathSegments := []string{"vpcs", "default_network_acl"}
+	pathParameters := []string{*getVPCDefaultNetworkACLOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -430,11 +451,11 @@ func (vpc *VpcV1) ListFlowLogCollectors(listFlowLogCollectorsOptions *ListFlowLo
 		return
 	}
 
-	for headerName, headerValue := range listFlowLogCollectorsOptions.Headers {
+	for headerName, headerValue := range getVPCDefaultNetworkACLOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListFlowLogCollectors")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVPCDefaultNetworkACL")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -442,32 +463,118 @@ func (vpc *VpcV1) ListFlowLogCollectors(listFlowLogCollectorsOptions *ListFlowLo
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-	if listFlowLogCollectorsOptions.Start != nil {
-		builder.AddQuery("start", fmt.Sprint(*listFlowLogCollectorsOptions.Start))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
 	}
-	if listFlowLogCollectorsOptions.Limit != nil {
-		builder.AddQuery("limit", fmt.Sprint(*listFlowLogCollectorsOptions.Limit))
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
 	}
-	if listFlowLogCollectorsOptions.ResourceGroupID != nil {
-		builder.AddQuery("resource_group.id", fmt.Sprint(*listFlowLogCollectorsOptions.ResourceGroupID))
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDefaultNetworkACL)
+	if err != nil {
+		return
 	}
-	if listFlowLogCollectorsOptions.Name != nil {
-		builder.AddQuery("name", fmt.Sprint(*listFlowLogCollectorsOptions.Name))
+	response.Result = result
+
+	return
+}
+
+// GetVPCDefaultSecurityGroup : Retrieve a VPC's default security group
+// This request retrieves the default security group for the VPC specified by the identifier in the URL. The default
+// security group is applied to any new network interfaces in the VPC that do not specify a security group.
+func (vpc *VpcV1) GetVPCDefaultSecurityGroup(getVPCDefaultSecurityGroupOptions *GetVPCDefaultSecurityGroupOptions) (result *DefaultSecurityGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getVPCDefaultSecurityGroupOptions, "getVPCDefaultSecurityGroupOptions cannot be nil")
+	if err != nil {
+		return
 	}
-	if listFlowLogCollectorsOptions.VPCID != nil {
-		builder.AddQuery("vpc.id", fmt.Sprint(*listFlowLogCollectorsOptions.VPCID))
+	err = core.ValidateStruct(getVPCDefaultSecurityGroupOptions, "getVPCDefaultSecurityGroupOptions")
+	if err != nil {
+		return
 	}
-	if listFlowLogCollectorsOptions.VPCCRN != nil {
-		builder.AddQuery("vpc.crn", fmt.Sprint(*listFlowLogCollectorsOptions.VPCCRN))
+
+	pathSegments := []string{"vpcs", "default_security_group"}
+	pathParameters := []string{*getVPCDefaultSecurityGroupOptions.ID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
 	}
-	if listFlowLogCollectorsOptions.VPCName != nil {
-		builder.AddQuery("vpc.name", fmt.Sprint(*listFlowLogCollectorsOptions.VPCName))
+
+	for headerName, headerValue := range getVPCDefaultSecurityGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
 	}
-	if listFlowLogCollectorsOptions.TargetID != nil {
-		builder.AddQuery("target.id", fmt.Sprint(*listFlowLogCollectorsOptions.TargetID))
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVPCDefaultSecurityGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
 	}
-	if listFlowLogCollectorsOptions.TargetResourceType != nil {
-		builder.AddQuery("target.resource_type", fmt.Sprint(*listFlowLogCollectorsOptions.TargetResourceType))
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDefaultSecurityGroup)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListVPCAddressPrefixes : List all address pool prefixes for a VPC
+// This request lists all address pool prefixes for a VPC.
+func (vpc *VpcV1) ListVPCAddressPrefixes(listVPCAddressPrefixesOptions *ListVPCAddressPrefixesOptions) (result *AddressPrefixCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listVPCAddressPrefixesOptions, "listVPCAddressPrefixesOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listVPCAddressPrefixesOptions, "listVPCAddressPrefixesOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"vpcs", "address_prefixes"}
+	pathParameters := []string{*listVPCAddressPrefixesOptions.VPCID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listVPCAddressPrefixesOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVPCAddressPrefixes")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listVPCAddressPrefixesOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listVPCAddressPrefixesOptions.Start))
+	}
+	if listVPCAddressPrefixesOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listVPCAddressPrefixesOptions.Limit))
 	}
 
 	request, err := builder.Build()
@@ -480,7 +587,7 @@ func (vpc *VpcV1) ListFlowLogCollectors(listFlowLogCollectorsOptions *ListFlowLo
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFlowLogCollectorCollection)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalAddressPrefixCollection)
 	if err != nil {
 		return
 	}
@@ -489,22 +596,21 @@ func (vpc *VpcV1) ListFlowLogCollectors(listFlowLogCollectorsOptions *ListFlowLo
 	return
 }
 
-// CreateFlowLogCollector : Create a flow log collector
-// This request creates and starts a new flow log collector from a flow log collector prototype object. The prototype
-// object is structured in the same way as a retrieved flow log collector, and contains the information necessary to
-// create and start the new flow log collector.
-func (vpc *VpcV1) CreateFlowLogCollector(createFlowLogCollectorOptions *CreateFlowLogCollectorOptions) (result *FlowLogCollector, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(createFlowLogCollectorOptions, "createFlowLogCollectorOptions cannot be nil")
+// CreateVPCAddressPrefix : Create an address pool prefix
+// This request creates a new prefix from a prefix prototype object. The prototype object is structured in the same way
+// as a retrieved prefix, and contains the information necessary to create the new prefix.
+func (vpc *VpcV1) CreateVPCAddressPrefix(createVPCAddressPrefixOptions *CreateVPCAddressPrefixOptions) (result *AddressPrefix, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createVPCAddressPrefixOptions, "createVPCAddressPrefixOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(createFlowLogCollectorOptions, "createFlowLogCollectorOptions")
+	err = core.ValidateStruct(createVPCAddressPrefixOptions, "createVPCAddressPrefixOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"flow_log_collectors"}
-	pathParameters := []string{}
+	pathSegments := []string{"vpcs", "address_prefixes"}
+	pathParameters := []string{*createVPCAddressPrefixOptions.VPCID}
 
 	builder := core.NewRequestBuilder(core.POST)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -512,11 +618,11 @@ func (vpc *VpcV1) CreateFlowLogCollector(createFlowLogCollectorOptions *CreateFl
 		return
 	}
 
-	for headerName, headerValue := range createFlowLogCollectorOptions.Headers {
+	for headerName, headerValue := range createVPCAddressPrefixOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateFlowLogCollector")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateVPCAddressPrefix")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -527,20 +633,17 @@ func (vpc *VpcV1) CreateFlowLogCollector(createFlowLogCollectorOptions *CreateFl
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
-	if createFlowLogCollectorOptions.StorageBucket != nil {
-		body["storage_bucket"] = createFlowLogCollectorOptions.StorageBucket
+	if createVPCAddressPrefixOptions.CIDR != nil {
+		body["cidr"] = createVPCAddressPrefixOptions.CIDR
 	}
-	if createFlowLogCollectorOptions.Target != nil {
-		body["target"] = createFlowLogCollectorOptions.Target
+	if createVPCAddressPrefixOptions.Zone != nil {
+		body["zone"] = createVPCAddressPrefixOptions.Zone
 	}
-	if createFlowLogCollectorOptions.Active != nil {
-		body["active"] = createFlowLogCollectorOptions.Active
+	if createVPCAddressPrefixOptions.Name != nil {
+		body["name"] = createVPCAddressPrefixOptions.Name
 	}
-	if createFlowLogCollectorOptions.Name != nil {
-		body["name"] = createFlowLogCollectorOptions.Name
-	}
-	if createFlowLogCollectorOptions.ResourceGroup != nil {
-		body["resource_group"] = createFlowLogCollectorOptions.ResourceGroup
+	if createVPCAddressPrefixOptions.IsDefault != nil {
+		body["is_default"] = createVPCAddressPrefixOptions.IsDefault
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -557,7 +660,7 @@ func (vpc *VpcV1) CreateFlowLogCollector(createFlowLogCollectorOptions *CreateFl
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFlowLogCollector)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalAddressPrefix)
 	if err != nil {
 		return
 	}
@@ -566,21 +669,21 @@ func (vpc *VpcV1) CreateFlowLogCollector(createFlowLogCollectorOptions *CreateFl
 	return
 }
 
-// DeleteFlowLogCollector : Delete the specified flow log collector
-// This request stops and deletes a flow log collector. Collected flow logs remain available within the flow log
-// collector's bucket.
-func (vpc *VpcV1) DeleteFlowLogCollector(deleteFlowLogCollectorOptions *DeleteFlowLogCollectorOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deleteFlowLogCollectorOptions, "deleteFlowLogCollectorOptions cannot be nil")
+// DeleteVPCAddressPrefix : Delete specified address pool prefix
+// This request deletes a prefix. This operation cannot be reversed. The request will fail if any subnets use addresses
+// from this prefix.
+func (vpc *VpcV1) DeleteVPCAddressPrefix(deleteVPCAddressPrefixOptions *DeleteVPCAddressPrefixOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteVPCAddressPrefixOptions, "deleteVPCAddressPrefixOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(deleteFlowLogCollectorOptions, "deleteFlowLogCollectorOptions")
+	err = core.ValidateStruct(deleteVPCAddressPrefixOptions, "deleteVPCAddressPrefixOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"flow_log_collectors"}
-	pathParameters := []string{*deleteFlowLogCollectorOptions.ID}
+	pathSegments := []string{"vpcs", "address_prefixes"}
+	pathParameters := []string{*deleteVPCAddressPrefixOptions.VPCID, *deleteVPCAddressPrefixOptions.ID}
 
 	builder := core.NewRequestBuilder(core.DELETE)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -588,11 +691,11 @@ func (vpc *VpcV1) DeleteFlowLogCollector(deleteFlowLogCollectorOptions *DeleteFl
 		return
 	}
 
-	for headerName, headerValue := range deleteFlowLogCollectorOptions.Headers {
+	for headerName, headerValue := range deleteVPCAddressPrefixOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteFlowLogCollector")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteVPCAddressPrefix")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -610,20 +713,20 @@ func (vpc *VpcV1) DeleteFlowLogCollector(deleteFlowLogCollectorOptions *DeleteFl
 	return
 }
 
-// GetFlowLogCollector : Retrieve the specified flow log collector
-// This request retrieves a single flow log collector specified by the identifier in the URL.
-func (vpc *VpcV1) GetFlowLogCollector(getFlowLogCollectorOptions *GetFlowLogCollectorOptions) (result *FlowLogCollector, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getFlowLogCollectorOptions, "getFlowLogCollectorOptions cannot be nil")
+// GetVPCAddressPrefix : Retrieve specified address pool prefix
+// This request retrieves a single prefix specified by the identifier in the URL.
+func (vpc *VpcV1) GetVPCAddressPrefix(getVPCAddressPrefixOptions *GetVPCAddressPrefixOptions) (result *AddressPrefix, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getVPCAddressPrefixOptions, "getVPCAddressPrefixOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(getFlowLogCollectorOptions, "getFlowLogCollectorOptions")
+	err = core.ValidateStruct(getVPCAddressPrefixOptions, "getVPCAddressPrefixOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"flow_log_collectors"}
-	pathParameters := []string{*getFlowLogCollectorOptions.ID}
+	pathSegments := []string{"vpcs", "address_prefixes"}
+	pathParameters := []string{*getVPCAddressPrefixOptions.VPCID, *getVPCAddressPrefixOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -631,11 +734,11 @@ func (vpc *VpcV1) GetFlowLogCollector(getFlowLogCollectorOptions *GetFlowLogColl
 		return
 	}
 
-	for headerName, headerValue := range getFlowLogCollectorOptions.Headers {
+	for headerName, headerValue := range getVPCAddressPrefixOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetFlowLogCollector")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVPCAddressPrefix")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -654,7 +757,7 @@ func (vpc *VpcV1) GetFlowLogCollector(getFlowLogCollectorOptions *GetFlowLogColl
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFlowLogCollector)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalAddressPrefix)
 	if err != nil {
 		return
 	}
@@ -663,22 +766,21 @@ func (vpc *VpcV1) GetFlowLogCollector(getFlowLogCollectorOptions *GetFlowLogColl
 	return
 }
 
-// UpdateFlowLogCollector : Update the specified flow log collector
-// This request updates a flow log collector with the information in a provided flow log collector patch. The flow log
-// collector patch object is structured in the same way as a retrieved flow log collector and contains only the
-// information to be updated.
-func (vpc *VpcV1) UpdateFlowLogCollector(updateFlowLogCollectorOptions *UpdateFlowLogCollectorOptions) (result *FlowLogCollector, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateFlowLogCollectorOptions, "updateFlowLogCollectorOptions cannot be nil")
+// UpdateVPCAddressPrefix : Update an address pool prefix
+// This request updates a prefix with the information in a provided prefix patch. The prefix patch object is structured
+// in the same way as a retrieved prefix and contains only the information to be updated.
+func (vpc *VpcV1) UpdateVPCAddressPrefix(updateVPCAddressPrefixOptions *UpdateVPCAddressPrefixOptions) (result *AddressPrefix, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateVPCAddressPrefixOptions, "updateVPCAddressPrefixOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(updateFlowLogCollectorOptions, "updateFlowLogCollectorOptions")
+	err = core.ValidateStruct(updateVPCAddressPrefixOptions, "updateVPCAddressPrefixOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"flow_log_collectors"}
-	pathParameters := []string{*updateFlowLogCollectorOptions.ID}
+	pathSegments := []string{"vpcs", "address_prefixes"}
+	pathParameters := []string{*updateVPCAddressPrefixOptions.VPCID, *updateVPCAddressPrefixOptions.ID}
 
 	builder := core.NewRequestBuilder(core.PATCH)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -686,11 +788,11 @@ func (vpc *VpcV1) UpdateFlowLogCollector(updateFlowLogCollectorOptions *UpdateFl
 		return
 	}
 
-	for headerName, headerValue := range updateFlowLogCollectorOptions.Headers {
+	for headerName, headerValue := range updateVPCAddressPrefixOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateFlowLogCollector")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateVPCAddressPrefix")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -701,11 +803,11 @@ func (vpc *VpcV1) UpdateFlowLogCollector(updateFlowLogCollectorOptions *UpdateFl
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
-	if updateFlowLogCollectorOptions.Active != nil {
-		body["active"] = updateFlowLogCollectorOptions.Active
+	if updateVPCAddressPrefixOptions.Name != nil {
+		body["name"] = updateVPCAddressPrefixOptions.Name
 	}
-	if updateFlowLogCollectorOptions.Name != nil {
-		body["name"] = updateFlowLogCollectorOptions.Name
+	if updateVPCAddressPrefixOptions.IsDefault != nil {
+		body["is_default"] = updateVPCAddressPrefixOptions.IsDefault
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -722,7 +824,7 @@ func (vpc *VpcV1) UpdateFlowLogCollector(updateFlowLogCollectorOptions *UpdateFl
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFlowLogCollector)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalAddressPrefix)
 	if err != nil {
 		return
 	}
@@ -731,19 +833,309 @@ func (vpc *VpcV1) UpdateFlowLogCollector(updateFlowLogCollectorOptions *UpdateFl
 	return
 }
 
-// ListRegions : List all regions
-// This request lists all regions. Each region is a separate geographic area that contains multiple isolated zones.
-// Resources can be provisioned into a one or more zones in a region. Each zone is isolated, but connected to other
-// zones in the same region with low-latency and high-bandwidth links. Regions represent the top-level of fault
-// isolation available. Resources deployed within a single region also benefit from the low latency afforded by
-// geographic proximity.
-func (vpc *VpcV1) ListRegions(listRegionsOptions *ListRegionsOptions) (result *RegionCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateStruct(listRegionsOptions, "listRegionsOptions")
+// ListVPCRoutes : List all routes in the VPC's default routing table
+// This request retrieves routes in the VPC's default routing table. For compatibility, routes with `action` values
+// other than `deliver` are omitted. Each route is zone-specific and directs any packets matching its destination CIDR
+// block to a `next_hop` IP address. The most specific route matching a packet's destination will be used. If multiple
+// equally-specific routes exist, traffic will be distributed across them.
+func (vpc *VpcV1) ListVPCRoutes(listVPCRoutesOptions *ListVPCRoutesOptions) (result *RouteCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listVPCRoutesOptions, "listVPCRoutesOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listVPCRoutesOptions, "listVPCRoutesOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"regions"}
+	pathSegments := []string{"vpcs", "routes"}
+	pathParameters := []string{*listVPCRoutesOptions.VPCID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listVPCRoutesOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVPCRoutes")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listVPCRoutesOptions.ZoneName != nil {
+		builder.AddQuery("zone.name", fmt.Sprint(*listVPCRoutesOptions.ZoneName))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRouteCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// CreateVPCRoute : Create a route in the VPC's default routing table
+// This request creates a new route in the VPC's default routing table. The route prototype object is structured in the
+// same way as a retrieved route, and contains the information necessary to create the new route. The request will fail
+// if the new route will cause a loop.
+func (vpc *VpcV1) CreateVPCRoute(createVPCRouteOptions *CreateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createVPCRouteOptions, "createVPCRouteOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createVPCRouteOptions, "createVPCRouteOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"vpcs", "routes"}
+	pathParameters := []string{*createVPCRouteOptions.VPCID}
+
+	builder := core.NewRequestBuilder(core.POST)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createVPCRouteOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateVPCRoute")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if createVPCRouteOptions.NextHop != nil {
+		body["next_hop"] = createVPCRouteOptions.NextHop
+	}
+	if createVPCRouteOptions.Destination != nil {
+		body["destination"] = createVPCRouteOptions.Destination
+	}
+	if createVPCRouteOptions.Zone != nil {
+		body["zone"] = createVPCRouteOptions.Zone
+	}
+	if createVPCRouteOptions.Name != nil {
+		body["name"] = createVPCRouteOptions.Name
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRoute)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// DeleteVPCRoute : Delete the specified route in the VPC's default routing table
+// This request deletes a route. This operation cannot be reversed.
+func (vpc *VpcV1) DeleteVPCRoute(deleteVPCRouteOptions *DeleteVPCRouteOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteVPCRouteOptions, "deleteVPCRouteOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteVPCRouteOptions, "deleteVPCRouteOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"vpcs", "routes"}
+	pathParameters := []string{*deleteVPCRouteOptions.VPCID, *deleteVPCRouteOptions.ID}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteVPCRouteOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteVPCRoute")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetVPCRoute : Retrieve the specified route in the VPC's default routing table
+// This request retrieves a single route specified by the identifier in the URL.
+func (vpc *VpcV1) GetVPCRoute(getVPCRouteOptions *GetVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getVPCRouteOptions, "getVPCRouteOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getVPCRouteOptions, "getVPCRouteOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"vpcs", "routes"}
+	pathParameters := []string{*getVPCRouteOptions.VPCID, *getVPCRouteOptions.ID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getVPCRouteOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVPCRoute")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRoute)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// UpdateVPCRoute : Update the specified route in the VPC's default routing table
+// This request updates a route with the information in a provided route patch. The route patch object is structured in
+// the same way as a retrieved route and contains only the information to be updated.
+func (vpc *VpcV1) UpdateVPCRoute(updateVPCRouteOptions *UpdateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateVPCRouteOptions, "updateVPCRouteOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateVPCRouteOptions, "updateVPCRouteOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"vpcs", "routes"}
+	pathParameters := []string{*updateVPCRouteOptions.VPCID, *updateVPCRouteOptions.ID}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateVPCRouteOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateVPCRoute")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if updateVPCRouteOptions.Name != nil {
+		body["name"] = updateVPCRouteOptions.Name
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRoute)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListSubnets : List all subnets
+// This request lists all subnets in the region. Subnets are contiguous ranges of IP addresses specified in CIDR block
+// notation. Each subnet is within a particular zone and cannot span multiple zones or regions.
+func (vpc *VpcV1) ListSubnets(listSubnetsOptions *ListSubnetsOptions) (result *SubnetCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listSubnetsOptions, "listSubnetsOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"subnets"}
 	pathParameters := []string{}
 
 	builder := core.NewRequestBuilder(core.GET)
@@ -752,11 +1144,11 @@ func (vpc *VpcV1) ListRegions(listRegionsOptions *ListRegionsOptions) (result *R
 		return
 	}
 
-	for headerName, headerValue := range listRegionsOptions.Headers {
+	for headerName, headerValue := range listSubnetsOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListRegions")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListSubnets")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -764,6 +1156,15 @@ func (vpc *VpcV1) ListRegions(listRegionsOptions *ListRegionsOptions) (result *R
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listSubnetsOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listSubnetsOptions.Start))
+	}
+	if listSubnetsOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listSubnetsOptions.Limit))
+	}
+	if listSubnetsOptions.ResourceGroupID != nil {
+		builder.AddQuery("resource_group.id", fmt.Sprint(*listSubnetsOptions.ResourceGroupID))
+	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -775,7 +1176,7 @@ func (vpc *VpcV1) ListRegions(listRegionsOptions *ListRegionsOptions) (result *R
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRegionCollection)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSubnetCollection)
 	if err != nil {
 		return
 	}
@@ -784,39 +1185,47 @@ func (vpc *VpcV1) ListRegions(listRegionsOptions *ListRegionsOptions) (result *R
 	return
 }
 
-// GetRegion : Retrieve a region
-// This request retrieves a single region specified by the name in the URL.
-func (vpc *VpcV1) GetRegion(getRegionOptions *GetRegionOptions) (result *Region, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getRegionOptions, "getRegionOptions cannot be nil")
+// CreateSubnet : Create a subnet
+// This request creates a new subnet from a subnet prototype object. The prototype object is structured in the same way
+// as a retrieved subnet, and contains the information necessary to create the new subnet. For this request to succeed,
+// the prototype's CIDR block must not overlap with an existing subnet in the VPC.
+func (vpc *VpcV1) CreateSubnet(createSubnetOptions *CreateSubnetOptions) (result *Subnet, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createSubnetOptions, "createSubnetOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(getRegionOptions, "getRegionOptions")
+	err = core.ValidateStruct(createSubnetOptions, "createSubnetOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"regions"}
-	pathParameters := []string{*getRegionOptions.Name}
+	pathSegments := []string{"subnets"}
+	pathParameters := []string{}
 
-	builder := core.NewRequestBuilder(core.GET)
+	builder := core.NewRequestBuilder(core.POST)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
 	if err != nil {
 		return
 	}
 
-	for headerName, headerValue := range getRegionOptions.Headers {
+	for headerName, headerValue := range createSubnetOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetRegion")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateSubnet")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(createSubnetOptions.SubnetPrototype)
+	if err != nil {
+		return
+	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -828,7 +1237,7 @@ func (vpc *VpcV1) GetRegion(getRegionOptions *GetRegionOptions) (result *Region,
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRegion)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSubnet)
 	if err != nil {
 		return
 	}
@@ -837,21 +1246,67 @@ func (vpc *VpcV1) GetRegion(getRegionOptions *GetRegionOptions) (result *Region,
 	return
 }
 
-// ListRegionZones : List all zones in a region
-// This request lists all zones in a region. Zones represent logically-isolated data centers with high-bandwidth and
-// low-latency interconnects to other zones in the same region. Faults in a zone do not affect other zones.
-func (vpc *VpcV1) ListRegionZones(listRegionZonesOptions *ListRegionZonesOptions) (result *ZoneCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(listRegionZonesOptions, "listRegionZonesOptions cannot be nil")
+// DeleteSubnet : Delete specified subnet
+// This request deletes a subnet. This operation cannot be reversed. For this request to succeed, the subnet must not be
+// referenced by any network interfaces, VPN gateways, or load balancers. A delete operation automatically detaches the
+// subnet from any network ACLs, public gateways, or endpoint gateways. All flow log collectors with `auto_delete` set
+// to
+// `true` targeting the subnet or any resource in the subnet are automatically deleted.
+func (vpc *VpcV1) DeleteSubnet(deleteSubnetOptions *DeleteSubnetOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteSubnetOptions, "deleteSubnetOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(listRegionZonesOptions, "listRegionZonesOptions")
+	err = core.ValidateStruct(deleteSubnetOptions, "deleteSubnetOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"regions", "zones"}
-	pathParameters := []string{*listRegionZonesOptions.RegionName}
+	pathSegments := []string{"subnets"}
+	pathParameters := []string{*deleteSubnetOptions.ID}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteSubnetOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteSubnet")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetSubnet : Retrieve specified subnet
+// This request retrieves a single subnet specified by the identifier in the URL.
+func (vpc *VpcV1) GetSubnet(getSubnetOptions *GetSubnetOptions) (result *Subnet, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getSubnetOptions, "getSubnetOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getSubnetOptions, "getSubnetOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"subnets"}
+	pathParameters := []string{*getSubnetOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -859,11 +1314,11 @@ func (vpc *VpcV1) ListRegionZones(listRegionZonesOptions *ListRegionZonesOptions
 		return
 	}
 
-	for headerName, headerValue := range listRegionZonesOptions.Headers {
+	for headerName, headerValue := range getSubnetOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListRegionZones")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetSubnet")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -882,7 +1337,7 @@ func (vpc *VpcV1) ListRegionZones(listRegionZonesOptions *ListRegionZonesOptions
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalZoneCollection)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSubnet)
 	if err != nil {
 		return
 	}
@@ -891,20 +1346,90 @@ func (vpc *VpcV1) ListRegionZones(listRegionZonesOptions *ListRegionZonesOptions
 	return
 }
 
-// GetRegionZone : Retrieve a zone
-// This request retrieves a single zone specified by the region and zone names in the URL.
-func (vpc *VpcV1) GetRegionZone(getRegionZoneOptions *GetRegionZoneOptions) (result *Zone, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getRegionZoneOptions, "getRegionZoneOptions cannot be nil")
+// UpdateSubnet : Update specified subnet
+// This request updates a subnet with the information in a provided subnet patch. The subnet patch object is structured
+// in the same way as a retrieved subnet and contains only the information to be updated.
+func (vpc *VpcV1) UpdateSubnet(updateSubnetOptions *UpdateSubnetOptions) (result *Subnet, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateSubnetOptions, "updateSubnetOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(getRegionZoneOptions, "getRegionZoneOptions")
+	err = core.ValidateStruct(updateSubnetOptions, "updateSubnetOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"regions", "zones"}
-	pathParameters := []string{*getRegionZoneOptions.RegionName, *getRegionZoneOptions.ZoneName}
+	pathSegments := []string{"subnets"}
+	pathParameters := []string{*updateSubnetOptions.ID}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateSubnetOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateSubnet")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if updateSubnetOptions.Name != nil {
+		body["name"] = updateSubnetOptions.Name
+	}
+	if updateSubnetOptions.NetworkACL != nil {
+		body["network_acl"] = updateSubnetOptions.NetworkACL
+	}
+	if updateSubnetOptions.PublicGateway != nil {
+		body["public_gateway"] = updateSubnetOptions.PublicGateway
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSubnet)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// GetSubnetNetworkACL : Retrieve a subnet's attached network ACL
+// This request retrieves the network ACL attached to the subnet specified by the identifier in the URL.
+func (vpc *VpcV1) GetSubnetNetworkACL(getSubnetNetworkACLOptions *GetSubnetNetworkACLOptions) (result *NetworkACL, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getSubnetNetworkACLOptions, "getSubnetNetworkACLOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getSubnetNetworkACLOptions, "getSubnetNetworkACLOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"subnets", "network_acl"}
+	pathParameters := []string{*getSubnetNetworkACLOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -912,11 +1437,11 @@ func (vpc *VpcV1) GetRegionZone(getRegionZoneOptions *GetRegionZoneOptions) (res
 		return
 	}
 
-	for headerName, headerValue := range getRegionZoneOptions.Headers {
+	for headerName, headerValue := range getSubnetNetworkACLOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetRegionZone")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetSubnetNetworkACL")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -935,7 +1460,223 @@ func (vpc *VpcV1) GetRegionZone(getRegionZoneOptions *GetRegionZoneOptions) (res
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalZone)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalNetworkACL)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ReplaceSubnetNetworkACL : Attach a network ACL to a subnet
+// This request attaches the network ACL, specified in the request body, to the subnet specified by the subnet
+// identifier in the URL. This replaces the existing network ACL on the subnet.
+func (vpc *VpcV1) ReplaceSubnetNetworkACL(replaceSubnetNetworkACLOptions *ReplaceSubnetNetworkACLOptions) (result *NetworkACL, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(replaceSubnetNetworkACLOptions, "replaceSubnetNetworkACLOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(replaceSubnetNetworkACLOptions, "replaceSubnetNetworkACLOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"subnets", "network_acl"}
+	pathParameters := []string{*replaceSubnetNetworkACLOptions.ID}
+
+	builder := core.NewRequestBuilder(core.PUT)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range replaceSubnetNetworkACLOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ReplaceSubnetNetworkACL")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(replaceSubnetNetworkACLOptions.NetworkACLIdentity)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalNetworkACL)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// UnsetSubnetPublicGateway : Detach a public gateway from a subnet
+// This request detaches the public gateway from the subnet specified by the subnet identifier in the URL.
+func (vpc *VpcV1) UnsetSubnetPublicGateway(unsetSubnetPublicGatewayOptions *UnsetSubnetPublicGatewayOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(unsetSubnetPublicGatewayOptions, "unsetSubnetPublicGatewayOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(unsetSubnetPublicGatewayOptions, "unsetSubnetPublicGatewayOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"subnets", "public_gateway"}
+	pathParameters := []string{*unsetSubnetPublicGatewayOptions.ID}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range unsetSubnetPublicGatewayOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UnsetSubnetPublicGateway")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetSubnetPublicGateway : Retrieve a subnet's attached public gateway
+// This request retrieves the public gateway attached to the subnet specified by the identifier in the URL.
+func (vpc *VpcV1) GetSubnetPublicGateway(getSubnetPublicGatewayOptions *GetSubnetPublicGatewayOptions) (result *PublicGateway, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getSubnetPublicGatewayOptions, "getSubnetPublicGatewayOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getSubnetPublicGatewayOptions, "getSubnetPublicGatewayOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"subnets", "public_gateway"}
+	pathParameters := []string{*getSubnetPublicGatewayOptions.ID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getSubnetPublicGatewayOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetSubnetPublicGateway")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPublicGateway)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// SetSubnetPublicGateway : Attach a public gateway to a subnet
+// This request attaches the public gateway, specified in the request body, to the subnet specified by the subnet
+// identifier in the URL. The public gateway must have the same VPC and zone as the subnet.
+func (vpc *VpcV1) SetSubnetPublicGateway(setSubnetPublicGatewayOptions *SetSubnetPublicGatewayOptions) (result *PublicGateway, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(setSubnetPublicGatewayOptions, "setSubnetPublicGatewayOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(setSubnetPublicGatewayOptions, "setSubnetPublicGatewayOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"subnets", "public_gateway"}
+	pathParameters := []string{*setSubnetPublicGatewayOptions.ID}
+
+	builder := core.NewRequestBuilder(core.PUT)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range setSubnetPublicGatewayOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "SetSubnetPublicGateway")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(setSubnetPublicGatewayOptions.PublicGatewayIdentity)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPublicGateway)
 	if err != nil {
 		return
 	}
@@ -945,8 +1686,8 @@ func (vpc *VpcV1) GetRegionZone(getRegionZoneOptions *GetRegionZoneOptions) (res
 }
 
 // ListImages : List all images
-// This request lists all images available in the region. An image provides source data for a volume. Images are either
-// system-provided, or created from another source, such as importing from object storage.
+// This request lists all provisionable images available in the region. An image provides source data for a volume.
+// Images are either system-provided, or created from another source, such as importing from object storage.
 func (vpc *VpcV1) ListImages(listImagesOptions *ListImagesOptions) (result *ImageCollection, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listImagesOptions, "listImagesOptions")
 	if err != nil {
@@ -1340,6 +2081,292 @@ func (vpc *VpcV1) GetOperatingSystem(getOperatingSystemOptions *GetOperatingSyst
 	return
 }
 
+// ListKeys : List all keys
+// This request lists all keys. A key contains a public SSH key which may be installed on instances when they are
+// created. Private keys are not stored.
+func (vpc *VpcV1) ListKeys(listKeysOptions *ListKeysOptions) (result *KeyCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listKeysOptions, "listKeysOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"keys"}
+	pathParameters := []string{}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listKeysOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListKeys")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listKeysOptions.ResourceGroupID != nil {
+		builder.AddQuery("resource_group.id", fmt.Sprint(*listKeysOptions.ResourceGroupID))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalKeyCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// CreateKey : Create a key
+// This request creates a new SSH key from an key prototype object. The prototype object is structured in the same way
+// as a retrieved key, and contains the information necessary to create the new key. The public key value must be
+// provided.
+func (vpc *VpcV1) CreateKey(createKeyOptions *CreateKeyOptions) (result *Key, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createKeyOptions, "createKeyOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createKeyOptions, "createKeyOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"keys"}
+	pathParameters := []string{}
+
+	builder := core.NewRequestBuilder(core.POST)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createKeyOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateKey")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if createKeyOptions.PublicKey != nil {
+		body["public_key"] = createKeyOptions.PublicKey
+	}
+	if createKeyOptions.Name != nil {
+		body["name"] = createKeyOptions.Name
+	}
+	if createKeyOptions.Type != nil {
+		body["type"] = createKeyOptions.Type
+	}
+	if createKeyOptions.ResourceGroup != nil {
+		body["resource_group"] = createKeyOptions.ResourceGroup
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalKey)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// DeleteKey : Delete specified key
+// This request deletes a key. This operation cannot be reversed.
+func (vpc *VpcV1) DeleteKey(deleteKeyOptions *DeleteKeyOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteKeyOptions, "deleteKeyOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteKeyOptions, "deleteKeyOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"keys"}
+	pathParameters := []string{*deleteKeyOptions.ID}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteKeyOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteKey")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetKey : Retrieve specified key
+// This request retrieves a single key specified by the identifier in the URL.
+func (vpc *VpcV1) GetKey(getKeyOptions *GetKeyOptions) (result *Key, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getKeyOptions, "getKeyOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getKeyOptions, "getKeyOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"keys"}
+	pathParameters := []string{*getKeyOptions.ID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getKeyOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetKey")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalKey)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// UpdateKey : Update specified key
+// This request updates a key's name.
+func (vpc *VpcV1) UpdateKey(updateKeyOptions *UpdateKeyOptions) (result *Key, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateKeyOptions, "updateKeyOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateKeyOptions, "updateKeyOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"keys"}
+	pathParameters := []string{*updateKeyOptions.ID}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateKeyOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateKey")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if updateKeyOptions.Name != nil {
+		body["name"] = updateKeyOptions.Name
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalKey)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
 // ListInstanceProfiles : List all instance profiles
 // This request lists all instance profiles available in the region. An instance profile specifies the performance
 // characteristics and pricing model for an instance.
@@ -1435,6 +2462,273 @@ func (vpc *VpcV1) GetInstanceProfile(getInstanceProfileOptions *GetInstanceProfi
 		return
 	}
 	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceProfile)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListInstanceTemplates : Get instance templates
+func (vpc *VpcV1) ListInstanceTemplates(listInstanceTemplatesOptions *ListInstanceTemplatesOptions) (result *InstanceTemplateCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listInstanceTemplatesOptions, "listInstanceTemplatesOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"instance/templates"}
+	pathParameters := []string{}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listInstanceTemplatesOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListInstanceTemplates")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceTemplateCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// CreateInstanceTemplate : Create an instance template
+// This request creates a new instance template.
+func (vpc *VpcV1) CreateInstanceTemplate(createInstanceTemplateOptions *CreateInstanceTemplateOptions) (result InstanceTemplateIntf, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createInstanceTemplateOptions, "createInstanceTemplateOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createInstanceTemplateOptions, "createInstanceTemplateOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"instance/templates"}
+	pathParameters := []string{}
+
+	builder := core.NewRequestBuilder(core.POST)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createInstanceTemplateOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateInstanceTemplate")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(createInstanceTemplateOptions.InstanceTemplatePrototype)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceTemplate)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// DeleteInstanceTemplate : Delete specified instance template
+// This request deletes the instance template. This operation cannot be reversed.
+func (vpc *VpcV1) DeleteInstanceTemplate(deleteInstanceTemplateOptions *DeleteInstanceTemplateOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteInstanceTemplateOptions, "deleteInstanceTemplateOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteInstanceTemplateOptions, "deleteInstanceTemplateOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"instance/templates"}
+	pathParameters := []string{*deleteInstanceTemplateOptions.ID}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteInstanceTemplateOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteInstanceTemplate")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetInstanceTemplate : Retrieve specified instance template
+func (vpc *VpcV1) GetInstanceTemplate(getInstanceTemplateOptions *GetInstanceTemplateOptions) (result InstanceTemplateIntf, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getInstanceTemplateOptions, "getInstanceTemplateOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getInstanceTemplateOptions, "getInstanceTemplateOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"instance/templates"}
+	pathParameters := []string{*getInstanceTemplateOptions.ID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getInstanceTemplateOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetInstanceTemplate")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceTemplate)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// UpdateInstanceTemplate : Update specified instance template
+// This request updates an instance template with the information provided in the instance template patch. The instance
+// template patch object is structured in the same way as a retrieved instance template and contains only the
+// information to be updated.
+func (vpc *VpcV1) UpdateInstanceTemplate(updateInstanceTemplateOptions *UpdateInstanceTemplateOptions) (result InstanceTemplateIntf, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateInstanceTemplateOptions, "updateInstanceTemplateOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateInstanceTemplateOptions, "updateInstanceTemplateOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"instance/templates"}
+	pathParameters := []string{*updateInstanceTemplateOptions.ID}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateInstanceTemplateOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateInstanceTemplate")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if updateInstanceTemplateOptions.Name != nil {
+		body["name"] = updateInstanceTemplateOptions.Name
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceTemplate)
 	if err != nil {
 		return
 	}
@@ -2452,11 +3746,11 @@ func (vpc *VpcV1) CreateInstanceVolumeAttachment(createInstanceVolumeAttachmentO
 	if createInstanceVolumeAttachmentOptions.Volume != nil {
 		body["volume"] = createInstanceVolumeAttachmentOptions.Volume
 	}
-	if createInstanceVolumeAttachmentOptions.DeleteVolumeOnInstanceDelete != nil {
-		body["delete_volume_on_instance_delete"] = createInstanceVolumeAttachmentOptions.DeleteVolumeOnInstanceDelete
-	}
 	if createInstanceVolumeAttachmentOptions.Name != nil {
 		body["name"] = createInstanceVolumeAttachmentOptions.Name
+	}
+	if createInstanceVolumeAttachmentOptions.DeleteVolumeOnInstanceDelete != nil {
+		body["delete_volume_on_instance_delete"] = createInstanceVolumeAttachmentOptions.DeleteVolumeOnInstanceDelete
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -2616,11 +3910,11 @@ func (vpc *VpcV1) UpdateInstanceVolumeAttachment(updateInstanceVolumeAttachmentO
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
-	if updateInstanceVolumeAttachmentOptions.DeleteVolumeOnInstanceDelete != nil {
-		body["delete_volume_on_instance_delete"] = updateInstanceVolumeAttachmentOptions.DeleteVolumeOnInstanceDelete
-	}
 	if updateInstanceVolumeAttachmentOptions.Name != nil {
 		body["name"] = updateInstanceVolumeAttachmentOptions.Name
+	}
+	if updateInstanceVolumeAttachmentOptions.DeleteVolumeOnInstanceDelete != nil {
+		body["delete_volume_on_instance_delete"] = updateInstanceVolumeAttachmentOptions.DeleteVolumeOnInstanceDelete
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -2646,15 +3940,14 @@ func (vpc *VpcV1) UpdateInstanceVolumeAttachment(updateInstanceVolumeAttachmentO
 	return
 }
 
-// ListLoadBalancers : List all load balancers
-// This request retrieves a paginated list of all load balancers that belong to this account.
-func (vpc *VpcV1) ListLoadBalancers(listLoadBalancersOptions *ListLoadBalancersOptions) (result *LoadBalancerCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateStruct(listLoadBalancersOptions, "listLoadBalancersOptions")
+// ListInstanceGroups : List all instance groups
+func (vpc *VpcV1) ListInstanceGroups(listInstanceGroupsOptions *ListInstanceGroupsOptions) (result *InstanceGroupCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listInstanceGroupsOptions, "listInstanceGroupsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers"}
+	pathSegments := []string{"instance_groups"}
 	pathParameters := []string{}
 
 	builder := core.NewRequestBuilder(core.GET)
@@ -2663,11 +3956,11 @@ func (vpc *VpcV1) ListLoadBalancers(listLoadBalancersOptions *ListLoadBalancersO
 		return
 	}
 
-	for headerName, headerValue := range listLoadBalancersOptions.Headers {
+	for headerName, headerValue := range listInstanceGroupsOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListLoadBalancers")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListInstanceGroups")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -2675,6 +3968,12 @@ func (vpc *VpcV1) ListLoadBalancers(listLoadBalancersOptions *ListLoadBalancersO
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listInstanceGroupsOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listInstanceGroupsOptions.Start))
+	}
+	if listInstanceGroupsOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listInstanceGroupsOptions.Limit))
+	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -2686,7 +3985,7 @@ func (vpc *VpcV1) ListLoadBalancers(listLoadBalancersOptions *ListLoadBalancersO
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerCollection)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroupCollection)
 	if err != nil {
 		return
 	}
@@ -2695,19 +3994,19 @@ func (vpc *VpcV1) ListLoadBalancers(listLoadBalancersOptions *ListLoadBalancersO
 	return
 }
 
-// CreateLoadBalancer : Create and provision a load balancer
-// This request creates and provisions a new load balancer.
-func (vpc *VpcV1) CreateLoadBalancer(createLoadBalancerOptions *CreateLoadBalancerOptions) (result *LoadBalancer, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(createLoadBalancerOptions, "createLoadBalancerOptions cannot be nil")
+// CreateInstanceGroup : Create an instance group
+// This request creates a new instance group.
+func (vpc *VpcV1) CreateInstanceGroup(createInstanceGroupOptions *CreateInstanceGroupOptions) (result *InstanceGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createInstanceGroupOptions, "createInstanceGroupOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(createLoadBalancerOptions, "createLoadBalancerOptions")
+	err = core.ValidateStruct(createInstanceGroupOptions, "createInstanceGroupOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers"}
+	pathSegments := []string{"instance_groups"}
 	pathParameters := []string{}
 
 	builder := core.NewRequestBuilder(core.POST)
@@ -2716,11 +4015,11 @@ func (vpc *VpcV1) CreateLoadBalancer(createLoadBalancerOptions *CreateLoadBalanc
 		return
 	}
 
-	for headerName, headerValue := range createLoadBalancerOptions.Headers {
+	for headerName, headerValue := range createInstanceGroupOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateLoadBalancer")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateInstanceGroup")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -2731,23 +4030,29 @@ func (vpc *VpcV1) CreateLoadBalancer(createLoadBalancerOptions *CreateLoadBalanc
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
-	if createLoadBalancerOptions.IsPublic != nil {
-		body["is_public"] = createLoadBalancerOptions.IsPublic
+	if createInstanceGroupOptions.InstanceTemplate != nil {
+		body["instance_template"] = createInstanceGroupOptions.InstanceTemplate
 	}
-	if createLoadBalancerOptions.Subnets != nil {
-		body["subnets"] = createLoadBalancerOptions.Subnets
+	if createInstanceGroupOptions.Subnets != nil {
+		body["subnets"] = createInstanceGroupOptions.Subnets
 	}
-	if createLoadBalancerOptions.Listeners != nil {
-		body["listeners"] = createLoadBalancerOptions.Listeners
+	if createInstanceGroupOptions.Name != nil {
+		body["name"] = createInstanceGroupOptions.Name
 	}
-	if createLoadBalancerOptions.Name != nil {
-		body["name"] = createLoadBalancerOptions.Name
+	if createInstanceGroupOptions.MembershipCount != nil {
+		body["membership_count"] = createInstanceGroupOptions.MembershipCount
 	}
-	if createLoadBalancerOptions.Pools != nil {
-		body["pools"] = createLoadBalancerOptions.Pools
+	if createInstanceGroupOptions.ApplicationPort != nil {
+		body["application_port"] = createInstanceGroupOptions.ApplicationPort
 	}
-	if createLoadBalancerOptions.ResourceGroup != nil {
-		body["resource_group"] = createLoadBalancerOptions.ResourceGroup
+	if createInstanceGroupOptions.LoadBalancer != nil {
+		body["load_balancer"] = createInstanceGroupOptions.LoadBalancer
+	}
+	if createInstanceGroupOptions.LoadBalancerPool != nil {
+		body["load_balancer_pool"] = createInstanceGroupOptions.LoadBalancerPool
+	}
+	if createInstanceGroupOptions.ResourceGroup != nil {
+		body["resource_group"] = createInstanceGroupOptions.ResourceGroup
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -2764,7 +4069,7 @@ func (vpc *VpcV1) CreateLoadBalancer(createLoadBalancerOptions *CreateLoadBalanc
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancer)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroup)
 	if err != nil {
 		return
 	}
@@ -2773,20 +4078,21 @@ func (vpc *VpcV1) CreateLoadBalancer(createLoadBalancerOptions *CreateLoadBalanc
 	return
 }
 
-// DeleteLoadBalancer : Delete a load balancer
-// This request deletes a load balancer. This operation cannot be reversed.
-func (vpc *VpcV1) DeleteLoadBalancer(deleteLoadBalancerOptions *DeleteLoadBalancerOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deleteLoadBalancerOptions, "deleteLoadBalancerOptions cannot be nil")
+// DeleteInstanceGroup : Delete specified instance group
+// This request deletes an instance group. This operation cannot be reversed. Any instances associated with the group
+// will be deleted.
+func (vpc *VpcV1) DeleteInstanceGroup(deleteInstanceGroupOptions *DeleteInstanceGroupOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteInstanceGroupOptions, "deleteInstanceGroupOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(deleteLoadBalancerOptions, "deleteLoadBalancerOptions")
+	err = core.ValidateStruct(deleteInstanceGroupOptions, "deleteInstanceGroupOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers"}
-	pathParameters := []string{*deleteLoadBalancerOptions.ID}
+	pathSegments := []string{"instance_groups"}
+	pathParameters := []string{*deleteInstanceGroupOptions.ID}
 
 	builder := core.NewRequestBuilder(core.DELETE)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -2794,11 +4100,11 @@ func (vpc *VpcV1) DeleteLoadBalancer(deleteLoadBalancerOptions *DeleteLoadBalanc
 		return
 	}
 
-	for headerName, headerValue := range deleteLoadBalancerOptions.Headers {
+	for headerName, headerValue := range deleteInstanceGroupOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteLoadBalancer")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteInstanceGroup")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -2816,20 +4122,20 @@ func (vpc *VpcV1) DeleteLoadBalancer(deleteLoadBalancerOptions *DeleteLoadBalanc
 	return
 }
 
-// GetLoadBalancer : Retrieve a load balancer
-// This request retrieves a single load balancer specified by the identifier in the URL path.
-func (vpc *VpcV1) GetLoadBalancer(getLoadBalancerOptions *GetLoadBalancerOptions) (result *LoadBalancer, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getLoadBalancerOptions, "getLoadBalancerOptions cannot be nil")
+// GetInstanceGroup : Retrieve specified instance group
+// This request retrieves a single instance group specified by identifier in the URL.
+func (vpc *VpcV1) GetInstanceGroup(getInstanceGroupOptions *GetInstanceGroupOptions) (result *InstanceGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getInstanceGroupOptions, "getInstanceGroupOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(getLoadBalancerOptions, "getLoadBalancerOptions")
+	err = core.ValidateStruct(getInstanceGroupOptions, "getInstanceGroupOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers"}
-	pathParameters := []string{*getLoadBalancerOptions.ID}
+	pathSegments := []string{"instance_groups"}
+	pathParameters := []string{*getInstanceGroupOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -2837,11 +4143,11 @@ func (vpc *VpcV1) GetLoadBalancer(getLoadBalancerOptions *GetLoadBalancerOptions
 		return
 	}
 
-	for headerName, headerValue := range getLoadBalancerOptions.Headers {
+	for headerName, headerValue := range getInstanceGroupOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetLoadBalancer")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetInstanceGroup")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -2860,7 +4166,7 @@ func (vpc *VpcV1) GetLoadBalancer(getLoadBalancerOptions *GetLoadBalancerOptions
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancer)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroup)
 	if err != nil {
 		return
 	}
@@ -2869,20 +4175,21 @@ func (vpc *VpcV1) GetLoadBalancer(getLoadBalancerOptions *GetLoadBalancerOptions
 	return
 }
 
-// UpdateLoadBalancer : Update a load balancer
-// This request updates a load balancer.
-func (vpc *VpcV1) UpdateLoadBalancer(updateLoadBalancerOptions *UpdateLoadBalancerOptions) (result *LoadBalancer, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateLoadBalancerOptions, "updateLoadBalancerOptions cannot be nil")
+// UpdateInstanceGroup : Update specified instance group
+// This request updates an instance group with the information provided instance group patch. The instance group patch
+// object is structured in the same way as a retrieved instance group and contains only the information to be updated.
+func (vpc *VpcV1) UpdateInstanceGroup(updateInstanceGroupOptions *UpdateInstanceGroupOptions) (result *InstanceGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateInstanceGroupOptions, "updateInstanceGroupOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(updateLoadBalancerOptions, "updateLoadBalancerOptions")
+	err = core.ValidateStruct(updateInstanceGroupOptions, "updateInstanceGroupOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers"}
-	pathParameters := []string{*updateLoadBalancerOptions.ID}
+	pathSegments := []string{"instance_groups"}
+	pathParameters := []string{*updateInstanceGroupOptions.ID}
 
 	builder := core.NewRequestBuilder(core.PATCH)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -2890,11 +4197,11 @@ func (vpc *VpcV1) UpdateLoadBalancer(updateLoadBalancerOptions *UpdateLoadBalanc
 		return
 	}
 
-	for headerName, headerValue := range updateLoadBalancerOptions.Headers {
+	for headerName, headerValue := range updateInstanceGroupOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateLoadBalancer")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateInstanceGroup")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -2905,8 +4212,26 @@ func (vpc *VpcV1) UpdateLoadBalancer(updateLoadBalancerOptions *UpdateLoadBalanc
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
-	if updateLoadBalancerOptions.Name != nil {
-		body["name"] = updateLoadBalancerOptions.Name
+	if updateInstanceGroupOptions.Name != nil {
+		body["name"] = updateInstanceGroupOptions.Name
+	}
+	if updateInstanceGroupOptions.MembershipCount != nil {
+		body["membership_count"] = updateInstanceGroupOptions.MembershipCount
+	}
+	if updateInstanceGroupOptions.InstanceTemplate != nil {
+		body["instance_template"] = updateInstanceGroupOptions.InstanceTemplate
+	}
+	if updateInstanceGroupOptions.Subnets != nil {
+		body["subnets"] = updateInstanceGroupOptions.Subnets
+	}
+	if updateInstanceGroupOptions.ApplicationPort != nil {
+		body["application_port"] = updateInstanceGroupOptions.ApplicationPort
+	}
+	if updateInstanceGroupOptions.LoadBalancer != nil {
+		body["load_balancer"] = updateInstanceGroupOptions.LoadBalancer
+	}
+	if updateInstanceGroupOptions.LoadBalancerPool != nil {
+		body["load_balancer_pool"] = updateInstanceGroupOptions.LoadBalancerPool
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -2923,7 +4248,7 @@ func (vpc *VpcV1) UpdateLoadBalancer(updateLoadBalancerOptions *UpdateLoadBalanc
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancer)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroup)
 	if err != nil {
 		return
 	}
@@ -2932,20 +4257,63 @@ func (vpc *VpcV1) UpdateLoadBalancer(updateLoadBalancerOptions *UpdateLoadBalanc
 	return
 }
 
-// GetLoadBalancerStatistics : List statistics of a load balancer
-// This request lists statistics of a load balancer specified by the identifier in the URL path.
-func (vpc *VpcV1) GetLoadBalancerStatistics(getLoadBalancerStatisticsOptions *GetLoadBalancerStatisticsOptions) (result *LoadBalancerStatistics, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getLoadBalancerStatisticsOptions, "getLoadBalancerStatisticsOptions cannot be nil")
+// DeleteInstanceGroupLoadBalancer : Delete specified instance group load balancer
+// This request unbinds the instance group from the load balancer pool, and deletes the load balancer pool members.
+func (vpc *VpcV1) DeleteInstanceGroupLoadBalancer(deleteInstanceGroupLoadBalancerOptions *DeleteInstanceGroupLoadBalancerOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteInstanceGroupLoadBalancerOptions, "deleteInstanceGroupLoadBalancerOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(getLoadBalancerStatisticsOptions, "getLoadBalancerStatisticsOptions")
+	err = core.ValidateStruct(deleteInstanceGroupLoadBalancerOptions, "deleteInstanceGroupLoadBalancerOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "statistics"}
-	pathParameters := []string{*getLoadBalancerStatisticsOptions.ID}
+	pathSegments := []string{"instance_groups", "load_balancer"}
+	pathParameters := []string{*deleteInstanceGroupLoadBalancerOptions.InstanceGroupID}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteInstanceGroupLoadBalancerOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteInstanceGroupLoadBalancer")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// ListInstanceGroupManagers : List all managers for an instance group
+// This request retrieves instance group managers.
+func (vpc *VpcV1) ListInstanceGroupManagers(listInstanceGroupManagersOptions *ListInstanceGroupManagersOptions) (result *InstanceGroupManagerCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listInstanceGroupManagersOptions, "listInstanceGroupManagersOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listInstanceGroupManagersOptions, "listInstanceGroupManagersOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"instance_groups", "managers"}
+	pathParameters := []string{*listInstanceGroupManagersOptions.InstanceGroupID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -2953,11 +4321,11 @@ func (vpc *VpcV1) GetLoadBalancerStatistics(getLoadBalancerStatisticsOptions *Ge
 		return
 	}
 
-	for headerName, headerValue := range getLoadBalancerStatisticsOptions.Headers {
+	for headerName, headerValue := range listInstanceGroupManagersOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetLoadBalancerStatistics")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListInstanceGroupManagers")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -2976,7 +4344,7 @@ func (vpc *VpcV1) GetLoadBalancerStatistics(getLoadBalancerStatisticsOptions *Ge
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerStatistics)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroupManagerCollection)
 	if err != nil {
 		return
 	}
@@ -2985,73 +4353,20 @@ func (vpc *VpcV1) GetLoadBalancerStatistics(getLoadBalancerStatisticsOptions *Ge
 	return
 }
 
-// ListLoadBalancerListeners : List all listeners of the load balancer
-// This request retrieves a list of all listeners that belong to the load balancer.
-func (vpc *VpcV1) ListLoadBalancerListeners(listLoadBalancerListenersOptions *ListLoadBalancerListenersOptions) (result *LoadBalancerListenerCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(listLoadBalancerListenersOptions, "listLoadBalancerListenersOptions cannot be nil")
+// CreateInstanceGroupManager : Create an instance group manager
+// This request creates a new instance group manager.
+func (vpc *VpcV1) CreateInstanceGroupManager(createInstanceGroupManagerOptions *CreateInstanceGroupManagerOptions) (result *InstanceGroupManager, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createInstanceGroupManagerOptions, "createInstanceGroupManagerOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(listLoadBalancerListenersOptions, "listLoadBalancerListenersOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"load_balancers", "listeners"}
-	pathParameters := []string{*listLoadBalancerListenersOptions.LoadBalancerID}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	err = core.ValidateStruct(createInstanceGroupManagerOptions, "createInstanceGroupManagerOptions")
 	if err != nil {
 		return
 	}
 
-	for headerName, headerValue := range listLoadBalancerListenersOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListLoadBalancerListeners")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerCollection)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// CreateLoadBalancerListener : Create a listener
-// This request creates a new listener to the load balancer.
-func (vpc *VpcV1) CreateLoadBalancerListener(createLoadBalancerListenerOptions *CreateLoadBalancerListenerOptions) (result *LoadBalancerListener, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(createLoadBalancerListenerOptions, "createLoadBalancerListenerOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(createLoadBalancerListenerOptions, "createLoadBalancerListenerOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"load_balancers", "listeners"}
-	pathParameters := []string{*createLoadBalancerListenerOptions.LoadBalancerID}
+	pathSegments := []string{"instance_groups", "managers"}
+	pathParameters := []string{*createInstanceGroupManagerOptions.InstanceGroupID}
 
 	builder := core.NewRequestBuilder(core.POST)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3059,11 +4374,11 @@ func (vpc *VpcV1) CreateLoadBalancerListener(createLoadBalancerListenerOptions *
 		return
 	}
 
-	for headerName, headerValue := range createLoadBalancerListenerOptions.Headers {
+	for headerName, headerValue := range createInstanceGroupManagerOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateLoadBalancerListener")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateInstanceGroupManager")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3073,26 +4388,7 @@ func (vpc *VpcV1) CreateLoadBalancerListener(createLoadBalancerListenerOptions *
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
-	body := make(map[string]interface{})
-	if createLoadBalancerListenerOptions.Port != nil {
-		body["port"] = createLoadBalancerListenerOptions.Port
-	}
-	if createLoadBalancerListenerOptions.Protocol != nil {
-		body["protocol"] = createLoadBalancerListenerOptions.Protocol
-	}
-	if createLoadBalancerListenerOptions.CertificateInstance != nil {
-		body["certificate_instance"] = createLoadBalancerListenerOptions.CertificateInstance
-	}
-	if createLoadBalancerListenerOptions.ConnectionLimit != nil {
-		body["connection_limit"] = createLoadBalancerListenerOptions.ConnectionLimit
-	}
-	if createLoadBalancerListenerOptions.DefaultPool != nil {
-		body["default_pool"] = createLoadBalancerListenerOptions.DefaultPool
-	}
-	if createLoadBalancerListenerOptions.Policies != nil {
-		body["policies"] = createLoadBalancerListenerOptions.Policies
-	}
-	_, err = builder.SetBodyContentJSON(body)
+	_, err = builder.SetBodyContentJSON(createInstanceGroupManagerOptions.InstanceGroupManagerPrototype)
 	if err != nil {
 		return
 	}
@@ -3107,7 +4403,7 @@ func (vpc *VpcV1) CreateLoadBalancerListener(createLoadBalancerListenerOptions *
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListener)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroupManager)
 	if err != nil {
 		return
 	}
@@ -3116,20 +4412,20 @@ func (vpc *VpcV1) CreateLoadBalancerListener(createLoadBalancerListenerOptions *
 	return
 }
 
-// DeleteLoadBalancerListener : Delete a listener
-// This request deletes a load balancer listener. This operation cannot be reversed.
-func (vpc *VpcV1) DeleteLoadBalancerListener(deleteLoadBalancerListenerOptions *DeleteLoadBalancerListenerOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deleteLoadBalancerListenerOptions, "deleteLoadBalancerListenerOptions cannot be nil")
+// DeleteInstanceGroupManager : Delete specified instance group manager
+// This request deletes an instance group manager. This operation cannot be reversed.
+func (vpc *VpcV1) DeleteInstanceGroupManager(deleteInstanceGroupManagerOptions *DeleteInstanceGroupManagerOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteInstanceGroupManagerOptions, "deleteInstanceGroupManagerOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(deleteLoadBalancerListenerOptions, "deleteLoadBalancerListenerOptions")
+	err = core.ValidateStruct(deleteInstanceGroupManagerOptions, "deleteInstanceGroupManagerOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "listeners"}
-	pathParameters := []string{*deleteLoadBalancerListenerOptions.LoadBalancerID, *deleteLoadBalancerListenerOptions.ID}
+	pathSegments := []string{"instance_groups", "managers"}
+	pathParameters := []string{*deleteInstanceGroupManagerOptions.InstanceGroupID, *deleteInstanceGroupManagerOptions.ID}
 
 	builder := core.NewRequestBuilder(core.DELETE)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3137,11 +4433,11 @@ func (vpc *VpcV1) DeleteLoadBalancerListener(deleteLoadBalancerListenerOptions *
 		return
 	}
 
-	for headerName, headerValue := range deleteLoadBalancerListenerOptions.Headers {
+	for headerName, headerValue := range deleteInstanceGroupManagerOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteLoadBalancerListener")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteInstanceGroupManager")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3159,20 +4455,20 @@ func (vpc *VpcV1) DeleteLoadBalancerListener(deleteLoadBalancerListenerOptions *
 	return
 }
 
-// GetLoadBalancerListener : Retrieve a listener
-// This request retrieves a single listener specified by the identifier in the URL path.
-func (vpc *VpcV1) GetLoadBalancerListener(getLoadBalancerListenerOptions *GetLoadBalancerListenerOptions) (result *LoadBalancerListener, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getLoadBalancerListenerOptions, "getLoadBalancerListenerOptions cannot be nil")
+// GetInstanceGroupManager : Retrieve specified instance group
+// This request retrieves a single instance group manager specified by identifier in the URL.
+func (vpc *VpcV1) GetInstanceGroupManager(getInstanceGroupManagerOptions *GetInstanceGroupManagerOptions) (result *InstanceGroupManager, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getInstanceGroupManagerOptions, "getInstanceGroupManagerOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(getLoadBalancerListenerOptions, "getLoadBalancerListenerOptions")
+	err = core.ValidateStruct(getInstanceGroupManagerOptions, "getInstanceGroupManagerOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "listeners"}
-	pathParameters := []string{*getLoadBalancerListenerOptions.LoadBalancerID, *getLoadBalancerListenerOptions.ID}
+	pathSegments := []string{"instance_groups", "managers"}
+	pathParameters := []string{*getInstanceGroupManagerOptions.InstanceGroupID, *getInstanceGroupManagerOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3180,11 +4476,11 @@ func (vpc *VpcV1) GetLoadBalancerListener(getLoadBalancerListenerOptions *GetLoa
 		return
 	}
 
-	for headerName, headerValue := range getLoadBalancerListenerOptions.Headers {
+	for headerName, headerValue := range getInstanceGroupManagerOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetLoadBalancerListener")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetInstanceGroupManager")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3203,7 +4499,7 @@ func (vpc *VpcV1) GetLoadBalancerListener(getLoadBalancerListenerOptions *GetLoa
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListener)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroupManager)
 	if err != nil {
 		return
 	}
@@ -3212,20 +4508,20 @@ func (vpc *VpcV1) GetLoadBalancerListener(getLoadBalancerListenerOptions *GetLoa
 	return
 }
 
-// UpdateLoadBalancerListener : Update a listener
-// This request updates a load balancer listener from a listener patch.
-func (vpc *VpcV1) UpdateLoadBalancerListener(updateLoadBalancerListenerOptions *UpdateLoadBalancerListenerOptions) (result *LoadBalancerListener, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateLoadBalancerListenerOptions, "updateLoadBalancerListenerOptions cannot be nil")
+// UpdateInstanceGroupManager : Update specified instance group manager
+// This request updates an instance group manager with the information provided instance group manager patch.
+func (vpc *VpcV1) UpdateInstanceGroupManager(updateInstanceGroupManagerOptions *UpdateInstanceGroupManagerOptions) (result *InstanceGroupManager, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateInstanceGroupManagerOptions, "updateInstanceGroupManagerOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(updateLoadBalancerListenerOptions, "updateLoadBalancerListenerOptions")
+	err = core.ValidateStruct(updateInstanceGroupManagerOptions, "updateInstanceGroupManagerOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "listeners"}
-	pathParameters := []string{*updateLoadBalancerListenerOptions.LoadBalancerID, *updateLoadBalancerListenerOptions.ID}
+	pathSegments := []string{"instance_groups", "managers"}
+	pathParameters := []string{*updateInstanceGroupManagerOptions.InstanceGroupID, *updateInstanceGroupManagerOptions.ID}
 
 	builder := core.NewRequestBuilder(core.PATCH)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3233,11 +4529,11 @@ func (vpc *VpcV1) UpdateLoadBalancerListener(updateLoadBalancerListenerOptions *
 		return
 	}
 
-	for headerName, headerValue := range updateLoadBalancerListenerOptions.Headers {
+	for headerName, headerValue := range updateInstanceGroupManagerOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateLoadBalancerListener")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateInstanceGroupManager")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3248,20 +4544,23 @@ func (vpc *VpcV1) UpdateLoadBalancerListener(updateLoadBalancerListenerOptions *
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
-	if updateLoadBalancerListenerOptions.CertificateInstance != nil {
-		body["certificate_instance"] = updateLoadBalancerListenerOptions.CertificateInstance
+	if updateInstanceGroupManagerOptions.Name != nil {
+		body["name"] = updateInstanceGroupManagerOptions.Name
 	}
-	if updateLoadBalancerListenerOptions.ConnectionLimit != nil {
-		body["connection_limit"] = updateLoadBalancerListenerOptions.ConnectionLimit
+	if updateInstanceGroupManagerOptions.ManagementEnabled != nil {
+		body["management_enabled"] = updateInstanceGroupManagerOptions.ManagementEnabled
 	}
-	if updateLoadBalancerListenerOptions.DefaultPool != nil {
-		body["default_pool"] = updateLoadBalancerListenerOptions.DefaultPool
+	if updateInstanceGroupManagerOptions.AggregationWindow != nil {
+		body["aggregation_window"] = updateInstanceGroupManagerOptions.AggregationWindow
 	}
-	if updateLoadBalancerListenerOptions.Port != nil {
-		body["port"] = updateLoadBalancerListenerOptions.Port
+	if updateInstanceGroupManagerOptions.Cooldown != nil {
+		body["cooldown"] = updateInstanceGroupManagerOptions.Cooldown
 	}
-	if updateLoadBalancerListenerOptions.Protocol != nil {
-		body["protocol"] = updateLoadBalancerListenerOptions.Protocol
+	if updateInstanceGroupManagerOptions.MaxMembershipCount != nil {
+		body["max_membership_count"] = updateInstanceGroupManagerOptions.MaxMembershipCount
+	}
+	if updateInstanceGroupManagerOptions.MinMembershipCount != nil {
+		body["min_membership_count"] = updateInstanceGroupManagerOptions.MinMembershipCount
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -3278,7 +4577,7 @@ func (vpc *VpcV1) UpdateLoadBalancerListener(updateLoadBalancerListenerOptions *
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListener)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroupManager)
 	if err != nil {
 		return
 	}
@@ -3287,20 +4586,19 @@ func (vpc *VpcV1) UpdateLoadBalancerListener(updateLoadBalancerListenerOptions *
 	return
 }
 
-// ListLoadBalancerListenerPolicies : List all policies of the load balancer listener
-// Retrieves a list of all policies belonging to the load balancer listener.
-func (vpc *VpcV1) ListLoadBalancerListenerPolicies(listLoadBalancerListenerPoliciesOptions *ListLoadBalancerListenerPoliciesOptions) (result *LoadBalancerListenerPolicyCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(listLoadBalancerListenerPoliciesOptions, "listLoadBalancerListenerPoliciesOptions cannot be nil")
+// ListInstanceGroupManagerPolicies : List all policies for an instance group manager
+func (vpc *VpcV1) ListInstanceGroupManagerPolicies(listInstanceGroupManagerPoliciesOptions *ListInstanceGroupManagerPoliciesOptions) (result *InstanceGroupManagerPolicyCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listInstanceGroupManagerPoliciesOptions, "listInstanceGroupManagerPoliciesOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(listLoadBalancerListenerPoliciesOptions, "listLoadBalancerListenerPoliciesOptions")
+	err = core.ValidateStruct(listInstanceGroupManagerPoliciesOptions, "listInstanceGroupManagerPoliciesOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "listeners", "policies"}
-	pathParameters := []string{*listLoadBalancerListenerPoliciesOptions.LoadBalancerID, *listLoadBalancerListenerPoliciesOptions.ListenerID}
+	pathSegments := []string{"instance_groups", "managers", "policies"}
+	pathParameters := []string{*listInstanceGroupManagerPoliciesOptions.InstanceGroupID, *listInstanceGroupManagerPoliciesOptions.InstanceGroupManagerID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3308,11 +4606,11 @@ func (vpc *VpcV1) ListLoadBalancerListenerPolicies(listLoadBalancerListenerPolic
 		return
 	}
 
-	for headerName, headerValue := range listLoadBalancerListenerPoliciesOptions.Headers {
+	for headerName, headerValue := range listInstanceGroupManagerPoliciesOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListLoadBalancerListenerPolicies")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListInstanceGroupManagerPolicies")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3331,7 +4629,7 @@ func (vpc *VpcV1) ListLoadBalancerListenerPolicies(listLoadBalancerListenerPolic
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicyCollection)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroupManagerPolicyCollection)
 	if err != nil {
 		return
 	}
@@ -3340,20 +4638,20 @@ func (vpc *VpcV1) ListLoadBalancerListenerPolicies(listLoadBalancerListenerPolic
 	return
 }
 
-// CreateLoadBalancerListenerPolicy : Create a policy for the load balancer listener
-// Creates a new policy to the load balancer listener.
-func (vpc *VpcV1) CreateLoadBalancerListenerPolicy(createLoadBalancerListenerPolicyOptions *CreateLoadBalancerListenerPolicyOptions) (result *LoadBalancerListenerPolicy, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(createLoadBalancerListenerPolicyOptions, "createLoadBalancerListenerPolicyOptions cannot be nil")
+// CreateInstanceGroupManagerPolicy : Create an instance group manager policy
+// This request creates a new instance group manager policy.
+func (vpc *VpcV1) CreateInstanceGroupManagerPolicy(createInstanceGroupManagerPolicyOptions *CreateInstanceGroupManagerPolicyOptions) (result InstanceGroupManagerPolicyIntf, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createInstanceGroupManagerPolicyOptions, "createInstanceGroupManagerPolicyOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(createLoadBalancerListenerPolicyOptions, "createLoadBalancerListenerPolicyOptions")
+	err = core.ValidateStruct(createInstanceGroupManagerPolicyOptions, "createInstanceGroupManagerPolicyOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "listeners", "policies"}
-	pathParameters := []string{*createLoadBalancerListenerPolicyOptions.LoadBalancerID, *createLoadBalancerListenerPolicyOptions.ListenerID}
+	pathSegments := []string{"instance_groups", "managers", "policies"}
+	pathParameters := []string{*createInstanceGroupManagerPolicyOptions.InstanceGroupID, *createInstanceGroupManagerPolicyOptions.InstanceGroupManagerID}
 
 	builder := core.NewRequestBuilder(core.POST)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3361,11 +4659,11 @@ func (vpc *VpcV1) CreateLoadBalancerListenerPolicy(createLoadBalancerListenerPol
 		return
 	}
 
-	for headerName, headerValue := range createLoadBalancerListenerPolicyOptions.Headers {
+	for headerName, headerValue := range createInstanceGroupManagerPolicyOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateLoadBalancerListenerPolicy")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateInstanceGroupManagerPolicy")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3375,23 +4673,7 @@ func (vpc *VpcV1) CreateLoadBalancerListenerPolicy(createLoadBalancerListenerPol
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
-	body := make(map[string]interface{})
-	if createLoadBalancerListenerPolicyOptions.Action != nil {
-		body["action"] = createLoadBalancerListenerPolicyOptions.Action
-	}
-	if createLoadBalancerListenerPolicyOptions.Priority != nil {
-		body["priority"] = createLoadBalancerListenerPolicyOptions.Priority
-	}
-	if createLoadBalancerListenerPolicyOptions.Name != nil {
-		body["name"] = createLoadBalancerListenerPolicyOptions.Name
-	}
-	if createLoadBalancerListenerPolicyOptions.Rules != nil {
-		body["rules"] = createLoadBalancerListenerPolicyOptions.Rules
-	}
-	if createLoadBalancerListenerPolicyOptions.Target != nil {
-		body["target"] = createLoadBalancerListenerPolicyOptions.Target
-	}
-	_, err = builder.SetBodyContentJSON(body)
+	_, err = builder.SetBodyContentJSON(createInstanceGroupManagerPolicyOptions.InstanceGroupManagerPolicyPrototype)
 	if err != nil {
 		return
 	}
@@ -3406,7 +4688,7 @@ func (vpc *VpcV1) CreateLoadBalancerListenerPolicy(createLoadBalancerListenerPol
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicy)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroupManagerPolicy)
 	if err != nil {
 		return
 	}
@@ -3415,20 +4697,20 @@ func (vpc *VpcV1) CreateLoadBalancerListenerPolicy(createLoadBalancerListenerPol
 	return
 }
 
-// DeleteLoadBalancerListenerPolicy : Delete a policy of the load balancer listener
-// Deletes a policy of the load balancer listener. This operation cannot be reversed.
-func (vpc *VpcV1) DeleteLoadBalancerListenerPolicy(deleteLoadBalancerListenerPolicyOptions *DeleteLoadBalancerListenerPolicyOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deleteLoadBalancerListenerPolicyOptions, "deleteLoadBalancerListenerPolicyOptions cannot be nil")
+// DeleteInstanceGroupManagerPolicy : Delete specified instance group manager policy
+// This request deletes an instance group manager policy. This operation cannot be reversed.
+func (vpc *VpcV1) DeleteInstanceGroupManagerPolicy(deleteInstanceGroupManagerPolicyOptions *DeleteInstanceGroupManagerPolicyOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteInstanceGroupManagerPolicyOptions, "deleteInstanceGroupManagerPolicyOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(deleteLoadBalancerListenerPolicyOptions, "deleteLoadBalancerListenerPolicyOptions")
+	err = core.ValidateStruct(deleteInstanceGroupManagerPolicyOptions, "deleteInstanceGroupManagerPolicyOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "listeners", "policies"}
-	pathParameters := []string{*deleteLoadBalancerListenerPolicyOptions.LoadBalancerID, *deleteLoadBalancerListenerPolicyOptions.ListenerID, *deleteLoadBalancerListenerPolicyOptions.ID}
+	pathSegments := []string{"instance_groups", "managers", "policies"}
+	pathParameters := []string{*deleteInstanceGroupManagerPolicyOptions.InstanceGroupID, *deleteInstanceGroupManagerPolicyOptions.InstanceGroupManagerID, *deleteInstanceGroupManagerPolicyOptions.ID}
 
 	builder := core.NewRequestBuilder(core.DELETE)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3436,11 +4718,11 @@ func (vpc *VpcV1) DeleteLoadBalancerListenerPolicy(deleteLoadBalancerListenerPol
 		return
 	}
 
-	for headerName, headerValue := range deleteLoadBalancerListenerPolicyOptions.Headers {
+	for headerName, headerValue := range deleteInstanceGroupManagerPolicyOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteLoadBalancerListenerPolicy")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteInstanceGroupManagerPolicy")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3458,20 +4740,20 @@ func (vpc *VpcV1) DeleteLoadBalancerListenerPolicy(deleteLoadBalancerListenerPol
 	return
 }
 
-// GetLoadBalancerListenerPolicy : Retrieve a policy of the load balancer listener
-// Retrieve a single policy specified by the identifier in the URL path.
-func (vpc *VpcV1) GetLoadBalancerListenerPolicy(getLoadBalancerListenerPolicyOptions *GetLoadBalancerListenerPolicyOptions) (result *LoadBalancerListenerPolicy, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getLoadBalancerListenerPolicyOptions, "getLoadBalancerListenerPolicyOptions cannot be nil")
+// GetInstanceGroupManagerPolicy : Retrieve specified instance group manager policy
+// This request retrieves a single instance group manager policy specified by identifier in the URL.
+func (vpc *VpcV1) GetInstanceGroupManagerPolicy(getInstanceGroupManagerPolicyOptions *GetInstanceGroupManagerPolicyOptions) (result InstanceGroupManagerPolicyIntf, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getInstanceGroupManagerPolicyOptions, "getInstanceGroupManagerPolicyOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(getLoadBalancerListenerPolicyOptions, "getLoadBalancerListenerPolicyOptions")
+	err = core.ValidateStruct(getInstanceGroupManagerPolicyOptions, "getInstanceGroupManagerPolicyOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "listeners", "policies"}
-	pathParameters := []string{*getLoadBalancerListenerPolicyOptions.LoadBalancerID, *getLoadBalancerListenerPolicyOptions.ListenerID, *getLoadBalancerListenerPolicyOptions.ID}
+	pathSegments := []string{"instance_groups", "managers", "policies"}
+	pathParameters := []string{*getInstanceGroupManagerPolicyOptions.InstanceGroupID, *getInstanceGroupManagerPolicyOptions.InstanceGroupManagerID, *getInstanceGroupManagerPolicyOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3479,11 +4761,11 @@ func (vpc *VpcV1) GetLoadBalancerListenerPolicy(getLoadBalancerListenerPolicyOpt
 		return
 	}
 
-	for headerName, headerValue := range getLoadBalancerListenerPolicyOptions.Headers {
+	for headerName, headerValue := range getInstanceGroupManagerPolicyOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetLoadBalancerListenerPolicy")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetInstanceGroupManagerPolicy")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3502,7 +4784,7 @@ func (vpc *VpcV1) GetLoadBalancerListenerPolicy(getLoadBalancerListenerPolicyOpt
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicy)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroupManagerPolicy)
 	if err != nil {
 		return
 	}
@@ -3511,20 +4793,20 @@ func (vpc *VpcV1) GetLoadBalancerListenerPolicy(getLoadBalancerListenerPolicyOpt
 	return
 }
 
-// UpdateLoadBalancerListenerPolicy : Update a policy of the load balancer listener
-// Updates a policy from a policy patch.
-func (vpc *VpcV1) UpdateLoadBalancerListenerPolicy(updateLoadBalancerListenerPolicyOptions *UpdateLoadBalancerListenerPolicyOptions) (result *LoadBalancerListenerPolicy, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateLoadBalancerListenerPolicyOptions, "updateLoadBalancerListenerPolicyOptions cannot be nil")
+// UpdateInstanceGroupManagerPolicy : Update specified instance group manager policy
+// This request updates an instance group manager policy.
+func (vpc *VpcV1) UpdateInstanceGroupManagerPolicy(updateInstanceGroupManagerPolicyOptions *UpdateInstanceGroupManagerPolicyOptions) (result InstanceGroupManagerPolicyIntf, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateInstanceGroupManagerPolicyOptions, "updateInstanceGroupManagerPolicyOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(updateLoadBalancerListenerPolicyOptions, "updateLoadBalancerListenerPolicyOptions")
+	err = core.ValidateStruct(updateInstanceGroupManagerPolicyOptions, "updateInstanceGroupManagerPolicyOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "listeners", "policies"}
-	pathParameters := []string{*updateLoadBalancerListenerPolicyOptions.LoadBalancerID, *updateLoadBalancerListenerPolicyOptions.ListenerID, *updateLoadBalancerListenerPolicyOptions.ID}
+	pathSegments := []string{"instance_groups", "managers", "policies"}
+	pathParameters := []string{*updateInstanceGroupManagerPolicyOptions.InstanceGroupID, *updateInstanceGroupManagerPolicyOptions.InstanceGroupManagerID, *updateInstanceGroupManagerPolicyOptions.ID}
 
 	builder := core.NewRequestBuilder(core.PATCH)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3532,11 +4814,11 @@ func (vpc *VpcV1) UpdateLoadBalancerListenerPolicy(updateLoadBalancerListenerPol
 		return
 	}
 
-	for headerName, headerValue := range updateLoadBalancerListenerPolicyOptions.Headers {
+	for headerName, headerValue := range updateInstanceGroupManagerPolicyOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateLoadBalancerListenerPolicy")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateInstanceGroupManagerPolicy")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3547,14 +4829,14 @@ func (vpc *VpcV1) UpdateLoadBalancerListenerPolicy(updateLoadBalancerListenerPol
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
-	if updateLoadBalancerListenerPolicyOptions.Name != nil {
-		body["name"] = updateLoadBalancerListenerPolicyOptions.Name
+	if updateInstanceGroupManagerPolicyOptions.Name != nil {
+		body["name"] = updateInstanceGroupManagerPolicyOptions.Name
 	}
-	if updateLoadBalancerListenerPolicyOptions.Priority != nil {
-		body["priority"] = updateLoadBalancerListenerPolicyOptions.Priority
+	if updateInstanceGroupManagerPolicyOptions.MetricType != nil {
+		body["metric_type"] = updateInstanceGroupManagerPolicyOptions.MetricType
 	}
-	if updateLoadBalancerListenerPolicyOptions.Target != nil {
-		body["target"] = updateLoadBalancerListenerPolicyOptions.Target
+	if updateInstanceGroupManagerPolicyOptions.MetricValue != nil {
+		body["metric_value"] = updateInstanceGroupManagerPolicyOptions.MetricValue
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -3571,7 +4853,7 @@ func (vpc *VpcV1) UpdateLoadBalancerListenerPolicy(updateLoadBalancerListenerPol
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicy)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroupManagerPolicy)
 	if err != nil {
 		return
 	}
@@ -3580,20 +4862,63 @@ func (vpc *VpcV1) UpdateLoadBalancerListenerPolicy(updateLoadBalancerListenerPol
 	return
 }
 
-// ListLoadBalancerListenerPolicyRules : List all rules of the load balancer listener policy
-// Retrieves a list of all rules belonging to the load balancer listener policy.
-func (vpc *VpcV1) ListLoadBalancerListenerPolicyRules(listLoadBalancerListenerPolicyRulesOptions *ListLoadBalancerListenerPolicyRulesOptions) (result *LoadBalancerListenerPolicyRuleCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(listLoadBalancerListenerPolicyRulesOptions, "listLoadBalancerListenerPolicyRulesOptions cannot be nil")
+// DeleteInstanceGroupMemberships : Delete all memberships from the instance group
+// This request deletes all memberships of an instance group. This operation cannot be reversed. reversed. Any
+// memberships that have `delete_instance_on_membership_delete` set to `true` will also have their instances deleted.
+func (vpc *VpcV1) DeleteInstanceGroupMemberships(deleteInstanceGroupMembershipsOptions *DeleteInstanceGroupMembershipsOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteInstanceGroupMembershipsOptions, "deleteInstanceGroupMembershipsOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(listLoadBalancerListenerPolicyRulesOptions, "listLoadBalancerListenerPolicyRulesOptions")
+	err = core.ValidateStruct(deleteInstanceGroupMembershipsOptions, "deleteInstanceGroupMembershipsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "listeners", "policies", "rules"}
-	pathParameters := []string{*listLoadBalancerListenerPolicyRulesOptions.LoadBalancerID, *listLoadBalancerListenerPolicyRulesOptions.ListenerID, *listLoadBalancerListenerPolicyRulesOptions.PolicyID}
+	pathSegments := []string{"instance_groups", "memberships"}
+	pathParameters := []string{*deleteInstanceGroupMembershipsOptions.InstanceGroupID}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteInstanceGroupMembershipsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteInstanceGroupMemberships")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// ListInstanceGroupMemberships : List all memberships for the instance group
+func (vpc *VpcV1) ListInstanceGroupMemberships(listInstanceGroupMembershipsOptions *ListInstanceGroupMembershipsOptions) (result *InstanceGroupMembershipCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listInstanceGroupMembershipsOptions, "listInstanceGroupMembershipsOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listInstanceGroupMembershipsOptions, "listInstanceGroupMembershipsOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"instance_groups", "memberships"}
+	pathParameters := []string{*listInstanceGroupMembershipsOptions.InstanceGroupID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3601,11 +4926,11 @@ func (vpc *VpcV1) ListLoadBalancerListenerPolicyRules(listLoadBalancerListenerPo
 		return
 	}
 
-	for headerName, headerValue := range listLoadBalancerListenerPolicyRulesOptions.Headers {
+	for headerName, headerValue := range listInstanceGroupMembershipsOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListLoadBalancerListenerPolicyRules")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListInstanceGroupMemberships")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3624,7 +4949,7 @@ func (vpc *VpcV1) ListLoadBalancerListenerPolicyRules(listLoadBalancerListenerPo
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicyRuleCollection)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroupMembershipCollection)
 	if err != nil {
 		return
 	}
@@ -3633,20 +4958,352 @@ func (vpc *VpcV1) ListLoadBalancerListenerPolicyRules(listLoadBalancerListenerPo
 	return
 }
 
-// CreateLoadBalancerListenerPolicyRule : Create a rule for the load balancer listener policy
-// Creates a new rule for the load balancer listener policy.
-func (vpc *VpcV1) CreateLoadBalancerListenerPolicyRule(createLoadBalancerListenerPolicyRuleOptions *CreateLoadBalancerListenerPolicyRuleOptions) (result *LoadBalancerListenerPolicyRule, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(createLoadBalancerListenerPolicyRuleOptions, "createLoadBalancerListenerPolicyRuleOptions cannot be nil")
+// DeleteInstanceGroupMembership : Delete specified instance group membership
+// This request deletes a memberships of an instance group. This operation cannot be reversed. reversed. If the
+// membership has `delete_instance_on_membership_delete` set to `true`, the instance will also be deleted.
+func (vpc *VpcV1) DeleteInstanceGroupMembership(deleteInstanceGroupMembershipOptions *DeleteInstanceGroupMembershipOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteInstanceGroupMembershipOptions, "deleteInstanceGroupMembershipOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(createLoadBalancerListenerPolicyRuleOptions, "createLoadBalancerListenerPolicyRuleOptions")
+	err = core.ValidateStruct(deleteInstanceGroupMembershipOptions, "deleteInstanceGroupMembershipOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "listeners", "policies", "rules"}
-	pathParameters := []string{*createLoadBalancerListenerPolicyRuleOptions.LoadBalancerID, *createLoadBalancerListenerPolicyRuleOptions.ListenerID, *createLoadBalancerListenerPolicyRuleOptions.PolicyID}
+	pathSegments := []string{"instance_groups", "memberships"}
+	pathParameters := []string{*deleteInstanceGroupMembershipOptions.InstanceGroupID, *deleteInstanceGroupMembershipOptions.ID}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteInstanceGroupMembershipOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteInstanceGroupMembership")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetInstanceGroupMembership : Retrieve specified instance group membership
+// This request retrieves a single instance group membership specified by identifier in the URL.
+func (vpc *VpcV1) GetInstanceGroupMembership(getInstanceGroupMembershipOptions *GetInstanceGroupMembershipOptions) (result *InstanceGroupMembership, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getInstanceGroupMembershipOptions, "getInstanceGroupMembershipOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getInstanceGroupMembershipOptions, "getInstanceGroupMembershipOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"instance_groups", "memberships"}
+	pathParameters := []string{*getInstanceGroupMembershipOptions.InstanceGroupID, *getInstanceGroupMembershipOptions.ID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getInstanceGroupMembershipOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetInstanceGroupMembership")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroupMembership)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// UpdateInstanceGroupMembership : Update specified instance group membership
+// This request updates an instance group membership with the information provided instance group membership patch.
+func (vpc *VpcV1) UpdateInstanceGroupMembership(updateInstanceGroupMembershipOptions *UpdateInstanceGroupMembershipOptions) (result *InstanceGroupMembership, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateInstanceGroupMembershipOptions, "updateInstanceGroupMembershipOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateInstanceGroupMembershipOptions, "updateInstanceGroupMembershipOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"instance_groups", "memberships"}
+	pathParameters := []string{*updateInstanceGroupMembershipOptions.InstanceGroupID, *updateInstanceGroupMembershipOptions.ID}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateInstanceGroupMembershipOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateInstanceGroupMembership")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if updateInstanceGroupMembershipOptions.Name != nil {
+		body["name"] = updateInstanceGroupMembershipOptions.Name
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroupMembership)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListVolumeProfiles : List all volume profiles
+// This request lists all volume profiles available in the region. A volume profile specifies the performance
+// characteristics and pricing model for a volume.
+func (vpc *VpcV1) ListVolumeProfiles(listVolumeProfilesOptions *ListVolumeProfilesOptions) (result *VolumeProfileCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listVolumeProfilesOptions, "listVolumeProfilesOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"volume/profiles"}
+	pathParameters := []string{}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listVolumeProfilesOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVolumeProfiles")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listVolumeProfilesOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listVolumeProfilesOptions.Start))
+	}
+	if listVolumeProfilesOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listVolumeProfilesOptions.Limit))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeProfileCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// GetVolumeProfile : Retrieve specified volume profile
+// This request retrieves a single volume profile specified by the name in the URL.
+func (vpc *VpcV1) GetVolumeProfile(getVolumeProfileOptions *GetVolumeProfileOptions) (result *VolumeProfile, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getVolumeProfileOptions, "getVolumeProfileOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getVolumeProfileOptions, "getVolumeProfileOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"volume/profiles"}
+	pathParameters := []string{*getVolumeProfileOptions.Name}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getVolumeProfileOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVolumeProfile")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeProfile)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListVolumes : List all volumes
+// This request lists all volumes in the region. Volumes are network-connected block storage devices that may be
+// attached to one or more instances in the same region.
+func (vpc *VpcV1) ListVolumes(listVolumesOptions *ListVolumesOptions) (result *VolumeCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listVolumesOptions, "listVolumesOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"volumes"}
+	pathParameters := []string{}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listVolumesOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVolumes")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listVolumesOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listVolumesOptions.Start))
+	}
+	if listVolumesOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listVolumesOptions.Limit))
+	}
+	if listVolumesOptions.Name != nil {
+		builder.AddQuery("name", fmt.Sprint(*listVolumesOptions.Name))
+	}
+	if listVolumesOptions.ZoneName != nil {
+		builder.AddQuery("zone.name", fmt.Sprint(*listVolumesOptions.ZoneName))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// CreateVolume : Create a volume
+// This request creates a new volume from a volume prototype object. The prototype object is structured in the same way
+// as a retrieved volume, and contains the information necessary to create the new volume.
+func (vpc *VpcV1) CreateVolume(createVolumeOptions *CreateVolumeOptions) (result *Volume, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createVolumeOptions, "createVolumeOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createVolumeOptions, "createVolumeOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"volumes"}
+	pathParameters := []string{}
 
 	builder := core.NewRequestBuilder(core.POST)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3654,11 +5311,11 @@ func (vpc *VpcV1) CreateLoadBalancerListenerPolicyRule(createLoadBalancerListene
 		return
 	}
 
-	for headerName, headerValue := range createLoadBalancerListenerPolicyRuleOptions.Headers {
+	for headerName, headerValue := range createVolumeOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateLoadBalancerListenerPolicyRule")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateVolume")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3668,20 +5325,7 @@ func (vpc *VpcV1) CreateLoadBalancerListenerPolicyRule(createLoadBalancerListene
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
-	body := make(map[string]interface{})
-	if createLoadBalancerListenerPolicyRuleOptions.Condition != nil {
-		body["condition"] = createLoadBalancerListenerPolicyRuleOptions.Condition
-	}
-	if createLoadBalancerListenerPolicyRuleOptions.Type != nil {
-		body["type"] = createLoadBalancerListenerPolicyRuleOptions.Type
-	}
-	if createLoadBalancerListenerPolicyRuleOptions.Value != nil {
-		body["value"] = createLoadBalancerListenerPolicyRuleOptions.Value
-	}
-	if createLoadBalancerListenerPolicyRuleOptions.Field != nil {
-		body["field"] = createLoadBalancerListenerPolicyRuleOptions.Field
-	}
-	_, err = builder.SetBodyContentJSON(body)
+	_, err = builder.SetBodyContentJSON(createVolumeOptions.VolumePrototype)
 	if err != nil {
 		return
 	}
@@ -3696,7 +5340,7 @@ func (vpc *VpcV1) CreateLoadBalancerListenerPolicyRule(createLoadBalancerListene
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicyRule)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolume)
 	if err != nil {
 		return
 	}
@@ -3705,20 +5349,21 @@ func (vpc *VpcV1) CreateLoadBalancerListenerPolicyRule(createLoadBalancerListene
 	return
 }
 
-// DeleteLoadBalancerListenerPolicyRule : Delete a rule from the load balancer listener policy
-// Deletes a rule from the load balancer listener policy. This operation cannot be reversed.
-func (vpc *VpcV1) DeleteLoadBalancerListenerPolicyRule(deleteLoadBalancerListenerPolicyRuleOptions *DeleteLoadBalancerListenerPolicyRuleOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deleteLoadBalancerListenerPolicyRuleOptions, "deleteLoadBalancerListenerPolicyRuleOptions cannot be nil")
+// DeleteVolume : Delete specified volume
+// This request deletes a volume. This operation cannot be reversed. For this request to succeed, the volume must not be
+// attached to any instances.
+func (vpc *VpcV1) DeleteVolume(deleteVolumeOptions *DeleteVolumeOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteVolumeOptions, "deleteVolumeOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(deleteLoadBalancerListenerPolicyRuleOptions, "deleteLoadBalancerListenerPolicyRuleOptions")
+	err = core.ValidateStruct(deleteVolumeOptions, "deleteVolumeOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "listeners", "policies", "rules"}
-	pathParameters := []string{*deleteLoadBalancerListenerPolicyRuleOptions.LoadBalancerID, *deleteLoadBalancerListenerPolicyRuleOptions.ListenerID, *deleteLoadBalancerListenerPolicyRuleOptions.PolicyID, *deleteLoadBalancerListenerPolicyRuleOptions.ID}
+	pathSegments := []string{"volumes"}
+	pathParameters := []string{*deleteVolumeOptions.ID}
 
 	builder := core.NewRequestBuilder(core.DELETE)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3726,11 +5371,11 @@ func (vpc *VpcV1) DeleteLoadBalancerListenerPolicyRule(deleteLoadBalancerListene
 		return
 	}
 
-	for headerName, headerValue := range deleteLoadBalancerListenerPolicyRuleOptions.Headers {
+	for headerName, headerValue := range deleteVolumeOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteLoadBalancerListenerPolicyRule")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteVolume")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3748,20 +5393,20 @@ func (vpc *VpcV1) DeleteLoadBalancerListenerPolicyRule(deleteLoadBalancerListene
 	return
 }
 
-// GetLoadBalancerListenerPolicyRule : Retrieve a rule of the load balancer listener policy
-// Retrieves a single rule specified by the identifier in the URL path.
-func (vpc *VpcV1) GetLoadBalancerListenerPolicyRule(getLoadBalancerListenerPolicyRuleOptions *GetLoadBalancerListenerPolicyRuleOptions) (result *LoadBalancerListenerPolicyRule, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getLoadBalancerListenerPolicyRuleOptions, "getLoadBalancerListenerPolicyRuleOptions cannot be nil")
+// GetVolume : Retrieve specified volume
+// This request retrieves a single volume specified by the identifier in the URL.
+func (vpc *VpcV1) GetVolume(getVolumeOptions *GetVolumeOptions) (result *Volume, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getVolumeOptions, "getVolumeOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(getLoadBalancerListenerPolicyRuleOptions, "getLoadBalancerListenerPolicyRuleOptions")
+	err = core.ValidateStruct(getVolumeOptions, "getVolumeOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "listeners", "policies", "rules"}
-	pathParameters := []string{*getLoadBalancerListenerPolicyRuleOptions.LoadBalancerID, *getLoadBalancerListenerPolicyRuleOptions.ListenerID, *getLoadBalancerListenerPolicyRuleOptions.PolicyID, *getLoadBalancerListenerPolicyRuleOptions.ID}
+	pathSegments := []string{"volumes"}
+	pathParameters := []string{*getVolumeOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3769,11 +5414,11 @@ func (vpc *VpcV1) GetLoadBalancerListenerPolicyRule(getLoadBalancerListenerPolic
 		return
 	}
 
-	for headerName, headerValue := range getLoadBalancerListenerPolicyRuleOptions.Headers {
+	for headerName, headerValue := range getVolumeOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetLoadBalancerListenerPolicyRule")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVolume")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3792,7 +5437,7 @@ func (vpc *VpcV1) GetLoadBalancerListenerPolicyRule(getLoadBalancerListenerPolic
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicyRule)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolume)
 	if err != nil {
 		return
 	}
@@ -3801,20 +5446,21 @@ func (vpc *VpcV1) GetLoadBalancerListenerPolicyRule(getLoadBalancerListenerPolic
 	return
 }
 
-// UpdateLoadBalancerListenerPolicyRule : Update a rule of the load balancer listener policy
-// Updates a rule of the load balancer listener policy.
-func (vpc *VpcV1) UpdateLoadBalancerListenerPolicyRule(updateLoadBalancerListenerPolicyRuleOptions *UpdateLoadBalancerListenerPolicyRuleOptions) (result *LoadBalancerListenerPolicyRule, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateLoadBalancerListenerPolicyRuleOptions, "updateLoadBalancerListenerPolicyRuleOptions cannot be nil")
+// UpdateVolume : Update specified volume
+// This request updates a volume with the information in a provided volume patch. The volume patch object is structured
+// in the same way as a retrieved volume and contains only the information to be updated.
+func (vpc *VpcV1) UpdateVolume(updateVolumeOptions *UpdateVolumeOptions) (result *Volume, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateVolumeOptions, "updateVolumeOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(updateLoadBalancerListenerPolicyRuleOptions, "updateLoadBalancerListenerPolicyRuleOptions")
+	err = core.ValidateStruct(updateVolumeOptions, "updateVolumeOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "listeners", "policies", "rules"}
-	pathParameters := []string{*updateLoadBalancerListenerPolicyRuleOptions.LoadBalancerID, *updateLoadBalancerListenerPolicyRuleOptions.ListenerID, *updateLoadBalancerListenerPolicyRuleOptions.PolicyID, *updateLoadBalancerListenerPolicyRuleOptions.ID}
+	pathSegments := []string{"volumes"}
+	pathParameters := []string{*updateVolumeOptions.ID}
 
 	builder := core.NewRequestBuilder(core.PATCH)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3822,11 +5468,11 @@ func (vpc *VpcV1) UpdateLoadBalancerListenerPolicyRule(updateLoadBalancerListene
 		return
 	}
 
-	for headerName, headerValue := range updateLoadBalancerListenerPolicyRuleOptions.Headers {
+	for headerName, headerValue := range updateVolumeOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateLoadBalancerListenerPolicyRule")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateVolume")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3837,17 +5483,8 @@ func (vpc *VpcV1) UpdateLoadBalancerListenerPolicyRule(updateLoadBalancerListene
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
-	if updateLoadBalancerListenerPolicyRuleOptions.Condition != nil {
-		body["condition"] = updateLoadBalancerListenerPolicyRuleOptions.Condition
-	}
-	if updateLoadBalancerListenerPolicyRuleOptions.Field != nil {
-		body["field"] = updateLoadBalancerListenerPolicyRuleOptions.Field
-	}
-	if updateLoadBalancerListenerPolicyRuleOptions.Type != nil {
-		body["type"] = updateLoadBalancerListenerPolicyRuleOptions.Type
-	}
-	if updateLoadBalancerListenerPolicyRuleOptions.Value != nil {
-		body["value"] = updateLoadBalancerListenerPolicyRuleOptions.Value
+	if updateVolumeOptions.Name != nil {
+		body["name"] = updateVolumeOptions.Name
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -3864,7 +5501,7 @@ func (vpc *VpcV1) UpdateLoadBalancerListenerPolicyRule(updateLoadBalancerListene
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicyRule)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolume)
 	if err != nil {
 		return
 	}
@@ -3873,20 +5510,20 @@ func (vpc *VpcV1) UpdateLoadBalancerListenerPolicyRule(updateLoadBalancerListene
 	return
 }
 
-// ListLoadBalancerPools : List all pools of the load balancer
-// This request lists all pools that belong to the load balancer.
-func (vpc *VpcV1) ListLoadBalancerPools(listLoadBalancerPoolsOptions *ListLoadBalancerPoolsOptions) (result *LoadBalancerPoolCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(listLoadBalancerPoolsOptions, "listLoadBalancerPoolsOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(listLoadBalancerPoolsOptions, "listLoadBalancerPoolsOptions")
+// ListRegions : List all regions
+// This request lists all regions. Each region is a separate geographic area that contains multiple isolated zones.
+// Resources can be provisioned into a one or more zones in a region. Each zone is isolated, but connected to other
+// zones in the same region with low-latency and high-bandwidth links. Regions represent the top-level of fault
+// isolation available. Resources deployed within a single region also benefit from the low latency afforded by
+// geographic proximity.
+func (vpc *VpcV1) ListRegions(listRegionsOptions *ListRegionsOptions) (result *RegionCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listRegionsOptions, "listRegionsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "pools"}
-	pathParameters := []string{*listLoadBalancerPoolsOptions.LoadBalancerID}
+	pathSegments := []string{"regions"}
+	pathParameters := []string{}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3894,11 +5531,11 @@ func (vpc *VpcV1) ListLoadBalancerPools(listLoadBalancerPoolsOptions *ListLoadBa
 		return
 	}
 
-	for headerName, headerValue := range listLoadBalancerPoolsOptions.Headers {
+	for headerName, headerValue := range listRegionsOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListLoadBalancerPools")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListRegions")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3917,7 +5554,7 @@ func (vpc *VpcV1) ListLoadBalancerPools(listLoadBalancerPoolsOptions *ListLoadBa
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPoolCollection)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRegionCollection)
 	if err != nil {
 		return
 	}
@@ -3926,20 +5563,245 @@ func (vpc *VpcV1) ListLoadBalancerPools(listLoadBalancerPoolsOptions *ListLoadBa
 	return
 }
 
-// CreateLoadBalancerPool : Create a load balancer pool
-// This request creates a new pool from a pool prototype object.
-func (vpc *VpcV1) CreateLoadBalancerPool(createLoadBalancerPoolOptions *CreateLoadBalancerPoolOptions) (result *LoadBalancerPool, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(createLoadBalancerPoolOptions, "createLoadBalancerPoolOptions cannot be nil")
+// GetRegion : Retrieve a region
+// This request retrieves a single region specified by the name in the URL.
+func (vpc *VpcV1) GetRegion(getRegionOptions *GetRegionOptions) (result *Region, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getRegionOptions, "getRegionOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(createLoadBalancerPoolOptions, "createLoadBalancerPoolOptions")
+	err = core.ValidateStruct(getRegionOptions, "getRegionOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "pools"}
-	pathParameters := []string{*createLoadBalancerPoolOptions.LoadBalancerID}
+	pathSegments := []string{"regions"}
+	pathParameters := []string{*getRegionOptions.Name}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getRegionOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetRegion")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRegion)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListRegionZones : List all zones in a region
+// This request lists all zones in a region. Zones represent logically-isolated data centers with high-bandwidth and
+// low-latency interconnects to other zones in the same region. Faults in a zone do not affect other zones.
+func (vpc *VpcV1) ListRegionZones(listRegionZonesOptions *ListRegionZonesOptions) (result *ZoneCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listRegionZonesOptions, "listRegionZonesOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listRegionZonesOptions, "listRegionZonesOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"regions", "zones"}
+	pathParameters := []string{*listRegionZonesOptions.RegionName}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listRegionZonesOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListRegionZones")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalZoneCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// GetRegionZone : Retrieve a zone
+// This request retrieves a single zone specified by the region and zone names in the URL.
+func (vpc *VpcV1) GetRegionZone(getRegionZoneOptions *GetRegionZoneOptions) (result *Zone, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getRegionZoneOptions, "getRegionZoneOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getRegionZoneOptions, "getRegionZoneOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"regions", "zones"}
+	pathParameters := []string{*getRegionZoneOptions.RegionName, *getRegionZoneOptions.ZoneName}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getRegionZoneOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetRegionZone")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalZone)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListPublicGateways : List all public gateways
+// This request lists all public gateways. A public gateway is a virtual network device associated with a VPC, which
+// allows access to the Internet. A public gateway resides in a zone and can be connected to subnets in the same zone
+// only.
+func (vpc *VpcV1) ListPublicGateways(listPublicGatewaysOptions *ListPublicGatewaysOptions) (result *PublicGatewayCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listPublicGatewaysOptions, "listPublicGatewaysOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"public_gateways"}
+	pathParameters := []string{}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listPublicGatewaysOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListPublicGateways")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listPublicGatewaysOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listPublicGatewaysOptions.Start))
+	}
+	if listPublicGatewaysOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listPublicGatewaysOptions.Limit))
+	}
+	if listPublicGatewaysOptions.ResourceGroupID != nil {
+		builder.AddQuery("resource_group.id", fmt.Sprint(*listPublicGatewaysOptions.ResourceGroupID))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPublicGatewayCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// CreatePublicGateway : Create a public gateway
+// This request creates a new public gateway from a public gateway prototype object. For this to succeed, the VPC must
+// not already have a public gateway in the specified zone.
+//
+// If a floating IP is provided, it must be unbound. If a floating IP is not provided, one will be created and bound to
+// the public gateway. Once a public gateway has been created, its floating IP cannot be unbound. A public gateway must
+// be explicitly attached to each subnet it will provide connectivity for.
+func (vpc *VpcV1) CreatePublicGateway(createPublicGatewayOptions *CreatePublicGatewayOptions) (result *PublicGateway, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createPublicGatewayOptions, "createPublicGatewayOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createPublicGatewayOptions, "createPublicGatewayOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"public_gateways"}
+	pathParameters := []string{}
 
 	builder := core.NewRequestBuilder(core.POST)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -3947,11 +5809,11 @@ func (vpc *VpcV1) CreateLoadBalancerPool(createLoadBalancerPoolOptions *CreateLo
 		return
 	}
 
-	for headerName, headerValue := range createLoadBalancerPoolOptions.Headers {
+	for headerName, headerValue := range createPublicGatewayOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateLoadBalancerPool")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreatePublicGateway")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -3962,23 +5824,20 @@ func (vpc *VpcV1) CreateLoadBalancerPool(createLoadBalancerPoolOptions *CreateLo
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
-	if createLoadBalancerPoolOptions.Algorithm != nil {
-		body["algorithm"] = createLoadBalancerPoolOptions.Algorithm
+	if createPublicGatewayOptions.VPC != nil {
+		body["vpc"] = createPublicGatewayOptions.VPC
 	}
-	if createLoadBalancerPoolOptions.HealthMonitor != nil {
-		body["health_monitor"] = createLoadBalancerPoolOptions.HealthMonitor
+	if createPublicGatewayOptions.Zone != nil {
+		body["zone"] = createPublicGatewayOptions.Zone
 	}
-	if createLoadBalancerPoolOptions.Protocol != nil {
-		body["protocol"] = createLoadBalancerPoolOptions.Protocol
+	if createPublicGatewayOptions.Name != nil {
+		body["name"] = createPublicGatewayOptions.Name
 	}
-	if createLoadBalancerPoolOptions.Members != nil {
-		body["members"] = createLoadBalancerPoolOptions.Members
+	if createPublicGatewayOptions.FloatingIP != nil {
+		body["floating_ip"] = createPublicGatewayOptions.FloatingIP
 	}
-	if createLoadBalancerPoolOptions.Name != nil {
-		body["name"] = createLoadBalancerPoolOptions.Name
-	}
-	if createLoadBalancerPoolOptions.SessionPersistence != nil {
-		body["session_persistence"] = createLoadBalancerPoolOptions.SessionPersistence
+	if createPublicGatewayOptions.ResourceGroup != nil {
+		body["resource_group"] = createPublicGatewayOptions.ResourceGroup
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -3995,7 +5854,7 @@ func (vpc *VpcV1) CreateLoadBalancerPool(createLoadBalancerPoolOptions *CreateLo
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPool)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPublicGateway)
 	if err != nil {
 		return
 	}
@@ -4004,20 +5863,22 @@ func (vpc *VpcV1) CreateLoadBalancerPool(createLoadBalancerPoolOptions *CreateLo
 	return
 }
 
-// DeleteLoadBalancerPool : Delete a pool
-// This request deletes a load balancer pool. This operation cannot be reversed.
-func (vpc *VpcV1) DeleteLoadBalancerPool(deleteLoadBalancerPoolOptions *DeleteLoadBalancerPoolOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deleteLoadBalancerPoolOptions, "deleteLoadBalancerPoolOptions cannot be nil")
+// DeletePublicGateway : Delete specified public gateway
+// This request deletes a public gateway. This operation cannot be reversed. For this request to succeed, the public
+// gateway must not be attached to any subnets. The public gateway's floating IP will be automatically unbound. If the
+// floating IP was created when the public gateway was created, it will be deleted.
+func (vpc *VpcV1) DeletePublicGateway(deletePublicGatewayOptions *DeletePublicGatewayOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deletePublicGatewayOptions, "deletePublicGatewayOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(deleteLoadBalancerPoolOptions, "deleteLoadBalancerPoolOptions")
+	err = core.ValidateStruct(deletePublicGatewayOptions, "deletePublicGatewayOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "pools"}
-	pathParameters := []string{*deleteLoadBalancerPoolOptions.LoadBalancerID, *deleteLoadBalancerPoolOptions.ID}
+	pathSegments := []string{"public_gateways"}
+	pathParameters := []string{*deletePublicGatewayOptions.ID}
 
 	builder := core.NewRequestBuilder(core.DELETE)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -4025,11 +5886,11 @@ func (vpc *VpcV1) DeleteLoadBalancerPool(deleteLoadBalancerPoolOptions *DeleteLo
 		return
 	}
 
-	for headerName, headerValue := range deleteLoadBalancerPoolOptions.Headers {
+	for headerName, headerValue := range deletePublicGatewayOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteLoadBalancerPool")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeletePublicGateway")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -4047,20 +5908,20 @@ func (vpc *VpcV1) DeleteLoadBalancerPool(deleteLoadBalancerPoolOptions *DeleteLo
 	return
 }
 
-// GetLoadBalancerPool : Retrieve a load balancer pool
-// This request retrieves a single pool specified by the identifier in the URL path.
-func (vpc *VpcV1) GetLoadBalancerPool(getLoadBalancerPoolOptions *GetLoadBalancerPoolOptions) (result *LoadBalancerPool, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getLoadBalancerPoolOptions, "getLoadBalancerPoolOptions cannot be nil")
+// GetPublicGateway : Retrieve specified public gateway
+// This request retrieves a single public gateway specified by the identifier in the URL.
+func (vpc *VpcV1) GetPublicGateway(getPublicGatewayOptions *GetPublicGatewayOptions) (result *PublicGateway, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getPublicGatewayOptions, "getPublicGatewayOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(getLoadBalancerPoolOptions, "getLoadBalancerPoolOptions")
+	err = core.ValidateStruct(getPublicGatewayOptions, "getPublicGatewayOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "pools"}
-	pathParameters := []string{*getLoadBalancerPoolOptions.LoadBalancerID, *getLoadBalancerPoolOptions.ID}
+	pathSegments := []string{"public_gateways"}
+	pathParameters := []string{*getPublicGatewayOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -4068,11 +5929,11 @@ func (vpc *VpcV1) GetLoadBalancerPool(getLoadBalancerPoolOptions *GetLoadBalance
 		return
 	}
 
-	for headerName, headerValue := range getLoadBalancerPoolOptions.Headers {
+	for headerName, headerValue := range getPublicGatewayOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetLoadBalancerPool")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetPublicGateway")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -4091,7 +5952,7 @@ func (vpc *VpcV1) GetLoadBalancerPool(getLoadBalancerPoolOptions *GetLoadBalance
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPool)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPublicGateway)
 	if err != nil {
 		return
 	}
@@ -4100,20 +5961,20 @@ func (vpc *VpcV1) GetLoadBalancerPool(getLoadBalancerPoolOptions *GetLoadBalance
 	return
 }
 
-// UpdateLoadBalancerPool : Update a load balancer pool
-// This request updates a load balancer pool from a pool patch.
-func (vpc *VpcV1) UpdateLoadBalancerPool(updateLoadBalancerPoolOptions *UpdateLoadBalancerPoolOptions) (result *LoadBalancerPool, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateLoadBalancerPoolOptions, "updateLoadBalancerPoolOptions cannot be nil")
+// UpdatePublicGateway : Update a public gateway's name
+// This request updates a public gateway's name.
+func (vpc *VpcV1) UpdatePublicGateway(updatePublicGatewayOptions *UpdatePublicGatewayOptions) (result *PublicGateway, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updatePublicGatewayOptions, "updatePublicGatewayOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(updateLoadBalancerPoolOptions, "updateLoadBalancerPoolOptions")
+	err = core.ValidateStruct(updatePublicGatewayOptions, "updatePublicGatewayOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "pools"}
-	pathParameters := []string{*updateLoadBalancerPoolOptions.LoadBalancerID, *updateLoadBalancerPoolOptions.ID}
+	pathSegments := []string{"public_gateways"}
+	pathParameters := []string{*updatePublicGatewayOptions.ID}
 
 	builder := core.NewRequestBuilder(core.PATCH)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -4121,11 +5982,11 @@ func (vpc *VpcV1) UpdateLoadBalancerPool(updateLoadBalancerPoolOptions *UpdateLo
 		return
 	}
 
-	for headerName, headerValue := range updateLoadBalancerPoolOptions.Headers {
+	for headerName, headerValue := range updatePublicGatewayOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateLoadBalancerPool")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdatePublicGateway")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -4136,20 +5997,8 @@ func (vpc *VpcV1) UpdateLoadBalancerPool(updateLoadBalancerPoolOptions *UpdateLo
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
-	if updateLoadBalancerPoolOptions.Algorithm != nil {
-		body["algorithm"] = updateLoadBalancerPoolOptions.Algorithm
-	}
-	if updateLoadBalancerPoolOptions.HealthMonitor != nil {
-		body["health_monitor"] = updateLoadBalancerPoolOptions.HealthMonitor
-	}
-	if updateLoadBalancerPoolOptions.Name != nil {
-		body["name"] = updateLoadBalancerPoolOptions.Name
-	}
-	if updateLoadBalancerPoolOptions.Protocol != nil {
-		body["protocol"] = updateLoadBalancerPoolOptions.Protocol
-	}
-	if updateLoadBalancerPoolOptions.SessionPersistence != nil {
-		body["session_persistence"] = updateLoadBalancerPoolOptions.SessionPersistence
+	if updatePublicGatewayOptions.Name != nil {
+		body["name"] = updatePublicGatewayOptions.Name
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -4166,7 +6015,7 @@ func (vpc *VpcV1) UpdateLoadBalancerPool(updateLoadBalancerPoolOptions *UpdateLo
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPool)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPublicGateway)
 	if err != nil {
 		return
 	}
@@ -4175,20 +6024,17 @@ func (vpc *VpcV1) UpdateLoadBalancerPool(updateLoadBalancerPoolOptions *UpdateLo
 	return
 }
 
-// ListLoadBalancerPoolMembers : List all members of the load balancer pool
-// This request retrieves a paginated list of all members that belong to the pool.
-func (vpc *VpcV1) ListLoadBalancerPoolMembers(listLoadBalancerPoolMembersOptions *ListLoadBalancerPoolMembersOptions) (result *LoadBalancerPoolMemberCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(listLoadBalancerPoolMembersOptions, "listLoadBalancerPoolMembersOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(listLoadBalancerPoolMembersOptions, "listLoadBalancerPoolMembersOptions")
+// ListFloatingIps : List all floating IPs
+// This request retrieves all floating IPs in the region. Floating IPs allow inbound and outbound traffic from the
+// Internet to an instance.
+func (vpc *VpcV1) ListFloatingIps(listFloatingIpsOptions *ListFloatingIpsOptions) (result *FloatingIPCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listFloatingIpsOptions, "listFloatingIpsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "pools", "members"}
-	pathParameters := []string{*listLoadBalancerPoolMembersOptions.LoadBalancerID, *listLoadBalancerPoolMembersOptions.PoolID}
+	pathSegments := []string{"floating_ips"}
+	pathParameters := []string{}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -4196,11 +6042,11 @@ func (vpc *VpcV1) ListLoadBalancerPoolMembers(listLoadBalancerPoolMembersOptions
 		return
 	}
 
-	for headerName, headerValue := range listLoadBalancerPoolMembersOptions.Headers {
+	for headerName, headerValue := range listFloatingIpsOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListLoadBalancerPoolMembers")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListFloatingIps")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -4208,6 +6054,15 @@ func (vpc *VpcV1) ListLoadBalancerPoolMembers(listLoadBalancerPoolMembersOptions
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listFloatingIpsOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listFloatingIpsOptions.Start))
+	}
+	if listFloatingIpsOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listFloatingIpsOptions.Limit))
+	}
+	if listFloatingIpsOptions.ResourceGroupID != nil {
+		builder.AddQuery("resource_group.id", fmt.Sprint(*listFloatingIpsOptions.ResourceGroupID))
+	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -4219,7 +6074,7 @@ func (vpc *VpcV1) ListLoadBalancerPoolMembers(listLoadBalancerPoolMembersOptions
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPoolMemberCollection)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFloatingIPCollection)
 	if err != nil {
 		return
 	}
@@ -4228,20 +6083,20 @@ func (vpc *VpcV1) ListLoadBalancerPoolMembers(listLoadBalancerPoolMembersOptions
 	return
 }
 
-// CreateLoadBalancerPoolMember : Create a member in the load balancer pool
-// This request creates a new member and adds the member to the pool.
-func (vpc *VpcV1) CreateLoadBalancerPoolMember(createLoadBalancerPoolMemberOptions *CreateLoadBalancerPoolMemberOptions) (result *LoadBalancerPoolMember, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(createLoadBalancerPoolMemberOptions, "createLoadBalancerPoolMemberOptions cannot be nil")
+// CreateFloatingIP : Reserve a floating IP
+// This request reserves a new floating IP.
+func (vpc *VpcV1) CreateFloatingIP(createFloatingIPOptions *CreateFloatingIPOptions) (result *FloatingIP, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createFloatingIPOptions, "createFloatingIPOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(createLoadBalancerPoolMemberOptions, "createLoadBalancerPoolMemberOptions")
+	err = core.ValidateStruct(createFloatingIPOptions, "createFloatingIPOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "pools", "members"}
-	pathParameters := []string{*createLoadBalancerPoolMemberOptions.LoadBalancerID, *createLoadBalancerPoolMemberOptions.PoolID}
+	pathSegments := []string{"floating_ips"}
+	pathParameters := []string{}
 
 	builder := core.NewRequestBuilder(core.POST)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -4249,11 +6104,11 @@ func (vpc *VpcV1) CreateLoadBalancerPoolMember(createLoadBalancerPoolMemberOptio
 		return
 	}
 
-	for headerName, headerValue := range createLoadBalancerPoolMemberOptions.Headers {
+	for headerName, headerValue := range createFloatingIPOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateLoadBalancerPoolMember")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateFloatingIP")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -4263,17 +6118,7 @@ func (vpc *VpcV1) CreateLoadBalancerPoolMember(createLoadBalancerPoolMemberOptio
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
-	body := make(map[string]interface{})
-	if createLoadBalancerPoolMemberOptions.Port != nil {
-		body["port"] = createLoadBalancerPoolMemberOptions.Port
-	}
-	if createLoadBalancerPoolMemberOptions.Target != nil {
-		body["target"] = createLoadBalancerPoolMemberOptions.Target
-	}
-	if createLoadBalancerPoolMemberOptions.Weight != nil {
-		body["weight"] = createLoadBalancerPoolMemberOptions.Weight
-	}
-	_, err = builder.SetBodyContentJSON(body)
+	_, err = builder.SetBodyContentJSON(createFloatingIPOptions.FloatingIPPrototype)
 	if err != nil {
 		return
 	}
@@ -4288,7 +6133,7 @@ func (vpc *VpcV1) CreateLoadBalancerPoolMember(createLoadBalancerPoolMemberOptio
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPoolMember)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFloatingIP)
 	if err != nil {
 		return
 	}
@@ -4297,83 +6142,21 @@ func (vpc *VpcV1) CreateLoadBalancerPoolMember(createLoadBalancerPoolMemberOptio
 	return
 }
 
-// ReplaceLoadBalancerPoolMembers : Update members of the load balancer pool
-// This request updates members of the load balancer pool from a collection of member prototype objects.
-func (vpc *VpcV1) ReplaceLoadBalancerPoolMembers(replaceLoadBalancerPoolMembersOptions *ReplaceLoadBalancerPoolMembersOptions) (result *LoadBalancerPoolMemberCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(replaceLoadBalancerPoolMembersOptions, "replaceLoadBalancerPoolMembersOptions cannot be nil")
+// DeleteFloatingIP : Release the specified floating IP
+// This request disassociates (if associated) and releases a floating IP. This operation cannot be reversed. For this
+// request to succeed, the floating IP must not be required by another resource, such as a public gateway.
+func (vpc *VpcV1) DeleteFloatingIP(deleteFloatingIPOptions *DeleteFloatingIPOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteFloatingIPOptions, "deleteFloatingIPOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(replaceLoadBalancerPoolMembersOptions, "replaceLoadBalancerPoolMembersOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"load_balancers", "pools", "members"}
-	pathParameters := []string{*replaceLoadBalancerPoolMembersOptions.LoadBalancerID, *replaceLoadBalancerPoolMembersOptions.PoolID}
-
-	builder := core.NewRequestBuilder(core.PUT)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	err = core.ValidateStruct(deleteFloatingIPOptions, "deleteFloatingIPOptions")
 	if err != nil {
 		return
 	}
 
-	for headerName, headerValue := range replaceLoadBalancerPoolMembersOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ReplaceLoadBalancerPoolMembers")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	body := make(map[string]interface{})
-	if replaceLoadBalancerPoolMembersOptions.Members != nil {
-		body["members"] = replaceLoadBalancerPoolMembersOptions.Members
-	}
-	_, err = builder.SetBodyContentJSON(body)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPoolMemberCollection)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// DeleteLoadBalancerPoolMember : Delete a member from the load balancer pool
-// This request deletes a member from the pool. This operation cannot be reversed.
-func (vpc *VpcV1) DeleteLoadBalancerPoolMember(deleteLoadBalancerPoolMemberOptions *DeleteLoadBalancerPoolMemberOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deleteLoadBalancerPoolMemberOptions, "deleteLoadBalancerPoolMemberOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(deleteLoadBalancerPoolMemberOptions, "deleteLoadBalancerPoolMemberOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"load_balancers", "pools", "members"}
-	pathParameters := []string{*deleteLoadBalancerPoolMemberOptions.LoadBalancerID, *deleteLoadBalancerPoolMemberOptions.PoolID, *deleteLoadBalancerPoolMemberOptions.ID}
+	pathSegments := []string{"floating_ips"}
+	pathParameters := []string{*deleteFloatingIPOptions.ID}
 
 	builder := core.NewRequestBuilder(core.DELETE)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -4381,11 +6164,11 @@ func (vpc *VpcV1) DeleteLoadBalancerPoolMember(deleteLoadBalancerPoolMemberOptio
 		return
 	}
 
-	for headerName, headerValue := range deleteLoadBalancerPoolMemberOptions.Headers {
+	for headerName, headerValue := range deleteFloatingIPOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteLoadBalancerPoolMember")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteFloatingIP")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -4403,20 +6186,20 @@ func (vpc *VpcV1) DeleteLoadBalancerPoolMember(deleteLoadBalancerPoolMemberOptio
 	return
 }
 
-// GetLoadBalancerPoolMember : Retrieve a member in the load balancer pool
-// This request retrieves a single member specified by the identifier in the URL path.
-func (vpc *VpcV1) GetLoadBalancerPoolMember(getLoadBalancerPoolMemberOptions *GetLoadBalancerPoolMemberOptions) (result *LoadBalancerPoolMember, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getLoadBalancerPoolMemberOptions, "getLoadBalancerPoolMemberOptions cannot be nil")
+// GetFloatingIP : Retrieve the specified floating IP
+// This request retrieves a single floating IP specified by the identifier in the URL.
+func (vpc *VpcV1) GetFloatingIP(getFloatingIPOptions *GetFloatingIPOptions) (result *FloatingIP, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getFloatingIPOptions, "getFloatingIPOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(getLoadBalancerPoolMemberOptions, "getLoadBalancerPoolMemberOptions")
+	err = core.ValidateStruct(getFloatingIPOptions, "getFloatingIPOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "pools", "members"}
-	pathParameters := []string{*getLoadBalancerPoolMemberOptions.LoadBalancerID, *getLoadBalancerPoolMemberOptions.PoolID, *getLoadBalancerPoolMemberOptions.ID}
+	pathSegments := []string{"floating_ips"}
+	pathParameters := []string{*getFloatingIPOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -4424,11 +6207,11 @@ func (vpc *VpcV1) GetLoadBalancerPoolMember(getLoadBalancerPoolMemberOptions *Ge
 		return
 	}
 
-	for headerName, headerValue := range getLoadBalancerPoolMemberOptions.Headers {
+	for headerName, headerValue := range getFloatingIPOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetLoadBalancerPoolMember")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetFloatingIP")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -4447,7 +6230,7 @@ func (vpc *VpcV1) GetLoadBalancerPoolMember(getLoadBalancerPoolMemberOptions *Ge
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPoolMember)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFloatingIP)
 	if err != nil {
 		return
 	}
@@ -4456,20 +6239,20 @@ func (vpc *VpcV1) GetLoadBalancerPoolMember(getLoadBalancerPoolMemberOptions *Ge
 	return
 }
 
-// UpdateLoadBalancerPoolMember : Update a member in the load balancer pool
-// This request updates an existing member from a member patch.
-func (vpc *VpcV1) UpdateLoadBalancerPoolMember(updateLoadBalancerPoolMemberOptions *UpdateLoadBalancerPoolMemberOptions) (result *LoadBalancerPoolMember, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateLoadBalancerPoolMemberOptions, "updateLoadBalancerPoolMemberOptions cannot be nil")
+// UpdateFloatingIP : Update the specified floating IP
+// This request updates a floating IP's name and/or target.
+func (vpc *VpcV1) UpdateFloatingIP(updateFloatingIPOptions *UpdateFloatingIPOptions) (result *FloatingIP, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateFloatingIPOptions, "updateFloatingIPOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(updateLoadBalancerPoolMemberOptions, "updateLoadBalancerPoolMemberOptions")
+	err = core.ValidateStruct(updateFloatingIPOptions, "updateFloatingIPOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"load_balancers", "pools", "members"}
-	pathParameters := []string{*updateLoadBalancerPoolMemberOptions.LoadBalancerID, *updateLoadBalancerPoolMemberOptions.PoolID, *updateLoadBalancerPoolMemberOptions.ID}
+	pathSegments := []string{"floating_ips"}
+	pathParameters := []string{*updateFloatingIPOptions.ID}
 
 	builder := core.NewRequestBuilder(core.PATCH)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -4477,11 +6260,11 @@ func (vpc *VpcV1) UpdateLoadBalancerPoolMember(updateLoadBalancerPoolMemberOptio
 		return
 	}
 
-	for headerName, headerValue := range updateLoadBalancerPoolMemberOptions.Headers {
+	for headerName, headerValue := range updateFloatingIPOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateLoadBalancerPoolMember")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateFloatingIP")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -4492,14 +6275,11 @@ func (vpc *VpcV1) UpdateLoadBalancerPoolMember(updateLoadBalancerPoolMemberOptio
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
-	if updateLoadBalancerPoolMemberOptions.Port != nil {
-		body["port"] = updateLoadBalancerPoolMemberOptions.Port
+	if updateFloatingIPOptions.Name != nil {
+		body["name"] = updateFloatingIPOptions.Name
 	}
-	if updateLoadBalancerPoolMemberOptions.Target != nil {
-		body["target"] = updateLoadBalancerPoolMemberOptions.Target
-	}
-	if updateLoadBalancerPoolMemberOptions.Weight != nil {
-		body["weight"] = updateLoadBalancerPoolMemberOptions.Weight
+	if updateFloatingIPOptions.Target != nil {
+		body["target"] = updateFloatingIPOptions.Target
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -4516,7 +6296,7 @@ func (vpc *VpcV1) UpdateLoadBalancerPoolMember(updateLoadBalancerPoolMemberOptio
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPoolMember)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFloatingIP)
 	if err != nil {
 		return
 	}
@@ -5059,17 +6839,20 @@ func (vpc *VpcV1) UpdateNetworkACLRule(updateNetworkACLRuleOptions *UpdateNetwor
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
+	if updateNetworkACLRuleOptions.Name != nil {
+		body["name"] = updateNetworkACLRuleOptions.Name
+	}
 	if updateNetworkACLRuleOptions.Action != nil {
 		body["action"] = updateNetworkACLRuleOptions.Action
 	}
-	if updateNetworkACLRuleOptions.Before != nil {
-		body["before"] = updateNetworkACLRuleOptions.Before
-	}
-	if updateNetworkACLRuleOptions.Code != nil {
-		body["code"] = updateNetworkACLRuleOptions.Code
-	}
 	if updateNetworkACLRuleOptions.Destination != nil {
 		body["destination"] = updateNetworkACLRuleOptions.Destination
+	}
+	if updateNetworkACLRuleOptions.Direction != nil {
+		body["direction"] = updateNetworkACLRuleOptions.Direction
+	}
+	if updateNetworkACLRuleOptions.Source != nil {
+		body["source"] = updateNetworkACLRuleOptions.Source
 	}
 	if updateNetworkACLRuleOptions.DestinationPortMax != nil {
 		body["destination_port_max"] = updateNetworkACLRuleOptions.DestinationPortMax
@@ -5077,23 +6860,20 @@ func (vpc *VpcV1) UpdateNetworkACLRule(updateNetworkACLRuleOptions *UpdateNetwor
 	if updateNetworkACLRuleOptions.DestinationPortMin != nil {
 		body["destination_port_min"] = updateNetworkACLRuleOptions.DestinationPortMin
 	}
-	if updateNetworkACLRuleOptions.Direction != nil {
-		body["direction"] = updateNetworkACLRuleOptions.Direction
-	}
-	if updateNetworkACLRuleOptions.Name != nil {
-		body["name"] = updateNetworkACLRuleOptions.Name
-	}
-	if updateNetworkACLRuleOptions.Source != nil {
-		body["source"] = updateNetworkACLRuleOptions.Source
-	}
 	if updateNetworkACLRuleOptions.SourcePortMax != nil {
 		body["source_port_max"] = updateNetworkACLRuleOptions.SourcePortMax
 	}
 	if updateNetworkACLRuleOptions.SourcePortMin != nil {
 		body["source_port_min"] = updateNetworkACLRuleOptions.SourcePortMin
 	}
+	if updateNetworkACLRuleOptions.Code != nil {
+		body["code"] = updateNetworkACLRuleOptions.Code
+	}
 	if updateNetworkACLRuleOptions.Type != nil {
 		body["type"] = updateNetworkACLRuleOptions.Type
+	}
+	if updateNetworkACLRuleOptions.Before != nil {
+		body["before"] = updateNetworkACLRuleOptions.Before
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -5111,593 +6891,6 @@ func (vpc *VpcV1) UpdateNetworkACLRule(updateNetworkACLRuleOptions *UpdateNetwor
 		return
 	}
 	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalNetworkACLRule)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// ListPublicGateways : List all public gateways
-// This request lists all public gateways. A public gateway is a virtual network device associated with a VPC, which
-// allows access to the Internet. A public gateway resides in a zone and can be connected to subnets in the same zone
-// only.
-func (vpc *VpcV1) ListPublicGateways(listPublicGatewaysOptions *ListPublicGatewaysOptions) (result *PublicGatewayCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateStruct(listPublicGatewaysOptions, "listPublicGatewaysOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"public_gateways"}
-	pathParameters := []string{}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range listPublicGatewaysOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListPublicGateways")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-	if listPublicGatewaysOptions.Start != nil {
-		builder.AddQuery("start", fmt.Sprint(*listPublicGatewaysOptions.Start))
-	}
-	if listPublicGatewaysOptions.Limit != nil {
-		builder.AddQuery("limit", fmt.Sprint(*listPublicGatewaysOptions.Limit))
-	}
-	if listPublicGatewaysOptions.ResourceGroupID != nil {
-		builder.AddQuery("resource_group.id", fmt.Sprint(*listPublicGatewaysOptions.ResourceGroupID))
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPublicGatewayCollection)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// CreatePublicGateway : Create a public gateway
-// This request creates a new public gateway from a public gateway prototype object. For this to succeed, the VPC must
-// not already have a public gateway in the specified zone.
-//
-// If a floating IP is provided, it must be unbound. If a floating IP is not provided, one will be created and bound to
-// the public gateway. Once a public gateway has been created, its floating IP cannot be unbound. A public gateway must
-// be explicitly attached to each subnet it will provide connectivity for.
-func (vpc *VpcV1) CreatePublicGateway(createPublicGatewayOptions *CreatePublicGatewayOptions) (result *PublicGateway, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(createPublicGatewayOptions, "createPublicGatewayOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(createPublicGatewayOptions, "createPublicGatewayOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"public_gateways"}
-	pathParameters := []string{}
-
-	builder := core.NewRequestBuilder(core.POST)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range createPublicGatewayOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreatePublicGateway")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	body := make(map[string]interface{})
-	if createPublicGatewayOptions.VPC != nil {
-		body["vpc"] = createPublicGatewayOptions.VPC
-	}
-	if createPublicGatewayOptions.Zone != nil {
-		body["zone"] = createPublicGatewayOptions.Zone
-	}
-	if createPublicGatewayOptions.FloatingIP != nil {
-		body["floating_ip"] = createPublicGatewayOptions.FloatingIP
-	}
-	if createPublicGatewayOptions.Name != nil {
-		body["name"] = createPublicGatewayOptions.Name
-	}
-	if createPublicGatewayOptions.ResourceGroup != nil {
-		body["resource_group"] = createPublicGatewayOptions.ResourceGroup
-	}
-	_, err = builder.SetBodyContentJSON(body)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPublicGateway)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// DeletePublicGateway : Delete specified public gateway
-// This request deletes a public gateway. This operation cannot be reversed. For this request to succeed, the public
-// gateway must not be attached to any subnets. The public gateway's floating IP will be automatically unbound. If the
-// floating IP was created when the public gateway was created, it will be deleted.
-func (vpc *VpcV1) DeletePublicGateway(deletePublicGatewayOptions *DeletePublicGatewayOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deletePublicGatewayOptions, "deletePublicGatewayOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(deletePublicGatewayOptions, "deletePublicGatewayOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"public_gateways"}
-	pathParameters := []string{*deletePublicGatewayOptions.ID}
-
-	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range deletePublicGatewayOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeletePublicGateway")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	response, err = vpc.Service.Request(request, nil)
-
-	return
-}
-
-// GetPublicGateway : Retrieve specified public gateway
-// This request retrieves a single public gateway specified by the identifier in the URL.
-func (vpc *VpcV1) GetPublicGateway(getPublicGatewayOptions *GetPublicGatewayOptions) (result *PublicGateway, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getPublicGatewayOptions, "getPublicGatewayOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(getPublicGatewayOptions, "getPublicGatewayOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"public_gateways"}
-	pathParameters := []string{*getPublicGatewayOptions.ID}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range getPublicGatewayOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetPublicGateway")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPublicGateway)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// UpdatePublicGateway : Update a public gateway's name
-// This request updates a public gateway's name.
-func (vpc *VpcV1) UpdatePublicGateway(updatePublicGatewayOptions *UpdatePublicGatewayOptions) (result *PublicGateway, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updatePublicGatewayOptions, "updatePublicGatewayOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(updatePublicGatewayOptions, "updatePublicGatewayOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"public_gateways"}
-	pathParameters := []string{*updatePublicGatewayOptions.ID}
-
-	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range updatePublicGatewayOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdatePublicGateway")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	body := make(map[string]interface{})
-	if updatePublicGatewayOptions.Name != nil {
-		body["name"] = updatePublicGatewayOptions.Name
-	}
-	_, err = builder.SetBodyContentJSON(body)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPublicGateway)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// ListKeys : List all keys
-// This request lists all keys. A key contains a public SSH key which may be installed on instances when they are
-// created. Private keys are not stored.
-func (vpc *VpcV1) ListKeys(listKeysOptions *ListKeysOptions) (result *KeyCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateStruct(listKeysOptions, "listKeysOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"keys"}
-	pathParameters := []string{}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range listKeysOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListKeys")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-	if listKeysOptions.ResourceGroupID != nil {
-		builder.AddQuery("resource_group.id", fmt.Sprint(*listKeysOptions.ResourceGroupID))
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalKeyCollection)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// CreateKey : Create a key
-// This request creates a new SSH key from an key prototype object. The prototype object is structured in the same way
-// as a retrieved key, and contains the information necessary to create the new key. The public key value must be
-// provided.
-func (vpc *VpcV1) CreateKey(createKeyOptions *CreateKeyOptions) (result *Key, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(createKeyOptions, "createKeyOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(createKeyOptions, "createKeyOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"keys"}
-	pathParameters := []string{}
-
-	builder := core.NewRequestBuilder(core.POST)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range createKeyOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateKey")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	body := make(map[string]interface{})
-	if createKeyOptions.PublicKey != nil {
-		body["public_key"] = createKeyOptions.PublicKey
-	}
-	if createKeyOptions.Name != nil {
-		body["name"] = createKeyOptions.Name
-	}
-	if createKeyOptions.ResourceGroup != nil {
-		body["resource_group"] = createKeyOptions.ResourceGroup
-	}
-	if createKeyOptions.Type != nil {
-		body["type"] = createKeyOptions.Type
-	}
-	_, err = builder.SetBodyContentJSON(body)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalKey)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// DeleteKey : Delete specified key
-// This request deletes a key. This operation cannot be reversed.
-func (vpc *VpcV1) DeleteKey(deleteKeyOptions *DeleteKeyOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deleteKeyOptions, "deleteKeyOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(deleteKeyOptions, "deleteKeyOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"keys"}
-	pathParameters := []string{*deleteKeyOptions.ID}
-
-	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range deleteKeyOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteKey")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	response, err = vpc.Service.Request(request, nil)
-
-	return
-}
-
-// GetKey : Retrieve specified key
-// This request retrieves a single key specified by the identifier in the URL.
-func (vpc *VpcV1) GetKey(getKeyOptions *GetKeyOptions) (result *Key, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getKeyOptions, "getKeyOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(getKeyOptions, "getKeyOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"keys"}
-	pathParameters := []string{*getKeyOptions.ID}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range getKeyOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetKey")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalKey)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// UpdateKey : Update specified key
-// This request updates a key's name.
-func (vpc *VpcV1) UpdateKey(updateKeyOptions *UpdateKeyOptions) (result *Key, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateKeyOptions, "updateKeyOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(updateKeyOptions, "updateKeyOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"keys"}
-	pathParameters := []string{*updateKeyOptions.ID}
-
-	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range updateKeyOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateKey")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	body := make(map[string]interface{})
-	if updateKeyOptions.Name != nil {
-		body["name"] = updateKeyOptions.Name
-	}
-	_, err = builder.SetBodyContentJSON(body)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalKey)
 	if err != nil {
 		return
 	}
@@ -6484,8 +7677,8 @@ func (vpc *VpcV1) UpdateSecurityGroupRule(updateSecurityGroupRuleOptions *Update
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
-	if updateSecurityGroupRuleOptions.Code != nil {
-		body["code"] = updateSecurityGroupRuleOptions.Code
+	if updateSecurityGroupRuleOptions.Remote != nil {
+		body["remote"] = updateSecurityGroupRuleOptions.Remote
 	}
 	if updateSecurityGroupRuleOptions.Direction != nil {
 		body["direction"] = updateSecurityGroupRuleOptions.Direction
@@ -6493,14 +7686,14 @@ func (vpc *VpcV1) UpdateSecurityGroupRule(updateSecurityGroupRuleOptions *Update
 	if updateSecurityGroupRuleOptions.IPVersion != nil {
 		body["ip_version"] = updateSecurityGroupRuleOptions.IPVersion
 	}
+	if updateSecurityGroupRuleOptions.Code != nil {
+		body["code"] = updateSecurityGroupRuleOptions.Code
+	}
 	if updateSecurityGroupRuleOptions.PortMax != nil {
 		body["port_max"] = updateSecurityGroupRuleOptions.PortMax
 	}
 	if updateSecurityGroupRuleOptions.PortMin != nil {
 		body["port_min"] = updateSecurityGroupRuleOptions.PortMin
-	}
-	if updateSecurityGroupRuleOptions.Remote != nil {
-		body["remote"] = updateSecurityGroupRuleOptions.Remote
 	}
 	if updateSecurityGroupRuleOptions.Type != nil {
 		body["type"] = updateSecurityGroupRuleOptions.Type
@@ -6521,1550 +7714,6 @@ func (vpc *VpcV1) UpdateSecurityGroupRule(updateSecurityGroupRuleOptions *Update
 		return
 	}
 	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSecurityGroupRule)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// ListSubnets : List all subnets
-// This request lists all subnets in the region. Subnets are contiguous ranges of IP addresses specified in CIDR block
-// notation. Each subnet is within a particular zone and cannot span multiple zones or regions.
-func (vpc *VpcV1) ListSubnets(listSubnetsOptions *ListSubnetsOptions) (result *SubnetCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateStruct(listSubnetsOptions, "listSubnetsOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"subnets"}
-	pathParameters := []string{}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range listSubnetsOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListSubnets")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-	if listSubnetsOptions.Start != nil {
-		builder.AddQuery("start", fmt.Sprint(*listSubnetsOptions.Start))
-	}
-	if listSubnetsOptions.Limit != nil {
-		builder.AddQuery("limit", fmt.Sprint(*listSubnetsOptions.Limit))
-	}
-	if listSubnetsOptions.ResourceGroupID != nil {
-		builder.AddQuery("resource_group.id", fmt.Sprint(*listSubnetsOptions.ResourceGroupID))
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSubnetCollection)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// CreateSubnet : Create a subnet
-// This request creates a new subnet from a subnet prototype object. The prototype object is structured in the same way
-// as a retrieved subnet, and contains the information necessary to create the new subnet. For this request to succeed,
-// the prototype's CIDR block must not overlap with an existing subnet in the VPC.
-func (vpc *VpcV1) CreateSubnet(createSubnetOptions *CreateSubnetOptions) (result *Subnet, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(createSubnetOptions, "createSubnetOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(createSubnetOptions, "createSubnetOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"subnets"}
-	pathParameters := []string{}
-
-	builder := core.NewRequestBuilder(core.POST)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range createSubnetOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateSubnet")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	_, err = builder.SetBodyContentJSON(createSubnetOptions.SubnetPrototype)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSubnet)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// DeleteSubnet : Delete specified subnet
-// This request deletes a subnet. This operation cannot be reversed. For this request to succeed, the subnet must not be
-// referenced by any network interfaces, VPN gateways, or load balancers. A delete operation automatically detaches the
-// subnet from any network ACLs, public gateways, or endpoint gateways. All flow log collectors with `auto_delete` set
-// to
-// `true` targeting the subnet or any resource in the subnet are automatically deleted.
-func (vpc *VpcV1) DeleteSubnet(deleteSubnetOptions *DeleteSubnetOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deleteSubnetOptions, "deleteSubnetOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(deleteSubnetOptions, "deleteSubnetOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"subnets"}
-	pathParameters := []string{*deleteSubnetOptions.ID}
-
-	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range deleteSubnetOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteSubnet")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	response, err = vpc.Service.Request(request, nil)
-
-	return
-}
-
-// GetSubnet : Retrieve specified subnet
-// This request retrieves a single subnet specified by the identifier in the URL.
-func (vpc *VpcV1) GetSubnet(getSubnetOptions *GetSubnetOptions) (result *Subnet, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getSubnetOptions, "getSubnetOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(getSubnetOptions, "getSubnetOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"subnets"}
-	pathParameters := []string{*getSubnetOptions.ID}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range getSubnetOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetSubnet")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSubnet)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// UpdateSubnet : Update specified subnet
-// This request updates a subnet with the information in a provided subnet patch. The subnet patch object is structured
-// in the same way as a retrieved subnet and contains only the information to be updated.
-func (vpc *VpcV1) UpdateSubnet(updateSubnetOptions *UpdateSubnetOptions) (result *Subnet, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateSubnetOptions, "updateSubnetOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(updateSubnetOptions, "updateSubnetOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"subnets"}
-	pathParameters := []string{*updateSubnetOptions.ID}
-
-	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range updateSubnetOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateSubnet")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	body := make(map[string]interface{})
-	if updateSubnetOptions.Name != nil {
-		body["name"] = updateSubnetOptions.Name
-	}
-	if updateSubnetOptions.NetworkACL != nil {
-		body["network_acl"] = updateSubnetOptions.NetworkACL
-	}
-	if updateSubnetOptions.PublicGateway != nil {
-		body["public_gateway"] = updateSubnetOptions.PublicGateway
-	}
-	_, err = builder.SetBodyContentJSON(body)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSubnet)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// GetSubnetNetworkACL : Retrieve a subnet's attached network ACL
-// This request retrieves the network ACL attached to the subnet specified by the identifier in the URL.
-func (vpc *VpcV1) GetSubnetNetworkACL(getSubnetNetworkACLOptions *GetSubnetNetworkACLOptions) (result *NetworkACL, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getSubnetNetworkACLOptions, "getSubnetNetworkACLOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(getSubnetNetworkACLOptions, "getSubnetNetworkACLOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"subnets", "network_acl"}
-	pathParameters := []string{*getSubnetNetworkACLOptions.ID}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range getSubnetNetworkACLOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetSubnetNetworkACL")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalNetworkACL)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// ReplaceSubnetNetworkACL : Attach a network ACL to a subnet
-// This request attaches the network ACL, specified in the request body, to the subnet specified by the subnet
-// identifier in the URL. This replaces the existing network ACL on the subnet.
-func (vpc *VpcV1) ReplaceSubnetNetworkACL(replaceSubnetNetworkACLOptions *ReplaceSubnetNetworkACLOptions) (result *NetworkACL, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(replaceSubnetNetworkACLOptions, "replaceSubnetNetworkACLOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(replaceSubnetNetworkACLOptions, "replaceSubnetNetworkACLOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"subnets", "network_acl"}
-	pathParameters := []string{*replaceSubnetNetworkACLOptions.ID}
-
-	builder := core.NewRequestBuilder(core.PUT)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range replaceSubnetNetworkACLOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ReplaceSubnetNetworkACL")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	_, err = builder.SetBodyContentJSON(replaceSubnetNetworkACLOptions.NetworkACLIdentity)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalNetworkACL)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// UnsetSubnetPublicGateway : Detach a public gateway from a subnet
-// This request detaches the public gateway from the subnet specified by the subnet identifier in the URL.
-func (vpc *VpcV1) UnsetSubnetPublicGateway(unsetSubnetPublicGatewayOptions *UnsetSubnetPublicGatewayOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(unsetSubnetPublicGatewayOptions, "unsetSubnetPublicGatewayOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(unsetSubnetPublicGatewayOptions, "unsetSubnetPublicGatewayOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"subnets", "public_gateway"}
-	pathParameters := []string{*unsetSubnetPublicGatewayOptions.ID}
-
-	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range unsetSubnetPublicGatewayOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UnsetSubnetPublicGateway")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	response, err = vpc.Service.Request(request, nil)
-
-	return
-}
-
-// GetSubnetPublicGateway : Retrieve a subnet's attached public gateway
-// This request retrieves the public gateway attached to the subnet specified by the identifier in the URL.
-func (vpc *VpcV1) GetSubnetPublicGateway(getSubnetPublicGatewayOptions *GetSubnetPublicGatewayOptions) (result *PublicGateway, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getSubnetPublicGatewayOptions, "getSubnetPublicGatewayOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(getSubnetPublicGatewayOptions, "getSubnetPublicGatewayOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"subnets", "public_gateway"}
-	pathParameters := []string{*getSubnetPublicGatewayOptions.ID}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range getSubnetPublicGatewayOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetSubnetPublicGateway")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPublicGateway)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// SetSubnetPublicGateway : Attach a public gateway to a subnet
-// This request attaches the public gateway, specified in the request body, to the subnet specified by the subnet
-// identifier in the URL. The public gateway must have the same VPC and zone as the subnet.
-func (vpc *VpcV1) SetSubnetPublicGateway(setSubnetPublicGatewayOptions *SetSubnetPublicGatewayOptions) (result *PublicGateway, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(setSubnetPublicGatewayOptions, "setSubnetPublicGatewayOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(setSubnetPublicGatewayOptions, "setSubnetPublicGatewayOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"subnets", "public_gateway"}
-	pathParameters := []string{*setSubnetPublicGatewayOptions.ID}
-
-	builder := core.NewRequestBuilder(core.PUT)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range setSubnetPublicGatewayOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "SetSubnetPublicGateway")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	_, err = builder.SetBodyContentJSON(setSubnetPublicGatewayOptions.PublicGatewayIdentity)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPublicGateway)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// ListVpcs : List all VPCs
-// This request lists all VPCs. A VPC is a virtual network that belongs to an account and provides logical isolation
-// from other networks. A VPC is made up of resources in one or more zones. VPCs are regional, and each VPC can contain
-// resources in multiple zones in a region.
-func (vpc *VpcV1) ListVpcs(listVpcsOptions *ListVpcsOptions) (result *VPCCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateStruct(listVpcsOptions, "listVpcsOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs"}
-	pathParameters := []string{}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range listVpcsOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVpcs")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-	if listVpcsOptions.Start != nil {
-		builder.AddQuery("start", fmt.Sprint(*listVpcsOptions.Start))
-	}
-	if listVpcsOptions.Limit != nil {
-		builder.AddQuery("limit", fmt.Sprint(*listVpcsOptions.Limit))
-	}
-	if listVpcsOptions.ResourceGroupID != nil {
-		builder.AddQuery("resource_group.id", fmt.Sprint(*listVpcsOptions.ResourceGroupID))
-	}
-	if listVpcsOptions.ClassicAccess != nil {
-		builder.AddQuery("classic_access", fmt.Sprint(*listVpcsOptions.ClassicAccess))
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPCCollection)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// CreateVPC : Create a VPC
-// This request creates a new VPC from a VPC prototype object. The prototype object is structured in the same way as a
-// retrieved VPC, and contains the information necessary to create the new VPC.
-func (vpc *VpcV1) CreateVPC(createVPCOptions *CreateVPCOptions) (result *VPC, response *core.DetailedResponse, err error) {
-	err = core.ValidateStruct(createVPCOptions, "createVPCOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs"}
-	pathParameters := []string{}
-
-	builder := core.NewRequestBuilder(core.POST)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range createVPCOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateVPC")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	body := make(map[string]interface{})
-	if createVPCOptions.AddressPrefixManagement != nil {
-		body["address_prefix_management"] = createVPCOptions.AddressPrefixManagement
-	}
-	if createVPCOptions.ClassicAccess != nil {
-		body["classic_access"] = createVPCOptions.ClassicAccess
-	}
-	if createVPCOptions.Name != nil {
-		body["name"] = createVPCOptions.Name
-	}
-	if createVPCOptions.ResourceGroup != nil {
-		body["resource_group"] = createVPCOptions.ResourceGroup
-	}
-	_, err = builder.SetBodyContentJSON(body)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPC)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// DeleteVPC : Delete specified VPC
-// This request deletes a VPC. This operation cannot be reversed. For this request to succeed, the VPC must not contain
-// any instances, subnets, or public gateways. All security groups and network ACLs associated with the VPC are
-// automatically deleted. All flow log collectors with `auto_delete` set to `true` targeting the VPC or any resource in
-// the VPC are automatically deleted.
-func (vpc *VpcV1) DeleteVPC(deleteVPCOptions *DeleteVPCOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deleteVPCOptions, "deleteVPCOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(deleteVPCOptions, "deleteVPCOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs"}
-	pathParameters := []string{*deleteVPCOptions.ID}
-
-	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range deleteVPCOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteVPC")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	response, err = vpc.Service.Request(request, nil)
-
-	return
-}
-
-// GetVPC : Retrieve specified VPC
-// This request retrieves a single VPC specified by the identifier in the URL.
-func (vpc *VpcV1) GetVPC(getVPCOptions *GetVPCOptions) (result *VPC, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getVPCOptions, "getVPCOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(getVPCOptions, "getVPCOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs"}
-	pathParameters := []string{*getVPCOptions.ID}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range getVPCOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVPC")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPC)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// UpdateVPC : Update specified VPC
-// This request updates a VPC's name.
-func (vpc *VpcV1) UpdateVPC(updateVPCOptions *UpdateVPCOptions) (result *VPC, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateVPCOptions, "updateVPCOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(updateVPCOptions, "updateVPCOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs"}
-	pathParameters := []string{*updateVPCOptions.ID}
-
-	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range updateVPCOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateVPC")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	body := make(map[string]interface{})
-	if updateVPCOptions.Name != nil {
-		body["name"] = updateVPCOptions.Name
-	}
-	_, err = builder.SetBodyContentJSON(body)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPC)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// GetVPCDefaultNetworkACL : Retrieve a VPC's default network ACL
-// This request retrieves the default network ACL for the VPC specified by the identifier in the URL. The default
-// network ACL is applied to any new subnets in the VPC which do not specify a network ACL.
-func (vpc *VpcV1) GetVPCDefaultNetworkACL(getVPCDefaultNetworkACLOptions *GetVPCDefaultNetworkACLOptions) (result *DefaultNetworkACL, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getVPCDefaultNetworkACLOptions, "getVPCDefaultNetworkACLOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(getVPCDefaultNetworkACLOptions, "getVPCDefaultNetworkACLOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs", "default_network_acl"}
-	pathParameters := []string{*getVPCDefaultNetworkACLOptions.ID}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range getVPCDefaultNetworkACLOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVPCDefaultNetworkACL")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDefaultNetworkACL)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// GetVPCDefaultSecurityGroup : Retrieve a VPC's default security group
-// This request retrieves the default security group for the VPC specified by the identifier in the URL. The default
-// security group is applied to any new network interfaces in the VPC that do not specify a security group.
-func (vpc *VpcV1) GetVPCDefaultSecurityGroup(getVPCDefaultSecurityGroupOptions *GetVPCDefaultSecurityGroupOptions) (result *DefaultSecurityGroup, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getVPCDefaultSecurityGroupOptions, "getVPCDefaultSecurityGroupOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(getVPCDefaultSecurityGroupOptions, "getVPCDefaultSecurityGroupOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs", "default_security_group"}
-	pathParameters := []string{*getVPCDefaultSecurityGroupOptions.ID}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range getVPCDefaultSecurityGroupOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVPCDefaultSecurityGroup")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDefaultSecurityGroup)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// ListVPCAddressPrefixes : List all address pool prefixes for a VPC
-// This request lists all address pool prefixes for a VPC.
-func (vpc *VpcV1) ListVPCAddressPrefixes(listVPCAddressPrefixesOptions *ListVPCAddressPrefixesOptions) (result *AddressPrefixCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(listVPCAddressPrefixesOptions, "listVPCAddressPrefixesOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(listVPCAddressPrefixesOptions, "listVPCAddressPrefixesOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs", "address_prefixes"}
-	pathParameters := []string{*listVPCAddressPrefixesOptions.VPCID}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range listVPCAddressPrefixesOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVPCAddressPrefixes")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalAddressPrefixCollection)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// CreateVPCAddressPrefix : Create an address pool prefix
-// This request creates a new prefix from a prefix prototype object. The prototype object is structured in the same way
-// as a retrieved prefix, and contains the information necessary to create the new prefix.
-func (vpc *VpcV1) CreateVPCAddressPrefix(createVPCAddressPrefixOptions *CreateVPCAddressPrefixOptions) (result *AddressPrefix, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(createVPCAddressPrefixOptions, "createVPCAddressPrefixOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(createVPCAddressPrefixOptions, "createVPCAddressPrefixOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs", "address_prefixes"}
-	pathParameters := []string{*createVPCAddressPrefixOptions.VPCID}
-
-	builder := core.NewRequestBuilder(core.POST)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range createVPCAddressPrefixOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateVPCAddressPrefix")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	body := make(map[string]interface{})
-	if createVPCAddressPrefixOptions.CIDR != nil {
-		body["cidr"] = createVPCAddressPrefixOptions.CIDR
-	}
-	if createVPCAddressPrefixOptions.Zone != nil {
-		body["zone"] = createVPCAddressPrefixOptions.Zone
-	}
-	if createVPCAddressPrefixOptions.IsDefault != nil {
-		body["is_default"] = createVPCAddressPrefixOptions.IsDefault
-	}
-	if createVPCAddressPrefixOptions.Name != nil {
-		body["name"] = createVPCAddressPrefixOptions.Name
-	}
-	_, err = builder.SetBodyContentJSON(body)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalAddressPrefix)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// DeleteVPCAddressPrefix : Delete specified address pool prefix
-// This request deletes a prefix. This operation cannot be reversed. The request will fail if any subnets use addresses
-// from this prefix.
-func (vpc *VpcV1) DeleteVPCAddressPrefix(deleteVPCAddressPrefixOptions *DeleteVPCAddressPrefixOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deleteVPCAddressPrefixOptions, "deleteVPCAddressPrefixOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(deleteVPCAddressPrefixOptions, "deleteVPCAddressPrefixOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs", "address_prefixes"}
-	pathParameters := []string{*deleteVPCAddressPrefixOptions.VPCID, *deleteVPCAddressPrefixOptions.ID}
-
-	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range deleteVPCAddressPrefixOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteVPCAddressPrefix")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	response, err = vpc.Service.Request(request, nil)
-
-	return
-}
-
-// GetVPCAddressPrefix : Retrieve specified address pool prefix
-// This request retrieves a single prefix specified by the identifier in the URL.
-func (vpc *VpcV1) GetVPCAddressPrefix(getVPCAddressPrefixOptions *GetVPCAddressPrefixOptions) (result *AddressPrefix, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getVPCAddressPrefixOptions, "getVPCAddressPrefixOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(getVPCAddressPrefixOptions, "getVPCAddressPrefixOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs", "address_prefixes"}
-	pathParameters := []string{*getVPCAddressPrefixOptions.VPCID, *getVPCAddressPrefixOptions.ID}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range getVPCAddressPrefixOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVPCAddressPrefix")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalAddressPrefix)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// UpdateVPCAddressPrefix : Update an address pool prefix
-// This request updates a prefix with the information in a provided prefix patch. The prefix patch object is structured
-// in the same way as a retrieved prefix and contains only the information to be updated.
-func (vpc *VpcV1) UpdateVPCAddressPrefix(updateVPCAddressPrefixOptions *UpdateVPCAddressPrefixOptions) (result *AddressPrefix, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateVPCAddressPrefixOptions, "updateVPCAddressPrefixOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(updateVPCAddressPrefixOptions, "updateVPCAddressPrefixOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs", "address_prefixes"}
-	pathParameters := []string{*updateVPCAddressPrefixOptions.VPCID, *updateVPCAddressPrefixOptions.ID}
-
-	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range updateVPCAddressPrefixOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateVPCAddressPrefix")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	body := make(map[string]interface{})
-	if updateVPCAddressPrefixOptions.IsDefault != nil {
-		body["is_default"] = updateVPCAddressPrefixOptions.IsDefault
-	}
-	if updateVPCAddressPrefixOptions.Name != nil {
-		body["name"] = updateVPCAddressPrefixOptions.Name
-	}
-	_, err = builder.SetBodyContentJSON(body)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalAddressPrefix)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// ListVPCRoutes : List all routes in the VPC's default routing table
-// This request retrieves routes in the VPC's default routing table. For compatibility, routes with `action` values
-// other than `deliver` are omitted. Each route is zone-specific and directs any packets matching its destination CIDR
-// block to a `next_hop` IP address. The most specific route matching a packet's destination will be used. If multiple
-// equally-specific routes exist, traffic will be distributed across them.
-func (vpc *VpcV1) ListVPCRoutes(listVPCRoutesOptions *ListVPCRoutesOptions) (result *RouteCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(listVPCRoutesOptions, "listVPCRoutesOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(listVPCRoutesOptions, "listVPCRoutesOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs", "routes"}
-	pathParameters := []string{*listVPCRoutesOptions.VPCID}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range listVPCRoutesOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVPCRoutes")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-	if listVPCRoutesOptions.ZoneName != nil {
-		builder.AddQuery("zone.name", fmt.Sprint(*listVPCRoutesOptions.ZoneName))
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRouteCollection)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// CreateVPCRoute : Create a route in the VPC's default routing table
-// This request creates a new route in the VPC's default routing table. The route prototype object is structured in the
-// same way as a retrieved route, and contains the information necessary to create the new route. The request will fail
-// if the new route will cause a loop.
-func (vpc *VpcV1) CreateVPCRoute(createVPCRouteOptions *CreateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(createVPCRouteOptions, "createVPCRouteOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(createVPCRouteOptions, "createVPCRouteOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs", "routes"}
-	pathParameters := []string{*createVPCRouteOptions.VPCID}
-
-	builder := core.NewRequestBuilder(core.POST)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range createVPCRouteOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateVPCRoute")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	body := make(map[string]interface{})
-	if createVPCRouteOptions.Destination != nil {
-		body["destination"] = createVPCRouteOptions.Destination
-	}
-	if createVPCRouteOptions.NextHop != nil {
-		body["next_hop"] = createVPCRouteOptions.NextHop
-	}
-	if createVPCRouteOptions.Zone != nil {
-		body["zone"] = createVPCRouteOptions.Zone
-	}
-	if createVPCRouteOptions.Name != nil {
-		body["name"] = createVPCRouteOptions.Name
-	}
-	_, err = builder.SetBodyContentJSON(body)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRoute)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// DeleteVPCRoute : Delete the specified route in the VPC's default routing table
-// This request deletes a route. This operation cannot be reversed.
-func (vpc *VpcV1) DeleteVPCRoute(deleteVPCRouteOptions *DeleteVPCRouteOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deleteVPCRouteOptions, "deleteVPCRouteOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(deleteVPCRouteOptions, "deleteVPCRouteOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs", "routes"}
-	pathParameters := []string{*deleteVPCRouteOptions.VPCID, *deleteVPCRouteOptions.ID}
-
-	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range deleteVPCRouteOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteVPCRoute")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	response, err = vpc.Service.Request(request, nil)
-
-	return
-}
-
-// GetVPCRoute : Retrieve the specified route in the VPC's default routing table
-// This request retrieves a single route specified by the identifier in the URL.
-func (vpc *VpcV1) GetVPCRoute(getVPCRouteOptions *GetVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getVPCRouteOptions, "getVPCRouteOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(getVPCRouteOptions, "getVPCRouteOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs", "routes"}
-	pathParameters := []string{*getVPCRouteOptions.VPCID, *getVPCRouteOptions.ID}
-
-	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range getVPCRouteOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVPCRoute")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRoute)
-	if err != nil {
-		return
-	}
-	response.Result = result
-
-	return
-}
-
-// UpdateVPCRoute : Update the specified route in the VPC's default routing table
-// This request updates a route with the information in a provided route patch. The route patch object is structured in
-// the same way as a retrieved route and contains only the information to be updated.
-func (vpc *VpcV1) UpdateVPCRoute(updateVPCRouteOptions *UpdateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateVPCRouteOptions, "updateVPCRouteOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(updateVPCRouteOptions, "updateVPCRouteOptions")
-	if err != nil {
-		return
-	}
-
-	pathSegments := []string{"vpcs", "routes"}
-	pathParameters := []string{*updateVPCRouteOptions.VPCID, *updateVPCRouteOptions.ID}
-
-	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range updateVPCRouteOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateVPCRoute")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	body := make(map[string]interface{})
-	if updateVPCRouteOptions.Name != nil {
-		body["name"] = updateVPCRouteOptions.Name
-	}
-	_, err = builder.SetBodyContentJSON(body)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRoute)
 	if err != nil {
 		return
 	}
@@ -8176,11 +7825,11 @@ func (vpc *VpcV1) CreateIkePolicy(createIkePolicyOptions *CreateIkePolicyOptions
 	if createIkePolicyOptions.IkeVersion != nil {
 		body["ike_version"] = createIkePolicyOptions.IkeVersion
 	}
-	if createIkePolicyOptions.KeyLifetime != nil {
-		body["key_lifetime"] = createIkePolicyOptions.KeyLifetime
-	}
 	if createIkePolicyOptions.Name != nil {
 		body["name"] = createIkePolicyOptions.Name
+	}
+	if createIkePolicyOptions.KeyLifetime != nil {
+		body["key_lifetime"] = createIkePolicyOptions.KeyLifetime
 	}
 	if createIkePolicyOptions.ResourceGroup != nil {
 		body["resource_group"] = createIkePolicyOptions.ResourceGroup
@@ -8341,6 +7990,9 @@ func (vpc *VpcV1) UpdateIkePolicy(updateIkePolicyOptions *UpdateIkePolicyOptions
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
+	if updateIkePolicyOptions.Name != nil {
+		body["name"] = updateIkePolicyOptions.Name
+	}
 	if updateIkePolicyOptions.AuthenticationAlgorithm != nil {
 		body["authentication_algorithm"] = updateIkePolicyOptions.AuthenticationAlgorithm
 	}
@@ -8355,9 +8007,6 @@ func (vpc *VpcV1) UpdateIkePolicy(updateIkePolicyOptions *UpdateIkePolicyOptions
 	}
 	if updateIkePolicyOptions.KeyLifetime != nil {
 		body["key_lifetime"] = updateIkePolicyOptions.KeyLifetime
-	}
-	if updateIkePolicyOptions.Name != nil {
-		body["name"] = updateIkePolicyOptions.Name
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -8536,11 +8185,11 @@ func (vpc *VpcV1) CreateIpsecPolicy(createIpsecPolicyOptions *CreateIpsecPolicyO
 	if createIpsecPolicyOptions.Pfs != nil {
 		body["pfs"] = createIpsecPolicyOptions.Pfs
 	}
-	if createIpsecPolicyOptions.KeyLifetime != nil {
-		body["key_lifetime"] = createIpsecPolicyOptions.KeyLifetime
-	}
 	if createIpsecPolicyOptions.Name != nil {
 		body["name"] = createIpsecPolicyOptions.Name
+	}
+	if createIpsecPolicyOptions.KeyLifetime != nil {
+		body["key_lifetime"] = createIpsecPolicyOptions.KeyLifetime
 	}
 	if createIpsecPolicyOptions.ResourceGroup != nil {
 		body["resource_group"] = createIpsecPolicyOptions.ResourceGroup
@@ -8701,6 +8350,9 @@ func (vpc *VpcV1) UpdateIpsecPolicy(updateIpsecPolicyOptions *UpdateIpsecPolicyO
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
+	if updateIpsecPolicyOptions.Name != nil {
+		body["name"] = updateIpsecPolicyOptions.Name
+	}
 	if updateIpsecPolicyOptions.AuthenticationAlgorithm != nil {
 		body["authentication_algorithm"] = updateIpsecPolicyOptions.AuthenticationAlgorithm
 	}
@@ -8709,9 +8361,6 @@ func (vpc *VpcV1) UpdateIpsecPolicy(updateIpsecPolicyOptions *UpdateIpsecPolicyO
 	}
 	if updateIpsecPolicyOptions.KeyLifetime != nil {
 		body["key_lifetime"] = updateIpsecPolicyOptions.KeyLifetime
-	}
-	if updateIpsecPolicyOptions.Name != nil {
-		body["name"] = updateIpsecPolicyOptions.Name
 	}
 	if updateIpsecPolicyOptions.Pfs != nil {
 		body["pfs"] = updateIpsecPolicyOptions.Pfs
@@ -9181,6 +8830,9 @@ func (vpc *VpcV1) CreateVPNGatewayConnection(createVPNGatewayConnectionOptions *
 	if createVPNGatewayConnectionOptions.AdminStateUp != nil {
 		body["admin_state_up"] = createVPNGatewayConnectionOptions.AdminStateUp
 	}
+	if createVPNGatewayConnectionOptions.Name != nil {
+		body["name"] = createVPNGatewayConnectionOptions.Name
+	}
 	if createVPNGatewayConnectionOptions.DeadPeerDetection != nil {
 		body["dead_peer_detection"] = createVPNGatewayConnectionOptions.DeadPeerDetection
 	}
@@ -9192,9 +8844,6 @@ func (vpc *VpcV1) CreateVPNGatewayConnection(createVPNGatewayConnectionOptions *
 	}
 	if createVPNGatewayConnectionOptions.LocalCIDRs != nil {
 		body["local_cidrs"] = createVPNGatewayConnectionOptions.LocalCIDRs
-	}
-	if createVPNGatewayConnectionOptions.Name != nil {
-		body["name"] = createVPNGatewayConnectionOptions.Name
 	}
 	if createVPNGatewayConnectionOptions.PeerCIDRs != nil {
 		body["peer_cidrs"] = createVPNGatewayConnectionOptions.PeerCIDRs
@@ -9358,6 +9007,15 @@ func (vpc *VpcV1) UpdateVPNGatewayConnection(updateVPNGatewayConnectionOptions *
 	if updateVPNGatewayConnectionOptions.AdminStateUp != nil {
 		body["admin_state_up"] = updateVPNGatewayConnectionOptions.AdminStateUp
 	}
+	if updateVPNGatewayConnectionOptions.PeerAddress != nil {
+		body["peer_address"] = updateVPNGatewayConnectionOptions.PeerAddress
+	}
+	if updateVPNGatewayConnectionOptions.Name != nil {
+		body["name"] = updateVPNGatewayConnectionOptions.Name
+	}
+	if updateVPNGatewayConnectionOptions.Psk != nil {
+		body["psk"] = updateVPNGatewayConnectionOptions.Psk
+	}
 	if updateVPNGatewayConnectionOptions.DeadPeerDetection != nil {
 		body["dead_peer_detection"] = updateVPNGatewayConnectionOptions.DeadPeerDetection
 	}
@@ -9366,15 +9024,6 @@ func (vpc *VpcV1) UpdateVPNGatewayConnection(updateVPNGatewayConnectionOptions *
 	}
 	if updateVPNGatewayConnectionOptions.IpsecPolicy != nil {
 		body["ipsec_policy"] = updateVPNGatewayConnectionOptions.IpsecPolicy
-	}
-	if updateVPNGatewayConnectionOptions.Name != nil {
-		body["name"] = updateVPNGatewayConnectionOptions.Name
-	}
-	if updateVPNGatewayConnectionOptions.PeerAddress != nil {
-		body["peer_address"] = updateVPNGatewayConnectionOptions.PeerAddress
-	}
-	if updateVPNGatewayConnectionOptions.Psk != nil {
-		body["psk"] = updateVPNGatewayConnectionOptions.Psk
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -9444,7 +9093,7 @@ func (vpc *VpcV1) ListVPNGatewayConnectionLocalCIDRs(listVPNGatewayConnectionLoc
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPNGatewayConnectionLocalCidRs)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPNGatewayConnectionLocalCIDRs)
 	if err != nil {
 		return
 	}
@@ -9627,7 +9276,7 @@ func (vpc *VpcV1) ListVPNGatewayConnectionPeerCIDRs(listVPNGatewayConnectionPeer
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPNGatewayConnectionPeerCidRs)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPNGatewayConnectionPeerCIDRs)
 	if err != nil {
 		return
 	}
@@ -9766,16 +9415,16 @@ func (vpc *VpcV1) AddVPNGatewayConnectionPeerCIDR(addVPNGatewayConnectionPeerCID
 	return
 }
 
-// ListVolumeProfiles : List all volume profiles
-// This request lists all volume profiles available in the region. A volume profile specifies the performance
-// characteristics and pricing model for a volume.
-func (vpc *VpcV1) ListVolumeProfiles(listVolumeProfilesOptions *ListVolumeProfilesOptions) (result *VolumeProfileCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateStruct(listVolumeProfilesOptions, "listVolumeProfilesOptions")
+// ListLoadBalancerProfiles : List all load balancer profiles
+// This request lists all load balancer profiles available in the region. A load balancer profile specifies the
+// performance characteristics and pricing model for a load balancer.
+func (vpc *VpcV1) ListLoadBalancerProfiles(listLoadBalancerProfilesOptions *ListLoadBalancerProfilesOptions) (result *LoadBalancerProfileCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listLoadBalancerProfilesOptions, "listLoadBalancerProfilesOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"volume/profiles"}
+	pathSegments := []string{"load_balancer/profiles"}
 	pathParameters := []string{}
 
 	builder := core.NewRequestBuilder(core.GET)
@@ -9784,11 +9433,11 @@ func (vpc *VpcV1) ListVolumeProfiles(listVolumeProfilesOptions *ListVolumeProfil
 		return
 	}
 
-	for headerName, headerValue := range listVolumeProfilesOptions.Headers {
+	for headerName, headerValue := range listLoadBalancerProfilesOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVolumeProfiles")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListLoadBalancerProfiles")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -9796,11 +9445,11 @@ func (vpc *VpcV1) ListVolumeProfiles(listVolumeProfilesOptions *ListVolumeProfil
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-	if listVolumeProfilesOptions.Start != nil {
-		builder.AddQuery("start", fmt.Sprint(*listVolumeProfilesOptions.Start))
+	if listLoadBalancerProfilesOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listLoadBalancerProfilesOptions.Start))
 	}
-	if listVolumeProfilesOptions.Limit != nil {
-		builder.AddQuery("limit", fmt.Sprint(*listVolumeProfilesOptions.Limit))
+	if listLoadBalancerProfilesOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listLoadBalancerProfilesOptions.Limit))
 	}
 
 	request, err := builder.Build()
@@ -9813,7 +9462,7 @@ func (vpc *VpcV1) ListVolumeProfiles(listVolumeProfilesOptions *ListVolumeProfil
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeProfileCollection)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerProfileCollection)
 	if err != nil {
 		return
 	}
@@ -9822,20 +9471,20 @@ func (vpc *VpcV1) ListVolumeProfiles(listVolumeProfilesOptions *ListVolumeProfil
 	return
 }
 
-// GetVolumeProfile : Retrieve specified volume profile
-// This request retrieves a single volume profile specified by the name in the URL.
-func (vpc *VpcV1) GetVolumeProfile(getVolumeProfileOptions *GetVolumeProfileOptions) (result *VolumeProfile, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getVolumeProfileOptions, "getVolumeProfileOptions cannot be nil")
+// GetLoadBalancerProfile : Retrieve specified load balancer profile
+// This request retrieves a load balancer profile specified by the name in the URL.
+func (vpc *VpcV1) GetLoadBalancerProfile(getLoadBalancerProfileOptions *GetLoadBalancerProfileOptions) (result *LoadBalancerProfile, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getLoadBalancerProfileOptions, "getLoadBalancerProfileOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(getVolumeProfileOptions, "getVolumeProfileOptions")
+	err = core.ValidateStruct(getLoadBalancerProfileOptions, "getLoadBalancerProfileOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"volume/profiles"}
-	pathParameters := []string{*getVolumeProfileOptions.Name}
+	pathSegments := []string{"load_balancer/profiles"}
+	pathParameters := []string{*getLoadBalancerProfileOptions.Name}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -9843,11 +9492,11 @@ func (vpc *VpcV1) GetVolumeProfile(getVolumeProfileOptions *GetVolumeProfileOpti
 		return
 	}
 
-	for headerName, headerValue := range getVolumeProfileOptions.Headers {
+	for headerName, headerValue := range getLoadBalancerProfileOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVolumeProfile")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetLoadBalancerProfile")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -9866,7 +9515,7 @@ func (vpc *VpcV1) GetVolumeProfile(getVolumeProfileOptions *GetVolumeProfileOpti
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeProfile)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerProfile)
 	if err != nil {
 		return
 	}
@@ -9875,16 +9524,15 @@ func (vpc *VpcV1) GetVolumeProfile(getVolumeProfileOptions *GetVolumeProfileOpti
 	return
 }
 
-// ListVolumes : List all volumes
-// This request lists all volumes in the region. Volumes are network-connected block storage devices that may be
-// attached to one or more instances in the same region.
-func (vpc *VpcV1) ListVolumes(listVolumesOptions *ListVolumesOptions) (result *VolumeCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateStruct(listVolumesOptions, "listVolumesOptions")
+// ListLoadBalancers : List all load balancers
+// This request retrieves a paginated list of all load balancers that belong to this account.
+func (vpc *VpcV1) ListLoadBalancers(listLoadBalancersOptions *ListLoadBalancersOptions) (result *LoadBalancerCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listLoadBalancersOptions, "listLoadBalancersOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"volumes"}
+	pathSegments := []string{"load_balancers"}
 	pathParameters := []string{}
 
 	builder := core.NewRequestBuilder(core.GET)
@@ -9893,11 +9541,11 @@ func (vpc *VpcV1) ListVolumes(listVolumesOptions *ListVolumesOptions) (result *V
 		return
 	}
 
-	for headerName, headerValue := range listVolumesOptions.Headers {
+	for headerName, headerValue := range listLoadBalancersOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVolumes")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListLoadBalancers")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -9905,18 +9553,6 @@ func (vpc *VpcV1) ListVolumes(listVolumesOptions *ListVolumesOptions) (result *V
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-	if listVolumesOptions.Start != nil {
-		builder.AddQuery("start", fmt.Sprint(*listVolumesOptions.Start))
-	}
-	if listVolumesOptions.Limit != nil {
-		builder.AddQuery("limit", fmt.Sprint(*listVolumesOptions.Limit))
-	}
-	if listVolumesOptions.Name != nil {
-		builder.AddQuery("name", fmt.Sprint(*listVolumesOptions.Name))
-	}
-	if listVolumesOptions.ZoneName != nil {
-		builder.AddQuery("zone.name", fmt.Sprint(*listVolumesOptions.ZoneName))
-	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -9928,7 +9564,7 @@ func (vpc *VpcV1) ListVolumes(listVolumesOptions *ListVolumesOptions) (result *V
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeCollection)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerCollection)
 	if err != nil {
 		return
 	}
@@ -9937,20 +9573,19 @@ func (vpc *VpcV1) ListVolumes(listVolumesOptions *ListVolumesOptions) (result *V
 	return
 }
 
-// CreateVolume : Create a volume
-// This request creates a new volume from a volume prototype object. The prototype object is structured in the same way
-// as a retrieved volume, and contains the information necessary to create the new volume.
-func (vpc *VpcV1) CreateVolume(createVolumeOptions *CreateVolumeOptions) (result *Volume, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(createVolumeOptions, "createVolumeOptions cannot be nil")
+// CreateLoadBalancer : Create and provision a load balancer
+// This request creates and provisions a new load balancer.
+func (vpc *VpcV1) CreateLoadBalancer(createLoadBalancerOptions *CreateLoadBalancerOptions) (result *LoadBalancer, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createLoadBalancerOptions, "createLoadBalancerOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(createVolumeOptions, "createVolumeOptions")
+	err = core.ValidateStruct(createLoadBalancerOptions, "createLoadBalancerOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"volumes"}
+	pathSegments := []string{"load_balancers"}
 	pathParameters := []string{}
 
 	builder := core.NewRequestBuilder(core.POST)
@@ -9959,11 +9594,11 @@ func (vpc *VpcV1) CreateVolume(createVolumeOptions *CreateVolumeOptions) (result
 		return
 	}
 
-	for headerName, headerValue := range createVolumeOptions.Headers {
+	for headerName, headerValue := range createLoadBalancerOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateVolume")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateLoadBalancer")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -9973,7 +9608,29 @@ func (vpc *VpcV1) CreateVolume(createVolumeOptions *CreateVolumeOptions) (result
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
-	_, err = builder.SetBodyContentJSON(createVolumeOptions.VolumePrototype)
+	body := make(map[string]interface{})
+	if createLoadBalancerOptions.IsPublic != nil {
+		body["is_public"] = createLoadBalancerOptions.IsPublic
+	}
+	if createLoadBalancerOptions.Subnets != nil {
+		body["subnets"] = createLoadBalancerOptions.Subnets
+	}
+	if createLoadBalancerOptions.Name != nil {
+		body["name"] = createLoadBalancerOptions.Name
+	}
+	if createLoadBalancerOptions.Listeners != nil {
+		body["listeners"] = createLoadBalancerOptions.Listeners
+	}
+	if createLoadBalancerOptions.Pools != nil {
+		body["pools"] = createLoadBalancerOptions.Pools
+	}
+	if createLoadBalancerOptions.Profile != nil {
+		body["profile"] = createLoadBalancerOptions.Profile
+	}
+	if createLoadBalancerOptions.ResourceGroup != nil {
+		body["resource_group"] = createLoadBalancerOptions.ResourceGroup
+	}
+	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
 		return
 	}
@@ -9988,7 +9645,7 @@ func (vpc *VpcV1) CreateVolume(createVolumeOptions *CreateVolumeOptions) (result
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolume)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancer)
 	if err != nil {
 		return
 	}
@@ -9997,21 +9654,20 @@ func (vpc *VpcV1) CreateVolume(createVolumeOptions *CreateVolumeOptions) (result
 	return
 }
 
-// DeleteVolume : Delete specified volume
-// This request deletes a volume. This operation cannot be reversed. For this request to succeed, the volume must not be
-// attached to any instances.
-func (vpc *VpcV1) DeleteVolume(deleteVolumeOptions *DeleteVolumeOptions) (response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deleteVolumeOptions, "deleteVolumeOptions cannot be nil")
+// DeleteLoadBalancer : Delete a load balancer
+// This request deletes a load balancer. This operation cannot be reversed.
+func (vpc *VpcV1) DeleteLoadBalancer(deleteLoadBalancerOptions *DeleteLoadBalancerOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteLoadBalancerOptions, "deleteLoadBalancerOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(deleteVolumeOptions, "deleteVolumeOptions")
+	err = core.ValidateStruct(deleteLoadBalancerOptions, "deleteLoadBalancerOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"volumes"}
-	pathParameters := []string{*deleteVolumeOptions.ID}
+	pathSegments := []string{"load_balancers"}
+	pathParameters := []string{*deleteLoadBalancerOptions.ID}
 
 	builder := core.NewRequestBuilder(core.DELETE)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -10019,11 +9675,11 @@ func (vpc *VpcV1) DeleteVolume(deleteVolumeOptions *DeleteVolumeOptions) (respon
 		return
 	}
 
-	for headerName, headerValue := range deleteVolumeOptions.Headers {
+	for headerName, headerValue := range deleteLoadBalancerOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteVolume")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteLoadBalancer")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -10041,20 +9697,20 @@ func (vpc *VpcV1) DeleteVolume(deleteVolumeOptions *DeleteVolumeOptions) (respon
 	return
 }
 
-// GetVolume : Retrieve specified volume
-// This request retrieves a single volume specified by the identifier in the URL.
-func (vpc *VpcV1) GetVolume(getVolumeOptions *GetVolumeOptions) (result *Volume, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getVolumeOptions, "getVolumeOptions cannot be nil")
+// GetLoadBalancer : Retrieve a load balancer
+// This request retrieves a single load balancer specified by the identifier in the URL path.
+func (vpc *VpcV1) GetLoadBalancer(getLoadBalancerOptions *GetLoadBalancerOptions) (result *LoadBalancer, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getLoadBalancerOptions, "getLoadBalancerOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(getVolumeOptions, "getVolumeOptions")
+	err = core.ValidateStruct(getLoadBalancerOptions, "getLoadBalancerOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"volumes"}
-	pathParameters := []string{*getVolumeOptions.ID}
+	pathSegments := []string{"load_balancers"}
+	pathParameters := []string{*getLoadBalancerOptions.ID}
 
 	builder := core.NewRequestBuilder(core.GET)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -10062,11 +9718,11 @@ func (vpc *VpcV1) GetVolume(getVolumeOptions *GetVolumeOptions) (result *Volume,
 		return
 	}
 
-	for headerName, headerValue := range getVolumeOptions.Headers {
+	for headerName, headerValue := range getLoadBalancerOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVolume")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetLoadBalancer")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -10085,7 +9741,7 @@ func (vpc *VpcV1) GetVolume(getVolumeOptions *GetVolumeOptions) (result *Volume,
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolume)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancer)
 	if err != nil {
 		return
 	}
@@ -10094,21 +9750,20 @@ func (vpc *VpcV1) GetVolume(getVolumeOptions *GetVolumeOptions) (result *Volume,
 	return
 }
 
-// UpdateVolume : Update specified volume
-// This request updates a volume with the information in a provided volume patch. The volume patch object is structured
-// in the same way as a retrieved volume and contains only the information to be updated.
-func (vpc *VpcV1) UpdateVolume(updateVolumeOptions *UpdateVolumeOptions) (result *Volume, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateVolumeOptions, "updateVolumeOptions cannot be nil")
+// UpdateLoadBalancer : Update a load balancer
+// This request updates a load balancer.
+func (vpc *VpcV1) UpdateLoadBalancer(updateLoadBalancerOptions *UpdateLoadBalancerOptions) (result *LoadBalancer, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateLoadBalancerOptions, "updateLoadBalancerOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(updateVolumeOptions, "updateVolumeOptions")
+	err = core.ValidateStruct(updateLoadBalancerOptions, "updateLoadBalancerOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"volumes"}
-	pathParameters := []string{*updateVolumeOptions.ID}
+	pathSegments := []string{"load_balancers"}
+	pathParameters := []string{*updateLoadBalancerOptions.ID}
 
 	builder := core.NewRequestBuilder(core.PATCH)
 	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
@@ -10116,11 +9771,11 @@ func (vpc *VpcV1) UpdateVolume(updateVolumeOptions *UpdateVolumeOptions) (result
 		return
 	}
 
-	for headerName, headerValue := range updateVolumeOptions.Headers {
+	for headerName, headerValue := range updateLoadBalancerOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateVolume")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateLoadBalancer")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -10131,8 +9786,8 @@ func (vpc *VpcV1) UpdateVolume(updateVolumeOptions *UpdateVolumeOptions) (result
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
-	if updateVolumeOptions.Name != nil {
-		body["name"] = updateVolumeOptions.Name
+	if updateLoadBalancerOptions.Name != nil {
+		body["name"] = updateLoadBalancerOptions.Name
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -10149,7 +9804,1919 @@ func (vpc *VpcV1) UpdateVolume(updateVolumeOptions *UpdateVolumeOptions) (result
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolume)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancer)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// GetLoadBalancerStatistics : List statistics of a load balancer
+// This request lists statistics of a load balancer specified by the identifier in the URL path.
+func (vpc *VpcV1) GetLoadBalancerStatistics(getLoadBalancerStatisticsOptions *GetLoadBalancerStatisticsOptions) (result *LoadBalancerStatistics, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getLoadBalancerStatisticsOptions, "getLoadBalancerStatisticsOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getLoadBalancerStatisticsOptions, "getLoadBalancerStatisticsOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "statistics"}
+	pathParameters := []string{*getLoadBalancerStatisticsOptions.ID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getLoadBalancerStatisticsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetLoadBalancerStatistics")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerStatistics)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListLoadBalancerListeners : List all listeners of the load balancer
+// This request retrieves a list of all listeners that belong to the load balancer.
+func (vpc *VpcV1) ListLoadBalancerListeners(listLoadBalancerListenersOptions *ListLoadBalancerListenersOptions) (result *LoadBalancerListenerCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listLoadBalancerListenersOptions, "listLoadBalancerListenersOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listLoadBalancerListenersOptions, "listLoadBalancerListenersOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "listeners"}
+	pathParameters := []string{*listLoadBalancerListenersOptions.LoadBalancerID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listLoadBalancerListenersOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListLoadBalancerListeners")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// CreateLoadBalancerListener : Create a listener
+// This request creates a new listener to the load balancer.
+func (vpc *VpcV1) CreateLoadBalancerListener(createLoadBalancerListenerOptions *CreateLoadBalancerListenerOptions) (result *LoadBalancerListener, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createLoadBalancerListenerOptions, "createLoadBalancerListenerOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createLoadBalancerListenerOptions, "createLoadBalancerListenerOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "listeners"}
+	pathParameters := []string{*createLoadBalancerListenerOptions.LoadBalancerID}
+
+	builder := core.NewRequestBuilder(core.POST)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createLoadBalancerListenerOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateLoadBalancerListener")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if createLoadBalancerListenerOptions.Port != nil {
+		body["port"] = createLoadBalancerListenerOptions.Port
+	}
+	if createLoadBalancerListenerOptions.Protocol != nil {
+		body["protocol"] = createLoadBalancerListenerOptions.Protocol
+	}
+	if createLoadBalancerListenerOptions.ConnectionLimit != nil {
+		body["connection_limit"] = createLoadBalancerListenerOptions.ConnectionLimit
+	}
+	if createLoadBalancerListenerOptions.CertificateInstance != nil {
+		body["certificate_instance"] = createLoadBalancerListenerOptions.CertificateInstance
+	}
+	if createLoadBalancerListenerOptions.DefaultPool != nil {
+		body["default_pool"] = createLoadBalancerListenerOptions.DefaultPool
+	}
+	if createLoadBalancerListenerOptions.Policies != nil {
+		body["policies"] = createLoadBalancerListenerOptions.Policies
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListener)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// DeleteLoadBalancerListener : Delete a listener
+// This request deletes a load balancer listener. This operation cannot be reversed.
+func (vpc *VpcV1) DeleteLoadBalancerListener(deleteLoadBalancerListenerOptions *DeleteLoadBalancerListenerOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteLoadBalancerListenerOptions, "deleteLoadBalancerListenerOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteLoadBalancerListenerOptions, "deleteLoadBalancerListenerOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "listeners"}
+	pathParameters := []string{*deleteLoadBalancerListenerOptions.LoadBalancerID, *deleteLoadBalancerListenerOptions.ID}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteLoadBalancerListenerOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteLoadBalancerListener")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetLoadBalancerListener : Retrieve a listener
+// This request retrieves a single listener specified by the identifier in the URL path.
+func (vpc *VpcV1) GetLoadBalancerListener(getLoadBalancerListenerOptions *GetLoadBalancerListenerOptions) (result *LoadBalancerListener, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getLoadBalancerListenerOptions, "getLoadBalancerListenerOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getLoadBalancerListenerOptions, "getLoadBalancerListenerOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "listeners"}
+	pathParameters := []string{*getLoadBalancerListenerOptions.LoadBalancerID, *getLoadBalancerListenerOptions.ID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getLoadBalancerListenerOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetLoadBalancerListener")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListener)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// UpdateLoadBalancerListener : Update a listener
+// This request updates a load balancer listener from a listener patch.
+func (vpc *VpcV1) UpdateLoadBalancerListener(updateLoadBalancerListenerOptions *UpdateLoadBalancerListenerOptions) (result *LoadBalancerListener, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateLoadBalancerListenerOptions, "updateLoadBalancerListenerOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateLoadBalancerListenerOptions, "updateLoadBalancerListenerOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "listeners"}
+	pathParameters := []string{*updateLoadBalancerListenerOptions.LoadBalancerID, *updateLoadBalancerListenerOptions.ID}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateLoadBalancerListenerOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateLoadBalancerListener")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if updateLoadBalancerListenerOptions.ConnectionLimit != nil {
+		body["connection_limit"] = updateLoadBalancerListenerOptions.ConnectionLimit
+	}
+	if updateLoadBalancerListenerOptions.Port != nil {
+		body["port"] = updateLoadBalancerListenerOptions.Port
+	}
+	if updateLoadBalancerListenerOptions.Protocol != nil {
+		body["protocol"] = updateLoadBalancerListenerOptions.Protocol
+	}
+	if updateLoadBalancerListenerOptions.CertificateInstance != nil {
+		body["certificate_instance"] = updateLoadBalancerListenerOptions.CertificateInstance
+	}
+	if updateLoadBalancerListenerOptions.DefaultPool != nil {
+		body["default_pool"] = updateLoadBalancerListenerOptions.DefaultPool
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListener)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListLoadBalancerListenerPolicies : List all policies of the load balancer listener
+// Retrieves a list of all policies belonging to the load balancer listener.
+func (vpc *VpcV1) ListLoadBalancerListenerPolicies(listLoadBalancerListenerPoliciesOptions *ListLoadBalancerListenerPoliciesOptions) (result *LoadBalancerListenerPolicyCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listLoadBalancerListenerPoliciesOptions, "listLoadBalancerListenerPoliciesOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listLoadBalancerListenerPoliciesOptions, "listLoadBalancerListenerPoliciesOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "listeners", "policies"}
+	pathParameters := []string{*listLoadBalancerListenerPoliciesOptions.LoadBalancerID, *listLoadBalancerListenerPoliciesOptions.ListenerID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listLoadBalancerListenerPoliciesOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListLoadBalancerListenerPolicies")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicyCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// CreateLoadBalancerListenerPolicy : Create a policy for the load balancer listener
+// Creates a new policy to the load balancer listener.
+func (vpc *VpcV1) CreateLoadBalancerListenerPolicy(createLoadBalancerListenerPolicyOptions *CreateLoadBalancerListenerPolicyOptions) (result *LoadBalancerListenerPolicy, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createLoadBalancerListenerPolicyOptions, "createLoadBalancerListenerPolicyOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createLoadBalancerListenerPolicyOptions, "createLoadBalancerListenerPolicyOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "listeners", "policies"}
+	pathParameters := []string{*createLoadBalancerListenerPolicyOptions.LoadBalancerID, *createLoadBalancerListenerPolicyOptions.ListenerID}
+
+	builder := core.NewRequestBuilder(core.POST)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createLoadBalancerListenerPolicyOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateLoadBalancerListenerPolicy")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if createLoadBalancerListenerPolicyOptions.Priority != nil {
+		body["priority"] = createLoadBalancerListenerPolicyOptions.Priority
+	}
+	if createLoadBalancerListenerPolicyOptions.Action != nil {
+		body["action"] = createLoadBalancerListenerPolicyOptions.Action
+	}
+	if createLoadBalancerListenerPolicyOptions.Name != nil {
+		body["name"] = createLoadBalancerListenerPolicyOptions.Name
+	}
+	if createLoadBalancerListenerPolicyOptions.Rules != nil {
+		body["rules"] = createLoadBalancerListenerPolicyOptions.Rules
+	}
+	if createLoadBalancerListenerPolicyOptions.Target != nil {
+		body["target"] = createLoadBalancerListenerPolicyOptions.Target
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicy)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// DeleteLoadBalancerListenerPolicy : Delete a policy of the load balancer listener
+// Deletes a policy of the load balancer listener. This operation cannot be reversed.
+func (vpc *VpcV1) DeleteLoadBalancerListenerPolicy(deleteLoadBalancerListenerPolicyOptions *DeleteLoadBalancerListenerPolicyOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteLoadBalancerListenerPolicyOptions, "deleteLoadBalancerListenerPolicyOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteLoadBalancerListenerPolicyOptions, "deleteLoadBalancerListenerPolicyOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "listeners", "policies"}
+	pathParameters := []string{*deleteLoadBalancerListenerPolicyOptions.LoadBalancerID, *deleteLoadBalancerListenerPolicyOptions.ListenerID, *deleteLoadBalancerListenerPolicyOptions.ID}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteLoadBalancerListenerPolicyOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteLoadBalancerListenerPolicy")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetLoadBalancerListenerPolicy : Retrieve a policy of the load balancer listener
+// Retrieve a single policy specified by the identifier in the URL path.
+func (vpc *VpcV1) GetLoadBalancerListenerPolicy(getLoadBalancerListenerPolicyOptions *GetLoadBalancerListenerPolicyOptions) (result *LoadBalancerListenerPolicy, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getLoadBalancerListenerPolicyOptions, "getLoadBalancerListenerPolicyOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getLoadBalancerListenerPolicyOptions, "getLoadBalancerListenerPolicyOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "listeners", "policies"}
+	pathParameters := []string{*getLoadBalancerListenerPolicyOptions.LoadBalancerID, *getLoadBalancerListenerPolicyOptions.ListenerID, *getLoadBalancerListenerPolicyOptions.ID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getLoadBalancerListenerPolicyOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetLoadBalancerListenerPolicy")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicy)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// UpdateLoadBalancerListenerPolicy : Update a policy of the load balancer listener
+// Updates a policy from a policy patch.
+func (vpc *VpcV1) UpdateLoadBalancerListenerPolicy(updateLoadBalancerListenerPolicyOptions *UpdateLoadBalancerListenerPolicyOptions) (result *LoadBalancerListenerPolicy, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateLoadBalancerListenerPolicyOptions, "updateLoadBalancerListenerPolicyOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateLoadBalancerListenerPolicyOptions, "updateLoadBalancerListenerPolicyOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "listeners", "policies"}
+	pathParameters := []string{*updateLoadBalancerListenerPolicyOptions.LoadBalancerID, *updateLoadBalancerListenerPolicyOptions.ListenerID, *updateLoadBalancerListenerPolicyOptions.ID}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateLoadBalancerListenerPolicyOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateLoadBalancerListenerPolicy")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if updateLoadBalancerListenerPolicyOptions.Name != nil {
+		body["name"] = updateLoadBalancerListenerPolicyOptions.Name
+	}
+	if updateLoadBalancerListenerPolicyOptions.Priority != nil {
+		body["priority"] = updateLoadBalancerListenerPolicyOptions.Priority
+	}
+	if updateLoadBalancerListenerPolicyOptions.Target != nil {
+		body["target"] = updateLoadBalancerListenerPolicyOptions.Target
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicy)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListLoadBalancerListenerPolicyRules : List all rules of the load balancer listener policy
+// Retrieves a list of all rules belonging to the load balancer listener policy.
+func (vpc *VpcV1) ListLoadBalancerListenerPolicyRules(listLoadBalancerListenerPolicyRulesOptions *ListLoadBalancerListenerPolicyRulesOptions) (result *LoadBalancerListenerPolicyRuleCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listLoadBalancerListenerPolicyRulesOptions, "listLoadBalancerListenerPolicyRulesOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listLoadBalancerListenerPolicyRulesOptions, "listLoadBalancerListenerPolicyRulesOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "listeners", "policies", "rules"}
+	pathParameters := []string{*listLoadBalancerListenerPolicyRulesOptions.LoadBalancerID, *listLoadBalancerListenerPolicyRulesOptions.ListenerID, *listLoadBalancerListenerPolicyRulesOptions.PolicyID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listLoadBalancerListenerPolicyRulesOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListLoadBalancerListenerPolicyRules")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicyRuleCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// CreateLoadBalancerListenerPolicyRule : Create a rule for the load balancer listener policy
+// Creates a new rule for the load balancer listener policy.
+func (vpc *VpcV1) CreateLoadBalancerListenerPolicyRule(createLoadBalancerListenerPolicyRuleOptions *CreateLoadBalancerListenerPolicyRuleOptions) (result *LoadBalancerListenerPolicyRule, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createLoadBalancerListenerPolicyRuleOptions, "createLoadBalancerListenerPolicyRuleOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createLoadBalancerListenerPolicyRuleOptions, "createLoadBalancerListenerPolicyRuleOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "listeners", "policies", "rules"}
+	pathParameters := []string{*createLoadBalancerListenerPolicyRuleOptions.LoadBalancerID, *createLoadBalancerListenerPolicyRuleOptions.ListenerID, *createLoadBalancerListenerPolicyRuleOptions.PolicyID}
+
+	builder := core.NewRequestBuilder(core.POST)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createLoadBalancerListenerPolicyRuleOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateLoadBalancerListenerPolicyRule")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if createLoadBalancerListenerPolicyRuleOptions.Condition != nil {
+		body["condition"] = createLoadBalancerListenerPolicyRuleOptions.Condition
+	}
+	if createLoadBalancerListenerPolicyRuleOptions.Type != nil {
+		body["type"] = createLoadBalancerListenerPolicyRuleOptions.Type
+	}
+	if createLoadBalancerListenerPolicyRuleOptions.Value != nil {
+		body["value"] = createLoadBalancerListenerPolicyRuleOptions.Value
+	}
+	if createLoadBalancerListenerPolicyRuleOptions.Field != nil {
+		body["field"] = createLoadBalancerListenerPolicyRuleOptions.Field
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicyRule)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// DeleteLoadBalancerListenerPolicyRule : Delete a rule from the load balancer listener policy
+// Deletes a rule from the load balancer listener policy. This operation cannot be reversed.
+func (vpc *VpcV1) DeleteLoadBalancerListenerPolicyRule(deleteLoadBalancerListenerPolicyRuleOptions *DeleteLoadBalancerListenerPolicyRuleOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteLoadBalancerListenerPolicyRuleOptions, "deleteLoadBalancerListenerPolicyRuleOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteLoadBalancerListenerPolicyRuleOptions, "deleteLoadBalancerListenerPolicyRuleOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "listeners", "policies", "rules"}
+	pathParameters := []string{*deleteLoadBalancerListenerPolicyRuleOptions.LoadBalancerID, *deleteLoadBalancerListenerPolicyRuleOptions.ListenerID, *deleteLoadBalancerListenerPolicyRuleOptions.PolicyID, *deleteLoadBalancerListenerPolicyRuleOptions.ID}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteLoadBalancerListenerPolicyRuleOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteLoadBalancerListenerPolicyRule")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetLoadBalancerListenerPolicyRule : Retrieve a rule of the load balancer listener policy
+// Retrieves a single rule specified by the identifier in the URL path.
+func (vpc *VpcV1) GetLoadBalancerListenerPolicyRule(getLoadBalancerListenerPolicyRuleOptions *GetLoadBalancerListenerPolicyRuleOptions) (result *LoadBalancerListenerPolicyRule, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getLoadBalancerListenerPolicyRuleOptions, "getLoadBalancerListenerPolicyRuleOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getLoadBalancerListenerPolicyRuleOptions, "getLoadBalancerListenerPolicyRuleOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "listeners", "policies", "rules"}
+	pathParameters := []string{*getLoadBalancerListenerPolicyRuleOptions.LoadBalancerID, *getLoadBalancerListenerPolicyRuleOptions.ListenerID, *getLoadBalancerListenerPolicyRuleOptions.PolicyID, *getLoadBalancerListenerPolicyRuleOptions.ID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getLoadBalancerListenerPolicyRuleOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetLoadBalancerListenerPolicyRule")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicyRule)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// UpdateLoadBalancerListenerPolicyRule : Update a rule of the load balancer listener policy
+// Updates a rule of the load balancer listener policy.
+func (vpc *VpcV1) UpdateLoadBalancerListenerPolicyRule(updateLoadBalancerListenerPolicyRuleOptions *UpdateLoadBalancerListenerPolicyRuleOptions) (result *LoadBalancerListenerPolicyRule, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateLoadBalancerListenerPolicyRuleOptions, "updateLoadBalancerListenerPolicyRuleOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateLoadBalancerListenerPolicyRuleOptions, "updateLoadBalancerListenerPolicyRuleOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "listeners", "policies", "rules"}
+	pathParameters := []string{*updateLoadBalancerListenerPolicyRuleOptions.LoadBalancerID, *updateLoadBalancerListenerPolicyRuleOptions.ListenerID, *updateLoadBalancerListenerPolicyRuleOptions.PolicyID, *updateLoadBalancerListenerPolicyRuleOptions.ID}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateLoadBalancerListenerPolicyRuleOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateLoadBalancerListenerPolicyRule")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if updateLoadBalancerListenerPolicyRuleOptions.Condition != nil {
+		body["condition"] = updateLoadBalancerListenerPolicyRuleOptions.Condition
+	}
+	if updateLoadBalancerListenerPolicyRuleOptions.Field != nil {
+		body["field"] = updateLoadBalancerListenerPolicyRuleOptions.Field
+	}
+	if updateLoadBalancerListenerPolicyRuleOptions.Type != nil {
+		body["type"] = updateLoadBalancerListenerPolicyRuleOptions.Type
+	}
+	if updateLoadBalancerListenerPolicyRuleOptions.Value != nil {
+		body["value"] = updateLoadBalancerListenerPolicyRuleOptions.Value
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerListenerPolicyRule)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListLoadBalancerPools : List all pools of the load balancer
+// This request lists all pools that belong to the load balancer.
+func (vpc *VpcV1) ListLoadBalancerPools(listLoadBalancerPoolsOptions *ListLoadBalancerPoolsOptions) (result *LoadBalancerPoolCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listLoadBalancerPoolsOptions, "listLoadBalancerPoolsOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listLoadBalancerPoolsOptions, "listLoadBalancerPoolsOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "pools"}
+	pathParameters := []string{*listLoadBalancerPoolsOptions.LoadBalancerID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listLoadBalancerPoolsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListLoadBalancerPools")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPoolCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// CreateLoadBalancerPool : Create a load balancer pool
+// This request creates a new pool from a pool prototype object.
+func (vpc *VpcV1) CreateLoadBalancerPool(createLoadBalancerPoolOptions *CreateLoadBalancerPoolOptions) (result *LoadBalancerPool, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createLoadBalancerPoolOptions, "createLoadBalancerPoolOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createLoadBalancerPoolOptions, "createLoadBalancerPoolOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "pools"}
+	pathParameters := []string{*createLoadBalancerPoolOptions.LoadBalancerID}
+
+	builder := core.NewRequestBuilder(core.POST)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createLoadBalancerPoolOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateLoadBalancerPool")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if createLoadBalancerPoolOptions.Algorithm != nil {
+		body["algorithm"] = createLoadBalancerPoolOptions.Algorithm
+	}
+	if createLoadBalancerPoolOptions.Protocol != nil {
+		body["protocol"] = createLoadBalancerPoolOptions.Protocol
+	}
+	if createLoadBalancerPoolOptions.HealthMonitor != nil {
+		body["health_monitor"] = createLoadBalancerPoolOptions.HealthMonitor
+	}
+	if createLoadBalancerPoolOptions.Name != nil {
+		body["name"] = createLoadBalancerPoolOptions.Name
+	}
+	if createLoadBalancerPoolOptions.Members != nil {
+		body["members"] = createLoadBalancerPoolOptions.Members
+	}
+	if createLoadBalancerPoolOptions.SessionPersistence != nil {
+		body["session_persistence"] = createLoadBalancerPoolOptions.SessionPersistence
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPool)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// DeleteLoadBalancerPool : Delete a pool
+// This request deletes a load balancer pool. This operation cannot be reversed.
+func (vpc *VpcV1) DeleteLoadBalancerPool(deleteLoadBalancerPoolOptions *DeleteLoadBalancerPoolOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteLoadBalancerPoolOptions, "deleteLoadBalancerPoolOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteLoadBalancerPoolOptions, "deleteLoadBalancerPoolOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "pools"}
+	pathParameters := []string{*deleteLoadBalancerPoolOptions.LoadBalancerID, *deleteLoadBalancerPoolOptions.ID}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteLoadBalancerPoolOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteLoadBalancerPool")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetLoadBalancerPool : Retrieve a load balancer pool
+// This request retrieves a single pool specified by the identifier in the URL path.
+func (vpc *VpcV1) GetLoadBalancerPool(getLoadBalancerPoolOptions *GetLoadBalancerPoolOptions) (result *LoadBalancerPool, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getLoadBalancerPoolOptions, "getLoadBalancerPoolOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getLoadBalancerPoolOptions, "getLoadBalancerPoolOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "pools"}
+	pathParameters := []string{*getLoadBalancerPoolOptions.LoadBalancerID, *getLoadBalancerPoolOptions.ID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getLoadBalancerPoolOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetLoadBalancerPool")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPool)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// UpdateLoadBalancerPool : Update a load balancer pool
+// This request updates a load balancer pool from a pool patch.
+func (vpc *VpcV1) UpdateLoadBalancerPool(updateLoadBalancerPoolOptions *UpdateLoadBalancerPoolOptions) (result *LoadBalancerPool, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateLoadBalancerPoolOptions, "updateLoadBalancerPoolOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateLoadBalancerPoolOptions, "updateLoadBalancerPoolOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "pools"}
+	pathParameters := []string{*updateLoadBalancerPoolOptions.LoadBalancerID, *updateLoadBalancerPoolOptions.ID}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateLoadBalancerPoolOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateLoadBalancerPool")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if updateLoadBalancerPoolOptions.Name != nil {
+		body["name"] = updateLoadBalancerPoolOptions.Name
+	}
+	if updateLoadBalancerPoolOptions.Algorithm != nil {
+		body["algorithm"] = updateLoadBalancerPoolOptions.Algorithm
+	}
+	if updateLoadBalancerPoolOptions.Protocol != nil {
+		body["protocol"] = updateLoadBalancerPoolOptions.Protocol
+	}
+	if updateLoadBalancerPoolOptions.HealthMonitor != nil {
+		body["health_monitor"] = updateLoadBalancerPoolOptions.HealthMonitor
+	}
+	if updateLoadBalancerPoolOptions.SessionPersistence != nil {
+		body["session_persistence"] = updateLoadBalancerPoolOptions.SessionPersistence
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPool)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListLoadBalancerPoolMembers : List all members of the load balancer pool
+// This request retrieves a paginated list of all members that belong to the pool.
+func (vpc *VpcV1) ListLoadBalancerPoolMembers(listLoadBalancerPoolMembersOptions *ListLoadBalancerPoolMembersOptions) (result *LoadBalancerPoolMemberCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listLoadBalancerPoolMembersOptions, "listLoadBalancerPoolMembersOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listLoadBalancerPoolMembersOptions, "listLoadBalancerPoolMembersOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "pools", "members"}
+	pathParameters := []string{*listLoadBalancerPoolMembersOptions.LoadBalancerID, *listLoadBalancerPoolMembersOptions.PoolID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listLoadBalancerPoolMembersOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListLoadBalancerPoolMembers")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPoolMemberCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// CreateLoadBalancerPoolMember : Create a member in the load balancer pool
+// This request creates a new member and adds the member to the pool.
+func (vpc *VpcV1) CreateLoadBalancerPoolMember(createLoadBalancerPoolMemberOptions *CreateLoadBalancerPoolMemberOptions) (result *LoadBalancerPoolMember, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createLoadBalancerPoolMemberOptions, "createLoadBalancerPoolMemberOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createLoadBalancerPoolMemberOptions, "createLoadBalancerPoolMemberOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "pools", "members"}
+	pathParameters := []string{*createLoadBalancerPoolMemberOptions.LoadBalancerID, *createLoadBalancerPoolMemberOptions.PoolID}
+
+	builder := core.NewRequestBuilder(core.POST)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createLoadBalancerPoolMemberOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateLoadBalancerPoolMember")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if createLoadBalancerPoolMemberOptions.Port != nil {
+		body["port"] = createLoadBalancerPoolMemberOptions.Port
+	}
+	if createLoadBalancerPoolMemberOptions.Target != nil {
+		body["target"] = createLoadBalancerPoolMemberOptions.Target
+	}
+	if createLoadBalancerPoolMemberOptions.Weight != nil {
+		body["weight"] = createLoadBalancerPoolMemberOptions.Weight
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPoolMember)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ReplaceLoadBalancerPoolMembers : Update members of the load balancer pool
+// This request updates members of the load balancer pool from a collection of member prototype objects.
+func (vpc *VpcV1) ReplaceLoadBalancerPoolMembers(replaceLoadBalancerPoolMembersOptions *ReplaceLoadBalancerPoolMembersOptions) (result *LoadBalancerPoolMemberCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(replaceLoadBalancerPoolMembersOptions, "replaceLoadBalancerPoolMembersOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(replaceLoadBalancerPoolMembersOptions, "replaceLoadBalancerPoolMembersOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "pools", "members"}
+	pathParameters := []string{*replaceLoadBalancerPoolMembersOptions.LoadBalancerID, *replaceLoadBalancerPoolMembersOptions.PoolID}
+
+	builder := core.NewRequestBuilder(core.PUT)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range replaceLoadBalancerPoolMembersOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ReplaceLoadBalancerPoolMembers")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if replaceLoadBalancerPoolMembersOptions.Members != nil {
+		body["members"] = replaceLoadBalancerPoolMembersOptions.Members
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPoolMemberCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// DeleteLoadBalancerPoolMember : Delete a member from the load balancer pool
+// This request deletes a member from the pool. This operation cannot be reversed.
+func (vpc *VpcV1) DeleteLoadBalancerPoolMember(deleteLoadBalancerPoolMemberOptions *DeleteLoadBalancerPoolMemberOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteLoadBalancerPoolMemberOptions, "deleteLoadBalancerPoolMemberOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteLoadBalancerPoolMemberOptions, "deleteLoadBalancerPoolMemberOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "pools", "members"}
+	pathParameters := []string{*deleteLoadBalancerPoolMemberOptions.LoadBalancerID, *deleteLoadBalancerPoolMemberOptions.PoolID, *deleteLoadBalancerPoolMemberOptions.ID}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteLoadBalancerPoolMemberOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteLoadBalancerPoolMember")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetLoadBalancerPoolMember : Retrieve a member in the load balancer pool
+// This request retrieves a single member specified by the identifier in the URL path.
+func (vpc *VpcV1) GetLoadBalancerPoolMember(getLoadBalancerPoolMemberOptions *GetLoadBalancerPoolMemberOptions) (result *LoadBalancerPoolMember, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getLoadBalancerPoolMemberOptions, "getLoadBalancerPoolMemberOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getLoadBalancerPoolMemberOptions, "getLoadBalancerPoolMemberOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "pools", "members"}
+	pathParameters := []string{*getLoadBalancerPoolMemberOptions.LoadBalancerID, *getLoadBalancerPoolMemberOptions.PoolID, *getLoadBalancerPoolMemberOptions.ID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getLoadBalancerPoolMemberOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetLoadBalancerPoolMember")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPoolMember)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// UpdateLoadBalancerPoolMember : Update a member in the load balancer pool
+// This request updates an existing member from a member patch.
+func (vpc *VpcV1) UpdateLoadBalancerPoolMember(updateLoadBalancerPoolMemberOptions *UpdateLoadBalancerPoolMemberOptions) (result *LoadBalancerPoolMember, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateLoadBalancerPoolMemberOptions, "updateLoadBalancerPoolMemberOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateLoadBalancerPoolMemberOptions, "updateLoadBalancerPoolMemberOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"load_balancers", "pools", "members"}
+	pathParameters := []string{*updateLoadBalancerPoolMemberOptions.LoadBalancerID, *updateLoadBalancerPoolMemberOptions.PoolID, *updateLoadBalancerPoolMemberOptions.ID}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateLoadBalancerPoolMemberOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateLoadBalancerPoolMember")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if updateLoadBalancerPoolMemberOptions.Port != nil {
+		body["port"] = updateLoadBalancerPoolMemberOptions.Port
+	}
+	if updateLoadBalancerPoolMemberOptions.Weight != nil {
+		body["weight"] = updateLoadBalancerPoolMemberOptions.Weight
+	}
+	if updateLoadBalancerPoolMemberOptions.Target != nil {
+		body["target"] = updateLoadBalancerPoolMemberOptions.Target
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalLoadBalancerPoolMember)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListFlowLogCollectors : List all flow log collectors
+// This request retrieves all flow log collectors in the region. A flow log collector summarizes data sent over one or
+// more network interfaces within a VPC, depending on the chosen target.
+func (vpc *VpcV1) ListFlowLogCollectors(listFlowLogCollectorsOptions *ListFlowLogCollectorsOptions) (result *FlowLogCollectorCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listFlowLogCollectorsOptions, "listFlowLogCollectorsOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"flow_log_collectors"}
+	pathParameters := []string{}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listFlowLogCollectorsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListFlowLogCollectors")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listFlowLogCollectorsOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listFlowLogCollectorsOptions.Start))
+	}
+	if listFlowLogCollectorsOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listFlowLogCollectorsOptions.Limit))
+	}
+	if listFlowLogCollectorsOptions.ResourceGroupID != nil {
+		builder.AddQuery("resource_group.id", fmt.Sprint(*listFlowLogCollectorsOptions.ResourceGroupID))
+	}
+	if listFlowLogCollectorsOptions.Name != nil {
+		builder.AddQuery("name", fmt.Sprint(*listFlowLogCollectorsOptions.Name))
+	}
+	if listFlowLogCollectorsOptions.VPCID != nil {
+		builder.AddQuery("vpc.id", fmt.Sprint(*listFlowLogCollectorsOptions.VPCID))
+	}
+	if listFlowLogCollectorsOptions.VPCCRN != nil {
+		builder.AddQuery("vpc.crn", fmt.Sprint(*listFlowLogCollectorsOptions.VPCCRN))
+	}
+	if listFlowLogCollectorsOptions.VPCName != nil {
+		builder.AddQuery("vpc.name", fmt.Sprint(*listFlowLogCollectorsOptions.VPCName))
+	}
+	if listFlowLogCollectorsOptions.TargetID != nil {
+		builder.AddQuery("target.id", fmt.Sprint(*listFlowLogCollectorsOptions.TargetID))
+	}
+	if listFlowLogCollectorsOptions.TargetResourceType != nil {
+		builder.AddQuery("target.resource_type", fmt.Sprint(*listFlowLogCollectorsOptions.TargetResourceType))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFlowLogCollectorCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// CreateFlowLogCollector : Create a flow log collector
+// This request creates and starts a new flow log collector from a flow log collector prototype object. The prototype
+// object is structured in the same way as a retrieved flow log collector, and contains the information necessary to
+// create and start the new flow log collector.
+func (vpc *VpcV1) CreateFlowLogCollector(createFlowLogCollectorOptions *CreateFlowLogCollectorOptions) (result *FlowLogCollector, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createFlowLogCollectorOptions, "createFlowLogCollectorOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createFlowLogCollectorOptions, "createFlowLogCollectorOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"flow_log_collectors"}
+	pathParameters := []string{}
+
+	builder := core.NewRequestBuilder(core.POST)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createFlowLogCollectorOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateFlowLogCollector")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if createFlowLogCollectorOptions.StorageBucket != nil {
+		body["storage_bucket"] = createFlowLogCollectorOptions.StorageBucket
+	}
+	if createFlowLogCollectorOptions.Target != nil {
+		body["target"] = createFlowLogCollectorOptions.Target
+	}
+	if createFlowLogCollectorOptions.Name != nil {
+		body["name"] = createFlowLogCollectorOptions.Name
+	}
+	if createFlowLogCollectorOptions.Active != nil {
+		body["active"] = createFlowLogCollectorOptions.Active
+	}
+	if createFlowLogCollectorOptions.ResourceGroup != nil {
+		body["resource_group"] = createFlowLogCollectorOptions.ResourceGroup
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFlowLogCollector)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// DeleteFlowLogCollector : Delete the specified flow log collector
+// This request stops and deletes a flow log collector. Collected flow logs remain available within the flow log
+// collector's bucket.
+func (vpc *VpcV1) DeleteFlowLogCollector(deleteFlowLogCollectorOptions *DeleteFlowLogCollectorOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteFlowLogCollectorOptions, "deleteFlowLogCollectorOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteFlowLogCollectorOptions, "deleteFlowLogCollectorOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"flow_log_collectors"}
+	pathParameters := []string{*deleteFlowLogCollectorOptions.ID}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteFlowLogCollectorOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteFlowLogCollector")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetFlowLogCollector : Retrieve the specified flow log collector
+// This request retrieves a single flow log collector specified by the identifier in the URL.
+func (vpc *VpcV1) GetFlowLogCollector(getFlowLogCollectorOptions *GetFlowLogCollectorOptions) (result *FlowLogCollector, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getFlowLogCollectorOptions, "getFlowLogCollectorOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getFlowLogCollectorOptions, "getFlowLogCollectorOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"flow_log_collectors"}
+	pathParameters := []string{*getFlowLogCollectorOptions.ID}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getFlowLogCollectorOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetFlowLogCollector")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFlowLogCollector)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// UpdateFlowLogCollector : Update the specified flow log collector
+// This request updates a flow log collector with the information in a provided flow log collector patch. The flow log
+// collector patch object is structured in the same way as a retrieved flow log collector and contains only the
+// information to be updated.
+func (vpc *VpcV1) UpdateFlowLogCollector(updateFlowLogCollectorOptions *UpdateFlowLogCollectorOptions) (result *FlowLogCollector, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateFlowLogCollectorOptions, "updateFlowLogCollectorOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateFlowLogCollectorOptions, "updateFlowLogCollectorOptions")
+	if err != nil {
+		return
+	}
+
+	pathSegments := []string{"flow_log_collectors"}
+	pathParameters := []string{*updateFlowLogCollectorOptions.ID}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	_, err = builder.ConstructHTTPURL(vpc.Service.Options.URL, pathSegments, pathParameters)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateFlowLogCollectorOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateFlowLogCollector")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if updateFlowLogCollectorOptions.Name != nil {
+		body["name"] = updateFlowLogCollectorOptions.Name
+	}
+	if updateFlowLogCollectorOptions.Active != nil {
+		body["active"] = updateFlowLogCollectorOptions.Active
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFlowLogCollector)
 	if err != nil {
 		return
 	}
@@ -10362,6 +11929,20 @@ func (options *AddVPNGatewayConnectionPeerCIDROptions) SetHeaders(param map[stri
 
 // AddressPrefix : AddressPrefix struct
 type AddressPrefix struct {
+	// The unique identifier for this address prefix.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this address prefix.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this address prefix. Names must be unique within the VPC the address prefix resides in.
+	Name *string `json:"name" validate:"required"`
+
+	// Indicates whether this is the default prefix for this zone in this VPC. If a default prefix was automatically
+	// created when the VPC was created, the prefix is automatically named using a hyphenated list of randomly-selected
+	// words, but may be updated with a user-specified name.
+	IsDefault *bool `json:"is_default" validate:"required"`
+
 	// The CIDR block for this prefix.
 	CIDR *string `json:"cidr" validate:"required"`
 
@@ -10371,20 +11952,6 @@ type AddressPrefix struct {
 	// Indicates whether subnets exist with addresses from this prefix.
 	HasSubnets *bool `json:"has_subnets" validate:"required"`
 
-	// The URL for this address prefix.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this address prefix.
-	ID *string `json:"id" validate:"required"`
-
-	// Indicates whether this is the default prefix for this zone in this VPC. If a default prefix was automatically
-	// created when the VPC was created, the prefix is automatically named using a hyphenated list of randomly-selected
-	// words, but may be updated with a user-specified name.
-	IsDefault *bool `json:"is_default" validate:"required"`
-
-	// The user-defined name for this address prefix. Names must be unique within the VPC the address prefix resides in.
-	Name *string `json:"name" validate:"required"`
-
 	// The zone this address prefix resides in.
 	Zone *ZoneReference `json:"zone" validate:"required"`
 }
@@ -10392,6 +11959,22 @@ type AddressPrefix struct {
 // UnmarshalAddressPrefix unmarshals an instance of AddressPrefix from the specified map of raw messages.
 func UnmarshalAddressPrefix(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(AddressPrefix)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "is_default", &obj.IsDefault)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "cidr", &obj.CIDR)
 	if err != nil {
 		return
@@ -10401,22 +11984,6 @@ func UnmarshalAddressPrefix(m map[string]json.RawMessage, result interface{}) (e
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "has_subnets", &obj.HasSubnets)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "is_default", &obj.IsDefault)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -10430,6 +11997,19 @@ func UnmarshalAddressPrefix(m map[string]json.RawMessage, result interface{}) (e
 
 // AddressPrefixCollection : AddressPrefixCollection struct
 type AddressPrefixCollection struct {
+	// A reference to the first page of resources.
+	First *AddressPrefixCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A reference to the next page of resources; this reference is included for all pages
+	// except the last page.
+	Next *AddressPrefixCollectionNext `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+
 	// Collection of address prefixes.
 	AddressPrefixes []AddressPrefix `json:"address_prefixes" validate:"required"`
 }
@@ -10437,7 +12017,57 @@ type AddressPrefixCollection struct {
 // UnmarshalAddressPrefixCollection unmarshals an instance of AddressPrefixCollection from the specified map of raw messages.
 func UnmarshalAddressPrefixCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(AddressPrefixCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalAddressPrefixCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalAddressPrefixCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "address_prefixes", &obj.AddressPrefixes, UnmarshalAddressPrefix)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AddressPrefixCollectionFirst : A reference to the first page of resources.
+type AddressPrefixCollectionFirst struct {
+	// The URL for the first page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalAddressPrefixCollectionFirst unmarshals an instance of AddressPrefixCollectionFirst from the specified map of raw messages.
+func UnmarshalAddressPrefixCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(AddressPrefixCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AddressPrefixCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+type AddressPrefixCollectionNext struct {
+	// The URL for the next page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalAddressPrefixCollectionNext unmarshals an instance of AddressPrefixCollectionNext from the specified map of raw messages.
+func UnmarshalAddressPrefixCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(AddressPrefixCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -10690,12 +12320,12 @@ type CreateFlowLogCollectorOptions struct {
 	// target that are themselves the target of a more specific flow log collector.
 	Target FlowLogCollectorPrototypeTargetIntf `json:"target" validate:"required"`
 
-	// Indicates whether this collector is active. If false, this collector is created in inactive mode.
-	Active *bool `json:"active,omitempty"`
-
 	// The unique user-defined name for this flow log collector. If unspecified, the name will be a hyphenated list of
 	// randomly-selected words.
 	Name *string `json:"name,omitempty"`
+
+	// Indicates whether this collector is active. If false, this collector is created in inactive mode.
+	Active *bool `json:"active,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
@@ -10725,15 +12355,15 @@ func (options *CreateFlowLogCollectorOptions) SetTarget(target FlowLogCollectorP
 	return options
 }
 
-// SetActive : Allow user to set Active
-func (options *CreateFlowLogCollectorOptions) SetActive(active bool) *CreateFlowLogCollectorOptions {
-	options.Active = core.BoolPtr(active)
-	return options
-}
-
 // SetName : Allow user to set Name
 func (options *CreateFlowLogCollectorOptions) SetName(name string) *CreateFlowLogCollectorOptions {
 	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetActive : Allow user to set Active
+func (options *CreateFlowLogCollectorOptions) SetActive(active bool) *CreateFlowLogCollectorOptions {
+	options.Active = core.BoolPtr(active)
 	return options
 }
 
@@ -10763,11 +12393,11 @@ type CreateIkePolicyOptions struct {
 	// The IKE protocol version.
 	IkeVersion *int64 `json:"ike_version" validate:"required"`
 
-	// The key lifetime in seconds.
-	KeyLifetime *int64 `json:"key_lifetime,omitempty"`
-
 	// The user-defined name for this IKE policy.
 	Name *string `json:"name,omitempty"`
+
+	// The key lifetime in seconds.
+	KeyLifetime *int64 `json:"key_lifetime,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
@@ -10827,15 +12457,15 @@ func (options *CreateIkePolicyOptions) SetIkeVersion(ikeVersion int64) *CreateIk
 	return options
 }
 
-// SetKeyLifetime : Allow user to set KeyLifetime
-func (options *CreateIkePolicyOptions) SetKeyLifetime(keyLifetime int64) *CreateIkePolicyOptions {
-	options.KeyLifetime = core.Int64Ptr(keyLifetime)
-	return options
-}
-
 // SetName : Allow user to set Name
 func (options *CreateIkePolicyOptions) SetName(name string) *CreateIkePolicyOptions {
 	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetKeyLifetime : Allow user to set KeyLifetime
+func (options *CreateIkePolicyOptions) SetKeyLifetime(keyLifetime int64) *CreateIkePolicyOptions {
+	options.KeyLifetime = core.Int64Ptr(keyLifetime)
 	return options
 }
 
@@ -10930,6 +12560,190 @@ func (options *CreateInstanceActionOptions) SetForce(force bool) *CreateInstance
 
 // SetHeaders : Allow user to set Headers
 func (options *CreateInstanceActionOptions) SetHeaders(param map[string]string) *CreateInstanceActionOptions {
+	options.Headers = param
+	return options
+}
+
+// CreateInstanceGroupManagerOptions : The CreateInstanceGroupManager options.
+type CreateInstanceGroupManagerOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// The instance group manager prototype object.
+	InstanceGroupManagerPrototype InstanceGroupManagerPrototypeIntf `json:"InstanceGroupManagerPrototype" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewCreateInstanceGroupManagerOptions : Instantiate CreateInstanceGroupManagerOptions
+func (*VpcV1) NewCreateInstanceGroupManagerOptions(instanceGroupID string, instanceGroupManagerPrototype InstanceGroupManagerPrototypeIntf) *CreateInstanceGroupManagerOptions {
+	return &CreateInstanceGroupManagerOptions{
+		InstanceGroupID:               core.StringPtr(instanceGroupID),
+		InstanceGroupManagerPrototype: instanceGroupManagerPrototype,
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *CreateInstanceGroupManagerOptions) SetInstanceGroupID(instanceGroupID string) *CreateInstanceGroupManagerOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetInstanceGroupManagerPrototype : Allow user to set InstanceGroupManagerPrototype
+func (options *CreateInstanceGroupManagerOptions) SetInstanceGroupManagerPrototype(instanceGroupManagerPrototype InstanceGroupManagerPrototypeIntf) *CreateInstanceGroupManagerOptions {
+	options.InstanceGroupManagerPrototype = instanceGroupManagerPrototype
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreateInstanceGroupManagerOptions) SetHeaders(param map[string]string) *CreateInstanceGroupManagerOptions {
+	options.Headers = param
+	return options
+}
+
+// CreateInstanceGroupManagerPolicyOptions : The CreateInstanceGroupManagerPolicy options.
+type CreateInstanceGroupManagerPolicyOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// The instance group manager identifier.
+	InstanceGroupManagerID *string `json:"instance_group_manager_id" validate:"required"`
+
+	// The instance group manager policy prototype object.
+	InstanceGroupManagerPolicyPrototype InstanceGroupManagerPolicyPrototypeIntf `json:"InstanceGroupManagerPolicyPrototype" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewCreateInstanceGroupManagerPolicyOptions : Instantiate CreateInstanceGroupManagerPolicyOptions
+func (*VpcV1) NewCreateInstanceGroupManagerPolicyOptions(instanceGroupID string, instanceGroupManagerID string, instanceGroupManagerPolicyPrototype InstanceGroupManagerPolicyPrototypeIntf) *CreateInstanceGroupManagerPolicyOptions {
+	return &CreateInstanceGroupManagerPolicyOptions{
+		InstanceGroupID:                     core.StringPtr(instanceGroupID),
+		InstanceGroupManagerID:              core.StringPtr(instanceGroupManagerID),
+		InstanceGroupManagerPolicyPrototype: instanceGroupManagerPolicyPrototype,
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *CreateInstanceGroupManagerPolicyOptions) SetInstanceGroupID(instanceGroupID string) *CreateInstanceGroupManagerPolicyOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetInstanceGroupManagerID : Allow user to set InstanceGroupManagerID
+func (options *CreateInstanceGroupManagerPolicyOptions) SetInstanceGroupManagerID(instanceGroupManagerID string) *CreateInstanceGroupManagerPolicyOptions {
+	options.InstanceGroupManagerID = core.StringPtr(instanceGroupManagerID)
+	return options
+}
+
+// SetInstanceGroupManagerPolicyPrototype : Allow user to set InstanceGroupManagerPolicyPrototype
+func (options *CreateInstanceGroupManagerPolicyOptions) SetInstanceGroupManagerPolicyPrototype(instanceGroupManagerPolicyPrototype InstanceGroupManagerPolicyPrototypeIntf) *CreateInstanceGroupManagerPolicyOptions {
+	options.InstanceGroupManagerPolicyPrototype = instanceGroupManagerPolicyPrototype
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreateInstanceGroupManagerPolicyOptions) SetHeaders(param map[string]string) *CreateInstanceGroupManagerPolicyOptions {
+	options.Headers = param
+	return options
+}
+
+// CreateInstanceGroupOptions : The CreateInstanceGroup options.
+type CreateInstanceGroupOptions struct {
+	// Instance template to use when creating new instances.
+	InstanceTemplate InstanceTemplateIdentityIntf `json:"instance_template" validate:"required"`
+
+	// Array of identities to subnets to use when creating new instances.
+	Subnets []SubnetIdentityIntf `json:"subnets" validate:"required"`
+
+	// The user-defined name for this instance group.
+	Name *string `json:"name,omitempty"`
+
+	// The number of instances in the instance group.
+	MembershipCount *int64 `json:"membership_count,omitempty"`
+
+	// Required if specifying a load balancer pool only. Used by the instance group when scaling up instances to supply the
+	// port for the load balancer pool member.
+	ApplicationPort *int64 `json:"application_port,omitempty"`
+
+	// The load balancer that the load balancer pool used by this group
+	// is in. Must be supplied when using a load balancer pool.
+	LoadBalancer LoadBalancerIdentityIntf `json:"load_balancer,omitempty"`
+
+	// When specified, the load balancer pool will be managed by this
+	// group. Instances created by this group will have a new load
+	// balancer pool member in that pool created. Must be used with
+	// `application_port`.
+	LoadBalancerPool LoadBalancerPoolIdentityIntf `json:"load_balancer_pool,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewCreateInstanceGroupOptions : Instantiate CreateInstanceGroupOptions
+func (*VpcV1) NewCreateInstanceGroupOptions(instanceTemplate InstanceTemplateIdentityIntf, subnets []SubnetIdentityIntf) *CreateInstanceGroupOptions {
+	return &CreateInstanceGroupOptions{
+		InstanceTemplate: instanceTemplate,
+		Subnets:          subnets,
+	}
+}
+
+// SetInstanceTemplate : Allow user to set InstanceTemplate
+func (options *CreateInstanceGroupOptions) SetInstanceTemplate(instanceTemplate InstanceTemplateIdentityIntf) *CreateInstanceGroupOptions {
+	options.InstanceTemplate = instanceTemplate
+	return options
+}
+
+// SetSubnets : Allow user to set Subnets
+func (options *CreateInstanceGroupOptions) SetSubnets(subnets []SubnetIdentityIntf) *CreateInstanceGroupOptions {
+	options.Subnets = subnets
+	return options
+}
+
+// SetName : Allow user to set Name
+func (options *CreateInstanceGroupOptions) SetName(name string) *CreateInstanceGroupOptions {
+	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetMembershipCount : Allow user to set MembershipCount
+func (options *CreateInstanceGroupOptions) SetMembershipCount(membershipCount int64) *CreateInstanceGroupOptions {
+	options.MembershipCount = core.Int64Ptr(membershipCount)
+	return options
+}
+
+// SetApplicationPort : Allow user to set ApplicationPort
+func (options *CreateInstanceGroupOptions) SetApplicationPort(applicationPort int64) *CreateInstanceGroupOptions {
+	options.ApplicationPort = core.Int64Ptr(applicationPort)
+	return options
+}
+
+// SetLoadBalancer : Allow user to set LoadBalancer
+func (options *CreateInstanceGroupOptions) SetLoadBalancer(loadBalancer LoadBalancerIdentityIntf) *CreateInstanceGroupOptions {
+	options.LoadBalancer = loadBalancer
+	return options
+}
+
+// SetLoadBalancerPool : Allow user to set LoadBalancerPool
+func (options *CreateInstanceGroupOptions) SetLoadBalancerPool(loadBalancerPool LoadBalancerPoolIdentityIntf) *CreateInstanceGroupOptions {
+	options.LoadBalancerPool = loadBalancerPool
+	return options
+}
+
+// SetResourceGroup : Allow user to set ResourceGroup
+func (options *CreateInstanceGroupOptions) SetResourceGroup(resourceGroup ResourceGroupIdentityIntf) *CreateInstanceGroupOptions {
+	options.ResourceGroup = resourceGroup
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreateInstanceGroupOptions) SetHeaders(param map[string]string) *CreateInstanceGroupOptions {
 	options.Headers = param
 	return options
 }
@@ -11029,6 +12843,34 @@ func (options *CreateInstanceOptions) SetHeaders(param map[string]string) *Creat
 	return options
 }
 
+// CreateInstanceTemplateOptions : The CreateInstanceTemplate options.
+type CreateInstanceTemplateOptions struct {
+	// The instance template prototype object.
+	InstanceTemplatePrototype InstanceTemplatePrototypeIntf `json:"InstanceTemplatePrototype" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewCreateInstanceTemplateOptions : Instantiate CreateInstanceTemplateOptions
+func (*VpcV1) NewCreateInstanceTemplateOptions(instanceTemplatePrototype InstanceTemplatePrototypeIntf) *CreateInstanceTemplateOptions {
+	return &CreateInstanceTemplateOptions{
+		InstanceTemplatePrototype: instanceTemplatePrototype,
+	}
+}
+
+// SetInstanceTemplatePrototype : Allow user to set InstanceTemplatePrototype
+func (options *CreateInstanceTemplateOptions) SetInstanceTemplatePrototype(instanceTemplatePrototype InstanceTemplatePrototypeIntf) *CreateInstanceTemplateOptions {
+	options.InstanceTemplatePrototype = instanceTemplatePrototype
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreateInstanceTemplateOptions) SetHeaders(param map[string]string) *CreateInstanceTemplateOptions {
+	options.Headers = param
+	return options
+}
+
 // CreateInstanceVolumeAttachmentOptions : The CreateInstanceVolumeAttachment options.
 type CreateInstanceVolumeAttachmentOptions struct {
 	// The instance identifier.
@@ -11037,12 +12879,12 @@ type CreateInstanceVolumeAttachmentOptions struct {
 	// The identity of the volume to attach to the instance.
 	Volume VolumeIdentityIntf `json:"volume" validate:"required"`
 
-	// If set to true, when deleting the instance the volume will also be deleted.
-	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
-
 	// The user-defined name for this volume attachment. If unspecified, the name will be a hyphenated list of
 	// randomly-selected words.
 	Name *string `json:"name,omitempty"`
+
+	// If set to true, when deleting the instance the volume will also be deleted.
+	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -11068,15 +12910,15 @@ func (options *CreateInstanceVolumeAttachmentOptions) SetVolume(volume VolumeIde
 	return options
 }
 
-// SetDeleteVolumeOnInstanceDelete : Allow user to set DeleteVolumeOnInstanceDelete
-func (options *CreateInstanceVolumeAttachmentOptions) SetDeleteVolumeOnInstanceDelete(deleteVolumeOnInstanceDelete bool) *CreateInstanceVolumeAttachmentOptions {
-	options.DeleteVolumeOnInstanceDelete = core.BoolPtr(deleteVolumeOnInstanceDelete)
-	return options
-}
-
 // SetName : Allow user to set Name
 func (options *CreateInstanceVolumeAttachmentOptions) SetName(name string) *CreateInstanceVolumeAttachmentOptions {
 	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetDeleteVolumeOnInstanceDelete : Allow user to set DeleteVolumeOnInstanceDelete
+func (options *CreateInstanceVolumeAttachmentOptions) SetDeleteVolumeOnInstanceDelete(deleteVolumeOnInstanceDelete bool) *CreateInstanceVolumeAttachmentOptions {
+	options.DeleteVolumeOnInstanceDelete = core.BoolPtr(deleteVolumeOnInstanceDelete)
 	return options
 }
 
@@ -11097,11 +12939,11 @@ type CreateIpsecPolicyOptions struct {
 	// Perfect Forward Secrecy.
 	Pfs *string `json:"pfs" validate:"required"`
 
-	// The key lifetime in seconds.
-	KeyLifetime *int64 `json:"key_lifetime,omitempty"`
-
 	// The user-defined name for this IPsec policy.
 	Name *string `json:"name,omitempty"`
+
+	// The key lifetime in seconds.
+	KeyLifetime *int64 `json:"key_lifetime,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
@@ -11163,15 +13005,15 @@ func (options *CreateIpsecPolicyOptions) SetPfs(pfs string) *CreateIpsecPolicyOp
 	return options
 }
 
-// SetKeyLifetime : Allow user to set KeyLifetime
-func (options *CreateIpsecPolicyOptions) SetKeyLifetime(keyLifetime int64) *CreateIpsecPolicyOptions {
-	options.KeyLifetime = core.Int64Ptr(keyLifetime)
-	return options
-}
-
 // SetName : Allow user to set Name
 func (options *CreateIpsecPolicyOptions) SetName(name string) *CreateIpsecPolicyOptions {
 	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetKeyLifetime : Allow user to set KeyLifetime
+func (options *CreateIpsecPolicyOptions) SetKeyLifetime(keyLifetime int64) *CreateIpsecPolicyOptions {
+	options.KeyLifetime = core.Int64Ptr(keyLifetime)
 	return options
 }
 
@@ -11197,12 +13039,12 @@ type CreateKeyOptions struct {
 	// words.
 	Name *string `json:"name,omitempty"`
 
+	// The cryptosystem used by this key.
+	Type *string `json:"type,omitempty"`
+
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
-
-	// The cryptosystem used by this key.
-	Type *string `json:"type,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -11233,15 +13075,15 @@ func (options *CreateKeyOptions) SetName(name string) *CreateKeyOptions {
 	return options
 }
 
-// SetResourceGroup : Allow user to set ResourceGroup
-func (options *CreateKeyOptions) SetResourceGroup(resourceGroup ResourceGroupIdentityIntf) *CreateKeyOptions {
-	options.ResourceGroup = resourceGroup
-	return options
-}
-
 // SetType : Allow user to set Type
 func (options *CreateKeyOptions) SetType(typeVar string) *CreateKeyOptions {
 	options.Type = core.StringPtr(typeVar)
+	return options
+}
+
+// SetResourceGroup : Allow user to set ResourceGroup
+func (options *CreateKeyOptions) SetResourceGroup(resourceGroup ResourceGroupIdentityIntf) *CreateKeyOptions {
+	options.ResourceGroup = resourceGroup
 	return options
 }
 
@@ -11259,15 +13101,16 @@ type CreateLoadBalancerListenerOptions struct {
 	// The listener port number.
 	Port *int64 `json:"port" validate:"required"`
 
-	// The listener protocol.
+	// The listener protocol. Load balancers in the `network` family support `tcp`. Load balancers in the `application`
+	// family support `tcp`, `http`, and `https`.
 	Protocol *string `json:"protocol" validate:"required"`
+
+	// The connection limit of the listener.
+	ConnectionLimit *int64 `json:"connection_limit,omitempty"`
 
 	// The certificate instance used for SSL termination. It is applicable only to `https`
 	// protocol.
 	CertificateInstance CertificateInstanceIdentityIntf `json:"certificate_instance,omitempty"`
-
-	// The connection limit of the listener.
-	ConnectionLimit *int64 `json:"connection_limit,omitempty"`
 
 	// The default pool associated with the listener.
 	DefaultPool LoadBalancerPoolIdentityIntf `json:"default_pool,omitempty"`
@@ -11280,7 +13123,8 @@ type CreateLoadBalancerListenerOptions struct {
 }
 
 // Constants associated with the CreateLoadBalancerListenerOptions.Protocol property.
-// The listener protocol.
+// The listener protocol. Load balancers in the `network` family support `tcp`. Load balancers in the `application`
+// family support `tcp`, `http`, and `https`.
 const (
 	CreateLoadBalancerListenerOptionsProtocolHTTPConst  = "http"
 	CreateLoadBalancerListenerOptionsProtocolHTTPSConst = "https"
@@ -11314,15 +13158,15 @@ func (options *CreateLoadBalancerListenerOptions) SetProtocol(protocol string) *
 	return options
 }
 
-// SetCertificateInstance : Allow user to set CertificateInstance
-func (options *CreateLoadBalancerListenerOptions) SetCertificateInstance(certificateInstance CertificateInstanceIdentityIntf) *CreateLoadBalancerListenerOptions {
-	options.CertificateInstance = certificateInstance
-	return options
-}
-
 // SetConnectionLimit : Allow user to set ConnectionLimit
 func (options *CreateLoadBalancerListenerOptions) SetConnectionLimit(connectionLimit int64) *CreateLoadBalancerListenerOptions {
 	options.ConnectionLimit = core.Int64Ptr(connectionLimit)
+	return options
+}
+
+// SetCertificateInstance : Allow user to set CertificateInstance
+func (options *CreateLoadBalancerListenerOptions) SetCertificateInstance(certificateInstance CertificateInstanceIdentityIntf) *CreateLoadBalancerListenerOptions {
+	options.CertificateInstance = certificateInstance
 	return options
 }
 
@@ -11352,11 +13196,11 @@ type CreateLoadBalancerListenerPolicyOptions struct {
 	// The listener identifier.
 	ListenerID *string `json:"listener_id" validate:"required"`
 
-	// The policy action.
-	Action *string `json:"action" validate:"required"`
-
 	// Priority of the policy. Lower value indicates higher priority.
 	Priority *int64 `json:"priority" validate:"required"`
+
+	// The policy action.
+	Action *string `json:"action" validate:"required"`
 
 	// The user-defined name for this policy. Names must be unique within the load balancer listener the policy resides in.
 	Name *string `json:"name,omitempty"`
@@ -11383,12 +13227,12 @@ const (
 )
 
 // NewCreateLoadBalancerListenerPolicyOptions : Instantiate CreateLoadBalancerListenerPolicyOptions
-func (*VpcV1) NewCreateLoadBalancerListenerPolicyOptions(loadBalancerID string, listenerID string, action string, priority int64) *CreateLoadBalancerListenerPolicyOptions {
+func (*VpcV1) NewCreateLoadBalancerListenerPolicyOptions(loadBalancerID string, listenerID string, priority int64, action string) *CreateLoadBalancerListenerPolicyOptions {
 	return &CreateLoadBalancerListenerPolicyOptions{
 		LoadBalancerID: core.StringPtr(loadBalancerID),
 		ListenerID:     core.StringPtr(listenerID),
-		Action:         core.StringPtr(action),
 		Priority:       core.Int64Ptr(priority),
+		Action:         core.StringPtr(action),
 	}
 }
 
@@ -11404,15 +13248,15 @@ func (options *CreateLoadBalancerListenerPolicyOptions) SetListenerID(listenerID
 	return options
 }
 
-// SetAction : Allow user to set Action
-func (options *CreateLoadBalancerListenerPolicyOptions) SetAction(action string) *CreateLoadBalancerListenerPolicyOptions {
-	options.Action = core.StringPtr(action)
-	return options
-}
-
 // SetPriority : Allow user to set Priority
 func (options *CreateLoadBalancerListenerPolicyOptions) SetPriority(priority int64) *CreateLoadBalancerListenerPolicyOptions {
 	options.Priority = core.Int64Ptr(priority)
+	return options
+}
+
+// SetAction : Allow user to set Action
+func (options *CreateLoadBalancerListenerPolicyOptions) SetAction(action string) *CreateLoadBalancerListenerPolicyOptions {
+	options.Action = core.StringPtr(action)
 	return options
 }
 
@@ -11551,15 +13395,18 @@ type CreateLoadBalancerOptions struct {
 	// The subnets to provision this load balancer.
 	Subnets []SubnetIdentityIntf `json:"subnets" validate:"required"`
 
-	// The listeners of this load balancer.
-	Listeners []LoadBalancerListenerPrototypeLoadBalancerContext `json:"listeners,omitempty"`
-
 	// The user-defined name for this load balancer. If unspecified, the name will be a hyphenated list of
 	// randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
+	// The listeners of this load balancer.
+	Listeners []LoadBalancerListenerPrototypeLoadBalancerContext `json:"listeners,omitempty"`
+
 	// The pools of this load balancer.
 	Pools []LoadBalancerPoolPrototype `json:"pools,omitempty"`
+
+	// The profile to use for this load balancer.
+	Profile LoadBalancerProfileIdentityIntf `json:"profile,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
@@ -11589,21 +13436,27 @@ func (options *CreateLoadBalancerOptions) SetSubnets(subnets []SubnetIdentityInt
 	return options
 }
 
-// SetListeners : Allow user to set Listeners
-func (options *CreateLoadBalancerOptions) SetListeners(listeners []LoadBalancerListenerPrototypeLoadBalancerContext) *CreateLoadBalancerOptions {
-	options.Listeners = listeners
-	return options
-}
-
 // SetName : Allow user to set Name
 func (options *CreateLoadBalancerOptions) SetName(name string) *CreateLoadBalancerOptions {
 	options.Name = core.StringPtr(name)
 	return options
 }
 
+// SetListeners : Allow user to set Listeners
+func (options *CreateLoadBalancerOptions) SetListeners(listeners []LoadBalancerListenerPrototypeLoadBalancerContext) *CreateLoadBalancerOptions {
+	options.Listeners = listeners
+	return options
+}
+
 // SetPools : Allow user to set Pools
 func (options *CreateLoadBalancerOptions) SetPools(pools []LoadBalancerPoolPrototype) *CreateLoadBalancerOptions {
 	options.Pools = pools
+	return options
+}
+
+// SetProfile : Allow user to set Profile
+func (options *CreateLoadBalancerOptions) SetProfile(profile LoadBalancerProfileIdentityIntf) *CreateLoadBalancerOptions {
+	options.Profile = profile
 	return options
 }
 
@@ -11630,7 +13483,9 @@ type CreateLoadBalancerPoolMemberOptions struct {
 	// The port number of the application running in the server member.
 	Port *int64 `json:"port" validate:"required"`
 
-	// The pool member target.
+	// The pool member target. Load balancers in the `network` family
+	// support instances. Load balancers in the `application` family support
+	// IP addresses.
 	Target LoadBalancerPoolMemberTargetPrototypeIntf `json:"target" validate:"required"`
 
 	// Weight of the server member. This takes effect only when the load balancing algorithm of its belonging pool is
@@ -11695,9 +13550,6 @@ type CreateLoadBalancerPoolOptions struct {
 	// The load balancing algorithm.
 	Algorithm *string `json:"algorithm" validate:"required"`
 
-	// The health monitor of this pool.
-	HealthMonitor *LoadBalancerPoolHealthMonitorPrototype `json:"health_monitor" validate:"required"`
-
 	// The protocol used for this load balancer pool.
 	//
 	// The enumerated values for this property are expected to expand in the future. When processing this property, check
@@ -11705,13 +13557,16 @@ type CreateLoadBalancerPoolOptions struct {
 	// unexpected property value was encountered.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The members for this load balancer pool. For load balancers in the `network` family, the same `port` and `target`
-	// tuple cannot be shared by a member of any other load balancer.
-	Members []LoadBalancerPoolMemberPrototype `json:"members,omitempty"`
+	// The health monitor of this pool.
+	HealthMonitor *LoadBalancerPoolHealthMonitorPrototype `json:"health_monitor" validate:"required"`
 
 	// The user-defined name for this load balancer pool. If unspecified, the name will be a hyphenated list of
 	// randomly-selected words.
 	Name *string `json:"name,omitempty"`
+
+	// The members for this load balancer pool. For load balancers in the `network` family, the same `port` and `target`
+	// tuple cannot be shared by a member of any other load balancer.
+	Members []LoadBalancerPoolMemberPrototype `json:"members,omitempty"`
 
 	// The session persistence of this pool.
 	SessionPersistence *LoadBalancerPoolSessionPersistencePrototype `json:"session_persistence,omitempty"`
@@ -11741,12 +13596,12 @@ const (
 )
 
 // NewCreateLoadBalancerPoolOptions : Instantiate CreateLoadBalancerPoolOptions
-func (*VpcV1) NewCreateLoadBalancerPoolOptions(loadBalancerID string, algorithm string, healthMonitor *LoadBalancerPoolHealthMonitorPrototype, protocol string) *CreateLoadBalancerPoolOptions {
+func (*VpcV1) NewCreateLoadBalancerPoolOptions(loadBalancerID string, algorithm string, protocol string, healthMonitor *LoadBalancerPoolHealthMonitorPrototype) *CreateLoadBalancerPoolOptions {
 	return &CreateLoadBalancerPoolOptions{
 		LoadBalancerID: core.StringPtr(loadBalancerID),
 		Algorithm:      core.StringPtr(algorithm),
-		HealthMonitor:  healthMonitor,
 		Protocol:       core.StringPtr(protocol),
+		HealthMonitor:  healthMonitor,
 	}
 }
 
@@ -11762,27 +13617,27 @@ func (options *CreateLoadBalancerPoolOptions) SetAlgorithm(algorithm string) *Cr
 	return options
 }
 
-// SetHealthMonitor : Allow user to set HealthMonitor
-func (options *CreateLoadBalancerPoolOptions) SetHealthMonitor(healthMonitor *LoadBalancerPoolHealthMonitorPrototype) *CreateLoadBalancerPoolOptions {
-	options.HealthMonitor = healthMonitor
-	return options
-}
-
 // SetProtocol : Allow user to set Protocol
 func (options *CreateLoadBalancerPoolOptions) SetProtocol(protocol string) *CreateLoadBalancerPoolOptions {
 	options.Protocol = core.StringPtr(protocol)
 	return options
 }
 
-// SetMembers : Allow user to set Members
-func (options *CreateLoadBalancerPoolOptions) SetMembers(members []LoadBalancerPoolMemberPrototype) *CreateLoadBalancerPoolOptions {
-	options.Members = members
+// SetHealthMonitor : Allow user to set HealthMonitor
+func (options *CreateLoadBalancerPoolOptions) SetHealthMonitor(healthMonitor *LoadBalancerPoolHealthMonitorPrototype) *CreateLoadBalancerPoolOptions {
+	options.HealthMonitor = healthMonitor
 	return options
 }
 
 // SetName : Allow user to set Name
 func (options *CreateLoadBalancerPoolOptions) SetName(name string) *CreateLoadBalancerPoolOptions {
 	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetMembers : Allow user to set Members
+func (options *CreateLoadBalancerPoolOptions) SetMembers(members []LoadBalancerPoolMemberPrototype) *CreateLoadBalancerPoolOptions {
+	options.Members = members
 	return options
 }
 
@@ -11870,11 +13725,11 @@ type CreatePublicGatewayOptions struct {
 	// The zone where this public gateway will be created.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
-	FloatingIP PublicGatewayPrototypeFloatingIPIntf `json:"floating_ip,omitempty"`
-
 	// The user-defined name for this public gateway. Names must be unique within the VPC the public gateway resides in. If
 	// unspecified, the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
+
+	FloatingIP PublicGatewayPrototypeFloatingIPIntf `json:"floating_ip,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
@@ -11904,15 +13759,15 @@ func (options *CreatePublicGatewayOptions) SetZone(zone ZoneIdentityIntf) *Creat
 	return options
 }
 
-// SetFloatingIP : Allow user to set FloatingIP
-func (options *CreatePublicGatewayOptions) SetFloatingIP(floatingIP PublicGatewayPrototypeFloatingIPIntf) *CreatePublicGatewayOptions {
-	options.FloatingIP = floatingIP
-	return options
-}
-
 // SetName : Allow user to set Name
 func (options *CreatePublicGatewayOptions) SetName(name string) *CreatePublicGatewayOptions {
 	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetFloatingIP : Allow user to set FloatingIP
+func (options *CreatePublicGatewayOptions) SetFloatingIP(floatingIP PublicGatewayPrototypeFloatingIPIntf) *CreatePublicGatewayOptions {
+	options.FloatingIP = floatingIP
 	return options
 }
 
@@ -12094,13 +13949,13 @@ type CreateVPCAddressPrefixOptions struct {
 	// The zone this address prefix is to belong to.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
-	// Indicates whether this is the default prefix for this zone in this VPC. If true, this prefix will become the default
-	// prefix for this zone in this VPC. This fails if the VPC currently has a default address prefix for this zone.
-	IsDefault *bool `json:"is_default,omitempty"`
-
 	// The user-defined name for this address prefix. Names must be unique within the VPC the address prefix resides in. If
 	// unspecified, the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
+
+	// Indicates whether this is the default prefix for this zone in this VPC. If true, this prefix will become the default
+	// prefix for this zone in this VPC. This fails if the VPC currently has a default address prefix for this zone.
+	IsDefault *bool `json:"is_default,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -12133,15 +13988,15 @@ func (options *CreateVPCAddressPrefixOptions) SetZone(zone ZoneIdentityIntf) *Cr
 	return options
 }
 
-// SetIsDefault : Allow user to set IsDefault
-func (options *CreateVPCAddressPrefixOptions) SetIsDefault(isDefault bool) *CreateVPCAddressPrefixOptions {
-	options.IsDefault = core.BoolPtr(isDefault)
-	return options
-}
-
 // SetName : Allow user to set Name
 func (options *CreateVPCAddressPrefixOptions) SetName(name string) *CreateVPCAddressPrefixOptions {
 	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetIsDefault : Allow user to set IsDefault
+func (options *CreateVPCAddressPrefixOptions) SetIsDefault(isDefault bool) *CreateVPCAddressPrefixOptions {
+	options.IsDefault = core.BoolPtr(isDefault)
 	return options
 }
 
@@ -12153,6 +14008,10 @@ func (options *CreateVPCAddressPrefixOptions) SetHeaders(param map[string]string
 
 // CreateVPCOptions : The CreateVPC options.
 type CreateVPCOptions struct {
+	// The unique user-defined name for this VPC. If unspecified, the name will be a hyphenated list of randomly-selected
+	// words.
+	Name *string `json:"name,omitempty"`
+
 	// Indicates whether a default address prefix should be automatically created for each zone in this VPC. If `manual`,
 	// this VPC will be created with no default address prefixes.
 	AddressPrefixManagement *string `json:"address_prefix_management,omitempty"`
@@ -12161,10 +14020,6 @@ type CreateVPCOptions struct {
 	// private network connectivity to the account's Classic Infrastructure resources. Only one VPC, per region, may be
 	// connected in this way. This value is set at creation and subsequently immutable.
 	ClassicAccess *bool `json:"classic_access,omitempty"`
-
-	// The unique user-defined name for this VPC. If unspecified, the name will be a hyphenated list of randomly-selected
-	// words.
-	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
@@ -12187,6 +14042,12 @@ func (*VpcV1) NewCreateVPCOptions() *CreateVPCOptions {
 	return &CreateVPCOptions{}
 }
 
+// SetName : Allow user to set Name
+func (options *CreateVPCOptions) SetName(name string) *CreateVPCOptions {
+	options.Name = core.StringPtr(name)
+	return options
+}
+
 // SetAddressPrefixManagement : Allow user to set AddressPrefixManagement
 func (options *CreateVPCOptions) SetAddressPrefixManagement(addressPrefixManagement string) *CreateVPCOptions {
 	options.AddressPrefixManagement = core.StringPtr(addressPrefixManagement)
@@ -12196,12 +14057,6 @@ func (options *CreateVPCOptions) SetAddressPrefixManagement(addressPrefixManagem
 // SetClassicAccess : Allow user to set ClassicAccess
 func (options *CreateVPCOptions) SetClassicAccess(classicAccess bool) *CreateVPCOptions {
 	options.ClassicAccess = core.BoolPtr(classicAccess)
-	return options
-}
-
-// SetName : Allow user to set Name
-func (options *CreateVPCOptions) SetName(name string) *CreateVPCOptions {
-	options.Name = core.StringPtr(name)
 	return options
 }
 
@@ -12222,11 +14077,11 @@ type CreateVPCRouteOptions struct {
 	// The VPC identifier.
 	VPCID *string `json:"vpc_id" validate:"required"`
 
-	// The destination of the route. Must not overlap with destinations for existing user-defined routes within the VPC.
-	Destination *string `json:"destination" validate:"required"`
-
 	// The next hop that packets will be delivered to.
 	NextHop RouteNextHopPrototypeIntf `json:"next_hop" validate:"required"`
+
+	// The destination of the route. Must not overlap with destinations for existing user-defined routes within the VPC.
+	Destination *string `json:"destination" validate:"required"`
 
 	// The zone to apply the route to. (Traffic from subnets in this zone will be
 	// subject to this route.).
@@ -12241,11 +14096,11 @@ type CreateVPCRouteOptions struct {
 }
 
 // NewCreateVPCRouteOptions : Instantiate CreateVPCRouteOptions
-func (*VpcV1) NewCreateVPCRouteOptions(vpcID string, destination string, nextHop RouteNextHopPrototypeIntf, zone ZoneIdentityIntf) *CreateVPCRouteOptions {
+func (*VpcV1) NewCreateVPCRouteOptions(vpcID string, nextHop RouteNextHopPrototypeIntf, destination string, zone ZoneIdentityIntf) *CreateVPCRouteOptions {
 	return &CreateVPCRouteOptions{
 		VPCID:       core.StringPtr(vpcID),
-		Destination: core.StringPtr(destination),
 		NextHop:     nextHop,
+		Destination: core.StringPtr(destination),
 		Zone:        zone,
 	}
 }
@@ -12256,15 +14111,15 @@ func (options *CreateVPCRouteOptions) SetVPCID(vpcID string) *CreateVPCRouteOpti
 	return options
 }
 
-// SetDestination : Allow user to set Destination
-func (options *CreateVPCRouteOptions) SetDestination(destination string) *CreateVPCRouteOptions {
-	options.Destination = core.StringPtr(destination)
-	return options
-}
-
 // SetNextHop : Allow user to set NextHop
 func (options *CreateVPCRouteOptions) SetNextHop(nextHop RouteNextHopPrototypeIntf) *CreateVPCRouteOptions {
 	options.NextHop = nextHop
+	return options
+}
+
+// SetDestination : Allow user to set Destination
+func (options *CreateVPCRouteOptions) SetDestination(destination string) *CreateVPCRouteOptions {
+	options.Destination = core.StringPtr(destination)
 	return options
 }
 
@@ -12300,6 +14155,9 @@ type CreateVPNGatewayConnectionOptions struct {
 	// If set to false, the VPN connection is shut down.
 	AdminStateUp *bool `json:"admin_state_up,omitempty"`
 
+	// The user-defined name for this VPN gateway connection.
+	Name *string `json:"name,omitempty"`
+
 	// The Dead Peer Detection settings.
 	DeadPeerDetection *VPNGatewayConnectionDpdPrototype `json:"dead_peer_detection,omitempty"`
 
@@ -12312,9 +14170,6 @@ type CreateVPNGatewayConnectionOptions struct {
 
 	// A collection of local CIDRs for this resource.
 	LocalCIDRs []string `json:"local_cidrs,omitempty"`
-
-	// The user-defined name for this VPN gateway connection.
-	Name *string `json:"name,omitempty"`
 
 	// A collection of peer CIDRs for this resource.
 	PeerCIDRs []string `json:"peer_cidrs,omitempty"`
@@ -12356,6 +14211,12 @@ func (options *CreateVPNGatewayConnectionOptions) SetAdminStateUp(adminStateUp b
 	return options
 }
 
+// SetName : Allow user to set Name
+func (options *CreateVPNGatewayConnectionOptions) SetName(name string) *CreateVPNGatewayConnectionOptions {
+	options.Name = core.StringPtr(name)
+	return options
+}
+
 // SetDeadPeerDetection : Allow user to set DeadPeerDetection
 func (options *CreateVPNGatewayConnectionOptions) SetDeadPeerDetection(deadPeerDetection *VPNGatewayConnectionDpdPrototype) *CreateVPNGatewayConnectionOptions {
 	options.DeadPeerDetection = deadPeerDetection
@@ -12377,12 +14238,6 @@ func (options *CreateVPNGatewayConnectionOptions) SetIpsecPolicy(ipsecPolicy IPs
 // SetLocalCIDRs : Allow user to set LocalCIDRs
 func (options *CreateVPNGatewayConnectionOptions) SetLocalCIDRs(localCIDRs []string) *CreateVPNGatewayConnectionOptions {
 	options.LocalCIDRs = localCIDRs
-	return options
-}
-
-// SetName : Allow user to set Name
-func (options *CreateVPNGatewayConnectionOptions) SetName(name string) *CreateVPNGatewayConnectionOptions {
-	options.Name = core.StringPtr(name)
 	return options
 }
 
@@ -12447,8 +14302,8 @@ func (options *CreateVPNGatewayOptions) SetHeaders(param map[string]string) *Cre
 
 // DefaultNetworkACL : DefaultNetworkACL struct
 type DefaultNetworkACL struct {
-	// The date and time that the network ACL was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The unique identifier for this network ACL.
+	ID *string `json:"id" validate:"required"`
 
 	// The CRN for this network ACL.
 	CRN *string `json:"crn" validate:"required"`
@@ -12456,16 +14311,19 @@ type DefaultNetworkACL struct {
 	// The URL for this network ACL.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this network ACL.
-	ID *string `json:"id" validate:"required"`
-
 	// The name of the default network ACL created for a VPC. The name will be a hyphenated list of randomly-selected words
 	// at creation, but may be user-specified with a subsequent request.
 	Name *string `json:"name" validate:"required"`
 
+	// The VPC this network ACL is a part of.
+	VPC *VPCReference `json:"vpc" validate:"required"`
+
 	// The resource group for the default network ACL for a VPC. Set to the VPC's
 	// resource group at creation.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The date and time that the network ACL was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The ordered rules for the default network ACL for a VPC.  Defaults to two rules which allow all inbound and outbound
 	// traffic, respectively.  Rules for the default network ACL may be changed, added, or removed.
@@ -12473,15 +14331,12 @@ type DefaultNetworkACL struct {
 
 	// The subnets to which this network ACL is attached.
 	Subnets []SubnetReference `json:"subnets" validate:"required"`
-
-	// The VPC this network ACL is a part of.
-	VPC *VPCReference `json:"vpc" validate:"required"`
 }
 
 // UnmarshalDefaultNetworkACL unmarshals an instance of DefaultNetworkACL from the specified map of raw messages.
 func UnmarshalDefaultNetworkACL(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(DefaultNetworkACL)
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -12493,15 +14348,19 @@ func UnmarshalDefaultNetworkACL(m map[string]json.RawMessage, result interface{}
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCReference)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -12513,18 +14372,14 @@ func UnmarshalDefaultNetworkACL(m map[string]json.RawMessage, result interface{}
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCReference)
-	if err != nil {
-		return
-	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
 // DefaultSecurityGroup : Collection of rules in a default security group.
 type DefaultSecurityGroup struct {
-	// The date and time that this security group was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The unique identifier for this security group.
+	ID *string `json:"id" validate:"required"`
 
 	// The security group's CRN.
 	CRN *string `json:"crn" validate:"required"`
@@ -12532,20 +14387,20 @@ type DefaultSecurityGroup struct {
 	// The security group's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this security group.
-	ID *string `json:"id" validate:"required"`
-
 	// The name of the default security group created for a VPC. The name will be a hyphenated list of randomly-selected
 	// words at creation, but may be user-specified with a subsequent request.
 	Name *string `json:"name" validate:"required"`
-
-	// The resource group for this security group.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
 	// Array of rules for the default security group for a VPC. Defaults to allowing all outbound traffic, and allowing all
 	// inbound traffic from other interfaces in the VPC’s default security group. Rules in the default security group may
 	// be changed, added or removed.
 	Rules []SecurityGroupRuleIntf `json:"rules" validate:"required"`
+
+	// The resource group for this security group.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The date and time that this security group was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The VPC this security group is a part of.
 	VPC *VPCReference `json:"vpc" validate:"required"`
@@ -12554,7 +14409,7 @@ type DefaultSecurityGroup struct {
 // UnmarshalDefaultSecurityGroup unmarshals an instance of DefaultSecurityGroup from the specified map of raw messages.
 func UnmarshalDefaultSecurityGroup(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(DefaultSecurityGroup)
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -12566,11 +14421,11 @@ func UnmarshalDefaultSecurityGroup(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalModel(m, "rules", &obj.Rules, UnmarshalSecurityGroupRule)
 	if err != nil {
 		return
 	}
@@ -12578,7 +14433,7 @@ func UnmarshalDefaultSecurityGroup(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "rules", &obj.Rules, UnmarshalSecurityGroupRule)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -12702,6 +14557,214 @@ func (options *DeleteImageOptions) SetHeaders(param map[string]string) *DeleteIm
 	return options
 }
 
+// DeleteInstanceGroupLoadBalancerOptions : The DeleteInstanceGroupLoadBalancer options.
+type DeleteInstanceGroupLoadBalancerOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeleteInstanceGroupLoadBalancerOptions : Instantiate DeleteInstanceGroupLoadBalancerOptions
+func (*VpcV1) NewDeleteInstanceGroupLoadBalancerOptions(instanceGroupID string) *DeleteInstanceGroupLoadBalancerOptions {
+	return &DeleteInstanceGroupLoadBalancerOptions{
+		InstanceGroupID: core.StringPtr(instanceGroupID),
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *DeleteInstanceGroupLoadBalancerOptions) SetInstanceGroupID(instanceGroupID string) *DeleteInstanceGroupLoadBalancerOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteInstanceGroupLoadBalancerOptions) SetHeaders(param map[string]string) *DeleteInstanceGroupLoadBalancerOptions {
+	options.Headers = param
+	return options
+}
+
+// DeleteInstanceGroupManagerOptions : The DeleteInstanceGroupManager options.
+type DeleteInstanceGroupManagerOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// The instance group manager identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeleteInstanceGroupManagerOptions : Instantiate DeleteInstanceGroupManagerOptions
+func (*VpcV1) NewDeleteInstanceGroupManagerOptions(instanceGroupID string, id string) *DeleteInstanceGroupManagerOptions {
+	return &DeleteInstanceGroupManagerOptions{
+		InstanceGroupID: core.StringPtr(instanceGroupID),
+		ID:              core.StringPtr(id),
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *DeleteInstanceGroupManagerOptions) SetInstanceGroupID(instanceGroupID string) *DeleteInstanceGroupManagerOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetID : Allow user to set ID
+func (options *DeleteInstanceGroupManagerOptions) SetID(id string) *DeleteInstanceGroupManagerOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteInstanceGroupManagerOptions) SetHeaders(param map[string]string) *DeleteInstanceGroupManagerOptions {
+	options.Headers = param
+	return options
+}
+
+// DeleteInstanceGroupManagerPolicyOptions : The DeleteInstanceGroupManagerPolicy options.
+type DeleteInstanceGroupManagerPolicyOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// The instance group manager identifier.
+	InstanceGroupManagerID *string `json:"instance_group_manager_id" validate:"required"`
+
+	// The instance group manager policy identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeleteInstanceGroupManagerPolicyOptions : Instantiate DeleteInstanceGroupManagerPolicyOptions
+func (*VpcV1) NewDeleteInstanceGroupManagerPolicyOptions(instanceGroupID string, instanceGroupManagerID string, id string) *DeleteInstanceGroupManagerPolicyOptions {
+	return &DeleteInstanceGroupManagerPolicyOptions{
+		InstanceGroupID:        core.StringPtr(instanceGroupID),
+		InstanceGroupManagerID: core.StringPtr(instanceGroupManagerID),
+		ID:                     core.StringPtr(id),
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *DeleteInstanceGroupManagerPolicyOptions) SetInstanceGroupID(instanceGroupID string) *DeleteInstanceGroupManagerPolicyOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetInstanceGroupManagerID : Allow user to set InstanceGroupManagerID
+func (options *DeleteInstanceGroupManagerPolicyOptions) SetInstanceGroupManagerID(instanceGroupManagerID string) *DeleteInstanceGroupManagerPolicyOptions {
+	options.InstanceGroupManagerID = core.StringPtr(instanceGroupManagerID)
+	return options
+}
+
+// SetID : Allow user to set ID
+func (options *DeleteInstanceGroupManagerPolicyOptions) SetID(id string) *DeleteInstanceGroupManagerPolicyOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteInstanceGroupManagerPolicyOptions) SetHeaders(param map[string]string) *DeleteInstanceGroupManagerPolicyOptions {
+	options.Headers = param
+	return options
+}
+
+// DeleteInstanceGroupMembershipOptions : The DeleteInstanceGroupMembership options.
+type DeleteInstanceGroupMembershipOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// The instance group membership identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeleteInstanceGroupMembershipOptions : Instantiate DeleteInstanceGroupMembershipOptions
+func (*VpcV1) NewDeleteInstanceGroupMembershipOptions(instanceGroupID string, id string) *DeleteInstanceGroupMembershipOptions {
+	return &DeleteInstanceGroupMembershipOptions{
+		InstanceGroupID: core.StringPtr(instanceGroupID),
+		ID:              core.StringPtr(id),
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *DeleteInstanceGroupMembershipOptions) SetInstanceGroupID(instanceGroupID string) *DeleteInstanceGroupMembershipOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetID : Allow user to set ID
+func (options *DeleteInstanceGroupMembershipOptions) SetID(id string) *DeleteInstanceGroupMembershipOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteInstanceGroupMembershipOptions) SetHeaders(param map[string]string) *DeleteInstanceGroupMembershipOptions {
+	options.Headers = param
+	return options
+}
+
+// DeleteInstanceGroupMembershipsOptions : The DeleteInstanceGroupMemberships options.
+type DeleteInstanceGroupMembershipsOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeleteInstanceGroupMembershipsOptions : Instantiate DeleteInstanceGroupMembershipsOptions
+func (*VpcV1) NewDeleteInstanceGroupMembershipsOptions(instanceGroupID string) *DeleteInstanceGroupMembershipsOptions {
+	return &DeleteInstanceGroupMembershipsOptions{
+		InstanceGroupID: core.StringPtr(instanceGroupID),
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *DeleteInstanceGroupMembershipsOptions) SetInstanceGroupID(instanceGroupID string) *DeleteInstanceGroupMembershipsOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteInstanceGroupMembershipsOptions) SetHeaders(param map[string]string) *DeleteInstanceGroupMembershipsOptions {
+	options.Headers = param
+	return options
+}
+
+// DeleteInstanceGroupOptions : The DeleteInstanceGroup options.
+type DeleteInstanceGroupOptions struct {
+	// The instance group identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeleteInstanceGroupOptions : Instantiate DeleteInstanceGroupOptions
+func (*VpcV1) NewDeleteInstanceGroupOptions(id string) *DeleteInstanceGroupOptions {
+	return &DeleteInstanceGroupOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (options *DeleteInstanceGroupOptions) SetID(id string) *DeleteInstanceGroupOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteInstanceGroupOptions) SetHeaders(param map[string]string) *DeleteInstanceGroupOptions {
+	options.Headers = param
+	return options
+}
+
 // DeleteInstanceNetworkInterfaceOptions : The DeleteInstanceNetworkInterface options.
 type DeleteInstanceNetworkInterfaceOptions struct {
 	// The instance identifier.
@@ -12764,6 +14827,34 @@ func (options *DeleteInstanceOptions) SetID(id string) *DeleteInstanceOptions {
 
 // SetHeaders : Allow user to set Headers
 func (options *DeleteInstanceOptions) SetHeaders(param map[string]string) *DeleteInstanceOptions {
+	options.Headers = param
+	return options
+}
+
+// DeleteInstanceTemplateOptions : The DeleteInstanceTemplate options.
+type DeleteInstanceTemplateOptions struct {
+	// The instance template identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeleteInstanceTemplateOptions : Instantiate DeleteInstanceTemplateOptions
+func (*VpcV1) NewDeleteInstanceTemplateOptions(id string) *DeleteInstanceTemplateOptions {
+	return &DeleteInstanceTemplateOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (options *DeleteInstanceTemplateOptions) SetID(id string) *DeleteInstanceTemplateOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteInstanceTemplateOptions) SetHeaders(param map[string]string) *DeleteInstanceTemplateOptions {
 	options.Headers = param
 	return options
 }
@@ -13556,11 +15647,8 @@ func UnmarshalEncryptionKeyReference(m map[string]json.RawMessage, result interf
 
 // FloatingIP : FloatingIP struct
 type FloatingIP struct {
-	// The globally unique IP address.
-	Address *string `json:"address" validate:"required"`
-
-	// The date and time that the floating IP was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The unique identifier for this floating IP.
+	ID *string `json:"id" validate:"required"`
 
 	// The CRN for this floating IP.
 	CRN *string `json:"crn" validate:"required"`
@@ -13568,14 +15656,17 @@ type FloatingIP struct {
 	// The URL for this floating IP.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this floating IP.
-	ID *string `json:"id" validate:"required"`
+	// The globally unique IP address.
+	Address *string `json:"address" validate:"required"`
 
-	// The user-defined name for this floating IP.
+	// The unique user-defined name for this floating IP.
 	Name *string `json:"name" validate:"required"`
 
 	// The resource group for this floating IP.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The date and time that the floating IP was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The status of the floating IP.
 	Status *string `json:"status" validate:"required"`
@@ -13599,11 +15690,7 @@ const (
 // UnmarshalFloatingIP unmarshals an instance of FloatingIP from the specified map of raw messages.
 func UnmarshalFloatingIP(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FloatingIP)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -13615,7 +15702,7 @@ func UnmarshalFloatingIP(m map[string]json.RawMessage, result interface{}) (err 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
 	if err != nil {
 		return
 	}
@@ -13624,6 +15711,10 @@ func UnmarshalFloatingIP(m map[string]json.RawMessage, result interface{}) (err 
 		return
 	}
 	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -13683,9 +15774,6 @@ type FloatingIPCollection struct {
 	// A reference to the first page of resources.
 	First *FloatingIPCollectionFirst `json:"first" validate:"required"`
 
-	// Collection of floating IPs.
-	FloatingIps []FloatingIP `json:"floating_ips" validate:"required"`
-
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
@@ -13695,16 +15783,15 @@ type FloatingIPCollection struct {
 
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of floating IPs.
+	FloatingIps []FloatingIP `json:"floating_ips" validate:"required"`
 }
 
 // UnmarshalFloatingIPCollection unmarshals an instance of FloatingIPCollection from the specified map of raw messages.
 func UnmarshalFloatingIPCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FloatingIPCollection)
 	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalFloatingIPCollectionFirst)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "floating_ips", &obj.FloatingIps, UnmarshalFloatingIP)
 	if err != nil {
 		return
 	}
@@ -13717,6 +15804,10 @@ func UnmarshalFloatingIPCollection(m map[string]json.RawMessage, result interfac
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "floating_ips", &obj.FloatingIps, UnmarshalFloatingIP)
 	if err != nil {
 		return
 	}
@@ -13847,8 +15938,8 @@ func UnmarshalFloatingIPPrototype(m map[string]json.RawMessage, result interface
 
 // FloatingIPReference : FloatingIPReference struct
 type FloatingIPReference struct {
-	// The globally unique IP address.
-	Address *string `json:"address" validate:"required"`
+	// The unique identifier for this floating IP.
+	ID *string `json:"id" validate:"required"`
 
 	// The CRN for this floating IP.
 	CRN *string `json:"crn" validate:"required"`
@@ -13856,17 +15947,17 @@ type FloatingIPReference struct {
 	// The URL for this floating IP.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this floating IP.
-	ID *string `json:"id" validate:"required"`
+	// The globally unique IP address.
+	Address *string `json:"address" validate:"required"`
 
-	// The user-defined name for this floating IP.
+	// The unique user-defined name for this floating IP.
 	Name *string `json:"name" validate:"required"`
 }
 
 // UnmarshalFloatingIPReference unmarshals an instance of FloatingIPReference from the specified map of raw messages.
 func UnmarshalFloatingIPReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FloatingIPReference)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -13878,7 +15969,7 @@ func UnmarshalFloatingIPReference(m map[string]json.RawMessage, result interface
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
 	if err != nil {
 		return
 	}
@@ -13895,14 +15986,14 @@ func UnmarshalFloatingIPReference(m map[string]json.RawMessage, result interface
 // - FloatingIPTargetNetworkInterfaceReference
 // - FloatingIPTargetPublicGatewayReference
 type FloatingIPTarget struct {
-	// The URL for this network interface.
-	Href *string `json:"href,omitempty"`
+	// The user-defined name for this network interface.
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier for this network interface.
 	ID *string `json:"id,omitempty"`
 
-	// The user-defined name for this network interface.
-	Name *string `json:"name,omitempty"`
+	// The URL for this network interface.
+	Href *string `json:"href,omitempty"`
 
 	// The primary IPv4 address.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address,omitempty"`
@@ -13931,7 +16022,7 @@ type FloatingIPTargetIntf interface {
 // UnmarshalFloatingIPTarget unmarshals an instance of FloatingIPTarget from the specified map of raw messages.
 func UnmarshalFloatingIPTarget(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FloatingIPTarget)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -13939,7 +16030,7 @@ func UnmarshalFloatingIPTarget(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -13978,6 +16069,21 @@ func UnmarshalFloatingIPUnpaginatedCollection(m map[string]json.RawMessage, resu
 
 // FlowLogCollector : FlowLogCollector struct
 type FlowLogCollector struct {
+	// The unique identifier for this flow log collector.
+	ID *string `json:"id" validate:"required"`
+
+	// The CRN for this flow log collector.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The URL for this flow log collector.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique user-defined name for this flow log collector.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource group for this flow log collector.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
 	// Indicates whether this collector is active.
 	Active *bool `json:"active" validate:"required"`
 
@@ -13987,23 +16093,8 @@ type FlowLogCollector struct {
 	// The date and time that the flow log collector was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
-	// The CRN for this flow log collector.
-	CRN *string `json:"crn" validate:"required"`
-
-	// The URL for this flow log collector.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this flow log collector.
-	ID *string `json:"id" validate:"required"`
-
 	// The lifecycle state of the flow log collector.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
-
-	// The user-defined name for this flow log collector.
-	Name *string `json:"name" validate:"required"`
-
-	// The resource group for this flow log collector.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
 	// The Cloud Object Storage bucket where the collected flows are logged.
 	StorageBucket *CloudObjectStorageBucketReference `json:"storage_bucket" validate:"required"`
@@ -14033,6 +16124,26 @@ const (
 // UnmarshalFlowLogCollector unmarshals an instance of FlowLogCollector from the specified map of raw messages.
 func UnmarshalFlowLogCollector(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FlowLogCollector)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "active", &obj.Active)
 	if err != nil {
 		return
@@ -14045,27 +16156,7 @@ func UnmarshalFlowLogCollector(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
@@ -14090,9 +16181,6 @@ type FlowLogCollectorCollection struct {
 	// A reference to the first page of resources.
 	First *FlowLogCollectorCollectionFirst `json:"first" validate:"required"`
 
-	// Collection of flow log collectors.
-	FlowLogCollectors []FlowLogCollector `json:"flow_log_collectors" validate:"required"`
-
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
@@ -14102,16 +16190,15 @@ type FlowLogCollectorCollection struct {
 
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of flow log collectors.
+	FlowLogCollectors []FlowLogCollector `json:"flow_log_collectors" validate:"required"`
 }
 
 // UnmarshalFlowLogCollectorCollection unmarshals an instance of FlowLogCollectorCollection from the specified map of raw messages.
 func UnmarshalFlowLogCollectorCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FlowLogCollectorCollection)
 	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalFlowLogCollectorCollectionFirst)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "flow_log_collectors", &obj.FlowLogCollectors, UnmarshalFlowLogCollector)
 	if err != nil {
 		return
 	}
@@ -14124,6 +16211,10 @@ func UnmarshalFlowLogCollectorCollection(m map[string]json.RawMessage, result in
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "flow_log_collectors", &obj.FlowLogCollectors, UnmarshalFlowLogCollector)
 	if err != nil {
 		return
 	}
@@ -14220,11 +16311,11 @@ func UnmarshalFlowLogCollectorPrototypeTarget(m map[string]json.RawMessage, resu
 // - FlowLogCollectorTargetSubnetReference
 // - FlowLogCollectorTargetVPCReference
 type FlowLogCollectorTarget struct {
-	// The URL for this network interface.
-	Href *string `json:"href,omitempty"`
-
 	// The unique identifier for this network interface.
 	ID *string `json:"id,omitempty"`
+
+	// The URL for this network interface.
+	Href *string `json:"href,omitempty"`
 
 	// The user-defined name for this network interface.
 	Name *string `json:"name,omitempty"`
@@ -14253,11 +16344,11 @@ type FlowLogCollectorTargetIntf interface {
 // UnmarshalFlowLogCollectorTarget unmarshals an instance of FlowLogCollectorTarget from the specified map of raw messages.
 func UnmarshalFlowLogCollectorTarget(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FlowLogCollectorTarget)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -14385,6 +16476,158 @@ func (options *GetImageOptions) SetID(id string) *GetImageOptions {
 
 // SetHeaders : Allow user to set Headers
 func (options *GetImageOptions) SetHeaders(param map[string]string) *GetImageOptions {
+	options.Headers = param
+	return options
+}
+
+// GetInstanceGroupManagerOptions : The GetInstanceGroupManager options.
+type GetInstanceGroupManagerOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// The instance group manager identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetInstanceGroupManagerOptions : Instantiate GetInstanceGroupManagerOptions
+func (*VpcV1) NewGetInstanceGroupManagerOptions(instanceGroupID string, id string) *GetInstanceGroupManagerOptions {
+	return &GetInstanceGroupManagerOptions{
+		InstanceGroupID: core.StringPtr(instanceGroupID),
+		ID:              core.StringPtr(id),
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *GetInstanceGroupManagerOptions) SetInstanceGroupID(instanceGroupID string) *GetInstanceGroupManagerOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetID : Allow user to set ID
+func (options *GetInstanceGroupManagerOptions) SetID(id string) *GetInstanceGroupManagerOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetInstanceGroupManagerOptions) SetHeaders(param map[string]string) *GetInstanceGroupManagerOptions {
+	options.Headers = param
+	return options
+}
+
+// GetInstanceGroupManagerPolicyOptions : The GetInstanceGroupManagerPolicy options.
+type GetInstanceGroupManagerPolicyOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// The instance group manager identifier.
+	InstanceGroupManagerID *string `json:"instance_group_manager_id" validate:"required"`
+
+	// The instance group manager policy identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetInstanceGroupManagerPolicyOptions : Instantiate GetInstanceGroupManagerPolicyOptions
+func (*VpcV1) NewGetInstanceGroupManagerPolicyOptions(instanceGroupID string, instanceGroupManagerID string, id string) *GetInstanceGroupManagerPolicyOptions {
+	return &GetInstanceGroupManagerPolicyOptions{
+		InstanceGroupID:        core.StringPtr(instanceGroupID),
+		InstanceGroupManagerID: core.StringPtr(instanceGroupManagerID),
+		ID:                     core.StringPtr(id),
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *GetInstanceGroupManagerPolicyOptions) SetInstanceGroupID(instanceGroupID string) *GetInstanceGroupManagerPolicyOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetInstanceGroupManagerID : Allow user to set InstanceGroupManagerID
+func (options *GetInstanceGroupManagerPolicyOptions) SetInstanceGroupManagerID(instanceGroupManagerID string) *GetInstanceGroupManagerPolicyOptions {
+	options.InstanceGroupManagerID = core.StringPtr(instanceGroupManagerID)
+	return options
+}
+
+// SetID : Allow user to set ID
+func (options *GetInstanceGroupManagerPolicyOptions) SetID(id string) *GetInstanceGroupManagerPolicyOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetInstanceGroupManagerPolicyOptions) SetHeaders(param map[string]string) *GetInstanceGroupManagerPolicyOptions {
+	options.Headers = param
+	return options
+}
+
+// GetInstanceGroupMembershipOptions : The GetInstanceGroupMembership options.
+type GetInstanceGroupMembershipOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// The instance group membership identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetInstanceGroupMembershipOptions : Instantiate GetInstanceGroupMembershipOptions
+func (*VpcV1) NewGetInstanceGroupMembershipOptions(instanceGroupID string, id string) *GetInstanceGroupMembershipOptions {
+	return &GetInstanceGroupMembershipOptions{
+		InstanceGroupID: core.StringPtr(instanceGroupID),
+		ID:              core.StringPtr(id),
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *GetInstanceGroupMembershipOptions) SetInstanceGroupID(instanceGroupID string) *GetInstanceGroupMembershipOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetID : Allow user to set ID
+func (options *GetInstanceGroupMembershipOptions) SetID(id string) *GetInstanceGroupMembershipOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetInstanceGroupMembershipOptions) SetHeaders(param map[string]string) *GetInstanceGroupMembershipOptions {
+	options.Headers = param
+	return options
+}
+
+// GetInstanceGroupOptions : The GetInstanceGroup options.
+type GetInstanceGroupOptions struct {
+	// The instance group identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetInstanceGroupOptions : Instantiate GetInstanceGroupOptions
+func (*VpcV1) NewGetInstanceGroupOptions(id string) *GetInstanceGroupOptions {
+	return &GetInstanceGroupOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (options *GetInstanceGroupOptions) SetID(id string) *GetInstanceGroupOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetInstanceGroupOptions) SetHeaders(param map[string]string) *GetInstanceGroupOptions {
 	options.Headers = param
 	return options
 }
@@ -14555,6 +16798,34 @@ func (options *GetInstanceProfileOptions) SetName(name string) *GetInstanceProfi
 
 // SetHeaders : Allow user to set Headers
 func (options *GetInstanceProfileOptions) SetHeaders(param map[string]string) *GetInstanceProfileOptions {
+	options.Headers = param
+	return options
+}
+
+// GetInstanceTemplateOptions : The GetInstanceTemplate options.
+type GetInstanceTemplateOptions struct {
+	// The instance template identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetInstanceTemplateOptions : Instantiate GetInstanceTemplateOptions
+func (*VpcV1) NewGetInstanceTemplateOptions(id string) *GetInstanceTemplateOptions {
+	return &GetInstanceTemplateOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (options *GetInstanceTemplateOptions) SetID(id string) *GetInstanceTemplateOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetInstanceTemplateOptions) SetHeaders(param map[string]string) *GetInstanceTemplateOptions {
 	options.Headers = param
 	return options
 }
@@ -14907,6 +17178,34 @@ func (options *GetLoadBalancerPoolOptions) SetID(id string) *GetLoadBalancerPool
 
 // SetHeaders : Allow user to set Headers
 func (options *GetLoadBalancerPoolOptions) SetHeaders(param map[string]string) *GetLoadBalancerPoolOptions {
+	options.Headers = param
+	return options
+}
+
+// GetLoadBalancerProfileOptions : The GetLoadBalancerProfile options.
+type GetLoadBalancerProfileOptions struct {
+	// The load balancer profile name.
+	Name *string `json:"name" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetLoadBalancerProfileOptions : Instantiate GetLoadBalancerProfileOptions
+func (*VpcV1) NewGetLoadBalancerProfileOptions(name string) *GetLoadBalancerProfileOptions {
+	return &GetLoadBalancerProfileOptions{
+		Name: core.StringPtr(name),
+	}
+}
+
+// SetName : Allow user to set Name
+func (options *GetLoadBalancerProfileOptions) SetName(name string) *GetLoadBalancerProfileOptions {
+	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetLoadBalancerProfileOptions) SetHeaders(param map[string]string) *GetLoadBalancerProfileOptions {
 	options.Headers = param
 	return options
 }
@@ -15599,14 +17898,20 @@ func (options *GetVPNGatewayOptions) SetHeaders(param map[string]string) *GetVPN
 
 // IkePolicy : IkePolicy struct
 type IkePolicy struct {
+	// The unique identifier for this IKE policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The IKE policy's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this IKE policy.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
 	// The authentication algorithm.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
-
-	// Collection of references to VPN gateway connections that use this IKE policy.
-	Connections []VPNGatewayConnectionReference `json:"connections" validate:"required"`
-
-	// The date and time that this IKE policy was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The Diffie-Hellman group.
 	DhGroup *int64 `json:"dh_group" validate:"required"`
@@ -15614,27 +17919,30 @@ type IkePolicy struct {
 	// The encryption algorithm.
 	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
 
-	// The IKE policy's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this IKE policy.
-	ID *string `json:"id" validate:"required"`
-
 	// The IKE protocol version.
 	IkeVersion *int64 `json:"ike_version" validate:"required"`
 
 	// The key lifetime in seconds.
 	KeyLifetime *int64 `json:"key_lifetime" validate:"required"`
 
-	// The user-defined name for this IKE policy.
-	Name *string `json:"name" validate:"required"`
+	// The resource group for this IKE policy.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// Collection of references to VPN gateway connections that use this IKE policy.
+	Connections []VPNGatewayConnectionReference `json:"connections" validate:"required"`
+
+	// The date and time that this IKE policy was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The IKE negotiation mode. Only `main` is supported.
 	NegotiationMode *string `json:"negotiation_mode" validate:"required"`
-
-	// The resource group for this IKE policy.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 }
+
+// Constants associated with the IkePolicy.ResourceType property.
+// The resource type.
+const (
+	IkePolicyResourceTypeIkePolicyConst = "ike_policy"
+)
 
 // Constants associated with the IkePolicy.AuthenticationAlgorithm property.
 // The authentication algorithm.
@@ -15661,15 +17969,23 @@ const (
 // UnmarshalIkePolicy unmarshals an instance of IkePolicy from the specified map of raw messages.
 func UnmarshalIkePolicy(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(IkePolicy)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "authentication_algorithm", &obj.AuthenticationAlgorithm)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "connections", &obj.Connections, UnmarshalVPNGatewayConnectionReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -15681,14 +17997,6 @@ func UnmarshalIkePolicy(m map[string]json.RawMessage, result interface{}) (err e
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "ike_version", &obj.IkeVersion)
 	if err != nil {
 		return
@@ -15697,15 +18005,19 @@ func UnmarshalIkePolicy(m map[string]json.RawMessage, result interface{}) (err e
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "connections", &obj.Connections, UnmarshalVPNGatewayConnectionReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "negotiation_mode", &obj.NegotiationMode)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
@@ -15718,9 +18030,6 @@ type IkePolicyCollection struct {
 	// A reference to the first page of resources.
 	First *IkePolicyCollectionFirst `json:"first" validate:"required"`
 
-	// Collection of IKE policies.
-	IkePolicies []IkePolicy `json:"ike_policies" validate:"required"`
-
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
@@ -15730,16 +18039,15 @@ type IkePolicyCollection struct {
 
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of IKE policies.
+	IkePolicies []IkePolicy `json:"ike_policies" validate:"required"`
 }
 
 // UnmarshalIkePolicyCollection unmarshals an instance of IkePolicyCollection from the specified map of raw messages.
 func UnmarshalIkePolicyCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(IkePolicyCollection)
 	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalIkePolicyCollectionFirst)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "ike_policies", &obj.IkePolicies, UnmarshalIkePolicy)
 	if err != nil {
 		return
 	}
@@ -15752,6 +18060,10 @@ func UnmarshalIkePolicyCollection(m map[string]json.RawMessage, result interface
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "ike_policies", &obj.IkePolicies, UnmarshalIkePolicy)
 	if err != nil {
 		return
 	}
@@ -15796,28 +18108,41 @@ func UnmarshalIkePolicyIdentity(m map[string]json.RawMessage, result interface{}
 
 // IkePolicyReference : IkePolicyReference struct
 type IkePolicyReference struct {
-	// The IKE policy's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
 	// The unique identifier for this IKE policy.
 	ID *string `json:"id" validate:"required"`
 
+	// The IKE policy's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
 	// The user-defined name for this IKE policy.
 	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
 }
+
+// Constants associated with the IkePolicyReference.ResourceType property.
+// The resource type.
+const (
+	IkePolicyReferenceResourceTypeIkePolicyConst = "ike_policy"
+)
 
 // UnmarshalIkePolicyReference unmarshals an instance of IkePolicyReference from the specified map of raw messages.
 func UnmarshalIkePolicyReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(IkePolicyReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
 	if err != nil {
 		return
 	}
@@ -15846,8 +18171,32 @@ func UnmarshalIP(m map[string]json.RawMessage, result interface{}) (err error) {
 
 // IPsecPolicy : IPsecPolicy struct
 type IPsecPolicy struct {
+	// The unique identifier for this IPsec policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The IPsec policy's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this IPsec policy.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
 	// The authentication algorithm.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
+
+	// The encryption algorithm.
+	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
+
+	// The key lifetime in seconds.
+	KeyLifetime *int64 `json:"key_lifetime" validate:"required"`
+
+	// Perfect Forward Secrecy.
+	Pfs *string `json:"pfs" validate:"required"`
+
+	// The resource group for this IPsec policy.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
 	// Collection of references to VPN gateway connections that use this IPsec policy.
 	Connections []VPNGatewayConnectionReference `json:"connections" validate:"required"`
@@ -15858,30 +18207,15 @@ type IPsecPolicy struct {
 	// The encapsulation mode used. Only `tunnel` is supported.
 	EncapsulationMode *string `json:"encapsulation_mode" validate:"required"`
 
-	// The encryption algorithm.
-	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
-
-	// The IPsec policy's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this IPsec policy.
-	ID *string `json:"id" validate:"required"`
-
-	// The key lifetime in seconds.
-	KeyLifetime *int64 `json:"key_lifetime" validate:"required"`
-
-	// The user-defined name for this IPsec policy.
-	Name *string `json:"name" validate:"required"`
-
-	// Perfect Forward Secrecy.
-	Pfs *string `json:"pfs" validate:"required"`
-
-	// The resource group for this IPsec policy.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
-
 	// The transform protocol used. Only `esp` is supported.
 	TransformProtocol *string `json:"transform_protocol" validate:"required"`
 }
+
+// Constants associated with the IPsecPolicy.ResourceType property.
+// The resource type.
+const (
+	IPsecPolicyResourceTypeIpsecPolicyConst = "ipsec_policy"
+)
 
 // Constants associated with the IPsecPolicy.AuthenticationAlgorithm property.
 // The authentication algorithm.
@@ -15889,12 +18223,6 @@ const (
 	IPsecPolicyAuthenticationAlgorithmMd5Const    = "md5"
 	IPsecPolicyAuthenticationAlgorithmSha1Const   = "sha1"
 	IPsecPolicyAuthenticationAlgorithmSha256Const = "sha256"
-)
-
-// Constants associated with the IPsecPolicy.EncapsulationMode property.
-// The encapsulation mode used. Only `tunnel` is supported.
-const (
-	IPsecPolicyEncapsulationModeTunnelConst = "tunnel"
 )
 
 // Constants associated with the IPsecPolicy.EncryptionAlgorithm property.
@@ -15914,6 +18242,12 @@ const (
 	IPsecPolicyPfsGroup5Const   = "group_5"
 )
 
+// Constants associated with the IPsecPolicy.EncapsulationMode property.
+// The encapsulation mode used. Only `tunnel` is supported.
+const (
+	IPsecPolicyEncapsulationModeTunnelConst = "tunnel"
+)
+
 // Constants associated with the IPsecPolicy.TransformProtocol property.
 // The transform protocol used. Only `esp` is supported.
 const (
@@ -15923,7 +18257,39 @@ const (
 // UnmarshalIPsecPolicy unmarshals an instance of IPsecPolicy from the specified map of raw messages.
 func UnmarshalIPsecPolicy(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(IPsecPolicy)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "authentication_algorithm", &obj.AuthenticationAlgorithm)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "encryption_algorithm", &obj.EncryptionAlgorithm)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "key_lifetime", &obj.KeyLifetime)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "pfs", &obj.Pfs)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
@@ -15936,34 +18302,6 @@ func UnmarshalIPsecPolicy(m map[string]json.RawMessage, result interface{}) (err
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "encapsulation_mode", &obj.EncapsulationMode)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "encryption_algorithm", &obj.EncryptionAlgorithm)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "key_lifetime", &obj.KeyLifetime)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "pfs", &obj.Pfs)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
@@ -15980,9 +18318,6 @@ type IPsecPolicyCollection struct {
 	// A reference to the first page of resources.
 	First *IPsecPolicyCollectionFirst `json:"first" validate:"required"`
 
-	// Collection of IPsec policies.
-	IpsecPolicies []IPsecPolicy `json:"ipsec_policies" validate:"required"`
-
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
@@ -15992,16 +18327,15 @@ type IPsecPolicyCollection struct {
 
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of IPsec policies.
+	IpsecPolicies []IPsecPolicy `json:"ipsec_policies" validate:"required"`
 }
 
 // UnmarshalIPsecPolicyCollection unmarshals an instance of IPsecPolicyCollection from the specified map of raw messages.
 func UnmarshalIPsecPolicyCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(IPsecPolicyCollection)
 	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalIPsecPolicyCollectionFirst)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "ipsec_policies", &obj.IpsecPolicies, UnmarshalIPsecPolicy)
 	if err != nil {
 		return
 	}
@@ -16014,6 +18348,10 @@ func UnmarshalIPsecPolicyCollection(m map[string]json.RawMessage, result interfa
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "ipsec_policies", &obj.IpsecPolicies, UnmarshalIPsecPolicy)
 	if err != nil {
 		return
 	}
@@ -16092,28 +18430,41 @@ func UnmarshalIPsecPolicyIdentity(m map[string]json.RawMessage, result interface
 
 // IPsecPolicyReference : IPsecPolicyReference struct
 type IPsecPolicyReference struct {
-	// The IPsec policy's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
 	// The unique identifier for this IPsec policy.
 	ID *string `json:"id" validate:"required"`
 
+	// The IPsec policy's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
 	// The user-defined name for this IPsec policy.
 	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
 }
+
+// Constants associated with the IPsecPolicyReference.ResourceType property.
+// The resource type.
+const (
+	IPsecPolicyReferenceResourceTypeIpsecPolicyConst = "ipsec_policy"
+)
 
 // UnmarshalIPsecPolicyReference unmarshals an instance of IPsecPolicyReference from the specified map of raw messages.
 func UnmarshalIPsecPolicyReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(IPsecPolicyReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
 	if err != nil {
 		return
 	}
@@ -16157,20 +18508,17 @@ func UnmarshalIkePolicyCollectionNext(m map[string]json.RawMessage, result inter
 
 // Image : Image struct
 type Image struct {
-	// The date and time that the image was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The unique identifier for this image.
+	ID *string `json:"id" validate:"required"`
 
 	// The CRN for this image.
 	CRN *string `json:"crn" validate:"required"`
 
-	// Details for the stored image file.
-	File *ImageFile `json:"file" validate:"required"`
-
 	// The URL for this image.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this image.
-	ID *string `json:"id" validate:"required"`
+	// The user-defined or system-provided name for this image.
+	Name *string `json:"name" validate:"required"`
 
 	// The minimum size (in gigabytes) of a volume onto which this image may be provisioned.
 	//
@@ -16178,14 +18526,17 @@ type Image struct {
 	// `failed`.
 	MinimumProvisionedSize *int64 `json:"minimum_provisioned_size,omitempty"`
 
-	// The user-defined or system-provided name for this image.
-	Name *string `json:"name" validate:"required"`
+	// The resource group for this image.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The date and time that the image was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// Details for the stored image file.
+	File *ImageFile `json:"file" validate:"required"`
 
 	// The operating system included in this image.
 	OperatingSystem *OperatingSystem `json:"operating_system,omitempty"`
-
-	// The resource group for this image.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
 	// The status of this image.
 	Status *string `json:"status" validate:"required"`
@@ -16215,7 +18566,7 @@ const (
 // UnmarshalImage unmarshals an instance of Image from the specified map of raw messages.
 func UnmarshalImage(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Image)
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -16223,19 +18574,7 @@ func UnmarshalImage(m map[string]json.RawMessage, result interface{}) (err error
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "file", &obj.File, UnmarshalImageFile)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "minimum_provisioned_size", &obj.MinimumProvisionedSize)
 	if err != nil {
 		return
 	}
@@ -16243,11 +18582,23 @@ func UnmarshalImage(m map[string]json.RawMessage, result interface{}) (err error
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "operating_system", &obj.OperatingSystem, UnmarshalOperatingSystem)
+	err = core.UnmarshalPrimitive(m, "minimum_provisioned_size", &obj.MinimumProvisionedSize)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "file", &obj.File, UnmarshalImageFile)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "operating_system", &obj.OperatingSystem, UnmarshalOperatingSystem)
 	if err != nil {
 		return
 	}
@@ -16268,15 +18619,15 @@ type ImageCollection struct {
 	// A reference to the first page of resources.
 	First *ImageCollectionFirst `json:"first" validate:"required"`
 
-	// Collection of images.
-	Images []Image `json:"images" validate:"required"`
-
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
 	// A reference to the next page of resources; this reference is included for all pages
 	// except the last page.
 	Next *ImageCollectionNext `json:"next,omitempty"`
+
+	// Collection of images.
+	Images []Image `json:"images" validate:"required"`
 }
 
 // UnmarshalImageCollection unmarshals an instance of ImageCollection from the specified map of raw messages.
@@ -16286,15 +18637,15 @@ func UnmarshalImageCollection(m map[string]json.RawMessage, result interface{}) 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "images", &obj.Images, UnmarshalImage)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalImageCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "images", &obj.Images, UnmarshalImage)
 	if err != nil {
 		return
 	}
@@ -16440,7 +18791,9 @@ type ImagePrototype struct {
 	// The file from which to create the image.
 	File *ImageFilePrototype `json:"file,omitempty"`
 
-	// The operating system included in this image.
+	// The identity of the [supported operating
+	// system](https://cloud.ibm.com/apidocs/vpc#retrieves-all-operating-systems) included in
+	// this image.
 	OperatingSystem OperatingSystemIdentityIntf `json:"operating_system,omitempty"`
 }
 
@@ -16477,14 +18830,14 @@ func UnmarshalImagePrototype(m map[string]json.RawMessage, result interface{}) (
 
 // ImageReference : ImageReference struct
 type ImageReference struct {
+	// The unique identifier for this image.
+	ID *string `json:"id" validate:"required"`
+
 	// The CRN for this image.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this image.
 	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this image.
-	ID *string `json:"id" validate:"required"`
 
 	// The user-defined or system-provided name for this image.
 	Name *string `json:"name" validate:"required"`
@@ -16493,15 +18846,15 @@ type ImageReference struct {
 // UnmarshalImageReference unmarshals an instance of ImageReference from the specified map of raw messages.
 func UnmarshalImageReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ImageReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -16515,6 +18868,21 @@ func UnmarshalImageReference(m map[string]json.RawMessage, result interface{}) (
 
 // Instance : Instance struct
 type Instance struct {
+	// The unique identifier for this virtual server instance.
+	ID *string `json:"id" validate:"required"`
+
+	// The CRN for this virtual server instance.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The URL for this virtual server instance.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this virtual server instance (and default system hostname).
+	Name *string `json:"name" validate:"required"`
+
+	// The resource group for this instance.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
 	// The total bandwidth (in megabits per second) shared across the virtual server instance's network interfaces.
 	Bandwidth *int64 `json:"bandwidth" validate:"required"`
 
@@ -16524,26 +18892,14 @@ type Instance struct {
 	// The date and time that the virtual server instance was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
-	// The CRN for this virtual server instance.
-	CRN *string `json:"crn" validate:"required"`
-
 	// The virtual server instance GPU configuration.
 	Gpu *InstanceGpu `json:"gpu,omitempty"`
-
-	// The URL for this virtual server instance.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this virtual server instance.
-	ID *string `json:"id" validate:"required"`
 
 	// The image the virtual server instance was provisioned from.
 	Image *ImageReference `json:"image,omitempty"`
 
 	// The amount of memory in gigabytes.
 	Memory *int64 `json:"memory" validate:"required"`
-
-	// The user-defined name for this virtual server instance (and default system hostname).
-	Name *string `json:"name" validate:"required"`
 
 	// Collection of the virtual server instance's network interfaces, including the primary network interface.
 	NetworkInterfaces []NetworkInterfaceInstanceContextReference `json:"network_interfaces" validate:"required"`
@@ -16553,9 +18909,6 @@ type Instance struct {
 
 	// The profile this virtual server instance uses.
 	Profile *InstanceProfileReference `json:"profile" validate:"required"`
-
-	// The resource group for this instance.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
 	// The status of the virtual server instance.
 	Status *string `json:"status" validate:"required"`
@@ -16591,6 +18944,26 @@ const (
 // UnmarshalInstance unmarshals an instance of Instance from the specified map of raw messages.
 func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Instance)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "bandwidth", &obj.Bandwidth)
 	if err != nil {
 		return
@@ -16603,19 +18976,7 @@ func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err er
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalModel(m, "gpu", &obj.Gpu, UnmarshalInstanceGpu)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -16624,10 +18985,6 @@ func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err er
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "memory", &obj.Memory)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -16640,10 +18997,6 @@ func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err er
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
@@ -16673,30 +19026,38 @@ func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err er
 
 // InstanceAction : InstanceAction struct
 type InstanceAction struct {
+	// The identifier for this instance action.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this instance action.
+	Href *string `json:"href" validate:"required"`
+
+	// If set to true, the action will be forced immediately, and all queued actions deleted. Ignored for the start action.
+	Force *bool `json:"force,omitempty"`
+
+	// The type of action.
+	Type *string `json:"type" validate:"required"`
+
 	// The date and time that the action was completed.
 	CompletedAt *strfmt.DateTime `json:"completed_at,omitempty"`
 
 	// The date and time that the action was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
-	// If set to true, the action will be forced immediately, and all queued actions deleted. Ignored for the start action.
-	Force *bool `json:"force,omitempty"`
-
-	// The URL for this instance action.
-	Href *string `json:"href" validate:"required"`
-
-	// The identifier for this instance action.
-	ID *string `json:"id" validate:"required"`
-
 	// The date and time that the action was started.
 	StartedAt *strfmt.DateTime `json:"started_at,omitempty"`
 
 	// The current status of this action.
 	Status *string `json:"status" validate:"required"`
-
-	// The type of action.
-	Type *string `json:"type" validate:"required"`
 }
+
+// Constants associated with the InstanceAction.Type property.
+// The type of action.
+const (
+	InstanceActionTypeRebootConst = "reboot"
+	InstanceActionTypeStartConst  = "start"
+	InstanceActionTypeStopConst   = "stop"
+)
 
 // Constants associated with the InstanceAction.Status property.
 // The current status of this action.
@@ -16707,17 +19068,25 @@ const (
 	InstanceActionStatusRunningConst   = "running"
 )
 
-// Constants associated with the InstanceAction.Type property.
-// The type of action.
-const (
-	InstanceActionTypeRebootConst = "reboot"
-	InstanceActionTypeStartConst  = "start"
-	InstanceActionTypeStopConst   = "stop"
-)
-
 // UnmarshalInstanceAction unmarshals an instance of InstanceAction from the specified map of raw messages.
 func UnmarshalInstanceAction(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceAction)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "force", &obj.Force)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "completed_at", &obj.CompletedAt)
 	if err != nil {
 		return
@@ -16726,27 +19095,11 @@ func UnmarshalInstanceAction(m map[string]json.RawMessage, result interface{}) (
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "force", &obj.Force)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "started_at", &obj.StartedAt)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		return
 	}
@@ -16759,9 +19112,6 @@ type InstanceCollection struct {
 	// A reference to the first page of resources.
 	First *InstanceCollectionFirst `json:"first" validate:"required"`
 
-	// Collection of virtual server instances.
-	Instances []Instance `json:"instances" validate:"required"`
-
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
@@ -16771,16 +19121,15 @@ type InstanceCollection struct {
 
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of virtual server instances.
+	Instances []Instance `json:"instances" validate:"required"`
 }
 
 // UnmarshalInstanceCollection unmarshals an instance of InstanceCollection from the specified map of raw messages.
 func UnmarshalInstanceCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceCollection)
 	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalInstanceCollectionFirst)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "instances", &obj.Instances, UnmarshalInstance)
 	if err != nil {
 		return
 	}
@@ -16793,6 +19142,10 @@ func UnmarshalInstanceCollection(m map[string]json.RawMessage, result interface{
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "instances", &obj.Instances, UnmarshalInstance)
 	if err != nil {
 		return
 	}
@@ -16872,6 +19225,942 @@ func UnmarshalInstanceGpu(m map[string]json.RawMessage, result interface{}) (err
 	return
 }
 
+// InstanceGroup : InstanceGroup struct
+type InstanceGroup struct {
+	// The unique identifier for this instance group.
+	ID *string `json:"id" validate:"required"`
+
+	// The CRN for this instance group.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The URL for this instance group.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this instance group.
+	Name *string `json:"name" validate:"required"`
+
+	// The number of instances in the instance group.
+	MembershipCount *int64 `json:"membership_count" validate:"required"`
+
+	// Required if specifying a load balancer pool only. Used by the instance group when scaling up instances to supply the
+	// port for the load balancer pool member.
+	ApplicationPort *int64 `json:"application_port,omitempty"`
+
+	// The load balancer pool managed by this group. Instances created
+	// by this group will have a new load balancer pool member in that
+	// pool created.
+	LoadBalancerPool *LoadBalancerPoolReference `json:"load_balancer_pool,omitempty"`
+
+	// The date and time that the instance group was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The template used to create new instances for this group.
+	InstanceTemplate *InstanceTemplateReference `json:"instance_template" validate:"required"`
+
+	// Array of references to managers for the instance group.
+	Managers []InstanceGroupManagerReference `json:"managers" validate:"required"`
+
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The status of the instance group
+	// - `deleting`: Group is being deleted
+	// - `healthy`: Group has `membership_count` instances
+	// - `scaling`: Instances in the group are being created or deleted to reach
+	//              `membership_count`
+	// - `unhealthy`: Group is unable to reach `membership_count` instances.
+	Status *string `json:"status" validate:"required"`
+
+	// Array of references to subnets to use when creating new instances.
+	Subnets []SubnetReference `json:"subnets" validate:"required"`
+
+	// The VPC the instance group resides in.
+	VPC *VPCReference `json:"vpc" validate:"required"`
+}
+
+// Constants associated with the InstanceGroup.Status property.
+// The status of the instance group
+// - `deleting`: Group is being deleted
+// - `healthy`: Group has `membership_count` instances
+// - `scaling`: Instances in the group are being created or deleted to reach
+//              `membership_count`
+// - `unhealthy`: Group is unable to reach `membership_count` instances.
+const (
+	InstanceGroupStatusDeletingConst  = "deleting"
+	InstanceGroupStatusHealthyConst   = "healthy"
+	InstanceGroupStatusScalingConst   = "scaling"
+	InstanceGroupStatusUnhealthyConst = "unhealthy"
+)
+
+// UnmarshalInstanceGroup unmarshals an instance of InstanceGroup from the specified map of raw messages.
+func UnmarshalInstanceGroup(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroup)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "membership_count", &obj.MembershipCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "application_port", &obj.ApplicationPort)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "load_balancer_pool", &obj.LoadBalancerPool, UnmarshalLoadBalancerPoolReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "instance_template", &obj.InstanceTemplate, UnmarshalInstanceTemplateReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "managers", &obj.Managers, UnmarshalInstanceGroupManagerReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "subnets", &obj.Subnets, UnmarshalSubnetReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupCollection : InstanceGroupCollection struct
+type InstanceGroupCollection struct {
+	// A reference to the first page of resources.
+	First *InstanceGroupCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A reference to the next page of resources; this reference is included for all pages
+	// except the last page.
+	Next *InstanceGroupCollectionNext `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of instance groups.
+	InstanceGroups []InstanceGroup `json:"instance_groups" validate:"required"`
+}
+
+// UnmarshalInstanceGroupCollection unmarshals an instance of InstanceGroupCollection from the specified map of raw messages.
+func UnmarshalInstanceGroupCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalInstanceGroupCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalInstanceGroupCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "instance_groups", &obj.InstanceGroups, UnmarshalInstanceGroup)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupCollectionFirst : A reference to the first page of resources.
+type InstanceGroupCollectionFirst struct {
+	// The URL for the first page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalInstanceGroupCollectionFirst unmarshals an instance of InstanceGroupCollectionFirst from the specified map of raw messages.
+func UnmarshalInstanceGroupCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+type InstanceGroupCollectionNext struct {
+	// The URL for the next page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalInstanceGroupCollectionNext unmarshals an instance of InstanceGroupCollectionNext from the specified map of raw messages.
+func UnmarshalInstanceGroupCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupManager : InstanceGroupManager struct
+type InstanceGroupManager struct {
+	// The unique identifier for this instance group manager.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this instance group manager.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this instance group manager. Names must be unique within the instance group.
+	Name *string `json:"name" validate:"required"`
+
+	// If set to `true`, this manager will control the instance group.
+	ManagementEnabled *bool `json:"management_enabled" validate:"required"`
+
+	// The time window in seconds to aggregate metrics prior to evaluation.
+	AggregationWindow *int64 `json:"aggregation_window,omitempty"`
+
+	// The duration of time in seconds to pause further scale actions after scaling has taken place.
+	Cooldown *int64 `json:"cooldown,omitempty"`
+
+	// The maximum number of members in a managed instance group.
+	MaxMembershipCount *int64 `json:"max_membership_count,omitempty"`
+
+	// The minimum number of members in a managed instance group.
+	MinMembershipCount *int64 `json:"min_membership_count,omitempty"`
+
+	// The type of instance group manager.
+	ManagerType *string `json:"manager_type" validate:"required"`
+
+	// The policies of the instance group manager.
+	Policies []InstanceGroupManagerPolicyReference `json:"policies" validate:"required"`
+}
+
+// Constants associated with the InstanceGroupManager.ManagerType property.
+// The type of instance group manager.
+const (
+	InstanceGroupManagerManagerTypeAutoscaleConst = "autoscale"
+)
+
+// UnmarshalInstanceGroupManager unmarshals an instance of InstanceGroupManager from the specified map of raw messages.
+func UnmarshalInstanceGroupManager(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupManager)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "management_enabled", &obj.ManagementEnabled)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "aggregation_window", &obj.AggregationWindow)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "cooldown", &obj.Cooldown)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "max_membership_count", &obj.MaxMembershipCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "min_membership_count", &obj.MinMembershipCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "manager_type", &obj.ManagerType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "policies", &obj.Policies, UnmarshalInstanceGroupManagerPolicyReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupManagerCollection : InstanceGroupManagerCollection struct
+type InstanceGroupManagerCollection struct {
+	// A reference to the first page of resources.
+	First *InstanceGroupManagerCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A reference to the next page of resources; this reference is included for all pages
+	// except the last page.
+	Next *InstanceGroupManagerCollectionNext `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of instance group managers.
+	Managers []InstanceGroupManager `json:"managers" validate:"required"`
+}
+
+// UnmarshalInstanceGroupManagerCollection unmarshals an instance of InstanceGroupManagerCollection from the specified map of raw messages.
+func UnmarshalInstanceGroupManagerCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupManagerCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalInstanceGroupManagerCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalInstanceGroupManagerCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "managers", &obj.Managers, UnmarshalInstanceGroupManager)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupManagerCollectionFirst : A reference to the first page of resources.
+type InstanceGroupManagerCollectionFirst struct {
+	// The URL for the first page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalInstanceGroupManagerCollectionFirst unmarshals an instance of InstanceGroupManagerCollectionFirst from the specified map of raw messages.
+func UnmarshalInstanceGroupManagerCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupManagerCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupManagerCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+type InstanceGroupManagerCollectionNext struct {
+	// The URL for the next page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalInstanceGroupManagerCollectionNext unmarshals an instance of InstanceGroupManagerCollectionNext from the specified map of raw messages.
+func UnmarshalInstanceGroupManagerCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupManagerCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupManagerPolicy : InstanceGroupManagerPolicy struct
+// Models which "extend" this model:
+// - InstanceGroupManagerPolicyInstanceGroupManagerTargetPolicy
+type InstanceGroupManagerPolicy struct {
+	// The unique identifier for this instance group manager policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this instance group manager policy.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this instance group manager policy. Names must be unique within the instance group
+	// manager.
+	Name *string `json:"name" validate:"required"`
+
+	// The type of metric to be evaluated.
+	MetricType *string `json:"metric_type,omitempty"`
+
+	// The metric value to be evaluated.
+	MetricValue *int64 `json:"metric_value,omitempty"`
+
+	// The type of Policy for the Instance Group.
+	PolicyType *string `json:"policy_type,omitempty"`
+}
+
+// Constants associated with the InstanceGroupManagerPolicy.MetricType property.
+// The type of metric to be evaluated.
+const (
+	InstanceGroupManagerPolicyMetricTypeCpuConst        = "cpu"
+	InstanceGroupManagerPolicyMetricTypeMemoryConst     = "memory"
+	InstanceGroupManagerPolicyMetricTypeNetworkInConst  = "network_in"
+	InstanceGroupManagerPolicyMetricTypeNetworkOutConst = "network_out"
+)
+
+// Constants associated with the InstanceGroupManagerPolicy.PolicyType property.
+// The type of Policy for the Instance Group.
+const (
+	InstanceGroupManagerPolicyPolicyTypeTargetConst = "target"
+)
+
+func (*InstanceGroupManagerPolicy) isaInstanceGroupManagerPolicy() bool {
+	return true
+}
+
+type InstanceGroupManagerPolicyIntf interface {
+	isaInstanceGroupManagerPolicy() bool
+}
+
+// UnmarshalInstanceGroupManagerPolicy unmarshals an instance of InstanceGroupManagerPolicy from the specified map of raw messages.
+func UnmarshalInstanceGroupManagerPolicy(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupManagerPolicy)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "metric_type", &obj.MetricType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "metric_value", &obj.MetricValue)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "policy_type", &obj.PolicyType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupManagerPolicyCollection : InstanceGroupManagerPolicyCollection struct
+type InstanceGroupManagerPolicyCollection struct {
+	// A reference to the first page of resources.
+	First *InstanceGroupManagerPolicyCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A reference to the next page of resources; this reference is included for all pages
+	// except the last page.
+	Next *InstanceGroupManagerPolicyCollectionNext `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of instance group manager policies.
+	Policies []InstanceGroupManagerPolicyIntf `json:"policies" validate:"required"`
+}
+
+// UnmarshalInstanceGroupManagerPolicyCollection unmarshals an instance of InstanceGroupManagerPolicyCollection from the specified map of raw messages.
+func UnmarshalInstanceGroupManagerPolicyCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupManagerPolicyCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalInstanceGroupManagerPolicyCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalInstanceGroupManagerPolicyCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "policies", &obj.Policies, UnmarshalInstanceGroupManagerPolicy)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupManagerPolicyCollectionFirst : A reference to the first page of resources.
+type InstanceGroupManagerPolicyCollectionFirst struct {
+	// The URL for the first page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalInstanceGroupManagerPolicyCollectionFirst unmarshals an instance of InstanceGroupManagerPolicyCollectionFirst from the specified map of raw messages.
+func UnmarshalInstanceGroupManagerPolicyCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupManagerPolicyCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupManagerPolicyCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+type InstanceGroupManagerPolicyCollectionNext struct {
+	// The URL for the next page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalInstanceGroupManagerPolicyCollectionNext unmarshals an instance of InstanceGroupManagerPolicyCollectionNext from the specified map of raw messages.
+func UnmarshalInstanceGroupManagerPolicyCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupManagerPolicyCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupManagerPolicyPrototype : InstanceGroupManagerPolicyPrototype struct
+// Models which "extend" this model:
+// - InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype
+type InstanceGroupManagerPolicyPrototype struct {
+	// The user-defined name for this instance group manager policy. Names must be unique within the instance group
+	// manager.
+	Name *string `json:"name,omitempty"`
+
+	// The type of metric to be evaluated.
+	MetricType *string `json:"metric_type,omitempty"`
+
+	// The metric value to be evaluated.
+	MetricValue *int64 `json:"metric_value,omitempty"`
+
+	// The type of Policy for the Instance Group.
+	PolicyType *string `json:"policy_type,omitempty"`
+}
+
+// Constants associated with the InstanceGroupManagerPolicyPrototype.MetricType property.
+// The type of metric to be evaluated.
+const (
+	InstanceGroupManagerPolicyPrototypeMetricTypeCpuConst        = "cpu"
+	InstanceGroupManagerPolicyPrototypeMetricTypeMemoryConst     = "memory"
+	InstanceGroupManagerPolicyPrototypeMetricTypeNetworkInConst  = "network_in"
+	InstanceGroupManagerPolicyPrototypeMetricTypeNetworkOutConst = "network_out"
+)
+
+// Constants associated with the InstanceGroupManagerPolicyPrototype.PolicyType property.
+// The type of Policy for the Instance Group.
+const (
+	InstanceGroupManagerPolicyPrototypePolicyTypeTargetConst = "target"
+)
+
+func (*InstanceGroupManagerPolicyPrototype) isaInstanceGroupManagerPolicyPrototype() bool {
+	return true
+}
+
+type InstanceGroupManagerPolicyPrototypeIntf interface {
+	isaInstanceGroupManagerPolicyPrototype() bool
+}
+
+// UnmarshalInstanceGroupManagerPolicyPrototype unmarshals an instance of InstanceGroupManagerPolicyPrototype from the specified map of raw messages.
+func UnmarshalInstanceGroupManagerPolicyPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupManagerPolicyPrototype)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "metric_type", &obj.MetricType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "metric_value", &obj.MetricValue)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "policy_type", &obj.PolicyType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupManagerPolicyReference : InstanceGroupManagerPolicyReference struct
+type InstanceGroupManagerPolicyReference struct {
+	// The unique identifier for this instance group manager policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this instance group manager policy.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this instance group manager policy. Names must be unique within the instance group
+	// manager.
+	Name *string `json:"name" validate:"required"`
+}
+
+// UnmarshalInstanceGroupManagerPolicyReference unmarshals an instance of InstanceGroupManagerPolicyReference from the specified map of raw messages.
+func UnmarshalInstanceGroupManagerPolicyReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupManagerPolicyReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupManagerPrototype : InstanceGroupManagerPrototype struct
+// Models which "extend" this model:
+// - InstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototype
+type InstanceGroupManagerPrototype struct {
+	// The user-defined name for this instance group manager. Names must be unique within the instance group.
+	Name *string `json:"name,omitempty"`
+
+	// If set to `true`, this manager will control the instance group.
+	ManagementEnabled *bool `json:"management_enabled,omitempty"`
+
+	// The time window in seconds to aggregate metrics prior to evaluation.
+	AggregationWindow *int64 `json:"aggregation_window,omitempty"`
+
+	// The duration of time in seconds to pause further scale actions after scaling has taken place.
+	Cooldown *int64 `json:"cooldown,omitempty"`
+
+	// The maximum number of members in a managed instance group.
+	MaxMembershipCount *int64 `json:"max_membership_count,omitempty"`
+
+	// The minimum number of members in a managed instance group.
+	MinMembershipCount *int64 `json:"min_membership_count,omitempty"`
+
+	// The type of instance group manager.
+	ManagerType *string `json:"manager_type,omitempty"`
+}
+
+// Constants associated with the InstanceGroupManagerPrototype.ManagerType property.
+// The type of instance group manager.
+const (
+	InstanceGroupManagerPrototypeManagerTypeAutoscaleConst = "autoscale"
+)
+
+func (*InstanceGroupManagerPrototype) isaInstanceGroupManagerPrototype() bool {
+	return true
+}
+
+type InstanceGroupManagerPrototypeIntf interface {
+	isaInstanceGroupManagerPrototype() bool
+}
+
+// UnmarshalInstanceGroupManagerPrototype unmarshals an instance of InstanceGroupManagerPrototype from the specified map of raw messages.
+func UnmarshalInstanceGroupManagerPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupManagerPrototype)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "management_enabled", &obj.ManagementEnabled)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "aggregation_window", &obj.AggregationWindow)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "cooldown", &obj.Cooldown)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "max_membership_count", &obj.MaxMembershipCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "min_membership_count", &obj.MinMembershipCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "manager_type", &obj.ManagerType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupManagerReference : InstanceGroupManagerReference struct
+type InstanceGroupManagerReference struct {
+	// The unique identifier for this instance group manager.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this instance group manager.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this instance group manager. Names must be unique within the instance group.
+	Name *string `json:"name" validate:"required"`
+}
+
+// UnmarshalInstanceGroupManagerReference unmarshals an instance of InstanceGroupManagerReference from the specified map of raw messages.
+func UnmarshalInstanceGroupManagerReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupManagerReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupMembership : InstanceGroupMembership struct
+type InstanceGroupMembership struct {
+	// The unique identifier for this instance group membership.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this instance group membership.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this instance group membership. Names must be unique within the instance group.
+	Name *string `json:"name" validate:"required"`
+
+	// If set to true, when deleting the membership the instance will also be deleted.
+	DeleteInstanceOnMembershipDelete *bool `json:"delete_instance_on_membership_delete" validate:"required"`
+
+	Instance *InstanceReference `json:"instance" validate:"required"`
+
+	InstanceTemplate *InstanceTemplateReference `json:"instance_template" validate:"required"`
+
+	PoolMember *LoadBalancerPoolMemberReference `json:"pool_member,omitempty"`
+
+	// The status of the instance group membership
+	// - `deleting`: Membership is deleting dependent resources
+	// - `failed`: Membership was unable to maintain dependent resources
+	// - `healthy`: Membership is active and serving in the group
+	// - `pending`: Membership is waiting for dependent resources
+	// - `unhealthy`: Membership has unhealthy dependent resources.
+	Status *string `json:"status" validate:"required"`
+}
+
+// Constants associated with the InstanceGroupMembership.Status property.
+// The status of the instance group membership
+// - `deleting`: Membership is deleting dependent resources
+// - `failed`: Membership was unable to maintain dependent resources
+// - `healthy`: Membership is active and serving in the group
+// - `pending`: Membership is waiting for dependent resources
+// - `unhealthy`: Membership has unhealthy dependent resources.
+const (
+	InstanceGroupMembershipStatusDeletingConst  = "deleting"
+	InstanceGroupMembershipStatusFailedConst    = "failed"
+	InstanceGroupMembershipStatusHealthyConst   = "healthy"
+	InstanceGroupMembershipStatusPendingConst   = "pending"
+	InstanceGroupMembershipStatusUnhealthyConst = "unhealthy"
+)
+
+// UnmarshalInstanceGroupMembership unmarshals an instance of InstanceGroupMembership from the specified map of raw messages.
+func UnmarshalInstanceGroupMembership(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupMembership)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "delete_instance_on_membership_delete", &obj.DeleteInstanceOnMembershipDelete)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "instance", &obj.Instance, UnmarshalInstanceReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "instance_template", &obj.InstanceTemplate, UnmarshalInstanceTemplateReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "pool_member", &obj.PoolMember, UnmarshalLoadBalancerPoolMemberReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupMembershipCollection : InstanceGroupMembershipCollection struct
+type InstanceGroupMembershipCollection struct {
+	// A reference to the first page of resources.
+	First *InstanceGroupMembershipCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A reference to the next page of resources; this reference is included for all pages
+	// except the last page.
+	Next *InstanceGroupMembershipCollectionNext `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of instance group memberships.
+	Memberships []InstanceGroupMembership `json:"memberships" validate:"required"`
+}
+
+// UnmarshalInstanceGroupMembershipCollection unmarshals an instance of InstanceGroupMembershipCollection from the specified map of raw messages.
+func UnmarshalInstanceGroupMembershipCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupMembershipCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalInstanceGroupMembershipCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalInstanceGroupMembershipCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "memberships", &obj.Memberships, UnmarshalInstanceGroupMembership)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupMembershipCollectionFirst : A reference to the first page of resources.
+type InstanceGroupMembershipCollectionFirst struct {
+	// The URL for the first page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalInstanceGroupMembershipCollectionFirst unmarshals an instance of InstanceGroupMembershipCollectionFirst from the specified map of raw messages.
+func UnmarshalInstanceGroupMembershipCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupMembershipCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupMembershipCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+type InstanceGroupMembershipCollectionNext struct {
+	// The URL for the next page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalInstanceGroupMembershipCollectionNext unmarshals an instance of InstanceGroupMembershipCollectionNext from the specified map of raw messages.
+func UnmarshalInstanceGroupMembershipCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupMembershipCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupReference : InstanceGroupReference struct
+type InstanceGroupReference struct {
+	// The unique identifier for this instance group.
+	ID *string `json:"id" validate:"required"`
+
+	// The CRN for this instance group.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The URL for this instance group.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this instance group.
+	Name *string `json:"name" validate:"required"`
+}
+
+// UnmarshalInstanceGroupReference unmarshals an instance of InstanceGroupReference from the specified map of raw messages.
+func UnmarshalInstanceGroupReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // InstanceInitialization : InstanceInitialization struct
 type InstanceInitialization struct {
 	// Collection of references to public SSH keys used at instance initialization.
@@ -16921,36 +20210,32 @@ func UnmarshalInstanceInitializationPassword(m map[string]json.RawMessage, resul
 
 // InstanceProfile : InstanceProfile struct
 type InstanceProfile struct {
-	Bandwidth InstanceProfileBandwidthIntf `json:"bandwidth" validate:"required"`
-
-	// The product family this virtual server instance profile belongs to.
-	Family *string `json:"family,omitempty"`
+	// The name for this virtual server instance profile.
+	Name *string `json:"name" validate:"required"`
 
 	// The URL for this virtual server instance profile.
 	Href *string `json:"href" validate:"required"`
 
-	Memory InstanceProfileMemoryIntf `json:"memory" validate:"required"`
-
-	// The name for this virtual server instance profile.
-	Name *string `json:"name" validate:"required"`
-
-	OsArchitecture *InstanceProfileOsArchitecture `json:"os_architecture" validate:"required"`
+	Bandwidth InstanceProfileBandwidthIntf `json:"bandwidth" validate:"required"`
 
 	PortSpeed InstanceProfilePortSpeedIntf `json:"port_speed" validate:"required"`
+
+	Memory InstanceProfileMemoryIntf `json:"memory" validate:"required"`
+
+	OsArchitecture *InstanceProfileOsArchitecture `json:"os_architecture" validate:"required"`
 
 	VcpuArchitecture *InstanceProfileVcpuArchitecture `json:"vcpu_architecture" validate:"required"`
 
 	VcpuCount InstanceProfileVcpuIntf `json:"vcpu_count" validate:"required"`
+
+	// The product family this virtual server instance profile belongs to.
+	Family *string `json:"family,omitempty"`
 }
 
 // UnmarshalInstanceProfile unmarshals an instance of InstanceProfile from the specified map of raw messages.
 func UnmarshalInstanceProfile(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfile)
-	err = core.UnmarshalModel(m, "bandwidth", &obj.Bandwidth, UnmarshalInstanceProfileBandwidth)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -16958,19 +20243,19 @@ func UnmarshalInstanceProfile(m map[string]json.RawMessage, result interface{}) 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "memory", &obj.Memory, UnmarshalInstanceProfileMemory)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "os_architecture", &obj.OsArchitecture, UnmarshalInstanceProfileOsArchitecture)
+	err = core.UnmarshalModel(m, "bandwidth", &obj.Bandwidth, UnmarshalInstanceProfileBandwidth)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "port_speed", &obj.PortSpeed, UnmarshalInstanceProfilePortSpeed)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "memory", &obj.Memory, UnmarshalInstanceProfileMemory)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "os_architecture", &obj.OsArchitecture, UnmarshalInstanceProfileOsArchitecture)
 	if err != nil {
 		return
 	}
@@ -16979,6 +20264,10 @@ func UnmarshalInstanceProfile(m map[string]json.RawMessage, result interface{}) 
 		return
 	}
 	err = core.UnmarshalModel(m, "vcpu_count", &obj.VcpuCount, UnmarshalInstanceProfileVcpu)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
 	if err != nil {
 		return
 	}
@@ -17196,11 +20485,11 @@ func UnmarshalInstanceProfileMemory(m map[string]json.RawMessage, result interfa
 
 // InstanceProfileOsArchitecture : InstanceProfileOsArchitecture struct
 type InstanceProfileOsArchitecture struct {
-	// The default OS architecture for an instance with this profile.
-	Default *string `json:"default" validate:"required"`
-
 	// The type for this profile field.
 	Type *string `json:"type" validate:"required"`
+
+	// The default OS architecture for an instance with this profile.
+	Default *string `json:"default" validate:"required"`
 
 	// The supported OS architecture(s) for an instance with this profile.
 	Values []string `json:"values" validate:"required"`
@@ -17215,11 +20504,11 @@ const (
 // UnmarshalInstanceProfileOsArchitecture unmarshals an instance of InstanceProfileOsArchitecture from the specified map of raw messages.
 func UnmarshalInstanceProfileOsArchitecture(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfileOsArchitecture)
-	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
 	if err != nil {
 		return
 	}
@@ -17274,21 +20563,21 @@ func UnmarshalInstanceProfilePortSpeed(m map[string]json.RawMessage, result inte
 
 // InstanceProfileReference : InstanceProfileReference struct
 type InstanceProfileReference struct {
-	// The URL for this virtual server instance profile.
-	Href *string `json:"href" validate:"required"`
-
 	// The name for this virtual server instance profile.
 	Name *string `json:"name" validate:"required"`
+
+	// The URL for this virtual server instance profile.
+	Href *string `json:"href" validate:"required"`
 }
 
 // UnmarshalInstanceProfileReference unmarshals an instance of InstanceProfileReference from the specified map of raw messages.
 func UnmarshalInstanceProfileReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfileReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -17376,14 +20665,14 @@ func UnmarshalInstanceProfileVcpu(m map[string]json.RawMessage, result interface
 
 // InstanceProfileVcpuArchitecture : InstanceProfileVcpuArchitecture struct
 type InstanceProfileVcpuArchitecture struct {
-	// The default VCPU architecture for an instance with this profile.
-	Default *string `json:"default,omitempty"`
-
 	// The type for this profile field.
 	Type *string `json:"type" validate:"required"`
 
 	// The VCPU architecture for an instance with this profile.
 	Value *string `json:"value" validate:"required"`
+
+	// The default VCPU architecture for an instance with this profile.
+	Default *string `json:"default,omitempty"`
 }
 
 // Constants associated with the InstanceProfileVcpuArchitecture.Type property.
@@ -17395,15 +20684,15 @@ const (
 // UnmarshalInstanceProfileVcpuArchitecture unmarshals an instance of InstanceProfileVcpuArchitecture from the specified map of raw messages.
 func UnmarshalInstanceProfileVcpuArchitecture(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfileVcpuArchitecture)
-	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
 	if err != nil {
 		return
 	}
@@ -17414,7 +20703,12 @@ func UnmarshalInstanceProfileVcpuArchitecture(m map[string]json.RawMessage, resu
 // InstancePrototype : InstancePrototype struct
 // Models which "extend" this model:
 // - InstancePrototypeInstanceByImage
+// - InstancePrototypeInstanceBySourceTemplate
 type InstancePrototype struct {
+	// The unique user-defined name for this virtual server instance (and default system hostname). If unspecified, the
+	// name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// The public SSH keys for the administrative user of the virtual server instance. Up to 10 keys may be provided; if no
 	// keys are provided the instance will be inaccessible unless the image used provides another means of access. For
 	// Windows instances, one of the keys will be used to encrypt the administrator password.
@@ -17423,19 +20717,11 @@ type InstancePrototype struct {
 	// these keys will also be added as SSH authorized keys for the administrative user.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
-	// The unique user-defined name for this virtual server instance (and default system hostname). If unspecified, the
-	// name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
 	// Collection of additional network interfaces to create for the virtual server instance.
 	NetworkInterfaces []NetworkInterfacePrototype `json:"network_interfaces,omitempty"`
 
 	// The profile to use for this virtual server instance.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
-
-	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
-	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// User data to be made available when setting up the virtual server instance.
 	UserData *string `json:"user_data,omitempty"`
@@ -17447,17 +20733,24 @@ type InstancePrototype struct {
 	// VPC tied to the subnets of the instance's network interfaces.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
-	// The boot volume attachment for the virtual server instance.
-	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
-
-	// The identity of the image to be used when provisioning the virtual server instance.
-	Image ImageIdentityIntf `json:"image,omitempty"`
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Primary network interface.
 	PrimaryNetworkInterface *NetworkInterfacePrototype `json:"primary_network_interface,omitempty"`
 
 	// The identity of the zone to provision the virtual server instance in.
 	Zone ZoneIdentityIntf `json:"zone,omitempty"`
+
+	// The boot volume attachment for the virtual server instance.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
+
+	// The identity of the image to be used when provisioning the virtual server instance.
+	Image ImageIdentityIntf `json:"image,omitempty"`
+
+	// Identifies an instance template by a unique property.
+	SourceTemplate InstanceTemplateIdentityIntf `json:"source_template,omitempty"`
 }
 
 func (*InstancePrototype) isaInstancePrototype() bool {
@@ -17471,11 +20764,11 @@ type InstancePrototypeIntf interface {
 // UnmarshalInstancePrototype unmarshals an instance of InstancePrototype from the specified map of raw messages.
 func UnmarshalInstancePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstancePrototype)
-	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
 	if err != nil {
 		return
 	}
@@ -17484,10 +20777,6 @@ func UnmarshalInstancePrototype(m map[string]json.RawMessage, result interface{}
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
 	if err != nil {
 		return
 	}
@@ -17503,11 +20792,7 @@ func UnmarshalInstancePrototype(m map[string]json.RawMessage, result interface{}
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
 	if err != nil {
 		return
 	}
@@ -17519,20 +20804,32 @@ func UnmarshalInstancePrototype(m map[string]json.RawMessage, result interface{}
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "source_template", &obj.SourceTemplate, UnmarshalInstanceTemplateIdentity)
+	if err != nil {
+		return
+	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
 // InstanceReference : InstanceReference struct
 type InstanceReference struct {
+	// The unique identifier for this virtual server instance.
+	ID *string `json:"id" validate:"required"`
+
 	// The CRN for this virtual server instance.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this virtual server instance.
 	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this virtual server instance.
-	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this virtual server instance (and default system hostname).
 	Name *string `json:"name" validate:"required"`
@@ -17541,6 +20838,10 @@ type InstanceReference struct {
 // UnmarshalInstanceReference unmarshals an instance of InstanceReference from the specified map of raw messages.
 func UnmarshalInstanceReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
@@ -17549,11 +20850,427 @@ func UnmarshalInstanceReference(m map[string]json.RawMessage, result interface{}
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceTemplate : InstanceTemplate struct
+// Models which "extend" this model:
+// - InstanceTemplateInstanceByImage
+// - InstanceTemplateInstanceBySourceTemplate
+type InstanceTemplate struct {
+	// The unique identifier for this instance template.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this instance template.
+	Href *string `json:"href" validate:"required"`
+
+	// The CRN for this instance template.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The unique user-defined name for this instance template.
+	Name *string `json:"name" validate:"required"`
+
+	// The public SSH keys for the administrative user of the virtual server instance. Up to 10 keys may be provided; if no
+	// keys are provided the instance will be inaccessible unless the image used provides another means of access. For
+	// Windows instances, one of the keys will be used to encrypt the administrator password.
+	//
+	// Keys will be made available to the virtual server instance as cloud-init vendor data. For cloud-init enabled images,
+	// these keys will also be added as SSH authorized keys for the administrative user.
+	Keys []KeyIdentityIntf `json:"keys,omitempty"`
+
+	// Collection of additional network interfaces to create for the virtual server instance.
+	NetworkInterfaces []NetworkInterfacePrototype `json:"network_interfaces,omitempty"`
+
+	// The profile to use for this virtual server instance.
+	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
+
+	// User data to be made available when setting up the virtual server instance.
+	UserData *string `json:"user_data,omitempty"`
+
+	// Collection of volume attachments.
+	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+
+	// The VPC the virtual server instance is to be a part of. If provided, must match the
+	// VPC tied to the subnets of the instance's network interfaces.
+	VPC VPCIdentityIntf `json:"vpc,omitempty"`
+
+	// The date and time that the instance template was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The resource group for this instance template.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// Primary network interface.
+	PrimaryNetworkInterface *NetworkInterfacePrototype `json:"primary_network_interface,omitempty"`
+
+	// The identity of the zone to provision the virtual server instance in.
+	Zone ZoneIdentityIntf `json:"zone,omitempty"`
+
+	// The boot volume attachment for the virtual server instance.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
+
+	// The identity of the image to be used when provisioning the virtual server instance.
+	Image ImageIdentityIntf `json:"image,omitempty"`
+
+	// Identifies an instance template by a unique property.
+	SourceTemplate InstanceTemplateIdentityIntf `json:"source_template,omitempty"`
+}
+
+func (*InstanceTemplate) isaInstanceTemplate() bool {
+	return true
+}
+
+type InstanceTemplateIntf interface {
+	isaInstanceTemplate() bool
+}
+
+// UnmarshalInstanceTemplate unmarshals an instance of InstanceTemplate from the specified map of raw messages.
+func UnmarshalInstanceTemplate(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceTemplate)
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "network_interfaces", &obj.NetworkInterfaces, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_data", &obj.UserData)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "primary_network_interface", &obj.PrimaryNetworkInterface, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "source_template", &obj.SourceTemplate, UnmarshalInstanceTemplateIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceTemplateCollection : InstanceTemplateCollection struct
+type InstanceTemplateCollection struct {
+	// A reference to the first page of resources.
+	First *InstanceTemplateCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A reference to the next page of resources; this reference is included for all pages
+	// except the last page.
+	Next *InstanceTemplateCollectionNext `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of instance templates.
+	Templates []InstanceTemplateIntf `json:"templates" validate:"required"`
+}
+
+// UnmarshalInstanceTemplateCollection unmarshals an instance of InstanceTemplateCollection from the specified map of raw messages.
+func UnmarshalInstanceTemplateCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceTemplateCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalInstanceTemplateCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalInstanceTemplateCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "templates", &obj.Templates, UnmarshalInstanceTemplate)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceTemplateCollectionFirst : A reference to the first page of resources.
+type InstanceTemplateCollectionFirst struct {
+	// The URL for the first page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalInstanceTemplateCollectionFirst unmarshals an instance of InstanceTemplateCollectionFirst from the specified map of raw messages.
+func UnmarshalInstanceTemplateCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceTemplateCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceTemplateCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+type InstanceTemplateCollectionNext struct {
+	// The URL for the next page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalInstanceTemplateCollectionNext unmarshals an instance of InstanceTemplateCollectionNext from the specified map of raw messages.
+func UnmarshalInstanceTemplateCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceTemplateCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceTemplateIdentity : Identifies an instance template by a unique property.
+// Models which "extend" this model:
+// - InstanceTemplateIdentityByID
+// - InstanceTemplateIdentityByHref
+// - InstanceTemplateIdentityByCRN
+type InstanceTemplateIdentity struct {
+	// The unique identifier for this instance template.
+	ID *string `json:"id,omitempty"`
+
+	// The URL for this instance template.
+	Href *string `json:"href,omitempty"`
+
+	// The CRN for this instance template.
+	CRN *string `json:"crn,omitempty"`
+}
+
+func (*InstanceTemplateIdentity) isaInstanceTemplateIdentity() bool {
+	return true
+}
+
+type InstanceTemplateIdentityIntf interface {
+	isaInstanceTemplateIdentity() bool
+}
+
+// UnmarshalInstanceTemplateIdentity unmarshals an instance of InstanceTemplateIdentity from the specified map of raw messages.
+func UnmarshalInstanceTemplateIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceTemplateIdentity)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceTemplatePrototype : InstanceTemplatePrototype struct
+// Models which "extend" this model:
+// - InstanceTemplatePrototypeInstanceByImage
+// - InstanceTemplatePrototypeInstanceBySourceTemplate
+type InstanceTemplatePrototype struct {
+	// The unique user-defined name for this virtual server instance (and default system hostname). If unspecified, the
+	// name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The public SSH keys for the administrative user of the virtual server instance. Up to 10 keys may be provided; if no
+	// keys are provided the instance will be inaccessible unless the image used provides another means of access. For
+	// Windows instances, one of the keys will be used to encrypt the administrator password.
+	//
+	// Keys will be made available to the virtual server instance as cloud-init vendor data. For cloud-init enabled images,
+	// these keys will also be added as SSH authorized keys for the administrative user.
+	Keys []KeyIdentityIntf `json:"keys,omitempty"`
+
+	// Collection of additional network interfaces to create for the virtual server instance.
+	NetworkInterfaces []NetworkInterfacePrototype `json:"network_interfaces,omitempty"`
+
+	// The profile to use for this virtual server instance.
+	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
+
+	// User data to be made available when setting up the virtual server instance.
+	UserData *string `json:"user_data,omitempty"`
+
+	// Collection of volume attachments.
+	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+
+	// The VPC the virtual server instance is to be a part of. If provided, must match the
+	// VPC tied to the subnets of the instance's network interfaces.
+	VPC VPCIdentityIntf `json:"vpc,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// Primary network interface.
+	PrimaryNetworkInterface *NetworkInterfacePrototype `json:"primary_network_interface,omitempty"`
+
+	// The identity of the zone to provision the virtual server instance in.
+	Zone ZoneIdentityIntf `json:"zone,omitempty"`
+
+	// The boot volume attachment for the virtual server instance.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
+
+	// The identity of the image to be used when provisioning the virtual server instance.
+	Image ImageIdentityIntf `json:"image,omitempty"`
+
+	// Identifies an instance template by a unique property.
+	SourceTemplate InstanceTemplateIdentityIntf `json:"source_template,omitempty"`
+}
+
+func (*InstanceTemplatePrototype) isaInstanceTemplatePrototype() bool {
+	return true
+}
+
+type InstanceTemplatePrototypeIntf interface {
+	isaInstanceTemplatePrototype() bool
+}
+
+// UnmarshalInstanceTemplatePrototype unmarshals an instance of InstanceTemplatePrototype from the specified map of raw messages.
+func UnmarshalInstanceTemplatePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceTemplatePrototype)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "network_interfaces", &obj.NetworkInterfaces, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_data", &obj.UserData)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "primary_network_interface", &obj.PrimaryNetworkInterface, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "source_template", &obj.SourceTemplate, UnmarshalInstanceTemplateIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceTemplateReference : InstanceTemplateReference struct
+type InstanceTemplateReference struct {
+	// The unique identifier for this instance template.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this instance template.
+	Href *string `json:"href" validate:"required"`
+
+	// The CRN for this instance template.
+	CRN *string `json:"crn" validate:"required"`
+}
+
+// UnmarshalInstanceTemplateReference unmarshals an instance of InstanceTemplateReference from the specified map of raw messages.
+func UnmarshalInstanceTemplateReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceTemplateReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
@@ -17587,24 +21304,18 @@ func UnmarshalInstanceVcpu(m map[string]json.RawMessage, result interface{}) (er
 
 // Key : Key struct
 type Key struct {
-	// The date and time that the key was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The unique identifier for this key.
+	ID *string `json:"id" validate:"required"`
 
 	// The CRN for this key.
 	CRN *string `json:"crn" validate:"required"`
 
-	// The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm (always
-	// `SHA256`).
-	Fingerprint *string `json:"fingerprint" validate:"required"`
-
 	// The URL for this key.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this key.
-	ID *string `json:"id" validate:"required"`
-
-	// The length of this key (in bits).
-	Length *int64 `json:"length" validate:"required"`
+	// The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm (always
+	// `SHA256`).
+	Fingerprint *string `json:"fingerprint" validate:"required"`
 
 	// The unique user-defined name for this key. If unspecified, the name will be a hyphenated list of randomly-selected
 	// words.
@@ -17613,11 +21324,17 @@ type Key struct {
 	// The public SSH key.
 	PublicKey *string `json:"public_key" validate:"required"`
 
+	// The cryptosystem used by this key.
+	Type *string `json:"type" validate:"required"`
+
 	// The resource group for this key.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
-	// The cryptosystem used by this key.
-	Type *string `json:"type" validate:"required"`
+	// The date and time that the key was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The length of this key (in bits).
+	Length *int64 `json:"length" validate:"required"`
 }
 
 // Constants associated with the Key.Type property.
@@ -17629,7 +21346,7 @@ const (
 // UnmarshalKey unmarshals an instance of Key from the specified map of raw messages.
 func UnmarshalKey(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Key)
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -17637,19 +21354,11 @@ func UnmarshalKey(m map[string]json.RawMessage, result interface{}) (err error) 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "fingerprint", &obj.Fingerprint)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "length", &obj.Length)
+	err = core.UnmarshalPrimitive(m, "fingerprint", &obj.Fingerprint)
 	if err != nil {
 		return
 	}
@@ -17661,11 +21370,19 @@ func UnmarshalKey(m map[string]json.RawMessage, result interface{}) (err error) 
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "length", &obj.Length)
 	if err != nil {
 		return
 	}
@@ -17747,18 +21464,18 @@ func UnmarshalKeyIdentity(m map[string]json.RawMessage, result interface{}) (err
 // - KeyReferenceInstanceInitializationContextKeyReference
 // - KeyReferenceInstanceInitializationContextKeyIdentityByFingerprint
 type KeyReferenceInstanceInitializationContext struct {
+	// The unique identifier for this key.
+	ID *string `json:"id,omitempty"`
+
 	// The CRN for this key.
 	CRN *string `json:"crn,omitempty"`
-
-	// The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm (always
-	// `SHA256`).
-	Fingerprint *string `json:"fingerprint,omitempty"`
 
 	// The URL for this key.
 	Href *string `json:"href,omitempty"`
 
-	// The unique identifier for this key.
-	ID *string `json:"id,omitempty"`
+	// The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm (always
+	// `SHA256`).
+	Fingerprint *string `json:"fingerprint,omitempty"`
 
 	// The user-defined name for this key.
 	Name *string `json:"name,omitempty"`
@@ -17775,11 +21492,11 @@ type KeyReferenceInstanceInitializationContextIntf interface {
 // UnmarshalKeyReferenceInstanceInitializationContext unmarshals an instance of KeyReferenceInstanceInitializationContext from the specified map of raw messages.
 func UnmarshalKeyReferenceInstanceInitializationContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(KeyReferenceInstanceInitializationContext)
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "fingerprint", &obj.Fingerprint)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
@@ -17787,7 +21504,7 @@ func UnmarshalKeyReferenceInstanceInitializationContext(m map[string]json.RawMes
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "fingerprint", &obj.Fingerprint)
 	if err != nil {
 		return
 	}
@@ -18030,7 +21747,7 @@ type ListImagesOptions struct {
 	// Filters the collection to resources with the exact specified name.
 	Name *string `json:"name,omitempty"`
 
-	// Filters the collection to images with the specified visibility.
+	// Filters the collection to images with the specified `visibility`.
 	Visibility *string `json:"visibility,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -18038,7 +21755,7 @@ type ListImagesOptions struct {
 }
 
 // Constants associated with the ListImagesOptions.Visibility property.
-// Filters the collection to images with the specified visibility.
+// Filters the collection to images with the specified `visibility`.
 const (
 	ListImagesOptionsVisibilityPrivateConst = "private"
 	ListImagesOptionsVisibilityPublicConst  = "public"
@@ -18081,6 +21798,135 @@ func (options *ListImagesOptions) SetVisibility(visibility string) *ListImagesOp
 
 // SetHeaders : Allow user to set Headers
 func (options *ListImagesOptions) SetHeaders(param map[string]string) *ListImagesOptions {
+	options.Headers = param
+	return options
+}
+
+// ListInstanceGroupManagerPoliciesOptions : The ListInstanceGroupManagerPolicies options.
+type ListInstanceGroupManagerPoliciesOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// The instance group manager identifier.
+	InstanceGroupManagerID *string `json:"instance_group_manager_id" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewListInstanceGroupManagerPoliciesOptions : Instantiate ListInstanceGroupManagerPoliciesOptions
+func (*VpcV1) NewListInstanceGroupManagerPoliciesOptions(instanceGroupID string, instanceGroupManagerID string) *ListInstanceGroupManagerPoliciesOptions {
+	return &ListInstanceGroupManagerPoliciesOptions{
+		InstanceGroupID:        core.StringPtr(instanceGroupID),
+		InstanceGroupManagerID: core.StringPtr(instanceGroupManagerID),
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *ListInstanceGroupManagerPoliciesOptions) SetInstanceGroupID(instanceGroupID string) *ListInstanceGroupManagerPoliciesOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetInstanceGroupManagerID : Allow user to set InstanceGroupManagerID
+func (options *ListInstanceGroupManagerPoliciesOptions) SetInstanceGroupManagerID(instanceGroupManagerID string) *ListInstanceGroupManagerPoliciesOptions {
+	options.InstanceGroupManagerID = core.StringPtr(instanceGroupManagerID)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListInstanceGroupManagerPoliciesOptions) SetHeaders(param map[string]string) *ListInstanceGroupManagerPoliciesOptions {
+	options.Headers = param
+	return options
+}
+
+// ListInstanceGroupManagersOptions : The ListInstanceGroupManagers options.
+type ListInstanceGroupManagersOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewListInstanceGroupManagersOptions : Instantiate ListInstanceGroupManagersOptions
+func (*VpcV1) NewListInstanceGroupManagersOptions(instanceGroupID string) *ListInstanceGroupManagersOptions {
+	return &ListInstanceGroupManagersOptions{
+		InstanceGroupID: core.StringPtr(instanceGroupID),
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *ListInstanceGroupManagersOptions) SetInstanceGroupID(instanceGroupID string) *ListInstanceGroupManagersOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListInstanceGroupManagersOptions) SetHeaders(param map[string]string) *ListInstanceGroupManagersOptions {
+	options.Headers = param
+	return options
+}
+
+// ListInstanceGroupMembershipsOptions : The ListInstanceGroupMemberships options.
+type ListInstanceGroupMembershipsOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewListInstanceGroupMembershipsOptions : Instantiate ListInstanceGroupMembershipsOptions
+func (*VpcV1) NewListInstanceGroupMembershipsOptions(instanceGroupID string) *ListInstanceGroupMembershipsOptions {
+	return &ListInstanceGroupMembershipsOptions{
+		InstanceGroupID: core.StringPtr(instanceGroupID),
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *ListInstanceGroupMembershipsOptions) SetInstanceGroupID(instanceGroupID string) *ListInstanceGroupMembershipsOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListInstanceGroupMembershipsOptions) SetHeaders(param map[string]string) *ListInstanceGroupMembershipsOptions {
+	options.Headers = param
+	return options
+}
+
+// ListInstanceGroupsOptions : The ListInstanceGroups options.
+type ListInstanceGroupsOptions struct {
+	// A server-supplied token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewListInstanceGroupsOptions : Instantiate ListInstanceGroupsOptions
+func (*VpcV1) NewListInstanceGroupsOptions() *ListInstanceGroupsOptions {
+	return &ListInstanceGroupsOptions{}
+}
+
+// SetStart : Allow user to set Start
+func (options *ListInstanceGroupsOptions) SetStart(start string) *ListInstanceGroupsOptions {
+	options.Start = core.StringPtr(start)
+	return options
+}
+
+// SetLimit : Allow user to set Limit
+func (options *ListInstanceGroupsOptions) SetLimit(limit int64) *ListInstanceGroupsOptions {
+	options.Limit = core.Int64Ptr(limit)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListInstanceGroupsOptions) SetHeaders(param map[string]string) *ListInstanceGroupsOptions {
 	options.Headers = param
 	return options
 }
@@ -18165,6 +22011,24 @@ func (*VpcV1) NewListInstanceProfilesOptions() *ListInstanceProfilesOptions {
 
 // SetHeaders : Allow user to set Headers
 func (options *ListInstanceProfilesOptions) SetHeaders(param map[string]string) *ListInstanceProfilesOptions {
+	options.Headers = param
+	return options
+}
+
+// ListInstanceTemplatesOptions : The ListInstanceTemplates options.
+type ListInstanceTemplatesOptions struct {
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewListInstanceTemplatesOptions : Instantiate ListInstanceTemplatesOptions
+func (*VpcV1) NewListInstanceTemplatesOptions() *ListInstanceTemplatesOptions {
+	return &ListInstanceTemplatesOptions{}
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListInstanceTemplatesOptions) SetHeaders(param map[string]string) *ListInstanceTemplatesOptions {
 	options.Headers = param
 	return options
 }
@@ -18544,6 +22408,41 @@ func (options *ListLoadBalancerPoolsOptions) SetLoadBalancerID(loadBalancerID st
 
 // SetHeaders : Allow user to set Headers
 func (options *ListLoadBalancerPoolsOptions) SetHeaders(param map[string]string) *ListLoadBalancerPoolsOptions {
+	options.Headers = param
+	return options
+}
+
+// ListLoadBalancerProfilesOptions : The ListLoadBalancerProfiles options.
+type ListLoadBalancerProfilesOptions struct {
+	// A server-supplied token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewListLoadBalancerProfilesOptions : Instantiate ListLoadBalancerProfilesOptions
+func (*VpcV1) NewListLoadBalancerProfilesOptions() *ListLoadBalancerProfilesOptions {
+	return &ListLoadBalancerProfilesOptions{}
+}
+
+// SetStart : Allow user to set Start
+func (options *ListLoadBalancerProfilesOptions) SetStart(start string) *ListLoadBalancerProfilesOptions {
+	options.Start = core.StringPtr(start)
+	return options
+}
+
+// SetLimit : Allow user to set Limit
+func (options *ListLoadBalancerProfilesOptions) SetLimit(limit int64) *ListLoadBalancerProfilesOptions {
+	options.Limit = core.Int64Ptr(limit)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListLoadBalancerProfilesOptions) SetHeaders(param map[string]string) *ListLoadBalancerProfilesOptions {
 	options.Headers = param
 	return options
 }
@@ -19083,6 +22982,12 @@ type ListVPCAddressPrefixesOptions struct {
 	// The VPC identifier.
 	VPCID *string `json:"vpc_id" validate:"required"`
 
+	// A server-supplied token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
@@ -19097,6 +23002,18 @@ func (*VpcV1) NewListVPCAddressPrefixesOptions(vpcID string) *ListVPCAddressPref
 // SetVPCID : Allow user to set VPCID
 func (options *ListVPCAddressPrefixesOptions) SetVPCID(vpcID string) *ListVPCAddressPrefixesOptions {
 	options.VPCID = core.StringPtr(vpcID)
+	return options
+}
+
+// SetStart : Allow user to set Start
+func (options *ListVPCAddressPrefixesOptions) SetStart(start string) *ListVPCAddressPrefixesOptions {
+	options.Start = core.StringPtr(start)
+	return options
+}
+
+// SetLimit : Allow user to set Limit
+func (options *ListVPCAddressPrefixesOptions) SetLimit(limit int64) *ListVPCAddressPrefixesOptions {
+	options.Limit = core.Int64Ptr(limit)
 	return options
 }
 
@@ -19359,29 +23276,32 @@ func (options *ListVPNGatewaysOptions) SetHeaders(param map[string]string) *List
 
 // LoadBalancer : LoadBalancer struct
 type LoadBalancer struct {
-	// The date and time that this load balancer was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The profile to use for this load balancer.
+	Profile *LoadBalancerProfileReference `json:"profile" validate:"required"`
+
+	// The unique identifier for this load balancer.
+	ID *string `json:"id" validate:"required"`
 
 	// The load balancer's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
-	// Fully qualified domain name assigned to this load balancer.
-	Hostname *string `json:"hostname" validate:"required"`
-
 	// The load balancer's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this load balancer.
-	ID *string `json:"id" validate:"required"`
+	// The unique user-defined name for this load balancer.
+	Name *string `json:"name" validate:"required"`
+
+	// The date and time that this load balancer was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// Fully qualified domain name assigned to this load balancer.
+	Hostname *string `json:"hostname" validate:"required"`
 
 	// The type of this load balancer, public or private.
 	IsPublic *bool `json:"is_public" validate:"required"`
 
 	// The listeners of this load balancer.
 	Listeners []LoadBalancerListenerReference `json:"listeners" validate:"required"`
-
-	// The unique user-defined name for this load balancer.
-	Name *string `json:"name" validate:"required"`
 
 	// The operating status of this load balancer.
 	OperatingStatus *string `json:"operating_status" validate:"required"`
@@ -19426,7 +23346,11 @@ const (
 // UnmarshalLoadBalancer unmarshals an instance of LoadBalancer from the specified map of raw messages.
 func UnmarshalLoadBalancer(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancer)
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalLoadBalancerProfileReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -19434,15 +23358,19 @@ func UnmarshalLoadBalancer(m map[string]json.RawMessage, result interface{}) (er
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "hostname", &obj.Hostname)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "hostname", &obj.Hostname)
 	if err != nil {
 		return
 	}
@@ -19451,10 +23379,6 @@ func UnmarshalLoadBalancer(m map[string]json.RawMessage, result interface{}) (er
 		return
 	}
 	err = core.UnmarshalModel(m, "listeners", &obj.Listeners, UnmarshalLoadBalancerListenerReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -19507,14 +23431,70 @@ func UnmarshalLoadBalancerCollection(m map[string]json.RawMessage, result interf
 	return
 }
 
+// LoadBalancerIdentity : Identifies a load balancer by a unique property.
+// Models which "extend" this model:
+// - LoadBalancerIdentityByID
+// - LoadBalancerIdentityByCRN
+// - LoadBalancerIdentityByHref
+type LoadBalancerIdentity struct {
+	// The unique identifier for this load balancer.
+	ID *string `json:"id,omitempty"`
+
+	// The load balancer's CRN.
+	CRN *string `json:"crn,omitempty"`
+
+	// The load balancer's canonical URL.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*LoadBalancerIdentity) isaLoadBalancerIdentity() bool {
+	return true
+}
+
+type LoadBalancerIdentityIntf interface {
+	isaLoadBalancerIdentity() bool
+}
+
+// UnmarshalLoadBalancerIdentity unmarshals an instance of LoadBalancerIdentity from the specified map of raw messages.
+func UnmarshalLoadBalancerIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerIdentity)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // LoadBalancerListener : LoadBalancerListener struct
 type LoadBalancerListener struct {
-	// The certificate instance used for SSL termination. It is applicable only to `https`
-	// protocol.
-	CertificateInstance *CertificateInstanceReference `json:"certificate_instance,omitempty"`
+	// The unique identifier for this load balancer listener.
+	ID *string `json:"id" validate:"required"`
+
+	// The listener's canonical URL.
+	Href *string `json:"href" validate:"required"`
 
 	// The connection limit of the listener.
 	ConnectionLimit *int64 `json:"connection_limit,omitempty"`
+
+	// The listener port number.
+	Port *int64 `json:"port" validate:"required"`
+
+	// The listener protocol. Load balancers in the `network` family support `tcp`. Load balancers in the `application`
+	// family support `tcp`, `http`, and `https`.
+	Protocol *string `json:"protocol" validate:"required"`
+
+	// The certificate instance used for SSL termination. It is applicable only to `https`
+	// protocol.
+	CertificateInstance *CertificateInstanceReference `json:"certificate_instance,omitempty"`
 
 	// The date and time that this listener was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
@@ -19522,27 +23502,16 @@ type LoadBalancerListener struct {
 	// The default pool associated with the listener.
 	DefaultPool *LoadBalancerPoolReference `json:"default_pool,omitempty"`
 
-	// The listener's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this load balancer listener.
-	ID *string `json:"id" validate:"required"`
-
 	// The list of policies of this listener.
 	Policies []LoadBalancerListenerPolicyReference `json:"policies,omitempty"`
-
-	// The listener port number.
-	Port *int64 `json:"port" validate:"required"`
-
-	// The listener protocol.
-	Protocol *string `json:"protocol" validate:"required"`
 
 	// The provisioning status of this listener.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
 }
 
 // Constants associated with the LoadBalancerListener.Protocol property.
-// The listener protocol.
+// The listener protocol. Load balancers in the `network` family support `tcp`. Load balancers in the `application`
+// family support `tcp`, `http`, and `https`.
 const (
 	LoadBalancerListenerProtocolHTTPConst  = "http"
 	LoadBalancerListenerProtocolHTTPSConst = "https"
@@ -19563,11 +23532,27 @@ const (
 // UnmarshalLoadBalancerListener unmarshals an instance of LoadBalancerListener from the specified map of raw messages.
 func UnmarshalLoadBalancerListener(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListener)
-	err = core.UnmarshalModel(m, "certificate_instance", &obj.CertificateInstance, UnmarshalCertificateInstanceReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "connection_limit", &obj.ConnectionLimit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "port", &obj.Port)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "certificate_instance", &obj.CertificateInstance, UnmarshalCertificateInstanceReference)
 	if err != nil {
 		return
 	}
@@ -19579,23 +23564,7 @@ func UnmarshalLoadBalancerListener(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalModel(m, "policies", &obj.Policies, UnmarshalLoadBalancerListenerPolicyReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "port", &obj.Port)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -19626,23 +23595,23 @@ func UnmarshalLoadBalancerListenerCollection(m map[string]json.RawMessage, resul
 
 // LoadBalancerListenerPolicy : LoadBalancerListenerPolicy struct
 type LoadBalancerListenerPolicy struct {
-	// The policy action.
-	Action *string `json:"action" validate:"required"`
-
-	// The date and time that this policy was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The policy's unique identifier.
+	ID *string `json:"id" validate:"required"`
 
 	// The listener policy's canonical URL.
 	Href *string `json:"href" validate:"required"`
-
-	// The policy's unique identifier.
-	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this policy.
 	Name *string `json:"name" validate:"required"`
 
 	// Priority of the policy. Lower value indicates higher priority.
 	Priority *int64 `json:"priority" validate:"required"`
+
+	// The policy action.
+	Action *string `json:"action" validate:"required"`
+
+	// The date and time that this policy was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The provisioning status of this policy.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
@@ -19677,19 +23646,11 @@ const (
 // UnmarshalLoadBalancerListenerPolicy unmarshals an instance of LoadBalancerListenerPolicy from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPolicy(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPolicy)
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -19698,6 +23659,14 @@ func UnmarshalLoadBalancerListenerPolicy(m map[string]json.RawMessage, result in
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "priority", &obj.Priority)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -19787,14 +23756,14 @@ func UnmarshalLoadBalancerListenerPolicyPatchTarget(m map[string]json.RawMessage
 
 // LoadBalancerListenerPolicyPrototype : LoadBalancerListenerPolicyPrototype struct
 type LoadBalancerListenerPolicyPrototype struct {
-	// The policy action.
-	Action *string `json:"action" validate:"required"`
-
 	// The user-defined name for this policy. Names must be unique within the load balancer listener the policy resides in.
 	Name *string `json:"name,omitempty"`
 
 	// Priority of the policy. Lower value indicates higher priority.
 	Priority *int64 `json:"priority" validate:"required"`
+
+	// The policy action.
+	Action *string `json:"action" validate:"required"`
 
 	// The list of rules of this policy.
 	Rules []LoadBalancerListenerPolicyRulePrototype `json:"rules,omitempty"`
@@ -19815,10 +23784,10 @@ const (
 )
 
 // NewLoadBalancerListenerPolicyPrototype : Instantiate LoadBalancerListenerPolicyPrototype (Generic Model Constructor)
-func (*VpcV1) NewLoadBalancerListenerPolicyPrototype(action string, priority int64) (model *LoadBalancerListenerPolicyPrototype, err error) {
+func (*VpcV1) NewLoadBalancerListenerPolicyPrototype(priority int64, action string) (model *LoadBalancerListenerPolicyPrototype, err error) {
 	model = &LoadBalancerListenerPolicyPrototype{
-		Action:   core.StringPtr(action),
 		Priority: core.Int64Ptr(priority),
+		Action:   core.StringPtr(action),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
@@ -19827,15 +23796,15 @@ func (*VpcV1) NewLoadBalancerListenerPolicyPrototype(action string, priority int
 // UnmarshalLoadBalancerListenerPolicyPrototype unmarshals an instance of LoadBalancerListenerPolicyPrototype from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPolicyPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPolicyPrototype)
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "priority", &obj.Priority)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
 	}
@@ -19905,21 +23874,21 @@ func UnmarshalLoadBalancerListenerPolicyPrototypeTarget(m map[string]json.RawMes
 
 // LoadBalancerListenerPolicyReference : LoadBalancerListenerPolicyReference struct
 type LoadBalancerListenerPolicyReference struct {
-	// The listener policy's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
 	// The policy's unique identifier.
 	ID *string `json:"id" validate:"required"`
+
+	// The listener policy's canonical URL.
+	Href *string `json:"href" validate:"required"`
 }
 
 // UnmarshalLoadBalancerListenerPolicyReference unmarshals an instance of LoadBalancerListenerPolicyReference from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPolicyReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPolicyReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -19929,29 +23898,29 @@ func UnmarshalLoadBalancerListenerPolicyReference(m map[string]json.RawMessage, 
 
 // LoadBalancerListenerPolicyRule : LoadBalancerListenerPolicyRule struct
 type LoadBalancerListenerPolicyRule struct {
-	// The condition of the rule.
-	Condition *string `json:"condition" validate:"required"`
-
-	// The date and time that this rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// HTTP header field. This is only applicable to "header" rule type.
-	Field *string `json:"field,omitempty"`
+	// The rule's unique identifier.
+	ID *string `json:"id" validate:"required"`
 
 	// The rule's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
-	// The rule's unique identifier.
-	ID *string `json:"id" validate:"required"`
+	// The condition of the rule.
+	Condition *string `json:"condition" validate:"required"`
 
-	// The provisioning status of this rule.
-	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
+	// HTTP header field. This is only applicable to "header" rule type.
+	Field *string `json:"field,omitempty"`
 
 	// The type of the rule.
 	Type *string `json:"type" validate:"required"`
 
 	// Value to be matched for rule condition.
 	Value *string `json:"value" validate:"required"`
+
+	// The date and time that this rule was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The provisioning status of this rule.
+	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
 }
 
 // Constants associated with the LoadBalancerListenerPolicyRule.Condition property.
@@ -19960,6 +23929,14 @@ const (
 	LoadBalancerListenerPolicyRuleConditionContainsConst     = "contains"
 	LoadBalancerListenerPolicyRuleConditionEqualsConst       = "equals"
 	LoadBalancerListenerPolicyRuleConditionMatchesRegexConst = "matches_regex"
+)
+
+// Constants associated with the LoadBalancerListenerPolicyRule.Type property.
+// The type of the rule.
+const (
+	LoadBalancerListenerPolicyRuleTypeHeaderConst   = "header"
+	LoadBalancerListenerPolicyRuleTypeHostnameConst = "hostname"
+	LoadBalancerListenerPolicyRuleTypePathConst     = "path"
 )
 
 // Constants associated with the LoadBalancerListenerPolicyRule.ProvisioningStatus property.
@@ -19973,26 +23950,10 @@ const (
 	LoadBalancerListenerPolicyRuleProvisioningStatusUpdatePendingConst      = "update_pending"
 )
 
-// Constants associated with the LoadBalancerListenerPolicyRule.Type property.
-// The type of the rule.
-const (
-	LoadBalancerListenerPolicyRuleTypeHeaderConst   = "header"
-	LoadBalancerListenerPolicyRuleTypeHostnameConst = "hostname"
-	LoadBalancerListenerPolicyRuleTypePathConst     = "path"
-)
-
 // UnmarshalLoadBalancerListenerPolicyRule unmarshals an instance of LoadBalancerListenerPolicyRule from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPolicyRule(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPolicyRule)
-	err = core.UnmarshalPrimitive(m, "condition", &obj.Condition)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "field", &obj.Field)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -20000,11 +23961,11 @@ func UnmarshalLoadBalancerListenerPolicyRule(m map[string]json.RawMessage, resul
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "condition", &obj.Condition)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "provisioning_status", &obj.ProvisioningStatus)
+	err = core.UnmarshalPrimitive(m, "field", &obj.Field)
 	if err != nil {
 		return
 	}
@@ -20013,6 +23974,14 @@ func UnmarshalLoadBalancerListenerPolicyRule(m map[string]json.RawMessage, resul
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "provisioning_status", &obj.ProvisioningStatus)
 	if err != nil {
 		return
 	}
@@ -20104,21 +24073,21 @@ func UnmarshalLoadBalancerListenerPolicyRulePrototype(m map[string]json.RawMessa
 
 // LoadBalancerListenerPolicyRuleReference : LoadBalancerListenerPolicyRuleReference struct
 type LoadBalancerListenerPolicyRuleReference struct {
-	// The rule's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
 	// The rule's unique identifier.
 	ID *string `json:"id" validate:"required"`
+
+	// The rule's canonical URL.
+	Href *string `json:"href" validate:"required"`
 }
 
 // UnmarshalLoadBalancerListenerPolicyRuleReference unmarshals an instance of LoadBalancerListenerPolicyRuleReference from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPolicyRuleReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPolicyRuleReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -20132,11 +24101,11 @@ func UnmarshalLoadBalancerListenerPolicyRuleReference(m map[string]json.RawMessa
 // - LoadBalancerListenerPolicyTargetReferenceLoadBalancerPoolReference
 // - LoadBalancerListenerPolicyTargetReferenceLoadBalancerListenerPolicyRedirectURL
 type LoadBalancerListenerPolicyTargetReference struct {
-	// The pool's canonical URL.
-	Href *string `json:"href,omitempty"`
-
 	// The unique identifier for this load balancer pool.
 	ID *string `json:"id,omitempty"`
+
+	// The pool's canonical URL.
+	Href *string `json:"href,omitempty"`
 
 	// The user-defined name for this load balancer pool.
 	Name *string `json:"name,omitempty"`
@@ -20159,11 +24128,11 @@ type LoadBalancerListenerPolicyTargetReferenceIntf interface {
 // UnmarshalLoadBalancerListenerPolicyTargetReference unmarshals an instance of LoadBalancerListenerPolicyTargetReference from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPolicyTargetReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPolicyTargetReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -20188,18 +24157,20 @@ type LoadBalancerListenerPrototypeLoadBalancerContext struct {
 	// The connection limit of the listener.
 	ConnectionLimit *int64 `json:"connection_limit,omitempty"`
 
-	// The default pool associated with the listener.
-	DefaultPool *LoadBalancerPoolIdentityByName `json:"default_pool,omitempty"`
-
 	// The listener port number.
 	Port *int64 `json:"port" validate:"required"`
 
-	// The listener protocol.
+	// The listener protocol. Load balancers in the `network` family support `tcp`. Load balancers in the `application`
+	// family support `tcp`, `http`, and `https`.
 	Protocol *string `json:"protocol" validate:"required"`
+
+	// The default pool associated with the listener.
+	DefaultPool *LoadBalancerPoolIdentityByName `json:"default_pool,omitempty"`
 }
 
 // Constants associated with the LoadBalancerListenerPrototypeLoadBalancerContext.Protocol property.
-// The listener protocol.
+// The listener protocol. Load balancers in the `network` family support `tcp`. Load balancers in the `application`
+// family support `tcp`, `http`, and `https`.
 const (
 	LoadBalancerListenerPrototypeLoadBalancerContextProtocolHTTPConst  = "http"
 	LoadBalancerListenerPrototypeLoadBalancerContextProtocolHTTPSConst = "https"
@@ -20223,15 +24194,15 @@ func UnmarshalLoadBalancerListenerPrototypeLoadBalancerContext(m map[string]json
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "default_pool", &obj.DefaultPool, UnmarshalLoadBalancerPoolIdentityByName)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "port", &obj.Port)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "default_pool", &obj.DefaultPool, UnmarshalLoadBalancerPoolIdentityByName)
 	if err != nil {
 		return
 	}
@@ -20241,21 +24212,21 @@ func UnmarshalLoadBalancerListenerPrototypeLoadBalancerContext(m map[string]json
 
 // LoadBalancerListenerReference : LoadBalancerListenerReference struct
 type LoadBalancerListenerReference struct {
-	// The listener's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
 	// The unique identifier for this load balancer listener.
 	ID *string `json:"id" validate:"required"`
+
+	// The listener's canonical URL.
+	Href *string `json:"href" validate:"required"`
 }
 
 // UnmarshalLoadBalancerListenerReference unmarshals an instance of LoadBalancerListenerReference from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -20265,26 +24236,17 @@ func UnmarshalLoadBalancerListenerReference(m map[string]json.RawMessage, result
 
 // LoadBalancerPool : LoadBalancerPool struct
 type LoadBalancerPool struct {
-	// The load balancing algorithm.
-	Algorithm *string `json:"algorithm" validate:"required"`
-
-	// The date and time that this pool was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// The health monitor of this pool.
-	HealthMonitor *LoadBalancerPoolHealthMonitor `json:"health_monitor" validate:"required"`
+	// The unique identifier for this load balancer pool.
+	ID *string `json:"id" validate:"required"`
 
 	// The pool's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this load balancer pool.
-	ID *string `json:"id" validate:"required"`
-
-	// The backend server members of the pool.
-	Members []LoadBalancerPoolMemberReference `json:"members,omitempty"`
-
 	// The user-defined name for this load balancer pool.
 	Name *string `json:"name" validate:"required"`
+
+	// The load balancing algorithm.
+	Algorithm *string `json:"algorithm" validate:"required"`
 
 	// The protocol used for this load balancer pool.
 	//
@@ -20292,6 +24254,18 @@ type LoadBalancerPool struct {
 	// for and log unknown values. Optionally halt processing and surface the error, or bypass the pool on which the
 	// unexpected property value was encountered.
 	Protocol *string `json:"protocol" validate:"required"`
+
+	// The date and time that this pool was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The health monitor of this pool.
+	HealthMonitor *LoadBalancerPoolHealthMonitor `json:"health_monitor" validate:"required"`
+
+	// The instance group that is managing this pool.
+	InstanceGroup *InstanceGroupReference `json:"instance_group,omitempty"`
+
+	// The backend server members of the pool.
+	Members []LoadBalancerPoolMemberReference `json:"members,omitempty"`
 
 	// The provisioning status of this pool.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
@@ -20334,7 +24308,23 @@ const (
 // UnmarshalLoadBalancerPool unmarshals an instance of LoadBalancerPool from the specified map of raw messages.
 func UnmarshalLoadBalancerPool(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPool)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "algorithm", &obj.Algorithm)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -20346,23 +24336,11 @@ func UnmarshalLoadBalancerPool(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalModel(m, "instance_group", &obj.InstanceGroup, UnmarshalInstanceGroupReference)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "members", &obj.Members, UnmarshalLoadBalancerPoolMemberReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -20671,30 +24649,32 @@ func UnmarshalLoadBalancerPoolIdentityByName(m map[string]json.RawMessage, resul
 
 // LoadBalancerPoolMember : LoadBalancerPoolMember struct
 type LoadBalancerPoolMember struct {
-	// The date and time that this member was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// Health of the server member in the pool.
-	Health *string `json:"health" validate:"required"`
+	// The unique identifier for this load balancer pool member.
+	ID *string `json:"id" validate:"required"`
 
 	// The member's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this load balancer pool member.
-	ID *string `json:"id" validate:"required"`
-
 	// The port number of the application running in the server member.
 	Port *int64 `json:"port" validate:"required"`
-
-	// The provisioning status of this member.
-	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
-
-	// The pool member target.
-	Target LoadBalancerPoolMemberTargetIntf `json:"target" validate:"required"`
 
 	// Weight of the server member. This takes effect only when the load balancing algorithm of its belonging pool is
 	// `weighted_round_robin`.
 	Weight *int64 `json:"weight,omitempty"`
+
+	// Health of the server member in the pool.
+	Health *string `json:"health" validate:"required"`
+
+	// The date and time that this member was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The provisioning status of this member.
+	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
+
+	// The pool member target. Load balancers in the `network` family
+	// support instances. Load balancers in the `application` family support
+	// IP addresses.
+	Target LoadBalancerPoolMemberTargetIntf `json:"target" validate:"required"`
 }
 
 // Constants associated with the LoadBalancerPoolMember.Health property.
@@ -20719,11 +24699,7 @@ const (
 // UnmarshalLoadBalancerPoolMember unmarshals an instance of LoadBalancerPoolMember from the specified map of raw messages.
 func UnmarshalLoadBalancerPoolMember(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPoolMember)
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "health", &obj.Health)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -20731,11 +24707,19 @@ func UnmarshalLoadBalancerPoolMember(m map[string]json.RawMessage, result interf
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "port", &obj.Port)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "port", &obj.Port)
+	err = core.UnmarshalPrimitive(m, "weight", &obj.Weight)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health", &obj.Health)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -20744,10 +24728,6 @@ func UnmarshalLoadBalancerPoolMember(m map[string]json.RawMessage, result interf
 		return
 	}
 	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalLoadBalancerPoolMemberTarget)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "weight", &obj.Weight)
 	if err != nil {
 		return
 	}
@@ -20777,12 +24757,14 @@ type LoadBalancerPoolMemberPrototype struct {
 	// The port number of the application running in the server member.
 	Port *int64 `json:"port" validate:"required"`
 
-	// The pool member target.
-	Target LoadBalancerPoolMemberTargetPrototypeIntf `json:"target" validate:"required"`
-
 	// Weight of the server member. This takes effect only when the load balancing algorithm of its belonging pool is
 	// `weighted_round_robin`.
 	Weight *int64 `json:"weight,omitempty"`
+
+	// The pool member target. Load balancers in the `network` family
+	// support instances. Load balancers in the `application` family support
+	// IP addresses.
+	Target LoadBalancerPoolMemberTargetPrototypeIntf `json:"target" validate:"required"`
 }
 
 // NewLoadBalancerPoolMemberPrototype : Instantiate LoadBalancerPoolMemberPrototype (Generic Model Constructor)
@@ -20802,11 +24784,11 @@ func UnmarshalLoadBalancerPoolMemberPrototype(m map[string]json.RawMessage, resu
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalLoadBalancerPoolMemberTargetPrototype)
+	err = core.UnmarshalPrimitive(m, "weight", &obj.Weight)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "weight", &obj.Weight)
+	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalLoadBalancerPoolMemberTargetPrototype)
 	if err != nil {
 		return
 	}
@@ -20816,21 +24798,21 @@ func UnmarshalLoadBalancerPoolMemberPrototype(m map[string]json.RawMessage, resu
 
 // LoadBalancerPoolMemberReference : LoadBalancerPoolMemberReference struct
 type LoadBalancerPoolMemberReference struct {
-	// The member's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
 	// The unique identifier for this load balancer pool member.
 	ID *string `json:"id" validate:"required"`
+
+	// The member's canonical URL.
+	Href *string `json:"href" validate:"required"`
 }
 
 // UnmarshalLoadBalancerPoolMemberReference unmarshals an instance of LoadBalancerPoolMemberReference from the specified map of raw messages.
 func UnmarshalLoadBalancerPoolMemberReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPoolMemberReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -20838,7 +24820,8 @@ func UnmarshalLoadBalancerPoolMemberReference(m map[string]json.RawMessage, resu
 	return
 }
 
-// LoadBalancerPoolMemberTarget : The pool member target.
+// LoadBalancerPoolMemberTarget : The pool member target. Load balancers in the `network` family support instances. Load balancers in the `application`
+// family support IP addresses.
 // Models which "extend" this model:
 // - LoadBalancerPoolMemberTargetIP
 type LoadBalancerPoolMemberTarget struct {
@@ -20867,7 +24850,8 @@ func UnmarshalLoadBalancerPoolMemberTarget(m map[string]json.RawMessage, result 
 	return
 }
 
-// LoadBalancerPoolMemberTargetPrototype : The pool member target.
+// LoadBalancerPoolMemberTargetPrototype : The pool member target. Load balancers in the `network` family support instances. Load balancers in the `application`
+// family support IP addresses.
 // Models which "extend" this model:
 // - LoadBalancerPoolMemberTargetPrototypeIP
 type LoadBalancerPoolMemberTargetPrototype struct {
@@ -20898,19 +24882,12 @@ func UnmarshalLoadBalancerPoolMemberTargetPrototype(m map[string]json.RawMessage
 
 // LoadBalancerPoolPrototype : LoadBalancerPoolPrototype struct
 type LoadBalancerPoolPrototype struct {
-	// The load balancing algorithm.
-	Algorithm *string `json:"algorithm" validate:"required"`
-
-	// The health monitor of this pool.
-	HealthMonitor *LoadBalancerPoolHealthMonitorPrototype `json:"health_monitor" validate:"required"`
-
-	// The members for this load balancer pool. For load balancers in the `network` family, the same `port` and `target`
-	// tuple cannot be shared by a member of any other load balancer.
-	Members []LoadBalancerPoolMemberPrototype `json:"members,omitempty"`
-
 	// The user-defined name for this load balancer pool. If unspecified, the name will be a hyphenated list of
 	// randomly-selected words.
 	Name *string `json:"name,omitempty"`
+
+	// The load balancing algorithm.
+	Algorithm *string `json:"algorithm" validate:"required"`
 
 	// The protocol used for this load balancer pool.
 	//
@@ -20918,6 +24895,13 @@ type LoadBalancerPoolPrototype struct {
 	// for and log unknown values. Optionally halt processing and surface the error, or bypass the pool on which the
 	// unexpected property value was encountered.
 	Protocol *string `json:"protocol" validate:"required"`
+
+	// The health monitor of this pool.
+	HealthMonitor *LoadBalancerPoolHealthMonitorPrototype `json:"health_monitor" validate:"required"`
+
+	// The members for this load balancer pool. For load balancers in the `network` family, the same `port` and `target`
+	// tuple cannot be shared by a member of any other load balancer.
+	Members []LoadBalancerPoolMemberPrototype `json:"members,omitempty"`
 
 	// The session persistence of this pool.
 	SessionPersistence *LoadBalancerPoolSessionPersistencePrototype `json:"session_persistence,omitempty"`
@@ -20944,11 +24928,11 @@ const (
 )
 
 // NewLoadBalancerPoolPrototype : Instantiate LoadBalancerPoolPrototype (Generic Model Constructor)
-func (*VpcV1) NewLoadBalancerPoolPrototype(algorithm string, healthMonitor *LoadBalancerPoolHealthMonitorPrototype, protocol string) (model *LoadBalancerPoolPrototype, err error) {
+func (*VpcV1) NewLoadBalancerPoolPrototype(algorithm string, protocol string, healthMonitor *LoadBalancerPoolHealthMonitorPrototype) (model *LoadBalancerPoolPrototype, err error) {
 	model = &LoadBalancerPoolPrototype{
 		Algorithm:     core.StringPtr(algorithm),
-		HealthMonitor: healthMonitor,
 		Protocol:      core.StringPtr(protocol),
+		HealthMonitor: healthMonitor,
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
@@ -20957,7 +24941,15 @@ func (*VpcV1) NewLoadBalancerPoolPrototype(algorithm string, healthMonitor *Load
 // UnmarshalLoadBalancerPoolPrototype unmarshals an instance of LoadBalancerPoolPrototype from the specified map of raw messages.
 func UnmarshalLoadBalancerPoolPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPoolPrototype)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "algorithm", &obj.Algorithm)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -20966,14 +24958,6 @@ func UnmarshalLoadBalancerPoolPrototype(m map[string]json.RawMessage, result int
 		return
 	}
 	err = core.UnmarshalModel(m, "members", &obj.Members, UnmarshalLoadBalancerPoolMemberPrototype)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -20987,11 +24971,11 @@ func UnmarshalLoadBalancerPoolPrototype(m map[string]json.RawMessage, result int
 
 // LoadBalancerPoolReference : LoadBalancerPoolReference struct
 type LoadBalancerPoolReference struct {
-	// The pool's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
 	// The unique identifier for this load balancer pool.
 	ID *string `json:"id" validate:"required"`
+
+	// The pool's canonical URL.
+	Href *string `json:"href" validate:"required"`
 
 	// The user-defined name for this load balancer pool.
 	Name *string `json:"name" validate:"required"`
@@ -21000,11 +24984,11 @@ type LoadBalancerPoolReference struct {
 // UnmarshalLoadBalancerPoolReference unmarshals an instance of LoadBalancerPoolReference from the specified map of raw messages.
 func UnmarshalLoadBalancerPoolReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPoolReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -21103,6 +25087,183 @@ func UnmarshalLoadBalancerPoolSessionPersistencePrototype(m map[string]json.RawM
 	return
 }
 
+// LoadBalancerProfile : LoadBalancerProfile struct
+type LoadBalancerProfile struct {
+	// The name for this load balancer profile.
+	Name *string `json:"name" validate:"required"`
+
+	// The URL for this load balancer profile.
+	Href *string `json:"href" validate:"required"`
+
+	// The product family this load balancer profile belongs to.
+	Family *string `json:"family" validate:"required"`
+}
+
+// UnmarshalLoadBalancerProfile unmarshals an instance of LoadBalancerProfile from the specified map of raw messages.
+func UnmarshalLoadBalancerProfile(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfile)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileCollection : LoadBalancerProfileCollection struct
+type LoadBalancerProfileCollection struct {
+	// A reference to the first page of resources.
+	First *LoadBalancerProfileCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A reference to the next page of resources; this reference is included for all pages
+	// except the last page.
+	Next *LoadBalancerProfileCollectionNext `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of load balancer profiles.
+	Profiles []LoadBalancerProfile `json:"profiles" validate:"required"`
+}
+
+// UnmarshalLoadBalancerProfileCollection unmarshals an instance of LoadBalancerProfileCollection from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalLoadBalancerProfileCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalLoadBalancerProfileCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profiles", &obj.Profiles, UnmarshalLoadBalancerProfile)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileCollectionFirst : A reference to the first page of resources.
+type LoadBalancerProfileCollectionFirst struct {
+	// The URL for the first page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalLoadBalancerProfileCollectionFirst unmarshals an instance of LoadBalancerProfileCollectionFirst from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+type LoadBalancerProfileCollectionNext struct {
+	// The URL for the next page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalLoadBalancerProfileCollectionNext unmarshals an instance of LoadBalancerProfileCollectionNext from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileIdentity : Identifies a load balancer profile by a unique property.
+// Models which "extend" this model:
+// - LoadBalancerProfileIdentityByName
+// - LoadBalancerProfileIdentityByHref
+type LoadBalancerProfileIdentity struct {
+	// The name for this load balancer profile.
+	Name *string `json:"name,omitempty"`
+
+	// The URL for this load balancer profile.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*LoadBalancerProfileIdentity) isaLoadBalancerProfileIdentity() bool {
+	return true
+}
+
+type LoadBalancerProfileIdentityIntf interface {
+	isaLoadBalancerProfileIdentity() bool
+}
+
+// UnmarshalLoadBalancerProfileIdentity unmarshals an instance of LoadBalancerProfileIdentity from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileIdentity)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileReference : LoadBalancerProfileReference struct
+type LoadBalancerProfileReference struct {
+	// The name for this load balancer profile.
+	Name *string `json:"name" validate:"required"`
+
+	// The URL for this load balancer profile.
+	Href *string `json:"href" validate:"required"`
+
+	// The product family this load balancer profile belongs to.
+	Family *string `json:"family" validate:"required"`
+}
+
+// UnmarshalLoadBalancerProfileReference unmarshals an instance of LoadBalancerProfileReference from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileReference)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // LoadBalancerStatistics : LoadBalancerStatistics struct
 type LoadBalancerStatistics struct {
 	// Number of active connections of this load balancer.
@@ -21143,8 +25304,8 @@ func UnmarshalLoadBalancerStatistics(m map[string]json.RawMessage, result interf
 
 // NetworkACL : NetworkACL struct
 type NetworkACL struct {
-	// The date and time that the network ACL was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The unique identifier for this network ACL.
+	ID *string `json:"id" validate:"required"`
 
 	// The CRN for this network ACL.
 	CRN *string `json:"crn" validate:"required"`
@@ -21152,29 +25313,29 @@ type NetworkACL struct {
 	// The URL for this network ACL.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this network ACL.
-	ID *string `json:"id" validate:"required"`
-
 	// The user-defined name for this network ACL.
 	Name *string `json:"name" validate:"required"`
 
+	// The VPC this network ACL is a part of.
+	VPC *VPCReference `json:"vpc" validate:"required"`
+
 	// The resource group for this network ACL.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The date and time that the network ACL was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The ordered rules for this network ACL. If no rules exist, all traffic will be denied.
 	Rules []NetworkACLRuleItemIntf `json:"rules" validate:"required"`
 
 	// The subnets to which this network ACL is attached.
 	Subnets []SubnetReference `json:"subnets" validate:"required"`
-
-	// The VPC this network ACL is a part of.
-	VPC *VPCReference `json:"vpc" validate:"required"`
 }
 
 // UnmarshalNetworkACL unmarshals an instance of NetworkACL from the specified map of raw messages.
 func UnmarshalNetworkACL(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACL)
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -21186,15 +25347,19 @@ func UnmarshalNetworkACL(m map[string]json.RawMessage, result interface{}) (err 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCReference)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -21203,10 +25368,6 @@ func UnmarshalNetworkACL(m map[string]json.RawMessage, result interface{}) (err 
 		return
 	}
 	err = core.UnmarshalModel(m, "subnets", &obj.Subnets, UnmarshalSubnetReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCReference)
 	if err != nil {
 		return
 	}
@@ -21222,15 +25383,15 @@ type NetworkACLCollection struct {
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// Collection of network ACLs.
-	NetworkAcls []NetworkACL `json:"network_acls" validate:"required"`
-
 	// A reference to the next page of resources; this reference is included for all pages
 	// except the last page.
 	Next *NetworkACLCollectionNext `json:"next,omitempty"`
 
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of network ACLs.
+	NetworkAcls []NetworkACL `json:"network_acls" validate:"required"`
 }
 
 // UnmarshalNetworkACLCollection unmarshals an instance of NetworkACLCollection from the specified map of raw messages.
@@ -21244,15 +25405,15 @@ func UnmarshalNetworkACLCollection(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "network_acls", &obj.NetworkAcls, UnmarshalNetworkACL)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalNetworkACLCollectionNext)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "network_acls", &obj.NetworkAcls, UnmarshalNetworkACL)
 	if err != nil {
 		return
 	}
@@ -21346,12 +25507,12 @@ type NetworkACLPrototype struct {
 	// unspecified, the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
+	// The VPC this network ACL is to be a part of.
+	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
+
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
-
-	// The VPC this network ACL is to be a part of.
-	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
 
 	// Array of prototype objects for rules to create along with this network ACL. If unspecified, no rules will be
 	// created, resulting in all traffic being denied.
@@ -21376,11 +25537,11 @@ func UnmarshalNetworkACLPrototype(m map[string]json.RawMessage, result interface
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCIdentity)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCIdentity)
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
 	if err != nil {
 		return
 	}
@@ -21398,14 +25559,14 @@ func UnmarshalNetworkACLPrototype(m map[string]json.RawMessage, result interface
 
 // NetworkACLReference : NetworkACLReference struct
 type NetworkACLReference struct {
+	// The unique identifier for this network ACL.
+	ID *string `json:"id" validate:"required"`
+
 	// The CRN for this network ACL.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this network ACL.
 	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this network ACL.
-	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this network ACL.
 	Name *string `json:"name" validate:"required"`
@@ -21414,15 +25575,15 @@ type NetworkACLReference struct {
 // UnmarshalNetworkACLReference unmarshals an instance of NetworkACLReference from the specified map of raw messages.
 func UnmarshalNetworkACLReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -21440,14 +25601,18 @@ func UnmarshalNetworkACLReference(m map[string]json.RawMessage, result interface
 // - NetworkACLRuleNetworkACLRuleProtocolIcmp
 // - NetworkACLRuleNetworkACLRuleProtocolAll
 type NetworkACLRule struct {
+	// The unique identifier for this Network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this Network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The rule that this rule is immediately before. If absent, this is the last rule.
-	Before *NetworkACLRuleReference `json:"before,omitempty"`
-
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
@@ -21455,24 +25620,20 @@ type NetworkACLRule struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
+	// The rule that this rule is immediately before. If absent, this is the last rule.
+	Before *NetworkACLRuleReference `json:"before,omitempty"`
+
+	// The date and time that the rule was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The IP version for this rule.
+	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	DestinationPortMax *int64 `json:"destination_port_max,omitempty"`
@@ -21508,13 +25669,6 @@ const (
 	NetworkACLRuleDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRule.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRuleIPVersionIpv4Const = "ipv4"
-	NetworkACLRuleIPVersionIpv6Const = "ipv6"
-)
-
 // Constants associated with the NetworkACLRule.Protocol property.
 // The protocol to enforce.
 const (
@@ -21522,6 +25676,13 @@ const (
 	NetworkACLRuleProtocolIcmpConst = "icmp"
 	NetworkACLRuleProtocolTCPConst  = "tcp"
 	NetworkACLRuleProtocolUDPConst  = "udp"
+)
+
+// Constants associated with the NetworkACLRule.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRuleIPVersionIpv4Const = "ipv4"
+	NetworkACLRuleIPVersionIpv6Const = "ipv6"
 )
 
 func (*NetworkACLRule) isaNetworkACLRule() bool {
@@ -21571,11 +25732,11 @@ type NetworkACLRuleCollection struct {
 	// except the last page.
 	Next *NetworkACLRuleCollectionNext `json:"next,omitempty"`
 
-	// Ordered collection of Network ACL rules.
-	Rules []NetworkACLRuleItemIntf `json:"rules" validate:"required"`
-
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Ordered collection of Network ACL rules.
+	Rules []NetworkACLRuleItemIntf `json:"rules" validate:"required"`
 }
 
 // UnmarshalNetworkACLRuleCollection unmarshals an instance of NetworkACLRuleCollection from the specified map of raw messages.
@@ -21593,11 +25754,11 @@ func UnmarshalNetworkACLRuleCollection(m map[string]json.RawMessage, result inte
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "rules", &obj.Rules, UnmarshalNetworkACLRuleItem)
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	err = core.UnmarshalModel(m, "rules", &obj.Rules, UnmarshalNetworkACLRuleItem)
 	if err != nil {
 		return
 	}
@@ -21680,8 +25841,30 @@ func UnmarshalNetworkACLRuleIdentity(m map[string]json.RawMessage, result interf
 // - NetworkACLRuleItemNetworkACLRuleProtocolIcmp
 // - NetworkACLRuleItemNetworkACLRuleProtocolAll
 type NetworkACLRuleItem struct {
+	// The unique identifier for this Network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this Network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
+
+	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination" validate:"required"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The rule that this rule is immediately before. In a rule collection, this always
 	// refers to the next item in the collection. If absent, this is the last rule.
@@ -21690,30 +25873,8 @@ type NetworkACLRuleItem struct {
 	// The date and time that the rule was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
-
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
 	// The IP version for this rule.
 	IPVersion *string `json:"ip_version" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
-
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	DestinationPortMax *int64 `json:"destination_port_max,omitempty"`
@@ -21749,13 +25910,6 @@ const (
 	NetworkACLRuleItemDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRuleItem.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRuleItemIPVersionIpv4Const = "ipv4"
-	NetworkACLRuleItemIPVersionIpv6Const = "ipv6"
-)
-
 // Constants associated with the NetworkACLRuleItem.Protocol property.
 // The protocol to enforce.
 const (
@@ -21763,6 +25917,13 @@ const (
 	NetworkACLRuleItemProtocolIcmpConst = "icmp"
 	NetworkACLRuleItemProtocolTCPConst  = "tcp"
 	NetworkACLRuleItemProtocolUDPConst  = "udp"
+)
+
+// Constants associated with the NetworkACLRuleItem.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRuleItemIPVersionIpv4Const = "ipv4"
+	NetworkACLRuleItemIPVersionIpv6Const = "ipv6"
 )
 
 func (*NetworkACLRuleItem) isaNetworkACLRuleItem() bool {
@@ -21806,12 +25967,12 @@ func UnmarshalNetworkACLRuleItem(m map[string]json.RawMessage, result interface{
 // - NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp
 // - NetworkACLRulePrototypeNetworkACLRuleProtocolAll
 type NetworkACLRulePrototype struct {
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The rule to insert this rule immediately before. If omitted, this rule will be
-	// inserted after all existing rules.
-	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
 	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
@@ -21819,15 +25980,15 @@ type NetworkACLRulePrototype struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
+	// The rule to insert this rule immediately before. If omitted, this rule will be
+	// inserted after all existing rules.
+	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	DestinationPortMax *int64 `json:"destination_port_max,omitempty"`
@@ -21913,6 +26074,10 @@ func UnmarshalNetworkACLRulePrototype(m map[string]json.RawMessage, result inter
 // - NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp
 // - NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll
 type NetworkACLRulePrototypeNetworkACLContext struct {
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
@@ -21922,15 +26087,11 @@ type NetworkACLRulePrototypeNetworkACLContext struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
-
-	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	DestinationPortMax *int64 `json:"destination_port_max,omitempty"`
@@ -22012,11 +26173,11 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContext(m map[string]json.RawMess
 
 // NetworkACLRuleReference : NetworkACLRuleReference struct
 type NetworkACLRuleReference struct {
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
 	// The unique identifier for this Network ACL rule.
 	ID *string `json:"id" validate:"required"`
+
+	// The URL for this Network ACL rule.
+	Href *string `json:"href" validate:"required"`
 
 	// The user-defined name for this Network ACL rule.
 	Name *string `json:"name" validate:"required"`
@@ -22025,11 +26186,11 @@ type NetworkACLRuleReference struct {
 // UnmarshalNetworkACLRuleReference unmarshals an instance of NetworkACLRuleReference from the specified map of raw messages.
 func UnmarshalNetworkACLRuleReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRuleReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -22043,23 +26204,14 @@ func UnmarshalNetworkACLRuleReference(m map[string]json.RawMessage, result inter
 
 // NetworkInterface : NetworkInterface struct
 type NetworkInterface struct {
-	// The date and time that the network interface was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// Array of references to floating IPs associated with this network interface.
-	FloatingIps []FloatingIPReference `json:"floating_ips,omitempty"`
-
-	// The URL for this network interface.
-	Href *string `json:"href" validate:"required"`
+	// The user-defined name for this network interface.
+	Name *string `json:"name" validate:"required"`
 
 	// The unique identifier for this network interface.
 	ID *string `json:"id" validate:"required"`
 
-	// The user-defined name for this network interface.
-	Name *string `json:"name" validate:"required"`
-
-	// The network interface port speed in Mbps.
-	PortSpeed *int64 `json:"port_speed" validate:"required"`
+	// The URL for this network interface.
+	Href *string `json:"href" validate:"required"`
 
 	// The primary IPv4 address.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address" validate:"required"`
@@ -22069,6 +26221,15 @@ type NetworkInterface struct {
 
 	// Collection of security groups.
 	SecurityGroups []SecurityGroupReference `json:"security_groups" validate:"required"`
+
+	// The date and time that the network interface was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// Array of references to floating IPs associated with this network interface.
+	FloatingIps []FloatingIPReference `json:"floating_ips,omitempty"`
+
+	// The network interface port speed in Mbps.
+	PortSpeed *int64 `json:"port_speed" validate:"required"`
 
 	// The status of the network interface.
 	Status *string `json:"status" validate:"required"`
@@ -22104,15 +26265,7 @@ const (
 // UnmarshalNetworkInterface unmarshals an instance of NetworkInterface from the specified map of raw messages.
 func UnmarshalNetworkInterface(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkInterface)
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "floating_ips", &obj.FloatingIps, UnmarshalFloatingIPReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -22120,11 +26273,7 @@ func UnmarshalNetworkInterface(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "port_speed", &obj.PortSpeed)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -22137,6 +26286,18 @@ func UnmarshalNetworkInterface(m map[string]json.RawMessage, result interface{})
 		return
 	}
 	err = core.UnmarshalModel(m, "security_groups", &obj.SecurityGroups, UnmarshalSecurityGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "floating_ips", &obj.FloatingIps, UnmarshalFloatingIPReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "port_speed", &obj.PortSpeed)
 	if err != nil {
 		return
 	}
@@ -22164,15 +26325,15 @@ type NetworkInterfaceCollection struct {
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// Collection of network interfaces.
-	NetworkInterfaces []NetworkInterface `json:"network_interfaces" validate:"required"`
-
 	// A reference to the next page of resources; this reference is included for all pages
 	// except the last page.
 	Next *NetworkInterfaceCollectionNext `json:"next,omitempty"`
 
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of network interfaces.
+	NetworkInterfaces []NetworkInterface `json:"network_interfaces" validate:"required"`
 }
 
 // UnmarshalNetworkInterfaceCollection unmarshals an instance of NetworkInterfaceCollection from the specified map of raw messages.
@@ -22186,15 +26347,15 @@ func UnmarshalNetworkInterfaceCollection(m map[string]json.RawMessage, result in
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "network_interfaces", &obj.NetworkInterfaces, UnmarshalNetworkInterface)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalNetworkInterfaceCollectionNext)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "network_interfaces", &obj.NetworkInterfaces, UnmarshalNetworkInterface)
 	if err != nil {
 		return
 	}
@@ -22238,14 +26399,14 @@ func UnmarshalNetworkInterfaceCollectionNext(m map[string]json.RawMessage, resul
 
 // NetworkInterfaceInstanceContextReference : NetworkInterfaceInstanceContextReference struct
 type NetworkInterfaceInstanceContextReference struct {
-	// The URL for this network interface.
-	Href *string `json:"href" validate:"required"`
+	// The user-defined name for this network interface.
+	Name *string `json:"name" validate:"required"`
 
 	// The unique identifier for this network interface.
 	ID *string `json:"id" validate:"required"`
 
-	// The user-defined name for this network interface.
-	Name *string `json:"name" validate:"required"`
+	// The URL for this network interface.
+	Href *string `json:"href" validate:"required"`
 
 	// The primary IPv4 address.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address" validate:"required"`
@@ -22266,7 +26427,7 @@ const (
 // UnmarshalNetworkInterfaceInstanceContextReference unmarshals an instance of NetworkInterfaceInstanceContextReference from the specified map of raw messages.
 func UnmarshalNetworkInterfaceInstanceContextReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkInterfaceInstanceContextReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -22274,7 +26435,7 @@ func UnmarshalNetworkInterfaceInstanceContextReference(m map[string]json.RawMess
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -22345,14 +26506,14 @@ func UnmarshalNetworkInterfacePrototype(m map[string]json.RawMessage, result int
 
 // NetworkInterfaceReference : NetworkInterfaceReference struct
 type NetworkInterfaceReference struct {
-	// The URL for this network interface.
-	Href *string `json:"href" validate:"required"`
+	// The user-defined name for this network interface.
+	Name *string `json:"name" validate:"required"`
 
 	// The unique identifier for this network interface.
 	ID *string `json:"id" validate:"required"`
 
-	// The user-defined name for this network interface.
-	Name *string `json:"name" validate:"required"`
+	// The URL for this network interface.
+	Href *string `json:"href" validate:"required"`
 
 	// The primary IPv4 address.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address" validate:"required"`
@@ -22370,7 +26531,7 @@ const (
 // UnmarshalNetworkInterfaceReference unmarshals an instance of NetworkInterfaceReference from the specified map of raw messages.
 func UnmarshalNetworkInterfaceReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkInterfaceReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -22378,7 +26539,7 @@ func UnmarshalNetworkInterfaceReference(m map[string]json.RawMessage, result int
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -22413,6 +26574,12 @@ func UnmarshalNetworkInterfaceUnpaginatedCollection(m map[string]json.RawMessage
 
 // OperatingSystem : OperatingSystem struct
 type OperatingSystem struct {
+	// The unique name of the operating system.
+	Name *string `json:"name" validate:"required"`
+
+	// The URL for this operating system.
+	Href *string `json:"href" validate:"required"`
+
 	// The operating system architecture.
 	Architecture *string `json:"architecture" validate:"required"`
 
@@ -22421,12 +26588,6 @@ type OperatingSystem struct {
 
 	// The name of the software family this operating system belongs to.
 	Family *string `json:"family" validate:"required"`
-
-	// The URL for this operating system.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique name of the operating system.
-	Name *string `json:"name" validate:"required"`
 
 	// The vendor of the operating system.
 	Vendor *string `json:"vendor" validate:"required"`
@@ -22438,6 +26599,14 @@ type OperatingSystem struct {
 // UnmarshalOperatingSystem unmarshals an instance of OperatingSystem from the specified map of raw messages.
 func UnmarshalOperatingSystem(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(OperatingSystem)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "architecture", &obj.Architecture)
 	if err != nil {
 		return
@@ -22447,14 +26616,6 @@ func UnmarshalOperatingSystem(m map[string]json.RawMessage, result interface{}) 
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -22580,29 +26741,29 @@ func UnmarshalOperatingSystemIdentity(m map[string]json.RawMessage, result inter
 
 // PublicGateway : PublicGateway struct
 type PublicGateway struct {
-	// The date and time that the public gateway was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The unique identifier for this public gateway.
+	ID *string `json:"id" validate:"required"`
 
 	// The CRN for this public gateway.
 	CRN *string `json:"crn" validate:"required"`
 
-	// Reference to the floating IP which is bound to this public gateway.
-	FloatingIP *PublicGatewayFloatingIP `json:"floating_ip" validate:"required"`
-
 	// The URL for this public gateway.
 	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this public gateway.
-	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this public gateway.
 	Name *string `json:"name" validate:"required"`
 
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
 	// The resource group for this public gateway.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
-	// The resource type.
-	ResourceType *string `json:"resource_type" validate:"required"`
+	// The date and time that the public gateway was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// Reference to the floating IP which is bound to this public gateway.
+	FloatingIP *PublicGatewayFloatingIP `json:"floating_ip" validate:"required"`
 
 	// The status of the volume.
 	Status *string `json:"status" validate:"required"`
@@ -22632,7 +26793,7 @@ const (
 // UnmarshalPublicGateway unmarshals an instance of PublicGateway from the specified map of raw messages.
 func UnmarshalPublicGateway(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(PublicGateway)
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -22640,15 +26801,7 @@ func UnmarshalPublicGateway(m map[string]json.RawMessage, result interface{}) (e
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "floating_ip", &obj.FloatingIP, UnmarshalPublicGatewayFloatingIP)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -22656,11 +26809,19 @@ func UnmarshalPublicGateway(m map[string]json.RawMessage, result interface{}) (e
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "floating_ip", &obj.FloatingIP, UnmarshalPublicGatewayFloatingIP)
 	if err != nil {
 		return
 	}
@@ -22692,11 +26853,11 @@ type PublicGatewayCollection struct {
 	// except the last page.
 	Next *PublicGatewayCollectionNext `json:"next,omitempty"`
 
-	// Collection of public gateways.
-	PublicGateways []PublicGateway `json:"public_gateways" validate:"required"`
-
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of public gateways.
+	PublicGateways []PublicGateway `json:"public_gateways" validate:"required"`
 }
 
 // UnmarshalPublicGatewayCollection unmarshals an instance of PublicGatewayCollection from the specified map of raw messages.
@@ -22714,11 +26875,11 @@ func UnmarshalPublicGatewayCollection(m map[string]json.RawMessage, result inter
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "public_gateways", &obj.PublicGateways, UnmarshalPublicGateway)
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	err = core.UnmarshalModel(m, "public_gateways", &obj.PublicGateways, UnmarshalPublicGateway)
 	if err != nil {
 		return
 	}
@@ -22762,8 +26923,8 @@ func UnmarshalPublicGatewayCollectionNext(m map[string]json.RawMessage, result i
 
 // PublicGatewayFloatingIP : Reference to the floating IP which is bound to this public gateway.
 type PublicGatewayFloatingIP struct {
-	// The globally unique IP address.
-	Address *string `json:"address" validate:"required"`
+	// The unique identifier for this floating IP.
+	ID *string `json:"id" validate:"required"`
 
 	// The CRN for this floating IP.
 	CRN *string `json:"crn" validate:"required"`
@@ -22771,17 +26932,17 @@ type PublicGatewayFloatingIP struct {
 	// The URL for this floating IP.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this floating IP.
-	ID *string `json:"id" validate:"required"`
+	// The globally unique IP address.
+	Address *string `json:"address" validate:"required"`
 
-	// The user-defined name for this floating IP.
+	// The unique user-defined name for this floating IP.
 	Name *string `json:"name" validate:"required"`
 }
 
 // UnmarshalPublicGatewayFloatingIP unmarshals an instance of PublicGatewayFloatingIP from the specified map of raw messages.
 func UnmarshalPublicGatewayFloatingIP(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(PublicGatewayFloatingIP)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -22793,7 +26954,7 @@ func UnmarshalPublicGatewayFloatingIP(m map[string]json.RawMessage, result inter
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
 	if err != nil {
 		return
 	}
@@ -22915,14 +27076,14 @@ func UnmarshalPublicGatewayPrototypeFloatingIP(m map[string]json.RawMessage, res
 
 // PublicGatewayReference : PublicGatewayReference struct
 type PublicGatewayReference struct {
+	// The unique identifier for this public gateway.
+	ID *string `json:"id" validate:"required"`
+
 	// The CRN for this public gateway.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this public gateway.
 	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this public gateway.
-	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this public gateway.
 	Name *string `json:"name" validate:"required"`
@@ -22940,15 +27101,15 @@ const (
 // UnmarshalPublicGatewayReference unmarshals an instance of PublicGatewayReference from the specified map of raw messages.
 func UnmarshalPublicGatewayReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(PublicGatewayReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -22966,14 +27127,14 @@ func UnmarshalPublicGatewayReference(m map[string]json.RawMessage, result interf
 
 // Region : Region struct
 type Region struct {
-	// The API endpoint for this region.
-	Endpoint *string `json:"endpoint" validate:"required"`
+	// The name for this region.
+	Name *string `json:"name" validate:"required"`
 
 	// The URL for this region.
 	Href *string `json:"href" validate:"required"`
 
-	// The name for this region.
-	Name *string `json:"name" validate:"required"`
+	// The API endpoint for this region.
+	Endpoint *string `json:"endpoint" validate:"required"`
 
 	// The availability status of this region.
 	Status *string `json:"status" validate:"required"`
@@ -22989,7 +27150,7 @@ const (
 // UnmarshalRegion unmarshals an instance of Region from the specified map of raw messages.
 func UnmarshalRegion(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Region)
-	err = core.UnmarshalPrimitive(m, "endpoint", &obj.Endpoint)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -22997,7 +27158,7 @@ func UnmarshalRegion(m map[string]json.RawMessage, result interface{}) (err erro
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "endpoint", &obj.Endpoint)
 	if err != nil {
 		return
 	}
@@ -23028,21 +27189,21 @@ func UnmarshalRegionCollection(m map[string]json.RawMessage, result interface{})
 
 // RegionReference : RegionReference struct
 type RegionReference struct {
-	// The URL for this region.
-	Href *string `json:"href" validate:"required"`
-
 	// The name for this region.
 	Name *string `json:"name" validate:"required"`
+
+	// The URL for this region.
+	Href *string `json:"href" validate:"required"`
 }
 
 // UnmarshalRegionReference unmarshals an instance of RegionReference from the specified map of raw messages.
 func UnmarshalRegionReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(RegionReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -23368,28 +27529,28 @@ func UnmarshalResourceGroupIdentity(m map[string]json.RawMessage, result interfa
 
 // ResourceGroupReference : ResourceGroupReference struct
 type ResourceGroupReference struct {
-	// The URL for this resource group.
-	Href *string `json:"href" validate:"required"`
-
 	// The unique identifier for this resource group.
 	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this resource group.
 	Name *string `json:"name" validate:"required"`
+
+	// The URL for this resource group.
+	Href *string `json:"href" validate:"required"`
 }
 
 // UnmarshalResourceGroupReference unmarshals an instance of ResourceGroupReference from the specified map of raw messages.
 func UnmarshalResourceGroupReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ResourceGroupReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -23399,26 +27560,26 @@ func UnmarshalResourceGroupReference(m map[string]json.RawMessage, result interf
 
 // Route : Route struct
 type Route struct {
+	// The next hop that packets will be delivered to.
+	NextHop RouteNextHopIntf `json:"next_hop" validate:"required"`
+
+	// The unique identifier for this route.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this route.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this route.
+	Name *string `json:"name" validate:"required"`
+
 	// The date and time that the route was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination of the route.
 	Destination *string `json:"destination" validate:"required"`
 
-	// The URL for this route.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this route.
-	ID *string `json:"id" validate:"required"`
-
 	// The lifecycle state of the route.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
-
-	// The user-defined name for this route.
-	Name *string `json:"name" validate:"required"`
-
-	// The next hop that packets will be delivered to.
-	NextHop RouteNextHopIntf `json:"next_hop" validate:"required"`
 
 	// The zone the route applies to. (Traffic from subnets in this zone will be
 	// subject to this route.).
@@ -23441,6 +27602,22 @@ const (
 // UnmarshalRoute unmarshals an instance of Route from the specified map of raw messages.
 func UnmarshalRoute(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Route)
+	err = core.UnmarshalModel(m, "next_hop", &obj.NextHop, UnmarshalRouteNextHop)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
@@ -23449,23 +27626,7 @@ func UnmarshalRoute(m map[string]json.RawMessage, result interface{}) (err error
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "next_hop", &obj.NextHop, UnmarshalRouteNextHop)
 	if err != nil {
 		return
 	}
@@ -23554,8 +27715,8 @@ func UnmarshalRouteNextHopPrototype(m map[string]json.RawMessage, result interfa
 
 // SecurityGroup : SecurityGroup struct
 type SecurityGroup struct {
-	// The date and time that this security group was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The unique identifier for this security group.
+	ID *string `json:"id" validate:"required"`
 
 	// The security group's CRN.
 	CRN *string `json:"crn" validate:"required"`
@@ -23563,17 +27724,17 @@ type SecurityGroup struct {
 	// The security group's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this security group.
-	ID *string `json:"id" validate:"required"`
-
 	// The user-defined name for this security group. Names must be unique within the VPC the security group resides in.
 	Name *string `json:"name" validate:"required"`
 
-	// Array of references to network interfaces.
-	NetworkInterfaces []NetworkInterfaceReference `json:"network_interfaces" validate:"required"`
-
 	// The resource group for this security group.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The date and time that this security group was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// Array of references to network interfaces.
+	NetworkInterfaces []NetworkInterfaceReference `json:"network_interfaces" validate:"required"`
 
 	// Array of rules for this security group. If no rules exist, all traffic will be denied.
 	Rules []SecurityGroupRuleIntf `json:"rules" validate:"required"`
@@ -23585,7 +27746,7 @@ type SecurityGroup struct {
 // UnmarshalSecurityGroup unmarshals an instance of SecurityGroup from the specified map of raw messages.
 func UnmarshalSecurityGroup(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroup)
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -23597,19 +27758,19 @@ func UnmarshalSecurityGroup(m map[string]json.RawMessage, result interface{}) (e
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "network_interfaces", &obj.NetworkInterfaces, UnmarshalNetworkInterfaceReference)
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "network_interfaces", &obj.NetworkInterfaces, UnmarshalNetworkInterfaceReference)
 	if err != nil {
 		return
 	}
@@ -23637,11 +27798,11 @@ type SecurityGroupCollection struct {
 	// except the last page.
 	Next *SecurityGroupCollectionNext `json:"next,omitempty"`
 
-	// Collection of security groups.
-	SecurityGroups []SecurityGroup `json:"security_groups" validate:"required"`
-
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of security groups.
+	SecurityGroups []SecurityGroup `json:"security_groups" validate:"required"`
 }
 
 // UnmarshalSecurityGroupCollection unmarshals an instance of SecurityGroupCollection from the specified map of raw messages.
@@ -23659,11 +27820,11 @@ func UnmarshalSecurityGroupCollection(m map[string]json.RawMessage, result inter
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "security_groups", &obj.SecurityGroups, UnmarshalSecurityGroup)
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	err = core.UnmarshalModel(m, "security_groups", &obj.SecurityGroups, UnmarshalSecurityGroup)
 	if err != nil {
 		return
 	}
@@ -23750,14 +27911,14 @@ func UnmarshalSecurityGroupIdentity(m map[string]json.RawMessage, result interfa
 
 // SecurityGroupReference : SecurityGroupReference struct
 type SecurityGroupReference struct {
+	// The unique identifier for this security group.
+	ID *string `json:"id" validate:"required"`
+
 	// The security group's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The security group's canonical URL.
 	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this security group.
-	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this security group. Names must be unique within the VPC the security group resides in.
 	Name *string `json:"name" validate:"required"`
@@ -23766,15 +27927,15 @@ type SecurityGroupReference struct {
 // UnmarshalSecurityGroupReference unmarshals an instance of SecurityGroupReference from the specified map of raw messages.
 func UnmarshalSecurityGroupReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroupReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -23792,14 +27953,14 @@ func UnmarshalSecurityGroupReference(m map[string]json.RawMessage, result interf
 // - SecurityGroupRuleSecurityGroupRuleProtocolIcmp
 // - SecurityGroupRuleSecurityGroupRuleProtocolTcpudp
 type SecurityGroupRule struct {
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
+	// The unique identifier for this security group rule.
+	ID *string `json:"id" validate:"required"`
 
 	// The URL for this security group rule.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this security group rule.
-	ID *string `json:"id" validate:"required"`
+	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
 
 	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
 	// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
@@ -24143,14 +28304,14 @@ type SecurityGroupRuleRemote struct {
 	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
 	CIDRBlock *string `json:"cidr_block,omitempty"`
 
+	// The unique identifier for this security group.
+	ID *string `json:"id,omitempty"`
+
 	// The security group's CRN.
 	CRN *string `json:"crn,omitempty"`
 
 	// The security group's canonical URL.
 	Href *string `json:"href,omitempty"`
-
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
 
 	// The user-defined name for this security group. Names must be unique within the VPC the security group resides in.
 	Name *string `json:"name,omitempty"`
@@ -24175,15 +28336,15 @@ func UnmarshalSecurityGroupRuleRemote(m map[string]json.RawMessage, result inter
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -24235,12 +28396,8 @@ func (options *SetSubnetPublicGatewayOptions) SetHeaders(param map[string]string
 
 // Subnet : Subnet struct
 type Subnet struct {
-	// The number of IPv4 addresses in this subnet that are not in-use, and have not been reserved by the user or the
-	// provider.
-	AvailableIpv4AddressCount *int64 `json:"available_ipv4_address_count" validate:"required"`
-
-	// The date and time that the subnet was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The unique identifier for this subnet.
+	ID *string `json:"id" validate:"required"`
 
 	// The CRN for this subnet.
 	CRN *string `json:"crn" validate:"required"`
@@ -24248,29 +28405,18 @@ type Subnet struct {
 	// The URL for this subnet.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this subnet.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version(s) supported by this subnet.
-	IPVersion *string `json:"ip_version" validate:"required"`
-
-	// The IPv4 range of the subnet, expressed in CIDR format.
-	Ipv4CIDRBlock *string `json:"ipv4_cidr_block" validate:"required"`
-
 	// The user-defined name for this subnet.
 	Name *string `json:"name" validate:"required"`
-
-	// The network ACL for this subnet.
-	NetworkACL *NetworkACLReference `json:"network_acl" validate:"required"`
-
-	// The public gateway to handle internet bound traffic for this subnet.
-	PublicGateway *PublicGatewayReference `json:"public_gateway,omitempty"`
 
 	// The resource group for this subnet.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
-	// The status of the subnet.
-	Status *string `json:"status" validate:"required"`
+	// The number of IPv4 addresses in this subnet that are not in-use, and have not been reserved by the user or the
+	// provider.
+	AvailableIpv4AddressCount *int64 `json:"available_ipv4_address_count" validate:"required"`
+
+	// The network ACL for this subnet.
+	NetworkACL *NetworkACLReference `json:"network_acl" validate:"required"`
 
 	// The total number of IPv4 addresses in this subnet.
 	//
@@ -24278,20 +28424,27 @@ type Subnet struct {
 	// 2<sup>(32 − 24)</sup> = 2<sup>8</sup> = 256 addresses.
 	TotalIpv4AddressCount *int64 `json:"total_ipv4_address_count" validate:"required"`
 
+	// The date and time that the subnet was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The IPv4 range of the subnet, expressed in CIDR format.
+	Ipv4CIDRBlock *string `json:"ipv4_cidr_block" validate:"required"`
+
+	// The public gateway to handle internet bound traffic for this subnet.
+	PublicGateway *PublicGatewayReference `json:"public_gateway,omitempty"`
+
+	// The status of the subnet.
+	Status *string `json:"status" validate:"required"`
+
 	// The VPC this subnet is a part of.
 	VPC *VPCReference `json:"vpc" validate:"required"`
 
 	// The zone this subnet resides in.
 	Zone *ZoneReference `json:"zone" validate:"required"`
-}
 
-// Constants associated with the Subnet.IPVersion property.
-// The IP version(s) supported by this subnet.
-const (
-	SubnetIPVersionBothConst = "both"
-	SubnetIPVersionIpv4Const = "ipv4"
-	SubnetIPVersionIpv6Const = "ipv6"
-)
+	// The IP version(s) supported by this subnet.
+	IPVersion *string `json:"ip_version" validate:"required"`
+}
 
 // Constants associated with the Subnet.Status property.
 // The status of the subnet.
@@ -24302,14 +28455,16 @@ const (
 	SubnetStatusPendingConst   = "pending"
 )
 
+// Constants associated with the Subnet.IPVersion property.
+// The IP version(s) supported by this subnet.
+const (
+	SubnetIPVersionIpv4Const = "ipv4"
+)
+
 // UnmarshalSubnet unmarshals an instance of Subnet from the specified map of raw messages.
 func UnmarshalSubnet(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Subnet)
-	err = core.UnmarshalPrimitive(m, "available_ipv4_address_count", &obj.AvailableIpv4AddressCount)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -24321,27 +28476,7 @@ func UnmarshalSubnet(m map[string]json.RawMessage, result interface{}) (err erro
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ipv4_cidr_block", &obj.Ipv4CIDRBlock)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "network_acl", &obj.NetworkACL, UnmarshalNetworkACLReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "public_gateway", &obj.PublicGateway, UnmarshalPublicGatewayReference)
 	if err != nil {
 		return
 	}
@@ -24349,11 +28484,31 @@ func UnmarshalSubnet(m map[string]json.RawMessage, result interface{}) (err erro
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	err = core.UnmarshalPrimitive(m, "available_ipv4_address_count", &obj.AvailableIpv4AddressCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "network_acl", &obj.NetworkACL, UnmarshalNetworkACLReference)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "total_ipv4_address_count", &obj.TotalIpv4AddressCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ipv4_cidr_block", &obj.Ipv4CIDRBlock)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "public_gateway", &obj.PublicGateway, UnmarshalPublicGatewayReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -24362,6 +28517,10 @@ func UnmarshalSubnet(m map[string]json.RawMessage, result interface{}) (err erro
 		return
 	}
 	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -24381,11 +28540,11 @@ type SubnetCollection struct {
 	// except the last page.
 	Next *SubnetCollectionNext `json:"next,omitempty"`
 
-	// Collection of subnets.
-	Subnets []Subnet `json:"subnets" validate:"required"`
-
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of subnets.
+	Subnets []Subnet `json:"subnets" validate:"required"`
 }
 
 // UnmarshalSubnetCollection unmarshals an instance of SubnetCollection from the specified map of raw messages.
@@ -24403,11 +28562,11 @@ func UnmarshalSubnetCollection(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "subnets", &obj.Subnets, UnmarshalSubnet)
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	err = core.UnmarshalModel(m, "subnets", &obj.Subnets, UnmarshalSubnet)
 	if err != nil {
 		return
 	}
@@ -24497,9 +28656,6 @@ func UnmarshalSubnetIdentity(m map[string]json.RawMessage, result interface{}) (
 // - SubnetPrototypeSubnetByTotalCount
 // - SubnetPrototypeSubnetByCIDR
 type SubnetPrototype struct {
-	// The IP version(s) supported by this subnet; if unspecified, `ipv4` is used.
-	IPVersion *string `json:"ip_version,omitempty"`
-
 	// The user-defined name for this subnet. Names must be unique within the VPC the subnet resides in. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -24509,6 +28665,9 @@ type SubnetPrototype struct {
 
 	// The public gateway to handle internet bound traffic for this subnet.
 	PublicGateway PublicGatewayIdentityIntf `json:"public_gateway,omitempty"`
+
+	// The IP version(s) to support for this subnet.
+	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
@@ -24532,11 +28691,9 @@ type SubnetPrototype struct {
 }
 
 // Constants associated with the SubnetPrototype.IPVersion property.
-// The IP version(s) supported by this subnet; if unspecified, `ipv4` is used.
+// The IP version(s) to support for this subnet.
 const (
-	SubnetPrototypeIPVersionBothConst = "both"
 	SubnetPrototypeIPVersionIpv4Const = "ipv4"
-	SubnetPrototypeIPVersionIpv6Const = "ipv6"
 )
 
 func (*SubnetPrototype) isaSubnetPrototype() bool {
@@ -24550,10 +28707,6 @@ type SubnetPrototypeIntf interface {
 // UnmarshalSubnetPrototype unmarshals an instance of SubnetPrototype from the specified map of raw messages.
 func UnmarshalSubnetPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SubnetPrototype)
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -24563,6 +28716,10 @@ func UnmarshalSubnetPrototype(m map[string]json.RawMessage, result interface{}) 
 		return
 	}
 	err = core.UnmarshalModel(m, "public_gateway", &obj.PublicGateway, UnmarshalPublicGatewayIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -24592,14 +28749,14 @@ func UnmarshalSubnetPrototype(m map[string]json.RawMessage, result interface{}) 
 
 // SubnetReference : SubnetReference struct
 type SubnetReference struct {
+	// The unique identifier for this subnet.
+	ID *string `json:"id" validate:"required"`
+
 	// The CRN for this subnet.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this subnet.
 	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this subnet.
-	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this subnet.
 	Name *string `json:"name" validate:"required"`
@@ -24608,15 +28765,15 @@ type SubnetReference struct {
 // UnmarshalSubnetReference unmarshals an instance of SubnetReference from the specified map of raw messages.
 func UnmarshalSubnetReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SubnetReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -24709,12 +28866,12 @@ type UpdateFlowLogCollectorOptions struct {
 	// The flow log collector identifier.
 	ID *string `json:"id" validate:"required"`
 
+	// The unique user-defined name for this flow log collector.
+	Name *string `json:"name,omitempty"`
+
 	// Indicates whether this collector is active. Updating to false deactivates the collector and updating to true
 	// activates the collector.
 	Active *bool `json:"active,omitempty"`
-
-	// The unique user-defined name for this flow log collector.
-	Name *string `json:"name,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -24733,15 +28890,15 @@ func (options *UpdateFlowLogCollectorOptions) SetID(id string) *UpdateFlowLogCol
 	return options
 }
 
-// SetActive : Allow user to set Active
-func (options *UpdateFlowLogCollectorOptions) SetActive(active bool) *UpdateFlowLogCollectorOptions {
-	options.Active = core.BoolPtr(active)
-	return options
-}
-
 // SetName : Allow user to set Name
 func (options *UpdateFlowLogCollectorOptions) SetName(name string) *UpdateFlowLogCollectorOptions {
 	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetActive : Allow user to set Active
+func (options *UpdateFlowLogCollectorOptions) SetActive(active bool) *UpdateFlowLogCollectorOptions {
+	options.Active = core.BoolPtr(active)
 	return options
 }
 
@@ -24755,6 +28912,9 @@ func (options *UpdateFlowLogCollectorOptions) SetHeaders(param map[string]string
 type UpdateIkePolicyOptions struct {
 	// The IKE policy identifier.
 	ID *string `json:"id" validate:"required"`
+
+	// The user-defined name for this IKE policy.
+	Name *string `json:"name,omitempty"`
 
 	// The authentication algorithm.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm,omitempty"`
@@ -24770,9 +28930,6 @@ type UpdateIkePolicyOptions struct {
 
 	// The key lifetime in seconds.
 	KeyLifetime *int64 `json:"key_lifetime,omitempty"`
-
-	// The user-defined name for this IKE policy.
-	Name *string `json:"name,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -24807,6 +28964,12 @@ func (options *UpdateIkePolicyOptions) SetID(id string) *UpdateIkePolicyOptions 
 	return options
 }
 
+// SetName : Allow user to set Name
+func (options *UpdateIkePolicyOptions) SetName(name string) *UpdateIkePolicyOptions {
+	options.Name = core.StringPtr(name)
+	return options
+}
+
 // SetAuthenticationAlgorithm : Allow user to set AuthenticationAlgorithm
 func (options *UpdateIkePolicyOptions) SetAuthenticationAlgorithm(authenticationAlgorithm string) *UpdateIkePolicyOptions {
 	options.AuthenticationAlgorithm = core.StringPtr(authenticationAlgorithm)
@@ -24834,12 +28997,6 @@ func (options *UpdateIkePolicyOptions) SetIkeVersion(ikeVersion int64) *UpdateIk
 // SetKeyLifetime : Allow user to set KeyLifetime
 func (options *UpdateIkePolicyOptions) SetKeyLifetime(keyLifetime int64) *UpdateIkePolicyOptions {
 	options.KeyLifetime = core.Int64Ptr(keyLifetime)
-	return options
-}
-
-// SetName : Allow user to set Name
-func (options *UpdateIkePolicyOptions) SetName(name string) *UpdateIkePolicyOptions {
-	options.Name = core.StringPtr(name)
 	return options
 }
 
@@ -24882,6 +29039,326 @@ func (options *UpdateImageOptions) SetName(name string) *UpdateImageOptions {
 
 // SetHeaders : Allow user to set Headers
 func (options *UpdateImageOptions) SetHeaders(param map[string]string) *UpdateImageOptions {
+	options.Headers = param
+	return options
+}
+
+// UpdateInstanceGroupManagerOptions : The UpdateInstanceGroupManager options.
+type UpdateInstanceGroupManagerOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// The instance group manager identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// The user-defined name for this instance group manager. Names must be unique within the instance group.
+	Name *string `json:"name,omitempty"`
+
+	// If set to `true`, this manager will control the instance group.
+	ManagementEnabled *bool `json:"management_enabled,omitempty"`
+
+	// The time window in seconds to aggregate metrics prior to evaluation.
+	AggregationWindow *int64 `json:"aggregation_window,omitempty"`
+
+	// The duration of time in seconds to pause further scale actions after scaling has taken place.
+	Cooldown *int64 `json:"cooldown,omitempty"`
+
+	// The maximum number of members in a managed instance group.
+	MaxMembershipCount *int64 `json:"max_membership_count,omitempty"`
+
+	// The minimum number of members in a managed instance group.
+	MinMembershipCount *int64 `json:"min_membership_count,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewUpdateInstanceGroupManagerOptions : Instantiate UpdateInstanceGroupManagerOptions
+func (*VpcV1) NewUpdateInstanceGroupManagerOptions(instanceGroupID string, id string) *UpdateInstanceGroupManagerOptions {
+	return &UpdateInstanceGroupManagerOptions{
+		InstanceGroupID: core.StringPtr(instanceGroupID),
+		ID:              core.StringPtr(id),
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *UpdateInstanceGroupManagerOptions) SetInstanceGroupID(instanceGroupID string) *UpdateInstanceGroupManagerOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetID : Allow user to set ID
+func (options *UpdateInstanceGroupManagerOptions) SetID(id string) *UpdateInstanceGroupManagerOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetName : Allow user to set Name
+func (options *UpdateInstanceGroupManagerOptions) SetName(name string) *UpdateInstanceGroupManagerOptions {
+	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetManagementEnabled : Allow user to set ManagementEnabled
+func (options *UpdateInstanceGroupManagerOptions) SetManagementEnabled(managementEnabled bool) *UpdateInstanceGroupManagerOptions {
+	options.ManagementEnabled = core.BoolPtr(managementEnabled)
+	return options
+}
+
+// SetAggregationWindow : Allow user to set AggregationWindow
+func (options *UpdateInstanceGroupManagerOptions) SetAggregationWindow(aggregationWindow int64) *UpdateInstanceGroupManagerOptions {
+	options.AggregationWindow = core.Int64Ptr(aggregationWindow)
+	return options
+}
+
+// SetCooldown : Allow user to set Cooldown
+func (options *UpdateInstanceGroupManagerOptions) SetCooldown(cooldown int64) *UpdateInstanceGroupManagerOptions {
+	options.Cooldown = core.Int64Ptr(cooldown)
+	return options
+}
+
+// SetMaxMembershipCount : Allow user to set MaxMembershipCount
+func (options *UpdateInstanceGroupManagerOptions) SetMaxMembershipCount(maxMembershipCount int64) *UpdateInstanceGroupManagerOptions {
+	options.MaxMembershipCount = core.Int64Ptr(maxMembershipCount)
+	return options
+}
+
+// SetMinMembershipCount : Allow user to set MinMembershipCount
+func (options *UpdateInstanceGroupManagerOptions) SetMinMembershipCount(minMembershipCount int64) *UpdateInstanceGroupManagerOptions {
+	options.MinMembershipCount = core.Int64Ptr(minMembershipCount)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateInstanceGroupManagerOptions) SetHeaders(param map[string]string) *UpdateInstanceGroupManagerOptions {
+	options.Headers = param
+	return options
+}
+
+// UpdateInstanceGroupManagerPolicyOptions : The UpdateInstanceGroupManagerPolicy options.
+type UpdateInstanceGroupManagerPolicyOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// The instance group manager identifier.
+	InstanceGroupManagerID *string `json:"instance_group_manager_id" validate:"required"`
+
+	// The instance group manager policy identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// The user-defined name for this instance group manager policy. Names must be unique within the instance group
+	// manager.
+	Name *string `json:"name,omitempty"`
+
+	// The type of metric to be evaluated.
+	MetricType *string `json:"metric_type,omitempty"`
+
+	// The metric value to be evaluated.
+	MetricValue *int64 `json:"metric_value,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// Constants associated with the UpdateInstanceGroupManagerPolicyOptions.MetricType property.
+// The type of metric to be evaluated.
+const (
+	UpdateInstanceGroupManagerPolicyOptionsMetricTypeCpuConst        = "cpu"
+	UpdateInstanceGroupManagerPolicyOptionsMetricTypeMemoryConst     = "memory"
+	UpdateInstanceGroupManagerPolicyOptionsMetricTypeNetworkInConst  = "network_in"
+	UpdateInstanceGroupManagerPolicyOptionsMetricTypeNetworkOutConst = "network_out"
+)
+
+// NewUpdateInstanceGroupManagerPolicyOptions : Instantiate UpdateInstanceGroupManagerPolicyOptions
+func (*VpcV1) NewUpdateInstanceGroupManagerPolicyOptions(instanceGroupID string, instanceGroupManagerID string, id string) *UpdateInstanceGroupManagerPolicyOptions {
+	return &UpdateInstanceGroupManagerPolicyOptions{
+		InstanceGroupID:        core.StringPtr(instanceGroupID),
+		InstanceGroupManagerID: core.StringPtr(instanceGroupManagerID),
+		ID:                     core.StringPtr(id),
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *UpdateInstanceGroupManagerPolicyOptions) SetInstanceGroupID(instanceGroupID string) *UpdateInstanceGroupManagerPolicyOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetInstanceGroupManagerID : Allow user to set InstanceGroupManagerID
+func (options *UpdateInstanceGroupManagerPolicyOptions) SetInstanceGroupManagerID(instanceGroupManagerID string) *UpdateInstanceGroupManagerPolicyOptions {
+	options.InstanceGroupManagerID = core.StringPtr(instanceGroupManagerID)
+	return options
+}
+
+// SetID : Allow user to set ID
+func (options *UpdateInstanceGroupManagerPolicyOptions) SetID(id string) *UpdateInstanceGroupManagerPolicyOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetName : Allow user to set Name
+func (options *UpdateInstanceGroupManagerPolicyOptions) SetName(name string) *UpdateInstanceGroupManagerPolicyOptions {
+	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetMetricType : Allow user to set MetricType
+func (options *UpdateInstanceGroupManagerPolicyOptions) SetMetricType(metricType string) *UpdateInstanceGroupManagerPolicyOptions {
+	options.MetricType = core.StringPtr(metricType)
+	return options
+}
+
+// SetMetricValue : Allow user to set MetricValue
+func (options *UpdateInstanceGroupManagerPolicyOptions) SetMetricValue(metricValue int64) *UpdateInstanceGroupManagerPolicyOptions {
+	options.MetricValue = core.Int64Ptr(metricValue)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateInstanceGroupManagerPolicyOptions) SetHeaders(param map[string]string) *UpdateInstanceGroupManagerPolicyOptions {
+	options.Headers = param
+	return options
+}
+
+// UpdateInstanceGroupMembershipOptions : The UpdateInstanceGroupMembership options.
+type UpdateInstanceGroupMembershipOptions struct {
+	// The instance group identifier.
+	InstanceGroupID *string `json:"instance_group_id" validate:"required"`
+
+	// The instance group membership identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// The user-defined name for this instance group membership. Names must be unique within the instance group.
+	Name *string `json:"name,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewUpdateInstanceGroupMembershipOptions : Instantiate UpdateInstanceGroupMembershipOptions
+func (*VpcV1) NewUpdateInstanceGroupMembershipOptions(instanceGroupID string, id string) *UpdateInstanceGroupMembershipOptions {
+	return &UpdateInstanceGroupMembershipOptions{
+		InstanceGroupID: core.StringPtr(instanceGroupID),
+		ID:              core.StringPtr(id),
+	}
+}
+
+// SetInstanceGroupID : Allow user to set InstanceGroupID
+func (options *UpdateInstanceGroupMembershipOptions) SetInstanceGroupID(instanceGroupID string) *UpdateInstanceGroupMembershipOptions {
+	options.InstanceGroupID = core.StringPtr(instanceGroupID)
+	return options
+}
+
+// SetID : Allow user to set ID
+func (options *UpdateInstanceGroupMembershipOptions) SetID(id string) *UpdateInstanceGroupMembershipOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetName : Allow user to set Name
+func (options *UpdateInstanceGroupMembershipOptions) SetName(name string) *UpdateInstanceGroupMembershipOptions {
+	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateInstanceGroupMembershipOptions) SetHeaders(param map[string]string) *UpdateInstanceGroupMembershipOptions {
+	options.Headers = param
+	return options
+}
+
+// UpdateInstanceGroupOptions : The UpdateInstanceGroup options.
+type UpdateInstanceGroupOptions struct {
+	// The instance group identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// The user-defined name for this instance group.
+	Name *string `json:"name,omitempty"`
+
+	// The number of instances in the instance group.
+	MembershipCount *int64 `json:"membership_count,omitempty"`
+
+	// Instance template to use when creating new instances.
+	InstanceTemplate InstanceTemplateIdentityIntf `json:"instance_template,omitempty"`
+
+	// Array of identities to subnets to use when creating new instances.
+	Subnets []SubnetIdentityIntf `json:"subnets,omitempty"`
+
+	// Required if specifying a load balancer pool only. Used by the instance group when scaling up instances to supply the
+	// port for the load balancer pool member.
+	ApplicationPort *int64 `json:"application_port,omitempty"`
+
+	// The load balancer that the load balancer pool used by this group
+	// is in. Must be supplied when using a load balancer pool.
+	LoadBalancer LoadBalancerIdentityIntf `json:"load_balancer,omitempty"`
+
+	// When specified, the load balancer pool will be managed by this
+	// group. Instances created by this group will have a new load
+	// balancer pool member in that pool created. Must be used with
+	// `application_port`.
+	LoadBalancerPool LoadBalancerPoolIdentityIntf `json:"load_balancer_pool,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewUpdateInstanceGroupOptions : Instantiate UpdateInstanceGroupOptions
+func (*VpcV1) NewUpdateInstanceGroupOptions(id string) *UpdateInstanceGroupOptions {
+	return &UpdateInstanceGroupOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (options *UpdateInstanceGroupOptions) SetID(id string) *UpdateInstanceGroupOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetName : Allow user to set Name
+func (options *UpdateInstanceGroupOptions) SetName(name string) *UpdateInstanceGroupOptions {
+	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetMembershipCount : Allow user to set MembershipCount
+func (options *UpdateInstanceGroupOptions) SetMembershipCount(membershipCount int64) *UpdateInstanceGroupOptions {
+	options.MembershipCount = core.Int64Ptr(membershipCount)
+	return options
+}
+
+// SetInstanceTemplate : Allow user to set InstanceTemplate
+func (options *UpdateInstanceGroupOptions) SetInstanceTemplate(instanceTemplate InstanceTemplateIdentityIntf) *UpdateInstanceGroupOptions {
+	options.InstanceTemplate = instanceTemplate
+	return options
+}
+
+// SetSubnets : Allow user to set Subnets
+func (options *UpdateInstanceGroupOptions) SetSubnets(subnets []SubnetIdentityIntf) *UpdateInstanceGroupOptions {
+	options.Subnets = subnets
+	return options
+}
+
+// SetApplicationPort : Allow user to set ApplicationPort
+func (options *UpdateInstanceGroupOptions) SetApplicationPort(applicationPort int64) *UpdateInstanceGroupOptions {
+	options.ApplicationPort = core.Int64Ptr(applicationPort)
+	return options
+}
+
+// SetLoadBalancer : Allow user to set LoadBalancer
+func (options *UpdateInstanceGroupOptions) SetLoadBalancer(loadBalancer LoadBalancerIdentityIntf) *UpdateInstanceGroupOptions {
+	options.LoadBalancer = loadBalancer
+	return options
+}
+
+// SetLoadBalancerPool : Allow user to set LoadBalancerPool
+func (options *UpdateInstanceGroupOptions) SetLoadBalancerPool(loadBalancerPool LoadBalancerPoolIdentityIntf) *UpdateInstanceGroupOptions {
+	options.LoadBalancerPool = loadBalancerPool
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateInstanceGroupOptions) SetHeaders(param map[string]string) *UpdateInstanceGroupOptions {
 	options.Headers = param
 	return options
 }
@@ -24970,6 +29447,43 @@ func (options *UpdateInstanceOptions) SetHeaders(param map[string]string) *Updat
 	return options
 }
 
+// UpdateInstanceTemplateOptions : The UpdateInstanceTemplate options.
+type UpdateInstanceTemplateOptions struct {
+	// The instance template identifier.
+	ID *string `json:"id" validate:"required"`
+
+	// The unique user-defined name for this instance template.
+	Name *string `json:"name,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewUpdateInstanceTemplateOptions : Instantiate UpdateInstanceTemplateOptions
+func (*VpcV1) NewUpdateInstanceTemplateOptions(id string) *UpdateInstanceTemplateOptions {
+	return &UpdateInstanceTemplateOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (options *UpdateInstanceTemplateOptions) SetID(id string) *UpdateInstanceTemplateOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetName : Allow user to set Name
+func (options *UpdateInstanceTemplateOptions) SetName(name string) *UpdateInstanceTemplateOptions {
+	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateInstanceTemplateOptions) SetHeaders(param map[string]string) *UpdateInstanceTemplateOptions {
+	options.Headers = param
+	return options
+}
+
 // UpdateInstanceVolumeAttachmentOptions : The UpdateInstanceVolumeAttachment options.
 type UpdateInstanceVolumeAttachmentOptions struct {
 	// The instance identifier.
@@ -24978,11 +29492,11 @@ type UpdateInstanceVolumeAttachmentOptions struct {
 	// The volume attachment identifier.
 	ID *string `json:"id" validate:"required"`
 
-	// If set to true, when deleting the instance the volume will also be deleted.
-	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
-
 	// The user-defined name for this volume attachment.
 	Name *string `json:"name,omitempty"`
+
+	// If set to true, when deleting the instance the volume will also be deleted.
+	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -25008,15 +29522,15 @@ func (options *UpdateInstanceVolumeAttachmentOptions) SetID(id string) *UpdateIn
 	return options
 }
 
-// SetDeleteVolumeOnInstanceDelete : Allow user to set DeleteVolumeOnInstanceDelete
-func (options *UpdateInstanceVolumeAttachmentOptions) SetDeleteVolumeOnInstanceDelete(deleteVolumeOnInstanceDelete bool) *UpdateInstanceVolumeAttachmentOptions {
-	options.DeleteVolumeOnInstanceDelete = core.BoolPtr(deleteVolumeOnInstanceDelete)
-	return options
-}
-
 // SetName : Allow user to set Name
 func (options *UpdateInstanceVolumeAttachmentOptions) SetName(name string) *UpdateInstanceVolumeAttachmentOptions {
 	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetDeleteVolumeOnInstanceDelete : Allow user to set DeleteVolumeOnInstanceDelete
+func (options *UpdateInstanceVolumeAttachmentOptions) SetDeleteVolumeOnInstanceDelete(deleteVolumeOnInstanceDelete bool) *UpdateInstanceVolumeAttachmentOptions {
+	options.DeleteVolumeOnInstanceDelete = core.BoolPtr(deleteVolumeOnInstanceDelete)
 	return options
 }
 
@@ -25031,6 +29545,9 @@ type UpdateIpsecPolicyOptions struct {
 	// The IPsec policy identifier.
 	ID *string `json:"id" validate:"required"`
 
+	// The user-defined name for this IPsec policy.
+	Name *string `json:"name,omitempty"`
+
 	// The authentication algorithm.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm,omitempty"`
 
@@ -25039,9 +29556,6 @@ type UpdateIpsecPolicyOptions struct {
 
 	// The key lifetime in seconds.
 	KeyLifetime *int64 `json:"key_lifetime,omitempty"`
-
-	// The user-defined name for this IPsec policy.
-	Name *string `json:"name,omitempty"`
 
 	// Perfect Forward Secrecy.
 	Pfs *string `json:"pfs,omitempty"`
@@ -25088,6 +29602,12 @@ func (options *UpdateIpsecPolicyOptions) SetID(id string) *UpdateIpsecPolicyOpti
 	return options
 }
 
+// SetName : Allow user to set Name
+func (options *UpdateIpsecPolicyOptions) SetName(name string) *UpdateIpsecPolicyOptions {
+	options.Name = core.StringPtr(name)
+	return options
+}
+
 // SetAuthenticationAlgorithm : Allow user to set AuthenticationAlgorithm
 func (options *UpdateIpsecPolicyOptions) SetAuthenticationAlgorithm(authenticationAlgorithm string) *UpdateIpsecPolicyOptions {
 	options.AuthenticationAlgorithm = core.StringPtr(authenticationAlgorithm)
@@ -25103,12 +29623,6 @@ func (options *UpdateIpsecPolicyOptions) SetEncryptionAlgorithm(encryptionAlgori
 // SetKeyLifetime : Allow user to set KeyLifetime
 func (options *UpdateIpsecPolicyOptions) SetKeyLifetime(keyLifetime int64) *UpdateIpsecPolicyOptions {
 	options.KeyLifetime = core.Int64Ptr(keyLifetime)
-	return options
-}
-
-// SetName : Allow user to set Name
-func (options *UpdateIpsecPolicyOptions) SetName(name string) *UpdateIpsecPolicyOptions {
-	options.Name = core.StringPtr(name)
 	return options
 }
 
@@ -25169,28 +29683,30 @@ type UpdateLoadBalancerListenerOptions struct {
 	// The listener identifier.
 	ID *string `json:"id" validate:"required"`
 
-	// The certificate instance used for SSL termination. It is applicable only to `https`
-	// protocol.
-	CertificateInstance CertificateInstanceIdentityIntf `json:"certificate_instance,omitempty"`
-
 	// The connection limit of the listener.
 	ConnectionLimit *int64 `json:"connection_limit,omitempty"`
-
-	// The default pool associated with the listener.
-	DefaultPool LoadBalancerPoolIdentityIntf `json:"default_pool,omitempty"`
 
 	// The listener port number.
 	Port *int64 `json:"port,omitempty"`
 
-	// The listener protocol.
+	// The listener protocol. Load balancers in the `network` family support `tcp`. Load balancers in the `application`
+	// family support `tcp`, `http`, and `https`.
 	Protocol *string `json:"protocol,omitempty"`
+
+	// The certificate instance used for SSL termination. It is applicable only to `https`
+	// protocol.
+	CertificateInstance CertificateInstanceIdentityIntf `json:"certificate_instance,omitempty"`
+
+	// The default pool associated with the listener.
+	DefaultPool LoadBalancerPoolIdentityIntf `json:"default_pool,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
 
 // Constants associated with the UpdateLoadBalancerListenerOptions.Protocol property.
-// The listener protocol.
+// The listener protocol. Load balancers in the `network` family support `tcp`. Load balancers in the `application`
+// family support `tcp`, `http`, and `https`.
 const (
 	UpdateLoadBalancerListenerOptionsProtocolHTTPConst  = "http"
 	UpdateLoadBalancerListenerOptionsProtocolHTTPSConst = "https"
@@ -25217,21 +29733,9 @@ func (options *UpdateLoadBalancerListenerOptions) SetID(id string) *UpdateLoadBa
 	return options
 }
 
-// SetCertificateInstance : Allow user to set CertificateInstance
-func (options *UpdateLoadBalancerListenerOptions) SetCertificateInstance(certificateInstance CertificateInstanceIdentityIntf) *UpdateLoadBalancerListenerOptions {
-	options.CertificateInstance = certificateInstance
-	return options
-}
-
 // SetConnectionLimit : Allow user to set ConnectionLimit
 func (options *UpdateLoadBalancerListenerOptions) SetConnectionLimit(connectionLimit int64) *UpdateLoadBalancerListenerOptions {
 	options.ConnectionLimit = core.Int64Ptr(connectionLimit)
-	return options
-}
-
-// SetDefaultPool : Allow user to set DefaultPool
-func (options *UpdateLoadBalancerListenerOptions) SetDefaultPool(defaultPool LoadBalancerPoolIdentityIntf) *UpdateLoadBalancerListenerOptions {
-	options.DefaultPool = defaultPool
 	return options
 }
 
@@ -25244,6 +29748,18 @@ func (options *UpdateLoadBalancerListenerOptions) SetPort(port int64) *UpdateLoa
 // SetProtocol : Allow user to set Protocol
 func (options *UpdateLoadBalancerListenerOptions) SetProtocol(protocol string) *UpdateLoadBalancerListenerOptions {
 	options.Protocol = core.StringPtr(protocol)
+	return options
+}
+
+// SetCertificateInstance : Allow user to set CertificateInstance
+func (options *UpdateLoadBalancerListenerOptions) SetCertificateInstance(certificateInstance CertificateInstanceIdentityIntf) *UpdateLoadBalancerListenerOptions {
+	options.CertificateInstance = certificateInstance
+	return options
+}
+
+// SetDefaultPool : Allow user to set DefaultPool
+func (options *UpdateLoadBalancerListenerOptions) SetDefaultPool(defaultPool LoadBalancerPoolIdentityIntf) *UpdateLoadBalancerListenerOptions {
+	options.DefaultPool = defaultPool
 	return options
 }
 
@@ -25492,12 +30008,14 @@ type UpdateLoadBalancerPoolMemberOptions struct {
 	// The port number of the application running in the server member.
 	Port *int64 `json:"port,omitempty"`
 
-	// The pool member target.
-	Target LoadBalancerPoolMemberTargetPrototypeIntf `json:"target,omitempty"`
-
 	// Weight of the server member. This takes effect only when the load balancing algorithm of its belonging pool is
 	// `weighted_round_robin`.
 	Weight *int64 `json:"weight,omitempty"`
+
+	// The pool member target. Load balancers in the `network` family
+	// support instances. Load balancers in the `application` family support
+	// IP addresses.
+	Target LoadBalancerPoolMemberTargetPrototypeIntf `json:"target,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -25536,15 +30054,15 @@ func (options *UpdateLoadBalancerPoolMemberOptions) SetPort(port int64) *UpdateL
 	return options
 }
 
-// SetTarget : Allow user to set Target
-func (options *UpdateLoadBalancerPoolMemberOptions) SetTarget(target LoadBalancerPoolMemberTargetPrototypeIntf) *UpdateLoadBalancerPoolMemberOptions {
-	options.Target = target
-	return options
-}
-
 // SetWeight : Allow user to set Weight
 func (options *UpdateLoadBalancerPoolMemberOptions) SetWeight(weight int64) *UpdateLoadBalancerPoolMemberOptions {
 	options.Weight = core.Int64Ptr(weight)
+	return options
+}
+
+// SetTarget : Allow user to set Target
+func (options *UpdateLoadBalancerPoolMemberOptions) SetTarget(target LoadBalancerPoolMemberTargetPrototypeIntf) *UpdateLoadBalancerPoolMemberOptions {
+	options.Target = target
 	return options
 }
 
@@ -25562,14 +30080,11 @@ type UpdateLoadBalancerPoolOptions struct {
 	// The pool identifier.
 	ID *string `json:"id" validate:"required"`
 
-	// The load balancing algorithm.
-	Algorithm *string `json:"algorithm,omitempty"`
-
-	// The health monitor of this pool.
-	HealthMonitor *LoadBalancerPoolHealthMonitorPatch `json:"health_monitor,omitempty"`
-
 	// The user-defined name for this load balancer pool.
 	Name *string `json:"name,omitempty"`
+
+	// The load balancing algorithm.
+	Algorithm *string `json:"algorithm,omitempty"`
 
 	// The protocol used for this load balancer pool.
 	//
@@ -25577,6 +30092,9 @@ type UpdateLoadBalancerPoolOptions struct {
 	// for and log unknown values. Optionally halt processing and surface the error, or bypass the pool on which the
 	// unexpected property value was encountered.
 	Protocol *string `json:"protocol,omitempty"`
+
+	// The health monitor of this pool.
+	HealthMonitor *LoadBalancerPoolHealthMonitorPatch `json:"health_monitor,omitempty"`
 
 	// The session persistence of this pool.
 	SessionPersistence *LoadBalancerPoolSessionPersistencePatch `json:"session_persistence,omitempty"`
@@ -25625,27 +30143,27 @@ func (options *UpdateLoadBalancerPoolOptions) SetID(id string) *UpdateLoadBalanc
 	return options
 }
 
-// SetAlgorithm : Allow user to set Algorithm
-func (options *UpdateLoadBalancerPoolOptions) SetAlgorithm(algorithm string) *UpdateLoadBalancerPoolOptions {
-	options.Algorithm = core.StringPtr(algorithm)
-	return options
-}
-
-// SetHealthMonitor : Allow user to set HealthMonitor
-func (options *UpdateLoadBalancerPoolOptions) SetHealthMonitor(healthMonitor *LoadBalancerPoolHealthMonitorPatch) *UpdateLoadBalancerPoolOptions {
-	options.HealthMonitor = healthMonitor
-	return options
-}
-
 // SetName : Allow user to set Name
 func (options *UpdateLoadBalancerPoolOptions) SetName(name string) *UpdateLoadBalancerPoolOptions {
 	options.Name = core.StringPtr(name)
 	return options
 }
 
+// SetAlgorithm : Allow user to set Algorithm
+func (options *UpdateLoadBalancerPoolOptions) SetAlgorithm(algorithm string) *UpdateLoadBalancerPoolOptions {
+	options.Algorithm = core.StringPtr(algorithm)
+	return options
+}
+
 // SetProtocol : Allow user to set Protocol
 func (options *UpdateLoadBalancerPoolOptions) SetProtocol(protocol string) *UpdateLoadBalancerPoolOptions {
 	options.Protocol = core.StringPtr(protocol)
+	return options
+}
+
+// SetHealthMonitor : Allow user to set HealthMonitor
+func (options *UpdateLoadBalancerPoolOptions) SetHealthMonitor(healthMonitor *LoadBalancerPoolHealthMonitorPatch) *UpdateLoadBalancerPoolOptions {
+	options.HealthMonitor = healthMonitor
 	return options
 }
 
@@ -25706,18 +30224,20 @@ type UpdateNetworkACLRuleOptions struct {
 	// The rule identifier.
 	ID *string `json:"id" validate:"required"`
 
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in.
+	Name *string `json:"name,omitempty"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action,omitempty"`
 
-	// The rule to move this rule immediately before. Specify `null` to move this rule after
-	// all existing rules.
-	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
-
-	// The ICMP traffic code to allow.
-	Code *int64 `json:"code,omitempty"`
-
 	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination,omitempty"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction,omitempty"`
+
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	DestinationPortMax *int64 `json:"destination_port_max,omitempty"`
@@ -25725,23 +30245,21 @@ type UpdateNetworkACLRuleOptions struct {
 	// The inclusive lower bound of TCP/UDP destination port range.
 	DestinationPortMin *int64 `json:"destination_port_min,omitempty"`
 
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction,omitempty"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in.
-	Name *string `json:"name,omitempty"`
-
-	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source,omitempty"`
-
 	// The inclusive upper bound of TCP/UDP source port range.
 	SourcePortMax *int64 `json:"source_port_max,omitempty"`
 
 	// The inclusive lower bound of TCP/UDP source port range.
 	SourcePortMin *int64 `json:"source_port_min,omitempty"`
 
+	// The ICMP traffic code to allow.
+	Code *int64 `json:"code,omitempty"`
+
 	// The ICMP traffic type to allow.
 	Type *int64 `json:"type,omitempty"`
+
+	// The rule to move this rule immediately before. Specify `null` to move this rule after
+	// all existing rules.
+	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -25781,27 +30299,33 @@ func (options *UpdateNetworkACLRuleOptions) SetID(id string) *UpdateNetworkACLRu
 	return options
 }
 
+// SetName : Allow user to set Name
+func (options *UpdateNetworkACLRuleOptions) SetName(name string) *UpdateNetworkACLRuleOptions {
+	options.Name = core.StringPtr(name)
+	return options
+}
+
 // SetAction : Allow user to set Action
 func (options *UpdateNetworkACLRuleOptions) SetAction(action string) *UpdateNetworkACLRuleOptions {
 	options.Action = core.StringPtr(action)
 	return options
 }
 
-// SetBefore : Allow user to set Before
-func (options *UpdateNetworkACLRuleOptions) SetBefore(before NetworkACLRuleIdentityIntf) *UpdateNetworkACLRuleOptions {
-	options.Before = before
-	return options
-}
-
-// SetCode : Allow user to set Code
-func (options *UpdateNetworkACLRuleOptions) SetCode(code int64) *UpdateNetworkACLRuleOptions {
-	options.Code = core.Int64Ptr(code)
-	return options
-}
-
 // SetDestination : Allow user to set Destination
 func (options *UpdateNetworkACLRuleOptions) SetDestination(destination string) *UpdateNetworkACLRuleOptions {
 	options.Destination = core.StringPtr(destination)
+	return options
+}
+
+// SetDirection : Allow user to set Direction
+func (options *UpdateNetworkACLRuleOptions) SetDirection(direction string) *UpdateNetworkACLRuleOptions {
+	options.Direction = core.StringPtr(direction)
+	return options
+}
+
+// SetSource : Allow user to set Source
+func (options *UpdateNetworkACLRuleOptions) SetSource(source string) *UpdateNetworkACLRuleOptions {
+	options.Source = core.StringPtr(source)
 	return options
 }
 
@@ -25817,24 +30341,6 @@ func (options *UpdateNetworkACLRuleOptions) SetDestinationPortMin(destinationPor
 	return options
 }
 
-// SetDirection : Allow user to set Direction
-func (options *UpdateNetworkACLRuleOptions) SetDirection(direction string) *UpdateNetworkACLRuleOptions {
-	options.Direction = core.StringPtr(direction)
-	return options
-}
-
-// SetName : Allow user to set Name
-func (options *UpdateNetworkACLRuleOptions) SetName(name string) *UpdateNetworkACLRuleOptions {
-	options.Name = core.StringPtr(name)
-	return options
-}
-
-// SetSource : Allow user to set Source
-func (options *UpdateNetworkACLRuleOptions) SetSource(source string) *UpdateNetworkACLRuleOptions {
-	options.Source = core.StringPtr(source)
-	return options
-}
-
 // SetSourcePortMax : Allow user to set SourcePortMax
 func (options *UpdateNetworkACLRuleOptions) SetSourcePortMax(sourcePortMax int64) *UpdateNetworkACLRuleOptions {
 	options.SourcePortMax = core.Int64Ptr(sourcePortMax)
@@ -25847,9 +30353,21 @@ func (options *UpdateNetworkACLRuleOptions) SetSourcePortMin(sourcePortMin int64
 	return options
 }
 
+// SetCode : Allow user to set Code
+func (options *UpdateNetworkACLRuleOptions) SetCode(code int64) *UpdateNetworkACLRuleOptions {
+	options.Code = core.Int64Ptr(code)
+	return options
+}
+
 // SetType : Allow user to set Type
 func (options *UpdateNetworkACLRuleOptions) SetType(typeVar int64) *UpdateNetworkACLRuleOptions {
 	options.Type = core.Int64Ptr(typeVar)
+	return options
+}
+
+// SetBefore : Allow user to set Before
+func (options *UpdateNetworkACLRuleOptions) SetBefore(before NetworkACLRuleIdentityIntf) *UpdateNetworkACLRuleOptions {
+	options.Before = before
 	return options
 }
 
@@ -25941,8 +30459,11 @@ type UpdateSecurityGroupRuleOptions struct {
 	// The rule identifier.
 	ID *string `json:"id" validate:"required"`
 
-	// The ICMP traffic code to allow.
-	Code *int64 `json:"code,omitempty"`
+	// The IP addresses or security groups from which this rule will allow traffic (or to
+	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
+	// security group. A CIDR block of `0.0.0.0/0` will allow traffic from any source (or to
+	// any source, for outbound rules).
+	Remote SecurityGroupRulePatchRemoteIntf `json:"remote,omitempty"`
 
 	// The direction of traffic to enforce, either `inbound` or `outbound`.
 	Direction *string `json:"direction,omitempty"`
@@ -25952,17 +30473,14 @@ type UpdateSecurityGroupRuleOptions struct {
 	// interfaces) in that group matching this IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
+	// The ICMP traffic code to allow.
+	Code *int64 `json:"code,omitempty"`
+
 	// The inclusive upper bound of TCP/UDP port range.
 	PortMax *int64 `json:"port_max,omitempty"`
 
 	// The inclusive lower bound of TCP/UDP port range.
 	PortMin *int64 `json:"port_min,omitempty"`
-
-	// The IP addresses or security groups from which this rule will allow traffic (or to
-	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
-	// security group. A CIDR block of `0.0.0.0/0` will allow traffic from any source (or to
-	// any source, for outbound rules).
-	Remote SecurityGroupRulePatchRemoteIntf `json:"remote,omitempty"`
 
 	// The ICMP traffic type to allow.
 	Type *int64 `json:"type,omitempty"`
@@ -26006,9 +30524,9 @@ func (options *UpdateSecurityGroupRuleOptions) SetID(id string) *UpdateSecurityG
 	return options
 }
 
-// SetCode : Allow user to set Code
-func (options *UpdateSecurityGroupRuleOptions) SetCode(code int64) *UpdateSecurityGroupRuleOptions {
-	options.Code = core.Int64Ptr(code)
+// SetRemote : Allow user to set Remote
+func (options *UpdateSecurityGroupRuleOptions) SetRemote(remote SecurityGroupRulePatchRemoteIntf) *UpdateSecurityGroupRuleOptions {
+	options.Remote = remote
 	return options
 }
 
@@ -26024,6 +30542,12 @@ func (options *UpdateSecurityGroupRuleOptions) SetIPVersion(ipVersion string) *U
 	return options
 }
 
+// SetCode : Allow user to set Code
+func (options *UpdateSecurityGroupRuleOptions) SetCode(code int64) *UpdateSecurityGroupRuleOptions {
+	options.Code = core.Int64Ptr(code)
+	return options
+}
+
 // SetPortMax : Allow user to set PortMax
 func (options *UpdateSecurityGroupRuleOptions) SetPortMax(portMax int64) *UpdateSecurityGroupRuleOptions {
 	options.PortMax = core.Int64Ptr(portMax)
@@ -26033,12 +30557,6 @@ func (options *UpdateSecurityGroupRuleOptions) SetPortMax(portMax int64) *Update
 // SetPortMin : Allow user to set PortMin
 func (options *UpdateSecurityGroupRuleOptions) SetPortMin(portMin int64) *UpdateSecurityGroupRuleOptions {
 	options.PortMin = core.Int64Ptr(portMin)
-	return options
-}
-
-// SetRemote : Allow user to set Remote
-func (options *UpdateSecurityGroupRuleOptions) SetRemote(remote SecurityGroupRulePatchRemoteIntf) *UpdateSecurityGroupRuleOptions {
-	options.Remote = remote
 	return options
 }
 
@@ -26154,13 +30672,13 @@ type UpdateVPCAddressPrefixOptions struct {
 	// The prefix identifier.
 	ID *string `json:"id" validate:"required"`
 
+	// The user-defined name for this address prefix. Names must be unique within the VPC the address prefix resides in.
+	Name *string `json:"name,omitempty"`
+
 	// Indicates whether this is the default prefix for this zone in this VPC. Updating to true makes this prefix the
 	// default prefix for this zone in this VPC, provided the VPC currently has no default address prefix for this zone.
 	// Updating to false removes the default prefix for this zone in this VPC.
 	IsDefault *bool `json:"is_default,omitempty"`
-
-	// The user-defined name for this address prefix. Names must be unique within the VPC the address prefix resides in.
-	Name *string `json:"name,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -26186,15 +30704,15 @@ func (options *UpdateVPCAddressPrefixOptions) SetID(id string) *UpdateVPCAddress
 	return options
 }
 
-// SetIsDefault : Allow user to set IsDefault
-func (options *UpdateVPCAddressPrefixOptions) SetIsDefault(isDefault bool) *UpdateVPCAddressPrefixOptions {
-	options.IsDefault = core.BoolPtr(isDefault)
-	return options
-}
-
 // SetName : Allow user to set Name
 func (options *UpdateVPCAddressPrefixOptions) SetName(name string) *UpdateVPCAddressPrefixOptions {
 	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetIsDefault : Allow user to set IsDefault
+func (options *UpdateVPCAddressPrefixOptions) SetIsDefault(isDefault bool) *UpdateVPCAddressPrefixOptions {
+	options.IsDefault = core.BoolPtr(isDefault)
 	return options
 }
 
@@ -26299,6 +30817,15 @@ type UpdateVPNGatewayConnectionOptions struct {
 	// If set to false, the VPN connection is shut down.
 	AdminStateUp *bool `json:"admin_state_up,omitempty"`
 
+	// The IP address of the peer VPN gateway.
+	PeerAddress *string `json:"peer_address,omitempty"`
+
+	// The user-defined name for this VPN gateway connection.
+	Name *string `json:"name,omitempty"`
+
+	// The preshared key.
+	Psk *string `json:"psk,omitempty"`
+
 	// The Dead Peer Detection settings.
 	DeadPeerDetection *VPNGatewayConnectionDpdPrototype `json:"dead_peer_detection,omitempty"`
 
@@ -26308,15 +30835,6 @@ type UpdateVPNGatewayConnectionOptions struct {
 	// Optional IPsec policy configuration. The absence of a policy indicates
 	// autonegotiation.
 	IpsecPolicy IPsecPolicyIdentityIntf `json:"ipsec_policy,omitempty"`
-
-	// The user-defined name for this VPN gateway connection.
-	Name *string `json:"name,omitempty"`
-
-	// The IP address of the peer VPN gateway.
-	PeerAddress *string `json:"peer_address,omitempty"`
-
-	// The preshared key.
-	Psk *string `json:"psk,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -26348,6 +30866,24 @@ func (options *UpdateVPNGatewayConnectionOptions) SetAdminStateUp(adminStateUp b
 	return options
 }
 
+// SetPeerAddress : Allow user to set PeerAddress
+func (options *UpdateVPNGatewayConnectionOptions) SetPeerAddress(peerAddress string) *UpdateVPNGatewayConnectionOptions {
+	options.PeerAddress = core.StringPtr(peerAddress)
+	return options
+}
+
+// SetName : Allow user to set Name
+func (options *UpdateVPNGatewayConnectionOptions) SetName(name string) *UpdateVPNGatewayConnectionOptions {
+	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetPsk : Allow user to set Psk
+func (options *UpdateVPNGatewayConnectionOptions) SetPsk(psk string) *UpdateVPNGatewayConnectionOptions {
+	options.Psk = core.StringPtr(psk)
+	return options
+}
+
 // SetDeadPeerDetection : Allow user to set DeadPeerDetection
 func (options *UpdateVPNGatewayConnectionOptions) SetDeadPeerDetection(deadPeerDetection *VPNGatewayConnectionDpdPrototype) *UpdateVPNGatewayConnectionOptions {
 	options.DeadPeerDetection = deadPeerDetection
@@ -26363,24 +30899,6 @@ func (options *UpdateVPNGatewayConnectionOptions) SetIkePolicy(ikePolicy IkePoli
 // SetIpsecPolicy : Allow user to set IpsecPolicy
 func (options *UpdateVPNGatewayConnectionOptions) SetIpsecPolicy(ipsecPolicy IPsecPolicyIdentityIntf) *UpdateVPNGatewayConnectionOptions {
 	options.IpsecPolicy = ipsecPolicy
-	return options
-}
-
-// SetName : Allow user to set Name
-func (options *UpdateVPNGatewayConnectionOptions) SetName(name string) *UpdateVPNGatewayConnectionOptions {
-	options.Name = core.StringPtr(name)
-	return options
-}
-
-// SetPeerAddress : Allow user to set PeerAddress
-func (options *UpdateVPNGatewayConnectionOptions) SetPeerAddress(peerAddress string) *UpdateVPNGatewayConnectionOptions {
-	options.PeerAddress = core.StringPtr(peerAddress)
-	return options
-}
-
-// SetPsk : Allow user to set Psk
-func (options *UpdateVPNGatewayConnectionOptions) SetPsk(psk string) *UpdateVPNGatewayConnectionOptions {
-	options.Psk = core.StringPtr(psk)
 	return options
 }
 
@@ -26429,38 +30947,38 @@ func (options *UpdateVPNGatewayOptions) SetHeaders(param map[string]string) *Upd
 
 // VPC : VPC struct
 type VPC struct {
+	// The unique identifier for this VPC.
+	ID *string `json:"id" validate:"required"`
+
+	// The CRN for this VPC.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The URL for this VPC.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique user-defined name for this VPC.
+	Name *string `json:"name" validate:"required"`
+
+	// The default network ACL to use for subnets created in this VPC.
+	DefaultNetworkACL *NetworkACLReference `json:"default_network_acl" validate:"required"`
+
 	// Indicates whether this VPC is connected to Classic Infrastructure. If true, this VPC's resources have private
 	// network connectivity to the account's Classic Infrastructure resources. Only one VPC, per region, may be connected
 	// in this way. This value is set at creation and subsequently immutable.
 	ClassicAccess *bool `json:"classic_access" validate:"required"`
 
+	// The default security group to use for network interfaces created in this VPC.
+	DefaultSecurityGroup *SecurityGroupReference `json:"default_security_group" validate:"required"`
+
+	// The resource group for this VPC.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
 	// The date and time that the VPC was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// The CRN for this VPC.
-	CRN *string `json:"crn" validate:"required"`
 
 	// Array of CSE ([Cloud Service Endpoint](https://cloud.ibm.com/docs/resources?topic=resources-service-endpoints))
 	// source IP addresses for the VPC. The VPC will have one CSE source IP address per zone.
 	CseSourceIps []VpccseSourceIP `json:"cse_source_ips,omitempty"`
-
-	// The default network ACL to use for subnets created in this VPC.
-	DefaultNetworkACL *NetworkACLReference `json:"default_network_acl" validate:"required"`
-
-	// The default security group to use for network interfaces created in this VPC.
-	DefaultSecurityGroup *SecurityGroupReference `json:"default_security_group" validate:"required"`
-
-	// The URL for this VPC.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this VPC.
-	ID *string `json:"id" validate:"required"`
-
-	// The user-defined name for this VPC.
-	Name *string `json:"name" validate:"required"`
-
-	// The resource group for this VPC.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
 	// The status of this VPC.
 	Status *string `json:"status" validate:"required"`
@@ -26478,11 +30996,7 @@ const (
 // UnmarshalVPC unmarshals an instance of VPC from the specified map of raw messages.
 func UnmarshalVPC(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPC)
-	err = core.UnmarshalPrimitive(m, "classic_access", &obj.ClassicAccess)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -26490,23 +31004,7 @@ func UnmarshalVPC(m map[string]json.RawMessage, result interface{}) (err error) 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "cse_source_ips", &obj.CseSourceIps, UnmarshalVpccseSourceIP)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "default_network_acl", &obj.DefaultNetworkACL, UnmarshalNetworkACLReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "default_security_group", &obj.DefaultSecurityGroup, UnmarshalSecurityGroupReference)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -26514,7 +31012,27 @@ func UnmarshalVPC(m map[string]json.RawMessage, result interface{}) (err error) 
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "default_network_acl", &obj.DefaultNetworkACL, UnmarshalNetworkACLReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "classic_access", &obj.ClassicAccess)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "default_security_group", &obj.DefaultSecurityGroup, UnmarshalSecurityGroupReference)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "cse_source_ips", &obj.CseSourceIps, UnmarshalVpccseSourceIP)
 	if err != nil {
 		return
 	}
@@ -26675,31 +31193,31 @@ func UnmarshalVPCIdentity(m map[string]json.RawMessage, result interface{}) (err
 
 // VPCReference : VPCReference struct
 type VPCReference struct {
+	// The unique identifier for this VPC.
+	ID *string `json:"id" validate:"required"`
+
 	// The CRN for this VPC.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this VPC.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this VPC.
-	ID *string `json:"id" validate:"required"`
-
-	// The user-defined name for this VPC.
+	// The unique user-defined name for this VPC.
 	Name *string `json:"name" validate:"required"`
 }
 
 // UnmarshalVPCReference unmarshals an instance of VPCReference from the specified map of raw messages.
 func UnmarshalVPCReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPCReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -26713,11 +31231,8 @@ func UnmarshalVPCReference(m map[string]json.RawMessage, result interface{}) (er
 
 // VPNGateway : VPNGateway struct
 type VPNGateway struct {
-	// Collection of references to VPN gateway connections.
-	Connections []VPNGatewayConnectionReference `json:"connections" validate:"required"`
-
-	// The date and time that this VPN gateway was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The unique identifier for this VPN gateway.
+	ID *string `json:"id" validate:"required"`
 
 	// The VPN gateway's CRN.
 	CRN *string `json:"crn" validate:"required"`
@@ -26725,23 +31240,35 @@ type VPNGateway struct {
 	// The VPN gateway's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this VPN gateway.
-	ID *string `json:"id" validate:"required"`
-
 	// The user-defined name for this VPN gateway.
 	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The resource group for this VPN gateway.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
 	// The public IP address assigned to this VPN gateway.
 	PublicIP *VPNGatewayPublicIP `json:"public_ip" validate:"required"`
 
-	// The resource group for this VPN gateway.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+	// Collection of references to VPN gateway connections.
+	Connections []VPNGatewayConnectionReference `json:"connections" validate:"required"`
+
+	// The date and time that this VPN gateway was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The status of the VPN gateway.
 	Status *string `json:"status" validate:"required"`
 
 	Subnet *SubnetReference `json:"subnet" validate:"required"`
 }
+
+// Constants associated with the VPNGateway.ResourceType property.
+// The resource type.
+const (
+	VPNGatewayResourceTypeVPNGatewayConst = "vpn_gateway"
+)
 
 // Constants associated with the VPNGateway.Status property.
 // The status of the VPN gateway.
@@ -26755,11 +31282,7 @@ const (
 // UnmarshalVPNGateway unmarshals an instance of VPNGateway from the specified map of raw messages.
 func UnmarshalVPNGateway(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNGateway)
-	err = core.UnmarshalModel(m, "connections", &obj.Connections, UnmarshalVPNGatewayConnectionReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -26771,11 +31294,15 @@ func UnmarshalVPNGateway(m map[string]json.RawMessage, result interface{}) (err 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
@@ -26783,7 +31310,11 @@ func UnmarshalVPNGateway(m map[string]json.RawMessage, result interface{}) (err 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	err = core.UnmarshalModel(m, "connections", &obj.Connections, UnmarshalVPNGatewayConnectionReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -26881,11 +31412,41 @@ func UnmarshalVPNGatewayCollectionNext(m map[string]json.RawMessage, result inte
 
 // VPNGatewayConnection : VPNGatewayConnection struct
 type VPNGatewayConnection struct {
+	// The unique identifier for this VPN connection.
+	ID *string `json:"id" validate:"required"`
+
+	// The VPN connection's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this VPN gateway connection.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
 	// If set to false, the VPN connection is shut down.
 	AdminStateUp *bool `json:"admin_state_up" validate:"required"`
 
+	// The IP address of the peer VPN gateway.
+	PeerAddress *string `json:"peer_address" validate:"required"`
+
+	// The preshared key.
+	Psk *string `json:"psk" validate:"required"`
+
+	// A collection of local CIDRs for this resource.
+	LocalCIDRs []string `json:"local_cidrs" validate:"required"`
+
+	// A collection of peer CIDRs for this resource.
+	PeerCIDRs []string `json:"peer_cidrs" validate:"required"`
+
+	// The routing mode. Only `policy` is currently supported.
+	RouteMode *string `json:"route_mode" validate:"required"`
+
 	// The authentication mode. Only `psk` is currently supported.
 	AuthenticationMode *string `json:"authentication_mode" validate:"required"`
+
+	// The status of a VPN connection.
+	Status *string `json:"status" validate:"required"`
 
 	// The date and time that this VPN gateway connection was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
@@ -26893,51 +31454,30 @@ type VPNGatewayConnection struct {
 	// The Dead Peer Detection settings.
 	DeadPeerDetection *VPNGatewayConnectionDpd `json:"dead_peer_detection" validate:"required"`
 
-	// The VPN connection's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this VPN connection.
-	ID *string `json:"id" validate:"required"`
-
 	// Optional IKE policy configuration. The absence of a policy indicates autonegotiation.
 	IkePolicy *IkePolicyReference `json:"ike_policy,omitempty"`
 
 	// Optional IPsec policy configuration. The absence of a policy indicates
 	// autonegotiation.
 	IpsecPolicy *IPsecPolicyReference `json:"ipsec_policy,omitempty"`
-
-	// A collection of local CIDRs for this resource.
-	LocalCIDRs []string `json:"local_cidrs" validate:"required"`
-
-	// The user-defined name for this VPN gateway connection.
-	Name *string `json:"name" validate:"required"`
-
-	// The IP address of the peer VPN gateway.
-	PeerAddress *string `json:"peer_address" validate:"required"`
-
-	// A collection of peer CIDRs for this resource.
-	PeerCIDRs []string `json:"peer_cidrs" validate:"required"`
-
-	// The preshared key.
-	Psk *string `json:"psk" validate:"required"`
-
-	// The routing mode. Only `policy` is currently supported.
-	RouteMode *string `json:"route_mode" validate:"required"`
-
-	// The status of a VPN connection.
-	Status *string `json:"status" validate:"required"`
 }
 
-// Constants associated with the VPNGatewayConnection.AuthenticationMode property.
-// The authentication mode. Only `psk` is currently supported.
+// Constants associated with the VPNGatewayConnection.ResourceType property.
+// The resource type.
 const (
-	VPNGatewayConnectionAuthenticationModePskConst = "psk"
+	VPNGatewayConnectionResourceTypeVPNGatewayConnectionConst = "vpn_gateway_connection"
 )
 
 // Constants associated with the VPNGatewayConnection.RouteMode property.
 // The routing mode. Only `policy` is currently supported.
 const (
 	VPNGatewayConnectionRouteModePolicyConst = "policy"
+)
+
+// Constants associated with the VPNGatewayConnection.AuthenticationMode property.
+// The authentication mode. Only `psk` is currently supported.
+const (
+	VPNGatewayConnectionAuthenticationModePskConst = "psk"
 )
 
 // Constants associated with the VPNGatewayConnection.Status property.
@@ -26950,11 +31490,51 @@ const (
 // UnmarshalVPNGatewayConnection unmarshals an instance of VPNGatewayConnection from the specified map of raw messages.
 func UnmarshalVPNGatewayConnection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNGatewayConnection)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "admin_state_up", &obj.AdminStateUp)
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "peer_address", &obj.PeerAddress)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "psk", &obj.Psk)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCIDRs)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "route_mode", &obj.RouteMode)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "authentication_mode", &obj.AuthenticationMode)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -26966,47 +31546,11 @@ func UnmarshalVPNGatewayConnection(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalModel(m, "ike_policy", &obj.IkePolicy, UnmarshalIkePolicyReference)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "ipsec_policy", &obj.IpsecPolicy, UnmarshalIPsecPolicyReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "peer_address", &obj.PeerAddress)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCIDRs)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "psk", &obj.Psk)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "route_mode", &obj.RouteMode)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -27117,8 +31661,8 @@ type VPNGatewayConnectionLocalCIDRs struct {
 	LocalCIDRs []string `json:"local_cidrs,omitempty"`
 }
 
-// UnmarshalVPNGatewayConnectionLocalCidRs unmarshals an instance of VPNGatewayConnectionLocalCIDRs from the specified map of raw messages.
-func UnmarshalVPNGatewayConnectionLocalCidRs(m map[string]json.RawMessage, result interface{}) (err error) {
+// UnmarshalVPNGatewayConnectionLocalCIDRs unmarshals an instance of VPNGatewayConnectionLocalCIDRs from the specified map of raw messages.
+func UnmarshalVPNGatewayConnectionLocalCIDRs(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNGatewayConnectionLocalCIDRs)
 	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
 	if err != nil {
@@ -27134,8 +31678,8 @@ type VPNGatewayConnectionPeerCIDRs struct {
 	PeerCIDRs []string `json:"peer_cidrs,omitempty"`
 }
 
-// UnmarshalVPNGatewayConnectionPeerCidRs unmarshals an instance of VPNGatewayConnectionPeerCIDRs from the specified map of raw messages.
-func UnmarshalVPNGatewayConnectionPeerCidRs(m map[string]json.RawMessage, result interface{}) (err error) {
+// UnmarshalVPNGatewayConnectionPeerCIDRs unmarshals an instance of VPNGatewayConnectionPeerCIDRs from the specified map of raw messages.
+func UnmarshalVPNGatewayConnectionPeerCIDRs(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNGatewayConnectionPeerCIDRs)
 	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCIDRs)
 	if err != nil {
@@ -27147,28 +31691,41 @@ func UnmarshalVPNGatewayConnectionPeerCidRs(m map[string]json.RawMessage, result
 
 // VPNGatewayConnectionReference : VPNGatewayConnectionReference struct
 type VPNGatewayConnectionReference struct {
-	// The VPN connection's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
 	// The unique identifier for this VPN connection.
 	ID *string `json:"id" validate:"required"`
 
+	// The VPN connection's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
 	// The user-defined name for this VPN connection.
 	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
 }
+
+// Constants associated with the VPNGatewayConnectionReference.ResourceType property.
+// The resource type.
+const (
+	VPNGatewayConnectionReferenceResourceTypeVPNGatewayConnectionConst = "vpn_gateway_connection"
+)
 
 // UnmarshalVPNGatewayConnectionReference unmarshals an instance of VPNGatewayConnectionReference from the specified map of raw messages.
 func UnmarshalVPNGatewayConnectionReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNGatewayConnectionReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
 	if err != nil {
 		return
 	}
@@ -27197,15 +31754,30 @@ func UnmarshalVPNGatewayPublicIP(m map[string]json.RawMessage, result interface{
 
 // Volume : Volume struct
 type Volume struct {
+	// The bandwidth for the volume.
+	Iops *int64 `json:"iops" validate:"required"`
+
 	// The capacity of the volume in gigabytes. Note that the specified minimum and maximum capacity values for creating or
 	// updating volumes may expand in the future.
 	Capacity *int64 `json:"capacity" validate:"required"`
 
-	// The date and time that the volume was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The unique identifier for this volume.
+	ID *string `json:"id" validate:"required"`
 
 	// The CRN for this volume.
 	CRN *string `json:"crn" validate:"required"`
+
+	// The URL for this volume.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique user-defined name for this volume.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource group for this volume.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The date and time that the volume was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The type of encryption used on the volume.
 	Encryption *string `json:"encryption" validate:"required"`
@@ -27216,23 +31788,8 @@ type Volume struct {
 	// `user_managed`.
 	EncryptionKey *EncryptionKeyReference `json:"encryption_key,omitempty"`
 
-	// The URL for this volume.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this volume.
-	ID *string `json:"id" validate:"required"`
-
-	// The bandwidth for the volume.
-	Iops *int64 `json:"iops" validate:"required"`
-
-	// The unique user-defined name for this volume.
-	Name *string `json:"name" validate:"required"`
-
 	// The profile this volume uses.
 	Profile *VolumeProfileReference `json:"profile" validate:"required"`
-
-	// The resource group for this volume.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
 	// The status of the volume.
 	Status *string `json:"status" validate:"required"`
@@ -27263,15 +31820,35 @@ const (
 // UnmarshalVolume unmarshals an instance of Volume from the specified map of raw messages.
 func UnmarshalVolume(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Volume)
+	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "capacity", &obj.Capacity)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -27283,27 +31860,7 @@ func UnmarshalVolume(m map[string]json.RawMessage, result interface{}) (err erro
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
@@ -27325,34 +31882,34 @@ func UnmarshalVolume(m map[string]json.RawMessage, result interface{}) (err erro
 
 // VolumeAttachment : VolumeAttachment struct
 type VolumeAttachment struct {
-	// The date and time that the volume was attached.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The user-defined name for this volume attachment.
+	Name *string `json:"name" validate:"required"`
 
 	// If set to true, when deleting the instance the volume will also be deleted.
 	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
+
+	// The unique identifier for this volume attachment.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this volume attachment.
+	Href *string `json:"href" validate:"required"`
 
 	// Information about how the volume is exposed to the instance operating system.
 	//
 	// This property may be absent if the volume attachment's `status` is not `attached`.
 	Device *VolumeAttachmentDevice `json:"device,omitempty"`
 
-	// The URL for this volume attachment.
-	Href *string `json:"href" validate:"required"`
+	// The attached volume.
+	Volume *VolumeReference `json:"volume" validate:"required"`
 
-	// The unique identifier for this volume attachment.
-	ID *string `json:"id" validate:"required"`
-
-	// The user-defined name for this volume attachment.
-	Name *string `json:"name" validate:"required"`
+	// The date and time that the volume was attached.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The status of this volume attachment.
 	Status *string `json:"status" validate:"required"`
 
 	// The type of volume attachment.
 	Type *string `json:"type" validate:"required"`
-
-	// The attached volume.
-	Volume *VolumeReference `json:"volume" validate:"required"`
 }
 
 // Constants associated with the VolumeAttachment.Status property.
@@ -27373,7 +31930,7 @@ const (
 // UnmarshalVolumeAttachment unmarshals an instance of VolumeAttachment from the specified map of raw messages.
 func UnmarshalVolumeAttachment(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeAttachment)
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -27381,7 +31938,7 @@ func UnmarshalVolumeAttachment(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "device", &obj.Device, UnmarshalVolumeAttachmentDevice)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -27389,11 +31946,15 @@ func UnmarshalVolumeAttachment(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalModel(m, "device", &obj.Device, UnmarshalVolumeAttachmentDevice)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalModel(m, "volume", &obj.Volume, UnmarshalVolumeReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -27402,10 +31963,6 @@ func UnmarshalVolumeAttachment(m map[string]json.RawMessage, result interface{})
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "volume", &obj.Volume, UnmarshalVolumeReference)
 	if err != nil {
 		return
 	}
@@ -27449,11 +32006,11 @@ func UnmarshalVolumeAttachmentDevice(m map[string]json.RawMessage, result interf
 
 // VolumeAttachmentPrototypeInstanceByImageContext : VolumeAttachmentPrototypeInstanceByImageContext struct
 type VolumeAttachmentPrototypeInstanceByImageContext struct {
-	// If set to true, when deleting the instance the volume will also be deleted.
-	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
-
 	// The user-defined name for this volume attachment.
 	Name *string `json:"name,omitempty"`
+
+	// If set to true, when deleting the instance the volume will also be deleted.
+	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
 
 	// The identity of the volume to attach to the instance, or a prototype object for a
 	// new volume.
@@ -27472,11 +32029,11 @@ func (*VpcV1) NewVolumeAttachmentPrototypeInstanceByImageContext(volume *VolumeP
 // UnmarshalVolumeAttachmentPrototypeInstanceByImageContext unmarshals an instance of VolumeAttachmentPrototypeInstanceByImageContext from the specified map of raw messages.
 func UnmarshalVolumeAttachmentPrototypeInstanceByImageContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeAttachmentPrototypeInstanceByImageContext)
-	err = core.UnmarshalPrimitive(m, "delete_volume_on_instance_delete", &obj.DeleteVolumeOnInstanceDelete)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "delete_volume_on_instance_delete", &obj.DeleteVolumeOnInstanceDelete)
 	if err != nil {
 		return
 	}
@@ -27490,11 +32047,11 @@ func UnmarshalVolumeAttachmentPrototypeInstanceByImageContext(m map[string]json.
 
 // VolumeAttachmentPrototypeInstanceContext : VolumeAttachmentPrototypeInstanceContext struct
 type VolumeAttachmentPrototypeInstanceContext struct {
-	// If set to true, when deleting the instance the volume will also be deleted.
-	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
-
 	// The user-defined name for this volume attachment.
 	Name *string `json:"name,omitempty"`
+
+	// If set to true, when deleting the instance the volume will also be deleted.
+	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
 
 	// The identity of the volume to attach to the instance, or a prototype object for a new
 	// volume.
@@ -27513,11 +32070,11 @@ func (*VpcV1) NewVolumeAttachmentPrototypeInstanceContext(volume VolumeAttachmen
 // UnmarshalVolumeAttachmentPrototypeInstanceContext unmarshals an instance of VolumeAttachmentPrototypeInstanceContext from the specified map of raw messages.
 func UnmarshalVolumeAttachmentPrototypeInstanceContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeAttachmentPrototypeInstanceContext)
-	err = core.UnmarshalPrimitive(m, "delete_volume_on_instance_delete", &obj.DeleteVolumeOnInstanceDelete)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "delete_volume_on_instance_delete", &obj.DeleteVolumeOnInstanceDelete)
 	if err != nil {
 		return
 	}
@@ -27543,6 +32100,12 @@ type VolumeAttachmentPrototypeInstanceContextVolume struct {
 	// The URL for this volume.
 	Href *string `json:"href,omitempty"`
 
+	// The unique user-defined name for this volume.
+	Name *string `json:"name,omitempty"`
+
+	// The profile to use for this volume.
+	Profile VolumeProfileIdentityIntf `json:"profile,omitempty"`
+
 	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
 	// If this property is not provided, the `encryption` type for the volume will be
@@ -27551,12 +32114,6 @@ type VolumeAttachmentPrototypeInstanceContextVolume struct {
 
 	// The bandwidth for the volume.
 	Iops *int64 `json:"iops,omitempty"`
-
-	// The unique user-defined name for this volume.
-	Name *string `json:"name,omitempty"`
-
-	// The profile to use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile,omitempty"`
 
 	// The capacity of the volume in gigabytes. Note that the specified minimum and maximum capacity values for creating or
 	// updating volumes may expand in the future.
@@ -27586,19 +32143,19 @@ func UnmarshalVolumeAttachmentPrototypeInstanceContextVolume(m map[string]json.R
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
 	if err != nil {
 		return
 	}
@@ -27612,19 +32169,19 @@ func UnmarshalVolumeAttachmentPrototypeInstanceContextVolume(m map[string]json.R
 
 // VolumeAttachmentReferenceInstanceContext : VolumeAttachmentReferenceInstanceContext struct
 type VolumeAttachmentReferenceInstanceContext struct {
-	// Information about how the volume is exposed to the instance operating system.
-	//
-	// This property may be absent if the volume attachment's `status` is not `attached`.
-	Device *VolumeAttachmentDevice `json:"device,omitempty"`
+	// The unique identifier for this volume attachment.
+	ID *string `json:"id" validate:"required"`
 
 	// The URL for this volume attachment.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this volume attachment.
-	ID *string `json:"id" validate:"required"`
-
 	// The user-defined name for this volume attachment.
 	Name *string `json:"name" validate:"required"`
+
+	// Information about how the volume is exposed to the instance operating system.
+	//
+	// This property may be absent if the volume attachment's `status` is not `attached`.
+	Device *VolumeAttachmentDevice `json:"device,omitempty"`
 
 	// The attached volume.
 	Volume *VolumeReference `json:"volume" validate:"required"`
@@ -27633,7 +32190,7 @@ type VolumeAttachmentReferenceInstanceContext struct {
 // UnmarshalVolumeAttachmentReferenceInstanceContext unmarshals an instance of VolumeAttachmentReferenceInstanceContext from the specified map of raw messages.
 func UnmarshalVolumeAttachmentReferenceInstanceContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeAttachmentReferenceInstanceContext)
-	err = core.UnmarshalModel(m, "device", &obj.Device, UnmarshalVolumeAttachmentDevice)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -27641,11 +32198,11 @@ func UnmarshalVolumeAttachmentReferenceInstanceContext(m map[string]json.RawMess
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalModel(m, "device", &obj.Device, UnmarshalVolumeAttachmentDevice)
 	if err != nil {
 		return
 	}
@@ -27659,6 +32216,15 @@ func UnmarshalVolumeAttachmentReferenceInstanceContext(m map[string]json.RawMess
 
 // VolumeAttachmentReferenceVolumeContext : VolumeAttachmentReferenceVolumeContext struct
 type VolumeAttachmentReferenceVolumeContext struct {
+	// The unique identifier for this volume attachment.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this volume attachment.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this volume attachment.
+	Name *string `json:"name" validate:"required"`
+
 	// If set to true, when deleting the instance the volume will also be deleted.
 	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete" validate:"required"`
 
@@ -27667,17 +32233,8 @@ type VolumeAttachmentReferenceVolumeContext struct {
 	// This property may be absent if the volume attachment's `status` is not `attached`.
 	Device *VolumeAttachmentDevice `json:"device,omitempty"`
 
-	// The URL for this volume attachment.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this volume attachment.
-	ID *string `json:"id" validate:"required"`
-
 	// The attached instance.
 	Instance *InstanceReference `json:"instance" validate:"required"`
-
-	// The user-defined name for this volume attachment.
-	Name *string `json:"name" validate:"required"`
 
 	// The type of volume attachment.
 	Type *string `json:"type" validate:"required"`
@@ -27693,6 +32250,18 @@ const (
 // UnmarshalVolumeAttachmentReferenceVolumeContext unmarshals an instance of VolumeAttachmentReferenceVolumeContext from the specified map of raw messages.
 func UnmarshalVolumeAttachmentReferenceVolumeContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeAttachmentReferenceVolumeContext)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "delete_volume_on_instance_delete", &obj.DeleteVolumeOnInstanceDelete)
 	if err != nil {
 		return
@@ -27701,19 +32270,7 @@ func UnmarshalVolumeAttachmentReferenceVolumeContext(m map[string]json.RawMessag
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalModel(m, "instance", &obj.Instance, UnmarshalInstanceReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -27843,20 +32400,20 @@ func UnmarshalVolumeIdentity(m map[string]json.RawMessage, result interface{}) (
 
 // VolumeProfile : VolumeProfile struct
 type VolumeProfile struct {
-	// The product family this volume profile belongs to.
-	Family *string `json:"family,omitempty"`
+	// The name for this volume profile.
+	Name *string `json:"name" validate:"required"`
 
 	// The URL for this volume profile.
 	Href *string `json:"href" validate:"required"`
 
-	// The name for this volume profile.
-	Name *string `json:"name" validate:"required"`
+	// The product family this volume profile belongs to.
+	Family *string `json:"family,omitempty"`
 }
 
 // UnmarshalVolumeProfile unmarshals an instance of VolumeProfile from the specified map of raw messages.
 func UnmarshalVolumeProfile(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeProfile)
-	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -27864,7 +32421,7 @@ func UnmarshalVolumeProfile(m map[string]json.RawMessage, result interface{}) (e
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
 	if err != nil {
 		return
 	}
@@ -27884,11 +32441,11 @@ type VolumeProfileCollection struct {
 	// except the last page.
 	Next *VolumeProfileCollectionNext `json:"next,omitempty"`
 
-	// Collection of volume profiles.
-	Profiles []VolumeProfile `json:"profiles" validate:"required"`
-
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
+
+	// Collection of volume profiles.
+	Profiles []VolumeProfile `json:"profiles" validate:"required"`
 }
 
 // UnmarshalVolumeProfileCollection unmarshals an instance of VolumeProfileCollection from the specified map of raw messages.
@@ -27906,11 +32463,11 @@ func UnmarshalVolumeProfileCollection(m map[string]json.RawMessage, result inter
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "profiles", &obj.Profiles, UnmarshalVolumeProfile)
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	err = core.UnmarshalModel(m, "profiles", &obj.Profiles, UnmarshalVolumeProfile)
 	if err != nil {
 		return
 	}
@@ -27989,21 +32546,21 @@ func UnmarshalVolumeProfileIdentity(m map[string]json.RawMessage, result interfa
 
 // VolumeProfileReference : VolumeProfileReference struct
 type VolumeProfileReference struct {
-	// The URL for this volume profile.
-	Href *string `json:"href" validate:"required"`
-
 	// The name for this volume profile.
 	Name *string `json:"name" validate:"required"`
+
+	// The URL for this volume profile.
+	Href *string `json:"href" validate:"required"`
 }
 
 // UnmarshalVolumeProfileReference unmarshals an instance of VolumeProfileReference from the specified map of raw messages.
 func UnmarshalVolumeProfileReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeProfileReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -28015,6 +32572,12 @@ func UnmarshalVolumeProfileReference(m map[string]json.RawMessage, result interf
 // Models which "extend" this model:
 // - VolumePrototypeVolumeByCapacity
 type VolumePrototype struct {
+	// The unique user-defined name for this volume.
+	Name *string `json:"name,omitempty"`
+
+	// The profile to use for this volume.
+	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
+
 	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
 	// If this property is not provided, the `encryption` type for the volume will be
@@ -28023,12 +32586,6 @@ type VolumePrototype struct {
 
 	// The bandwidth for the volume.
 	Iops *int64 `json:"iops,omitempty"`
-
-	// The unique user-defined name for this volume.
-	Name *string `json:"name,omitempty"`
-
-	// The profile to use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
@@ -28053,19 +32610,19 @@ type VolumePrototypeIntf interface {
 // UnmarshalVolumePrototype unmarshals an instance of VolumePrototype from the specified map of raw messages.
 func UnmarshalVolumePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumePrototype)
-	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
 	if err != nil {
 		return
 	}
@@ -28087,9 +32644,11 @@ func UnmarshalVolumePrototype(m map[string]json.RawMessage, result interface{}) 
 
 // VolumePrototypeInstanceByImageContext : VolumePrototypeInstanceByImageContext struct
 type VolumePrototypeInstanceByImageContext struct {
-	// The capacity of the volume in gigabytes. Note that the specified minimum and maximum capacity values for creating or
-	// updating volumes may expand in the future.
-	Capacity *int64 `json:"capacity,omitempty"`
+	// The unique user-defined name for this volume.
+	Name *string `json:"name,omitempty"`
+
+	// The profile to use for this volume.
+	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
 
 	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
@@ -28097,14 +32656,12 @@ type VolumePrototypeInstanceByImageContext struct {
 	// `provider_managed`.
 	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
 
+	// The capacity of the volume in gigabytes. Note that the specified minimum and maximum capacity values for creating or
+	// updating volumes may expand in the future.
+	Capacity *int64 `json:"capacity,omitempty"`
+
 	// The bandwidth for the volume.
 	Iops *int64 `json:"iops,omitempty"`
-
-	// The unique user-defined name for this volume.
-	Name *string `json:"name,omitempty"`
-
-	// The profile to use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
 }
 
 // NewVolumePrototypeInstanceByImageContext : Instantiate VolumePrototypeInstanceByImageContext (Generic Model Constructor)
@@ -28119,7 +32676,11 @@ func (*VpcV1) NewVolumePrototypeInstanceByImageContext(profile VolumeProfileIden
 // UnmarshalVolumePrototypeInstanceByImageContext unmarshals an instance of VolumePrototypeInstanceByImageContext from the specified map of raw messages.
 func UnmarshalVolumePrototypeInstanceByImageContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumePrototypeInstanceByImageContext)
-	err = core.UnmarshalPrimitive(m, "capacity", &obj.Capacity)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
 	if err != nil {
 		return
 	}
@@ -28127,15 +32688,11 @@ func UnmarshalVolumePrototypeInstanceByImageContext(m map[string]json.RawMessage
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "capacity", &obj.Capacity)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
 	if err != nil {
 		return
 	}
@@ -28145,14 +32702,14 @@ func UnmarshalVolumePrototypeInstanceByImageContext(m map[string]json.RawMessage
 
 // VolumeReference : VolumeReference struct
 type VolumeReference struct {
+	// The unique identifier for this volume.
+	ID *string `json:"id" validate:"required"`
+
 	// The CRN for this volume.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this volume.
 	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this volume.
-	ID *string `json:"id" validate:"required"`
 
 	// The unique user-defined name for this volume.
 	Name *string `json:"name" validate:"required"`
@@ -28161,15 +32718,15 @@ type VolumeReference struct {
 // UnmarshalVolumeReference unmarshals an instance of VolumeReference from the specified map of raw messages.
 func UnmarshalVolumeReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -28183,11 +32740,11 @@ func UnmarshalVolumeReference(m map[string]json.RawMessage, result interface{}) 
 
 // Zone : Zone struct
 type Zone struct {
-	// The URL for this zone.
-	Href *string `json:"href" validate:"required"`
-
 	// The name for this zone.
 	Name *string `json:"name" validate:"required"`
+
+	// The URL for this zone.
+	Href *string `json:"href" validate:"required"`
 
 	// The region this zone belongs to.
 	Region *RegionReference `json:"region" validate:"required"`
@@ -28207,11 +32764,11 @@ const (
 // UnmarshalZone unmarshals an instance of Zone from the specified map of raw messages.
 func UnmarshalZone(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Zone)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -28281,21 +32838,21 @@ func UnmarshalZoneIdentity(m map[string]json.RawMessage, result interface{}) (er
 
 // ZoneReference : ZoneReference struct
 type ZoneReference struct {
-	// The URL for this zone.
-	Href *string `json:"href" validate:"required"`
-
 	// The name for this zone.
 	Name *string `json:"name" validate:"required"`
+
+	// The URL for this zone.
+	Href *string `json:"href" validate:"required"`
 }
 
 // UnmarshalZoneReference unmarshals an instance of ZoneReference from the specified map of raw messages.
 func UnmarshalZoneReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ZoneReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -28619,14 +33176,14 @@ func UnmarshalFloatingIPPrototypeFloatingIPByZone(m map[string]json.RawMessage, 
 // FloatingIPTargetNetworkInterfaceReference : FloatingIPTargetNetworkInterfaceReference struct
 // This model "extends" FloatingIPTarget
 type FloatingIPTargetNetworkInterfaceReference struct {
-	// The URL for this network interface.
-	Href *string `json:"href" validate:"required"`
+	// The user-defined name for this network interface.
+	Name *string `json:"name" validate:"required"`
 
 	// The unique identifier for this network interface.
 	ID *string `json:"id" validate:"required"`
 
-	// The user-defined name for this network interface.
-	Name *string `json:"name" validate:"required"`
+	// The URL for this network interface.
+	Href *string `json:"href" validate:"required"`
 
 	// The primary IPv4 address.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address" validate:"required"`
@@ -28648,7 +33205,7 @@ func (*FloatingIPTargetNetworkInterfaceReference) isaFloatingIPTarget() bool {
 // UnmarshalFloatingIPTargetNetworkInterfaceReference unmarshals an instance of FloatingIPTargetNetworkInterfaceReference from the specified map of raw messages.
 func UnmarshalFloatingIPTargetNetworkInterfaceReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FloatingIPTargetNetworkInterfaceReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -28656,7 +33213,7 @@ func UnmarshalFloatingIPTargetNetworkInterfaceReference(m map[string]json.RawMes
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -28675,14 +33232,14 @@ func UnmarshalFloatingIPTargetNetworkInterfaceReference(m map[string]json.RawMes
 // FloatingIPTargetPublicGatewayReference : FloatingIPTargetPublicGatewayReference struct
 // This model "extends" FloatingIPTarget
 type FloatingIPTargetPublicGatewayReference struct {
+	// The unique identifier for this public gateway.
+	ID *string `json:"id" validate:"required"`
+
 	// The CRN for this public gateway.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this public gateway.
 	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this public gateway.
-	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this public gateway.
 	Name *string `json:"name" validate:"required"`
@@ -28704,15 +33261,15 @@ func (*FloatingIPTargetPublicGatewayReference) isaFloatingIPTarget() bool {
 // UnmarshalFloatingIPTargetPublicGatewayReference unmarshals an instance of FloatingIPTargetPublicGatewayReference from the specified map of raw messages.
 func UnmarshalFloatingIPTargetPublicGatewayReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FloatingIPTargetPublicGatewayReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -28919,14 +33476,14 @@ func UnmarshalFlowLogCollectorPrototypeTargetVPCIdentity(m map[string]json.RawMe
 // FlowLogCollectorTargetInstanceReference : FlowLogCollectorTargetInstanceReference struct
 // This model "extends" FlowLogCollectorTarget
 type FlowLogCollectorTargetInstanceReference struct {
+	// The unique identifier for this virtual server instance.
+	ID *string `json:"id" validate:"required"`
+
 	// The CRN for this virtual server instance.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this virtual server instance.
 	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this virtual server instance.
-	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this virtual server instance (and default system hostname).
 	Name *string `json:"name" validate:"required"`
@@ -28939,15 +33496,15 @@ func (*FlowLogCollectorTargetInstanceReference) isaFlowLogCollectorTarget() bool
 // UnmarshalFlowLogCollectorTargetInstanceReference unmarshals an instance of FlowLogCollectorTargetInstanceReference from the specified map of raw messages.
 func UnmarshalFlowLogCollectorTargetInstanceReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FlowLogCollectorTargetInstanceReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -28962,11 +33519,11 @@ func UnmarshalFlowLogCollectorTargetInstanceReference(m map[string]json.RawMessa
 // FlowLogCollectorTargetNetworkInterfaceReferenceTargetContext : FlowLogCollectorTargetNetworkInterfaceReferenceTargetContext struct
 // This model "extends" FlowLogCollectorTarget
 type FlowLogCollectorTargetNetworkInterfaceReferenceTargetContext struct {
-	// The URL for this network interface.
-	Href *string `json:"href" validate:"required"`
-
 	// The unique identifier for this network interface.
 	ID *string `json:"id" validate:"required"`
+
+	// The URL for this network interface.
+	Href *string `json:"href" validate:"required"`
 
 	// The user-defined name for this network interface.
 	Name *string `json:"name" validate:"required"`
@@ -28988,11 +33545,11 @@ func (*FlowLogCollectorTargetNetworkInterfaceReferenceTargetContext) isaFlowLogC
 // UnmarshalFlowLogCollectorTargetNetworkInterfaceReferenceTargetContext unmarshals an instance of FlowLogCollectorTargetNetworkInterfaceReferenceTargetContext from the specified map of raw messages.
 func UnmarshalFlowLogCollectorTargetNetworkInterfaceReferenceTargetContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FlowLogCollectorTargetNetworkInterfaceReferenceTargetContext)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -29011,14 +33568,14 @@ func UnmarshalFlowLogCollectorTargetNetworkInterfaceReferenceTargetContext(m map
 // FlowLogCollectorTargetSubnetReference : FlowLogCollectorTargetSubnetReference struct
 // This model "extends" FlowLogCollectorTarget
 type FlowLogCollectorTargetSubnetReference struct {
+	// The unique identifier for this subnet.
+	ID *string `json:"id" validate:"required"`
+
 	// The CRN for this subnet.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this subnet.
 	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this subnet.
-	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this subnet.
 	Name *string `json:"name" validate:"required"`
@@ -29031,15 +33588,15 @@ func (*FlowLogCollectorTargetSubnetReference) isaFlowLogCollectorTarget() bool {
 // UnmarshalFlowLogCollectorTargetSubnetReference unmarshals an instance of FlowLogCollectorTargetSubnetReference from the specified map of raw messages.
 func UnmarshalFlowLogCollectorTargetSubnetReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FlowLogCollectorTargetSubnetReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -29054,16 +33611,16 @@ func UnmarshalFlowLogCollectorTargetSubnetReference(m map[string]json.RawMessage
 // FlowLogCollectorTargetVPCReference : FlowLogCollectorTargetVPCReference struct
 // This model "extends" FlowLogCollectorTarget
 type FlowLogCollectorTargetVPCReference struct {
+	// The unique identifier for this VPC.
+	ID *string `json:"id" validate:"required"`
+
 	// The CRN for this VPC.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this VPC.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this VPC.
-	ID *string `json:"id" validate:"required"`
-
-	// The user-defined name for this VPC.
+	// The unique user-defined name for this VPC.
 	Name *string `json:"name" validate:"required"`
 }
 
@@ -29074,15 +33631,15 @@ func (*FlowLogCollectorTargetVPCReference) isaFlowLogCollectorTarget() bool {
 // UnmarshalFlowLogCollectorTargetVPCReference unmarshals an instance of FlowLogCollectorTargetVPCReference from the specified map of raw messages.
 func UnmarshalFlowLogCollectorTargetVPCReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FlowLogCollectorTargetVPCReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -29325,7 +33882,9 @@ type ImagePrototypeImageByFile struct {
 	// The file from which to create the image.
 	File *ImageFilePrototype `json:"file" validate:"required"`
 
-	// The operating system included in this image.
+	// The identity of the [supported operating
+	// system](https://cloud.ibm.com/apidocs/vpc#retrieves-all-operating-systems) included in
+	// this image.
 	OperatingSystem OperatingSystemIdentityIntf `json:"operating_system" validate:"required"`
 }
 
@@ -29366,6 +33925,229 @@ func UnmarshalImagePrototypeImageByFile(m map[string]json.RawMessage, result int
 	return
 }
 
+// InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype : InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype struct
+// This model "extends" InstanceGroupManagerPolicyPrototype
+type InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype struct {
+	// The user-defined name for this instance group manager policy. Names must be unique within the instance group
+	// manager.
+	Name *string `json:"name,omitempty"`
+
+	// The type of metric to be evaluated.
+	MetricType *string `json:"metric_type" validate:"required"`
+
+	// The metric value to be evaluated.
+	MetricValue *int64 `json:"metric_value" validate:"required"`
+
+	// The type of Policy for the Instance Group.
+	PolicyType *string `json:"policy_type" validate:"required"`
+}
+
+// Constants associated with the InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype.MetricType property.
+// The type of metric to be evaluated.
+const (
+	InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototypeMetricTypeCpuConst        = "cpu"
+	InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototypeMetricTypeMemoryConst     = "memory"
+	InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototypeMetricTypeNetworkInConst  = "network_in"
+	InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototypeMetricTypeNetworkOutConst = "network_out"
+)
+
+// Constants associated with the InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype.PolicyType property.
+// The type of Policy for the Instance Group.
+const (
+	InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototypePolicyTypeTargetConst = "target"
+)
+
+// NewInstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype : Instantiate InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype (Generic Model Constructor)
+func (*VpcV1) NewInstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype(metricType string, metricValue int64, policyType string) (model *InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype, err error) {
+	model = &InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype{
+		MetricType:  core.StringPtr(metricType),
+		MetricValue: core.Int64Ptr(metricValue),
+		PolicyType:  core.StringPtr(policyType),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype) isaInstanceGroupManagerPolicyPrototype() bool {
+	return true
+}
+
+// UnmarshalInstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype unmarshals an instance of InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype from the specified map of raw messages.
+func UnmarshalInstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupManagerPolicyPrototypeInstanceGroupManagerTargetPolicyPrototype)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "metric_type", &obj.MetricType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "metric_value", &obj.MetricValue)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "policy_type", &obj.PolicyType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupManagerPolicyInstanceGroupManagerTargetPolicy : InstanceGroupManagerPolicyInstanceGroupManagerTargetPolicy struct
+// This model "extends" InstanceGroupManagerPolicy
+type InstanceGroupManagerPolicyInstanceGroupManagerTargetPolicy struct {
+	// The unique identifier for this instance group manager policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this instance group manager policy.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this instance group manager policy. Names must be unique within the instance group
+	// manager.
+	Name *string `json:"name" validate:"required"`
+
+	// The type of metric to be evaluated.
+	MetricType *string `json:"metric_type" validate:"required"`
+
+	// The metric value to be evaluated.
+	MetricValue *int64 `json:"metric_value" validate:"required"`
+
+	// The type of Policy for the Instance Group.
+	PolicyType *string `json:"policy_type" validate:"required"`
+}
+
+// Constants associated with the InstanceGroupManagerPolicyInstanceGroupManagerTargetPolicy.MetricType property.
+// The type of metric to be evaluated.
+const (
+	InstanceGroupManagerPolicyInstanceGroupManagerTargetPolicyMetricTypeCpuConst        = "cpu"
+	InstanceGroupManagerPolicyInstanceGroupManagerTargetPolicyMetricTypeMemoryConst     = "memory"
+	InstanceGroupManagerPolicyInstanceGroupManagerTargetPolicyMetricTypeNetworkInConst  = "network_in"
+	InstanceGroupManagerPolicyInstanceGroupManagerTargetPolicyMetricTypeNetworkOutConst = "network_out"
+)
+
+// Constants associated with the InstanceGroupManagerPolicyInstanceGroupManagerTargetPolicy.PolicyType property.
+// The type of Policy for the Instance Group.
+const (
+	InstanceGroupManagerPolicyInstanceGroupManagerTargetPolicyPolicyTypeTargetConst = "target"
+)
+
+func (*InstanceGroupManagerPolicyInstanceGroupManagerTargetPolicy) isaInstanceGroupManagerPolicy() bool {
+	return true
+}
+
+// UnmarshalInstanceGroupManagerPolicyInstanceGroupManagerTargetPolicy unmarshals an instance of InstanceGroupManagerPolicyInstanceGroupManagerTargetPolicy from the specified map of raw messages.
+func UnmarshalInstanceGroupManagerPolicyInstanceGroupManagerTargetPolicy(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupManagerPolicyInstanceGroupManagerTargetPolicy)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "metric_type", &obj.MetricType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "metric_value", &obj.MetricValue)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "policy_type", &obj.PolicyType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototype : InstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototype struct
+// This model "extends" InstanceGroupManagerPrototype
+type InstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototype struct {
+	// The user-defined name for this instance group manager. Names must be unique within the instance group.
+	Name *string `json:"name,omitempty"`
+
+	// If set to `true`, this manager will control the instance group.
+	ManagementEnabled *bool `json:"management_enabled,omitempty"`
+
+	// The time window in seconds to aggregate metrics prior to evaluation.
+	AggregationWindow *int64 `json:"aggregation_window,omitempty"`
+
+	// The duration of time in seconds to pause further scale actions after scaling has taken place.
+	Cooldown *int64 `json:"cooldown,omitempty"`
+
+	// The maximum number of members in a managed instance group.
+	MaxMembershipCount *int64 `json:"max_membership_count" validate:"required"`
+
+	// The minimum number of members in a managed instance group.
+	MinMembershipCount *int64 `json:"min_membership_count,omitempty"`
+
+	// The type of instance group manager.
+	ManagerType *string `json:"manager_type" validate:"required"`
+}
+
+// Constants associated with the InstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototype.ManagerType property.
+// The type of instance group manager.
+const (
+	InstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototypeManagerTypeAutoscaleConst = "autoscale"
+)
+
+// NewInstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototype : Instantiate InstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototype (Generic Model Constructor)
+func (*VpcV1) NewInstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototype(maxMembershipCount int64, managerType string) (model *InstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototype, err error) {
+	model = &InstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototype{
+		MaxMembershipCount: core.Int64Ptr(maxMembershipCount),
+		ManagerType:        core.StringPtr(managerType),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*InstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototype) isaInstanceGroupManagerPrototype() bool {
+	return true
+}
+
+// UnmarshalInstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototype unmarshals an instance of InstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototype from the specified map of raw messages.
+func UnmarshalInstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceGroupManagerPrototypeInstanceGroupManagerAutoScalePrototype)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "management_enabled", &obj.ManagementEnabled)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "aggregation_window", &obj.AggregationWindow)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "cooldown", &obj.Cooldown)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "max_membership_count", &obj.MaxMembershipCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "min_membership_count", &obj.MinMembershipCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "manager_type", &obj.ManagerType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // InstanceProfileBandwidthDependent : The total bandwidth shared across the network interfaces of an instance with this profile depends on its
 // configuration.
 // This model "extends" InstanceProfileBandwidth
@@ -29399,11 +34181,11 @@ func UnmarshalInstanceProfileBandwidthDependent(m map[string]json.RawMessage, re
 // with this profile.
 // This model "extends" InstanceProfileBandwidth
 type InstanceProfileBandwidthEnum struct {
-	// The default value for this profile field.
-	Default *int64 `json:"default" validate:"required"`
-
 	// The type for this profile field.
 	Type *string `json:"type" validate:"required"`
+
+	// The default value for this profile field.
+	Default *int64 `json:"default" validate:"required"`
 
 	// The permitted values for this profile field.
 	Values []int64 `json:"values" validate:"required"`
@@ -29422,11 +34204,11 @@ func (*InstanceProfileBandwidthEnum) isaInstanceProfileBandwidth() bool {
 // UnmarshalInstanceProfileBandwidthEnum unmarshals an instance of InstanceProfileBandwidthEnum from the specified map of raw messages.
 func UnmarshalInstanceProfileBandwidthEnum(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfileBandwidthEnum)
-	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
 	if err != nil {
 		return
 	}
@@ -29477,6 +34259,9 @@ func UnmarshalInstanceProfileBandwidthFixed(m map[string]json.RawMessage, result
 // this profile.
 // This model "extends" InstanceProfileBandwidth
 type InstanceProfileBandwidthRange struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
 	// The default value for this profile field.
 	Default *int64 `json:"default" validate:"required"`
 
@@ -29488,9 +34273,6 @@ type InstanceProfileBandwidthRange struct {
 
 	// The increment step value for this profile field.
 	Step *int64 `json:"step" validate:"required"`
-
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
 }
 
 // Constants associated with the InstanceProfileBandwidthRange.Type property.
@@ -29506,6 +34288,10 @@ func (*InstanceProfileBandwidthRange) isaInstanceProfileBandwidth() bool {
 // UnmarshalInstanceProfileBandwidthRange unmarshals an instance of InstanceProfileBandwidthRange from the specified map of raw messages.
 func UnmarshalInstanceProfileBandwidthRange(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfileBandwidthRange)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
 	if err != nil {
 		return
@@ -29519,10 +34305,6 @@ func UnmarshalInstanceProfileBandwidthRange(m map[string]json.RawMessage, result
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		return
 	}
@@ -29623,11 +34405,11 @@ func UnmarshalInstanceProfileMemoryDependent(m map[string]json.RawMessage, resul
 // InstanceProfileMemoryEnum : The permitted memory values (in gigabytes) for an instance with this profile.
 // This model "extends" InstanceProfileMemory
 type InstanceProfileMemoryEnum struct {
-	// The default value for this profile field.
-	Default *int64 `json:"default" validate:"required"`
-
 	// The type for this profile field.
 	Type *string `json:"type" validate:"required"`
+
+	// The default value for this profile field.
+	Default *int64 `json:"default" validate:"required"`
 
 	// The permitted values for this profile field.
 	Values []int64 `json:"values" validate:"required"`
@@ -29646,11 +34428,11 @@ func (*InstanceProfileMemoryEnum) isaInstanceProfileMemory() bool {
 // UnmarshalInstanceProfileMemoryEnum unmarshals an instance of InstanceProfileMemoryEnum from the specified map of raw messages.
 func UnmarshalInstanceProfileMemoryEnum(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfileMemoryEnum)
-	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
 	if err != nil {
 		return
 	}
@@ -29700,6 +34482,9 @@ func UnmarshalInstanceProfileMemoryFixed(m map[string]json.RawMessage, result in
 // InstanceProfileMemoryRange : The permitted memory range (in gigabytes) for an instance with this profile.
 // This model "extends" InstanceProfileMemory
 type InstanceProfileMemoryRange struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
 	// The default value for this profile field.
 	Default *int64 `json:"default" validate:"required"`
 
@@ -29711,9 +34496,6 @@ type InstanceProfileMemoryRange struct {
 
 	// The increment step value for this profile field.
 	Step *int64 `json:"step" validate:"required"`
-
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
 }
 
 // Constants associated with the InstanceProfileMemoryRange.Type property.
@@ -29729,6 +34511,10 @@ func (*InstanceProfileMemoryRange) isaInstanceProfileMemory() bool {
 // UnmarshalInstanceProfileMemoryRange unmarshals an instance of InstanceProfileMemoryRange from the specified map of raw messages.
 func UnmarshalInstanceProfileMemoryRange(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfileMemoryRange)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
 	if err != nil {
 		return
@@ -29742,10 +34528,6 @@ func UnmarshalInstanceProfileMemoryRange(m map[string]json.RawMessage, result in
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		return
 	}
@@ -29847,11 +34629,11 @@ func UnmarshalInstanceProfileVcpuDependent(m map[string]json.RawMessage, result 
 // InstanceProfileVcpuEnum : The permitted values for VCPU count for an instance with this profile.
 // This model "extends" InstanceProfileVcpu
 type InstanceProfileVcpuEnum struct {
-	// The default value for this profile field.
-	Default *int64 `json:"default" validate:"required"`
-
 	// The type for this profile field.
 	Type *string `json:"type" validate:"required"`
+
+	// The default value for this profile field.
+	Default *int64 `json:"default" validate:"required"`
 
 	// The permitted values for this profile field.
 	Values []int64 `json:"values" validate:"required"`
@@ -29870,11 +34652,11 @@ func (*InstanceProfileVcpuEnum) isaInstanceProfileVcpu() bool {
 // UnmarshalInstanceProfileVcpuEnum unmarshals an instance of InstanceProfileVcpuEnum from the specified map of raw messages.
 func UnmarshalInstanceProfileVcpuEnum(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfileVcpuEnum)
-	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
 	if err != nil {
 		return
 	}
@@ -29924,6 +34706,9 @@ func UnmarshalInstanceProfileVcpuFixed(m map[string]json.RawMessage, result inte
 // InstanceProfileVcpuRange : The permitted range for VCPU count for an instance with this profile.
 // This model "extends" InstanceProfileVcpu
 type InstanceProfileVcpuRange struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
 	// The default value for this profile field.
 	Default *int64 `json:"default" validate:"required"`
 
@@ -29935,9 +34720,6 @@ type InstanceProfileVcpuRange struct {
 
 	// The increment step value for this profile field.
 	Step *int64 `json:"step" validate:"required"`
-
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
 }
 
 // Constants associated with the InstanceProfileVcpuRange.Type property.
@@ -29953,6 +34735,10 @@ func (*InstanceProfileVcpuRange) isaInstanceProfileVcpu() bool {
 // UnmarshalInstanceProfileVcpuRange unmarshals an instance of InstanceProfileVcpuRange from the specified map of raw messages.
 func UnmarshalInstanceProfileVcpuRange(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfileVcpuRange)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
 	if err != nil {
 		return
@@ -29969,10 +34755,6 @@ func UnmarshalInstanceProfileVcpuRange(m map[string]json.RawMessage, result inte
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
@@ -29980,6 +34762,10 @@ func UnmarshalInstanceProfileVcpuRange(m map[string]json.RawMessage, result inte
 // InstancePrototypeInstanceByImage : InstancePrototypeInstanceByImage struct
 // This model "extends" InstancePrototype
 type InstancePrototypeInstanceByImage struct {
+	// The unique user-defined name for this virtual server instance (and default system hostname). If unspecified, the
+	// name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// The public SSH keys for the administrative user of the virtual server instance. Up to 10 keys may be provided; if no
 	// keys are provided the instance will be inaccessible unless the image used provides another means of access. For
 	// Windows instances, one of the keys will be used to encrypt the administrator password.
@@ -29988,19 +34774,11 @@ type InstancePrototypeInstanceByImage struct {
 	// these keys will also be added as SSH authorized keys for the administrative user.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
-	// The unique user-defined name for this virtual server instance (and default system hostname). If unspecified, the
-	// name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
 	// Collection of additional network interfaces to create for the virtual server instance.
 	NetworkInterfaces []NetworkInterfacePrototype `json:"network_interfaces,omitempty"`
 
 	// The profile to use for this virtual server instance.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
-
-	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
-	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// User data to be made available when setting up the virtual server instance.
 	UserData *string `json:"user_data,omitempty"`
@@ -30012,25 +34790,29 @@ type InstancePrototypeInstanceByImage struct {
 	// VPC tied to the subnets of the instance's network interfaces.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
-	// The boot volume attachment for the virtual server instance.
-	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
-
-	// The identity of the image to be used when provisioning the virtual server instance.
-	Image ImageIdentityIntf `json:"image" validate:"required"`
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Primary network interface.
 	PrimaryNetworkInterface *NetworkInterfacePrototype `json:"primary_network_interface" validate:"required"`
 
 	// The identity of the zone to provision the virtual server instance in.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
+
+	// The boot volume attachment for the virtual server instance.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
+
+	// The identity of the image to be used when provisioning the virtual server instance.
+	Image ImageIdentityIntf `json:"image" validate:"required"`
 }
 
 // NewInstancePrototypeInstanceByImage : Instantiate InstancePrototypeInstanceByImage (Generic Model Constructor)
-func (*VpcV1) NewInstancePrototypeInstanceByImage(image ImageIdentityIntf, primaryNetworkInterface *NetworkInterfacePrototype, zone ZoneIdentityIntf) (model *InstancePrototypeInstanceByImage, err error) {
+func (*VpcV1) NewInstancePrototypeInstanceByImage(primaryNetworkInterface *NetworkInterfacePrototype, zone ZoneIdentityIntf, image ImageIdentityIntf) (model *InstancePrototypeInstanceByImage, err error) {
 	model = &InstancePrototypeInstanceByImage{
-		Image:                   image,
 		PrimaryNetworkInterface: primaryNetworkInterface,
 		Zone:                    zone,
+		Image:                   image,
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
@@ -30043,11 +34825,11 @@ func (*InstancePrototypeInstanceByImage) isaInstancePrototype() bool {
 // UnmarshalInstancePrototypeInstanceByImage unmarshals an instance of InstancePrototypeInstanceByImage from the specified map of raw messages.
 func UnmarshalInstancePrototypeInstanceByImage(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstancePrototypeInstanceByImage)
-	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
 	if err != nil {
 		return
 	}
@@ -30056,10 +34838,6 @@ func UnmarshalInstancePrototypeInstanceByImage(m map[string]json.RawMessage, res
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
 	if err != nil {
 		return
 	}
@@ -30075,11 +34853,7 @@ func UnmarshalInstancePrototypeInstanceByImage(m map[string]json.RawMessage, res
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
 	if err != nil {
 		return
 	}
@@ -30088,6 +34862,744 @@ func UnmarshalInstancePrototypeInstanceByImage(m map[string]json.RawMessage, res
 		return
 	}
 	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstancePrototypeInstanceBySourceTemplate : InstancePrototypeInstanceBySourceTemplate struct
+// This model "extends" InstancePrototype
+type InstancePrototypeInstanceBySourceTemplate struct {
+	// The unique user-defined name for this virtual server instance (and default system hostname). If unspecified, the
+	// name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The public SSH keys for the administrative user of the virtual server instance. Up to 10 keys may be provided; if no
+	// keys are provided the instance will be inaccessible unless the image used provides another means of access. For
+	// Windows instances, one of the keys will be used to encrypt the administrator password.
+	//
+	// Keys will be made available to the virtual server instance as cloud-init vendor data. For cloud-init enabled images,
+	// these keys will also be added as SSH authorized keys for the administrative user.
+	Keys []KeyIdentityIntf `json:"keys,omitempty"`
+
+	// Collection of additional network interfaces to create for the virtual server instance.
+	NetworkInterfaces []NetworkInterfacePrototype `json:"network_interfaces,omitempty"`
+
+	// The profile to use for this virtual server instance.
+	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
+
+	// User data to be made available when setting up the virtual server instance.
+	UserData *string `json:"user_data,omitempty"`
+
+	// Collection of volume attachments.
+	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+
+	// The VPC the virtual server instance is to be a part of. If provided, must match the
+	// VPC tied to the subnets of the instance's network interfaces.
+	VPC VPCIdentityIntf `json:"vpc,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// Primary network interface.
+	PrimaryNetworkInterface *NetworkInterfacePrototype `json:"primary_network_interface,omitempty"`
+
+	// The identity of the zone to provision the virtual server instance in.
+	Zone ZoneIdentityIntf `json:"zone,omitempty"`
+
+	// The boot volume attachment for the virtual server instance.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
+
+	// The identity of the image to be used when provisioning the virtual server instance.
+	Image ImageIdentityIntf `json:"image,omitempty"`
+
+	// Identifies an instance template by a unique property.
+	SourceTemplate InstanceTemplateIdentityIntf `json:"source_template" validate:"required"`
+}
+
+// NewInstancePrototypeInstanceBySourceTemplate : Instantiate InstancePrototypeInstanceBySourceTemplate (Generic Model Constructor)
+func (*VpcV1) NewInstancePrototypeInstanceBySourceTemplate(sourceTemplate InstanceTemplateIdentityIntf) (model *InstancePrototypeInstanceBySourceTemplate, err error) {
+	model = &InstancePrototypeInstanceBySourceTemplate{
+		SourceTemplate: sourceTemplate,
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*InstancePrototypeInstanceBySourceTemplate) isaInstancePrototype() bool {
+	return true
+}
+
+// UnmarshalInstancePrototypeInstanceBySourceTemplate unmarshals an instance of InstancePrototypeInstanceBySourceTemplate from the specified map of raw messages.
+func UnmarshalInstancePrototypeInstanceBySourceTemplate(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstancePrototypeInstanceBySourceTemplate)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "network_interfaces", &obj.NetworkInterfaces, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_data", &obj.UserData)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "primary_network_interface", &obj.PrimaryNetworkInterface, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "source_template", &obj.SourceTemplate, UnmarshalInstanceTemplateIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceTemplateIdentityByCRN : InstanceTemplateIdentityByCRN struct
+// This model "extends" InstanceTemplateIdentity
+type InstanceTemplateIdentityByCRN struct {
+	// The CRN for this instance template.
+	CRN *string `json:"crn" validate:"required"`
+}
+
+// NewInstanceTemplateIdentityByCRN : Instantiate InstanceTemplateIdentityByCRN (Generic Model Constructor)
+func (*VpcV1) NewInstanceTemplateIdentityByCRN(crn string) (model *InstanceTemplateIdentityByCRN, err error) {
+	model = &InstanceTemplateIdentityByCRN{
+		CRN: core.StringPtr(crn),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*InstanceTemplateIdentityByCRN) isaInstanceTemplateIdentity() bool {
+	return true
+}
+
+// UnmarshalInstanceTemplateIdentityByCRN unmarshals an instance of InstanceTemplateIdentityByCRN from the specified map of raw messages.
+func UnmarshalInstanceTemplateIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceTemplateIdentityByCRN)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceTemplateIdentityByHref : InstanceTemplateIdentityByHref struct
+// This model "extends" InstanceTemplateIdentity
+type InstanceTemplateIdentityByHref struct {
+	// The URL for this instance template.
+	Href *string `json:"href" validate:"required"`
+}
+
+// NewInstanceTemplateIdentityByHref : Instantiate InstanceTemplateIdentityByHref (Generic Model Constructor)
+func (*VpcV1) NewInstanceTemplateIdentityByHref(href string) (model *InstanceTemplateIdentityByHref, err error) {
+	model = &InstanceTemplateIdentityByHref{
+		Href: core.StringPtr(href),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*InstanceTemplateIdentityByHref) isaInstanceTemplateIdentity() bool {
+	return true
+}
+
+// UnmarshalInstanceTemplateIdentityByHref unmarshals an instance of InstanceTemplateIdentityByHref from the specified map of raw messages.
+func UnmarshalInstanceTemplateIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceTemplateIdentityByHref)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceTemplateIdentityByID : InstanceTemplateIdentityByID struct
+// This model "extends" InstanceTemplateIdentity
+type InstanceTemplateIdentityByID struct {
+	// The unique identifier for this instance template.
+	ID *string `json:"id" validate:"required"`
+}
+
+// NewInstanceTemplateIdentityByID : Instantiate InstanceTemplateIdentityByID (Generic Model Constructor)
+func (*VpcV1) NewInstanceTemplateIdentityByID(id string) (model *InstanceTemplateIdentityByID, err error) {
+	model = &InstanceTemplateIdentityByID{
+		ID: core.StringPtr(id),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*InstanceTemplateIdentityByID) isaInstanceTemplateIdentity() bool {
+	return true
+}
+
+// UnmarshalInstanceTemplateIdentityByID unmarshals an instance of InstanceTemplateIdentityByID from the specified map of raw messages.
+func UnmarshalInstanceTemplateIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceTemplateIdentityByID)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceTemplatePrototypeInstanceByImage : InstanceTemplatePrototypeInstanceByImage struct
+// This model "extends" InstanceTemplatePrototype
+type InstanceTemplatePrototypeInstanceByImage struct {
+	// The unique user-defined name for this virtual server instance (and default system hostname). If unspecified, the
+	// name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The public SSH keys for the administrative user of the virtual server instance. Up to 10 keys may be provided; if no
+	// keys are provided the instance will be inaccessible unless the image used provides another means of access. For
+	// Windows instances, one of the keys will be used to encrypt the administrator password.
+	//
+	// Keys will be made available to the virtual server instance as cloud-init vendor data. For cloud-init enabled images,
+	// these keys will also be added as SSH authorized keys for the administrative user.
+	Keys []KeyIdentityIntf `json:"keys,omitempty"`
+
+	// Collection of additional network interfaces to create for the virtual server instance.
+	NetworkInterfaces []NetworkInterfacePrototype `json:"network_interfaces,omitempty"`
+
+	// The profile to use for this virtual server instance.
+	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
+
+	// User data to be made available when setting up the virtual server instance.
+	UserData *string `json:"user_data,omitempty"`
+
+	// Collection of volume attachments.
+	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+
+	// The VPC the virtual server instance is to be a part of. If provided, must match the
+	// VPC tied to the subnets of the instance's network interfaces.
+	VPC VPCIdentityIntf `json:"vpc,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// Primary network interface.
+	PrimaryNetworkInterface *NetworkInterfacePrototype `json:"primary_network_interface" validate:"required"`
+
+	// The identity of the zone to provision the virtual server instance in.
+	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
+
+	// The boot volume attachment for the virtual server instance.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
+
+	// The identity of the image to be used when provisioning the virtual server instance.
+	Image ImageIdentityIntf `json:"image" validate:"required"`
+}
+
+// NewInstanceTemplatePrototypeInstanceByImage : Instantiate InstanceTemplatePrototypeInstanceByImage (Generic Model Constructor)
+func (*VpcV1) NewInstanceTemplatePrototypeInstanceByImage(primaryNetworkInterface *NetworkInterfacePrototype, zone ZoneIdentityIntf, image ImageIdentityIntf) (model *InstanceTemplatePrototypeInstanceByImage, err error) {
+	model = &InstanceTemplatePrototypeInstanceByImage{
+		PrimaryNetworkInterface: primaryNetworkInterface,
+		Zone:                    zone,
+		Image:                   image,
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*InstanceTemplatePrototypeInstanceByImage) isaInstanceTemplatePrototype() bool {
+	return true
+}
+
+// UnmarshalInstanceTemplatePrototypeInstanceByImage unmarshals an instance of InstanceTemplatePrototypeInstanceByImage from the specified map of raw messages.
+func UnmarshalInstanceTemplatePrototypeInstanceByImage(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceTemplatePrototypeInstanceByImage)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "network_interfaces", &obj.NetworkInterfaces, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_data", &obj.UserData)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "primary_network_interface", &obj.PrimaryNetworkInterface, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceTemplatePrototypeInstanceBySourceTemplate : InstanceTemplatePrototypeInstanceBySourceTemplate struct
+// This model "extends" InstanceTemplatePrototype
+type InstanceTemplatePrototypeInstanceBySourceTemplate struct {
+	// The unique user-defined name for this virtual server instance (and default system hostname). If unspecified, the
+	// name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The public SSH keys for the administrative user of the virtual server instance. Up to 10 keys may be provided; if no
+	// keys are provided the instance will be inaccessible unless the image used provides another means of access. For
+	// Windows instances, one of the keys will be used to encrypt the administrator password.
+	//
+	// Keys will be made available to the virtual server instance as cloud-init vendor data. For cloud-init enabled images,
+	// these keys will also be added as SSH authorized keys for the administrative user.
+	Keys []KeyIdentityIntf `json:"keys,omitempty"`
+
+	// Collection of additional network interfaces to create for the virtual server instance.
+	NetworkInterfaces []NetworkInterfacePrototype `json:"network_interfaces,omitempty"`
+
+	// The profile to use for this virtual server instance.
+	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
+
+	// User data to be made available when setting up the virtual server instance.
+	UserData *string `json:"user_data,omitempty"`
+
+	// Collection of volume attachments.
+	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+
+	// The VPC the virtual server instance is to be a part of. If provided, must match the
+	// VPC tied to the subnets of the instance's network interfaces.
+	VPC VPCIdentityIntf `json:"vpc,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// Primary network interface.
+	PrimaryNetworkInterface *NetworkInterfacePrototype `json:"primary_network_interface,omitempty"`
+
+	// The identity of the zone to provision the virtual server instance in.
+	Zone ZoneIdentityIntf `json:"zone,omitempty"`
+
+	// The boot volume attachment for the virtual server instance.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
+
+	// The identity of the image to be used when provisioning the virtual server instance.
+	Image ImageIdentityIntf `json:"image,omitempty"`
+
+	// Identifies an instance template by a unique property.
+	SourceTemplate InstanceTemplateIdentityIntf `json:"source_template" validate:"required"`
+}
+
+// NewInstanceTemplatePrototypeInstanceBySourceTemplate : Instantiate InstanceTemplatePrototypeInstanceBySourceTemplate (Generic Model Constructor)
+func (*VpcV1) NewInstanceTemplatePrototypeInstanceBySourceTemplate(sourceTemplate InstanceTemplateIdentityIntf) (model *InstanceTemplatePrototypeInstanceBySourceTemplate, err error) {
+	model = &InstanceTemplatePrototypeInstanceBySourceTemplate{
+		SourceTemplate: sourceTemplate,
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*InstanceTemplatePrototypeInstanceBySourceTemplate) isaInstanceTemplatePrototype() bool {
+	return true
+}
+
+// UnmarshalInstanceTemplatePrototypeInstanceBySourceTemplate unmarshals an instance of InstanceTemplatePrototypeInstanceBySourceTemplate from the specified map of raw messages.
+func UnmarshalInstanceTemplatePrototypeInstanceBySourceTemplate(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceTemplatePrototypeInstanceBySourceTemplate)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "network_interfaces", &obj.NetworkInterfaces, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_data", &obj.UserData)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "primary_network_interface", &obj.PrimaryNetworkInterface, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "source_template", &obj.SourceTemplate, UnmarshalInstanceTemplateIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceTemplateInstanceByImage : InstanceTemplateInstanceByImage struct
+// This model "extends" InstanceTemplate
+type InstanceTemplateInstanceByImage struct {
+	// The unique identifier for this instance template.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this instance template.
+	Href *string `json:"href" validate:"required"`
+
+	// The CRN for this instance template.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The unique user-defined name for this instance template.
+	Name *string `json:"name" validate:"required"`
+
+	// The public SSH keys for the administrative user of the virtual server instance. Up to 10 keys may be provided; if no
+	// keys are provided the instance will be inaccessible unless the image used provides another means of access. For
+	// Windows instances, one of the keys will be used to encrypt the administrator password.
+	//
+	// Keys will be made available to the virtual server instance as cloud-init vendor data. For cloud-init enabled images,
+	// these keys will also be added as SSH authorized keys for the administrative user.
+	Keys []KeyIdentityIntf `json:"keys,omitempty"`
+
+	// Collection of additional network interfaces to create for the virtual server instance.
+	NetworkInterfaces []NetworkInterfacePrototype `json:"network_interfaces,omitempty"`
+
+	// The profile to use for this virtual server instance.
+	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
+
+	// User data to be made available when setting up the virtual server instance.
+	UserData *string `json:"user_data,omitempty"`
+
+	// Collection of volume attachments.
+	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+
+	// The VPC the virtual server instance is to be a part of. If provided, must match the
+	// VPC tied to the subnets of the instance's network interfaces.
+	VPC VPCIdentityIntf `json:"vpc,omitempty"`
+
+	// The date and time that the instance template was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The resource group for this instance template.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// Primary network interface.
+	PrimaryNetworkInterface *NetworkInterfacePrototype `json:"primary_network_interface" validate:"required"`
+
+	// The identity of the zone to provision the virtual server instance in.
+	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
+
+	// The boot volume attachment for the virtual server instance.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
+
+	// The identity of the image to be used when provisioning the virtual server instance.
+	Image ImageIdentityIntf `json:"image" validate:"required"`
+}
+
+func (*InstanceTemplateInstanceByImage) isaInstanceTemplate() bool {
+	return true
+}
+
+// UnmarshalInstanceTemplateInstanceByImage unmarshals an instance of InstanceTemplateInstanceByImage from the specified map of raw messages.
+func UnmarshalInstanceTemplateInstanceByImage(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceTemplateInstanceByImage)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "network_interfaces", &obj.NetworkInterfaces, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_data", &obj.UserData)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "primary_network_interface", &obj.PrimaryNetworkInterface, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceTemplateInstanceBySourceTemplate : InstanceTemplateInstanceBySourceTemplate struct
+// This model "extends" InstanceTemplate
+type InstanceTemplateInstanceBySourceTemplate struct {
+	// The unique identifier for this instance template.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this instance template.
+	Href *string `json:"href" validate:"required"`
+
+	// The CRN for this instance template.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The unique user-defined name for this instance template.
+	Name *string `json:"name" validate:"required"`
+
+	// The public SSH keys for the administrative user of the virtual server instance. Up to 10 keys may be provided; if no
+	// keys are provided the instance will be inaccessible unless the image used provides another means of access. For
+	// Windows instances, one of the keys will be used to encrypt the administrator password.
+	//
+	// Keys will be made available to the virtual server instance as cloud-init vendor data. For cloud-init enabled images,
+	// these keys will also be added as SSH authorized keys for the administrative user.
+	Keys []KeyIdentityIntf `json:"keys,omitempty"`
+
+	// Collection of additional network interfaces to create for the virtual server instance.
+	NetworkInterfaces []NetworkInterfacePrototype `json:"network_interfaces,omitempty"`
+
+	// The profile to use for this virtual server instance.
+	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
+
+	// User data to be made available when setting up the virtual server instance.
+	UserData *string `json:"user_data,omitempty"`
+
+	// Collection of volume attachments.
+	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+
+	// The VPC the virtual server instance is to be a part of. If provided, must match the
+	// VPC tied to the subnets of the instance's network interfaces.
+	VPC VPCIdentityIntf `json:"vpc,omitempty"`
+
+	// The date and time that the instance template was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The resource group for this instance template.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// Primary network interface.
+	PrimaryNetworkInterface *NetworkInterfacePrototype `json:"primary_network_interface,omitempty"`
+
+	// The identity of the zone to provision the virtual server instance in.
+	Zone ZoneIdentityIntf `json:"zone,omitempty"`
+
+	// The boot volume attachment for the virtual server instance.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
+
+	// The identity of the image to be used when provisioning the virtual server instance.
+	Image ImageIdentityIntf `json:"image,omitempty"`
+
+	// Identifies an instance template by a unique property.
+	SourceTemplate InstanceTemplateIdentityIntf `json:"source_template" validate:"required"`
+}
+
+func (*InstanceTemplateInstanceBySourceTemplate) isaInstanceTemplate() bool {
+	return true
+}
+
+// UnmarshalInstanceTemplateInstanceBySourceTemplate unmarshals an instance of InstanceTemplateInstanceBySourceTemplate from the specified map of raw messages.
+func UnmarshalInstanceTemplateInstanceBySourceTemplate(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceTemplateInstanceBySourceTemplate)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "network_interfaces", &obj.NetworkInterfaces, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_data", &obj.UserData)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "primary_network_interface", &obj.PrimaryNetworkInterface, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "source_template", &obj.SourceTemplate, UnmarshalInstanceTemplateIdentity)
 	if err != nil {
 		return
 	}
@@ -30246,18 +35758,18 @@ func UnmarshalKeyReferenceInstanceInitializationContextKeyIdentityByFingerprint(
 // KeyReferenceInstanceInitializationContextKeyReference : KeyReferenceInstanceInitializationContextKeyReference struct
 // This model "extends" KeyReferenceInstanceInitializationContext
 type KeyReferenceInstanceInitializationContextKeyReference struct {
+	// The unique identifier for this key.
+	ID *string `json:"id" validate:"required"`
+
 	// The CRN for this key.
 	CRN *string `json:"crn" validate:"required"`
-
-	// The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm (always
-	// `SHA256`).
-	Fingerprint *string `json:"fingerprint" validate:"required"`
 
 	// The URL for this key.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this key.
-	ID *string `json:"id" validate:"required"`
+	// The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm (always
+	// `SHA256`).
+	Fingerprint *string `json:"fingerprint" validate:"required"`
 
 	// The user-defined name for this key.
 	Name *string `json:"name" validate:"required"`
@@ -30270,11 +35782,11 @@ func (*KeyReferenceInstanceInitializationContextKeyReference) isaKeyReferenceIns
 // UnmarshalKeyReferenceInstanceInitializationContextKeyReference unmarshals an instance of KeyReferenceInstanceInitializationContextKeyReference from the specified map of raw messages.
 func UnmarshalKeyReferenceInstanceInitializationContextKeyReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(KeyReferenceInstanceInitializationContextKeyReference)
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "fingerprint", &obj.Fingerprint)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
@@ -30282,11 +35794,104 @@ func UnmarshalKeyReferenceInstanceInitializationContextKeyReference(m map[string
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "fingerprint", &obj.Fingerprint)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerIdentityByCRN : LoadBalancerIdentityByCRN struct
+// This model "extends" LoadBalancerIdentity
+type LoadBalancerIdentityByCRN struct {
+	// The load balancer's CRN.
+	CRN *string `json:"crn" validate:"required"`
+}
+
+// NewLoadBalancerIdentityByCRN : Instantiate LoadBalancerIdentityByCRN (Generic Model Constructor)
+func (*VpcV1) NewLoadBalancerIdentityByCRN(crn string) (model *LoadBalancerIdentityByCRN, err error) {
+	model = &LoadBalancerIdentityByCRN{
+		CRN: core.StringPtr(crn),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*LoadBalancerIdentityByCRN) isaLoadBalancerIdentity() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerIdentityByCRN unmarshals an instance of LoadBalancerIdentityByCRN from the specified map of raw messages.
+func UnmarshalLoadBalancerIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerIdentityByCRN)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerIdentityByHref : LoadBalancerIdentityByHref struct
+// This model "extends" LoadBalancerIdentity
+type LoadBalancerIdentityByHref struct {
+	// The load balancer's canonical URL.
+	Href *string `json:"href" validate:"required"`
+}
+
+// NewLoadBalancerIdentityByHref : Instantiate LoadBalancerIdentityByHref (Generic Model Constructor)
+func (*VpcV1) NewLoadBalancerIdentityByHref(href string) (model *LoadBalancerIdentityByHref, err error) {
+	model = &LoadBalancerIdentityByHref{
+		Href: core.StringPtr(href),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*LoadBalancerIdentityByHref) isaLoadBalancerIdentity() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerIdentityByHref unmarshals an instance of LoadBalancerIdentityByHref from the specified map of raw messages.
+func UnmarshalLoadBalancerIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerIdentityByHref)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerIdentityByID : LoadBalancerIdentityByID struct
+// This model "extends" LoadBalancerIdentity
+type LoadBalancerIdentityByID struct {
+	// The unique identifier for this load balancer.
+	ID *string `json:"id" validate:"required"`
+}
+
+// NewLoadBalancerIdentityByID : Instantiate LoadBalancerIdentityByID (Generic Model Constructor)
+func (*VpcV1) NewLoadBalancerIdentityByID(id string) (model *LoadBalancerIdentityByID, err error) {
+	model = &LoadBalancerIdentityByID{
+		ID: core.StringPtr(id),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*LoadBalancerIdentityByID) isaLoadBalancerIdentity() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerIdentityByID unmarshals an instance of LoadBalancerIdentityByID from the specified map of raw messages.
+func UnmarshalLoadBalancerIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerIdentityByID)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -30476,11 +36081,11 @@ func UnmarshalLoadBalancerListenerPolicyTargetReferenceLoadBalancerListenerPolic
 // LoadBalancerListenerPolicyTargetReferenceLoadBalancerPoolReference : LoadBalancerListenerPolicyTargetReferenceLoadBalancerPoolReference struct
 // This model "extends" LoadBalancerListenerPolicyTargetReference
 type LoadBalancerListenerPolicyTargetReferenceLoadBalancerPoolReference struct {
-	// The pool's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
 	// The unique identifier for this load balancer pool.
 	ID *string `json:"id" validate:"required"`
+
+	// The pool's canonical URL.
+	Href *string `json:"href" validate:"required"`
 
 	// The user-defined name for this load balancer pool.
 	Name *string `json:"name" validate:"required"`
@@ -30493,11 +36098,11 @@ func (*LoadBalancerListenerPolicyTargetReferenceLoadBalancerPoolReference) isaLo
 // UnmarshalLoadBalancerListenerPolicyTargetReferenceLoadBalancerPoolReference unmarshals an instance of LoadBalancerListenerPolicyTargetReferenceLoadBalancerPoolReference from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPolicyTargetReferenceLoadBalancerPoolReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPolicyTargetReferenceLoadBalancerPoolReference)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -30628,6 +36233,68 @@ func UnmarshalLoadBalancerPoolMemberTargetIP(m map[string]json.RawMessage, resul
 	return
 }
 
+// LoadBalancerProfileIdentityByHref : LoadBalancerProfileIdentityByHref struct
+// This model "extends" LoadBalancerProfileIdentity
+type LoadBalancerProfileIdentityByHref struct {
+	// The URL for this load balancer profile.
+	Href *string `json:"href" validate:"required"`
+}
+
+// NewLoadBalancerProfileIdentityByHref : Instantiate LoadBalancerProfileIdentityByHref (Generic Model Constructor)
+func (*VpcV1) NewLoadBalancerProfileIdentityByHref(href string) (model *LoadBalancerProfileIdentityByHref, err error) {
+	model = &LoadBalancerProfileIdentityByHref{
+		Href: core.StringPtr(href),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*LoadBalancerProfileIdentityByHref) isaLoadBalancerProfileIdentity() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerProfileIdentityByHref unmarshals an instance of LoadBalancerProfileIdentityByHref from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileIdentityByHref)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileIdentityByName : LoadBalancerProfileIdentityByName struct
+// This model "extends" LoadBalancerProfileIdentity
+type LoadBalancerProfileIdentityByName struct {
+	// The name for this load balancer profile.
+	Name *string `json:"name" validate:"required"`
+}
+
+// NewLoadBalancerProfileIdentityByName : Instantiate LoadBalancerProfileIdentityByName (Generic Model Constructor)
+func (*VpcV1) NewLoadBalancerProfileIdentityByName(name string) (model *LoadBalancerProfileIdentityByName, err error) {
+	model = &LoadBalancerProfileIdentityByName{
+		Name: core.StringPtr(name),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*LoadBalancerProfileIdentityByName) isaLoadBalancerProfileIdentity() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerProfileIdentityByName unmarshals an instance of LoadBalancerProfileIdentityByName from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileIdentityByName(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileIdentityByName)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // NetworkACLIdentityByCRN : NetworkACLIdentityByCRN struct
 // This model "extends" NetworkACLIdentity
 type NetworkACLIdentityByCRN struct {
@@ -30728,12 +36395,12 @@ type NetworkACLPrototypeNetworkACLByRules struct {
 	// unspecified, the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
+	// The VPC this network ACL is to be a part of.
+	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
+
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
-
-	// The VPC this network ACL is to be a part of.
-	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
 
 	// Array of prototype objects for rules to create along with this network ACL. If unspecified, no rules will be
 	// created, resulting in all traffic being denied.
@@ -30760,11 +36427,11 @@ func UnmarshalNetworkACLPrototypeNetworkACLByRules(m map[string]json.RawMessage,
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCIdentity)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCIdentity)
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
 	if err != nil {
 		return
 	}
@@ -30783,12 +36450,12 @@ type NetworkACLPrototypeNetworkACLBySourceNetworkACL struct {
 	// unspecified, the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
+	// The VPC this network ACL is to be a part of.
+	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
+
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
-
-	// The VPC this network ACL is to be a part of.
-	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
 
 	// Network ACL to copy rules from.
 	SourceNetworkACL NetworkACLIdentityIntf `json:"source_network_acl" validate:"required"`
@@ -30815,11 +36482,11 @@ func UnmarshalNetworkACLPrototypeNetworkACLBySourceNetworkACL(m map[string]json.
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCIdentity)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCIdentity)
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
 	if err != nil {
 		return
 	}
@@ -30896,8 +36563,30 @@ func UnmarshalNetworkACLRuleIdentityByID(m map[string]json.RawMessage, result in
 // NetworkACLRuleItemNetworkACLRuleProtocolAll : NetworkACLRuleItemNetworkACLRuleProtocolAll struct
 // This model "extends" NetworkACLRuleItem
 type NetworkACLRuleItemNetworkACLRuleProtocolAll struct {
+	// The unique identifier for this Network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this Network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
+
+	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination" validate:"required"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The rule that this rule is immediately before. In a rule collection, this always
 	// refers to the next item in the collection. If absent, this is the last rule.
@@ -30906,30 +36595,8 @@ type NetworkACLRuleItemNetworkACLRuleProtocolAll struct {
 	// The date and time that the rule was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
-
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
 	// The IP version for this rule.
 	IPVersion *string `json:"ip_version" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
-
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
 }
 
 // Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolAll.Action property.
@@ -30946,13 +36613,6 @@ const (
 	NetworkACLRuleItemNetworkACLRuleProtocolAllDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolAll.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRuleItemNetworkACLRuleProtocolAllIPVersionIpv4Const = "ipv4"
-	NetworkACLRuleItemNetworkACLRuleProtocolAllIPVersionIpv6Const = "ipv6"
-)
-
 // Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolAll.Protocol property.
 // The protocol to enforce.
 const (
@@ -30962,6 +36622,13 @@ const (
 	NetworkACLRuleItemNetworkACLRuleProtocolAllProtocolUDPConst  = "udp"
 )
 
+// Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolAll.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRuleItemNetworkACLRuleProtocolAllIPVersionIpv4Const = "ipv4"
+	NetworkACLRuleItemNetworkACLRuleProtocolAllIPVersionIpv6Const = "ipv6"
+)
+
 func (*NetworkACLRuleItemNetworkACLRuleProtocolAll) isaNetworkACLRuleItem() bool {
 	return true
 }
@@ -30969,15 +36636,19 @@ func (*NetworkACLRuleItemNetworkACLRuleProtocolAll) isaNetworkACLRuleItem() bool
 // UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolAll unmarshals an instance of NetworkACLRuleItemNetworkACLRuleProtocolAll from the specified map of raw messages.
 func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRuleItemNetworkACLRuleProtocolAll)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -30989,19 +36660,7 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolAll(m map[string]json.RawM
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
@@ -31009,7 +36668,15 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolAll(m map[string]json.RawM
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -31020,8 +36687,30 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolAll(m map[string]json.RawM
 // NetworkACLRuleItemNetworkACLRuleProtocolIcmp : NetworkACLRuleItemNetworkACLRuleProtocolIcmp struct
 // This model "extends" NetworkACLRuleItem
 type NetworkACLRuleItemNetworkACLRuleProtocolIcmp struct {
+	// The unique identifier for this Network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this Network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
+
+	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination" validate:"required"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The rule that this rule is immediately before. In a rule collection, this always
 	// refers to the next item in the collection. If absent, this is the last rule.
@@ -31030,30 +36719,8 @@ type NetworkACLRuleItemNetworkACLRuleProtocolIcmp struct {
 	// The date and time that the rule was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
-
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
 	// The IP version for this rule.
 	IPVersion *string `json:"ip_version" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
-
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
 
 	// The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also
 	// specified.
@@ -31077,13 +36744,6 @@ const (
 	NetworkACLRuleItemNetworkACLRuleProtocolIcmpDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolIcmp.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRuleItemNetworkACLRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
-	NetworkACLRuleItemNetworkACLRuleProtocolIcmpIPVersionIpv6Const = "ipv6"
-)
-
 // Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolIcmp.Protocol property.
 // The protocol to enforce.
 const (
@@ -31093,6 +36753,13 @@ const (
 	NetworkACLRuleItemNetworkACLRuleProtocolIcmpProtocolUDPConst  = "udp"
 )
 
+// Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolIcmp.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRuleItemNetworkACLRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
+	NetworkACLRuleItemNetworkACLRuleProtocolIcmpIPVersionIpv6Const = "ipv6"
+)
+
 func (*NetworkACLRuleItemNetworkACLRuleProtocolIcmp) isaNetworkACLRuleItem() bool {
 	return true
 }
@@ -31100,15 +36767,19 @@ func (*NetworkACLRuleItemNetworkACLRuleProtocolIcmp) isaNetworkACLRuleItem() boo
 // UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIcmp unmarshals an instance of NetworkACLRuleItemNetworkACLRuleProtocolIcmp from the specified map of raw messages.
 func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRuleItemNetworkACLRuleProtocolIcmp)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -31120,19 +36791,7 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIcmp(m map[string]json.Raw
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
@@ -31140,7 +36799,15 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIcmp(m map[string]json.Raw
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -31159,8 +36826,30 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIcmp(m map[string]json.Raw
 // NetworkACLRuleItemNetworkACLRuleProtocolTcpudp : NetworkACLRuleItemNetworkACLRuleProtocolTcpudp struct
 // This model "extends" NetworkACLRuleItem
 type NetworkACLRuleItemNetworkACLRuleProtocolTcpudp struct {
+	// The unique identifier for this Network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this Network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
+
+	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination" validate:"required"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The rule that this rule is immediately before. In a rule collection, this always
 	// refers to the next item in the collection. If absent, this is the last rule.
@@ -31169,30 +36858,8 @@ type NetworkACLRuleItemNetworkACLRuleProtocolTcpudp struct {
 	// The date and time that the rule was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
-
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
 	// The IP version for this rule.
 	IPVersion *string `json:"ip_version" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
-
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	DestinationPortMax *int64 `json:"destination_port_max,omitempty"`
@@ -31221,13 +36888,6 @@ const (
 	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolTcpudp.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
-	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpIPVersionIpv6Const = "ipv6"
-)
-
 // Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolTcpudp.Protocol property.
 // The protocol to enforce.
 const (
@@ -31237,6 +36897,13 @@ const (
 	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpProtocolUDPConst  = "udp"
 )
 
+// Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolTcpudp.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
+	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpIPVersionIpv6Const = "ipv6"
+)
+
 func (*NetworkACLRuleItemNetworkACLRuleProtocolTcpudp) isaNetworkACLRuleItem() bool {
 	return true
 }
@@ -31244,15 +36911,19 @@ func (*NetworkACLRuleItemNetworkACLRuleProtocolTcpudp) isaNetworkACLRuleItem() b
 // UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolTcpudp unmarshals an instance of NetworkACLRuleItemNetworkACLRuleProtocolTcpudp from the specified map of raw messages.
 func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRuleItemNetworkACLRuleProtocolTcpudp)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -31264,19 +36935,7 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolTcpudp(m map[string]json.R
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
@@ -31284,7 +36943,15 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolTcpudp(m map[string]json.R
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -31311,6 +36978,10 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolTcpudp(m map[string]json.R
 // NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll : NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll struct
 // This model "extends" NetworkACLRulePrototypeNetworkACLContext
 type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll struct {
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
@@ -31320,15 +36991,11 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
-
-	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
 }
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll.Action property.
@@ -31355,13 +37022,13 @@ const (
 )
 
 // NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll : Instantiate NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll (Generic Model Constructor)
-func (*VpcV1) NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll(action string, destination string, direction string, protocol string, source string) (model *NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll, err error) {
+func (*VpcV1) NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll(action string, destination string, direction string, source string, protocol string) (model *NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll, err error) {
 	model = &NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll{
 		Action:      core.StringPtr(action),
 		Destination: core.StringPtr(destination),
 		Direction:   core.StringPtr(direction),
-		Protocol:    core.StringPtr(protocol),
 		Source:      core.StringPtr(source),
+		Protocol:    core.StringPtr(protocol),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
@@ -31374,6 +37041,10 @@ func (*NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll) isaNet
 // UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll unmarshals an instance of NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll from the specified map of raw messages.
 func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
@@ -31386,15 +37057,11 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll(
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
@@ -31405,6 +37072,10 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll(
 // NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp : NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp struct
 // This model "extends" NetworkACLRulePrototypeNetworkACLContext
 type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp struct {
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
@@ -31414,15 +37085,11 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
-
-	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
 
 	// The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also
 	// specified.
@@ -31456,13 +37123,13 @@ const (
 )
 
 // NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp : Instantiate NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp (Generic Model Constructor)
-func (*VpcV1) NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp(action string, destination string, direction string, protocol string, source string) (model *NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp, err error) {
+func (*VpcV1) NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp(action string, destination string, direction string, source string, protocol string) (model *NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp, err error) {
 	model = &NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp{
 		Action:      core.StringPtr(action),
 		Destination: core.StringPtr(destination),
 		Direction:   core.StringPtr(direction),
-		Protocol:    core.StringPtr(protocol),
 		Source:      core.StringPtr(source),
+		Protocol:    core.StringPtr(protocol),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
@@ -31475,6 +37142,10 @@ func (*NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp) isaNe
 // UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp unmarshals an instance of NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp from the specified map of raw messages.
 func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
@@ -31487,15 +37158,11 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
@@ -31514,6 +37181,10 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp
 // NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp : NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp struct
 // This model "extends" NetworkACLRulePrototypeNetworkACLContext
 type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp struct {
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
@@ -31523,15 +37194,11 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp struct
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
-
-	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	DestinationPortMax *int64 `json:"destination_port_max,omitempty"`
@@ -31570,13 +37237,13 @@ const (
 )
 
 // NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp : Instantiate NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp (Generic Model Constructor)
-func (*VpcV1) NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp(action string, destination string, direction string, protocol string, source string) (model *NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp, err error) {
+func (*VpcV1) NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp(action string, destination string, direction string, source string, protocol string) (model *NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp, err error) {
 	model = &NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp{
 		Action:      core.StringPtr(action),
 		Destination: core.StringPtr(destination),
 		Direction:   core.StringPtr(direction),
-		Protocol:    core.StringPtr(protocol),
 		Source:      core.StringPtr(source),
+		Protocol:    core.StringPtr(protocol),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
@@ -31589,6 +37256,10 @@ func (*NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp) isa
 // UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp unmarshals an instance of NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp from the specified map of raw messages.
 func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
@@ -31601,15 +37272,11 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpu
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
@@ -31636,12 +37303,12 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpu
 // NetworkACLRulePrototypeNetworkACLRuleProtocolAll : NetworkACLRulePrototypeNetworkACLRuleProtocolAll struct
 // This model "extends" NetworkACLRulePrototype
 type NetworkACLRulePrototypeNetworkACLRuleProtocolAll struct {
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The rule to insert this rule immediately before. If omitted, this rule will be
-	// inserted after all existing rules.
-	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
 	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
@@ -31649,15 +37316,15 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolAll struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
+	// The rule to insert this rule immediately before. If omitted, this rule will be
+	// inserted after all existing rules.
+	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 }
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolAll.Action property.
@@ -31684,13 +37351,13 @@ const (
 )
 
 // NewNetworkACLRulePrototypeNetworkACLRuleProtocolAll : Instantiate NetworkACLRulePrototypeNetworkACLRuleProtocolAll (Generic Model Constructor)
-func (*VpcV1) NewNetworkACLRulePrototypeNetworkACLRuleProtocolAll(action string, destination string, direction string, protocol string, source string) (model *NetworkACLRulePrototypeNetworkACLRuleProtocolAll, err error) {
+func (*VpcV1) NewNetworkACLRulePrototypeNetworkACLRuleProtocolAll(action string, destination string, direction string, source string, protocol string) (model *NetworkACLRulePrototypeNetworkACLRuleProtocolAll, err error) {
 	model = &NetworkACLRulePrototypeNetworkACLRuleProtocolAll{
 		Action:      core.StringPtr(action),
 		Destination: core.StringPtr(destination),
 		Direction:   core.StringPtr(direction),
-		Protocol:    core.StringPtr(protocol),
 		Source:      core.StringPtr(source),
+		Protocol:    core.StringPtr(protocol),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
@@ -31703,11 +37370,11 @@ func (*NetworkACLRulePrototypeNetworkACLRuleProtocolAll) isaNetworkACLRuleProtot
 // UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolAll unmarshals an instance of NetworkACLRulePrototypeNetworkACLRuleProtocolAll from the specified map of raw messages.
 func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRulePrototypeNetworkACLRuleProtocolAll)
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
 	}
@@ -31719,7 +37386,7 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolAll(m map[string]json
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
@@ -31727,7 +37394,7 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolAll(m map[string]json
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
 	if err != nil {
 		return
 	}
@@ -31738,12 +37405,12 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolAll(m map[string]json
 // NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp : NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp struct
 // This model "extends" NetworkACLRulePrototype
 type NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp struct {
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The rule to insert this rule immediately before. If omitted, this rule will be
-	// inserted after all existing rules.
-	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
 	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
@@ -31751,15 +37418,15 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
+	// The rule to insert this rule immediately before. If omitted, this rule will be
+	// inserted after all existing rules.
+	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
 	// The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also
 	// specified.
@@ -31793,13 +37460,13 @@ const (
 )
 
 // NewNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp : Instantiate NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp (Generic Model Constructor)
-func (*VpcV1) NewNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp(action string, destination string, direction string, protocol string, source string) (model *NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp, err error) {
+func (*VpcV1) NewNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp(action string, destination string, direction string, source string, protocol string) (model *NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp, err error) {
 	model = &NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp{
 		Action:      core.StringPtr(action),
 		Destination: core.StringPtr(destination),
 		Direction:   core.StringPtr(direction),
-		Protocol:    core.StringPtr(protocol),
 		Source:      core.StringPtr(source),
+		Protocol:    core.StringPtr(protocol),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
@@ -31812,11 +37479,11 @@ func (*NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp) isaNetworkACLRuleProto
 // UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp unmarshals an instance of NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp from the specified map of raw messages.
 func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp)
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
 	}
@@ -31828,7 +37495,7 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp(m map[string]jso
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
@@ -31836,7 +37503,7 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp(m map[string]jso
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
 	if err != nil {
 		return
 	}
@@ -31855,12 +37522,12 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp(m map[string]jso
 // NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp : NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp struct
 // This model "extends" NetworkACLRulePrototype
 type NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp struct {
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The rule to insert this rule immediately before. If omitted, this rule will be
-	// inserted after all existing rules.
-	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
 	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
@@ -31868,15 +37535,15 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
+	// The rule to insert this rule immediately before. If omitted, this rule will be
+	// inserted after all existing rules.
+	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	DestinationPortMax *int64 `json:"destination_port_max,omitempty"`
@@ -31915,13 +37582,13 @@ const (
 )
 
 // NewNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp : Instantiate NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp (Generic Model Constructor)
-func (*VpcV1) NewNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(action string, destination string, direction string, protocol string, source string) (model *NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp, err error) {
+func (*VpcV1) NewNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(action string, destination string, direction string, source string, protocol string) (model *NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp, err error) {
 	model = &NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp{
 		Action:      core.StringPtr(action),
 		Destination: core.StringPtr(destination),
 		Direction:   core.StringPtr(direction),
-		Protocol:    core.StringPtr(protocol),
 		Source:      core.StringPtr(source),
+		Protocol:    core.StringPtr(protocol),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
@@ -31934,11 +37601,11 @@ func (*NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp) isaNetworkACLRulePro
 // UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp unmarshals an instance of NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp from the specified map of raw messages.
 func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp)
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
 	}
@@ -31950,7 +37617,7 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(m map[string]j
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
@@ -31958,7 +37625,7 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(m map[string]j
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
 	if err != nil {
 		return
 	}
@@ -31985,14 +37652,18 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(m map[string]j
 // NetworkACLRuleNetworkACLRuleProtocolAll : NetworkACLRuleNetworkACLRuleProtocolAll struct
 // This model "extends" NetworkACLRule
 type NetworkACLRuleNetworkACLRuleProtocolAll struct {
+	// The unique identifier for this Network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this Network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The rule that this rule is immediately before. If absent, this is the last rule.
-	Before *NetworkACLRuleReference `json:"before,omitempty"`
-
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
@@ -32000,24 +37671,20 @@ type NetworkACLRuleNetworkACLRuleProtocolAll struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
+	// The rule that this rule is immediately before. If absent, this is the last rule.
+	Before *NetworkACLRuleReference `json:"before,omitempty"`
+
+	// The date and time that the rule was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The IP version for this rule.
+	IPVersion *string `json:"ip_version" validate:"required"`
 }
 
 // Constants associated with the NetworkACLRuleNetworkACLRuleProtocolAll.Action property.
@@ -32034,13 +37701,6 @@ const (
 	NetworkACLRuleNetworkACLRuleProtocolAllDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolAll.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRuleNetworkACLRuleProtocolAllIPVersionIpv4Const = "ipv4"
-	NetworkACLRuleNetworkACLRuleProtocolAllIPVersionIpv6Const = "ipv6"
-)
-
 // Constants associated with the NetworkACLRuleNetworkACLRuleProtocolAll.Protocol property.
 // The protocol to enforce.
 const (
@@ -32050,6 +37710,13 @@ const (
 	NetworkACLRuleNetworkACLRuleProtocolAllProtocolUDPConst  = "udp"
 )
 
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolAll.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRuleNetworkACLRuleProtocolAllIPVersionIpv4Const = "ipv4"
+	NetworkACLRuleNetworkACLRuleProtocolAllIPVersionIpv6Const = "ipv6"
+)
+
 func (*NetworkACLRuleNetworkACLRuleProtocolAll) isaNetworkACLRule() bool {
 	return true
 }
@@ -32057,15 +37724,19 @@ func (*NetworkACLRuleNetworkACLRuleProtocolAll) isaNetworkACLRule() bool {
 // UnmarshalNetworkACLRuleNetworkACLRuleProtocolAll unmarshals an instance of NetworkACLRuleNetworkACLRuleProtocolAll from the specified map of raw messages.
 func UnmarshalNetworkACLRuleNetworkACLRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRuleNetworkACLRuleProtocolAll)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -32077,19 +37748,7 @@ func UnmarshalNetworkACLRuleNetworkACLRuleProtocolAll(m map[string]json.RawMessa
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
@@ -32097,7 +37756,15 @@ func UnmarshalNetworkACLRuleNetworkACLRuleProtocolAll(m map[string]json.RawMessa
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -32108,14 +37775,18 @@ func UnmarshalNetworkACLRuleNetworkACLRuleProtocolAll(m map[string]json.RawMessa
 // NetworkACLRuleNetworkACLRuleProtocolIcmp : NetworkACLRuleNetworkACLRuleProtocolIcmp struct
 // This model "extends" NetworkACLRule
 type NetworkACLRuleNetworkACLRuleProtocolIcmp struct {
+	// The unique identifier for this Network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this Network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The rule that this rule is immediately before. If absent, this is the last rule.
-	Before *NetworkACLRuleReference `json:"before,omitempty"`
-
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
@@ -32123,24 +37794,20 @@ type NetworkACLRuleNetworkACLRuleProtocolIcmp struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
+	// The rule that this rule is immediately before. If absent, this is the last rule.
+	Before *NetworkACLRuleReference `json:"before,omitempty"`
+
+	// The date and time that the rule was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The IP version for this rule.
+	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also
 	// specified.
@@ -32164,13 +37831,6 @@ const (
 	NetworkACLRuleNetworkACLRuleProtocolIcmpDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolIcmp.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRuleNetworkACLRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
-	NetworkACLRuleNetworkACLRuleProtocolIcmpIPVersionIpv6Const = "ipv6"
-)
-
 // Constants associated with the NetworkACLRuleNetworkACLRuleProtocolIcmp.Protocol property.
 // The protocol to enforce.
 const (
@@ -32180,6 +37840,13 @@ const (
 	NetworkACLRuleNetworkACLRuleProtocolIcmpProtocolUDPConst  = "udp"
 )
 
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolIcmp.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRuleNetworkACLRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
+	NetworkACLRuleNetworkACLRuleProtocolIcmpIPVersionIpv6Const = "ipv6"
+)
+
 func (*NetworkACLRuleNetworkACLRuleProtocolIcmp) isaNetworkACLRule() bool {
 	return true
 }
@@ -32187,15 +37854,19 @@ func (*NetworkACLRuleNetworkACLRuleProtocolIcmp) isaNetworkACLRule() bool {
 // UnmarshalNetworkACLRuleNetworkACLRuleProtocolIcmp unmarshals an instance of NetworkACLRuleNetworkACLRuleProtocolIcmp from the specified map of raw messages.
 func UnmarshalNetworkACLRuleNetworkACLRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRuleNetworkACLRuleProtocolIcmp)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -32207,19 +37878,7 @@ func UnmarshalNetworkACLRuleNetworkACLRuleProtocolIcmp(m map[string]json.RawMess
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
@@ -32227,7 +37886,15 @@ func UnmarshalNetworkACLRuleNetworkACLRuleProtocolIcmp(m map[string]json.RawMess
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -32246,14 +37913,18 @@ func UnmarshalNetworkACLRuleNetworkACLRuleProtocolIcmp(m map[string]json.RawMess
 // NetworkACLRuleNetworkACLRuleProtocolTcpudp : NetworkACLRuleNetworkACLRuleProtocolTcpudp struct
 // This model "extends" NetworkACLRule
 type NetworkACLRuleNetworkACLRuleProtocolTcpudp struct {
+	// The unique identifier for this Network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
+	// The URL for this Network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The rule that this rule is immediately before. If absent, this is the last rule.
-	Before *NetworkACLRuleReference `json:"before,omitempty"`
-
-	// The date and time that the rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
@@ -32261,24 +37932,20 @@ type NetworkACLRuleNetworkACLRuleProtocolTcpudp struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The IP version for this rule.
-	IPVersion *string `json:"ip_version" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
+	// The rule that this rule is immediately before. If absent, this is the last rule.
+	Before *NetworkACLRuleReference `json:"before,omitempty"`
+
+	// The date and time that the rule was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The IP version for this rule.
+	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	DestinationPortMax *int64 `json:"destination_port_max,omitempty"`
@@ -32307,13 +37974,6 @@ const (
 	NetworkACLRuleNetworkACLRuleProtocolTcpudpDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolTcpudp.IPVersion property.
-// The IP version for this rule.
-const (
-	NetworkACLRuleNetworkACLRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
-	NetworkACLRuleNetworkACLRuleProtocolTcpudpIPVersionIpv6Const = "ipv6"
-)
-
 // Constants associated with the NetworkACLRuleNetworkACLRuleProtocolTcpudp.Protocol property.
 // The protocol to enforce.
 const (
@@ -32323,6 +37983,13 @@ const (
 	NetworkACLRuleNetworkACLRuleProtocolTcpudpProtocolUDPConst  = "udp"
 )
 
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolTcpudp.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRuleNetworkACLRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
+	NetworkACLRuleNetworkACLRuleProtocolTcpudpIPVersionIpv6Const = "ipv6"
+)
+
 func (*NetworkACLRuleNetworkACLRuleProtocolTcpudp) isaNetworkACLRule() bool {
 	return true
 }
@@ -32330,15 +37997,19 @@ func (*NetworkACLRuleNetworkACLRuleProtocolTcpudp) isaNetworkACLRule() bool {
 // UnmarshalNetworkACLRuleNetworkACLRuleProtocolTcpudp unmarshals an instance of NetworkACLRuleNetworkACLRuleProtocolTcpudp from the specified map of raw messages.
 func UnmarshalNetworkACLRuleNetworkACLRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRuleNetworkACLRuleProtocolTcpudp)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -32350,19 +38021,7 @@ func UnmarshalNetworkACLRuleNetworkACLRuleProtocolTcpudp(m map[string]json.RawMe
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
@@ -32370,7 +38029,15 @@ func UnmarshalNetworkACLRuleNetworkACLRuleProtocolTcpudp(m map[string]json.RawMe
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -32693,7 +38360,6 @@ func UnmarshalRouteNextHopIP(m map[string]json.RawMessage, result interface{}) (
 }
 
 // RouteNextHopPrototypeRouteNextHopIP : The IP address of the next hop to which to route packets. Must be an IP address within a subnet assigned to `zone`.
-// Must be unique within the VPC the route resides in.
 // This model "extends" RouteNextHopPrototype
 type RouteNextHopPrototypeRouteNextHopIP struct {
 	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
@@ -33377,14 +39043,14 @@ func UnmarshalSecurityGroupRuleRemoteIP(m map[string]json.RawMessage, result int
 // SecurityGroupRuleRemoteSecurityGroupReference : SecurityGroupRuleRemoteSecurityGroupReference struct
 // This model "extends" SecurityGroupRuleRemote
 type SecurityGroupRuleRemoteSecurityGroupReference struct {
+	// The unique identifier for this security group.
+	ID *string `json:"id" validate:"required"`
+
 	// The security group's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The security group's canonical URL.
 	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this security group.
-	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this security group. Names must be unique within the VPC the security group resides in.
 	Name *string `json:"name" validate:"required"`
@@ -33397,15 +39063,15 @@ func (*SecurityGroupRuleRemoteSecurityGroupReference) isaSecurityGroupRuleRemote
 // UnmarshalSecurityGroupRuleRemoteSecurityGroupReference unmarshals an instance of SecurityGroupRuleRemoteSecurityGroupReference from the specified map of raw messages.
 func UnmarshalSecurityGroupRuleRemoteSecurityGroupReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroupRuleRemoteSecurityGroupReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -33421,14 +39087,14 @@ func UnmarshalSecurityGroupRuleRemoteSecurityGroupReference(m map[string]json.Ra
 // `code`.
 // This model "extends" SecurityGroupRule
 type SecurityGroupRuleSecurityGroupRuleProtocolAll struct {
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
+	// The unique identifier for this security group rule.
+	ID *string `json:"id" validate:"required"`
 
 	// The URL for this security group rule.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this security group rule.
-	ID *string `json:"id" validate:"required"`
+	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
 
 	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
 	// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
@@ -33476,7 +39142,7 @@ func (*SecurityGroupRuleSecurityGroupRuleProtocolAll) isaSecurityGroupRule() boo
 // UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolAll unmarshals an instance of SecurityGroupRuleSecurityGroupRuleProtocolAll from the specified map of raw messages.
 func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroupRuleSecurityGroupRuleProtocolAll)
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -33484,7 +39150,7 @@ func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolAll(m map[string]json.Ra
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
 	if err != nil {
 		return
 	}
@@ -33510,14 +39176,14 @@ func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolAll(m map[string]json.Ra
 // codes.
 // This model "extends" SecurityGroupRule
 type SecurityGroupRuleSecurityGroupRuleProtocolIcmp struct {
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
+	// The unique identifier for this security group rule.
+	ID *string `json:"id" validate:"required"`
 
 	// The URL for this security group rule.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this security group rule.
-	ID *string `json:"id" validate:"required"`
+	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
 
 	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
 	// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
@@ -33571,7 +39237,7 @@ func (*SecurityGroupRuleSecurityGroupRuleProtocolIcmp) isaSecurityGroupRule() bo
 // UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolIcmp unmarshals an instance of SecurityGroupRuleSecurityGroupRuleProtocolIcmp from the specified map of raw messages.
 func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -33579,7 +39245,7 @@ func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolIcmp(m map[string]json.R
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
 	if err != nil {
 		return
 	}
@@ -33612,14 +39278,14 @@ func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolIcmp(m map[string]json.R
 // single port, set both to the same value.
 // This model "extends" SecurityGroupRule
 type SecurityGroupRuleSecurityGroupRuleProtocolTcpudp struct {
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
+	// The unique identifier for this security group rule.
+	ID *string `json:"id" validate:"required"`
 
 	// The URL for this security group rule.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique identifier for this security group rule.
-	ID *string `json:"id" validate:"required"`
+	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
 
 	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
 	// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
@@ -33673,7 +39339,7 @@ func (*SecurityGroupRuleSecurityGroupRuleProtocolTcpudp) isaSecurityGroupRule() 
 // UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolTcpudp unmarshals an instance of SecurityGroupRuleSecurityGroupRuleProtocolTcpudp from the specified map of raw messages.
 func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -33681,7 +39347,7 @@ func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolTcpudp(m map[string]json
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
 	if err != nil {
 		return
 	}
@@ -33805,9 +39471,6 @@ func UnmarshalSubnetIdentityByID(m map[string]json.RawMessage, result interface{
 // SubnetPrototypeSubnetByCIDR : SubnetPrototypeSubnetByCIDR struct
 // This model "extends" SubnetPrototype
 type SubnetPrototypeSubnetByCIDR struct {
-	// The IP version(s) supported by this subnet; if unspecified, `ipv4` is used.
-	IPVersion *string `json:"ip_version,omitempty"`
-
 	// The user-defined name for this subnet. Names must be unique within the VPC the subnet resides in. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -33817,6 +39480,9 @@ type SubnetPrototypeSubnetByCIDR struct {
 
 	// The public gateway to handle internet bound traffic for this subnet.
 	PublicGateway PublicGatewayIdentityIntf `json:"public_gateway,omitempty"`
+
+	// The IP version(s) to support for this subnet.
+	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
@@ -33836,11 +39502,9 @@ type SubnetPrototypeSubnetByCIDR struct {
 }
 
 // Constants associated with the SubnetPrototypeSubnetByCIDR.IPVersion property.
-// The IP version(s) supported by this subnet; if unspecified, `ipv4` is used.
+// The IP version(s) to support for this subnet.
 const (
-	SubnetPrototypeSubnetByCIDRIPVersionBothConst = "both"
 	SubnetPrototypeSubnetByCIDRIPVersionIpv4Const = "ipv4"
-	SubnetPrototypeSubnetByCIDRIPVersionIpv6Const = "ipv6"
 )
 
 // NewSubnetPrototypeSubnetByCIDR : Instantiate SubnetPrototypeSubnetByCIDR (Generic Model Constructor)
@@ -33860,10 +39524,6 @@ func (*SubnetPrototypeSubnetByCIDR) isaSubnetPrototype() bool {
 // UnmarshalSubnetPrototypeSubnetByCIDR unmarshals an instance of SubnetPrototypeSubnetByCIDR from the specified map of raw messages.
 func UnmarshalSubnetPrototypeSubnetByCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SubnetPrototypeSubnetByCIDR)
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -33873,6 +39533,10 @@ func UnmarshalSubnetPrototypeSubnetByCIDR(m map[string]json.RawMessage, result i
 		return
 	}
 	err = core.UnmarshalModel(m, "public_gateway", &obj.PublicGateway, UnmarshalPublicGatewayIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -33899,9 +39563,6 @@ func UnmarshalSubnetPrototypeSubnetByCIDR(m map[string]json.RawMessage, result i
 // SubnetPrototypeSubnetByTotalCount : SubnetPrototypeSubnetByTotalCount struct
 // This model "extends" SubnetPrototype
 type SubnetPrototypeSubnetByTotalCount struct {
-	// The IP version(s) supported by this subnet; if unspecified, `ipv4` is used.
-	IPVersion *string `json:"ip_version,omitempty"`
-
 	// The user-defined name for this subnet. Names must be unique within the VPC the subnet resides in. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -33911,6 +39572,9 @@ type SubnetPrototypeSubnetByTotalCount struct {
 
 	// The public gateway to handle internet bound traffic for this subnet.
 	PublicGateway PublicGatewayIdentityIntf `json:"public_gateway,omitempty"`
+
+	// The IP version(s) to support for this subnet.
+	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
@@ -33928,11 +39592,9 @@ type SubnetPrototypeSubnetByTotalCount struct {
 }
 
 // Constants associated with the SubnetPrototypeSubnetByTotalCount.IPVersion property.
-// The IP version(s) supported by this subnet; if unspecified, `ipv4` is used.
+// The IP version(s) to support for this subnet.
 const (
-	SubnetPrototypeSubnetByTotalCountIPVersionBothConst = "both"
 	SubnetPrototypeSubnetByTotalCountIPVersionIpv4Const = "ipv4"
-	SubnetPrototypeSubnetByTotalCountIPVersionIpv6Const = "ipv6"
 )
 
 // NewSubnetPrototypeSubnetByTotalCount : Instantiate SubnetPrototypeSubnetByTotalCount (Generic Model Constructor)
@@ -33953,10 +39615,6 @@ func (*SubnetPrototypeSubnetByTotalCount) isaSubnetPrototype() bool {
 // UnmarshalSubnetPrototypeSubnetByTotalCount unmarshals an instance of SubnetPrototypeSubnetByTotalCount from the specified map of raw messages.
 func UnmarshalSubnetPrototypeSubnetByTotalCount(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SubnetPrototypeSubnetByTotalCount)
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -33966,6 +39624,10 @@ func UnmarshalSubnetPrototypeSubnetByTotalCount(m map[string]json.RawMessage, re
 		return
 	}
 	err = core.UnmarshalModel(m, "public_gateway", &obj.PublicGateway, UnmarshalPublicGatewayIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -34136,6 +39798,12 @@ func UnmarshalVolumeAttachmentPrototypeInstanceContextVolumeVolumeIdentity(m map
 // - VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity
 // This model "extends" VolumeAttachmentPrototypeInstanceContextVolume
 type VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext struct {
+	// The unique user-defined name for this volume.
+	Name *string `json:"name,omitempty"`
+
+	// The profile to use for this volume.
+	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
+
 	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
 	// If this property is not provided, the `encryption` type for the volume will be
@@ -34144,12 +39812,6 @@ type VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContex
 
 	// The bandwidth for the volume.
 	Iops *int64 `json:"iops,omitempty"`
-
-	// The unique user-defined name for this volume.
-	Name *string `json:"name,omitempty"`
-
-	// The profile to use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
 
 	// The capacity of the volume in gigabytes. Note that the specified minimum and maximum capacity values for creating or
 	// updating volumes may expand in the future.
@@ -34172,19 +39834,19 @@ func (*VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceCont
 // UnmarshalVolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext unmarshals an instance of VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext from the specified map of raw messages.
 func UnmarshalVolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext)
-	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
 	if err != nil {
 		return
 	}
@@ -34354,6 +40016,12 @@ func UnmarshalVolumeProfileIdentityByName(m map[string]json.RawMessage, result i
 // VolumePrototypeVolumeByCapacity : VolumePrototypeVolumeByCapacity struct
 // This model "extends" VolumePrototype
 type VolumePrototypeVolumeByCapacity struct {
+	// The unique user-defined name for this volume.
+	Name *string `json:"name,omitempty"`
+
+	// The profile to use for this volume.
+	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
+
 	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
 	// If this property is not provided, the `encryption` type for the volume will be
@@ -34362,12 +40030,6 @@ type VolumePrototypeVolumeByCapacity struct {
 
 	// The bandwidth for the volume.
 	Iops *int64 `json:"iops,omitempty"`
-
-	// The unique user-defined name for this volume.
-	Name *string `json:"name,omitempty"`
-
-	// The profile to use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
@@ -34399,19 +40061,19 @@ func (*VolumePrototypeVolumeByCapacity) isaVolumePrototype() bool {
 // UnmarshalVolumePrototypeVolumeByCapacity unmarshals an instance of VolumePrototypeVolumeByCapacity from the specified map of raw messages.
 func UnmarshalVolumePrototypeVolumeByCapacity(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumePrototypeVolumeByCapacity)
-	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
 	if err != nil {
 		return
 	}
@@ -35476,6 +41138,12 @@ func UnmarshalVolumeAttachmentPrototypeInstanceContextVolumeVolumeIdentityVolume
 // VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity : VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity struct
 // This model "extends" VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext
 type VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity struct {
+	// The unique user-defined name for this volume.
+	Name *string `json:"name,omitempty"`
+
+	// The profile to use for this volume.
+	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
+
 	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
 	// If this property is not provided, the `encryption` type for the volume will be
@@ -35484,12 +41152,6 @@ type VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContex
 
 	// The bandwidth for the volume.
 	Iops *int64 `json:"iops,omitempty"`
-
-	// The unique user-defined name for this volume.
-	Name *string `json:"name,omitempty"`
-
-	// The profile to use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
 
 	// The capacity of the volume in gigabytes. Note that the specified minimum and maximum capacity values for creating or
 	// updating volumes may expand in the future.
@@ -35517,19 +41179,19 @@ func (*VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceCont
 // UnmarshalVolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity unmarshals an instance of VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity from the specified map of raw messages.
 func UnmarshalVolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity)
-	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
 	if err != nil {
 		return
 	}

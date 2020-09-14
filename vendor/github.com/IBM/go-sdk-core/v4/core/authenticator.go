@@ -24,3 +24,13 @@ type Authenticator interface {
 	Authenticate(*http.Request) error
 	Validate() error
 }
+
+// AuthenticationError describes the error returned when authentication fails
+type AuthenticationError struct {
+	Response *DetailedResponse
+	err      error
+}
+
+func (e *AuthenticationError) Error() string {
+	return e.err.Error()
+}

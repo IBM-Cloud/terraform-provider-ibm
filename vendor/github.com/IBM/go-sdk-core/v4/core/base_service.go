@@ -185,13 +185,13 @@ func (service *BaseService) SetUserAgent(userAgentString string) {
 
 //
 // Request invokes the specified HTTP request and returns the response.
-// 
+//
 // Parameters:
 // req: the http.Request object that holds the request information
 //
 // result: a pointer to the operation result.  This should be one of:
 //   - *io.ReadCloser (for a byte-stream type response)
-//   - *<primitive>, *[]<primitive>, *map[string]<primitive> 
+//   - *<primitive>, *[]<primitive>, *map[string]<primitive>
 //   - *map[string]json.RawMessage, *[]json.RawMessage
 //
 // Return values:
@@ -219,8 +219,13 @@ func (service *BaseService) Request(req *http.Request, result interface{}) (deta
 		return
 	}
 
-	err = service.Options.Authenticator.Authenticate(req)
-	if err != nil {
+	authError := service.Options.Authenticator.Authenticate(req)
+	if authError != nil {
+		err = fmt.Errorf(ERRORMSG_AUTHENTICATE_ERROR, authError.Error())
+		castErr, ok := authError.(*AuthenticationError)
+		if ok {
+			detailedResponse = castErr.Response
+		}
 		return
 	}
 
@@ -254,7 +259,7 @@ func (service *BaseService) Request(req *http.Request, result interface{}) (deta
 			defer httpResponse.Body.Close()
 			responseBody, readErr = ioutil.ReadAll(httpResponse.Body)
 			if readErr != nil {
-				err = fmt.Errorf("An error occurred while reading the response body: '%s'", readErr.Error())
+				err = fmt.Errorf(ERRORMSG_READ_RESPONSE_BODY, readErr.Error())
 				return
 			}
 		}
@@ -286,8 +291,8 @@ func (service *BaseService) Request(req *http.Request, result interface{}) (deta
 	}
 
 	// Operation was successful and we are expecting a response, so process the response.
-	if result != nil {
-		
+	if !IsNil(result) {
+
 		// If 'result' is a io.ReadCloser, then pass the response body back reflectively via 'result'
 		// and bypass any further unmarshalling of the response.
 		if reflect.TypeOf(result).String() == "*io.ReadCloser" {
@@ -301,7 +306,7 @@ func (service *BaseService) Request(req *http.Request, result interface{}) (deta
 			defer httpResponse.Body.Close()
 			responseBody, readErr := ioutil.ReadAll(httpResponse.Body)
 			if readErr != nil {
-				err = fmt.Errorf("An error occurred while reading the response body: '%s'", readErr.Error())
+				err = fmt.Errorf(ERRORMSG_READ_RESPONSE_BODY, readErr.Error())
 				return
 			}
 
@@ -310,7 +315,7 @@ func (service *BaseService) Request(req *http.Request, result interface{}) (deta
 			if decodeErr != nil {
 				// Error decoding the response body.
 				// Return the response body in RawResult, along with an error.
-				err = fmt.Errorf("An error occurred while unmarshalling the response body: '%s'", decodeErr.Error())
+				err = fmt.Errorf(ERRORMSG_UNMARSHAL_RESPONSE_BODY, decodeErr.Error())
 				detailedResponse.RawResult = responseBody
 				return
 			}
@@ -325,19 +330,19 @@ func (service *BaseService) Request(req *http.Request, result interface{}) (deta
 			defer httpResponse.Body.Close()
 			responseBody, readErr := ioutil.ReadAll(httpResponse.Body)
 			if readErr != nil {
-				err = fmt.Errorf("An error occurred while reading the response body: '%s'", readErr.Error())
+				err = fmt.Errorf(ERRORMSG_READ_RESPONSE_BODY, readErr.Error())
 				return
 			}
-			
+
 			// After reading the response body into a []byte, check to see if the caller wanted the
 			// response body as a string.
-			// If the caller passed in 'result' as the address of *string, 
-			// then we'll reflectively set result to point to it.			
+			// If the caller passed in 'result' as the address of *string,
+			// then we'll reflectively set result to point to it.
 			if reflect.TypeOf(result).String() == "**string" {
 				responseString := string(responseBody)
 				rResult := reflect.ValueOf(result).Elem()
 				rResult.Set(reflect.ValueOf(&responseString))
-				
+
 				// And set the string in the Result field.
 				detailedResponse.Result = &responseString
 			} else {

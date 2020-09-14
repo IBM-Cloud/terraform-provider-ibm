@@ -53,4 +53,11 @@ const (
 		"self-signed certificate, disable verification of the server's SSL certificate " +
 		"by invoking the DisableSSLVerification() function on your service instance " +
 		"and/or use the DisableSSLVerification option of the authenticator."
+	ERRORMSG_AUTHENTICATE_ERROR      = "An error occurred while performing the 'authenticate' step: %s"
+	ERRORMSG_READ_RESPONSE_BODY      = "An error occurred while reading the response body: %s"
+	ERRORMSG_UNMARSHAL_RESPONSE_BODY = "An error occurred while unmarshalling the response body: %s"
+	ERRORMSG_NIL_SLICE               = "The 'slice' parameter cannot be nil"
+	ERRORMSG_PARAM_NOT_SLICE         = "The 'slice' parameter must be a slice"
+	ERRORMSG_MARSHAL_SLICE           = "An error occurred while marshalling the slice: %s"
+	ERRORMSG_CONVERT_SLICE           = "An error occurred while converting 'slice' to string slice"
 )
