@@ -4,7 +4,8 @@ This example shows how to create Transit Gateway resources.
 
 Following types of resources are supported:
 
-* [Transit Gateways](https://cloud.ibm.com/docs/terraform)
+* [Transit Gateway](https://cloud.ibm.com/docs/terraform?topic=terraform-tg-resource#tg-gateway-resource)
+* [Transit Gateway Connection](https://cloud.ibm.com/docs/terraform?topic=terraform-tg-resource#tg-connection)
 
 
 ## Terraform versions
@@ -25,18 +26,62 @@ $ terraform apply
 
 Run `terraform destroy` when you don't need these resources.
 
-## Example Usage
+## Transit Gateway Resources
 
 Create a transit gateway:
 
 ```hcl
 resource "ibm_tg_gateway" "new_tg_gw"{
-name="tg-gateway-1"
-location="us-south"
-global=true
-} 
+	name=var.name
+	location=var.location
+	global=true
+	resource_group = data.ibm_resource_group.rg.id
+}  
 ```
 
+Create a transit gateway connection:
+
+```hcl
+resource "ibm_is_vpc" "test_tg_vpc" {
+  name = var.vpc_name
+}
+
+resource "ibm_tg_connection" "test_ibm_tg_connection"{
+		gateway = "${ibm_tg_gateway.new_tg_gw.id}"
+		network_type = var.network_type
+		name= vc_name
+		network_id = ibm_is_vpc.test_tg_vpc.resource_crn
+}  
+```
+## Transit Gateway Data Sources
+
+Retrieves specified Transit Gateway:
+
+```hcl
+
+data "ibm_tg_gateway" "tg_gateway" {
+	name= ibm_tg_gateway.new_tg_gw.name
+}
+
+```
+List all the Transit Gateways in the account.
+
+```hcl
+data "ibm_tg_gateways" "all_tg_gws"{
+}
+```
+List all locations that support Transit Gateways
+```hcl
+data "ibm_tg_locations" "tg_locations" {
+}
+```
+Get the details of a Transit Gateway Location.
+```hcl
+data "ibm_tg_location" "tg_location" {
+	name = var.location
+} 
+ 
+```
 ## Examples
 
 * [ Transit Gateway](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-transit-gateway)
@@ -61,6 +106,9 @@ global=true
 | name | Name of Transit Gateway Services. | `string` | yes |
 | location |  Location of Transit Gateway Services. | `string` | yes |
 | global | Allow global routing for a Transit Gateway. If unspecified, the default value is false. | `boolean` | no |
+| vc_name | Name of Transit Gateway Connection . | `string` | yes |
+| vpc_name | Name of VPC . | `string` | yes |
+
 
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

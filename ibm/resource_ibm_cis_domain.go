@@ -9,7 +9,6 @@ import (
 
 const (
 	cisDomain                    = "domain"
-	cisDomainName                = "name"
 	cisDomainPaused              = "paused"
 	cisDomainStatus              = "status"
 	cisDomainNameServers         = "name_servers"
@@ -102,7 +101,6 @@ func resourceCISdomainRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(cisID, crn)
 	d.Set(cisDomainID, result.Result.ID)
 	d.Set(cisDomain, result.Result.Name)
-	d.Set(cisDomainName, result.Result.Name)
 	d.Set(cisDomainStatus, result.Result.Status)
 	d.Set(cisDomainPaused, result.Result.Paused)
 	d.Set(cisDomainNameServers, result.Result.NameServers)

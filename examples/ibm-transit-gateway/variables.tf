@@ -1,14 +1,18 @@
-variable "ibmcloud_api_key" {
-  description = "holds the user api key"
+variable "name" {
+  description = "name of transit gateway"
 }
 
-variable "resource_group" {
-  description = "holds the resource group"
+variable "vc_name" {
+  description = "name of transit gateway connection"
 }
-
-variable "network_id" {
-description = "holds vpc crn id "
+variable "location" {
+  description = "The location of the transit gateway"
+  default = "us-south"
 }
-variable "network_account_id" {
-description = "holds the ID of the account which owns the network that is being connected. Generally only used if the network is in a different account than the gateway"
+variable "network_type" {
+  description = "Defines what type of network is connected via this connection."
+  default = "vpc"
 }
+variable "vpc_name" {
+  description = "VPC name"
+ }

@@ -73,7 +73,6 @@ func dataSourceIBMCISDomainRead(d *schema.ResourceData, meta interface{}) error 
 		if *zone.Name == zoneName {
 			d.SetId(convertCisToTfTwoVar(*zone.ID, crn))
 			d.Set(cisID, crn)
-			d.Set(cisDomainName, *zone.Name)
 			d.Set(cisDomain, *zone.Name)
 			d.Set(cisDomainStatus, *zone.Status)
 			d.Set(cisDomainPaused, *zone.Paused)

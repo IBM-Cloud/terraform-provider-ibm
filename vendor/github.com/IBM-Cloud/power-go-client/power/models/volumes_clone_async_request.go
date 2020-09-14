@@ -21,7 +21,7 @@ type VolumesCloneAsyncRequest struct {
 	// Cloned Volume names will be prefixed with 'clone-'
 	//     and suffixed with ‘-#####’ (where ##### is a 5 digit random number)
 	// If multiple volumes cloned they will be further suffixed with an incremental number starting with 1.
-	//   Example volume names using displayName="volume-abcdef"
+	//   Example volume names using name="volume-abcdef"
 	//     single volume clone will be named "clone-volume-abcdef-83081“
 	//     multi volume clone will be named "clone-volume-abcdef-73721-1”, "clone-volume-abcdef-73721-2”, ...
 	//
