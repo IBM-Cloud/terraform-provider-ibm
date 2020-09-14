@@ -120,7 +120,9 @@ var regionToEndpoint = map[string]map[string]string{
 		"global": "https://api.serviceendpoint.cloud.ibm.com",
 	},
 	"schematics": {
-		"global": "https://schematics.cloud.ibm.com",
+		"us-south": "https://us.schematics.cloud.ibm.com",
+		"eu-gb":    "https://eu-gb.schematics.cloud.ibm.com",
+		"eu-de":    "https://eu-de.schematics.cloud.ibm.com",
 	},
 	"usermanagement": {
 		"global": "https://user-management.cloud.ibm.com",
@@ -182,7 +184,7 @@ func (e *endpointLocator) ContainerEndpoint() (string, error) {
 }
 
 func (e *endpointLocator) SchematicsEndpoint() (string, error) {
-	if ep, ok := regionToEndpoint["schematics"]["global"]; ok {
+	if ep, ok := regionToEndpoint["schematics"][e.region]; ok {
 		//As the current list of regionToEndpoint above is not exhaustive we allow to read endpoints from the env
 		return helpers.EnvFallBack([]string{"IBMCLOUD_SCHEMATICS_API_ENDPOINT"}, ep), nil
 	}

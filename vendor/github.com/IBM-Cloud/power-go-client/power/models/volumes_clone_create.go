@@ -13,17 +13,12 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// VolumesCloneAsyncRequest volumes clone async request
-// swagger:model VolumesCloneAsyncRequest
-type VolumesCloneAsyncRequest struct {
+// VolumesCloneCreate volumes clone create
+// swagger:model VolumesCloneCreate
+type VolumesCloneCreate struct {
 
-	// Base name of the new cloned volume(s).
-	// Cloned Volume names will be prefixed with 'clone-'
-	//     and suffixed with ‘-#####’ (where ##### is a 5 digit random number)
-	// If multiple volumes cloned they will be further suffixed with an incremental number starting with 1.
-	//   Example volume names using name="volume-abcdef"
-	//     single volume clone will be named "clone-volume-abcdef-83081“
-	//     multi volume clone will be named "clone-volume-abcdef-73721-1”, "clone-volume-abcdef-73721-2”, ...
+	// Unique name within a cloud instance used to identify a volumes-clone request
+	// name can be used in replace of a volumesCloneID when used as a URL path parameter
 	//
 	// Required: true
 	Name *string `json:"name"`
@@ -33,8 +28,8 @@ type VolumesCloneAsyncRequest struct {
 	VolumeIds []string `json:"volumeIDs"`
 }
 
-// Validate validates this volumes clone async request
-func (m *VolumesCloneAsyncRequest) Validate(formats strfmt.Registry) error {
+// Validate validates this volumes clone create
+func (m *VolumesCloneCreate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -51,7 +46,7 @@ func (m *VolumesCloneAsyncRequest) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VolumesCloneAsyncRequest) validateName(formats strfmt.Registry) error {
+func (m *VolumesCloneCreate) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
@@ -60,7 +55,7 @@ func (m *VolumesCloneAsyncRequest) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VolumesCloneAsyncRequest) validateVolumeIds(formats strfmt.Registry) error {
+func (m *VolumesCloneCreate) validateVolumeIds(formats strfmt.Registry) error {
 
 	if err := validate.Required("volumeIDs", "body", m.VolumeIds); err != nil {
 		return err
@@ -70,7 +65,7 @@ func (m *VolumesCloneAsyncRequest) validateVolumeIds(formats strfmt.Registry) er
 }
 
 // MarshalBinary interface implementation
-func (m *VolumesCloneAsyncRequest) MarshalBinary() ([]byte, error) {
+func (m *VolumesCloneCreate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -78,8 +73,8 @@ func (m *VolumesCloneAsyncRequest) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumesCloneAsyncRequest) UnmarshalBinary(b []byte) error {
-	var res VolumesCloneAsyncRequest
+func (m *VolumesCloneCreate) UnmarshalBinary(b []byte) error {
+	var res VolumesCloneCreate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

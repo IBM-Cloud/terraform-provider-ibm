@@ -177,10 +177,13 @@ func (f *IBMPINetworkClient) AttachPort(powerinstanceid, network_id, port_id, de
 
 func (f *IBMPINetworkClient) DetachPort(powerinstanceid, network_id, port_id string, timeout time.Duration) (*models.NetworkPort, error) {
 	log.Printf("Calling the detach port ")
-	var body = models.NetworkPortUpdate{}
-	body.PvmInstanceID = nil
 
-	params := p_cloud_networks.NewPcloudNetworksPortsPutParamsWithTimeout(timeout).WithCloudInstanceID(powerinstanceid).WithNetworkID(network_id).WithPortID(port_id).WithBody(&body)
+	emptyPVM := ""
+	body := &models.NetworkPortUpdate{
+		PvmInstanceID: &emptyPVM,
+	}
+
+	params := p_cloud_networks.NewPcloudNetworksPortsPutParamsWithTimeout(timeout).WithCloudInstanceID(powerinstanceid).WithNetworkID(network_id).WithPortID(port_id).WithBody(body)
 	resp, err := f.session.Power.PCloudNetworks.PcloudNetworksPortsPut(params, ibmpisession.NewAuth(f.session, powerinstanceid))
 
 	if err != nil {
