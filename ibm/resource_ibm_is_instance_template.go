@@ -279,7 +279,7 @@ func resourceIBMisInstanceTemplateDelete(d *schema.ResourceData, meta interface{
 	if err != nil {
 		return err
 	}
-	return resourceIBMisInstanceTemplateRead(d, meta)
+	return nil
 }
 
 func resourceIBMisInstanceTemplateUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -288,7 +288,7 @@ func resourceIBMisInstanceTemplateUpdate(d *schema.ResourceData, meta interface{
 	if err != nil {
 		return err
 	}
-	return nil
+	return resourceIBMisInstanceTemplateRead(d, meta)
 }
 
 func resourceIBMisInstanceTemplateExists(d *schema.ResourceData, meta interface{}) (bool, error) {
