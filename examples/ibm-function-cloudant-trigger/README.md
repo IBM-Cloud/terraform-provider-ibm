@@ -18,6 +18,18 @@ $ terraform apply
 
 Run `terraform destroy` when you don't need these resources.
 
+These types of resources and datasources are supported:
+
+* [ Package ](https://cloud.ibm.com/docs/terraform?topic=terraform-function-data-sources#fn-package)
+* [ Action ](https://cloud.ibm.com/docs/terraform?topic=terraform-function-data-sources#fn-action)
+* [ Trigger ](https://cloud.ibm.com/docs/terraform?topic=terraform-function-data-sources#fn-trigger)
+* [ Rule ](https://cloud.ibm.com/docs/terraform?topic=terraform-function-data-sources#fn-rule)
+
+## Terraform versions
+
+Terraform 0.12. Pin module version to `~> v1.10.0`. Branch - `master`.
+
+
 ## Cloud Function Resources
 
 Package Resource:
@@ -62,19 +74,19 @@ resource "ibm_function_trigger" "trigger" {
 	
   user_defined_parameters = <<EOF
          [
-        	{
-                	"key":"place",
-                        "value":"India"
-                 }
+        	  {
+              "key":"place",
+              "value":"India"
+            }
          ]
 
   EOF
   user_defined_annotations = <<EOF
          [
-                 {
-                        "key":"Description",
-                        "value":"Sample code to display hello"
-                 }
+              {
+                  "key":"Description",
+                  "value":"Sample code to display hello"
+              }
          ]
 
   EOF
