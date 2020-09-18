@@ -18,3 +18,5 @@ variable "profile" {
   default = "bc1-2x8"
 }
 
+variable "lb_name" {
+}

@@ -133,7 +133,7 @@ github.com/IBM/networking-go-sdk/directlinkv1
 github.com/IBM/networking-go-sdk/dnsrecordsv1
 github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1
 github.com/IBM/networking-go-sdk/transitgatewayapisv1
-# github.com/IBM/vpc-go-sdk v0.1.0
+# github.com/IBM/vpc-go-sdk v0.1.1
 github.com/IBM/vpc-go-sdk/common
 github.com/IBM/vpc-go-sdk/vpcclassicv1
 github.com/IBM/vpc-go-sdk/vpcv1
