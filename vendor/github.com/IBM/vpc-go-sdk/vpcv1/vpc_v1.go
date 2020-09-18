@@ -27,8 +27,8 @@ import (
 	"reflect"
 
 	"github.com/IBM/go-sdk-core/v4/core"
-	"github.com/go-openapi/strfmt"
 	common "github.com/IBM/vpc-go-sdk/common"
+	"github.com/go-openapi/strfmt"
 )
 
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage
@@ -24823,8 +24823,21 @@ func UnmarshalLoadBalancerPoolMemberReference(m map[string]json.RawMessage, resu
 // LoadBalancerPoolMemberTarget : The pool member target. Load balancers in the `network` family support instances. Load balancers in the `application`
 // family support IP addresses.
 // Models which "extend" this model:
+// - LoadBalancerPoolMemberTargetInstanceReference
 // - LoadBalancerPoolMemberTargetIP
 type LoadBalancerPoolMemberTarget struct {
+	// The unique identifier for this virtual server instance.
+	ID *string `json:"id,omitempty"`
+
+	// The CRN for this virtual server instance.
+	CRN *string `json:"crn,omitempty"`
+
+	// The URL for this virtual server instance.
+	Href *string `json:"href,omitempty"`
+
+	// The user-defined name for this virtual server instance (and default system hostname).
+	Name *string `json:"name,omitempty"`
+
 	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
 	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
 	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
@@ -24842,6 +24855,22 @@ type LoadBalancerPoolMemberTargetIntf interface {
 // UnmarshalLoadBalancerPoolMemberTarget unmarshals an instance of LoadBalancerPoolMemberTarget from the specified map of raw messages.
 func UnmarshalLoadBalancerPoolMemberTarget(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPoolMemberTarget)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
 	if err != nil {
 		return
@@ -24853,8 +24882,18 @@ func UnmarshalLoadBalancerPoolMemberTarget(m map[string]json.RawMessage, result 
 // LoadBalancerPoolMemberTargetPrototype : The pool member target. Load balancers in the `network` family support instances. Load balancers in the `application`
 // family support IP addresses.
 // Models which "extend" this model:
+// - LoadBalancerPoolMemberTargetPrototypeInstanceIdentity
 // - LoadBalancerPoolMemberTargetPrototypeIP
 type LoadBalancerPoolMemberTargetPrototype struct {
+	// The unique identifier for this virtual server instance.
+	ID *string `json:"id,omitempty"`
+
+	// The CRN for this virtual server instance.
+	CRN *string `json:"crn,omitempty"`
+
+	// The URL for this virtual server instance.
+	Href *string `json:"href,omitempty"`
+
 	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
 	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
 	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
@@ -24872,6 +24911,18 @@ type LoadBalancerPoolMemberTargetPrototypeIntf interface {
 // UnmarshalLoadBalancerPoolMemberTargetPrototype unmarshals an instance of LoadBalancerPoolMemberTargetPrototype from the specified map of raw messages.
 func UnmarshalLoadBalancerPoolMemberTargetPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPoolMemberTargetPrototype)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
 	if err != nil {
 		return
@@ -36209,6 +36260,55 @@ func UnmarshalLoadBalancerPoolMemberTargetPrototypeIP(m map[string]json.RawMessa
 	return
 }
 
+// LoadBalancerPoolMemberTargetPrototypeInstanceIdentity : Identifies a virtual server instance by a unique property.
+// Models which "extend" this model:
+// - LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByID
+// - LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByCRN
+// - LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByHref
+// This model "extends" LoadBalancerPoolMemberTargetPrototype
+type LoadBalancerPoolMemberTargetPrototypeInstanceIdentity struct {
+	// The unique identifier for this virtual server instance.
+	ID *string `json:"id,omitempty"`
+
+	// The CRN for this virtual server instance.
+	CRN *string `json:"crn,omitempty"`
+
+	// The URL for this virtual server instance.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*LoadBalancerPoolMemberTargetPrototypeInstanceIdentity) isaLoadBalancerPoolMemberTargetPrototypeInstanceIdentity() bool {
+	return true
+}
+
+type LoadBalancerPoolMemberTargetPrototypeInstanceIdentityIntf interface {
+	LoadBalancerPoolMemberTargetPrototypeIntf
+	isaLoadBalancerPoolMemberTargetPrototypeInstanceIdentity() bool
+}
+
+func (*LoadBalancerPoolMemberTargetPrototypeInstanceIdentity) isaLoadBalancerPoolMemberTargetPrototype() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerPoolMemberTargetPrototypeInstanceIdentity unmarshals an instance of LoadBalancerPoolMemberTargetPrototypeInstanceIdentity from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolMemberTargetPrototypeInstanceIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolMemberTargetPrototypeInstanceIdentity)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // LoadBalancerPoolMemberTargetIP : LoadBalancerPoolMemberTargetIP struct
 // This model "extends" LoadBalancerPoolMemberTarget
 type LoadBalancerPoolMemberTargetIP struct {
@@ -36226,6 +36326,49 @@ func (*LoadBalancerPoolMemberTargetIP) isaLoadBalancerPoolMemberTarget() bool {
 func UnmarshalLoadBalancerPoolMemberTargetIP(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPoolMemberTargetIP)
 	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolMemberTargetInstanceReference : LoadBalancerPoolMemberTargetInstanceReference struct
+// This model "extends" LoadBalancerPoolMemberTarget
+type LoadBalancerPoolMemberTargetInstanceReference struct {
+	// The unique identifier for this virtual server instance.
+	ID *string `json:"id" validate:"required"`
+
+	// The CRN for this virtual server instance.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The URL for this virtual server instance.
+	Href *string `json:"href" validate:"required"`
+
+	// The user-defined name for this virtual server instance (and default system hostname).
+	Name *string `json:"name" validate:"required"`
+}
+
+func (*LoadBalancerPoolMemberTargetInstanceReference) isaLoadBalancerPoolMemberTarget() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerPoolMemberTargetInstanceReference unmarshals an instance of LoadBalancerPoolMemberTargetInstanceReference from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolMemberTargetInstanceReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolMemberTargetInstanceReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -40672,6 +40815,111 @@ func (*LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBala
 // UnmarshalLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID unmarshals an instance of LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByCRN : LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByCRN struct
+// This model "extends" LoadBalancerPoolMemberTargetPrototypeInstanceIdentity
+type LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByCRN struct {
+	// The CRN for this virtual server instance.
+	CRN *string `json:"crn" validate:"required"`
+}
+
+// NewLoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByCRN : Instantiate LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByCRN (Generic Model Constructor)
+func (*VpcV1) NewLoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByCRN(crn string) (model *LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByCRN, err error) {
+	model = &LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByCRN{
+		CRN: core.StringPtr(crn),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByCRN) isaLoadBalancerPoolMemberTargetPrototypeInstanceIdentity() bool {
+	return true
+}
+
+func (*LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByCRN) isaLoadBalancerPoolMemberTargetPrototype() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByCRN unmarshals an instance of LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByCRN from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByCRN)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByHref : LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByHref struct
+// This model "extends" LoadBalancerPoolMemberTargetPrototypeInstanceIdentity
+type LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByHref struct {
+	// The URL for this virtual server instance.
+	Href *string `json:"href" validate:"required"`
+}
+
+// NewLoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByHref : Instantiate LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByHref (Generic Model Constructor)
+func (*VpcV1) NewLoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByHref(href string) (model *LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByHref, err error) {
+	model = &LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByHref{
+		Href: core.StringPtr(href),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByHref) isaLoadBalancerPoolMemberTargetPrototypeInstanceIdentity() bool {
+	return true
+}
+
+func (*LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByHref) isaLoadBalancerPoolMemberTargetPrototype() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByHref unmarshals an instance of LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByHref from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByHref)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByID : LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByID struct
+// This model "extends" LoadBalancerPoolMemberTargetPrototypeInstanceIdentity
+type LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByID struct {
+	// The unique identifier for this virtual server instance.
+	ID *string `json:"id" validate:"required"`
+}
+
+// NewLoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByID : Instantiate LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByID (Generic Model Constructor)
+func (*VpcV1) NewLoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByID(id string) (model *LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByID, err error) {
+	model = &LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByID{
+		ID: core.StringPtr(id),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByID) isaLoadBalancerPoolMemberTargetPrototypeInstanceIdentity() bool {
+	return true
+}
+
+func (*LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByID) isaLoadBalancerPoolMemberTargetPrototype() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByID unmarshals an instance of LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByID from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolMemberTargetPrototypeInstanceIdentityInstanceIdentityByID)
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return

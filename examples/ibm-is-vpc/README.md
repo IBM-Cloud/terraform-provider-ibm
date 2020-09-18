@@ -98,5 +98,6 @@ Single OpenAPI document or directory of documents.
 | ssh\_public\_key | The name of the API Gateway Endpoint resource. Default: `~/.ssh/id_rsa.pub`| `string` | yes |
 | image | ID of the virtual server Image used in instance1, instance2. Default: `fc538f61-7dd6-4408-978c-c6b85b69fe76` | `string` | yes |
 | profile | Name of the profile that is to be associated with instances Default: `b-2x8`| `string` | yes |
+| lb_name | Name for this load balancer| `string` | yes |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

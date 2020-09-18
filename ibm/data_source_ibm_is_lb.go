@@ -2,11 +2,32 @@ package ibm
 
 import (
 	"fmt"
-	"log"
-
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"log"
+	"strconv"
+)
+
+const (
+	name                    = "name"
+	poolAlgorithm           = "algorithm"
+	href                    = "href"
+	poolProtocol            = "protocol"
+	poolCreatedAt           = "created_at"
+	poolProvisioningStatus  = "provisioning_status"
+	healthMonitor           = "health_monitor"
+	instanceGroup           = "instance_group"
+	members                 = "members"
+	sessionPersistence      = "session_persistence"
+	crnInstance             = "crn"
+	sessionType             = "type"
+	healthMonitorType       = "type"
+	healthMonitorDelay      = "delay"
+	healthMonitorMaxRetries = "max_retries"
+	healthMonitorPort       = "port"
+	healthMonitorTimeout    = "timeout"
+	healthMonitorURLPath    = "url_path"
 )
 
 func dataSourceIBMISLB() *schema.Resource {
@@ -87,15 +108,153 @@ func dataSourceIBMISLB() *schema.Resource {
 				Set:         schema.HashString,
 				Description: "Load Balancer Listeners list",
 			},
-
 			isLBPools: {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Set:         schema.HashString,
 				Description: "Load Balancer Pools list",
-			},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						poolAlgorithm: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The load balancing algorithm.",
+						},
+						healthMonitor: {
+							Description: "The health monitor of this pool.",
+							Computed:    true,
+							Type:        schema.TypeMap,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									healthMonitorDelay: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The health check interval in seconds. Interval must be greater than timeout value.",
+									},
+									healthMonitorMaxRetries: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this virtual connection",
+									},
+									healthMonitorPort: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The health check port number. If specified, this overrides the ports specified in the server member resources.",
+									},
+									healthMonitorTimeout: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The health check timeout in seconds.",
+									},
+									healthMonitorType: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The protocol type of this load balancer pool health monitor.",
+									},
+									healthMonitorURLPath: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The health check URL. This is applicable only to http type of health monitor.",
+									},
+								},
+							},
+						},
 
+						instanceGroup: {
+							Description: "The instance group that is managing this pool.",
+							Computed:    true,
+							Type:        schema.TypeMap,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									crnInstance: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this instance group.",
+									},
+									href: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this instance group.",
+									},
+									ID: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this instance group.",
+									},
+									name: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The user-defined name for this instance group.",
+									},
+								},
+							},
+						},
+
+						members: {
+							Description: "The backend server members of the pool.",
+							Computed:    true,
+							Type:        schema.TypeList,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									href: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The member's canonical URL.",
+									},
+									ID: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this load balancer pool member.",
+									},
+								},
+							},
+						},
+						sessionPersistence: {
+							Description: "The session persistence of this pool.",
+							Computed:    true,
+							Type:        schema.TypeMap,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									sessionType: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The session persistence type.",
+									},
+								},
+							},
+						},
+						poolCreatedAt: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time that this pool was created.",
+						},
+						href: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The pool's canonical URL.",
+						},
+						ID: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this load balancer pool",
+						},
+						name: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined name for this load balancer pool",
+						},
+						poolProtocol: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The protocol used for this load balancer pool.",
+						},
+						poolProvisioningStatus: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The provisioning status of this pool.",
+						},
+					},
+				},
+			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -199,15 +358,56 @@ func classiclbGetbyName(d *schema.ResourceData, meta interface{}, name string) e
 				}
 				d.Set(isLBListeners, listenerList)
 			}
-			if lb.Pools != nil {
-				poolList := make([]string, 0)
-				for _, pool := range lb.Pools {
-					if pool.ID != nil {
-						p := *pool.ID
-						poolList = append(poolList, p)
+			listLoadBalancerPoolsOptions := &vpcclassicv1.ListLoadBalancerPoolsOptions{}
+			listLoadBalancerPoolsOptions.SetLoadBalancerID(*lb.ID)
+			poolsResult, _, _ := sess.ListLoadBalancerPools(listLoadBalancerPoolsOptions)
+			if poolsResult != nil {
+				poolsInfo := make([]map[string]interface{}, 0)
+				for _, p := range poolsResult.Pools {
+					//log.Printf("******* p ******** : (%+v)", p)
+					pool := make(map[string]interface{})
+					pool[poolAlgorithm] = *p.Algorithm
+					pool[ID] = *p.ID
+					pool[href] = *p.Href
+					pool[poolProtocol] = *p.Protocol
+					pool[poolCreatedAt] = p.CreatedAt.String()
+					pool[poolProvisioningStatus] = *p.ProvisioningStatus
+					pool["name"] = *p.Name
+					if p.HealthMonitor != nil {
+						healthMonitorInfo := make(map[string]interface{})
+						delayfinal := strconv.FormatInt(*(p.HealthMonitor.Delay), 10)
+						healthMonitorInfo[healthMonitorDelay] = delayfinal
+						maxRetriesfinal := strconv.FormatInt(*(p.HealthMonitor.MaxRetries), 10)
+						timeoutfinal := strconv.FormatInt(*(p.HealthMonitor.Timeout), 10)
+
+						healthMonitorInfo[healthMonitorMaxRetries] = maxRetriesfinal
+						healthMonitorInfo[healthMonitorTimeout] = timeoutfinal
+						if p.HealthMonitor.URLPath != nil {
+							healthMonitorInfo[healthMonitorURLPath] = *(p.HealthMonitor.URLPath)
+						}
+						healthMonitorInfo[healthMonitorType] = *(p.HealthMonitor.Type)
+						pool[healthMonitor] = healthMonitorInfo
 					}
-				}
-				d.Set(isLBPools, poolList)
+
+					if p.SessionPersistence != nil {
+						sessionPersistenceInfo := make(map[string]interface{})
+						sessionPersistenceInfo[sessionType] = *p.SessionPersistence.Type
+						pool[sessionPersistence] = sessionPersistenceInfo
+					}
+					if p.Members != nil {
+						memberList := make([]map[string]interface{}, len(p.Members))
+						for j, m := range p.Members {
+							member := make(map[string]interface{})
+							member[ID] = *m.ID
+							member[href] = *m.Href
+							memberList[j] = member
+						}
+						pool[members] = memberList
+					}
+					poolsInfo = append(poolsInfo, pool)
+				} //for
+				d.Set(isLBPools, poolsInfo)
+
 			}
 			d.Set(isLBResourceGroup, *lb.ResourceGroup.ID)
 			d.Set(isLBHostName, *lb.Hostname)
@@ -294,16 +494,66 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				}
 				d.Set(isLBListeners, listenerList)
 			}
-			if lb.Pools != nil {
-				poolList := make([]string, 0)
-				for _, pool := range lb.Pools {
-					if pool.ID != nil {
-						p := *pool.ID
-						poolList = append(poolList, p)
+			listLoadBalancerPoolsOptions := &vpcv1.ListLoadBalancerPoolsOptions{}
+			listLoadBalancerPoolsOptions.SetLoadBalancerID(*lb.ID)
+			poolsResult, _, _ := sess.ListLoadBalancerPools(listLoadBalancerPoolsOptions)
+			if poolsResult != nil {
+				poolsInfo := make([]map[string]interface{}, 0)
+
+				for _, p := range poolsResult.Pools {
+					//	log.Printf("******* p ******** : (%+v)", p)
+					pool := make(map[string]interface{})
+					pool[poolAlgorithm] = *p.Algorithm
+					pool[ID] = *p.ID
+					pool[href] = *p.Href
+					pool[poolProtocol] = *p.Protocol
+					pool[poolCreatedAt] = p.CreatedAt.String()
+					pool[poolProvisioningStatus] = *p.ProvisioningStatus
+					pool["name"] = *p.Name
+					if p.HealthMonitor != nil {
+						healthMonitorInfo := make(map[string]interface{})
+						delayfinal := strconv.FormatInt(*(p.HealthMonitor.Delay), 10)
+						healthMonitorInfo[healthMonitorDelay] = delayfinal
+						maxRetriesfinal := strconv.FormatInt(*(p.HealthMonitor.MaxRetries), 10)
+						timeoutfinal := strconv.FormatInt(*(p.HealthMonitor.Timeout), 10)
+						healthMonitorInfo[healthMonitorMaxRetries] = maxRetriesfinal
+						healthMonitorInfo[healthMonitorTimeout] = timeoutfinal
+						if p.HealthMonitor.URLPath != nil {
+							healthMonitorInfo[healthMonitorURLPath] = *(p.HealthMonitor.URLPath)
+						}
+						healthMonitorInfo[healthMonitorType] = *(p.HealthMonitor.Type)
+						pool[healthMonitor] = healthMonitorInfo
 					}
-				}
-				d.Set(isLBPools, poolList)
+
+					if p.SessionPersistence != nil {
+						sessionPersistenceInfo := make(map[string]interface{})
+						sessionPersistenceInfo[sessionType] = *p.SessionPersistence.Type
+						pool[sessionPersistence] = sessionPersistenceInfo
+					}
+					if p.Members != nil {
+						memberList := make([]map[string]interface{}, len(p.Members))
+						for j, m := range p.Members {
+							member := make(map[string]interface{})
+							member[ID] = *m.ID
+							member[href] = *m.Href
+							memberList[j] = member
+						}
+						pool[members] = memberList
+					}
+
+					if p.InstanceGroup != nil {
+						instanceGroupInfo := make(map[string]interface{})
+						instanceGroupInfo[ID] = *(p.InstanceGroup.ID)
+						instanceGroupInfo[crnInstance] = *(p.InstanceGroup.CRN)
+						instanceGroupInfo[href] = *(p.InstanceGroup.Href)
+						instanceGroupInfo[name] = *(p.InstanceGroup.Name)
+						pool[instanceGroup] = instanceGroupInfo
+					}
+					poolsInfo = append(poolsInfo, pool)
+				} //for
+				d.Set(isLBPools, poolsInfo)
 			}
+
 			d.Set(isLBResourceGroup, *lb.ResourceGroup.ID)
 			d.Set(isLBHostName, *lb.Hostname)
 			tags, err := GetTagsUsingCRN(meta, *lb.CRN)
