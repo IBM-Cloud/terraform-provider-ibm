@@ -21,6 +21,8 @@ import (
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
+	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
+	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -183,8 +185,10 @@ type ClientSession interface {
 	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
 	HpcsEndpointAPI() (hpcs.HPCSV2, error)
 	IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1, error)
+	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
 	CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error)
+	CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1, error)
 }
 
 type clientSession struct {
@@ -301,6 +305,10 @@ type clientSession struct {
 	iamNamespaceAPI *ns.IbmCloudFunctionsNamespaceAPIV1
 	iamNamespaceErr error
 
+	// CIS Zones
+	cisZonesErr      error
+	cisZonesV1Client *ciszonesv1.ZonesV1
+
 	// CIS dns service options
 	cisDNSErr           error
 	cisDNSRecordsClient *cisdnsrecordsv1.DnsRecordsV1
@@ -308,6 +316,10 @@ type clientSession struct {
 	// CIS GLB health check service options
 	cisGLBHealthCheckErr    error
 	cisGLBHealthCheckClient *cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1
+
+	// CIS Zone Rate Limits service options
+	cisRLErr    error
+	cisRLClient *cisratelimitv1.ZoneRateLimitsV1
 }
 
 // BluemixAcccountAPI ...
@@ -496,6 +508,11 @@ func (sess clientSession) IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1
 	return sess.iamNamespaceAPI, sess.iamNamespaceErr
 }
 
+// CIS Zones Service
+func (sess clientSession) CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error) {
+	return sess.cisZonesV1Client, sess.cisZonesErr
+}
+
 // CIS DNS Service
 func (sess clientSession) CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error) {
 	return sess.cisDNSRecordsClient, sess.cisDNSErr
@@ -504,6 +521,11 @@ func (sess clientSession) CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecor
 // CIS GLB Health Check/Monitor
 func (sess clientSession) CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error) {
 	return sess.cisGLBHealthCheckClient, sess.cisGLBHealthCheckErr
+}
+
+// CIS Zone Rate Limits
+func (sess clientSession) CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1, error) {
+	return sess.cisRLClient, sess.cisRLErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -560,6 +582,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamNamespaceErr = errEmptyBluemixCredentials
 		session.cisDNSErr = errEmptyBluemixCredentials
 		session.cisGLBHealthCheckErr = errEmptyBluemixCredentials
+		session.cisZonesErr = errEmptyBluemixCredentials
+		session.cisRLErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -884,8 +908,23 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamNamespaceErr = fmt.Errorf("Error occured while configuring IAM namespace service: %q", err)
 	}
 
-	// IBM Network CIS DNS Record service
+	// CIS Service instances starts here.
 	cisEndPoint := envFallBack([]string{"IBMCLOUD_CIS_API_ENDPOINT"}, "https://api.cis.cloud.ibm.com")
+
+	// IBM Network CIS Zones service
+	cisZonesV1Opt := &ciszonesv1.ZonesV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisZonesV1Client, session.cisZonesErr = ciszonesv1.NewZonesV1(cisZonesV1Opt)
+	if session.cisZonesErr != nil {
+		session.cisZonesErr = fmt.Errorf(
+			"Error occured while configuring CIS Zones service: %s",
+			session.cisZonesErr)
+	}
+
+	// IBM Network CIS DNS Record service
 	cisDNSRecordsOpt := &cisdnsrecordsv1.DnsRecordsV1Options{
 		URL:            cisEndPoint,
 		Crn:            core.StringPtr(""),
@@ -911,6 +950,19 @@ func (c *Config) ClientSession() (interface{}, error) {
 				session.cisGLBHealthCheckErr)
 	}
 
+	// IBM Network CIS Zone Rate Limit
+	cisRLOpt := &cisratelimitv1.ZoneRateLimitsV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisRLClient, session.cisRLErr = cisratelimitv1.NewZoneRateLimitsV1(cisRLOpt)
+	if session.cisRLErr != nil {
+		session.cisRLErr = fmt.Errorf(
+			"Error occured while cofiguring CIS Zone Rate Limit service: %s",
+			session.cisRLErr)
+	}
 	return session, nil
 }
 

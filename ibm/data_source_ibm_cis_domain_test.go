@@ -12,8 +12,8 @@ func TestAccIBMCisDomainDataSource_Basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMCisDomainDataSourceConfig_basic1(),
+			{
+				Config: testAccCheckIBMCisDomainDataSourceConfigBasic1(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_cis_domain.cis_domain", "status", "active"),
 					resource.TestCheckResourceAttr("data.ibm_cis_domain.cis_domain", "original_name_servers.#", "2"),
@@ -24,21 +24,21 @@ func TestAccIBMCisDomainDataSource_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCisDomainDataSourceConfig_basic1() string {
+func testAccCheckIBMCisDomainDataSourceConfigBasic1() string {
+	name := cisDomainStatic
+	instance := cisInstance
+	resourceGroup := cisResourceGroup
 	return fmt.Sprintf(`
-	
 	data "ibm_cis_domain" "cis_domain" {
 		cis_id = data.ibm_cis.cis.id
-		domain = "cis-test-domain.com"
+		domain = "%[1]s"
 	}
-	  
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		name = "%[2]s"
 	}
-	  
 	data "ibm_cis" "cis" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
-		name              = "Terraform-Test-CIS"
+		name = "%[3]s"
 	}
-	`)
+	`, name, resourceGroup, instance)
 }

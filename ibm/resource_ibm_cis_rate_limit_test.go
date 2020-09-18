@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
@@ -33,6 +34,33 @@ func TestAccIBMCisRateLimit_Basic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMCisRateLimitWithoutMatchRequest_Basic(t *testing.T) {
+	var record string
+	resource.Test(t, resource.TestCase{
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMCisRateLimitDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCisRateLimitConfigWithoutRequestBasic1(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCisRateLimitExists("ibm_cis_rate_limit.ratelimit", &record),
+					resource.TestCheckResourceAttr(
+						"ibm_cis_rate_limit.ratelimit", "action.0.mode", "simulate"),
+				),
+			},
+			{
+				Config: testAccCheckIBMCisRateLimitConfigUpdate(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCisRateLimitExists("ibm_cis_rate_limit.ratelimit", &record),
+					resource.TestCheckResourceAttr(
+						"ibm_cis_rate_limit.ratelimit", "action.0.mode", "ban"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMCisRateLimit_Import(t *testing.T) {
 
 	var record string
@@ -41,7 +69,7 @@ func TestAccIBMCisRateLimit_Import(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMCisRateLimitDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCisRateLimitConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMCisRateLimitExists("ibm_cis_rate_limit.ratelimit", &record),
@@ -61,7 +89,7 @@ func TestAccIBMCisRateLimit_Import(t *testing.T) {
 						"ibm_cis_rate_limit.ratelimit", "action.#", "1"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_cis_rate_limit.ratelimit",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -70,7 +98,7 @@ func TestAccIBMCisRateLimit_Import(t *testing.T) {
 	})
 }
 func testAccCheckIBMCisRateLimitDestroy(s *terraform.State) error {
-	cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
+	cisClient, err := testAccProvider.Meta().(ClientSession).CisRLClientSession()
 	if err != nil {
 		return err
 	}
@@ -79,7 +107,10 @@ func testAccCheckIBMCisRateLimitDestroy(s *terraform.State) error {
 			continue
 		}
 		recordID, zoneID, cisID, _ := convertTfToCisThreeVar(rs.Primary.ID)
-		_, err = cisClient.RateLimit().GetRateLimit(cisID, zoneID, recordID)
+		cisClient.Crn = core.StringPtr(cisID)
+		cisClient.ZoneIdentifier = core.StringPtr(zoneID)
+		opt := cisClient.NewGetRateLimitOptions(recordID)
+		_, _, err := cisClient.GetRateLimit(opt)
 		if err == nil {
 			return fmt.Errorf("Record still exists")
 		}
@@ -100,27 +131,32 @@ func testAccCheckIBMCisRateLimitExists(n string, tfRecordID *string) resource.Te
 		}
 
 		tfRecord := *tfRecordID
-		cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
+		cisClient, err := testAccProvider.Meta().(ClientSession).CisRLClientSession()
+		if err != nil {
+			return err
+		}
 		recordID, zoneID, cisID, _ := convertTfToCisThreeVar(rs.Primary.ID)
-		foundRecordPtr, err := cisClient.RateLimit().GetRateLimit(cisID, zoneID, recordID)
+		cisClient.Crn = core.StringPtr(cisID)
+		cisClient.ZoneIdentifier = core.StringPtr(zoneID)
+		opt := cisClient.NewGetRateLimitOptions(recordID)
+		foundRecordPtr, _, err := cisClient.GetRateLimit(opt)
 		if err != nil {
 			return err
 		}
 
-		foundRecord := *foundRecordPtr
-		if foundRecord.ID != recordID {
+		foundRecord := foundRecordPtr.Result
+		if *foundRecord.ID != recordID {
 			return fmt.Errorf("Record not found")
 		}
 
-		tfRecord = convertCisToTfThreeVar(foundRecord.ID, zoneID, cisID)
+		tfRecord = convertCisToTfThreeVar(*foundRecord.ID, zoneID, cisID)
 		*tfRecordID = tfRecord
 		return nil
 	}
 }
 
 func testAccCheckIBMCisRateLimitConfigBasic() string {
-	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
-	
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_rate_limit" "ratelimit" {
 		cis_id = data.ibm_cis.cis.id
 		domain_id = data.ibm_cis_domain.cis_domain.id
@@ -159,9 +195,32 @@ func testAccCheckIBMCisRateLimitConfigBasic() string {
 	  `)
 }
 
+func testAccCheckIBMCisRateLimitConfigWithoutRequestBasic1() string {
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
+	resource "ibm_cis_rate_limit" "ratelimit" {
+		cis_id = data.ibm_cis.cis.id
+		domain_id = data.ibm_cis_domain.cis_domain.id
+		threshold = 20
+		period = 900
+		action {
+			mode = "simulate"
+			timeout = 43200
+			response {
+				content_type = "text/plain"
+				body = "custom response body"
+			}
+		}
+		correlate {
+			by = "nat"
+		}
+		disabled = false
+		description = "example rate limit for a zone"
+	}
+	  `)
+}
+
 func testAccCheckIBMCisRateLimitConfigUpdate() string {
-	return testAccCheckIBMCisDomainDataSourceConfig_basic1() + fmt.Sprintf(`
-	
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_rate_limit" "ratelimit" {
 		cis_id = data.ibm_cis.cis.id
 		domain_id = data.ibm_cis_domain.cis_domain.id

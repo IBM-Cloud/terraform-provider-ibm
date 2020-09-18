@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 
+	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -178,7 +179,7 @@ func dataSourceIBMCISRateLimit() *schema.Resource {
 }
 
 func dataSourceIBMCISRateLimitRead(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
+	cisClient, err := meta.(ClientSession).CisRLClientSession()
 	if err != nil {
 		return err
 	}
@@ -187,27 +188,29 @@ func dataSourceIBMCISRateLimitRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
-
-	rateLimitRecord, err := cisClient.RateLimit().ListRateLimit(cisID, zoneID)
+	cisClient.Crn = core.StringPtr(cisID)
+	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
+	opt := cisClient.NewListAllZoneRateLimitsOptions()
+	rateLimitRecord, resp, err := cisClient.ListAllZoneRateLimits(opt)
 	if err != nil {
-		return fmt.Errorf("Failed to read RateLimit: %v", err)
+		return fmt.Errorf("Failed to read RateLimit: %v", resp)
 	}
-	rules := make([]map[string]interface{}, 0, len(rateLimitRecord))
-	for _, r := range rateLimitRecord {
-		rule := make(map[string]interface{})
-		rule["rule_id"] = r.ID
-		rule["disabled"] = r.Disabled
-		rule["description"] = r.Description
-		rule["threshold"] = r.Threshold
-		rule["period"] = r.Period
+	rules := make([]map[string]interface{}, 0)
+	for _, r := range rateLimitRecord.Result {
+		rule := map[string]interface{}{}
+		rule["rule_id"] = *r.ID
+		rule["disabled"] = *r.Disabled
+		rule["description"] = *r.Description
+		rule["threshold"] = *r.Threshold
+		rule["period"] = *r.Period
 		rule["action"] = flattenRateLimitAction(r.Action)
 		rule["match"] = flattenRateLimitMatch(r.Match)
-		rule["correlate"] = flattenRateLimitCorrelate(*r.Correlate)
+		rule["correlate"] = flattenRateLimitCorrelate(r.Correlate)
 		rule["bypass"] = flattenRateLimitByPass(r.Bypass)
 		rules = append(rules, rule)
 
 	}
-	d.SetId(cisID)
+	d.SetId(convertCisToTfTwoVar(zoneID, cisID))
 	d.Set("rate_limit", rules)
 	d.Set("cis_id", cisID)
 	d.Set("domain_id", convertCisToTfTwoVar(zoneID, cisID))

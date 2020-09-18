@@ -13,7 +13,7 @@ require (
 	github.com/IBM/ibm-cos-sdk-go v1.3.1
 	github.com/IBM/ibm-cos-sdk-go-config v1.0.0
 	github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
-	github.com/IBM/networking-go-sdk v0.4.0
+	github.com/IBM/networking-go-sdk v0.7.0
 	github.com/IBM/vpc-go-sdk v0.1.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.26.4
@@ -29,6 +29,7 @@ require (
 	github.com/go-openapi/validate v0.19.8 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
+	github.com/google/uuid v1.1.1
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/hashicorp/go-version v1.2.1
 	github.com/hashicorp/hil v0.0.0-20200423225030-a18a1cd20038 // indirect
