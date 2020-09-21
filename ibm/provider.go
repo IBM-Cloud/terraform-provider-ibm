@@ -487,6 +487,7 @@ func Validator() ValidatorDict {
 				"ibm_is_instance_group":                resourceIBMISInstanceGroupValidator(),
 				"ibm_is_instance_group_manager":        resourceIBMISInstanceGroupManagerValidator(),
 				"ibm_is_instance_group_manager_policy": resourceIBMISInstanceGroupManagerPolicyValidator(),
+				"ibm_is_lb":                            resourceIBMISLBValidator(),
 			},
 		}
 	})
