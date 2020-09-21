@@ -3,6 +3,7 @@ package ibm
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
@@ -19,10 +20,20 @@ func TestAccIBMISLBPoolMember_basic(t *testing.T) {
 	subnetname := fmt.Sprintf("tflbpmc-name-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
 	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
+	nlbPoolName := fmt.Sprintf("tfnlbpoolc%d", acctest.RandIntRange(10, 100))
 	port := "8080"
 	port1 := "9000"
 	address := "127.0.0.1"
 	address1 := "192.168.0.1"
+
+	nlbName := fmt.Sprintf("tfnlbcreate%d", acctest.RandIntRange(10, 100))
+	nlbName1 := fmt.Sprintf("tfnlbupdate%d", acctest.RandIntRange(10, 100))
+
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	vsiName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -30,24 +41,30 @@ func TestAccIBMISLBPoolMember_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMISLBPoolMemberDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMISLBPoolMemberConfig(vpcname, subnetname, ISZoneName, ISCIDR, name, poolName, port, address),
+				Config: testAccCheckIBMISLBPoolMemberConfig(vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, vsiName, name, poolName, port, address, nlbName, nlbPoolName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_lb_mem", lb),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_pool_member.testacc_lb_mem", "port", port),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_pool_member.testacc_lb_mem", "target_address", address),
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_nlb_mem", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool_member.testacc_nlb_mem", "weight", "20"),
 				),
 			},
 
 			resource.TestStep{
-				Config: testAccCheckIBMISLBPoolMemberConfig(vpcname, subnetname, ISZoneName, ISCIDR, name, poolName, port1, address1),
+				Config: testAccCheckIBMISLBPoolMemberConfig(vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, vsiName, name, poolName, port1, address1, nlbName1, nlbPoolName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_lb_mem", lb),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_pool_member.testacc_lb_mem", "port", port1),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_pool_member.testacc_lb_mem", "target_address", address1),
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_nlb_mem", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool_member.testacc_nlb_mem", "port", "8080"),
 				),
 			},
 		},
@@ -161,17 +178,32 @@ func testAccCheckIBMISLBPoolMemberExists(n, lbPoolMember string) resource.TestCh
 	}
 }
 
-func testAccCheckIBMISLBPoolMemberConfig(vpcname, subnetname, zone, cidr, name, poolName, port, address string) string {
+func testAccCheckIBMISLBPoolMemberConfig(vpcname, subnetname, zone, cidr, sshname, publicKey, vsiName, name, poolName, port, address, nlbName, nlbPoolName string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
-	
 	resource "ibm_is_subnet" "testacc_subnet" {
 		name = "%s"
 		vpc = "${ibm_is_vpc.testacc_vpc.id}"
 		zone = "%s"
 		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	  } 
+	resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		primary_network_interface {
+		  port_speed = "100"
+		  subnet     = ibm_is_subnet.testacc_subnet.id
+		}
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
 	}
 	resource "ibm_is_lb" "testacc_LB" {
 		name = "%s"
@@ -192,6 +224,29 @@ func testAccCheckIBMISLBPoolMemberConfig(vpcname, subnetname, zone, cidr, name, 
 		pool = "${element(split("/",ibm_is_lb_pool.testacc_lb_pool.id),1)}"
 		port 	=	"%s"
 		target_address = "%s"
-}`, vpcname, subnetname, zone, cidr, name, poolName, port, address)
+	}
+	resource "ibm_is_lb" "testacc_NLB" {
+		name = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+		profile = "network-fixed"
+	}
+	resource "ibm_is_lb_pool" "testacc_nlb_pool" {
+		name = "%s"
+		lb = "${ibm_is_lb.testacc_NLB.id}"
+		algorithm      = "weighted_round_robin"
+        protocol       = "tcp"
+        health_delay   = 60
+        health_retries = 5
+        health_timeout = 30
+        health_type    = "tcp"
+	}
+	resource "ibm_is_lb_pool_member" "testacc_nlb_mem" {
+		lb = "${ibm_is_lb.testacc_NLB.id}"
+		pool = "${element(split("/",ibm_is_lb_pool.testacc_nlb_pool.id),1)}"
+		port           = 8080
+        weight = 20
+		target_id = "${ibm_is_instance.testacc_instance.id}"
+	}
+`, vpcname, subnetname, zone, cidr, sshname, publicKey, vsiName, isImage, instanceProfileName, zone, name, poolName, port, address, nlbName, nlbPoolName)
 
 }
