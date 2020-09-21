@@ -17,7 +17,6 @@ import (
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
@@ -1059,45 +1058,13 @@ func waitForVpcClusterIngressAvailable(d *schema.ResourceData, meta interface{})
 }
 
 func getVpcClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v2.ClusterTargetHeader, error) {
-
-	resourceGroup := d.Get("resource_group_id").(string)
-
-	sess, err := meta.(ClientSession).BluemixSession()
-	if err != nil {
-		return v2.ClusterTargetHeader{}, err
-	}
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return v2.ClusterTargetHeader{}, err
-	}
-	accountID := userDetails.userAccount
-
-	if resourceGroup == "" {
-		resourceGroup = sess.Config.ResourceGroup
-
-		if resourceGroup == "" {
-			rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
-			if err != nil {
-				return v2.ClusterTargetHeader{}, err
-			}
-			resourceGroupQuery := managementv2.ResourceGroupQuery{
-				Default:   true,
-				AccountID: accountID,
-			}
-			grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
-			if err != nil {
-				return v2.ClusterTargetHeader{}, err
-			}
-			if len(grpList) <= 0 {
-				return v2.ClusterTargetHeader{}, fmt.Errorf("the targeted resource group could not be found. Make sure you have required permissions to access the resource group")
-			}
-			resourceGroup = grpList[0].ID
-		}
+	targetEnv := v2.ClusterTargetHeader{}
+	var resourceGroup string
+	if rg, ok := d.GetOk("resource_group_id"); ok {
+		resourceGroup = rg.(string)
+		targetEnv.ResourceGroup = resourceGroup
 	}
 
-	targetEnv := v2.ClusterTargetHeader{
-		ResourceGroup: resourceGroup,
-	}
 	return targetEnv, nil
 }
 
