@@ -166,16 +166,16 @@ resource "ibm_cis_rate_limit" "ratelimit" {
 resource "ibm_cis_edge_functions_action" "test_action" {
   cis_id      = data.ibm_cis.cis.id
   domain_id   = data.ibm_cis_domain.cis_domain.domain_id
-  action_name = "sample-script"
+  script_name = "sample-script"
   script      = file("./script.js")
 }
 
 # CIS Edge Functions trigger
 resource "ibm_cis_edge_functions_trigger" "test_trigger" {
-  cis_id      = ibm_cis_edge_functions_action.test_action.cis_id
-  domain_id   = ibm_cis_edge_functions_action.test_action.domain_id
-  action_name = ibm_cis_edge_functions_action.test_action.action_name
-  pattern_url = "example.com/*"
+  cis_id    = ibm_cis_edge_functions_action.test_action.cis_id
+  domain_id = ibm_cis_edge_functions_action.test_action.domain_id
+  script    = ibm_cis_edge_functions_action.test_action.script_name
+  pattern   = "example.domain.com/*"
 }
 
 # CIS Edge Functions action data source
