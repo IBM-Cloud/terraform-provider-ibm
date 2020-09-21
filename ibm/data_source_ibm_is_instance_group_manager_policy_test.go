@@ -10,10 +10,10 @@ import (
 )
 
 func TestAccIBMISInstanceGroupManagerPolicy_dataBasic(t *testing.T) {
-	randInt := acctest.RandIntRange(10, 100)
+	randInt := acctest.RandIntRange(1200, 1300)
 	instanceGroupName := fmt.Sprintf("testinstancegroup%d", randInt)
 	publicKey := strings.TrimSpace(`
-	ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+	ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDmdgitxJde3s6PFDmWbyoF8S5YsC8+l3Qo3vRzBzXf05n5b3JL0t1sswZ7XNNyO2y8jTX7sCpGMzv4Q3WksCzkU12OPbr89Zmf+mC+11o3Lp/NpejiNtYf8hVtHWUAUrKLNywjFnm28pn64pf9KFgdkkp9quBZQgis8osfeygknYaSBBzkZKaZPszGuixTqaRAaomfwDP7QJJvS3Bo8bAe2kK+4EsW2DfP7h1G6BhHoxjoinVshbfE1nsJ2zlQigidjyjFL5YbCUYygjz5kq2khoxWmaNNKPVxAZ8fqvIHNi8F8sLCKW6VTruxPQIlW2A/D1YIJ4ME/Y6Goje9l40dA1W/mnygD0mZVYiLtYtlUM6ylKoQKNGeV+ugA554UK0lA++FVg5xOm8SNSvWWf6hyN/mK6atbpSBzRLoUQc95XsG1u7eQtz/zA1+pKaVsASpCMMbZFcTaeOiPLIcIVlzYDBcKap0MglFlsJsoKSRJ4uxIGm+CHoCWdc7VgaVvz8= root@ffd8363b1226
 	`)
 	vpcName := fmt.Sprintf("testvpc%d", randInt)
 	subnetName := fmt.Sprintf("testsubnet%d", randInt)
