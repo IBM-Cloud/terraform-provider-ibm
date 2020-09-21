@@ -185,6 +185,24 @@ resource "ibm_cis_rate_limit" "ratelimit" {
   }
 }
 ```
+`CIS Edge Functions action`
+```hcl
+resource "ibm_cis_edge_functions_action" "test_action" {
+  cis_id      = data.ibm_cis.cis.id
+  domain_id   = data.ibm_cis_domain.cis_domain.domain_id
+  script_name = "sample-script"
+  script      = file("./script.js")
+}
+```
+`CIS Edge Functions trigger`
+```hcl
+resource "ibm_cis_edge_functions_trigger" "test_trigger" {
+  cis_id    = ibm_cis_edge_functions_action.test_action.cis_id
+  domain_id = ibm_cis_edge_functions_action.test_action.domain_id
+  script    = ibm_cis_edge_functions_action.test_action.script_name
+  pattern   = "example.domain.com/*"
+}
+```
 
 ## CIS Data Sources
 `CIS Instance`
@@ -215,7 +233,20 @@ data "ibm_cis_rate_limit" "ratelimit" {
   cis_id = data.ibm_cis.cis.id
   domain_id = data.ibm_cis_domain.cis_domain.id
 }
-
+```
+`CIS Edge Functions action data source`
+```hcl
+data "ibm_cis_edge_functions_actions" "test_actions" {
+  cis_id    = ibm_cis_edge_functions_trigger.test_trigger.cis_id
+  domain_id = ibm_cis_edge_functions_trigger.test_trigger.domain_id
+}
+```
+`CIS Edge Functions trigger data source`
+```
+data "ibm_cis_edge_functions_triggers" "test_triggers" {
+  cis_id    = ibm_cis_edge_functions_trigger.test_trigger.cis_id
+  domain_id = ibm_cis_edge_functions_trigger.test_trigger.domain_id
+}
 ```
 ## Dependencies
 
@@ -227,6 +258,7 @@ data "ibm_cis_rate_limit" "ratelimit" {
 - To create a custom rate limit rule the CIS instance should be a `enterprise` plan.
 - [Rate Limiting Cloud Docs](https://cloud.ibm.com/docs/cis?topic=cis-cis-rate-limiting#rate-limiting-configure-response)
 - [Rate Limiting CLI](https://cloud.ibm.com/docs/cis?topic=cis-cli-plugin-cis-cli#ratelimit)
+- [Edge Functions CLI](https://cloud.ibm.com/docs/cis?topic=cis-cli-plugin-cis-cli#edge-functions)
 
 ## Notes
 
@@ -296,7 +328,10 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | description | A note that you can use to describe the reason for a rate limiting rule. | `string` | no |
 | bypass1\_name | bypass URL name. Default - `url` | `string` | no |
 | bypass1\_value | bypass URL value | `string` | no |
-  
+| script_name | script name | `string` | yes |
+| script | script content | `string` | yes |
+| pattern | domain name pattern | `string` | yes |
+
 ## Outputs
 
 | Name | Description |
@@ -306,6 +341,8 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | domain\_id | Domain Id. It is a combination of `domain_id`:`cis_id`|
 | monitor |Monitor Id |
 | rate_limit_id | Resource ID. It is a combination of `rule_id`:`domain_id`:`cis_id`|
+| edge_functions_action_id | Resource ID. It is combination of `script_name`:`domain_id`:`cis_id`|
+| edge_functions_trigger_id | Resource ID. It is combination of `route_id`:`domain_id`:`cis_id`|
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 

@@ -19,6 +19,7 @@ import (
 	kp "github.com/IBM/keyprotect-go-client"
 	dl "github.com/IBM/networking-go-sdk/directlinkv1"
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
+	cisedgefunctionv1 "github.com/IBM/networking-go-sdk/edgefunctionsapiv1"
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
@@ -189,6 +190,7 @@ type ClientSession interface {
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
 	CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error)
 	CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1, error)
+	CisEdgeFunctionClientSession() (*cisedgefunctionv1.EdgeFunctionsApiV1, error)
 }
 
 type clientSession struct {
@@ -320,6 +322,10 @@ type clientSession struct {
 	// CIS Zone Rate Limits service options
 	cisRLErr    error
 	cisRLClient *cisratelimitv1.ZoneRateLimitsV1
+
+	// CIS Edge Functions service options
+	cisEdgeFunctionErr    error
+	cisEdgeFunctionClient *cisedgefunctionv1.EdgeFunctionsApiV1
 }
 
 // BluemixAcccountAPI ...
@@ -528,6 +534,11 @@ func (sess clientSession) CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1
 	return sess.cisRLClient, sess.cisRLErr
 }
 
+// cCIS Edge Function
+func (sess clientSession) CisEdgeFunctionClientSession() (*cisedgefunctionv1.EdgeFunctionsApiV1, error) {
+	return sess.cisEdgeFunctionClient, sess.cisEdgeFunctionErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -584,6 +595,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisGLBHealthCheckErr = errEmptyBluemixCredentials
 		session.cisZonesErr = errEmptyBluemixCredentials
 		session.cisRLErr = errEmptyBluemixCredentials
+		session.cisEdgeFunctionErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -962,6 +974,21 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisRLErr = fmt.Errorf(
 			"Error occured while cofiguring CIS Zone Rate Limit service: %s",
 			session.cisRLErr)
+	}
+
+	// IBM Network CIS Edge Function
+	cisEdgeFunctionOpt := &cisedgefunctionv1.EdgeFunctionsApiV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisEdgeFunctionClient, session.cisEdgeFunctionErr =
+		cisedgefunctionv1.NewEdgeFunctionsApiV1(cisEdgeFunctionOpt)
+	if session.cisEdgeFunctionErr != nil {
+		session.cisEdgeFunctionErr =
+			fmt.Errorf("Error occured while configuring CIS Edge Function service: %s",
+				session.cisEdgeFunctionErr)
 	}
 	return session, nil
 }

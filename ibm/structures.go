@@ -1331,6 +1331,31 @@ func convertCisToTfFourVar(firewallType string, ID string, ID2 string, cisID str
 	}
 	return
 }
+
+func convertCisToTfFiveVar(etag string, scriptFile string, ID string, ID2 string, cisID string) (buildID string) {
+	if ID != "" {
+		buildID = etag + ":" + scriptFile + ":" + ID + ":" + ID2 + ":" + cisID
+	} else {
+		buildID = ""
+	}
+	return
+}
+
+func convertTfToCisFiveVar(TfID string) (eTag string, scriptFile string, ID string, zoneID string, cisID string, err error) {
+	g := strings.SplitN(TfID, ":", 5)
+	eTag = g[0]
+	if len(g) > 3 {
+		scriptFile = g[1]
+		ID = g[2]
+		zoneID = g[3]
+		cisID = g[4]
+
+	} else {
+		err = errors.New("Id or cis_id or zone_id or script file or etag not passed")
+		return
+	}
+	return
+}
 func convertTfToCisFourVar(TfID string) (firewallType string, ID string, zoneID string, cisID string, err error) {
 	g := strings.SplitN(TfID, ":", 4)
 	firewallType = g[0]
