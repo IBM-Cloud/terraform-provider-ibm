@@ -177,7 +177,7 @@ func (zoneRateLimits *ZoneRateLimitsV1) ListAllZoneRateLimits(listAllZoneRateLim
 	return
 }
 
-// CreateZoneRateLimits : Create a new rate limit
+// CreateZoneRateLimits : Create rate limit
 // Create a new rate limit for a given zone under a service instance.
 func (zoneRateLimits *ZoneRateLimitsV1) CreateZoneRateLimits(createZoneRateLimitsOptions *CreateZoneRateLimitsOptions) (result *RatelimitResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(createZoneRateLimitsOptions, "createZoneRateLimitsOptions")
@@ -254,7 +254,7 @@ func (zoneRateLimits *ZoneRateLimitsV1) CreateZoneRateLimits(createZoneRateLimit
 	return
 }
 
-// DeleteZoneRateLimit : Delete a rate limit
+// DeleteZoneRateLimit : Delete rate limit
 // Delete a rate limit given its id.
 func (zoneRateLimits *ZoneRateLimitsV1) DeleteZoneRateLimit(deleteZoneRateLimitOptions *DeleteZoneRateLimitOptions) (result *DeleteRateLimitResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteZoneRateLimitOptions, "deleteZoneRateLimitOptions cannot be nil")
@@ -354,7 +354,7 @@ func (zoneRateLimits *ZoneRateLimitsV1) GetRateLimit(getRateLimitOptions *GetRat
 	return
 }
 
-// UpdateRateLimit : Update a rate limit
+// UpdateRateLimit : Update rate limit
 // Update an existing rate limit for a given zone under a service instance.
 func (zoneRateLimits *ZoneRateLimitsV1) UpdateRateLimit(updateRateLimitOptions *UpdateRateLimitOptions) (result *RatelimitResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateRateLimitOptions, "updateRateLimitOptions cannot be nil")

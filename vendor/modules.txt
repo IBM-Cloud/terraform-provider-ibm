@@ -127,10 +127,11 @@ github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1
 # github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
 github.com/IBM/keyprotect-go-client
 github.com/IBM/keyprotect-go-client/iam
-# github.com/IBM/networking-go-sdk v0.7.0
+# github.com/IBM/networking-go-sdk v0.8.0
 github.com/IBM/networking-go-sdk/common
 github.com/IBM/networking-go-sdk/directlinkv1
 github.com/IBM/networking-go-sdk/dnsrecordsv1
+github.com/IBM/networking-go-sdk/edgefunctionsapiv1
 github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1
 github.com/IBM/networking-go-sdk/transitgatewayapisv1
 github.com/IBM/networking-go-sdk/zoneratelimitsv1
