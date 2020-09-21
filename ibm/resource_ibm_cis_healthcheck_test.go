@@ -261,6 +261,14 @@ func testAccCheckCisHealthcheckConfigFullySpecified(resourceID string, cisDomain
 		interval       = 60
 		retries        = 3
 		description    = "this is a very weird load balancer"
+		headers {
+			header = "Host"
+			values = ["example.com", "example1.com"]
+		  }
+		headers {
+			header = "Host1"
+			values = ["example3.com", "example11.com"]
+		  }
 	  }
 	`)
 }

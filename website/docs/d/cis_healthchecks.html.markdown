@@ -46,3 +46,4 @@ The following attributes are exported:
 - `allow_insecure`- Do not validate the certificate when healthcheck use HTTPS.
 - `description` - Free text description.
 - `port` - The TCP port to use for the health check.
+- `headers` - The health check header

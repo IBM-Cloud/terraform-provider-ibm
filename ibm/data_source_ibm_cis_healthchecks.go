@@ -115,6 +115,25 @@ func dataSourceIBMCISHealthChecks() *schema.Resource {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
+						cisGLBHealthCheckHeaders: {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									cisGLBHealthCheckHeadersHeader: {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									cisGLBHealthCheckHeadersValues: {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -158,7 +177,7 @@ func dataSourceIBMCISGLBHealthCheckRead(d *schema.ResourceData, meta interface{}
 		monitor[cisGLBHealthCheckInterval] = *instance.Interval
 		monitor[cisGLBHealthCheckFollowRedirects] = *instance.FollowRedirects
 		monitor[cisGLBHealthCheckAllowInsecure] = *instance.AllowInsecure
-		monitor[cisGLBHealthCheckPort] = 0
+		monitor[cisGLBHealthCheckHeaders] = flattenDataSourceLoadBalancerMonitorHeader(instance.Header)
 		if instance.Port != nil {
 			monitor[cisGLBHealthCheckPort] = *instance.Port
 		}
@@ -173,4 +192,16 @@ func dataSourceIBMCISGLBHealthCheckRead(d *schema.ResourceData, meta interface{}
 // dataSourceIBMCISDNSRecordID returns a reasonable ID for dns zones list.
 func dataSourceIBMCISGLBHealthCheckID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
+}
+
+func flattenDataSourceLoadBalancerMonitorHeader(header map[string][]string) interface{} {
+	flattened := make([]interface{}, 0)
+	for k, v := range header {
+		cfg := map[string]interface{}{
+			cisGLBHealthCheckHeadersHeader: k,
+			cisGLBHealthCheckHeadersValues: v,
+		}
+		flattened = append(flattened, cfg)
+	}
+	return flattened
 }
