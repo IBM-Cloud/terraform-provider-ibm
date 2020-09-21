@@ -18,6 +18,8 @@ func TestAccIBMISLB_basic(t *testing.T) {
 	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
 	name1 := fmt.Sprintf("tfupdate%d", acctest.RandIntRange(10, 100))
+	nlbName := fmt.Sprintf("tfnlbcreate%d", acctest.RandIntRange(10, 100))
+	nlbName1 := fmt.Sprintf("tfnlbupdate%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -25,7 +27,7 @@ func TestAccIBMISLB_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMISLBDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMISLBConfig(vpcname, subnetname, ISZoneName, ISCIDR, name),
+				Config: testAccCheckIBMISLBConfig(vpcname, subnetname, ISZoneName, ISCIDR, name, nlbName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
 					resource.TestCheckResourceAttr(
@@ -36,7 +38,7 @@ func TestAccIBMISLB_basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckIBMISLBConfig(vpcname, subnetname, ISZoneName, ISCIDR, name1),
+				Config: testAccCheckIBMISLBConfig(vpcname, subnetname, ISZoneName, ISCIDR, name1, nlbName1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
 					resource.TestCheckResourceAttr(
@@ -157,13 +159,12 @@ func testAccCheckIBMISLBExists(n, lb string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckIBMISLBConfig(vpcname, subnetname, zone, cidr, name string) string {
+func testAccCheckIBMISLBConfig(vpcname, subnetname, zone, cidr, name, nlbName string) string {
 	return fmt.Sprintf(`
 
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
-	
 	resource "ibm_is_subnet" "testacc_subnet" {
 		name = "%s"
 		vpc = ibm_is_vpc.testacc_vpc.id
@@ -173,7 +174,12 @@ func testAccCheckIBMISLBConfig(vpcname, subnetname, zone, cidr, name string) str
 	resource "ibm_is_lb" "testacc_LB" {
 		name = "%s"
 		subnets = [ibm_is_subnet.testacc_subnet.id]
-}`, vpcname, subnetname, zone, cidr, name)
+	}
+	resource "ibm_is_lb" "testacc_NLB" {
+		name = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+		profile = "network-fixed"
+    }`, vpcname, subnetname, zone, cidr, name, nlbName)
 
 }
 
@@ -194,6 +200,7 @@ func testAccCheckIBMISLBConfigPrivate(vpcname, subnetname, zone, cidr, name stri
 		name = "%s"
 		subnets = [ibm_is_subnet.testacc_subnet.id]
 		type = "private"
-}`, vpcname, subnetname, zone, cidr, name)
+	}
+`, vpcname, subnetname, zone, cidr, name)
 
 }
