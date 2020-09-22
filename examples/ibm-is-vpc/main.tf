@@ -318,6 +318,7 @@ resource "ibm_is_public_gateway" "publicgateway1" {
 data "ibm_is_vpc" "vpc1" {
   name = ibm_is_vpc.vpc1.name
 }
-data "ibm_is_lb" "test_lb" {
-name = ibm_is_lb.lb1.name
+
+data ibm_is_lb_profiles "test_lb_profiles" {
+
 }
