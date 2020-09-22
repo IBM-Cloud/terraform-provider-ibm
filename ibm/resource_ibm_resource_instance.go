@@ -85,7 +85,6 @@ func resourceIBMResourceInstance() *schema.Resource {
 			"parameters": {
 				Type:        schema.TypeMap,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "Arbitrary parameters to pass. Must be a JSON object",
 			},
 
@@ -119,6 +118,7 @@ func resourceIBMResourceInstance() *schema.Resource {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "public-and-private"}),
 			},
 			"dashboard_url": {
@@ -397,13 +397,34 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 	params := map[string]interface{}{}
 
 	if d.HasChange("service_endpoints") {
-		params["service-endpoints"] = d.Get("service_endpoints").(string)
+		endpoint := d.Get("service_endpoints").(string)
+		params["service-endpoints"] = endpoint
 	}
 
 	if d.HasChange("parameters") {
-		param := d.Get("parameters").(map[string]interface{})
-		for k, v := range param {
-			params[k] = v
+		instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+		if err != nil {
+			return fmt.Errorf("Error retrieving resource instance: %s", err)
+		}
+
+		if parameters, ok := d.GetOk("parameters"); ok {
+			temp := parameters.(map[string]interface{})
+			for k, v := range temp {
+				if v == "true" || v == "false" {
+					b, _ := strconv.ParseBool(v.(string))
+					params[k] = b
+
+				} else {
+					params[k] = v
+				}
+			}
+		}
+		serviceEndpoints := d.Get("service_endpoints").(string)
+		if serviceEndpoints != "" {
+			endpoint := d.Get("service_endpoints").(string)
+			params["service-endpoints"] = endpoint
+		} else if _, ok := instance.Parameters["service-endpoints"]; ok {
+			params["service-endpoints"] = instance.Parameters["service-endpoints"]
 		}
 
 	}
