@@ -189,6 +189,7 @@ func classicVpcAddressPrefixGet(d *schema.ResourceData, meta interface{}, vpcID,
 		}
 		return fmt.Errorf("Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
 	}
+	d.Set(isVPCAddressPrefixVPCID, vpcID)
 	d.Set(isVPCAddressPrefixPrefixName, *addrPrefix.Name)
 	if addrPrefix.Zone != nil {
 		d.Set(isVPCAddressPrefixZoneName, *addrPrefix.Zone.Name)
@@ -224,6 +225,7 @@ func vpcAddressPrefixGet(d *schema.ResourceData, meta interface{}, vpcID, addrPr
 		}
 		return fmt.Errorf("Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
 	}
+	d.Set(isVPCAddressPrefixVPCID, vpcID)
 	d.Set(isVPCAddressPrefixPrefixName, *addrPrefix.Name)
 	if addrPrefix.Zone != nil {
 		d.Set(isVPCAddressPrefixZoneName, *addrPrefix.Zone.Name)
