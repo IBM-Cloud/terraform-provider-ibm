@@ -319,3 +319,6 @@ data "ibm_is_vpc" "vpc1" {
   name = ibm_is_vpc.vpc1.name
 }
 
+data ibm_is_lb_profiles "test_lb_profiles" {
+
+}
