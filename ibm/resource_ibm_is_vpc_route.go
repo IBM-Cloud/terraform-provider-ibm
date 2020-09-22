@@ -278,7 +278,7 @@ func classicVpcRouteGet(d *schema.ResourceData, meta interface{}, vpcID, routeID
 		}
 		return fmt.Errorf("Error Getting VPC Route (%s): %s\n%s", routeID, err, response)
 	}
-	d.Set("id", *route.ID)
+	d.Set(isVPCRouteVPCID, vpcID)
 	d.Set(isVPCRouteName, route.Name)
 	if route.Zone != nil {
 		d.Set(isVPCRouteLocation, *route.Zone.Name)
@@ -315,7 +315,7 @@ func vpcRouteGet(d *schema.ResourceData, meta interface{}, vpcID, routeID string
 		}
 		return fmt.Errorf("Error Getting VPC Route (%s): %s\n%s", routeID, err, response)
 	}
-	d.Set("id", *route.ID)
+	d.Set(isVPCRouteVPCID, vpcID)
 	d.Set(isVPCRouteName, route.Name)
 	if route.Zone != nil {
 		d.Set(isVPCRouteLocation, *route.Zone.Name)
