@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
-	"sort"
 	"strings"
 	"time"
 
@@ -82,11 +81,10 @@ func resourceIBMPIInstance() *schema.Resource {
 				Description: "Maximum memory size",
 			},
 			helpers.PIInstanceNetworkIds: {
-				Type:             schema.TypeSet,
+				Type:             schema.TypeList,
 				Required:         true,
 				Elem:             &schema.Schema{Type: schema.TypeString},
-				Set:              schema.HashString,
-				Description:      "Set of Networks that have been configured for the account",
+				Description:      "List of Networks that have been configured for the account",
 				DiffSuppressFunc: applyOnce,
 			},
 
@@ -282,7 +280,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	mem := d.Get(helpers.PIInstanceMemory).(float64)
 	procs := d.Get(helpers.PIInstanceProcessors).(float64)
 	systype := d.Get(helpers.PIInstanceSystemType).(string)
-	networks := expandStringList((d.Get(helpers.PIInstanceNetworkIds).(*schema.Set)).List())
+	networks := expandStringList(d.Get(helpers.PIInstanceNetworkIds).([]interface{}))
 	volids := expandStringList((d.Get(helpers.PIInstanceVolumeIds).(*schema.Set)).List())
 	replicants := d.Get(helpers.PIInstanceReplicants).(float64)
 	replicationpolicy := d.Get(helpers.PIInstanceReplicationPolicy).(string)
@@ -313,8 +311,6 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		log.Printf("Data is not base64 encoded")
 		return err
 	}
-
-	sort.Strings(networks)
 
 	//publicinterface := d.Get(helpers.PIInstancePublicNetwork).(bool)
 	body := &models.PVMInstanceCreate{
@@ -442,7 +438,7 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 
 		}
 	}
-	d.Set(helpers.PIInstanceNetworkIds, newStringSet(schema.HashString, networks))
+	d.Set(helpers.PIInstanceNetworkIds, networks)
 	d.Set(helpers.PIInstanceVolumeIds, powervmdata.VolumeIds)
 	d.Set(helpers.PIInstanceSystemType, powervmdata.SysType)
 	d.Set("min_memory", powervmdata.Minmem)
