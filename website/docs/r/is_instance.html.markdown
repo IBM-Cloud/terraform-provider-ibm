@@ -37,6 +37,7 @@ resource "ibm_is_instance" "testacc_instance" {
 
   primary_network_interface {
     subnet = ibm_is_subnet.testacc_subnet.id
+    primary_ipv4_address = "10.240.0.6"
   }
 
   network_interfaces {
