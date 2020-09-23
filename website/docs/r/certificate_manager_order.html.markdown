@@ -45,7 +45,7 @@ The following arguments are supported:
 * `dns_provider_instance_crn` - (Optional,string) The CRN-based instance ID of the IBM Cloud Internet Services instance that manages the domains. If not present, Certificate Manager assumes a v4 or above Callback URL notifications channel with domain validation exists.
 * `auto_renew_enabled` - (Optional, Default, bool) Determines whether the certificate should be auto renewed. Default: false.
     **NOTE:** With `auto_renew_enabled`, certificates are automatically renewed 31 days before they expire. If your certificate expires in less than 31 days, you must renew it by updating `rotate_keys`. After you do so, your future certificates are renewed automatically.
-
+* `renew_certificate`-(Optional,Default, bool) Determines whether the certificate should be renewed.Default: false.
 
 ## Attribute Reference
 
