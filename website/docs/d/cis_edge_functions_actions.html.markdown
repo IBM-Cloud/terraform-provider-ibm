@@ -35,7 +35,7 @@ The following attributes are exported:
 - `created_on` - The Action created date.
 - `modified_on` - The Action modified date.
 - `routes` - The Action route detail.
-  - `pattern` - The Route pattern. It is a domain name which the action will be performed.
-  - `route_id` - The Route ID of action trigger.
-  - `script` - The Action Script for execution.
+  - `pattern_url` - The Route pattern. It is a domain name which the action will be performed.
+  - `trigger_id` - The Trigger ID of action trigger.
+  - `action_name` - The Action Script for execution.
   - `request_limit_fail_open` - The Action request limit fail open

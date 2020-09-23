@@ -13,8 +13,9 @@ func TestAccIBMCisEdgeFunctionsTrigger_Basic(t *testing.T) {
 	var record string
 	testName := "test"
 	resourceName := fmt.Sprintf("ibm_cis_edge_functions_trigger.%s", testName)
-	scriptName := "sample_script"
-	pattern := fmt.Sprintf("example.%s/*", cisDomainStatic)
+	actionName := "sample_script"
+	pattern1 := fmt.Sprintf("example.%s/*", cisDomainStatic)
+	pattern2 := fmt.Sprintf("example1.%s/*", cisDomainStatic)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckCis(t) },
@@ -22,11 +23,21 @@ func TestAccIBMCisEdgeFunctionsTrigger_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCisEdgeFunctionsActionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMCisEdgeFunctionsTriggerBasic(testName, pattern, scriptName),
+				Config: testAccCheckIBMCisEdgeFunctionsTriggerBasic(testName, pattern1, actionName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMCisEdgeFunctionsTriggerExists(resourceName, &record),
 					resource.TestCheckResourceAttr(
-						resourceName, "script", scriptName),
+						resourceName, "action_name", actionName),
+					resource.TestCheckResourceAttr(
+						resourceName, "pattern_url", pattern1),
+				),
+			},
+			{
+				Config: testAccCheckIBMCisEdgeFunctionsTriggerUpdate(testName, pattern2, actionName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCisEdgeFunctionsTriggerExists(resourceName, &record),
+					resource.TestCheckResourceAttr(
+						resourceName, "pattern_url", pattern2),
 				),
 			},
 		},
@@ -34,8 +45,10 @@ func TestAccIBMCisEdgeFunctionsTrigger_Basic(t *testing.T) {
 }
 
 func TestAccIBMCisEdgeFunctionsTrigger_import(t *testing.T) {
+	var record string
+
 	name := "ibm_cis_edge_functions_trigger.test"
-	scriptName := "sample_script"
+	actionName := "sample_script"
 	pattern := fmt.Sprintf("example.%s/*", cisDomainStatic)
 
 	resource.Test(t, resource.TestCase{
@@ -44,17 +57,24 @@ func TestAccIBMCisEdgeFunctionsTrigger_import(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCisEdgeFunctionsTriggerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMCisEdgeFunctionsTriggerBasic("test", pattern, scriptName),
+				Config: testAccCheckIBMCisEdgeFunctionsTriggerBasic("test", pattern, actionName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(name, "script", scriptName),
+					testAccCheckIBMCisEdgeFunctionsTriggerExists(name, &record),
+					resource.TestCheckResourceAttr(name, "action_name", actionName),
+				),
+			},
+			{
+				Config: testAccCheckIBMCisEdgeFunctionsTriggerUpdate("test", pattern, actionName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCisEdgeFunctionsTriggerExists(name, &record),
+					resource.TestCheckResourceAttr(
+						name, "pattern_url", pattern),
 				),
 			},
 			{
 				ResourceName:      name,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes"},
 			},
 		},
 	})
@@ -103,10 +123,10 @@ func testAccCheckIBMCisEdgeFunctionsTriggerDelete(tfActionID *string) resource.T
 			return fmt.Errorf("Error in creating CIS object")
 		}
 
-		scriptName, zoneID, cisID, _ := convertTfToCisThreeVar(*tfActionID)
+		actionName, zoneID, cisID, _ := convertTfToCisThreeVar(*tfActionID)
 		cisClient.Crn = core.StringPtr(cisID)
 		cisClient.ZoneIdentifier = core.StringPtr(zoneID)
-		opt := cisClient.NewDeleteEdgeFunctionsTriggerOptions(scriptName)
+		opt := cisClient.NewDeleteEdgeFunctionsTriggerOptions(actionName)
 		_, response, err := cisClient.DeleteEdgeFunctionsTrigger(opt)
 		if err != nil {
 			return fmt.Errorf("Edge function action script deletion failed: %v", response)
@@ -162,6 +182,9 @@ func testAccCheckIBMCisEdgeFunctionsTriggerExists(n string, tfRecordID *string) 
 		if err != nil {
 			return fmt.Errorf("Error: %v", resp)
 		}
+		if *result.Result.ID != triggerID {
+			return fmt.Errorf("Trigger ID is not found")
+		}
 
 		tfRecord = convertCisToTfThreeVar(*result.Result.ID, zoneID, cisID)
 		*tfRecordID = tfRecord
@@ -169,13 +192,23 @@ func testAccCheckIBMCisEdgeFunctionsTriggerExists(n string, tfRecordID *string) 
 	}
 }
 
-func testAccCheckIBMCisEdgeFunctionsTriggerBasic(testName, pattern, scriptName string) string {
-	return testAccCheckIBMCisEdgeFunctionsActionBasic(testName, scriptName) + fmt.Sprintf(`
+func testAccCheckIBMCisEdgeFunctionsTriggerBasic(testName, pattern, actionName string) string {
+	return testAccCheckIBMCisEdgeFunctionsActionBasic(testName, actionName) + fmt.Sprintf(`
 	resource "ibm_cis_edge_functions_trigger" "%[1]s" {
-		cis_id    = ibm_cis_edge_functions_action.test.cis_id
-		domain_id = ibm_cis_edge_functions_action.test.domain_id
-		pattern   = "%[2]s"
-		script    = "%[3]s"
+		cis_id      = ibm_cis_edge_functions_action.test.cis_id
+		domain_id   = ibm_cis_edge_functions_action.test.domain_id
+		pattern_url = "%[2]s"
+		action_name = "%[3]s"
 	  }
-	  `, testName, pattern, scriptName)
+	  `, testName, pattern, actionName)
+}
+
+func testAccCheckIBMCisEdgeFunctionsTriggerUpdate(testName, pattern, actionName string) string {
+	return testAccCheckIBMCisEdgeFunctionsActionBasic(testName, actionName) + fmt.Sprintf(`
+	resource "ibm_cis_edge_functions_trigger" "%[1]s" {
+		cis_id      = ibm_cis_edge_functions_action.test.cis_id
+		domain_id   = ibm_cis_edge_functions_action.test.domain_id
+		pattern_url = "%[2]s"
+	  }
+	  `, testName, pattern)
 }

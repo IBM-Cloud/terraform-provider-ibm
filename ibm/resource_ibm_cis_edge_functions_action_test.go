@@ -9,13 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-const cisEdgeFunctionsActionScriptTmpFile = "/tmp/script.js"
-
 func TestAccIBMCisEdgeFunctionsAction_Basic(t *testing.T) {
 	var record string
 	testName := "tf-acctest-basic"
 	resourceName := "ibm_cis_edge_functions_action.tf-acctest-basic"
-	scriptName := "sample_script"
+	actionName := "sample_script"
+	content1 := "addEventListener('fetch', (event) => {\n\tevent.respondWith(handleRequest(event.request))\n})\n\n/**\n * Sample test function\n * Log a given request object\n * @param {Request} request\n */\nasync function handleRequest(request) {\n\tconsole.log('Got request', request)\n\tconst response = await fetch(request)\n\treturn response;\n}"
+	content2 := "addEventListener('fetch', (event) => {\n\tevent.respondWith(handleRequest(event.request))\n})\n\n/**\n * Sample test function\n * @param {Request} request\n */\nasync function handleRequest(request) {\n\tconsole.log('Got request', request)\n\tconst response = await fetch(request)\n\treturn response;\n}"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckCis(t) },
@@ -23,11 +23,23 @@ func TestAccIBMCisEdgeFunctionsAction_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCisEdgeFunctionsActionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMCisEdgeFunctionsActionBasic(testName, scriptName),
+				Config: testAccCheckIBMCisEdgeFunctionsActionBasic(testName, actionName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMCisEdgeFunctionsActionExists(resourceName, &record),
 					resource.TestCheckResourceAttr(
-						resourceName, "script_name", scriptName),
+						resourceName, "action_name", actionName),
+					resource.TestCheckResourceAttr(
+						resourceName, "script", content1),
+				),
+			},
+			{
+				Config: testAccCheckIBMCisEdgeFunctionsActionUpdate(testName, actionName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCisEdgeFunctionsActionExists(resourceName, &record),
+					resource.TestCheckResourceAttr(
+						resourceName, "action_name", actionName),
+					resource.TestCheckResourceAttr(
+						resourceName, "script", content2),
 				),
 			},
 		},
@@ -36,24 +48,22 @@ func TestAccIBMCisEdgeFunctionsAction_Basic(t *testing.T) {
 
 func TestAccIBMCisEdgeFunctionsAction_import(t *testing.T) {
 	name := "ibm_cis_edge_functions_action.test"
-	scriptName := "sample_script"
+	actionName := "sample_script"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMCisEdgeFunctionsActionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMCisEdgeFunctionsActionBasic("test", scriptName),
+				Config: testAccCheckIBMCisEdgeFunctionsActionBasic("test", actionName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(name, "script_name", scriptName),
+					resource.TestCheckResourceAttr(name, "action_name", actionName),
 				),
 			},
 			{
 				ResourceName:      name,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes"},
 			},
 		},
 	})
@@ -101,10 +111,10 @@ func testAccCheckIBMCisEdgeFunctionsActionDelete(tfActionID *string) resource.Te
 			return fmt.Errorf("Error in creating CIS object")
 		}
 
-		scriptName, zoneID, cisID, err := convertTfToCisThreeVar(*tfActionID)
+		actionName, zoneID, cisID, err := convertTfToCisThreeVar(*tfActionID)
 		cisClient.Crn = core.StringPtr(cisID)
 		cisClient.ZoneIdentifier = core.StringPtr(zoneID)
-		opt := cisClient.NewDeleteEdgeFunctionsActionOptions(scriptName)
+		opt := cisClient.NewDeleteEdgeFunctionsActionOptions(actionName)
 		_, response, err := cisClient.DeleteEdgeFunctionsAction(opt)
 		if err != nil {
 			return fmt.Errorf("Edge function action script deletion failed: %v", response)
@@ -123,10 +133,10 @@ func testAccCheckIBMCisEdgeFunctionsActionDestroy(s *terraform.State) error {
 			continue
 		}
 
-		scriptName, zoneID, cisID, err := convertTfToCisThreeVar(rs.Primary.ID)
+		actionName, zoneID, cisID, err := convertTfToCisThreeVar(rs.Primary.ID)
 		cisClient.Crn = core.StringPtr(cisID)
 		cisClient.ZoneIdentifier = core.StringPtr(zoneID)
-		opt := cisClient.NewGetEdgeFunctionsActionOptions(scriptName)
+		opt := cisClient.NewGetEdgeFunctionsActionOptions(actionName)
 		_, response, err := cisClient.GetEdgeFunctionsAction(opt)
 		if err == nil {
 			return fmt.Errorf("Edge function action script still exists: %v", response)
@@ -152,30 +162,43 @@ func testAccCheckIBMCisEdgeFunctionsActionExists(n string, tfRecordID *string) r
 		if err != nil {
 			return fmt.Errorf("Error in creating CIS object")
 		}
-		scriptName, zoneID, cisID, err := convertTfToCisThreeVar(rs.Primary.ID)
+		actionName, zoneID, cisID, err := convertTfToCisThreeVar(rs.Primary.ID)
 		cisClient.Crn = core.StringPtr(cisID)
 		cisClient.ZoneIdentifier = core.StringPtr(zoneID)
-		opt := cisClient.NewGetEdgeFunctionsActionOptions(scriptName)
+		opt := cisClient.NewGetEdgeFunctionsActionOptions(actionName)
 		_, resp, err := cisClient.GetEdgeFunctionsAction(opt)
 		if err != nil {
 			return fmt.Errorf("Error: %v", resp)
 		}
 
-		tfRecord = convertCisToTfThreeVar(scriptName, zoneID, cisID)
+		tfRecord = convertCisToTfThreeVar(actionName, zoneID, cisID)
 		*tfRecordID = tfRecord
 		return nil
 	}
 }
 
-func testAccCheckIBMCisEdgeFunctionsActionBasic(testName, scriptName string) string {
+func testAccCheckIBMCisEdgeFunctionsActionBasic(testName, actionName string) string {
 	content := `addEventListener('fetch', (event) => {\n\tevent.respondWith(handleRequest(event.request))\n})\n\n/**\n * Sample test function\n * Log a given request object\n * @param {Request} request\n */\nasync function handleRequest(request) {\n\tconsole.log('Got request', request)\n\tconst response = await fetch(request)\n\treturn response;\n}`
 
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_edge_functions_action" "%[1]s" {
 		cis_id      = data.ibm_cis.cis.id
 		domain_id   = data.ibm_cis_domain.cis_domain.domain_id
-		script_name = "%[2]s"
-		script = "%[3]s"
+		action_name = "%[2]s"
+		script      = "%[3]s"
 	  }
-	  `, testName, scriptName, content)
+	  `, testName, actionName, content)
+}
+
+func testAccCheckIBMCisEdgeFunctionsActionUpdate(testName, actionName string) string {
+	content := `addEventListener('fetch', (event) => {\n\tevent.respondWith(handleRequest(event.request))\n})\n\n/**\n * Sample test function\n * @param {Request} request\n */\nasync function handleRequest(request) {\n\tconsole.log('Got request', request)\n\tconst response = await fetch(request)\n\treturn response;\n}`
+
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
+	resource "ibm_cis_edge_functions_action" "%[1]s" {
+		cis_id      = data.ibm_cis.cis.id
+		domain_id   = data.ibm_cis_domain.cis_domain.domain_id
+		action_name = "%[2]s"
+		script      = "%[3]s"
+	  }
+	  `, testName, actionName, content)
 }

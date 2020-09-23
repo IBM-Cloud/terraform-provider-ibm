@@ -16,7 +16,7 @@ func TestAccIBMCisEdgeFunctionsTriggersDataSource_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMCisEdgeFunctionsTriggersDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(node, "cis_edge_functions_triggers.0.pattern"),
+					resource.TestCheckResourceAttrSet(node, "cis_edge_functions_triggers.0.pattern_url"),
 				),
 			},
 		},

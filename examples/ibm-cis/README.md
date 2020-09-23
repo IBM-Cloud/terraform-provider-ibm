@@ -13,6 +13,8 @@ These types of resources are supported:
 * [ CIS Health Check | Monitor ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-health)
 * [ CIS Origin Pool ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-origin-pool)
 * [ CIS Rate Limit ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-rate-limit)
+* [ CIS Edge Functions Action ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-edge-functions-action)
+* [ CIS Edge Functions Trigger ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-edge-functions-trigger)
 
 ## Terraform versions
 
@@ -190,17 +192,17 @@ resource "ibm_cis_rate_limit" "ratelimit" {
 resource "ibm_cis_edge_functions_action" "test_action" {
   cis_id      = data.ibm_cis.cis.id
   domain_id   = data.ibm_cis_domain.cis_domain.domain_id
-  script_name = "sample-script"
+  action_name = "sample-script"
   script      = file("./script.js")
 }
 ```
 `CIS Edge Functions trigger`
 ```hcl
 resource "ibm_cis_edge_functions_trigger" "test_trigger" {
-  cis_id    = ibm_cis_edge_functions_action.test_action.cis_id
-  domain_id = ibm_cis_edge_functions_action.test_action.domain_id
-  script    = ibm_cis_edge_functions_action.test_action.script_name
-  pattern   = "example.domain.com/*"
+  cis_id      = ibm_cis_edge_functions_action.test_action.cis_id
+  domain_id   = ibm_cis_edge_functions_action.test_action.domain_id
+  action_name = ibm_cis_edge_functions_action.test_action.action_name
+  pattern_url = "example.com/*"
 }
 ```
 
@@ -328,9 +330,9 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | description | A note that you can use to describe the reason for a rate limiting rule. | `string` | no |
 | bypass1\_name | bypass URL name. Default - `url` | `string` | no |
 | bypass1\_value | bypass URL value | `string` | no |
-| script_name | script name | `string` | yes |
+| action_name | The Edge Functions action name | `string` | yes |
 | script | script content | `string` | yes |
-| pattern | domain name pattern | `string` | yes |
+| pattern_url | domain name pattern url| `string` | yes |
 
 ## Outputs
 
@@ -341,8 +343,8 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | domain\_id | Domain Id. It is a combination of `domain_id`:`cis_id`|
 | monitor |Monitor Id |
 | rate_limit_id | Resource ID. It is a combination of `rule_id`:`domain_id`:`cis_id`|
-| edge_functions_action_id | Resource ID. It is combination of `script_name`:`domain_id`:`cis_id`|
-| edge_functions_trigger_id | Resource ID. It is combination of `route_id`:`domain_id`:`cis_id`|
+| edge_functions_action_id | Resource ID. It is combination of `action_name`:`domain_id`:`cis_id`|
+| edge_functions_trigger_id | Resource ID. It is combination of `trigger_id`:`domain_id`:`cis_id`|
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 

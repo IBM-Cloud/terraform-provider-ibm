@@ -36,7 +36,7 @@ func dataSourceIBMCISEdgeFunctionsTriggers() *schema.Resource {
 							Computed:    true,
 							Description: "Edge function trigger id",
 						},
-						cisEdgeFunctionsTriggerRouteID: {
+						cisEdgeFunctionsTriggerID: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Edge function trigger route id",
@@ -46,7 +46,7 @@ func dataSourceIBMCISEdgeFunctionsTriggers() *schema.Resource {
 							Computed:    true,
 							Description: "Edge function trigger pattern",
 						},
-						cisEdgeFunctionsTriggerScript: {
+						cisEdgeFunctionsTriggerActionName: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Edge function trigger script name",
@@ -80,12 +80,13 @@ func dataSourceIBMCISEdgeFunctionsTriggerRead(d *schema.ResourceData, meta inter
 	}
 	triggerInfo := make([]map[string]interface{}, 0)
 	for _, trigger := range result.Result {
-		l := map[string]interface{}{
-			"id":                                        convertCisToTfThreeVar(*trigger.ID, zoneID, crn),
-			cisEdgeFunctionsTriggerRouteID:              *trigger.ID,
-			cisEdgeFunctionsTriggerPattern:              *trigger.Pattern,
-			cisEdgeFunctionsTriggerScript:               *trigger.Script,
-			cisEdgeFunctionsTriggerRequestLimitFailOpen: *trigger.RequestLimitFailOpen,
+		l := map[string]interface{}{}
+		l["id"] = convertCisToTfThreeVar(*trigger.ID, zoneID, crn)
+		l[cisEdgeFunctionsTriggerID] = *trigger.ID
+		l[cisEdgeFunctionsTriggerPattern] = *trigger.Pattern
+		l[cisEdgeFunctionsTriggerRequestLimitFailOpen] = *trigger.RequestLimitFailOpen
+		if trigger.Script != nil {
+			l[cisEdgeFunctionsTriggerActionName] = *trigger.Script
 		}
 		triggerInfo = append(triggerInfo, l)
 	}

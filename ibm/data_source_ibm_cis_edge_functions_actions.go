@@ -13,9 +13,9 @@ const (
 	cisEdgeFunctionsActionEtag                      = "etag"
 	cisEdgeFunctionsActionHandlers                  = "handlers"
 	cisEdgeFunctionsActionRoutes                    = "routes"
-	cisEdgeFunctionsActionRouteID                   = "route_id"
-	cisEdgeFunctionsActionRoutePattern              = "pattern"
-	cisEdgeFunctionsActionRouteScript               = "script"
+	cisEdgeFunctionsActionTriggerID                 = "trigger_id"
+	cisEdgeFunctionsActionRoutePattern              = "pattern_url"
+	cisEdgeFunctionsActionRouteActionName           = "action_name"
 	cisEdgeFunctionsActionRouteRequestLimitFailOpen = "request_limit_fail_open"
 	cisEdgeFunctionsActionCreatedOn                 = "created_on"
 	cisEdgeFunctionsActionModifiedOn                = "modified_on"
@@ -69,12 +69,12 @@ func dataSourceIBMCISEdgeFunctionsActions() *schema.Resource {
 							Computed:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									cisEdgeFunctionsActionRouteID: {
+									cisEdgeFunctionsActionTriggerID: {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Edge function action script identifier",
 									},
-									cisEdgeFunctionsActionRouteScript: {
+									cisEdgeFunctionsActionRouteActionName: {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Edge function action script name",
@@ -119,9 +119,9 @@ func dataSourceIBMCISEdgeFunctionsActionsRead(d *schema.ResourceData, meta inter
 		routes := make([]map[string]interface{}, 0)
 		for _, route := range script.Routes {
 			r := map[string]interface{}{
-				cisEdgeFunctionsActionRouteID:                   *route.ID,
+				cisEdgeFunctionsActionTriggerID:                 *route.ID,
 				cisEdgeFunctionsActionRoutePattern:              *route.Pattern,
-				cisEdgeFunctionsActionRouteScript:               *route.Script,
+				cisEdgeFunctionsActionRouteActionName:           *route.Script,
 				cisEdgeFunctionsActionRouteRequestLimitFailOpen: *route.RequestLimitFailOpen,
 			}
 			routes = append(routes, r)

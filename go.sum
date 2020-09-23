@@ -57,6 +57,8 @@ github.com/IBM/networking-go-sdk v0.8.0 h1:70M3kAYi93SiyjttYGUAXXfiz39F8b2cvaJVi
 github.com/IBM/networking-go-sdk v0.8.0/go.mod h1:WB/PjK7LA6VuIOsGjv1gm6WS/Ki6nF8KmycwMU0bgIs=
 github.com/IBM/vpc-go-sdk v0.1.0 h1:RzuflgtHT0J1G6ImkkSVt0cFKJ2rRhw3xD2c1Vt3rSA=
 github.com/IBM/vpc-go-sdk v0.1.0/go.mod h1:P0B/btm8+wm2gkTg1FgN2uwtjztEIJc7Kqq7HeZdBp4=
+github.com/IBM/vpc-go-sdk v0.1.1 h1:rzYDbHm6IAxLnL9TNk0y9syCSBbDQ/t1kaI7W51faYY=
+github.com/IBM/vpc-go-sdk v0.1.1/go.mod h1:P0B/btm8+wm2gkTg1FgN2uwtjztEIJc7Kqq7HeZdBp4=
 github.com/PuerkitoBio/purell v1.1.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/purell v1.1.1 h1:WEQqlqaGbrPkxLJWfBwQmfEAE1Z7ONdDLqrN38tNFfI=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=

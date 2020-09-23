@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	cisEdgeFunctionsTriggerRouteID              = "route_id"
-	cisEdgeFunctionsTriggerPattern              = "pattern"
-	cisEdgeFunctionsTriggerScript               = "script"
+	cisEdgeFunctionsTriggerID                   = "trigger_id"
+	cisEdgeFunctionsTriggerPattern              = "pattern_url"
+	cisEdgeFunctionsTriggerActionName           = "action_name"
 	cisEdgeFunctionsTriggerRequestLimitFailOpen = "request_limit_fail_open"
 )
 
@@ -35,7 +35,7 @@ func resourceIBMCISEdgeFunctionsTrigger() *schema.Resource {
 				Description:      "CIS Domain ID",
 				DiffSuppressFunc: suppressDataDiff,
 			},
-			cisEdgeFunctionsTriggerRouteID: {
+			cisEdgeFunctionsTriggerID: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "CIS Edge Functions trigger route ID",
@@ -45,10 +45,10 @@ func resourceIBMCISEdgeFunctionsTrigger() *schema.Resource {
 				Required:    true,
 				Description: "Edge function trigger pattern",
 			},
-			cisEdgeFunctionsTriggerScript: {
+			cisEdgeFunctionsTriggerActionName: {
 				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Edge function trigger script name",
+				Optional:    true,
+				Description: "Edge function trigger action name",
 			},
 			cisEdgeFunctionsTriggerRequestLimitFailOpen: {
 				Type:        schema.TypeBool,
@@ -69,13 +69,12 @@ func resourceIBMCISEdgeFunctionsTriggerCreate(d *schema.ResourceData, meta inter
 	zoneID, _, err := convertTftoCisTwoVar(d.Get(cisDomainID).(string))
 	cisClient.Crn = core.StringPtr(crn)
 	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
-
-	script := d.Get(cisEdgeFunctionsTriggerScript).(string)
-	pattern := d.Get(cisEdgeFunctionsTriggerPattern).(string)
-
 	opt := cisClient.NewCreateEdgeFunctionsTriggerOptions()
+	if action, ok := d.GetOk(cisEdgeFunctionsTriggerActionName); ok {
+		opt.SetScript(action.(string))
+	}
+	pattern := d.Get(cisEdgeFunctionsTriggerPattern).(string)
 	opt.SetPattern(pattern)
-	opt.SetScript(script)
 
 	result, _, err := cisClient.CreateEdgeFunctionsTrigger(opt)
 	if err != nil {
@@ -95,14 +94,15 @@ func resourceIBMCISEdgeFunctionsTriggerUpdate(d *schema.ResourceData, meta inter
 	cisClient.Crn = core.StringPtr(crn)
 	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 
-	if d.HasChange(cisEdgeFunctionsTriggerScript) ||
+	if d.HasChange(cisEdgeFunctionsTriggerActionName) ||
 		d.HasChange(cisEdgeFunctionsTriggerPattern) {
-		script := d.Get(cisEdgeFunctionsTriggerScript).(string)
-		pattern := d.Get(cisEdgeFunctionsTriggerPattern).(string)
-
 		opt := cisClient.NewUpdateEdgeFunctionsTriggerOptions(routeID)
+
+		if action, ok := d.GetOk(cisEdgeFunctionsTriggerActionName); ok {
+			opt.SetScript(action.(string))
+		}
+		pattern := d.Get(cisEdgeFunctionsTriggerPattern).(string)
 		opt.SetPattern(pattern)
-		opt.SetScript(script)
 
 		_, _, err := cisClient.UpdateEdgeFunctionsTrigger(opt)
 		if err != nil {
@@ -129,8 +129,8 @@ func resourceIBMCISEdgeFunctionsTriggerRead(d *schema.ResourceData, meta interfa
 	}
 	d.Set(cisID, crn)
 	d.Set(cisDomainID, zoneID)
-	d.Set(cisEdgeFunctionsTriggerRouteID, routeID)
-	d.Set(cisEdgeFunctionsTriggerScript, result.Result.Script)
+	d.Set(cisEdgeFunctionsTriggerID, routeID)
+	d.Set(cisEdgeFunctionsTriggerActionName, result.Result.Script)
 	d.Set(cisEdgeFunctionsTriggerPattern, result.Result.Pattern)
 	d.Set(cisEdgeFunctionsTriggerRequestLimitFailOpen, result.Result.RequestLimitFailOpen)
 	return nil

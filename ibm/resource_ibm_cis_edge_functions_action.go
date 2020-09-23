@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	cisEdgeFunctionsActionScriptName = "script_name"
+	cisEdgeFunctionsActionActionName = "action_name"
 	cisEdgeFunctionsActionScript     = "script"
 )
 
@@ -36,7 +36,7 @@ func resourceIBMCISEdgeFunctionsAction() *schema.Resource {
 				Description:      "CIS Domain ID",
 				DiffSuppressFunc: suppressDomainIDDiff,
 			},
-			cisEdgeFunctionsActionScriptName: {
+			cisEdgeFunctionsActionActionName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -62,7 +62,7 @@ func resourceIBMCISEdgeFunctionsActionCreate(d *schema.ResourceData, meta interf
 	cisClient.Crn = core.StringPtr(crn)
 	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 
-	scriptName := d.Get(cisEdgeFunctionsActionScriptName).(string)
+	scriptName := d.Get(cisEdgeFunctionsActionActionName).(string)
 	script := d.Get(cisEdgeFunctionsActionScript).(string)
 	r := ioutil.NopCloser(strings.NewReader(script))
 	opt := cisClient.NewUpdateEdgeFunctionsActionOptions(scriptName)
@@ -78,7 +78,7 @@ func resourceIBMCISEdgeFunctionsActionCreate(d *schema.ResourceData, meta interf
 
 func resourceIBMCISEdgeFunctionsActionUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange(cisEdgeFunctionsActionScript) {
-		resourceIBMCISEdgeFunctionsActionCreate(d, meta)
+		return resourceIBMCISEdgeFunctionsActionCreate(d, meta)
 	}
 
 	return resourceIBMCISEdgeFunctionsActionRead(d, meta)
@@ -117,7 +117,7 @@ func resourceIBMCISEdgeFunctionsActionRead(d *schema.ResourceData, meta interfac
 
 	d.Set(cisID, crn)
 	d.Set(cisDomainID, zoneID)
-	d.Set(cisEdgeFunctionsActionScriptName, scriptName)
+	d.Set(cisEdgeFunctionsActionActionName, scriptName)
 	d.Set(cisEdgeFunctionsActionScript, string(content))
 	return nil
 }
@@ -160,11 +160,4 @@ func resourceIBMCISEdgeFunctionsActionDelete(d *schema.ResourceData, meta interf
 		return fmt.Errorf("Error in edge function action script deletion: %v", response)
 	}
 	return nil
-}
-
-func suppressScriptDiff(k, old, new string, d *schema.ResourceData) bool {
-	if old != new {
-		return true
-	}
-	return false
 }
