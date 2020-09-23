@@ -133,14 +133,14 @@ func resourceIBMISInstanceGroupManagerValidator() *ResourceValidator {
 			ValidateFunctionIdentifier: IntBetween,
 			Type:                       TypeInt,
 			MinValue:                   "1",
-			MaxValue:                   "100"})
+			MaxValue:                   "1000"})
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "min_membership_count",
 			ValidateFunctionIdentifier: IntBetween,
 			Type:                       TypeInt,
 			MinValue:                   "1",
-			MaxValue:                   "100"})
+			MaxValue:                   "1000"})
 
 	ibmISInstanceGroupManagerResourceValidator := ResourceValidator{ResourceName: "ibm_is_instance_group_manager", Schema: validateSchema}
 	return &ibmISInstanceGroupManagerResourceValidator

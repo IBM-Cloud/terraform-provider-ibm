@@ -52,7 +52,8 @@ func resourceIBMISInstanceGroup() *schema.Resource {
 
 			"instance_count": {
 				Type:         schema.TypeInt,
-				Required:     true,
+				Optional:     true,
+				Default:      0,
 				ValidateFunc: InvokeValidator("ibm_is_instance_group", "instance_count"),
 				Description:  "The number of instances in the instance group",
 			},
@@ -97,6 +98,12 @@ func resourceIBMISInstanceGroup() *schema.Resource {
 				Description: "list of Managers associated with instancegroup",
 			},
 
+			"instances": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "number of instances in the intances group",
+			},
+
 			"vpc": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -130,7 +137,7 @@ func resourceIBMISInstanceGroupValidator() *ResourceValidator {
 			ValidateFunctionIdentifier: IntBetween,
 			Type:                       TypeInt,
 			MinValue:                   "0",
-			MaxValue:                   "100"})
+			MaxValue:                   "1000"})
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "application_port",
@@ -147,7 +154,7 @@ func resourceIBMISInstanceGroupCreate(d *schema.ResourceData, meta interface{}) 
 
 	name := d.Get("name").(string)
 	instanceTemplate := d.Get("instance_template").(string)
-	membershipCount := d.Get("instance_count").(int)
+
 	subnets := d.Get("subnets")
 
 	sess, err := vpcClient(meta)
@@ -160,14 +167,20 @@ func resourceIBMISInstanceGroupCreate(d *schema.ResourceData, meta interface{}) 
 		subnet := s.(string)
 		subnetIDs = append(subnetIDs, &vpcv1.SubnetIdentity{ID: &subnet})
 	}
-	mc := int64(membershipCount)
+
 	instanceGroupOptions := vpcv1.CreateInstanceGroupOptions{
 		InstanceTemplate: &vpcv1.InstanceTemplateIdentity{
 			ID: &instanceTemplate,
 		},
-		Subnets:         subnetIDs,
-		Name:            &name,
-		MembershipCount: &mc,
+		Subnets: subnetIDs,
+		Name:    &name,
+	}
+
+	var membershipCount int
+	if v, ok := d.GetOk("instance_count"); ok {
+		membershipCount = v.(int)
+		mc := int64(membershipCount)
+		instanceGroupOptions.MembershipCount = &mc
 	}
 
 	if v, ok := d.GetOk("load_balancer"); ok {
@@ -291,7 +304,7 @@ func resourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) er
 	}
 	d.Set("name", *instanceGroup.Name)
 	d.Set("instance_template", *instanceGroup.InstanceTemplate)
-	d.Set("instance_count", *instanceGroup.MembershipCount)
+	d.Set("instances", *instanceGroup.MembershipCount)
 	d.Set("resource_group", *instanceGroup.ResourceGroup)
 	if instanceGroup.ApplicationPort != nil {
 		d.Set("application_port", *instanceGroup.ApplicationPort)

@@ -63,13 +63,22 @@ resource "ibm_is_instance_group" "instance_group" {
 }
 ```
 
+## Timeouts
+
+ibm_is_instance_group provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 10 minutes) Used for creating Instance.
+* `update` - (Default 10 minutes) Used for updating Instance.
+* `delete` - (Default 5 minutes) Used for deleting Instance.
+
 ## Argument Reference
 
 The following arguments are supported:
 
 * `name` - (Required, Forces new resource, string) The name of the instance group.
 * `instance_template` - (Required, Forces new resource, string) The ID of the instance template to create the instance group.
-* `instance_count` - (Required, int) The number of instances to be created under the instance group.
+* `instance_count` - (Optional, int) The number of instances to be created under the instance group. Default is set to 0.
+  **NOTE**: instance group manager should be in disabled state to update the `instance_count`.
 * `resource_group` - (Optional, string) Resource group ID.
 * `subnets` - (Required, list) The list of subnet IDs used by the instances.
 * `application_port` - (Optional, int) Used by the instance group when scaling up instances to supply the port for the load balancer pool member
@@ -81,6 +90,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - Id of the instance group
+* `instances` - The number of instances in the intances group
 * `managers` - list of managers associated with the instance group.
 * `vpc` - The VPC ID
 * `status` - Status of instance group.
