@@ -50,6 +50,12 @@ func resourceIBMCertificateManagerOrder() *schema.Resource {
 				Default:     false,
 				Description: "Keys are sorated if set to true",
 			},
+			"renew_certificate": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Invokes renew functionality",
+			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -242,7 +248,7 @@ func resourceIBMCertificateManagerRenew(d *schema.ResourceData, meta interface{}
 	certID := d.Id()
 	client := cmService.Certificate()
 
-	if d.HasChange("rotate_keys") {
+	if d.Get("renew_certificate").(bool) == true {
 		rotateKeys := d.Get("rotate_keys").(bool)
 		payload := models.CertificateRenewData{RotateKeys: rotateKeys}
 
