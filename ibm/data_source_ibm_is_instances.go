@@ -296,7 +296,9 @@ func classicInstancesList(d *schema.ResourceData, meta interface{}) error {
 			bootVol := map[string]interface{}{}
 			bootVol["id"] = *instance.BootVolumeAttachment.ID
 			bootVol["name"] = *instance.BootVolumeAttachment.Name
-			bootVol["device"] = *instance.BootVolumeAttachment.Device.ID
+			if instance.BootVolumeAttachment.Device != nil {
+				bootVol["device"] = *instance.BootVolumeAttachment.Device.ID
+			}
 			if instance.BootVolumeAttachment.Volume != nil {
 				bootVol["volume_id"] = *instance.BootVolumeAttachment.Volume.ID
 				bootVol["volume_crn"] = *instance.BootVolumeAttachment.Volume.CRN
@@ -438,7 +440,9 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			bootVol := map[string]interface{}{}
 			bootVol["id"] = *instance.BootVolumeAttachment.ID
 			bootVol["name"] = *instance.BootVolumeAttachment.Name
-			bootVol["device"] = *instance.BootVolumeAttachment.Device.ID
+			if instance.BootVolumeAttachment.Device != nil {
+				bootVol["device"] = *instance.BootVolumeAttachment.Device.ID
+			}
 			if instance.BootVolumeAttachment.Volume != nil {
 				bootVol["volume_id"] = *instance.BootVolumeAttachment.Volume.ID
 				bootVol["volume_crn"] = *instance.BootVolumeAttachment.Volume.CRN
