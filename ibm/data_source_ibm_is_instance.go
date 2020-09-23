@@ -635,7 +635,9 @@ func classicInstanceGetByName(d *schema.ResourceData, meta interface{}, name str
 				bootVol := map[string]interface{}{}
 				bootVol["id"] = *instance.BootVolumeAttachment.ID
 				bootVol["name"] = *instance.BootVolumeAttachment.Name
-				bootVol["device"] = *instance.BootVolumeAttachment.Device.ID
+				if instance.BootVolumeAttachment.Device != nil {
+					bootVol["device"] = *instance.BootVolumeAttachment.Device.ID
+				}
 				if instance.BootVolumeAttachment.Volume != nil {
 					bootVol["volume_name"] = *instance.BootVolumeAttachment.Volume.Name
 					bootVol["volume_id"] = *instance.BootVolumeAttachment.Volume.ID
@@ -914,7 +916,9 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 				bootVol := map[string]interface{}{}
 				bootVol["id"] = *instance.BootVolumeAttachment.ID
 				bootVol["name"] = *instance.BootVolumeAttachment.Name
-				bootVol["device"] = *instance.BootVolumeAttachment.Device.ID
+				if instance.BootVolumeAttachment.Device != nil {
+					bootVol["device"] = *instance.BootVolumeAttachment.Device.ID
+				}
 				if instance.BootVolumeAttachment.Volume != nil {
 					bootVol["volume_name"] = *instance.BootVolumeAttachment.Volume.Name
 					bootVol["volume_id"] = *instance.BootVolumeAttachment.Volume.ID
