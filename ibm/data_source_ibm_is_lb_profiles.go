@@ -20,7 +20,7 @@ func dataSourceIBMISLbProfiles() *schema.Resource {
 
 			isLbsProfiles: {
 				Type:        schema.TypeList,
-				Description: "Collection of load balencer profile collectors",
+				Description: "Collection of load balancer profile collectors",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
