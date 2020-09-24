@@ -3,13 +3,11 @@ package ibm
 import (
 	"encoding/base64"
 	"fmt"
-	"log"
-	"sort"
-	"strings"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"log"
+	"strings"
+	"time"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -82,10 +80,11 @@ func resourceIBMPIInstance() *schema.Resource {
 				Description: "Maximum memory size",
 			},
 			helpers.PIInstanceNetworkIds: {
-				Type:             schema.TypeSet,
-				Required:         true,
-				Elem:             &schema.Schema{Type: schema.TypeString},
-				Set:              schema.HashString,
+				//Type: schema.TypeSet,
+				Type:     schema.TypeList,
+				Required: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				//Set:              schema.HashString,
 				Description:      "Set of Networks that have been configured for the account",
 				DiffSuppressFunc: applyOnce,
 			},
@@ -266,6 +265,12 @@ func resourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Minimum Virtual Cores Assigned to the PVMInstance",
 			},
+			"resource_timeout": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Value in minutes (30/60). This will override the defaults of 120 minutes",
+				Default:     120,
+			},
 		},
 	}
 }
@@ -282,7 +287,8 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	mem := d.Get(helpers.PIInstanceMemory).(float64)
 	procs := d.Get(helpers.PIInstanceProcessors).(float64)
 	systype := d.Get(helpers.PIInstanceSystemType).(string)
-	networks := expandStringList((d.Get(helpers.PIInstanceNetworkIds).(*schema.Set)).List())
+	networks := expandStringList(d.Get(helpers.PIInstanceNetworkIds).([]interface{}))
+	//networks := expandStringList((d.Get(helpers.PIInstanceNetworkIds).(*schema.Set)).List())
 	volids := expandStringList((d.Get(helpers.PIInstanceVolumeIds).(*schema.Set)).List())
 	replicants := d.Get(helpers.PIInstanceReplicants).(float64)
 	replicationpolicy := d.Get(helpers.PIInstanceReplicationPolicy).(string)
@@ -314,7 +320,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	sort.Strings(networks)
+	//sort.Strings(networks)
 
 	//publicinterface := d.Get(helpers.PIInstancePublicNetwork).(bool)
 	body := &models.PVMInstanceCreate{
@@ -340,10 +346,6 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	if d.Get(helpers.PIVirtualCoresAssigned) != "" && d.Get(helpers.PIVirtualCoresAssigned) != 0 {
-		//cores, err := strconv.Atoi(d.Get(helpers.PIVirtualCoresAssigned).(string))
-		//if err != nil {
-		//	fmt.Errorf("failed to convert %v", err)
-		//}
 		assigned_virtual_cores := int64(d.Get(helpers.PIVirtualCoresAssigned).(int))
 		body.VirtualCores = &models.VirtualCores{Assigned: &assigned_virtual_cores}
 	} else {
@@ -390,8 +392,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		if err != nil {
 			return fmt.Errorf("failed to get information on the pvminstance %v", err)
 		}
-
-		_, err = isWaitForPIInstanceAvailable(client, pvminstanceids[ids], d.Timeout(schema.TimeoutCreate), powerinstanceid, instance_ready_status)
+		_, err = isWaitForPIInstanceAvailable(client, pvminstanceids[ids], time.Duration(d.Get("resource_timeout").(int))*time.Minute, powerinstanceid, instance_ready_status)
 		if err != nil {
 			return err
 		}
@@ -442,7 +443,8 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 
 		}
 	}
-	d.Set(helpers.PIInstanceNetworkIds, newStringSet(schema.HashString, networks))
+	//d.Set(helpers.PIInstanceNetworkIds, newStringSet(schema.HashString, networks))
+	d.Set(helpers.PIInstanceNetworkIds, networks)
 	d.Set(helpers.PIInstanceVolumeIds, powervmdata.VolumeIds)
 	d.Set(helpers.PIInstanceSystemType, powervmdata.SysType)
 	d.Set("min_memory", powervmdata.Minmem)
@@ -761,12 +763,13 @@ func isWaitForPIInstanceAvailable(client *st.IBMPIInstanceClient, id string, tim
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"PENDING", "BUILD", helpers.PIInstanceHealthWarning},
-		Target:     []string{"OK", "ACTIVE", helpers.PIInstanceHealthOk},
-		Refresh:    isPIInstanceRefreshFunc(client, id, powerinstanceid, instance_ready_status),
-		Delay:      10 * time.Second,
-		MinTimeout: queryTimeOut,
-		Timeout:    120 * time.Minute,
+		Pending:                   []string{"PENDING", "BUILD", helpers.PIInstanceHealthWarning},
+		Target:                    []string{"OK", "ACTIVE", helpers.PIInstanceHealthOk, "ERROR"},
+		Refresh:                   isPIInstanceRefreshFunc(client, id, powerinstanceid, instance_ready_status),
+		Delay:                     10 * time.Second,
+		MinTimeout:                queryTimeOut,
+		Timeout:                   timeout,
+		ContinuousTargetOccurence: 5,
 	}
 
 	return stateConf.WaitForState()

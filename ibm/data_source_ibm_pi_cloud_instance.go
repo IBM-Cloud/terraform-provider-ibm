@@ -65,6 +65,10 @@ func dataSourceIBMPICloudInstance() *schema.Resource {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
+			"instance_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"pvm_instances": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -118,7 +122,7 @@ func dataSourceIBMPICloudInstanceRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	d.SetId(*cloud_instance_data.CloudInstanceID)
-	d.Set("tenant_id", (cloud_instance_data.TenantID))
+	d.Set("tenant_id", cloud_instance_data.TenantID)
 	d.Set("enabled", cloud_instance_data.Enabled)
 	d.Set("region", cloud_instance_data.Region)
 	d.Set("capabilities", cloud_instance_data.Capabilities)
@@ -128,6 +132,7 @@ func dataSourceIBMPICloudInstanceRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("total_standard_storage_consumed", cloud_instance_data.Usage.StorageStandard)
 	d.Set("total_processors_consumed", cloud_instance_data.Usage.Processors)
 	d.Set("total_memory_consumed", cloud_instance_data.Usage.Memory)
+	d.Set("instance_name", cloud_instance_data.Name)
 
 	return nil
 
