@@ -13,12 +13,23 @@ Provides a load balancer resource. This allows load balancer to be created, upda
 
 ## Example Usage
 
-In the following example, you can create a load balancer:
+In the following example, you can create an application load balancer:
 
 ```hcl
 resource "ibm_is_lb" "lb" {
   name    = "loadbalancer1"
   subnets = ["04813493-15d6-4150-9948-6cc646cb67f2"]
+}
+
+```
+
+In the following example, you can create a network load balancer:
+
+```hcl
+resource "ibm_is_lb" "lb" {
+  name    = "loadbalancer1"
+  subnets = ["04813493-15d6-4150-9948-6cc646cb67f2"]
+  profile = "network-fixed"
 }
 
 ```
@@ -36,6 +47,7 @@ The following arguments are supported:
 
 * `name` - (Required, string) Name of the loadbalancer.
 * `subnets` - (Required, list) ID of the subnets to provision this load balancer.
+* `profile` - (Required for network load balancer, Forces new resource, string) The profile to use for this load balancer. 
 * `type` - (Optional, Forces new resource, string) The type of the load balancer. Default value `public`. Supported values `public` and  `private`.
 * `resource_group` - (Optional, Forces new resource, string) The resource group where the load balancer to be created.
 * `tags` - (Optional, array of strings) Tags associated with the load balancer.
