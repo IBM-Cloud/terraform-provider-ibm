@@ -225,6 +225,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_instances":                       dataSourceIBMISInstances(),
 			"ibm_is_lb":                              dataSourceIBMISLB(),
 			"ibm_is_lb_profiles":                     dataSourceIBMISLbProfiles(),
+			"ibm_is_lbs":                             dataSourceIBMISLBS(),
 			"ibm_is_public_gateway":                  dataSourceIBMISPublicGateway(),
 			"ibm_is_region":                          dataSourceIBMISRegion(),
 			"ibm_is_ssh_key":                         dataSourceIBMISSSHKey(),
