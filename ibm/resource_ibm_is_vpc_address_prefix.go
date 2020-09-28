@@ -30,7 +30,7 @@ func resourceIBMISVpcAddressPrefix() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_address_prefix", isVPCAddressPrefixPrefixName),
 				Description:  "Name",
 			},
 			isVPCAddressPrefixZoneName: {
@@ -41,10 +41,11 @@ func resourceIBMISVpcAddressPrefix() *schema.Resource {
 			},
 
 			isVPCAddressPrefixCIDR: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "CIDIR address prefix",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: InvokeValidator("ibm_is_address_prefix", isVPCAddressPrefixCIDR),
+				Description:  "CIDIR address prefix",
 			},
 
 			isVPCAddressPrefixVPCID: {
@@ -67,6 +68,30 @@ func resourceIBMISVpcAddressPrefix() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISAddressPrefixValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCAddressPrefixPrefixName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCRouteDestinationCIDR,
+			ValidateFunctionIdentifier: ValidateCIDRAddress,
+			Type:                       TypeString,
+			ForceNew:                   true,
+			Required:                   true})
+
+	ibmISAddressPrefixResourceValidator := ResourceValidator{ResourceName: "ibm_is_address_prefix", Schema: validateSchema}
+	return &ibmISAddressPrefixResourceValidator
 }
 
 func resourceIBMISVpcAddressPrefixCreate(d *schema.ResourceData, meta interface{}) error {

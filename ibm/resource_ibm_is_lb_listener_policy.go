@@ -96,7 +96,7 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"forward", "redirect", "reject"}),
+				ValidateFunc: InvokeValidator("ibm_is_lb_listener_policy", isLBListenerPolicyAction),
 				Description:  "Policy Action",
 			},
 
@@ -113,7 +113,7 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 				Optional:     true,
 				ForceNew:     false,
 				Computed:     true,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_lb_listener_policy", isLBListenerPolicyName),
 				Description:  "Policy name",
 			},
 
@@ -133,14 +133,14 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 						isLBListenerPolicyRuleCondition: {
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validateAllowedStringValue([]string{"contains", "equals", "matches_regex"}),
+							ValidateFunc: InvokeValidator("ibm_is_lb_listener_policy_rule", isLBListenerPolicyRulecondition),
 							Description:  "Condition of the rule",
 						},
 
 						isLBListenerPolicyRuleType: {
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validateAllowedStringValue([]string{"header", "hostname", "path"}),
+							ValidateFunc: InvokeValidator("ibm_is_lb_listener_policy_rule", isLBListenerPolicyRulecondition),
 							Description:  "Type of the rule",
 						},
 
@@ -221,6 +221,31 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISLBListenerPolicyValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	action := "forward, redirect, reject"
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBListenerPolicyName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBListenerPolicyAction,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              action})
+
+	ibmISLBListenerPolicyResourceValidator := ResourceValidator{ResourceName: "ibm_is_lb_listener_policy", Schema: validateSchema}
+	return &ibmISLBListenerPolicyResourceValidator
 }
 
 func resourceIBMISLBListenerPolicyCreate(d *schema.ResourceData, meta interface{}) error {

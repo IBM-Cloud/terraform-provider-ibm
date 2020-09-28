@@ -38,7 +38,7 @@ func resourceIBMISIKEPolicy() *schema.Resource {
 			isIKEName: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_ike_policy", isIKEName),
 				Description:  "IKE name",
 			},
 
@@ -145,7 +145,15 @@ func resourceIBMISIKEValidator() *ResourceValidator {
 	encryption_algorithm := "triple_des, aes128, aes256"
 	dh_group := "2, 5, 14"
 	ike_version := "1, 2"
-
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isIKEName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isIKEAuthenticationAlg,

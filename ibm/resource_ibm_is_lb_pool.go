@@ -54,7 +54,7 @@ func resourceIBMISLBPool() *schema.Resource {
 			isLBPoolName: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_lb_pool", isLBPoolName),
 				Description:  "Load Balancer Pool name",
 			},
 
@@ -68,14 +68,14 @@ func resourceIBMISLBPool() *schema.Resource {
 			isLBPoolAlgorithm: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"round_robin", "weighted_round_robin", "least_connections"}),
+				ValidateFunc: InvokeValidator("ibm_is_lb_pool", isLBPoolAlgorithm),
 				Description:  "Load Balancer Pool algorithm",
 			},
 
 			isLBPoolProtocol: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"http", "tcp"}),
+				ValidateFunc: InvokeValidator("ibm_is_lb_pool", isLBPoolProtocol),
 				Description:  "Load Balancer Protocol",
 			},
 
@@ -100,7 +100,7 @@ func resourceIBMISLBPool() *schema.Resource {
 			isLBPoolHealthType: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"http", "tcp"}),
+				ValidateFunc: InvokeValidator("ibm_is_lb_pool", isLBPoolHealthType),
 				Description:  "Load Balancer health type",
 			},
 
@@ -121,7 +121,7 @@ func resourceIBMISLBPool() *schema.Resource {
 			isLBPoolSessPersistenceType: {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"source_ip", "http_cookie", "app_cookie"}),
+				ValidateFunc: InvokeValidator("ibm_is_lb_pool", isLBPoolSessPersistenceType),
 				Description:  "Load Balancer Pool session persisence type.",
 			},
 
@@ -150,6 +150,54 @@ func resourceIBMISLBPool() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISLBPoolValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	algorithm := "round_robin, weighted_round_robin, least_connections"
+	protocol := "http, tcp, https"
+	persistanceType := "source_ip"
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBPoolName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBPoolAlgorithm,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              algorithm})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBPoolProtocol,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              protocol})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBPoolHealthType,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              protocol})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBPoolSessPersistenceType,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              persistanceType})
+
+	ibmISLBPoolResourceValidator := ResourceValidator{ResourceName: "ibm_is_lb_pool", Schema: validateSchema}
+	return &ibmISLBPoolResourceValidator
 }
 
 func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {

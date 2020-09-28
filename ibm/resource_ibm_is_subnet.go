@@ -51,7 +51,7 @@ func resourceIBMISSubnet() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{isSubnetTotalIpv4AddressCount},
-				ValidateFunc:  validateCIDR,
+				ValidateFunc:  InvokeValidator("ibm_is_subnet", isSubnetIpv4CidrBlock),
 				Description:   "IPV4 subnet - CIDR block",
 			},
 
@@ -77,7 +77,7 @@ func resourceIBMISSubnet() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_subnet", isSubnetName),
 				Description:  "Subnet name",
 			},
 
@@ -151,6 +151,30 @@ func resourceIBMISSubnet() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISSubnetValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSubnetName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSubnetIpv4CidrBlock,
+			ValidateFunctionIdentifier: ValidateCIDRAddress,
+			Type:                       TypeString,
+			ForceNew:                   true,
+			Optional:                   true})
+
+	ibmISSubnetResourceValidator := ResourceValidator{ResourceName: "ibm_is_subnet", Schema: validateSchema}
+	return &ibmISSubnetResourceValidator
 }
 
 func resourceIBMISSubnetCreate(d *schema.ResourceData, meta interface{}) error {

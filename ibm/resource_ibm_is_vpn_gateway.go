@@ -52,7 +52,7 @@ func resourceIBMISVPNGateway() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_route", isVPNGatewayName),
 				Description:  "VPN Gateway instance name",
 			},
 
@@ -120,6 +120,23 @@ func resourceIBMISVPNGateway() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISVPNGatewayValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPNGatewayName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISVPNGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_is_vpn_gateway", Schema: validateSchema}
+	return &ibmISVPNGatewayResourceValidator
 }
 
 func resourceIBMISVPNGatewayCreate(d *schema.ResourceData, meta interface{}) error {

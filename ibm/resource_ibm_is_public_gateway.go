@@ -55,7 +55,7 @@ func resourceIBMISPublicGateway() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_public_gateway", isPublicGatewayName),
 				Description:  "Name of the Public gateway instance",
 			},
 
@@ -150,6 +150,23 @@ func resourceIBMISPublicGateway() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISPublicGatewayValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isPublicGatewayName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISPublicGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_is_public_gateway", Schema: validateSchema}
+	return &ibmISPublicGatewayResourceValidator
 }
 
 func resourceIBMISPublicGatewayCreate(d *schema.ResourceData, meta interface{}) error {

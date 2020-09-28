@@ -49,7 +49,7 @@ func resourceIBMISVPNGatewayConnection() *schema.Resource {
 			isVPNGatewayConnectionName: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_vpn_gateway_connection", isVPNGatewayConnectionName),
 				Description:  "VPN Gateway connection name",
 			},
 
@@ -101,21 +101,21 @@ func resourceIBMISVPNGatewayConnection() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "none",
-				ValidateFunc: validateAllowedStringValue([]string{"restart", "clear", "hold", "none"}),
+				ValidateFunc: InvokeValidator("ibm_is_vpn_gateway_connection", isVPNGatewayConnectionDeadPeerDetectionAction),
 				Description:  "Action detection for dead peer detection action",
 			},
 			isVPNGatewayConnectionDeadPeerDetectionInterval: {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      30,
-				ValidateFunc: validateDeadPeerDetectionInterval,
+				ValidateFunc: InvokeValidator("ibm_is_vpn_gateway_connection", isVPNGatewayConnectionDeadPeerDetectionInterval),
 				Description:  "Interval for dead peer detection interval",
 			},
 			isVPNGatewayConnectionDeadPeerDetectionTimeout: {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      120,
-				ValidateFunc: validateDeadPeerDetectionInterval,
+				ValidateFunc: InvokeValidator("ibm_is_vpn_gateway_connection", isVPNGatewayConnectionDeadPeerDetectionTimeout),
 				Description:  "Timeout for dead peer detection",
 			},
 
@@ -144,6 +144,46 @@ func resourceIBMISVPNGatewayConnection() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISVPNGatewayConnectionValidator() *ResourceValidator {
+	validateSchema := make([]ValidateSchema, 1)
+	action := "restart, clear, hold, none"
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPNGatewayConnectionName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPNGatewayConnectionDeadPeerDetectionAction,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              action})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPNGatewayConnectionDeadPeerDetectionInterval,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "15",
+			MaxValue:                   "86399"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPNGatewayConnectionDeadPeerDetectionTimeout,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "15",
+			MaxValue:                   "86399"})
+
+	ibmISVPNGatewayConnectionResourceValidator := ResourceValidator{ResourceName: "ibm_is_vpn_gateway_connection", Schema: validateSchema}
+	return &ibmISVPNGatewayConnectionResourceValidator
 }
 
 func resourceIBMISVPNGatewayConnectionCreate(d *schema.ResourceData, meta interface{}) error {

@@ -345,26 +345,6 @@ func validateSecurityRuleDirection(v interface{}, k string) (ws []string, errors
 	return
 }
 
-func validateIsSecurityRuleDirection(v interface{}, k string) (ws []string, errors []error) {
-	validDirections := map[string]bool{
-		"inbound":  true,
-		"outbound": true,
-	}
-
-	value := v.(string)
-	_, found := validDirections[value]
-	if !found {
-		strarray := make([]string, 0, len(validDirections))
-		for key := range validDirections {
-			strarray = append(strarray, key)
-		}
-		errors = append(errors, fmt.Errorf(
-			"%q contains an invalid security group rule direction %q. Valid types are %q.",
-			k, value, strings.Join(strarray, ",")))
-	}
-	return
-}
-
 func validateSecurityRuleEtherType(v interface{}, k string) (ws []string, errors []error) {
 	validEtherTypes := map[string]bool{
 		"IPv4": true,
@@ -406,6 +386,20 @@ func validateCIDR(v interface{}, k string) (ws []string, errors []error) {
 			k))
 	}
 	return
+}
+
+//validateCIDRAddress...
+func validateCIDRAddress() schema.SchemaValidateFunc {
+	return func(v interface{}, k string) (ws []string, errors []error) {
+		address := v.(string)
+		_, _, err := net.ParseCIDR(address)
+		if err != nil {
+			errors = append(errors, fmt.Errorf(
+				"%q must be a valid cidr address",
+				k))
+		}
+		return
+	}
 }
 
 //validateRemoteIP...
@@ -881,25 +875,6 @@ func validateSecurityGroupId(v interface{}, k string) (ws []string, errors []err
 	}
 	return
 }
-func validateICMPType(v interface{}, k string) (ws []string, errors []error) {
-	value := v.(int)
-	if value < 0 || value > 254 {
-		errors = append(errors, fmt.Errorf("%q (%d) invalid ICMP type", k, value))
-	}
-	return
-}
-
-func validateICMPCode(v interface{}, k string) (ws []string, errors []error) {
-	value := v.(int)
-	if value < 0 || value > 255 {
-		errors = append(errors, fmt.Errorf("%q (%d) invalid ICMP code", k, value))
-	}
-	return
-}
-
-func validateISSecurityRulePort(v interface{}, k string) (ws []string, errors []error) {
-	return validatePortRange(1, 65535)(v, k)
-}
 
 func isSecurityGroupAddress(s string) bool {
 	return net.ParseIP(s) != nil
@@ -1070,6 +1045,7 @@ const (
 	ValidateAllowedStringValue
 	StringLenBetween
 	ValidateIPorCIDR
+	ValidateCIDRAddress
 	ValidateAllowedIntValue
 	ValidateRegexpLen
 	ValidateRegexp
@@ -1228,6 +1204,8 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 		return validation.StringLenBetween(schema.MinValueLength, schema.MaxValueLength)
 	case ValidateIPorCIDR:
 		return validateIPorCIDR()
+	case ValidateCIDRAddress:
+		return validateCIDRAddress()
 	case ValidateAllowedIntValue:
 		allowedValues := schema.GetValue(AllowedValues)
 		return validateAllowedIntValue(allowedValues.([]int))

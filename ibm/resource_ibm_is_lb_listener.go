@@ -61,7 +61,7 @@ func resourceIBMISLBListener() *schema.Resource {
 			isLBListenerProtocol: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"https", "http", "tcp"}),
+				ValidateFunc: InvokeValidator("ibm_is_lb_listener", isLBListenerProtocol),
 				Description:  "Loadbalancer protocol",
 			},
 
@@ -121,6 +121,22 @@ func resourceIBMISLBListener() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISLBListenerValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	protocol := "https, http, tcp"
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBListenerProtocol,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              protocol})
+
+	ibmISLBListenerResourceValidator := ResourceValidator{ResourceName: "ibm_is_lb_listener", Schema: validateSchema}
+	return &ibmISLBListenerResourceValidator
 }
 
 func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) error {

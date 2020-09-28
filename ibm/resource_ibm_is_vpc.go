@@ -110,7 +110,7 @@ func resourceIBMISVPC() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCName),
 				Description:  "VPC name",
 			},
 
@@ -337,6 +337,15 @@ func resourceIBMISVPCValidator() *ResourceValidator {
 			Optional:                   true,
 			Default:                    "auto",
 			AllowedValues:              address_prefix_management})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
 
 	ibmISVPCResourceValidator := ResourceValidator{ResourceName: "ibm_is_vpc", Schema: validateSchema}
 	return &ibmISVPCResourceValidator
