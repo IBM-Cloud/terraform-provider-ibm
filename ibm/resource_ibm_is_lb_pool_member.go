@@ -16,6 +16,7 @@ const (
 	isLBPoolID                       = "pool"
 	isLBPoolMemberPort               = "port"
 	isLBPoolMemberTargetAddress      = "target_address"
+	isLBPoolMemberTargetID           = "target_id"
 	isLBPoolMemberWeight             = "weight"
 	isLBPoolMemberProvisioningStatus = "provisioning_status"
 	isLBPoolMemberHealth             = "health"
@@ -81,9 +82,17 @@ func resourceIBMISLBPoolMember() *schema.Resource {
 			},
 
 			isLBPoolMemberTargetAddress: {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Load balancer pool member target address",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{isLBPoolMemberTargetAddress, isLBPoolMemberTargetID},
+				Description:  "Load balancer pool member target address",
+			},
+
+			isLBPoolMemberTargetID: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{isLBPoolMemberTargetAddress, isLBPoolMemberTargetID},
+				Description:  "Load balancer pool member target id",
 			},
 
 			isLBPoolMemberWeight: {
@@ -134,7 +143,6 @@ func resourceIBMISLBPoolMemberCreate(d *schema.ResourceData, meta interface{}) e
 	lbID := d.Get(isLBID).(string)
 	port := d.Get(isLBPoolMemberPort).(int)
 	port64 := int64(port)
-	targetAddress := d.Get(isLBPoolMemberTargetAddress).(string)
 
 	var weight int64
 	if w, ok := d.GetOk(isLBPoolMemberWeight); ok {
@@ -145,12 +153,13 @@ func resourceIBMISLBPoolMemberCreate(d *schema.ResourceData, meta interface{}) e
 	defer ibmMutexKV.Unlock(isLBPoolMemberKey)
 
 	if userDetails.generation == 1 {
+		targetAddress := d.Get(isLBPoolMemberTargetAddress).(string)
 		err := classiclbpMemberCreate(d, meta, lbID, lbPoolID, targetAddress, port64, weight)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := lbpMemberCreate(d, meta, lbID, lbPoolID, targetAddress, port64, weight)
+		err := lbpMemberCreate(d, meta, lbID, lbPoolID, port64, weight)
 		if err != nil {
 			return err
 		}
@@ -215,7 +224,7 @@ func classiclbpMemberCreate(d *schema.ResourceData, meta interface{}, lbID, lbPo
 	return nil
 }
 
-func lbpMemberCreate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID, targetAddress string, port, weight int64) error {
+func lbpMemberCreate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string, port, weight int64) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -236,10 +245,22 @@ func lbpMemberCreate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID, t
 		LoadBalancerID: &lbID,
 		PoolID:         &lbPoolID,
 		Port:           &port,
-		Target: &vpcv1.LoadBalancerPoolMemberTargetPrototype{
-			Address: &targetAddress,
-		},
 	}
+
+	if _, ok := d.GetOk(isLBPoolMemberTargetAddress); ok {
+		targetAddress := d.Get(isLBPoolMemberTargetAddress).(string)
+		target := &vpcv1.LoadBalancerPoolMemberTargetPrototype{
+			Address: &targetAddress,
+		}
+		options.Target = target
+	} else {
+		targetID := d.Get(isLBPoolMemberTargetID).(string)
+		target := &vpcv1.LoadBalancerPoolMemberTargetPrototype{
+			ID: &targetID,
+		}
+		options.Target = target
+	}
+
 	if weight > int64(0) {
 		options.Weight = &weight
 	}
@@ -440,8 +461,13 @@ func lbpmemberGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID, lbPo
 	d.Set(isLBID, lbID)
 	d.Set(isLBPoolMemberPort, *lbPoolMem.Port)
 
-	targetaddress := lbPoolMem.Target.(*vpcv1.LoadBalancerPoolMemberTarget)
-	d.Set(isLBPoolMemberTargetAddress, *targetaddress.Address)
+	target := lbPoolMem.Target.(*vpcv1.LoadBalancerPoolMemberTarget)
+	if target.Address != nil {
+		d.Set(isLBPoolMemberTargetAddress, *target.Address)
+	}
+	if target.ID != nil {
+		d.Set(isLBPoolMemberTargetID, *target.ID)
+	}
 	d.Set(isLBPoolMemberWeight, *lbPoolMem.Weight)
 	d.Set(isLBPoolMemberProvisioningStatus, *lbPoolMem.ProvisioningStatus)
 	d.Set(isLBPoolMemberHealth, *lbPoolMem.Health)
@@ -558,10 +584,9 @@ func lbpmemberUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID, l
 		return err
 	}
 
-	if d.HasChange(isLBPoolMemberTargetAddress) || d.HasChange(isLBPoolMemberPort) || d.HasChange(isLBPoolMemberWeight) {
+	if d.HasChange(isLBPoolMemberTargetID) || d.HasChange(isLBPoolMemberTargetAddress) || d.HasChange(isLBPoolMemberPort) || d.HasChange(isLBPoolMemberWeight) {
 
 		port := int64(d.Get(isLBPoolMemberPort).(int))
-		targetAddress := d.Get(isLBPoolMemberTargetAddress).(string)
 		weight := int64(d.Get(isLBPoolMemberWeight).(int))
 
 		isLBPoolMemberKey := "load_balancer_pool_member_key_" + lbID + lbPoolID
@@ -590,11 +615,23 @@ func lbpmemberUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID, l
 			PoolID:         &lbPoolID,
 			ID:             &lbPoolMemID,
 			Port:           &port,
-			Target: &vpcv1.LoadBalancerPoolMemberTargetPrototype{
-				Address: &targetAddress,
-			},
-			Weight: &weight,
+			Weight:         &weight,
 		}
+
+		if _, ok := d.GetOk(isLBPoolMemberTargetAddress); ok {
+			targetAddress := d.Get(isLBPoolMemberTargetAddress).(string)
+			target := &vpcv1.LoadBalancerPoolMemberTargetPrototype{
+				Address: &targetAddress,
+			}
+			updatelbpmoptions.Target = target
+		} else {
+			targetID := d.Get(isLBPoolMemberTargetID).(string)
+			target := &vpcv1.LoadBalancerPoolMemberTargetPrototype{
+				ID: &targetID,
+			}
+			updatelbpmoptions.Target = target
+		}
+
 		_, response, err := sess.UpdateLoadBalancerPoolMember(updatelbpmoptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Load Balancer Pool Member: %s\n%s", err, response)
