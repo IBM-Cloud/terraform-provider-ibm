@@ -405,15 +405,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set(ResourceName, clusterFields.Name)
 	d.Set(ResourceCRN, clusterFields.CRN)
 	d.Set(ResourceStatus, clusterFields.State)
-	rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
-	if err != nil {
-		return err
-	}
-	grp, err := rsMangClient.ResourceGroup().Get(clusterFields.ResourceGroupID)
-	if err != nil {
-		return err
-	}
-	d.Set(ResourceGroupName, grp.Name)
+	d.Set(ResourceGroupName, clusterFields.ResourceGroupName)
 
 	return nil
 }
