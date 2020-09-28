@@ -18,6 +18,11 @@ func datasourceIBMContainerAddOns() *schema.Resource {
 				Required:    true,
 				Description: "Cluster Name or ID",
 			},
+			"resource_group_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the resource group.",
+			},
 			"addons": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -108,6 +113,7 @@ func datasourceIBMContainerAddOnsRead(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		fmt.Printf("Error Flattening Addons list %s", err)
 	}
+	d.Set("resource_group_id", targetEnv.ResourceGroup)
 	d.Set("addons", addOns)
 	d.SetId(cluster)
 	return nil
