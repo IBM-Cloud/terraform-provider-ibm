@@ -1728,3 +1728,11 @@ func GetNext(next interface{}) string {
 	q := u.Query()
 	return q.Get("start")
 }
+
+func pvmparts(id string) ([]string, error) {
+	if strings.Contains(id, " ") {
+		parts := strings.Split(id, " ")
+		return parts, nil
+	}
+	return []string{}, fmt.Errorf("The given id %s does not contain   please check documentation on how to provider id during import command", id)
+}

@@ -440,6 +440,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_pi_network_port":        resourceIBMPINetworkPort(),
 			"ibm_pi_snapshot":            resourceIBMPISnapshot(),
 			"ibm_pi_network_port_attach": resourceIBMPINetworkPortAttach(),
+			"ibm_pi_multi_instance":      resourceIBMPIMultiInstance(),
 
 			//Private DNS related resources
 			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),
