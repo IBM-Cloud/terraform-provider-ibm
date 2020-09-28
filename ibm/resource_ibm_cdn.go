@@ -580,6 +580,7 @@ func resourceIBMCDNDelete(d *schema.ResourceData, meta interface{}) error {
 	delete, err := service.DeleteDomainMapping(cdnId)
 	if err != nil {
 		log.Println(err)
+		return err
 	}
 	///print the delete response
 	log.Print("Delete response is : ", delete)
