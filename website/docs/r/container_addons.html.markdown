@@ -37,6 +37,7 @@ ibm_container_addons provides the following [Timeouts](https://www.terraform.io/
 The following arguments are supported:
 
 * `cluster` - (Required, string) Cluster Name or ID
+* `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
 * `addons` - (Required, set) Set of AddOns that has to be enabled
     * `name` - (Optional, string) The addon name such as 'istio'.
     * `version` - (Optional,string) The addon version, omit the version if you wish to use the default version. It is required when one wants to update the addon to specified version.
