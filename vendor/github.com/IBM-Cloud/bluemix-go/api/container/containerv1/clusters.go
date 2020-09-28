@@ -30,6 +30,7 @@ type ClusterInfo struct {
 	Name                          string   `json:"name"`
 	Region                        string   `json:"region"`
 	ResourceGroupID               string   `json:"resourceGroup"`
+	ResourceGroupName             string   `json:"resourceGroupName"`
 	ServerURL                     string   `json:"serverURL"`
 	MasterURL                     string   `json:"masterURL"` // vpc cluster serverURL is empty
 	State                         string   `json:"state"`
