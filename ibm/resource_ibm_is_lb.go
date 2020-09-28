@@ -30,6 +30,7 @@ const (
 	isLBProvisioning     = "provisioning"
 	isLBProvisioningDone = "done"
 	isLBResourceGroup    = "resource_group"
+	isLBProfile          = "profile"
 )
 
 func resourceIBMISLB() *schema.Resource {
@@ -101,6 +102,14 @@ func resourceIBMISLB() *schema.Resource {
 				Description: "Load Balancer subnets list",
 			},
 
+			isLBProfile: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Description:  "The profile to use for this load balancer.",
+				ValidateFunc: InvokeValidator("ibm_is_lb", isLBProfile),
+			},
+
 			isLBTags: {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -140,6 +149,24 @@ func resourceIBMISLB() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISLBValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	isLBProfileAllowedValues := "network-fixed"
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBProfile,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   false,
+			AllowedValues:              isLBProfileAllowedValues,
+		})
+
+	ibmISLBValidator := ResourceValidator{ResourceName: "ibm_is_lb", Schema: validateSchema}
+	return &ibmISLBValidator
 }
 
 func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
@@ -231,6 +258,7 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 	if err != nil {
 		return err
 	}
+
 	options := &vpcv1.CreateLoadBalancerOptions{
 		IsPublic: &isPublic,
 		Name:     &name,
@@ -249,6 +277,14 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
 			ID: &rg,
 		}
+	}
+
+	if _, ok := d.GetOk(isLBProfile); ok {
+		profile := d.Get(isLBProfile).(string)
+		// Construct an instance of the LoadBalancerPoolIdentityByName model
+		loadBalancerProfileIdentityModel := new(vpcv1.LoadBalancerProfileIdentityByName)
+		loadBalancerProfileIdentityModel.Name = &profile
+		options.Profile = loadBalancerProfileIdentityModel
 	}
 
 	lb, response, err := sess.CreateLoadBalancer(options)
@@ -422,6 +458,12 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 			}
 		}
 		d.Set(isLBSubnets, subnetList)
+	}
+	if lb.Profile != nil {
+		profile := lb.Profile
+		if profile.Name != nil {
+			d.Set(isLBProfile, *lb.Profile.Name)
+		}
 	}
 	d.Set(isLBResourceGroup, *lb.ResourceGroup.ID)
 	d.Set(isLBHostName, *lb.Hostname)
