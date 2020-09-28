@@ -65,7 +65,7 @@ func resourceIBMISImage() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_image", isImageName),
 				Description:  "Image name",
 			},
 
@@ -155,6 +155,23 @@ func resourceIBMISImage() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISImageValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isImageName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISImageResourceValidator := ResourceValidator{ResourceName: "ibm_is_image", Schema: validateSchema}
+	return &ibmISImageResourceValidator
 }
 
 func resourceIBMISImageCreate(d *schema.ResourceData, meta interface{}) error {

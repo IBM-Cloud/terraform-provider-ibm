@@ -47,7 +47,7 @@ func resourceIBMISVpcRoute() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_route", isVPCRouteName),
 				Description:  "VPC route name",
 			},
 			isVPCRouteLocation: {
@@ -58,10 +58,11 @@ func resourceIBMISVpcRoute() *schema.Resource {
 			},
 
 			isVPCRouteDestinationCIDR: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "VPC route destination CIDR value",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: InvokeValidator("ibm_is_route", isVPCRouteDestinationCIDR),
+				Description:  "VPC route destination CIDR value",
 			},
 
 			isVPCRouteState: {
@@ -90,6 +91,30 @@ func resourceIBMISVpcRoute() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISRouteValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCRouteName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCRouteDestinationCIDR,
+			ValidateFunctionIdentifier: ValidateCIDRAddress,
+			Type:                       TypeString,
+			ForceNew:                   true,
+			Required:                   true})
+
+	ibmISRouteResourceValidator := ResourceValidator{ResourceName: "ibm_is_route", Schema: validateSchema}
+	return &ibmISRouteResourceValidator
 }
 
 func resourceIBMISVpcRouteCreate(d *schema.ResourceData, meta interface{}) error {

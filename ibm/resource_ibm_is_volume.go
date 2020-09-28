@@ -55,7 +55,7 @@ func resourceIBMISVolume() *schema.Resource {
 			isVolumeName: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_volume", isVolumeName),
 				Description:  "Volume name",
 			},
 
@@ -153,6 +153,23 @@ func resourceIBMISVolume() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISVolumeValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVolumeName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISVolumeResourceValidator := ResourceValidator{ResourceName: "ibm_is_volume", Schema: validateSchema}
+	return &ibmISVolumeResourceValidator
 }
 
 func resourceIBMISVolumeCreate(d *schema.ResourceData, meta interface{}) error {

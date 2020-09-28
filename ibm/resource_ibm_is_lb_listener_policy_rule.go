@@ -111,14 +111,14 @@ func resourceIBMISLBListenerPolicyRule() *schema.Resource {
 			isLBListenerPolicyRulecondition: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"contains", "equals", "matches_regex"}),
+				ValidateFunc: InvokeValidator("ibm_is_lb_listener_policy_rule", isLBListenerPolicyRulecondition),
 				Description:  "Condition info of the rule.",
 			},
 
 			isLBListenerPolicyRuletype: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"header", "hostname", "path"}),
+				ValidateFunc: InvokeValidator("ibm_is_lb_listener_policy_rule", isLBListenerPolicyRuletype),
 				Description:  "Policy rule type.",
 			},
 
@@ -152,6 +152,30 @@ func resourceIBMISLBListenerPolicyRule() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISLBListenerPolicyRuleValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	condition := "contains, equals, matches_regex"
+	ruletype := "header, hostname, path"
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBListenerPolicyRulecondition,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              condition})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBListenerPolicyRuletype,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              ruletype})
+
+	ibmISLBListenerPolicyRuleResourceValidator := ResourceValidator{ResourceName: "ibm_is_lb_listener_policy_rule", Schema: validateSchema}
+	return &ibmISLBListenerPolicyRuleResourceValidator
 }
 
 func resourceIBMISLBListenerPolicyRuleCreate(d *schema.ResourceData, meta interface{}) error {

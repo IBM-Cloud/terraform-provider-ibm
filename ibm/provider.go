@@ -472,9 +472,6 @@ func Validator() ValidatorDict {
 	initOnce.Do(func() {
 		globalValidatorDict = ValidatorDict{
 			ResourceValidatorDictionary: map[string]*ResourceValidator{
-				"ibm_is_vpc":                           resourceIBMISVPCValidator(),
-				"ibm_is_ike_policy":                    resourceIBMISIKEValidator(),
-				"ibm_is_network_acl":                   resourceIBMISNetworkACLValidator(),
 				"ibm_iam_custom_role":                  resourceIBMIAMCustomRoleValidator(),
 				"ibm_cis_healthcheck":                  resourceIBMCISHealthCheckValidator(),
 				"ibm_cis_rate_limit":                   resourceIBMCISRateLimitValidator(),
@@ -493,7 +490,28 @@ func Validator() ValidatorDict {
 				"ibm_is_instance_group":                resourceIBMISInstanceGroupValidator(),
 				"ibm_is_instance_group_manager":        resourceIBMISInstanceGroupManagerValidator(),
 				"ibm_is_instance_group_manager_policy": resourceIBMISInstanceGroupManagerPolicyValidator(),
+				"ibm_is_floating_ip":                   resourceIBMISFloatingIPValidator(),
+				"ibm_is_ike_policy":                    resourceIBMISIKEValidator(),
+				"ibm_is_image":                         resourceIBMISImageValidator(),
+				"ibm_is_instance":                      resourceIBMISInstanceValidator(),
+				"ibm_is_ipsec_policy":                  resourceIBMISIPSECValidator(),
+				"ibm_is_lb_listener_policy_rule":       resourceIBMISLBListenerPolicyRuleValidator(),
+				"ibm_is_lb_listener_policy":            resourceIBMISLBListenerPolicyValidator(),
+				"ibm_is_lb_listener":                   resourceIBMISLBListenerValidator(),
+				"ibm_is_lb_pool":                       resourceIBMISLBPoolValidator(),
 				"ibm_is_lb":                            resourceIBMISLBValidator(),
+				"ibm_is_network_acl":                   resourceIBMISNetworkACLValidator(),
+				"ibm_is_public_gateway":                resourceIBMISPublicGatewayValidator(),
+				"ibm_is_security_group_rule":           resourceIBMISSecurityGroupRuleValidator(),
+				"ibm_is_security_group":                resourceIBMISSecurityGroupValidator(),
+				"ibm_is_ssh_key":                       resourceIBMISSHKeyValidator(),
+				"ibm_is_subnet":                        resourceIBMISSubnetValidator(),
+				"ibm_is_volume":                        resourceIBMISVolumeValidator(),
+				"ibm_is_address_prefix":                resourceIBMISAddressPrefixValidator(),
+				"ibm_is_route":                         resourceIBMISRouteValidator(),
+				"ibm_is_vpc":                           resourceIBMISVPCValidator(),
+				"ibm_is_vpn_gateway_connection":        resourceIBMISVPNGatewayConnectionValidator(),
+				"ibm_is_vpn_gateway":                   resourceIBMISVPNGatewayValidator(),
 			},
 		}
 	})

@@ -59,7 +59,7 @@ func resourceIBMISFloatingIP() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_floating_ip", isFloatingIPName),
 				Description:  "Name of the floating IP",
 			},
 
@@ -145,6 +145,23 @@ func classicVpcClient(meta interface{}) (*vpcclassicv1.VpcClassicV1, error) {
 func vpcClient(meta interface{}) (*vpcv1.VpcV1, error) {
 	sess, err := meta.(ClientSession).VpcV1API()
 	return sess, err
+}
+
+func resourceIBMISFloatingIPValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isFloatingIPName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISFloatingIPResourceValidator := ResourceValidator{ResourceName: "ibm_is_floating_ip", Schema: validateSchema}
+	return &ibmISFloatingIPResourceValidator
 }
 
 func resourceIBMISFloatingIPCreate(d *schema.ResourceData, meta interface{}) error {

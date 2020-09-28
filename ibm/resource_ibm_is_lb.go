@@ -59,7 +59,7 @@ func resourceIBMISLB() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_lb", isLBName),
 				Description:  "Load Balancer name",
 			},
 
@@ -68,7 +68,7 @@ func resourceIBMISLB() *schema.Resource {
 				ForceNew:     true,
 				Optional:     true,
 				Default:      "public",
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
+				ValidateFunc: InvokeValidator("ibm_is_lb", isLBType),
 				Description:  "Load Balancer type",
 			},
 
@@ -154,19 +154,35 @@ func resourceIBMISLB() *schema.Resource {
 func resourceIBMISLBValidator() *ResourceValidator {
 
 	validateSchema := make([]ValidateSchema, 1)
+	lbtype := "public, private"
 	isLBProfileAllowedValues := "network-fixed"
 
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBType,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              lbtype})
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isLBProfile,
 			ValidateFunctionIdentifier: ValidateAllowedStringValue,
 			Type:                       TypeString,
 			Required:                   false,
-			AllowedValues:              isLBProfileAllowedValues,
-		})
+			AllowedValues:              isLBProfileAllowedValues})
 
-	ibmISLBValidator := ResourceValidator{ResourceName: "ibm_is_lb", Schema: validateSchema}
-	return &ibmISLBValidator
+	ibmISLBResourceValidator := ResourceValidator{ResourceName: "ibm_is_lb", Schema: validateSchema}
+	return &ibmISLBResourceValidator
 }
 
 func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {

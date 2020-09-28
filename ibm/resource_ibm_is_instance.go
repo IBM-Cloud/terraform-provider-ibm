@@ -110,7 +110,7 @@ func resourceIBMISInstance() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_instance", isInstanceName),
 				Description:  "Instance name",
 			},
 
@@ -425,6 +425,23 @@ func resourceIBMISInstance() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISInstanceValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isInstanceName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISInstanceValidator := ResourceValidator{ResourceName: "ibm_is_instance", Schema: validateSchema}
+	return &ibmISInstanceValidator
 }
 
 func classicInstanceCreate(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image string) error {

@@ -56,7 +56,7 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Direction of traffic to enforce, either inbound or outbound",
-				ValidateFunc: validateIsSecurityRuleDirection,
+				ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleDirection),
 			},
 
 			isSecurityGroupRuleIPVersion: {
@@ -64,7 +64,7 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 				Optional:     true,
 				Description:  "IP version: ipv4 or ipv6",
 				Default:      isSecurityGroupRuleIPVersionDefault,
-				ValidateFunc: validateIPVersion,
+				ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleIPVersion),
 			},
 
 			isSecurityGroupRuleRemote: {
@@ -87,13 +87,13 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							ForceNew:     false,
-							ValidateFunc: validateICMPType,
+							ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleType),
 						},
 						isSecurityGroupRuleCode: {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							ForceNew:     false,
-							ValidateFunc: validateICMPCode,
+							ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleCode),
 						},
 					},
 				},
@@ -114,14 +114,14 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 							Optional:     true,
 							ForceNew:     false,
 							Default:      1,
-							ValidateFunc: validateISSecurityRulePort,
+							ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMin),
 						},
 						isSecurityGroupRulePortMax: {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							ForceNew:     false,
 							Default:      65535,
-							ValidateFunc: validateISSecurityRulePort,
+							ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMax),
 						},
 					},
 				},
@@ -142,14 +142,14 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 							Optional:     true,
 							ForceNew:     false,
 							Default:      1,
-							ValidateFunc: validateISSecurityRulePort,
+							ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMin),
 						},
 						isSecurityGroupRulePortMax: {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							ForceNew:     false,
 							Default:      65535,
-							ValidateFunc: validateISSecurityRulePort,
+							ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMax),
 						},
 					},
 				},
@@ -162,6 +162,58 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISSecurityGroupRuleValidator() *ResourceValidator {
+	validateSchema := make([]ValidateSchema, 1)
+	direction := "inbound, outbound"
+	ip_version := "ipv4, ipv6"
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSecurityGroupRuleDirection,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              direction})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSecurityGroupRuleIPVersion,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              ip_version})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSecurityGroupRuleType,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "0",
+			MaxValue:                   "254"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSecurityGroupRuleCode,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "0",
+			MaxValue:                   "255"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSecurityGroupRulePortMin,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "1",
+			MaxValue:                   "65535"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSecurityGroupRulePortMax,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "1",
+			MaxValue:                   "65535"})
+
+	ibmISSecurityGroupRuleResourceValidator := ResourceValidator{ResourceName: "ibm_is_security_group_rule", Schema: validateSchema}
+	return &ibmISSecurityGroupRuleResourceValidator
 }
 
 func resourceIBMISSecurityGroupRuleCreate(d *schema.ResourceData, meta interface{}) error {

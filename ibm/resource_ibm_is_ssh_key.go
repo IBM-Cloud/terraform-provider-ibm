@@ -41,7 +41,7 @@ func resourceIBMISSSHKey() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_security_group", isKeyName),
 				Description:  "SSH Key name",
 			},
 
@@ -111,6 +111,23 @@ func resourceIBMISSSHKey() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISSHKeyValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isKeyName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISSSHKeyResourceValidator := ResourceValidator{ResourceName: "ibm_is_ssh_key", Schema: validateSchema}
+	return &ibmISSSHKeyResourceValidator
 }
 
 func resourceIBMISSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {

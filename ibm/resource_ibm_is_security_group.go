@@ -33,7 +33,7 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				Description:  "Security group name",
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_security_group", isSecurityGroupName),
 			},
 			isSecurityGroupVPC: {
 				Type:        schema.TypeString,
@@ -84,6 +84,23 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISSecurityGroupValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSecurityGroupName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISSecurityGroupResourceValidator := ResourceValidator{ResourceName: "ibm_is_security_group", Schema: validateSchema}
+	return &ibmISSecurityGroupResourceValidator
 }
 
 func resourceIBMISSecurityGroupCreate(d *schema.ResourceData, meta interface{}) error {
