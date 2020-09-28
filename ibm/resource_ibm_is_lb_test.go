@@ -47,6 +47,41 @@ func TestAccIBMISLB_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISLB_basic_network(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	nlbName := fmt.Sprintf("tfnlbcreate%d", acctest.RandIntRange(10, 100))
+	nlbName1 := fmt.Sprintf("tfnlbupdate%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMISLBDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMISLBNetworkConfig(vpcname, subnetname, ISZoneName, ISCIDR, nlbName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_NLB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_NLB", "name", nlbName),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_NLB", "hostname"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIBMISLBNetworkConfig(vpcname, subnetname, ISZoneName, ISCIDR, nlbName1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_NLB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_NLB", "name", nlbName1),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISLB_basic_private(t *testing.T) {
 	var lb string
 	vpcname := fmt.Sprintf("tflbt-vpc-%d", acctest.RandIntRange(10, 100))
@@ -159,7 +194,6 @@ func testAccCheckIBMISLBExists(n, lb string) resource.TestCheckFunc {
 
 func testAccCheckIBMISLBConfig(vpcname, subnetname, zone, cidr, name string) string {
 	return fmt.Sprintf(`
-
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
@@ -177,9 +211,28 @@ func testAccCheckIBMISLBConfig(vpcname, subnetname, zone, cidr, name string) str
 
 }
 
-func testAccCheckIBMISLBConfigPrivate(vpcname, subnetname, zone, cidr, name string) string {
+func testAccCheckIBMISLBNetworkConfig(vpcname, subnetname, zone, cidr, nlbName string) string {
 	return fmt.Sprintf(`
 
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_NLB" {
+		name = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+		profile = "network-fixed"
+    }`, vpcname, subnetname, zone, cidr, nlbName)
+
+}
+
+func testAccCheckIBMISLBConfigPrivate(vpcname, subnetname, zone, cidr, name string) string {
+	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
