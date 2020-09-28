@@ -13,3 +13,10 @@ output "monitor" {
 output "rate_limit_id" {
   value = ibm_cis_rate_limit.ratelimit.id
 }
+output "ibm_cis_edge_functions_action_output" {
+  value = ibm_cis_edge_functions_action.test_action
+}
+
+output "ibm_cis_edge_function_trigger_output" {
+  value = ibm_cis_edge_functions_trigger.test_trigger
+}
