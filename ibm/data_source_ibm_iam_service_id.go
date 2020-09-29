@@ -57,6 +57,12 @@ func dataSourceIBMIAMServiceID() *schema.Resource {
 							Type:        schema.TypeBool,
 							Computed:    true,
 						},
+
+						"iam_id": {
+							Description: "The IAM ID of the serviceID",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
 					},
 				},
 			},
@@ -99,6 +105,7 @@ func dataSourceIBMIAMServiceIDRead(d *schema.ResourceData, meta interface{}) err
 			"description": serviceID.Description,
 			"crn":         serviceID.CRN,
 			"locked":      serviceID.Locked,
+			"iam_id":      serviceID.IAMID,
 		}
 		serviceIDListMap = append(serviceIDListMap, l)
 	}
