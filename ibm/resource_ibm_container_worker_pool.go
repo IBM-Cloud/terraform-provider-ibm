@@ -288,6 +288,24 @@ func resourceIBMContainerWorkerPoolUpdate(d *schema.ResourceData, meta interface
 				"Error waiting for workers of worker pool (%s) of cluster (%s) to become ready: %s", workerPoolNameorID, clusterNameorID, err)
 		}
 	}
+	if d.HasChange("labels") {
+		labels := make(map[string]string)
+		if l, ok := d.GetOk("labels"); ok {
+			for k, v := range l.(map[string]interface{}) {
+				labels[k] = v.(string)
+			}
+		}
+		err = workerPoolsAPI.UpdateLabelsWorkerPool(clusterNameorID, workerPoolNameorID, labels, targetEnv)
+		if err != nil {
+			return err
+		}
+
+		_, err = WaitForWorkerNormal(clusterNameorID, workerPoolNameorID, meta, d.Timeout(schema.TimeoutUpdate), targetEnv)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for workers of worker pool (%s) of cluster (%s) to become ready: %s", workerPoolNameorID, clusterNameorID, err)
+		}
+	}
 
 	return resourceIBMContainerWorkerPoolRead(d, meta)
 }
