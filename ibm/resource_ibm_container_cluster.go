@@ -157,6 +157,16 @@ func resourceIBMContainerCluster() *schema.Resource {
 				ValidateFunc: validateWorkerNum,
 			},
 
+			"default_pool_labels": {
+				Type:             schema.TypeMap,
+				Optional:         true,
+				Computed:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: applyOnce,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Description:      "list of labels to the default worker pool",
+			},
+
 			"workers_info": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -951,6 +961,48 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 				"The default worker pool does not exist. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes..")
 		}
 	}
+
+	if d.HasChange("default_pool_labels") || d.IsNewResource() {
+		workerPoolsAPI := csClient.WorkerPools()
+		workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID, targetEnv)
+		if err != nil {
+			return err
+		}
+		var poolName string
+		var poolContains bool
+
+		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
+			poolName = defaultWorkerPool
+			poolContains = true
+		} else if len(workerPools) > 0 && workerPoolContains(workerPools, computeWorkerPool) && workerPoolContains(workerPools, gatewayWorkerpool) {
+			poolName = computeWorkerPool
+			poolContains = true
+		}
+		if poolContains {
+			labels := make(map[string]string)
+			if l, ok := d.GetOk("default_pool_labels"); ok {
+				for k, v := range l.(map[string]interface{}) {
+					labels[k] = v.(string)
+				}
+			}
+			err = workerPoolsAPI.UpdateLabelsWorkerPool(clusterID, poolName, labels, targetEnv)
+			if err != nil {
+				return fmt.Errorf(
+					"Error updating the default_pool_labels%s", err)
+			}
+
+			_, err = WaitForWorkerAvailable(d, meta, targetEnv)
+			if err != nil {
+				return fmt.Errorf(
+					"Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
+			}
+		} else {
+			return fmt.Errorf(
+				"The default worker pool does not exist. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes..")
+		}
+
+	}
+
 
 	if d.HasChange("worker_num") {
 		old, new := d.GetChange("worker_num")
