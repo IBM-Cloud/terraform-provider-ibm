@@ -45,6 +45,12 @@ func resourceIBMIAMServiceID() *schema.Resource {
 				Description: "crn of the serviceID",
 			},
 
+			"iam_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The IAM ID of the serviceID",
+			},
+
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -103,6 +109,7 @@ func resourceIBMIAMServiceIDRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("description", serviceID.Description)
 	d.Set("crn", serviceID.CRN)
 	d.Set("version", serviceID.Version)
+	d.Set("iam_id", serviceID.IAMID)
 
 	return nil
 }

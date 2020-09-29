@@ -36,5 +36,6 @@ The following attributes are exported:
   * `description` -  description of the serviceID.
   * `version` -  version of the serviceID.
   * `locked` -  lock state of the serviceID.
+  * `iam_id` - The IAM ID of the serviceID.
 
   
