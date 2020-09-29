@@ -129,10 +129,10 @@ var regionToEndpoint = map[string]map[string]string{
 		"global": "https://user-management.cloud.ibm.com",
 	},
 	"hpcs": {
-		"us-south": "https://zcryptobroker.mybluemix.net/crypto_v2/",
-		"us-east":  "https://zcryptobroker-wdc.us-east.mybluemix.net/crypto_v2/",
-		"au-syd":   "https://zcryptobroker-syd.au-syd.mybluemix.net/crypto_v2/",
-		"eu-de":    "https://zcryptobroker-de.eu-de.mybluemix.net/crypto_v2/",
+		"us-south": "https://us-south.broker.hs-crypto.cloud.ibm.com/crypto_v2/",
+		"us-east":  "https://us-east.broker.hs-crypto.cloud.ibm.com/crypto_v2/",
+		"au-syd":   "https://au-syd.broker.hs-crypto.cloud.ibm.com/crypto_v2/",
+		"eu-de":    "https://eu-de.broker.hs-crypto.cloud.ibm.com/crypto_v2/",
 	},
 }
 
