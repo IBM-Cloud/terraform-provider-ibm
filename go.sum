@@ -35,6 +35,8 @@ github.com/IBM-Cloud/bluemix-go v0.0.0-20200921095234-26d1d0148c62 h1:8I8Z3mRorZ
 github.com/IBM-Cloud/bluemix-go v0.0.0-20200921095234-26d1d0148c62/go.mod h1:gPJbH1etcDj7qS/hBRiLuYW9CY0bRcostSKusa51xR0=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20200928122625-60d1f2f40c15 h1:2prJvW3vJuDbRUfTHP95ELKapQNDcfthaa/oOjjqUlU=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20200928122625-60d1f2f40c15/go.mod h1:gPJbH1etcDj7qS/hBRiLuYW9CY0bRcostSKusa51xR0=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20200929101244-3d3ebff67c98 h1:qAl4eigZyycBsf7AqIdPbRE/5v7eRW0bD65jy6PrKxo=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20200929101244-3d3ebff67c98/go.mod h1:gPJbH1etcDj7qS/hBRiLuYW9CY0bRcostSKusa51xR0=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
 github.com/IBM-Cloud/power-go-client v1.0.48 h1:iIMKJn+Pi5XwDV5mav4Pdl5QbAGaaoKFHmNoLuCLYHU=
 github.com/IBM-Cloud/power-go-client v1.0.48/go.mod h1:+mOxjyLeLIloR4EMHTpiDbN+FilZpiVHTwu5eqi+cbI=
