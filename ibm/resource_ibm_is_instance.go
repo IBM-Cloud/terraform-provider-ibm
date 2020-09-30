@@ -423,6 +423,12 @@ func resourceIBMISInstance() *schema.Resource {
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
 			},
+
+			"force_recovery_time": {
+				Description: "Define timeout to force the instances to start/stop in minutes.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -834,15 +840,21 @@ func isWaitForClassicInstanceAvailable(instanceC *vpcclassicv1.VpcClassicV1, id 
 func isWaitForInstanceAvailable(instanceC *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for instance (%s) to be available.", id)
 
+	communicator := make(chan interface{})
+
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isInstanceProvisioning},
 		Target:     []string{isInstanceStatusRunning, "available", "failed", ""},
-		Refresh:    isInstanceRefreshFunc(instanceC, id, d),
+		Refresh:    isInstanceRefreshFunc(instanceC, id, d, communicator),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
 
+	if v, ok := d.GetOk("force_recovery_time"); ok {
+		forceTimeout := v.(int)
+		go isRestartStartAction(instanceC, id, d, forceTimeout, communicator)
+	}
 	return stateConf.WaitForState()
 }
 
@@ -866,7 +878,7 @@ func isClassicInstanceRefreshFunc(instanceC *vpcclassicv1.VpcClassicV1, id strin
 	}
 }
 
-func isInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceData, communicator chan interface{}) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getinsOptions := &vpcv1.GetInstanceOptions{
 			ID: &id,
@@ -877,14 +889,61 @@ func isInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.Resource
 		}
 		d.Set(isInstanceStatus, *instance.Status)
 
-		if *instance.Status == "available" || *instance.Status == "failed" || *instance.Status == "running" {
-			return instance, *instance.Status, nil
+		select {
+		case data := <-communicator:
+			return nil, "", data.(error)
+		default:
+			fmt.Println("no message sent")
 		}
 
+		if *instance.Status == "available" || *instance.Status == "failed" || *instance.Status == "running" {
+			// let know the isRestartStartAction() to stop
+			close(communicator)
+			return instance, *instance.Status, nil
+
+		}
 		return instance, isInstanceProvisioning, nil
 	}
 }
 
+func isRestartStartAction(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceData, forceTimeout int, communicator chan interface{}) {
+	subticker := time.NewTicker(time.Duration(forceTimeout) * time.Minute)
+	//subticker := time.NewTicker(time.Duration(forceTimeout) * time.Second)
+	for {
+		select {
+
+		case <-subticker.C:
+			log.Println("Instance is still in starting state, force retry by restarting the instance.")
+			actiontype := "stop"
+			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+				InstanceID: &id,
+				Type:       &actiontype,
+			}
+			_, response, err := instanceC.CreateInstanceAction(createinsactoptions)
+			if err != nil {
+				communicator <- fmt.Errorf("Error retrying instance action start: %s\n%s", err, response)
+				return
+			}
+			waitTimeout := time.Duration(1) * time.Minute
+			_, _ = isWaitForInstanceActionStop(instanceC, waitTimeout, id, d)
+			actiontype = "start"
+			createinsactoptions = &vpcv1.CreateInstanceActionOptions{
+				InstanceID: &id,
+				Type:       &actiontype,
+			}
+			_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+			if err != nil {
+				communicator <- fmt.Errorf("Error retrying instance action start: %s\n%s", err, response)
+				return
+			}
+		case <-communicator:
+			// indicates refresh func is reached target and not proceed with the thread
+			subticker.Stop()
+			return
+
+		}
+	}
+}
 func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
@@ -1836,7 +1895,7 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("Error Creating Instance Action: %s\n%s", err, response)
 	}
-	_, err = isWaitForInstanceActionStop(instanceC, d, meta, id)
+	_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutDelete), id, d)
 	if err != nil {
 		return err
 	}
@@ -2043,8 +2102,8 @@ func isWaitForClassicInstanceActionStop(instanceC *vpcclassicv1.VpcClassicV1, d 
 
 	return stateConf.WaitForState()
 }
-func isWaitForInstanceActionStop(instanceC *vpcv1.VpcV1, d *schema.ResourceData, meta interface{}, id string) (interface{}, error) {
-
+func isWaitForInstanceActionStop(instanceC *vpcv1.VpcV1, timeout time.Duration, id string, d *schema.ResourceData) (interface{}, error) {
+	communicator := make(chan interface{})
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{isInstanceStatusRunning, isInstanceStatusPending, isInstanceActionStatusStopping},
 		Target:  []string{isInstanceActionStatusStopped, isInstanceStatusFailed, ""},
@@ -2056,17 +2115,57 @@ func isWaitForInstanceActionStop(instanceC *vpcv1.VpcV1, d *schema.ResourceData,
 			if err != nil {
 				return nil, "", fmt.Errorf("Error Getting Instance: %s\n%s", err, response)
 			}
+			select {
+			case data := <-communicator:
+				return nil, "", data.(error)
+			default:
+				fmt.Println("no message sent")
+			}
 			if *instance.Status == isInstanceStatusFailed {
-				return instance, *instance.Status, fmt.Errorf("The  instance %s failed to stop: %v", d.Id(), err)
+				// let know the isRestartStopAction() to stop
+				close(communicator)
+				return instance, *instance.Status, fmt.Errorf("The  instance %s failed to stop: %v", id, err)
 			}
 			return instance, *instance.Status, nil
 		},
-		Timeout:    d.Timeout(schema.TimeoutDelete),
+		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
 
+	if v, ok := d.GetOk("force_recovery_time"); ok {
+		forceTimeout := v.(int)
+		go isRestartStopAction(instanceC, id, d, forceTimeout, communicator)
+	}
+
 	return stateConf.WaitForState()
+}
+
+func isRestartStopAction(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceData, forceTimeout int, communicator chan interface{}) {
+	subticker := time.NewTicker(time.Duration(forceTimeout) * time.Minute)
+	//subticker := time.NewTicker(time.Duration(forceTimeout) * time.Second)
+	for {
+		select {
+
+		case <-subticker.C:
+			log.Println("Instance is still in stopping state, retrying to stop with -force")
+			actiontype := "stop"
+			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+				InstanceID: &id,
+				Type:       &actiontype,
+			}
+			_, response, err := instanceC.CreateInstanceAction(createinsactoptions)
+			if err != nil {
+				communicator <- fmt.Errorf("Error retrying instance action stop: %s\n%s", err, response)
+				return
+			}
+		case <-communicator:
+			// indicates refresh func is reached target and not proceed with the thread)
+			subticker.Stop()
+			return
+
+		}
+	}
 }
 
 func isWaitForClassicInstanceVolumeAttached(instanceC *vpcclassicv1.VpcClassicV1, d *schema.ResourceData, id, volID string) (interface{}, error) {
