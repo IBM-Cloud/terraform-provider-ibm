@@ -1003,7 +1003,6 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 
 	}
 
-
 	if d.HasChange("worker_num") {
 		old, new := d.GetChange("worker_num")
 		oldCount := old.(int)
