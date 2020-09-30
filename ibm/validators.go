@@ -1144,7 +1144,8 @@ type ResourceValidator struct {
 }
 
 type ValidatorDict struct {
-	ResourceValidatorDictionary map[string]*ResourceValidator
+	ResourceValidatorDictionary   map[string]*ResourceValidator
+	DataSourceValidatorDictionary map[string]*ResourceValidator
 }
 
 // Resource Validator Dictionary -- For all terraform IBM Resource Providers.
@@ -1162,6 +1163,31 @@ func InvokeValidator(resourceName, identifier string) schema.SchemaValidateFunc 
 	resourceItem := validatorDict.ResourceValidatorDictionary[resourceName]
 	if resourceItem.ResourceName == resourceName {
 		parameterValidateSchema := resourceItem.Schema
+		for _, validateSchema := range parameterValidateSchema {
+			if validateSchema.Identifier == identifier {
+				schemaToInvoke = validateSchema
+				found = true
+				break
+			}
+		}
+	}
+
+	if found {
+		return invokeValidatorInternal(schemaToInvoke)
+	} else {
+		// Add error code later. TODO
+		return nil
+	}
+}
+
+func InvokeDataSourceValidator(resourceName, identifier string) schema.SchemaValidateFunc {
+	// Loop through dictionary and identify the resource and then the parameter configuration.
+	var schemaToInvoke ValidateSchema
+	found := false
+
+	dataSourceItem := validatorDict.DataSourceValidatorDictionary[resourceName]
+	if dataSourceItem.ResourceName == resourceName {
+		parameterValidateSchema := dataSourceItem.Schema
 		for _, validateSchema := range parameterValidateSchema {
 			if validateSchema.Identifier == identifier {
 				schemaToInvoke = validateSchema

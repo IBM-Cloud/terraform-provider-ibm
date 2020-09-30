@@ -16,9 +16,10 @@ func dataSourceIBMISVolume() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			isVolumeName: {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Volume name",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: InvokeDataSourceValidator("ibm_is_subnet", isVolumeName),
+				Description:  "Volume name",
 			},
 
 			isVolumeZone: {
@@ -109,6 +110,18 @@ func dataSourceIBMISVolume() *schema.Resource {
 			},
 		},
 	}
+}
+
+func dataSourceIBMISVolumeValidator() *ResourceValidator {
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVolumeName,
+			ValidateFunctionIdentifier: ValidateNoZeroValues,
+			Type:                       TypeString})
+
+	ibmISVoulmeDataSourceValidator := ResourceValidator{ResourceName: "ibm_is_volume", Schema: validateSchema}
+	return &ibmISVoulmeDataSourceValidator
 }
 
 func dataSourceIBMISVolumeRead(d *schema.ResourceData, meta interface{}) error {

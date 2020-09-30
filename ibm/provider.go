@@ -482,8 +482,6 @@ func Validator() ValidatorDict {
 				"ibm_tg_connection":                    resourceIBMTransitGatewayConnectionValidator(),
 				"ibm_dl_virtual_connection":            resourceIBMdlGatewayVCValidator(),
 				"ibm_dl_gateway":                       resourceIBMDLGatewayValidator(),
-				"ibm_dl_offering_speeds":               datasourceIBMDLOfferingSpeedsValidator(),
-				"ibm_dl_routers":                       datasourceIBMDLRoutersValidator(),
 				"ibm_function_package":                 resourceIBMFuncPackageValidator(),
 				"ibm_function_action":                  resourceIBMFuncActionValidator(),
 				"ibm_function_rule":                    resourceIBMFuncRuleValidator(),
@@ -494,6 +492,13 @@ func Validator() ValidatorDict {
 				"ibm_is_instance_group_manager":        resourceIBMISInstanceGroupManagerValidator(),
 				"ibm_is_instance_group_manager_policy": resourceIBMISInstanceGroupManagerPolicyValidator(),
 				"ibm_is_lb":                            resourceIBMISLBValidator(),
+			},
+			DataSourceValidatorDictionary: map[string]*ResourceValidator{
+				"ibm_is_subnet":          dataSourceIBMISSubnetValidator(),
+				"ibm_dl_offering_speeds": datasourceIBMDLOfferingSpeedsValidator(),
+				"ibm_dl_routers":         datasourceIBMDLRoutersValidator(),
+				"ibm_is_vpc":             dataSourceIBMISVpcValidator(),
+				"ibm_is_volume":          dataSourceIBMISVolumeValidator(),
 			},
 		}
 	})

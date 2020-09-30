@@ -26,8 +26,9 @@ func dataSourceIBMISVPC() *schema.Resource {
 			},
 
 			isVPCName: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: InvokeDataSourceValidator("ibm_is_subnet", isVPCName),
 			},
 
 			isVPCResourceGroup: {
@@ -233,6 +234,18 @@ func dataSourceIBMISVPC() *schema.Resource {
 			},
 		},
 	}
+}
+
+func dataSourceIBMISVpcValidator() *ResourceValidator {
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCName,
+			ValidateFunctionIdentifier: ValidateNoZeroValues,
+			Type:                       TypeString})
+
+	ibmISVpcDataSourceValidator := ResourceValidator{ResourceName: "ibm_is_vpc", Schema: validateSchema}
+	return &ibmISVpcDataSourceValidator
 }
 
 func dataSourceIBMISVPCRead(d *schema.ResourceData, meta interface{}) error {
