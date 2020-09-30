@@ -757,8 +757,8 @@ func isWaitForPIInstanceAvailable(client *st.IBMPIInstanceClient, id string, tim
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"PENDING", "BUILD", helpers.PIInstanceHealthWarning},
-		Target:     []string{"OK", "ACTIVE", helpers.PIInstanceHealthOk},
+		Pending:    []string{"PENDING", helpers.PIInstanceBuilding, helpers.PIInstanceHealthWarning},
+		Target:     []string{helpers.PIInstanceAvailable, helpers.PIInstanceHealthOk, "ERROR", ""},
 		Refresh:    isPIInstanceRefreshFunc(client, id, powerinstanceid, instance_ready_status),
 		Delay:      10 * time.Second,
 		MinTimeout: queryTimeOut,
@@ -787,6 +787,10 @@ func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, powerinstanceid
 
 			return pvm, helpers.PIInstanceAvailable, nil
 
+		}
+		if *pvm.Status == "ERROR" {
+			log.Printf("The health status is now %s", *pvm.Status)
+			return pvm, *pvm.Status, fmt.Errorf("Failed to create the lpar")
 		}
 
 		return pvm, helpers.PIInstanceBuilding, nil
