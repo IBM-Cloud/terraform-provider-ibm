@@ -179,6 +179,7 @@ Nested `network_interfaces` block have the following structure:
 * `user_data` - (Optional, string) User data to transfer to the server instance.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID for this instance.
 * `tags` - (Optional, array of strings) Tags associated with the instance.
+* `force_recovery_time` - (Optional, int) Define timeout (in minutes), to force the is_instance to recover from a perpetual "starting" state, during provisioning; similarly, to force the is_instance to recover from a perpetual "stopping" state, during deprovisioning.  **Note**: the force_recovery_time is used to retry multiple times until timeout.
 
 ## Attribute Reference
 
