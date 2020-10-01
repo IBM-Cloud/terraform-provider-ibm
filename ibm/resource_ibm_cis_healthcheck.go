@@ -24,6 +24,9 @@ const (
 	cisGLBHealthCheckAllowInsecure   = "allow_insecure"
 	cisGLBHealthCheckCreatedOn       = "create_on"
 	cisGLBHealthCheckModifiedOn      = "modified_on"
+	cisGLBHealthCheckHeaders         = "headers"
+	cisGLBHealthCheckHeadersHeader   = "header"
+	cisGLBHealthCheckHeadersValues   = "values"
 )
 
 func resourceIBMCISHealthCheck() *schema.Resource {
@@ -132,6 +135,27 @@ func resourceIBMCISHealthCheck() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: InvokeValidator(ibmCISHealthCheck, cisGLBHealthCheckPort),
 			},
+			cisGLBHealthCheckHeaders: {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						cisGLBHealthCheckHeadersHeader: {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						cisGLBHealthCheckHeadersValues: {
+							Type:     schema.TypeSet,
+							Required: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+				Set: hashByMapKey(cisGLBHealthCheckHeadersHeader),
+			},
 		},
 	}
 }
@@ -238,6 +262,9 @@ func resourceCISHealthCheckCreate(d *schema.ResourceData, meta interface{}) erro
 	if port, ok := d.GetOk(cisGLBHealthCheckPort); ok {
 		opt.SetPort(int64(port.(int)))
 	}
+	if header, ok := d.GetOk(cisGLBHealthCheckHeaders); ok {
+		opt.SetHeader(expandLoadBalancerMonitorHeader(header))
+	}
 
 	result, resp, err := sess.CreateLoadBalancerMonitor(opt)
 	if err != nil {
@@ -284,6 +311,9 @@ func resourceCISHealthCheckRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set(cisGLBHealthCheckPort, result.Result.Port)
 	d.Set(cisGLBHealthCheckCreatedOn, result.Result.CreatedOn)
 	d.Set(cisGLBHealthCheckModifiedOn, result.Result.ModifiedOn)
+	if err := d.Set(cisGLBHealthCheckHeaders, flattenLoadBalancerMonitorHeader(result.Result.Header)); err != nil {
+		log.Printf("[WARN] Error setting header for load balancer monitor %q: %s", d.Id(), err)
+	}
 
 	return nil
 }
@@ -312,7 +342,8 @@ func resourceCISHealthCheckUpdate(d *schema.ResourceData, meta interface{}) erro
 		d.HasChange(cisGLBHealthCheckInterval) ||
 		d.HasChange(cisGLBHealthCheckFollowRedirects) ||
 		d.HasChange(cisGLBHealthCheckAllowInsecure) ||
-		d.HasChange(cisGLBHealthCheckPort) {
+		d.HasChange(cisGLBHealthCheckPort) ||
+		d.HasChange(cisGLBHealthCheckHeaders) {
 		if monType, ok := d.GetOk(cisGLBHealthCheckType); ok {
 			opt.SetType(monType.(string))
 		}
@@ -348,6 +379,9 @@ func resourceCISHealthCheckUpdate(d *schema.ResourceData, meta interface{}) erro
 		}
 		if port, ok := d.GetOk(cisGLBHealthCheckPort); ok {
 			opt.SetPort(int64(port.(int)))
+		}
+		if header, ok := d.GetOk(cisGLBHealthCheckHeaders); ok {
+			opt.SetHeader(expandLoadBalancerMonitorHeader(header))
 		}
 		result, resp, err := sess.EditLoadBalancerMonitor(opt)
 		if err != nil {
@@ -408,4 +442,34 @@ func resourceCISHealthCheckExists(d *schema.ResourceData, meta interface{}) (boo
 	}
 	log.Printf("global load balancer health check exists: %s", *result.Result.ID)
 	return true, nil
+}
+
+func hashByMapKey(key string) func(v interface{}) int {
+	return func(v interface{}) int {
+		m := v.(map[string]interface{})
+		return schema.HashString(m[key])
+	}
+}
+
+func expandLoadBalancerMonitorHeader(cfgSet interface{}) map[string][]string {
+	header := make(map[string][]string)
+	cfgList := cfgSet.(*schema.Set).List()
+	for _, item := range cfgList {
+		cfg := item.(map[string]interface{})
+		header[cfg[cisGLBHealthCheckHeadersHeader].(string)] =
+			expandStringList(cfg[cisGLBHealthCheckHeadersValues].(*schema.Set).List())
+	}
+	return header
+}
+
+func flattenLoadBalancerMonitorHeader(header map[string][]string) *schema.Set {
+	flattened := make([]interface{}, 0)
+	for k, v := range header {
+		cfg := map[string]interface{}{
+			cisGLBHealthCheckHeadersHeader: k,
+			cisGLBHealthCheckHeadersValues: schema.NewSet(schema.HashString, flattenStringList(v)),
+		}
+		flattened = append(flattened, cfg)
+	}
+	return schema.NewSet(hashByMapKey(cisGLBHealthCheckHeadersHeader), flattened)
 }
