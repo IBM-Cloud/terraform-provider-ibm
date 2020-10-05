@@ -75,6 +75,15 @@ func resourceIBMDLGateway() *schema.Resource {
 				ForceNew:    true,
 				Description: "BGP base CIDR",
 			},
+			dlPort: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				Computed:      true,
+				Description:   "Gateway port",
+				ConflictsWith: []string{"location_name", "cross_connect_router", "carrier_name", "customer_name"},
+			},
+
 			dlCrossConnectRouter: {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -91,6 +100,7 @@ func resourceIBMDLGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
+				Computed:    true,
 				Description: "Gateway location",
 			},
 			dlMetered: {
@@ -168,12 +178,6 @@ func resourceIBMDLGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Gateway operational status",
-			},
-			dlPort: {
-				Type: schema.TypeString,
-
-				Computed:    true,
-				Description: "Gateway port",
 			},
 			dlProviderAPIManaged: {
 				Type:        schema.TypeBool,
@@ -298,83 +302,111 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
-
-	createGatewayOptionsModel := &directlinkv1.CreateGatewayOptions{}
-	gatewayTemplateModel := &directlinkv1.GatewayTemplateGatewayTypeDedicatedTemplate{}
-
-	name := d.Get(dlName).(string)
-	gatewayTemplateModel.Name = &name
 	dtype := d.Get(dlType).(string)
-	gatewayTemplateModel.Type = &dtype
+	createGatewayOptionsModel := &directlinkv1.CreateGatewayOptions{}
+	name := d.Get(dlName).(string)
 	speed := int64(d.Get(dlSpeedMbps).(int))
-	gatewayTemplateModel.SpeedMbps = &speed
 	global := d.Get(dlGlobal).(bool)
-	gatewayTemplateModel.Global = &global
 	bgpAsn := int64(d.Get(dlBgpAsn).(int))
-	gatewayTemplateModel.BgpAsn = &bgpAsn
-	bgpBaseCidr := d.Get(dlBgpBaseCidr).(string)
-	gatewayTemplateModel.BgpBaseCidr = &bgpBaseCidr
 	metered := d.Get(dlMetered).(bool)
-	gatewayTemplateModel.Metered = &metered
+	var bgpBaseCidr string
+	bgpBaseCidr = d.Get(dlBgpBaseCidr).(string)
 
 	if dtype == "dedicated" {
+		var crossConnectRouter, carrierName, locationName, customerName string
 		if _, ok := d.GetOk(dlCarrierName); ok {
-			carrierName := d.Get(dlCarrierName).(string)
-			gatewayTemplateModel.CarrierName = &carrierName
+			carrierName = d.Get(dlCarrierName).(string)
+			//		gatewayTemplateModel.CarrierName = &carrierName
 		} else {
 			err = fmt.Errorf("Error creating gateway, %s is a required field", dlCarrierName)
 			log.Printf("%s is a required field", dlCarrierName)
 			return err
 		}
 		if _, ok := d.GetOk(dlCrossConnectRouter); ok {
-			crossConnectRouter := d.Get(dlCrossConnectRouter).(string)
-			gatewayTemplateModel.CrossConnectRouter = &crossConnectRouter
+			crossConnectRouter = d.Get(dlCrossConnectRouter).(string)
+			//	gatewayTemplateModel.CrossConnectRouter = &crossConnectRouter
 		} else {
 			err = fmt.Errorf("Error creating gateway, %s is a required field", dlCrossConnectRouter)
 			log.Printf("%s is a required field", dlCrossConnectRouter)
 			return err
 		}
 		if _, ok := d.GetOk(dlLocationName); ok {
-			locationName := d.Get(dlLocationName).(string)
-			gatewayTemplateModel.LocationName = &locationName
+			locationName = d.Get(dlLocationName).(string)
+			//gatewayTemplateModel.LocationName = &locationName
 		} else {
 			err = fmt.Errorf("Error creating gateway, %s is a required field", dlLocationName)
 			log.Printf("%s is a required field", dlLocationName)
 			return err
 		}
 		if _, ok := d.GetOk(dlCustomerName); ok {
-			customerName := d.Get(dlCustomerName).(string)
-			gatewayTemplateModel.CustomerName = &customerName
+			customerName = d.Get(dlCustomerName).(string)
+			//gatewayTemplateModel.CustomerName = &customerName
 		} else {
 			err = fmt.Errorf("Error creating gateway, %s is a required field", dlCustomerName)
 			log.Printf("%s is a required field", dlCustomerName)
 			return err
 		}
-	}
+		gatewayDedicatedTemplateModel, _ := directLink.NewGatewayTemplateGatewayTypeDedicatedTemplate(bgpAsn, bgpBaseCidr, global, metered, name, speed, dtype, carrierName, crossConnectRouter, customerName, locationName)
 
-	if _, ok := d.GetOk(dlBgpIbmCidr); ok {
-		bgpIbmCidr := d.Get(dlBgpIbmCidr).(string)
-		gatewayTemplateModel.BgpIbmCidr = &bgpIbmCidr
-	}
-	if _, ok := d.GetOk(dlBgpCerCidr); ok {
-		bgpCerCidr := d.Get(dlBgpCerCidr).(string)
-		gatewayTemplateModel.BgpCerCidr = &bgpCerCidr
-	}
-	if _, ok := d.GetOk(dlResourceGroup); ok {
-		resourceGroup := d.Get(dlResourceGroup).(string)
-		gatewayTemplateModel.ResourceGroup = &directlinkv1.ResourceGroupIdentity{ID: &resourceGroup}
-	}
+		if _, ok := d.GetOk(dlBgpIbmCidr); ok {
+			bgpIbmCidr := d.Get(dlBgpIbmCidr).(string)
+			gatewayDedicatedTemplateModel.BgpIbmCidr = &bgpIbmCidr
 
-	createGatewayOptionsModel.GatewayTemplate = gatewayTemplateModel
+		}
+		if _, ok := d.GetOk(dlBgpCerCidr); ok {
+			bgpCerCidr := d.Get(dlBgpCerCidr).(string)
+			gatewayDedicatedTemplateModel.BgpCerCidr = &bgpCerCidr
+
+		}
+		if _, ok := d.GetOk(dlResourceGroup); ok {
+			resourceGroup := d.Get(dlResourceGroup).(string)
+			gatewayDedicatedTemplateModel.ResourceGroup = &directlinkv1.ResourceGroupIdentity{ID: &resourceGroup}
+
+		}
+
+		createGatewayOptionsModel.GatewayTemplate = gatewayDedicatedTemplateModel
+
+	} else if dtype == "connect" {
+		var portID string
+		if _, ok := d.GetOk(dlPort); ok {
+			portID = d.Get(dlPort).(string)
+		}
+		if portID != "" {
+			portIdentity, _ := directLink.NewGatewayPortIdentity(portID)
+			gatewayConnectTemplateModel, _ := directLink.NewGatewayTemplateGatewayTypeConnectTemplate(bgpAsn, bgpBaseCidr, global, metered, name, speed, dtype, portIdentity)
+
+			if _, ok := d.GetOk(dlBgpIbmCidr); ok {
+				bgpIbmCidr := d.Get(dlBgpIbmCidr).(string)
+				gatewayConnectTemplateModel.BgpIbmCidr = &bgpIbmCidr
+
+			}
+			if _, ok := d.GetOk(dlBgpCerCidr); ok {
+				bgpCerCidr := d.Get(dlBgpCerCidr).(string)
+				gatewayConnectTemplateModel.BgpCerCidr = &bgpCerCidr
+
+			}
+			if _, ok := d.GetOk(dlResourceGroup); ok {
+				resourceGroup := d.Get(dlResourceGroup).(string)
+				gatewayConnectTemplateModel.ResourceGroup = &directlinkv1.ResourceGroupIdentity{ID: &resourceGroup}
+
+			}
+			createGatewayOptionsModel.GatewayTemplate = gatewayConnectTemplateModel
+
+		} else {
+			err = fmt.Errorf("Error creating direct link connect gateway, %s is a required field", dlPort)
+			log.Printf("%s is a required field", dlPort)
+			return err
+		}
+	}
 
 	gateway, response, err := directLink.CreateGateway(createGatewayOptionsModel)
 	if err != nil {
-		log.Printf("[DEBUG] Create Direct Link Gateway (Dedicated) err %s\n%s", err, response)
+		log.Printf("[DEBUG] Create Direct Link Gateway (%s) err %s\n%s", dtype, err, response)
 		return err
 	}
 	d.SetId(*gateway.ID)
 
-	log.Printf("[INFO] Created Direct Link Gateway (Dedicated Template) : %s", *gateway.ID)
+	log.Printf("[INFO] Created Direct Link Gateway (%s Template) : %s", dtype, *gateway.ID)
 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(dlTags); ok || v != "" {
@@ -382,7 +414,7 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *gateway.Crn)
 		if err != nil {
 			log.Printf(
-				"Error on create of resource direct link gateway dedicated (%s) tags: %s", d.Id(), err)
+				"Error on create of resource direct link gateway %s (%s) tags: %s", dtype, d.Id(), err)
 		}
 	}
 
@@ -390,6 +422,8 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
+	dtype := d.Get(dlType).(string)
+	log.Printf("[INFO] Inside resourceIBMdlGatewayRead: %s", dtype)
 
 	directLink, err := directlinkClient(meta)
 	if err != nil {
@@ -401,13 +435,15 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	getOptions := &directlinkv1.GetGatewayOptions{
 		ID: &ID,
 	}
+	log.Printf("[INFO] Calling getgateway api: %s", dtype)
+
 	instance, response, err := directLink.GetGateway(getOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error Getting Direct Link Gateway (Dedicated Template): %s\n%s", err, response)
+		return fmt.Errorf("Error Getting Direct Link Gateway (%s Template): %s\n%s", dtype, err, response)
 	}
 	if instance.ID != nil {
 		d.Set("id", *instance.ID)
@@ -457,7 +493,7 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	if instance.CompletionNoticeRejectReason != nil {
 		d.Set(dlCompletionNoticeRejectReason, *instance.CompletionNoticeRejectReason)
 	}
-	if instance.LocationName != nil {
+	if *instance.LocationName != "" {
 		d.Set(dlLocationName, *instance.LocationName)
 	}
 	if instance.LocationDisplayName != nil {
@@ -491,7 +527,7 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(ResourceControllerURL, controller+"/interconnectivity/direct-link")
 	d.Set(ResourceName, *instance.Name)
 	d.Set(ResourceCRN, *instance.Crn)
-	d.Set(ResourceStatus, *instance.LinkStatus)
+	d.Set(ResourceStatus, *instance.OperationalStatus)
 	if instance.ResourceGroup != nil {
 		rg := instance.ResourceGroup
 		d.Set(dlResourceGroup, *rg.ID)
@@ -612,12 +648,7 @@ func resourceIBMdlGatewayExists(d *schema.ResourceData, meta interface{}) (bool,
 			d.SetId("")
 			return false, nil
 		}
-		return false, fmt.Errorf("Error Getting Direct Link Gateway (Dedicated Template): %s\n%s", err, response)
-	}
-
-	if response.StatusCode == 404 {
-		d.SetId("")
-		return false, nil
+		return false, fmt.Errorf("Error Getting Direct Link Gateway : %s\n%s", err, response)
 	}
 	return true, nil
 }
