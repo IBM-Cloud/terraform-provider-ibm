@@ -81,7 +81,7 @@ resource "ibm_database" "test_acc" {
 
 // Setting Auto-Scaling Groups for database
 resource "ibm_database" "autoscale" {
-  resource_group_id        = data.ibm_resource_group.test_acc.id
+  resource_group_id        = data.ibm_resource_group.group.id
   name                     = "redis-test-key"
   service                  = "databases-for-redis"
   plan                     = "standard"
