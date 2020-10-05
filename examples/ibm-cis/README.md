@@ -254,6 +254,7 @@ data "ibm_cis_edge_functions_triggers" "test_triggers" {
 
 - User has IAM security rights to create and configure an Internet Services instance
 - DNS Domain registration
+- [Domain Settings](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#domain-settings)
 - [DNS Record CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#dns-record)
 - [GLB CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#glb)
 - [Firewall CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#firewall)
