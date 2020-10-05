@@ -4,15 +4,14 @@ import (
 	"log"
 
 	"github.com/IBM/go-sdk-core/v3/core"
-	"github.com/IBM/networking-go-sdk/zonessettingsv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 const (
+	ibmCISDomainSettings                             = "ibm_cis_domain_settings"
 	cisDomainSettingsDNSSEC                          = "dnssec"
 	cisDomainSettingsWAF                             = "waf"
 	cisDomainSettingsSSL                             = "ssl"
-	cisDomainSettingsUniversalSSL                    = "ssl_universal"
 	cisDomainSettingsCertificateStatus               = "certificate_status"
 	cisDomainSettingsMinTLSVersion                   = "min_tls_version"
 	cisDomainSettingsCNAMEFlattening                 = "cname_flattening"
@@ -52,6 +51,16 @@ const (
 	cisDomainSettingsMobileRedirectStripURI          = "strip_uri"
 	cisDomainSettingsMaxUpload                       = "max_upload"
 	cisDomainSettingsCipher                          = "cipher"
+	cisDomainSettingsONOFFValidatorID                = "on_off"
+	cisDomainSettingsActiveDisableValidatorID        = "active_disable"
+	cisDomainSettingsSSLSettingValidatorID           = "ssl_setting"
+	cisDomainSettingsTLSVersionValidatorID           = "tls_version"
+	cisDomainSettingsCNAMEFlattenValidatorID         = "cname_flatten"
+	cisDomainSettingsImgSizeOptimizeValidatorID      = "img_size_optimize"
+	cisDomainSettingsPseudoIPv4ValidatorID           = "psuedo_ipv4"
+	cisDomainSettingsChallengeTTLValidatorID         = "challenge_ttl"
+	cisDomainSettingsMaxUploadValidatorID            = "max_upload"
+	cisDomainSettingsCipherValidatorID               = "cipher"
 )
 
 func resourceIBMCISSettings() *schema.Resource {
@@ -69,25 +78,31 @@ func resourceIBMCISSettings() *schema.Resource {
 				DiffSuppressFunc: suppressDomainIDDiff,
 			},
 			cisDomainSettingsDNSSEC: {
-				Type:         schema.TypeString,
-				Description:  "DNS Sec setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"active", "disabled"}),
+				Type:        schema.TypeString,
+				Description: "DNS Sec setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsActiveDisableValidatorID),
 			},
 			cisDomainSettingsWAF: {
-				Type:         schema.TypeString,
-				Description:  "WAF setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"off", "on"}),
+				Type:        schema.TypeString,
+				Description: "WAF setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsSSL: {
-				Type:         schema.TypeString,
-				Description:  "SSL/TLS setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"off", "flexible", "full", "strict", "origin_pull"}),
+				Type:        schema.TypeString,
+				Description: "SSL/TLS setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsSSLSettingValidatorID),
 			},
 			cisDomainSettingsCertificateStatus: {
 				Type:        schema.TypeString,
@@ -96,174 +111,220 @@ func resourceIBMCISSettings() *schema.Resource {
 				Deprecated:  "This field is deprecated",
 			},
 			cisDomainSettingsMinTLSVersion: {
-				Type:         schema.TypeString,
-				Description:  "Minimum version of TLS required",
-				Optional:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"1.1", "1.2", "1.3", "1.4"}),
-				Default:      "1.1",
+				Type:        schema.TypeString,
+				Description: "Minimum version of TLS required",
+				Optional:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsTLSVersionValidatorID),
+				Default: "1.1",
 			},
 			cisDomainSettingsCNAMEFlattening: {
-				Type:         schema.TypeString,
-				Description:  "cname_flattening setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"flatten_at_root", "flatten_all", "flatten_none"}),
+				Type:        schema.TypeString,
+				Description: "cname_flattening setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsCNAMEFlattenValidatorID),
 			},
 			cisDomainSettingsOpportunisticEncryption: {
-				Type:         schema.TypeString,
-				Description:  "opportunistic_encryption setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "opportunistic_encryption setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsAutomaticHTPSRewrites: {
-				Type:         schema.TypeString,
-				Description:  "automatic_https_rewrites setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "automatic_https_rewrites setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsAlwaysUseHTTPS: {
-				Type:         schema.TypeString,
-				Description:  "always_use_https setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "always_use_https setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsIPv6: {
-				Type:         schema.TypeString,
-				Description:  "ipv6 setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "ipv6 setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsBrowserCheck: {
-				Type:         schema.TypeString,
-				Description:  "browser_check setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "browser_check setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsHotlinkProtection: {
-				Type:         schema.TypeString,
-				Description:  "hotlink_protection setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "hotlink_protection setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsHTTP2: {
-				Type:         schema.TypeString,
-				Description:  "http2 setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "http2 setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsImageLoadOptimization: {
-				Type:         schema.TypeString,
-				Description:  "image_load_optimization setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "image_load_optimization setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsImageSizeOptimization: {
-				Type:         schema.TypeString,
-				Description:  "image_size_optimization setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"lossless", "off", "lossy"}),
+				Type:        schema.TypeString,
+				Description: "image_size_optimization setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsImgSizeOptimizeValidatorID),
 			},
 			cisDomainSettingsIPGeoLocation: {
-				Type:         schema.TypeString,
-				Description:  "ip_geolocation setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "ip_geolocation setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsOriginErrorPagePassThru: {
-				Type:         schema.TypeString,
-				Description:  "origin_error_page_pass_thru setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "origin_error_page_pass_thru setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsBrotli: {
-				Type:         schema.TypeString,
-				Description:  "brotli setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "brotli setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsPseudoIPv4: {
-				Type:         schema.TypeString,
-				Description:  "pseudo_ipv4 setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"overwrite_header", "off", "add_header"}),
+				Type:        schema.TypeString,
+				Description: "pseudo_ipv4 setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsPseudoIPv4ValidatorID),
 			},
 			cisDomainSettingsPrefetchPreload: {
-				Type:         schema.TypeString,
-				Description:  "prefetch_preload setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "prefetch_preload setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsResponseBuffering: {
-				Type:         schema.TypeString,
-				Description:  "response_buffering setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "response_buffering setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsScriptLoadOptimisation: {
-				Type:         schema.TypeString,
-				Description:  "script_load_optimization setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "script_load_optimization setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsServerSideExclude: {
-				Type:         schema.TypeString,
-				Description:  "server_side_exclude setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "server_side_exclude setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsTLSClientAuth: {
-				Type:         schema.TypeString,
-				Description:  "tls_client_auth setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "tls_client_auth setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsTrueClientIPHeader: {
-				Type:         schema.TypeString,
-				Description:  "true_client_ip_header setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "true_client_ip_header setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsWebSockets: {
-				Type:         schema.TypeString,
-				Description:  "websockets setting",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+				Type:        schema.TypeString,
+				Description: "websockets setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsONOFFValidatorID),
 			},
 			cisDomainSettingsChallengeTTL: {
 				Type:        schema.TypeInt,
 				Description: "Challenge TTL setting",
 				Optional:    true,
 				Computed:    true,
-				ValidateFunc: validateAllowedIntValue([]int{300, 900, 1800, 2700,
-					3600, 7200, 10800, 14400, 28800, 57600, 86400, 604800, 2592000, 31536000}),
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsChallengeTTLValidatorID),
 			},
 			cisDomainSettingsMaxUpload: {
 				Type:        schema.TypeInt,
 				Description: "Maximum upload",
 				Optional:    true,
 				Computed:    true,
-				ValidateFunc: validateAllowedIntValue([]int{100, 125, 150, 175, 200, 225, 250, 275,
-					300, 325, 350, 375, 400, 425, 450, 475, 500}),
+				ValidateFunc: InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsMaxUploadValidatorID),
 			},
 			cisDomainSettingsCipher: {
 				Type:        schema.TypeSet,
@@ -273,28 +334,9 @@ func resourceIBMCISSettings() *schema.Resource {
 				Set:         schema.HashString,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
-					ValidateFunc: validateAllowedStringValue([]string{
-						zonessettingsv1.UpdateCiphersOptions_Value_Aes128GcmSha256,
-						zonessettingsv1.UpdateCiphersOptions_Value_Aes128Sha,
-						zonessettingsv1.UpdateCiphersOptions_Value_Aes128Sha256,
-						zonessettingsv1.UpdateCiphersOptions_Value_Aes256GcmSha384,
-						zonessettingsv1.UpdateCiphersOptions_Value_Aes256Sha,
-						zonessettingsv1.UpdateCiphersOptions_Value_Aes256Sha256,
-						zonessettingsv1.UpdateCiphersOptions_Value_DesCbc3Sha,
-						zonessettingsv1.UpdateCiphersOptions_Value_EcdheEcdsaAes128GcmSha256,
-						zonessettingsv1.UpdateCiphersOptions_Value_EcdheEcdsaAes128Sha,
-						zonessettingsv1.UpdateCiphersOptions_Value_EcdheEcdsaAes128Sha256,
-						zonessettingsv1.UpdateCiphersOptions_Value_EcdheEcdsaAes256GcmSha384,
-						zonessettingsv1.UpdateCiphersOptions_Value_EcdheEcdsaAes256Sha384,
-						zonessettingsv1.UpdateCiphersOptions_Value_EcdheEcdsaChacha20Poly1305,
-						zonessettingsv1.UpdateCiphersOptions_Value_EcdheRsaAes128GcmSha256,
-						zonessettingsv1.UpdateCiphersOptions_Value_EcdheRsaAes128Sha,
-						zonessettingsv1.UpdateCiphersOptions_Value_EcdheRsaAes128Sha256,
-						zonessettingsv1.UpdateCiphersOptions_Value_EcdheRsaAes256GcmSha384,
-						zonessettingsv1.UpdateCiphersOptions_Value_EcdheRsaAes256Sha,
-						zonessettingsv1.UpdateCiphersOptions_Value_EcdheRsaAes256Sha384,
-						zonessettingsv1.UpdateCiphersOptions_Value_EcdheRsaChacha20Poly1305,
-					}),
+					ValidateFunc: InvokeValidator(
+						ibmCISDomainSettings,
+						cisDomainSettingsCipherValidatorID),
 				},
 			},
 			cisDomainSettingsMinify: {
@@ -307,22 +349,28 @@ func resourceIBMCISSettings() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						cisDomainSettingsMinifyCSS: {
-							Type:         schema.TypeString,
-							Description:  "Minify CSS setting",
-							Required:     true,
-							ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+							Type:        schema.TypeString,
+							Description: "Minify CSS setting",
+							Required:    true,
+							ValidateFunc: InvokeValidator(
+								ibmCISDomainSettings,
+								cisDomainSettingsONOFFValidatorID),
 						},
 						cisDomainSettingsMinifyHTML: {
-							Type:         schema.TypeString,
-							Description:  "Minify HTML setting",
-							Required:     true,
-							ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+							Type:        schema.TypeString,
+							Description: "Minify HTML setting",
+							Required:    true,
+							ValidateFunc: InvokeValidator(
+								ibmCISDomainSettings,
+								cisDomainSettingsONOFFValidatorID),
 						},
 						cisDomainSettingsMinifyJS: {
-							Type:         schema.TypeString,
-							Description:  "Minify JS setting",
-							Required:     true,
-							ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+							Type:        schema.TypeString,
+							Description: "Minify JS setting",
+							Required:    true,
+							ValidateFunc: InvokeValidator(
+								ibmCISDomainSettings,
+								cisDomainSettingsONOFFValidatorID),
 						},
 					},
 				},
@@ -368,10 +416,12 @@ func resourceIBMCISSettings() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						cisDomainSettingsMobileRedirectStatus: {
-							Type:         schema.TypeString,
-							Description:  "mobile redirect status",
-							Required:     true,
-							ValidateFunc: validateAllowedStringValue([]string{"on", "off"}),
+							Type:        schema.TypeString,
+							Description: "mobile redirect status",
+							Required:    true,
+							ValidateFunc: InvokeValidator(
+								ibmCISDomainSettings,
+								cisDomainSettingsONOFFValidatorID),
 						},
 						cisDomainSettingsMobileRedirectMobileSubdomain: {
 							Type:        schema.TypeString,
@@ -390,12 +440,109 @@ func resourceIBMCISSettings() *schema.Resource {
 			},
 		},
 
-		Create:   resourceCISSettingsCreate,
+		Create:   resourceCISSettingsUpdate,
 		Read:     resourceCISSettingsRead,
 		Update:   resourceCISSettingsUpdate,
 		Delete:   resourceCISSettingsDelete,
 		Importer: &schema.ResourceImporter{},
 	}
+}
+
+func resourceIBMCISDomainSettingValidator() *ResourceValidator {
+
+	sslSetting := "off, flexible, full, strict, origin_pull"
+	tlsVersion := "1.1, 1.2, 1.3, 1.4"
+	cnameFlatten := "flatten_at_root, flatten_all, flatten_none"
+	imgSizeOptimize := "lossless, off, lossy"
+	pseudoIPv4 := "overwrite_header, off, add_header"
+	challengeTTL := "300, 900, 1800, 2700, 3600, 7200, 10800, 14400, 28800, 57600, 86400, 604800, 2592000, 31536000"
+	maxUpload := "100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500"
+	cipher := "ECDHE-ECDSA-AES128-GCM-SHA256,ECDHE-ECDSA-CHACHA20-POLY1305, ECDHE-RSA-AES128-GCM-SHA256,ECDHE-RSA-CHACHA20-POLY1305, ECDHE-ECDSA-AES128-SHA256, ECDHE-ECDSA-AES128-SHA, ECDHE-RSA-AES128-SHA256, ECDHE-RSA-AES128-SHA, AES128-GCM-SHA256, AES128-SHA256, AES128-SHA, ECDHE-ECDSA-AES256-GCM-SHA384, ECDHE-ECDSA-AES256-SHA384, ECDHE-RSA-AES256-GCM-SHA384, ECDHE-RSA-AES256-SHA384, ECDHE-RSA-AES256-SHA, AES256-GCM-SHA384, AES256-SHA256, AES256-SHA, DES-CBC3-SHA"
+
+	validateSchema := make([]ValidateSchema, 1)
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 cisDomainSettingsONOFFValidatorID,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              "on, off"})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 cisDomainSettingsActiveDisableValidatorID,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              "active, disabled"})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 cisDomainSettingsSSLSettingValidatorID,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              sslSetting})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 cisDomainSettingsTLSVersionValidatorID,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              tlsVersion})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 cisDomainSettingsCNAMEFlattenValidatorID,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              cnameFlatten})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 cisDomainSettingsImgSizeOptimizeValidatorID,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              imgSizeOptimize})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 cisDomainSettingsPseudoIPv4ValidatorID,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              pseudoIPv4})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 cisDomainSettingsChallengeTTLValidatorID,
+			ValidateFunctionIdentifier: ValidateAllowedIntValue,
+			Type:                       TypeInt,
+			Optional:                   true,
+			AllowedValues:              challengeTTL})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 cisDomainSettingsMaxUploadValidatorID,
+			ValidateFunctionIdentifier: ValidateAllowedIntValue,
+			Type:                       TypeInt,
+			Optional:                   true,
+			AllowedValues:              maxUpload})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 cisDomainSettingsCipherValidatorID,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              cipher})
+	ibmCISDomainSettingResourceValidator := ResourceValidator{
+		ResourceName: ibmCISDomainSettings,
+		Schema:       validateSchema}
+	return &ibmCISDomainSettingResourceValidator
 }
 
 var settingsList = []string{
@@ -432,21 +579,14 @@ var settingsList = []string{
 	cisDomainSettingsCipher,
 }
 
-func resourceCISSettingsCreate(d *schema.ResourceData, meta interface{}) error {
-	cisID := d.Get(cisID).(string)
-	zoneID := d.Get(cisDomainID).(string)
-
-	d.SetId(convertCisToTfTwoVar(zoneID, cisID))
-	return resourceCISSettingsUpdate(d, meta)
-}
-
 func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(ClientSession).CisDomainSettingsClientSession()
 	if err != nil {
 		return err
 	}
 
-	zoneID, cisID, _ := convertTftoCisTwoVar(d.Id())
+	cisID := d.Get(cisID).(string)
+	zoneID := d.Get(cisDomainID).(string)
 	cisClient.Crn = core.StringPtr(cisID)
 	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 
@@ -743,7 +883,7 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	}
-
+	d.SetId(convertCisToTfTwoVar(zoneID, cisID))
 	return resourceCISSettingsRead(d, meta)
 }
 

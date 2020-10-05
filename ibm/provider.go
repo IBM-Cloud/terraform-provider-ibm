@@ -478,6 +478,7 @@ func Validator() ValidatorDict {
 				"ibm_iam_custom_role":                  resourceIBMIAMCustomRoleValidator(),
 				"ibm_cis_healthcheck":                  resourceIBMCISHealthCheckValidator(),
 				"ibm_cis_rate_limit":                   resourceIBMCISRateLimitValidator(),
+				"ibm_cis_domain_settings":              resourceIBMCISDomainSettingValidator(),
 				"ibm_tg_gateway":                       resourceIBMTGValidator(),
 				"ibm_tg_connection":                    resourceIBMTransitGatewayConnectionValidator(),
 				"ibm_dl_virtual_connection":            resourceIBMdlGatewayVCValidator(),

@@ -76,6 +76,8 @@ func testAccCheckCisSettingsConfigBasic3(id string, cisDomainStatic string) stri
 	resource "ibm_cis_domain_settings" "%[1]s" {
 		cis_id          = data.ibm_cis.cis.id
 		domain_id       = data.ibm_cis_domain.cis_domain.domain_id
+		waf = "off"
+		min_tls_version = "1.1"
 	  }
 `, id)
 }
@@ -84,7 +86,7 @@ func testAccCheckCisSettingsConfigBasic1(id string, cisDomainStatic string) stri
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_domain_settings" "%[1]s" {
 		cis_id          = data.ibm_cis.cis.id
-		domain_id       = data.ibm_cis_domain.cis_domain.domain_id
+		domain_id       = data.ibm_cis_domain.cis_domain.id
 		waf             = "on"
 		ssl             = "full"
 		min_tls_version = "1.2"
