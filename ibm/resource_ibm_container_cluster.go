@@ -158,7 +158,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 				ValidateFunc: validateWorkerNum,
 			},
 
-			"default_pool_labels": {
+			"labels": {
 				Type:             schema.TypeMap,
 				Optional:         true,
 				Computed:         true,
@@ -761,6 +761,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 		if err != nil {
 			return err
 		}
+		d.Set("labels", defaultWorkerPool.Labels)
 		zones := defaultWorkerPool.Zones
 		for _, zone := range zones {
 			if zone.ID == cls.DataCenter {
@@ -970,7 +971,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		}
 	}
 
-	if d.HasChange("default_pool_labels") || d.IsNewResource() {
+	if d.HasChange("labels") || d.IsNewResource() {
 		workerPoolsAPI := csClient.WorkerPools()
 		workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID, targetEnv)
 		if err != nil {
@@ -988,7 +989,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		}
 		if poolContains {
 			labels := make(map[string]string)
-			if l, ok := d.GetOk("default_pool_labels"); ok {
+			if l, ok := d.GetOk("labels"); ok {
 				for k, v := range l.(map[string]interface{}) {
 					labels[k] = v.(string)
 				}
@@ -996,7 +997,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 			err = workerPoolsAPI.UpdateLabelsWorkerPool(clusterID, poolName, labels, targetEnv)
 			if err != nil {
 				return fmt.Errorf(
-					"Error updating the default_pool_labels%s", err)
+					"Error updating the labels%s", err)
 			}
 
 			_, err = WaitForWorkerAvailable(d, meta, targetEnv)
