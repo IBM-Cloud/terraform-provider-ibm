@@ -133,8 +133,10 @@ github.com/IBM/networking-go-sdk/directlinkv1
 github.com/IBM/networking-go-sdk/dnsrecordsv1
 github.com/IBM/networking-go-sdk/edgefunctionsapiv1
 github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1
+github.com/IBM/networking-go-sdk/sslcertificateapiv1
 github.com/IBM/networking-go-sdk/transitgatewayapisv1
 github.com/IBM/networking-go-sdk/zoneratelimitsv1
+github.com/IBM/networking-go-sdk/zonessettingsv1
 github.com/IBM/networking-go-sdk/zonesv1
 # github.com/IBM/vpc-go-sdk v0.1.1
 github.com/IBM/vpc-go-sdk/common
