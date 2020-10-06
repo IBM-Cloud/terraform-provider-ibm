@@ -22,22 +22,29 @@ func dataSourceIBMCosBucket() *schema.Resource {
 		Read: dataSourceIBMCosBucketRead,
 
 		Schema: map[string]*schema.Schema{
-			"bucket_name": &schema.Schema{
+			"bucket_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"bucket_type": &schema.Schema{
+			"bucket_type": {
 				Type:         schema.TypeString,
 				ValidateFunc: validateAllowedStringValue(bucketTypes),
 				Required:     true,
 			},
-			"bucket_region": &schema.Schema{
+			"bucket_region": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"resource_instance_id": &schema.Schema{
+			"resource_instance_id": {
 				Type:     schema.TypeString,
 				Required: true,
+			},
+			"endpoint_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
+				Description:  "public or private",
+				Default:      "public",
 			},
 			"crn": {
 				Type:        schema.TypeString,
@@ -49,19 +56,19 @@ func dataSourceIBMCosBucket() *schema.Resource {
 				Computed:    true,
 				Description: "CRN of the key you want to use data at rest encryption",
 			},
-			"single_site_location": &schema.Schema{
+			"single_site_location": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"region_location": &schema.Schema{
+			"region_location": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"cross_region_location": &schema.Schema{
+			"cross_region_location": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"storage_class": &schema.Schema{
+			"storage_class": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -136,8 +143,14 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	serviceID := d.Get("resource_instance_id").(string)
 	bucketType := d.Get("bucket_type").(string)
 	bucketRegion := d.Get("bucket_region").(string)
-
+	var endpointType = d.Get("endpoint_type").(string)
 	apiEndpoint, apiEndpointPrivate := selectCosApi(bucketLocationConvert(bucketType), bucketRegion)
+	if endpointType == "private" {
+		apiEndpoint = apiEndpointPrivate
+	}
+	if apiEndpoint == "" {
+		return fmt.Errorf("The endpoint doesn't exists for given location %s and endpoint type %s", bucketRegion, endpointType)
+	}
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
 		return err
@@ -145,7 +158,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
 	apiKey := rsConClient.Config.BluemixAPIKey
 	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
 	if iamAccessToken != "" {
@@ -210,7 +223,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
-	bucketID := fmt.Sprintf("%s:%s:%s:meta:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName, bucketLocationConvert(bucketType), bucketRegion)
+	bucketID := fmt.Sprintf("%s:%s:%s:meta:%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName, bucketLocationConvert(bucketType), bucketRegion, endpointType)
 	d.SetId(bucketID)
 	d.Set("key_protect", head.IBMSSEKPCrkId)
 	bucketCRN := fmt.Sprintf("%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName)
@@ -228,6 +241,9 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
+	if endpointType == "private" {
+		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
+	}
 	bucketPtr, response, err := sess.GetBucketConfig(getBucketConfigOptions)
 
 	if err != nil {
