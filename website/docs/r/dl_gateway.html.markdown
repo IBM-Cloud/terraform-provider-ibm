@@ -11,6 +11,7 @@ description: |-
 Provides a direct link gateway resource. This allows direct link gateway to be created, and updated and deleted.
 
 ## Example Usage
+In the following example, you can create Direct link of Dedicated type:
 
 ```hcl
 data "ibm_dl_routers" "test_dl_routers" {
@@ -35,6 +36,22 @@ resource ibm_dl_gateway test_dl_gateway {
   carrier_name = "Carrier1"
 
 }   
+```
+In the following example, you can create Direct link of Connect type:
+```
+data "ibm_dl_ports" "test_ds_dl_ports" {
+ 
+ }
+resource "ibm_dl_gateway" "test_dl_connect" {
+  bgp_asn =  64999
+  bgp_base_cidr =  "169.254.0.0/16"
+  global = true
+  metered = false
+  name = "dl-connect-gw-1"
+  speed_mbps = 1000
+  type =  "connect"
+  port =  data.ibm_dl_ports.test_ds_dl_ports.ports[0].port_id
+}
 
 ```
 
@@ -56,6 +73,8 @@ The following arguments are supported:
 * `cross_connect_router` - (Required for 'dedicated' type,  Forces new resource, string) Cross connect router. Example: xcr01.dal03
 * `customer_name` - (Required for 'dedicated' type, Forces new resource, string) Customer name. Constraints: 1 ≤ length ≤ 128, Value must match regular expression ^[a-z][A-Z][0-9][ -_]$. Example: newCustomerName
 * `location_name` - (Required for 'dedicated' type, Forces new resource, string) Gateway location. Example: dal03
+* `port` - (Required for Direct link Connect type, Forces new resource, string) gateway port for type=connect gateways
+
 
 
 ## Attribute Reference

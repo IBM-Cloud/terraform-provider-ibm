@@ -586,7 +586,7 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	cisID := d.Get(cisID).(string)
-	zoneID := d.Get(cisDomainID).(string)
+	zoneID, _, err := convertTftoCisTwoVar(d.Get(cisDomainID).(string))
 	cisClient.Crn = core.StringPtr(cisID)
 	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 

@@ -19,12 +19,12 @@ import (
 
 var singleSiteLocation = []string{
 	"ams03", "che01", "hkg02", "mel01", "mex01",
-	"mil01", "mon01", "osl01", "sjc04", "sao01",
-	"seo01", "tor01",
+	"mil01", "mon01", "osl01", "par01", "sjc04", "sao01",
+	"seo01", "sng01", "tor01",
 }
 
 var regionLocation = []string{
-	"au-syd", "eu-de", "eu-gb", "jp-tok", "us-east", "us-south",
+	"au-syd", "eu-de", "eu-fr2", "eu-gb", "jp-tok", "us-east", "us-south",
 }
 
 var crossRegionLocation = []string{
@@ -54,13 +54,13 @@ func resourceIBMCOS() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		Schema: map[string]*schema.Schema{
-			"bucket_name": &schema.Schema{
+			"bucket_name": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				Description: "COS Bucket name",
 			},
-			"resource_instance_id": &schema.Schema{
+			"resource_instance_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -77,7 +77,7 @@ func resourceIBMCOS() *schema.Resource {
 				Optional:         true,
 				Description:      "CRN of the key you want to use data at rest encryption",
 			},
-			"single_site_location": &schema.Schema{
+			"single_site_location": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ValidateFunc:  validateAllowedStringValue(singleSiteLocation),
@@ -85,7 +85,7 @@ func resourceIBMCOS() *schema.Resource {
 				ConflictsWith: []string{"region_location", "cross_region_location"},
 				Description:   "single site location info",
 			},
-			"region_location": &schema.Schema{
+			"region_location": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ValidateFunc:  validateAllowedStringValue(regionLocation),
@@ -93,7 +93,7 @@ func resourceIBMCOS() *schema.Resource {
 				ConflictsWith: []string{"cross_region_location", "single_site_location"},
 				Description:   "Region Location info.",
 			},
-			"cross_region_location": &schema.Schema{
+			"cross_region_location": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ValidateFunc:  validateAllowedStringValue(crossRegionLocation),
@@ -101,12 +101,20 @@ func resourceIBMCOS() *schema.Resource {
 				ConflictsWith: []string{"region_location", "single_site_location"},
 				Description:   "Cros region location info",
 			},
-			"storage_class": &schema.Schema{
+			"storage_class": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue(storageClass),
 				ForceNew:     true,
 				Description:  "Storage class info",
+			},
+			"endpoint_type": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateFunc:     validateAllowedStringValue([]string{"public", "private"}),
+				Description:      "public or private",
+				DiffSuppressFunc: applyOnce,
+				Default:          "public",
 			},
 			"s3_endpoint_public": {
 				Type:        schema.TypeString,
@@ -181,6 +189,10 @@ func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(ClientSession).CosConfigV1API()
 	if err != nil {
 		return err
+	}
+	endpointType := parseBucketId(d.Id(), "endpointType")
+	if endpointType == "private" {
+		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
 	}
 
 	hasChanged := false
@@ -270,7 +282,11 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
+	endpointType := parseBucketId(d.Id(), "endpointType")
 	apiEndpoint, apiEndpointPrivate := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
+	if endpointType == "private" {
+		apiEndpoint = apiEndpointPrivate
+	}
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
 		return err
@@ -278,7 +294,7 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
 	apiKey := rsConClient.Config.BluemixAPIKey
 	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
 	if iamAccessToken != "" {
@@ -291,7 +307,7 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
 			}, nil
 		}
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
 	}
 	s3Sess := session.Must(session.NewSession())
 	s3Client := s3.New(s3Sess, s3Conf)
@@ -349,6 +365,9 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("bucket_name", bucketName)
 	d.Set("s3_endpoint_public", apiEndpoint)
 	d.Set("s3_endpoint_private", apiEndpointPrivate)
+	if endpointType != "" {
+		d.Set("endpoint_type", endpointType)
+	}
 
 	getBucketConfigOptions := &resourceconfigurationv1.GetBucketConfigOptions{
 		Bucket: &bucketName,
@@ -357,6 +376,9 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(ClientSession).CosConfigV1API()
 	if err != nil {
 		return err
+	}
+	if endpointType == "private" {
+		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
 	}
 
 	bucketPtr, response, err := sess.GetBucketConfig(getBucketConfigOptions)
@@ -407,7 +429,14 @@ func resourceIBMCOSCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Provide either `cross_region_location` or `region_location` or `single_site_location`")
 	}
 	lConstraint := fmt.Sprintf("%s-%s", bLocation, storageClass)
-	apiEndpoint, _ := selectCosApi(apiType, bLocation)
+	var endpointType = d.Get("endpoint_type").(string)
+	apiEndpoint, privateApiEndpoint := selectCosApi(apiType, bLocation)
+	if endpointType == "private" {
+		apiEndpoint = privateApiEndpoint
+	}
+	if apiEndpoint == "" {
+		return fmt.Errorf("The endpoint doesn't exists for given location %s and endpoint type %s", bLocation, endpointType)
+	}
 	create := &s3.CreateBucketInput{
 		Bucket: aws.String(bucketName),
 		CreateBucketConfiguration: &s3.CreateBucketConfiguration{
@@ -427,7 +456,7 @@ func resourceIBMCOSCreate(d *schema.ResourceData, meta interface{}) error {
 	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
 	apiKey := rsConClient.Config.BluemixAPIKey
 	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
 	if iamAccessToken != "" {
@@ -440,7 +469,7 @@ func resourceIBMCOSCreate(d *schema.ResourceData, meta interface{}) error {
 				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
 			}, nil
 		}
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
 	}
 
 	s3Sess := session.Must(session.NewSession())
@@ -451,7 +480,7 @@ func resourceIBMCOSCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	// Generating a fake id which contains every information about to get the bucket via s3 api
-	bucketID := fmt.Sprintf("%s:%s:%s:meta:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName, apiType, bLocation)
+	bucketID := fmt.Sprintf("%s:%s:%s:meta:%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName, apiType, bLocation, endpointType)
 	d.SetId(bucketID)
 
 	return resourceIBMCOSUpdate(d, meta)
@@ -477,8 +506,11 @@ func resourceIBMCOSDelete(d *schema.ResourceData, meta interface{}) error {
 		bLocation = bucketLocation.(string)
 		apiType = "ssl"
 	}
-	apiEndpoint, _ := selectCosApi(apiType, bLocation)
-
+	endpointType := parseBucketId(d.Id(), "endpointType")
+	apiEndpoint, apiEndpointPrivate := selectCosApi(apiType, bLocation)
+	if endpointType == "private" {
+		apiEndpoint = apiEndpointPrivate
+	}
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
 		return err
@@ -487,7 +519,7 @@ func resourceIBMCOSDelete(d *schema.ResourceData, meta interface{}) error {
 
 	apiKey := rsConClient.Config.BluemixAPIKey
 	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
 	if iamAccessToken != "" {
@@ -500,7 +532,7 @@ func resourceIBMCOSDelete(d *schema.ResourceData, meta interface{}) error {
 				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
 			}, nil
 		}
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
 	}
 
 	s3Sess := session.Must(session.NewSession())
@@ -526,7 +558,11 @@ func resourceIBMCOSExists(d *schema.ResourceData, meta interface{}) (bool, error
 
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
-	apiEndpoint, _ := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
+	endpointType := parseBucketId(d.Id(), "endpointType")
+	apiEndpoint, apiEndpointPrivate := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
+	if endpointType == "private" {
+		apiEndpoint = apiEndpointPrivate
+	}
 
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
@@ -536,7 +572,7 @@ func resourceIBMCOSExists(d *schema.ResourceData, meta interface{}) (bool, error
 
 	apiKey := rsConClient.Config.BluemixAPIKey
 	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
 	if iamAccessToken != "" {
@@ -549,7 +585,7 @@ func resourceIBMCOSExists(d *schema.ResourceData, meta interface{}) (bool, error
 				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
 			}, nil
 		}
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
 	}
 
 	s3Sess := session.Must(session.NewSession())
@@ -584,6 +620,8 @@ func selectCosApi(apiType string, bLocation string) (string, string) {
 			return "s3.au-syd.cloud-object-storage.appdomain.cloud", "s3.private.au-syd.cloud-object-storage.appdomain.cloud"
 		case "eu-de":
 			return "s3.eu-de.cloud-object-storage.appdomain.cloud", "s3.private.eu-de.cloud-object-storage.appdomain.cloud"
+		case "eu-fr2":
+			return "", "s3.private.eu-fr2.cloud-object-storage.appdomain.cloud"
 		case "eu-gb":
 			return "s3.eu-gb.cloud-object-storage.appdomain.cloud", "s3.private.eu-gb.cloud-object-storage.appdomain.cloud"
 		case "jp-tok":
@@ -612,12 +650,16 @@ func selectCosApi(apiType string, bLocation string) (string, string) {
 			return "s3.mon01.cloud-object-storage.appdomain.cloud", "s3.private.mon01.cloud-object-storage.appdomain.cloud"
 		case "osl01":
 			return "s3.osl01.cloud-object-storage.appdomain.cloud", "s3.private.osl01.cloud-object-storage.appdomain.cloud"
+		case "par01":
+			return "s3.par01.cloud-object-storage.appdomain.cloud", "s3.private.par01.cloud-object-storage.appdomain.cloud"
 		case "sjc04":
 			return "s3.sjc04.cloud-object-storage.appdomain.cloud", "s3.private.sjc04.cloud-object-storage.appdomain.cloud"
 		case "sao01":
 			return "s3.sao01.cloud-object-storage.appdomain.cloud", "s3.private.sao01.cloud-object-storage.appdomain.cloud"
 		case "seo01":
 			return "s3.seo01.cloud-object-storage.appdomain.cloud", "s3.private.seo01.cloud-object-storage.appdomain.cloud"
+		case "sng01":
+			return "s3.sng01.cloud-object-storage.appdomain.cloud", "s3.private.sng01.cloud-object-storage.appdomain.cloud"
 		case "tor01":
 			return "s3.tor01.cloud-object-storage.appdomain.cloud", "s3.private.tor01.cloud-object-storage.appdomain.cloud"
 		}
@@ -640,6 +682,14 @@ func parseBucketId(id string, info string) string {
 	}
 	if info == "bLocation" {
 		return strings.Split(meta, ":")[1]
+	}
+	if info == "endpointType" {
+		s := strings.Split(meta, ":")
+		if len(s) > 2 {
+			return strings.Split(meta, ":")[2]
+		}
+		return ""
+
 	}
 	return ""
 }
