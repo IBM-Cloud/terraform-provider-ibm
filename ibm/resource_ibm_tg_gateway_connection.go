@@ -335,9 +335,11 @@ func resourceIBMTransitGatewayConnectionDelete(d *schema.ResourceData, meta inte
 	deleteTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
 	response, err := client.DeleteTransitGatewayConnection(deleteTransitGatewayConnectionOptions)
 
-	if err != nil && response.StatusCode != 404 {
-		log.Printf("Error deleting Transit Gateway Connection: %s", response)
-		return err
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
+		return fmt.Errorf("Error deleting Transit Gateway Connection(%s): %s\n%s", ID, err, response)
 	}
 	_, err = isWaitForTransitGatewayConnectionDeleted(client, d.Id(), d.Timeout(schema.TimeoutCreate))
 
