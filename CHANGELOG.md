@@ -1,3 +1,17 @@
+## 1.13.1 (Oct07, 2020)
+
+ENHANCEMENTS:
+
+* resource: Support endpoint_type argument and eu-fr2 region for COS bucket ([#1945](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1945))
+
+* resource: Support Direct Link Connect Type([#1927](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1927))
+
+* doc: Update supported parameters for Event Streams([#1946](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1946))
+
+BUGFIXES
+
+* Fix the nil pointer exception for transist gateway delete ([#1943](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1943))
+
 ## 1.13.0 (Oct01, 2020)
 
 FEATURES:
