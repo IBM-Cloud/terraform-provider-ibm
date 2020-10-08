@@ -39,7 +39,6 @@ func resourceIBMISInstanceGroup() *schema.Resource {
 			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: InvokeValidator("ibm_is_instance_group", "name"),
 				Description:  "The user-defined name for this instance group",
 			},
