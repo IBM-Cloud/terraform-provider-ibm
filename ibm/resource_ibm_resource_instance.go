@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
@@ -253,7 +254,17 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 			if v == "true" || v == "false" {
 				b, _ := strconv.ParseBool(v.(string))
 				params[k] = b
-
+			} else if strings.HasPrefix(v.(string), "[") && strings.HasSuffix(v.(string), "]") {
+				//transform v.(string) to be []string
+				arrayString := v.(string)
+				trimLeft := strings.TrimLeft(arrayString, "[")
+				trimRight := strings.TrimRight(trimLeft, "]")
+				array := strings.Split(trimRight, ",")
+				result := []string{}
+				for _, a := range array {
+					result = append(result, strings.Trim(a, "\""))
+				}
+				params[k] = result
 			} else {
 				params[k] = v
 			}
@@ -413,7 +424,17 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 				if v == "true" || v == "false" {
 					b, _ := strconv.ParseBool(v.(string))
 					params[k] = b
-
+				} else if strings.HasPrefix(v.(string), "[") && strings.HasSuffix(v.(string), "]") {
+					//transform v.(string) to be []string
+					arrayString := v.(string)
+					trimLeft := strings.TrimLeft(arrayString, "[")
+					trimRight := strings.TrimRight(trimLeft, "]")
+					array := strings.Split(trimRight, ",")
+					result := []string{}
+					for _, a := range array {
+						result = append(result, strings.Trim(a, "\""))
+					}
+					params[k] = result
 				} else {
 					params[k] = v
 				}
