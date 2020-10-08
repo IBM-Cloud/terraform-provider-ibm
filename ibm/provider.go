@@ -387,6 +387,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_security_group_rule":                         resourceIBMISSecurityGroupRule(),
 			"ibm_is_security_group_network_interface_attachment": resourceIBMISSecurityGroupNetworkInterfaceAttachment(),
 			"ibm_is_subnet":                                      resourceIBMISSubnet(),
+			"ibm_is_subnet_network_acl_attachment":               resourceIBMISSubnetNetworkACLAttachment(),
 			"ibm_is_ssh_key":                                     resourceIBMISSSHKey(),
 			"ibm_is_volume":                                      resourceIBMISVolume(),
 			"ibm_is_vpn_gateway":                                 resourceIBMISVPNGateway(),

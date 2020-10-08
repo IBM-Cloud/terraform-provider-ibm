@@ -347,9 +347,11 @@ func resourceIBMTransitGatewayDelete(d *schema.ResourceData, meta interface{}) e
 	}
 	response, err := client.DeleteTransitGateway(delOptions)
 
-	if err != nil && response.StatusCode != 404 {
-		log.Printf("Error deleting Transit Gateway: %s", response)
-		return err
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
+		return fmt.Errorf("Error deleting Transit Gateway (%s): %s\n%s", ID, err, response)
 	}
 	_, err = isWaitForTransitGatewayDeleted(client, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {

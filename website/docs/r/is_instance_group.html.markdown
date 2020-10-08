@@ -75,7 +75,7 @@ ibm_is_instance_group provides the following [Timeouts](https://www.terraform.io
 
 The following arguments are supported:
 
-* `name` - (Required, Forces new resource, string) The name of the instance group.
+* `name` - (Required, string) The name of the instance group.
 * `instance_template` - (Required, Forces new resource, string) The ID of the instance template to create the instance group.
 * `instance_count` - (Optional, int) The number of instances to be created under the instance group. Default is set to 0.
   **NOTE**: instance group manager should be in disabled state to update the `instance_count`.

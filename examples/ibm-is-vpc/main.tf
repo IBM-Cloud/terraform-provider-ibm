@@ -340,6 +340,11 @@ resource "ibm_is_network_acl" "isExampleACL" {
   }
 }
 
+resource "ibm_is_subnet_network_acl_attachment" attach {
+  subnet      = ibm_is_subnet.subnet1.id
+  network_acl = ibm_is_network_acl.isExampleACL.id
+}
+
 resource "ibm_is_public_gateway" "publicgateway1" {
   name = "gateway1"
   vpc  = ibm_is_vpc.vpc1.id
