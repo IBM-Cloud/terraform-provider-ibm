@@ -123,8 +123,8 @@ The following arguments are supported:
 * `bucket_name` - (Required, string) The name of the bucket.
 * `resource_instance_id` - (Required, string) The id of Cloud Object Storage instance.
 * `key_protect` - (Optional, bool) CRN of the Key Protect instance where there a root key is already provisioned. Authorization required: [Docs](https://cloud.ibm.com/docs/services/cloud-object-storage?topic=cloud-object-storage-encryption#grant-service-authorization)
-* `single_site_location` - (Optional,string) Location if single site bucket is desired. Accepted values: 'ams03', 'che01', 'hkg02', 'mel01', 'mex01', 'mil01', 'mon01', 'osl01', 'sjc04', 'sao01', 'seo01', 'tor01' Conflicts with: `region_location`, `cross_region_location`
-* `region_location` - (Optional,string) Location if regional bucket is desired. Accepted values: 'au-syd', 'eu-de', 'eu-gb', 'jp-tok', 'us-east', 'us-south' Conflicts with: `single_site_location`, `cross_region_location`
+* `single_site_location` - (Optional,string) Location if single site bucket is desired. Accepted values: 'ams03', 'che01', 'hkg02', 'mel01', 'mex01', 'mil01', 'mon01', 'osl01', 'par01', 'sjc04', 'sao01', 'seo01', 'sng01', 'tor01' Conflicts with: `region_location`, `cross_region_location`
+* `region_location` - (Optional,string) Location if regional bucket is desired. Accepted values: 'au-syd', 'eu-de', 'eu-fr2', 'eu-gb', 'jp-tok', 'us-east', 'us-south' Conflicts with: `single_site_location`, `cross_region_location`
 * `cross_region_location` - (Optional,string) Location if cross regional bucket is desired. Accepted values: 'us', 'eu', 'ap' Conflicts with: `single_site_location`, `region_location`
 * `allowed_ip` - (Optional, list of strings) List of IPv4 or IPv6 addresses in CIDR notation to be affected by firewall in CIDR notation is supported. 
 * Nested `activity_tracking` block have the following structure:
@@ -133,10 +133,12 @@ The following arguments are supported:
 	*	`activity_tracking.activity_tracker_crn` : (Required, string) Required the first time activity_tracking is configured.
 * Nested `metrics_monitoring` block have the following structure:
 	*	`metrics_monitoring.usage_metrics_enabled` : (Optional,bool) If set to true, all usage metrics (i.e. bytes_used) will be sent to the monitoring service.
-	*	`metrics_monitoring.metrics_monitoring_crn` : (Required, string) Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics.
+	*	`metrics_monitoring.metrics_monitoring_crn` :* (Required, string) Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics.
 
 * **Note** - One of the location option must be present.
-* `storage_class` - (Required, string) Storage class of the bucket. Accepted values: 'standard', 'vault', 'cold', 'flex', 'smart'
+* `storage_class` - (Required, string) Storage class of the bucket. Accepted values: 'standard', 'vault', 'cold', 'flex', 'smart'.
+
+* `endpoint_type` - (Optional, string) The type of the endpoint (public or private) to be used for buckets. Default value is `public`.
 
 ## Attribute Reference
 
@@ -153,7 +155,7 @@ The following attributes are exported:
 
 ## Import
 
-The `ibm_cos_bucket` resource can be imported using the `id`. The ID is formed from the `CRN` (Cloud Resource Name), the `bucket type` which must be `ssl` for single_site_location, `rl` for region_location or `crl` for cross_region_location, and the bucket location. The `CRN` and bucket location can be found on the portal.
+The `ibm_cos_bucket` resource can be imported using the `id`. The ID is formed from the `CRN` (Cloud Resource Name), the `bucket type` which must be `ssl` for single_site_location, `rl` for region_location or `crl` for cross_region_location, the bucket location and the endpoint type (public or private). The `CRN` and bucket location can be found on the portal.
 
 id = $CRN:meta:$buckettype:$bucketlocation
 
@@ -161,5 +163,5 @@ id = $CRN:meta:$buckettype:$bucketlocation
 ```
 $ terraform import ibm_cos_bucket.mybucket <crn>
 
-$ terraform import ibm_cos_bucket.mybucket crn:v1:bluemix:public:cloud-object-storage:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3:bucket:mybucketname:meta:crl:eu
+$ terraform import ibm_cos_bucket.mybucket crn:v1:bluemix:public:cloud-object-storage:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3:bucket:mybucketname:meta:crl:eu:public
 ```

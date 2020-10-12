@@ -7,6 +7,11 @@ variable "name" {
   type        = string
   description = "The unique user-defined name for this gateway"
 }
+variable "dl_connect_gw_name" {
+  type        = string
+  description = "The unique user-defined name for this connect gateway"
+}
+
 variable "location_name" { 
   type        = string
   description = "Gateway location"

@@ -20,3 +20,7 @@ output "ibm_cis_edge_functions_action_output" {
 output "ibm_cis_edge_function_trigger_output" {
   value = ibm_cis_edge_functions_trigger.test_trigger
 }
+
+output "domain_setting" {
+  value = ibm_cis_domain_settings.test_domain_settings
+}

@@ -21,8 +21,10 @@ import (
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
 	cisedgefunctionv1 "github.com/IBM/networking-go-sdk/edgefunctionsapiv1"
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
+	cissslv1 "github.com/IBM/networking-go-sdk/sslcertificateapiv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
+	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
@@ -191,6 +193,8 @@ type ClientSession interface {
 	CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error)
 	CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1, error)
 	CisEdgeFunctionClientSession() (*cisedgefunctionv1.EdgeFunctionsApiV1, error)
+	CisSSLClientSession() (*cissslv1.SslCertificateApiV1, error)
+	CisDomainSettingsClientSession() (*cisdomainsettingsv1.ZonesSettingsV1, error)
 }
 
 type clientSession struct {
@@ -326,6 +330,14 @@ type clientSession struct {
 	// CIS Edge Functions service options
 	cisEdgeFunctionErr    error
 	cisEdgeFunctionClient *cisedgefunctionv1.EdgeFunctionsApiV1
+
+	// CIS SSL certificate service options
+	cisSSLErr    error
+	cisSSLClient *cissslv1.SslCertificateApiV1
+
+	// CIS Zone Setting service options
+	cisDomainSettingsErr    error
+	cisDomainSettingsClient *cisdomainsettingsv1.ZonesSettingsV1
 }
 
 // BluemixAcccountAPI ...
@@ -539,6 +551,16 @@ func (sess clientSession) CisEdgeFunctionClientSession() (*cisedgefunctionv1.Edg
 	return sess.cisEdgeFunctionClient, sess.cisEdgeFunctionErr
 }
 
+// CIS SSL certificate
+func (sess clientSession) CisSSLClientSession() (*cissslv1.SslCertificateApiV1, error) {
+	return sess.cisSSLClient, sess.cisSSLErr
+}
+
+// CIS Zone Settings
+func (sess clientSession) CisDomainSettingsClientSession() (*cisdomainsettingsv1.ZonesSettingsV1, error) {
+	return sess.cisDomainSettingsClient, sess.cisDomainSettingsErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -596,6 +618,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisZonesErr = errEmptyBluemixCredentials
 		session.cisRLErr = errEmptyBluemixCredentials
 		session.cisEdgeFunctionErr = errEmptyBluemixCredentials
+		session.cisSSLErr = errEmptyBluemixCredentials
+		session.cisDomainSettingsErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -734,6 +758,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	//cosconfigurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
 	cosconfigoptions := &cosconfig.ResourceConfigurationV1Options{
 		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, "https://config.cloud-object-storage.cloud.ibm.com/v1"),
 	}
 	cosconfigclient, err := cosconfig.NewResourceConfigurationV1(cosconfigoptions)
 	if err != nil {
@@ -989,6 +1014,37 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisEdgeFunctionErr =
 			fmt.Errorf("Error occured while configuring CIS Edge Function service: %s",
 				session.cisEdgeFunctionErr)
+	}
+
+	// IBM Network CIS SSL certificate
+	cisSSLOpt := &cissslv1.SslCertificateApiV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+
+	// IBM Network CIS Edge Function
+	session.cisSSLClient, session.cisSSLErr = cissslv1.NewSslCertificateApiV1(cisSSLOpt)
+	if session.cisSSLErr != nil {
+		session.cisSSLErr =
+			fmt.Errorf("Error occured while configuring CIS SSL certificate service: %s",
+				session.cisSSLErr)
+	}
+
+	// IBM Network CIS Domain settings
+	cisDomainSettingsOpt := &cisdomainsettingsv1.ZonesSettingsV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisDomainSettingsClient, session.cisDomainSettingsErr =
+		cisdomainsettingsv1.NewZonesSettingsV1(cisDomainSettingsOpt)
+	if session.cisSSLErr != nil {
+		session.cisSSLErr =
+			fmt.Errorf("Error occured while configuring CIS SSL certificate service: %s",
+				session.cisSSLErr)
 	}
 	return session, nil
 }

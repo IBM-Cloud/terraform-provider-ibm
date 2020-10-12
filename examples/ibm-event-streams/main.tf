@@ -12,13 +12,19 @@ resource "ibm_resource_instance" "es_instance_1" {
   resource_group_id = data.ibm_resource_group.group.id
 
   # parameters = {
-  #   service-endpoint     = "private"                    # for enterprise instance
-  #   private_ip_allowlist = ["1.0.0.0/32", "1.0.0.1/32"] # for enterprise instance
+  #   service-endpoints    = "private"                   # for enterprise instance only, Options are: "public", "public-and-private", "private". Default is "public" when not specified.
+  #   private_ip_allowlist = "[10.0.0.0/32,10.0.0.1/32]" # for enterprise instance only. Specify 1 or more IP range in CIDR format
+  #   # document about using private service endpoint and IP allowlist to restrict access: https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-restrict_access
+
+  #   throughput   = "150"  # for enterprise instance only. Options are: "150", "300", "450". Default is "150" when not specified.
+  #   storage_size = "2048" # for enterprise instance only. Options are: "2048", "4096", "6144", "8192", "10240", "12288". Default is "2048" when not specified.
+  #   # Note: when throughput is "300", storage_size starts from "4096",  when throughput is "450", storage_size starts from "6144"
+  #   # document about supported combinations of throughput and storage_size: https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-ES_scaling_capacity#ES_scaling_combinations
   # }
 
   # timeouts {
-  #   create = "15m" # use 3h when creating enterprise instance
-  #   update = "15m" # use 1h when updating enterprise instance
+  #   create = "15m" # use 3h when creating enterprise instance, add additional 1h for each level of non-default throughput, add additional 30m for each level of non-default storage_size
+  #   update = "15m" # use 1h when updating enterprise instance, add additional 1h for each level of non-default throughput, add additional 30m for each level of non-default storage_size
   #   delete = "15m"
   # }
 }

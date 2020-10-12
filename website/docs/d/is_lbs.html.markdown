@@ -18,10 +18,6 @@ data "ibm_is_lbs" "ds_lbs" {
  }
 ```
 
-## Argument Reference
-
-The following arguments are supported:
-
 ## Attribute Reference
 
 The following attributes are exported:
