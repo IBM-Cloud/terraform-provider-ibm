@@ -38,5 +38,5 @@ The following attributes are exported:
 * `total_processors_consumed` - The total processors consumed by this service instance
 * `total_ssd_storage_consumed` - The total SSD Storage consumed by this service instance
 * `total_standard_storage_consumed` - The total Standard Storage consumed by this service instance
-
+* `instance_name` - Name of the cloud instance
   

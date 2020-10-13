@@ -48,6 +48,7 @@ The following attributes are exported:
 * `macaddress` - The macaddress of the port
 * `status` - The status of the port
 * `portid` - The id of the port .
+* `public_ip` - The public ip associated with the port
 ## Import
 
 ibm_pi_network_port can be imported using `power_instance_id` and `port_id`, eg

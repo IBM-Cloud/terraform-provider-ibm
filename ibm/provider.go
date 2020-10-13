@@ -273,6 +273,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_pi_pvm_snapshots":      dataSourceIBMPISnapshot(),
 			"ibm_pi_network_port":       dataSourceIBMPINetworkPort(),
 			"ibm_pi_cloud_instance":     dataSourceIBMPICloudInstance(),
+			"ibm_pi_sap_profiles":       dataSourceIBMPISAPProfiles(),
 
 			// Added for private dns zones
 
