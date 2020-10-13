@@ -148,6 +148,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
 	}
+	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
 		return fmt.Errorf("The endpoint doesn't exists for given location %s and endpoint type %s", bucketRegion, endpointType)
 	}
@@ -158,7 +159,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
 	apiKey := rsConClient.Config.BluemixAPIKey
 	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
 	if iamAccessToken != "" {

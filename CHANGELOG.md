@@ -2,7 +2,7 @@
 
 ENHANCEMENTS:
 
-* resource: Support endpoint_type argument and eu-fr2 region for COS bucket ([#1945](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1945))
+* resource: Support endpoint_type argument and endpoint environmental variable for COS bucket ([#1945](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1945))
 
 * resource: Support Direct Link Connect Type([#1927](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1927))
 
@@ -113,8 +113,6 @@ ENHANCEMENTS:
 * resource: Support key protect configuraton for Container clusters ([#673] (https://github.com/IBM-Cloud/terraform-provider-ibm/issues/673))
 
 * resource: Support delete of PVC Storage for Container clusters([#1847] (https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1847))
-
-* resource: Support eu-fr2 region for ICD [#1870](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1870))
 
 BUGFIXES
 

@@ -24,7 +24,7 @@ var singleSiteLocation = []string{
 }
 
 var regionLocation = []string{
-	"au-syd", "eu-de", "eu-fr2", "eu-gb", "jp-tok", "us-east", "us-south",
+	"au-syd", "eu-de", "eu-gb", "jp-tok", "us-east", "us-south",
 }
 
 var crossRegionLocation = []string{
@@ -86,9 +86,9 @@ func resourceIBMCOS() *schema.Resource {
 				Description:   "single site location info",
 			},
 			"region_location": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ValidateFunc:  validateAllowedStringValue(regionLocation),
+				Type:     schema.TypeString,
+				Optional: true,
+				//ValidateFunc:  validateAllowedStringValue(regionLocation),
 				ForceNew:      true,
 				ConflictsWith: []string{"cross_region_location", "single_site_location"},
 				Description:   "Region Location info.",
@@ -287,6 +287,7 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
 	}
+	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
 		return err
@@ -294,7 +295,7 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
 	apiKey := rsConClient.Config.BluemixAPIKey
 	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
 	if iamAccessToken != "" {
@@ -307,7 +308,7 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
 			}, nil
 		}
-		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
 	}
 	s3Sess := session.Must(session.NewSession())
 	s3Client := s3.New(s3Sess, s3Conf)
@@ -434,6 +435,7 @@ func resourceIBMCOSCreate(d *schema.ResourceData, meta interface{}) error {
 	if endpointType == "private" {
 		apiEndpoint = privateApiEndpoint
 	}
+	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
 		return fmt.Errorf("The endpoint doesn't exists for given location %s and endpoint type %s", bLocation, endpointType)
 	}
@@ -456,7 +458,7 @@ func resourceIBMCOSCreate(d *schema.ResourceData, meta interface{}) error {
 	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
 	apiKey := rsConClient.Config.BluemixAPIKey
 	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
 	if iamAccessToken != "" {
@@ -469,7 +471,7 @@ func resourceIBMCOSCreate(d *schema.ResourceData, meta interface{}) error {
 				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
 			}, nil
 		}
-		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
 	}
 
 	s3Sess := session.Must(session.NewSession())
@@ -511,6 +513,10 @@ func resourceIBMCOSDelete(d *schema.ResourceData, meta interface{}) error {
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
 	}
+	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
+	if apiEndpoint == "" {
+		return fmt.Errorf("The endpoint doesn't exists for given location %s and endpoint type %s", bLocation, endpointType)
+	}
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
 		return err
@@ -519,7 +525,7 @@ func resourceIBMCOSDelete(d *schema.ResourceData, meta interface{}) error {
 
 	apiKey := rsConClient.Config.BluemixAPIKey
 	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
 	if iamAccessToken != "" {
@@ -532,7 +538,7 @@ func resourceIBMCOSDelete(d *schema.ResourceData, meta interface{}) error {
 				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
 			}, nil
 		}
-		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
 	}
 
 	s3Sess := session.Must(session.NewSession())
@@ -563,7 +569,10 @@ func resourceIBMCOSExists(d *schema.ResourceData, meta interface{}) (bool, error
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
 	}
-
+	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
+	if apiEndpoint == "" {
+		return false, fmt.Errorf("The endpoint doesn't exists for given endpoint type %s", endpointType)
+	}
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
 		return false, err
@@ -572,7 +581,7 @@ func resourceIBMCOSExists(d *schema.ResourceData, meta interface{}) (bool, error
 
 	apiKey := rsConClient.Config.BluemixAPIKey
 	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
 	if iamAccessToken != "" {
@@ -585,7 +594,7 @@ func resourceIBMCOSExists(d *schema.ResourceData, meta interface{}) (bool, error
 				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
 			}, nil
 		}
-		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
 	}
 
 	s3Sess := session.Must(session.NewSession())
@@ -620,8 +629,6 @@ func selectCosApi(apiType string, bLocation string) (string, string) {
 			return "s3.au-syd.cloud-object-storage.appdomain.cloud", "s3.private.au-syd.cloud-object-storage.appdomain.cloud"
 		case "eu-de":
 			return "s3.eu-de.cloud-object-storage.appdomain.cloud", "s3.private.eu-de.cloud-object-storage.appdomain.cloud"
-		case "eu-fr2":
-			return "", "s3.private.eu-fr2.cloud-object-storage.appdomain.cloud"
 		case "eu-gb":
 			return "s3.eu-gb.cloud-object-storage.appdomain.cloud", "s3.private.eu-gb.cloud-object-storage.appdomain.cloud"
 		case "jp-tok":
