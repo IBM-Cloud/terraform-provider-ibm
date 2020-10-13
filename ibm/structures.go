@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
@@ -1136,21 +1135,6 @@ func flattenServiceIds(services []string, meta interface{}) ([]string, error) {
 	return serviceids, nil
 }
 
-// Cloud Internet Services
-func expandOrigins(originsList *schema.Set) (origins []cisv1.Origin) {
-	for _, iface := range originsList.List() {
-		orig := iface.(map[string]interface{})
-		origin := cisv1.Origin{
-			Name:    orig["name"].(string),
-			Address: orig["address"].(string),
-			Enabled: orig["enabled"].(bool),
-			Weight:  orig["weight"].(int),
-		}
-		origins = append(origins, origin)
-	}
-	return
-}
-
 func expandUsers(userList *schema.Set) (users []icdv4.User) {
 	for _, iface := range userList.List() {
 		userEl := iface.(map[string]interface{})
@@ -1281,21 +1265,6 @@ func flattenWhitelist(whitelist icdv4.Whitelist) []map[string]interface{} {
 		entries[i] = l
 	}
 	return entries
-}
-
-// Cloud Internet Services
-func flattenOrigins(list []cisv1.Origin) []map[string]interface{} {
-	origins := make([]map[string]interface{}, len(list), len(list))
-	for i, origin := range list {
-		l := map[string]interface{}{
-			"name":    origin.Name,
-			"address": origin.Address,
-			"enabled": origin.Enabled,
-			"weight":  origin.Weight,
-		}
-		origins[i] = l
-	}
-	return origins
 }
 
 func expandStringMap(inVal interface{}) map[string]string {

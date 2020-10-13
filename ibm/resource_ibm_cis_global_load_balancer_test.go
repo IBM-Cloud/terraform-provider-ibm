@@ -289,7 +289,7 @@ func testAccCheckCisGlbConfigCisDS_Update(id string, cisDomain string) string {
 }
 
 func testAccCheckCisGlbConfigCisRI_Basic(id string, cisDomain string) string {
-	return testAccCheckCisPoolConfigCisRI_Basic(id, cisDomain) + fmt.Sprintf(`
+	return testAccCheckCisPoolConfigCisRIBasic(id, cisDomain) + fmt.Sprintf(`
 	resource "ibm_cis_global_load_balancer" "%[1]s" {
 		cis_id           = ibm_cis.cis.id
 		domain_id        = ibm_cis_domain.cis_domain.id

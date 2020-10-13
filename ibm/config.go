@@ -21,6 +21,7 @@ import (
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
 	cisedgefunctionv1 "github.com/IBM/networking-go-sdk/edgefunctionsapiv1"
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
+	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
 	cissslv1 "github.com/IBM/networking-go-sdk/sslcertificateapiv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
@@ -190,6 +191,7 @@ type ClientSession interface {
 	IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
+	CisGLBPoolClientSession() (*cisglbpoolv0.GlobalLoadBalancerPoolsV0, error)
 	CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error)
 	CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1, error)
 	CisEdgeFunctionClientSession() (*cisedgefunctionv1.EdgeFunctionsApiV1, error)
@@ -318,6 +320,10 @@ type clientSession struct {
 	// CIS dns service options
 	cisDNSErr           error
 	cisDNSRecordsClient *cisdnsrecordsv1.DnsRecordsV1
+
+	// CIS Global Load Balancer Pool service options
+	cisGLBPoolErr    error
+	cisGLBPoolClient *cisglbpoolv0.GlobalLoadBalancerPoolsV0
 
 	// CIS GLB health check service options
 	cisGLBHealthCheckErr    error
@@ -536,6 +542,11 @@ func (sess clientSession) CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecor
 	return sess.cisDNSRecordsClient, sess.cisDNSErr
 }
 
+// CIS GLB Pool
+func (sess clientSession) CisGLBPoolClientSession() (*cisglbpoolv0.GlobalLoadBalancerPoolsV0, error) {
+	return sess.cisGLBPoolClient, sess.cisGLBPoolErr
+}
+
 // CIS GLB Health Check/Monitor
 func (sess clientSession) CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error) {
 	return sess.cisGLBHealthCheckClient, sess.cisGLBHealthCheckErr
@@ -614,6 +625,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.transitgatewayErr = errEmptyBluemixCredentials
 		session.iamNamespaceErr = errEmptyBluemixCredentials
 		session.cisDNSErr = errEmptyBluemixCredentials
+		session.cisGLBPoolErr = errEmptyBluemixCredentials
 		session.cisGLBHealthCheckErr = errEmptyBluemixCredentials
 		session.cisZonesErr = errEmptyBluemixCredentials
 		session.cisRLErr = errEmptyBluemixCredentials
@@ -971,6 +983,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.cisDNSRecordsClient, session.cisDNSErr = cisdnsrecordsv1.NewDnsRecordsV1(cisDNSRecordsOpt)
 	if session.cisDNSErr != nil {
 		session.cisDNSErr = fmt.Errorf("Error occured while configuring CIS DNS Service: %s", session.cisDNSErr)
+	}
+
+	// IBM Network CIS Global load balancer pool
+	cisGLBPoolOpt := &cisglbpoolv0.GlobalLoadBalancerPoolsV0Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisGLBPoolClient, session.cisGLBPoolErr =
+		cisglbpoolv0.NewGlobalLoadBalancerPoolsV0(cisGLBPoolOpt)
+	if session.cisGLBPoolErr != nil {
+		session.cisGLBPoolErr =
+			fmt.Errorf("Error occured while configuring CIS GLB Pool service: %s",
+				session.cisGLBPoolErr)
 	}
 
 	// IBM Network CIS Global load balancer health check/monitor

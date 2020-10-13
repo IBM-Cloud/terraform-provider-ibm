@@ -2,29 +2,53 @@ package ibm
 
 import (
 	"log"
-	"reflect"
-	"strings"
 
+	"github.com/IBM/go-sdk-core/v3/core"
+	"github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+)
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
+const (
+	cisGLBPoolID                   = "pool_id"
+	cisGLBPoolName                 = "name"
+	cisGLBPoolRegions              = "check_regions"
+	cisGLBPoolDesc                 = "description"
+	cisGLBPoolEnabled              = "enabled"
+	cisGLBPoolMinimumOrigins       = "minimum_origins"
+	cisGLBPoolMonitor              = "monitor"
+	cisGLBPoolNotificationEMail    = "notification_email"
+	cisGLBPoolOrigins              = "origins"
+	cisGLBPoolHealth               = "health"
+	cisGLBPoolHealthy              = "healthy"
+	cisGLBPoolCreatedOn            = "created_on"
+	cisGLBPoolModifiedOn           = "modified_on"
+	cisGLBPoolOriginsName          = "name"
+	cisGLBPoolOriginsAddress       = "address"
+	cisGLBPoolOriginsEnabled       = "enabled"
+	cisGLBPoolOriginsHealthy       = "healthy"
+	cisGLBPoolOriginsWeight        = "weight"
+	cisGLBPoolOriginsDisabledAt    = "disabled_at"
+	cisGLBPoolOriginsFailureReason = "failure_reason"
 )
 
 func resourceIBMCISPool() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"cis_id": {
+			cisID: {
 				Type:        schema.TypeString,
 				Description: "CIS instance crn",
 				Required:    true,
 			},
-			"name": {
+			cisGLBPoolID: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			cisGLBPoolName: {
 				Type:        schema.TypeString,
 				Description: "name",
 				Required:    true,
-				//ValidateFunc: validation.StringLenBetween(1, 32),
 			},
-			"check_regions": {
+			cisGLBPoolRegions: {
 				Type:     schema.TypeSet,
 				Required: true,
 				Elem: &schema.Schema{
@@ -32,270 +56,329 @@ func resourceIBMCISPool() *schema.Resource {
 				},
 				Description: "List of regions",
 			},
-			"description": {
+			cisGLBPoolDesc: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Description of the CIS Origin Pool",
 			},
-			"enabled": {
+			cisGLBPoolEnabled: {
 				Type:        schema.TypeBool,
 				Required:    true,
 				Description: "Boolean value set to true if cis origin pool needs to be enabled",
 			},
-			"minimum_origins": {
+			cisGLBPoolMinimumOrigins: {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     1,
 				Description: "Minimum number of Origins",
 			},
-			"monitor": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Monitor value",
+			cisGLBPoolMonitor: {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "Monitor value",
+				DiffSuppressFunc: suppressDomainIDDiff,
 			},
-			"notification_email": {
+			cisGLBPoolNotificationEMail: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Email address configured to recieve the notifications",
 			},
-			"origins": {
+			cisGLBPoolOrigins: {
 				Type:        schema.TypeSet,
 				Required:    true,
 				Description: "Origins info",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": {
+						cisGLBPoolOriginsName: {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"address": {
+						cisGLBPoolOriginsAddress: {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"enabled": {
+						cisGLBPoolOriginsEnabled: {
 							Type:     schema.TypeBool,
 							Required: true,
 						},
-						"weight": {
-							Type:     schema.TypeInt,
+						cisGLBPoolOriginsWeight: {
+							Type:     schema.TypeFloat,
+							Default:  1,
 							Optional: true,
 						},
-						"healthy": {
+						cisGLBPoolOriginsHealthy: {
 							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						cisGLBPoolOriginsDisabledAt: {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						cisGLBPoolOriginsFailureReason: {
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
 				},
 			},
-			"health": {
+			cisGLBPoolHealth: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Health info",
 			},
-			"created_on": {
+			cisGLBPoolHealthy: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Health status",
+			},
+			cisGLBPoolCreatedOn: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Creation date info",
 			},
-			"modified_on": {
+			cisGLBPoolModifiedOn: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Modified date info",
 			},
 		},
 
-		Create:   resourceCISpoolCreate,
-		Read:     resourceCISpoolRead,
-		Update:   resourceCISpoolUpdate,
-		Delete:   resourceCISpoolDelete,
+		Create:   resourceCISPoolCreate,
+		Read:     resourceCISPoolRead,
+		Update:   resourceCISPoolUpdate,
+		Delete:   resourceCISPoolDelete,
+		Exists:   resourceCISPoolExists,
 		Importer: &schema.ResourceImporter{},
 	}
 }
 
-func resourceCISpoolCreate(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
+func resourceCISPoolCreate(d *schema.ResourceData, meta interface{}) error {
+	var regions []string
+	cisClient, err := meta.(ClientSession).CisGLBPoolClientSession()
 	if err != nil {
 		return err
 	}
 
-	cisId := d.Get("cis_id").(string)
-	name := d.Get("name").(string)
-	origins := d.Get("origins").(*schema.Set)
-	checkRegions := d.Get("check_regions").(*schema.Set).List()
+	crn := d.Get(cisID).(string)
+	cisClient.Crn = core.StringPtr(crn)
+	name := d.Get(cisGLBPoolName).(string)
+	origins := d.Get(cisGLBPoolOrigins).(*schema.Set).List()
+	checkRegions := d.Get(cisGLBPoolRegions).(*schema.Set).List()
 
-	poolNew := v1.PoolBody{}
-	poolNew.Name = name
-	poolNew.CheckRegions = expandStringList(checkRegions)
-	poolNew.Origins = expandOrigins(origins)
-
-	if notEmail, ok := d.GetOk("notification_email"); ok {
-		poolNew.NotEmail = notEmail.(string)
-	}
-	if monitor, ok := d.GetOk("monitor"); ok {
-		monitorId, _, _ := convertTftoCisTwoVar(monitor.(string))
-		poolNew.Monitor = monitorId
-	}
-	if enabled, ok := d.GetOk("enabled"); ok {
-		poolNew.Enabled = enabled.(bool)
-	}
-	if minOrigins, ok := d.GetOk("minimum_origins"); ok {
-		poolNew.MinOrigins = minOrigins.(int)
-	}
-	if description, ok := d.GetOk("description"); ok {
-		poolNew.Description = description.(string)
+	for _, region := range checkRegions {
+		regions = append(regions, region.(string))
 	}
 
-	var pool *v1.Pool
-	var poolObj v1.Pool
+	glbOrigins := []globalloadbalancerpoolsv0.LoadBalancerPoolReqOriginsItem{}
 
-	pool, err = cisClient.Pools().CreatePool(cisId, poolNew)
+	for _, origin := range origins {
+		orig := origin.(map[string]interface{})
+		glbOrigin := globalloadbalancerpoolsv0.LoadBalancerPoolReqOriginsItem{
+			Name:    core.StringPtr(orig[cisGLBPoolOriginsName].(string)),
+			Address: core.StringPtr(orig[cisGLBPoolOriginsAddress].(string)),
+			Enabled: core.BoolPtr(orig[cisGLBPoolOriginsEnabled].(bool)),
+			Weight:  core.Float64Ptr(orig[cisGLBPoolOriginsWeight].(float64)),
+		}
+		glbOrigins = append(glbOrigins, glbOrigin)
+	}
+
+	opt := cisClient.NewCreateLoadBalancerPoolOptions()
+	opt.SetName(name)
+	opt.SetCheckRegions(regions)
+	opt.SetOrigins(glbOrigins)
+	opt.SetEnabled(d.Get(cisGLBPoolEnabled).(bool))
+
+	if notifEmail, ok := d.GetOk(cisGLBPoolNotificationEMail); ok {
+		opt.SetNotificationEmail(notifEmail.(string))
+	}
+	if monitor, ok := d.GetOk(cisGLBPoolMonitor); ok {
+		monitorID, _, _ := convertTftoCisTwoVar(monitor.(string))
+		opt.SetMonitor(monitorID)
+	}
+	if minOrigins, ok := d.GetOk(cisGLBPoolMinimumOrigins); ok {
+		opt.SetMinimumOrigins(int64(minOrigins.(int)))
+	}
+	if description, ok := d.GetOk(cisGLBPoolDesc); ok {
+		opt.SetDescription(description.(string))
+	}
+
+	result, resp, err := cisClient.CreateLoadBalancerPool(opt)
 	if err != nil {
-		log.Printf("[WARN] CreatePools Failed %s\n", err)
+		log.Printf("[WARN] Create GLB Pools failed %s\n", resp)
 		return err
 	}
-
-	poolObj = *pool
-
 	//Set unique TF Id from concatenated CIS Ids
-	d.SetId(convertCisToTfTwoVar(poolObj.Id, cisId))
-	d.Set("name", poolObj.Name)
-
-	return resourceCISpoolRead(d, meta)
+	d.SetId(convertCisToTfTwoVar(*result.Result.ID, crn))
+	return resourceCISPoolRead(d, meta)
 }
 
-func resourceCISpoolRead(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
+func resourceCISPoolRead(d *schema.ResourceData, meta interface{}) error {
+	cisClient, err := meta.(ClientSession).CisGLBPoolClientSession()
 	if err != nil {
 		return err
 	}
-	poolId, cisId, err := convertTftoCisTwoVar(d.Id())
+	poolID, crn, err := convertTftoCisTwoVar(d.Id())
 	if err != nil {
 		return err
 	}
-	var pool *v1.Pool
-	pool, err = cisClient.Pools().GetPool(cisId, poolId)
+	cisClient.Crn = core.StringPtr(crn)
+	opt := cisClient.NewGetLoadBalancerPoolOptions(poolID)
+	result, resp, err := cisClient.GetLoadBalancerPool(opt)
 	if err != nil {
-		if checkCisPoolDeleted(d, meta, err, pool) {
-			d.SetId("")
-			return nil
-		}
-		log.Printf("[WARN] Error getting zone during PoolRead %v\n", err)
+		log.Printf("[WARN] Create GLB Pools failed %s\n", resp)
 		return err
 	}
 
-	poolObj := *pool
-	d.Set("cis_id", cisId)
-	d.Set("name", poolObj.Name)
-	d.Set("check_regions", poolObj.CheckRegions)
-	d.Set("origins", flattenOrigins(poolObj.Origins))
-	d.Set("description", poolObj.Description)
-	d.Set("enabled", poolObj.Enabled)
-	d.Set("minimum_origins", poolObj.MinOrigins)
-	d.Set("monitor", convertCisToTfTwoVar(poolObj.Monitor, cisId))
-	d.Set("notification_email", poolObj.NotEmail)
-	d.Set("health", poolObj.Health)
-	d.Set("created_on", poolObj.CreatedOn)
-	d.Set("modified_on", poolObj.ModifiedOn)
-
+	poolObj := *result.Result
+	d.Set(cisID, crn)
+	d.Set(cisGLBPoolID, poolObj.ID)
+	d.Set(cisGLBPoolName, poolObj.Name)
+	d.Set(cisGLBPoolOrigins, flattenOrigins(poolObj.Origins))
+	d.Set(cisGLBPoolRegions, poolObj.CheckRegions)
+	d.Set(cisGLBPoolDesc, poolObj.Description)
+	d.Set(cisGLBPoolEnabled, poolObj.Enabled)
+	d.Set(cisGLBPoolNotificationEMail, poolObj.NotificationEmail)
+	d.Set(cisGLBPoolHealthy, poolObj.Healthy)
+	d.Set(cisGLBPoolMinimumOrigins, poolObj.MinimumOrigins)
+	d.Set(cisGLBPoolCreatedOn, poolObj.CreatedOn)
+	d.Set(cisGLBPoolModifiedOn, poolObj.ModifiedOn)
+	if poolObj.Monitor != nil {
+		d.Set(cisGLBPoolMonitor, *poolObj.Monitor)
+	}
 	return nil
 }
 
-func resourceCISpoolUpdate(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
+func resourceCISPoolUpdate(d *schema.ResourceData, meta interface{}) error {
+	cisClient, err := meta.(ClientSession).CisGLBPoolClientSession()
 	if err != nil {
 		return err
+	}
+	cisID := d.Get(cisID).(string)
+	cisClient.Crn = core.StringPtr(cisID)
+	poolID := d.Get(cisGLBPoolID).(string)
+	if d.HasChange(cisGLBPoolName) ||
+		d.HasChange(cisGLBPoolOrigins) ||
+		d.HasChange(cisGLBPoolRegions) ||
+		d.HasChange(cisGLBPoolNotificationEMail) ||
+		d.HasChange(cisGLBPoolMonitor) ||
+		d.HasChange(cisGLBPoolEnabled) ||
+		d.HasChange(cisGLBPoolMinimumOrigins) ||
+		d.HasChange(cisGLBPoolDesc) {
+
+		opt := cisClient.NewEditLoadBalancerPoolOptions(poolID)
+		if monitor, ok := d.GetOk(cisGLBPoolMonitor); ok {
+			monitorID, _, _ := convertTftoCisTwoVar(monitor.(string))
+			opt.SetMonitor(monitorID)
+		}
+
+		if name, ok := d.GetOk(cisGLBPoolName); ok {
+			opt.SetName(name.(string))
+		}
+		if origins, ok := d.GetOk(cisGLBPoolOrigins); ok {
+			glbOrigins := []globalloadbalancerpoolsv0.LoadBalancerPoolReqOriginsItem{}
+
+			for _, origin := range origins.(*schema.Set).List() {
+				orig := origin.(map[string]interface{})
+				glbOrigin := globalloadbalancerpoolsv0.LoadBalancerPoolReqOriginsItem{
+					Name:    core.StringPtr(orig[cisGLBPoolOriginsName].(string)),
+					Address: core.StringPtr(orig[cisGLBPoolOriginsAddress].(string)),
+					Enabled: core.BoolPtr(orig[cisGLBPoolOriginsEnabled].(bool)),
+					Weight:  core.Float64Ptr(orig[cisGLBPoolOriginsWeight].(float64)),
+				}
+				glbOrigins = append(glbOrigins, glbOrigin)
+			}
+			opt.SetOrigins(glbOrigins)
+		}
+		if checkregions, ok := d.GetOk(cisGLBPoolRegions); ok {
+			checkRegions := checkregions.(*schema.Set).List()
+			var regions []string
+			for _, region := range checkRegions {
+				regions = append(regions, region.(string))
+			}
+			opt.SetCheckRegions(regions)
+		}
+		if notEmail, ok := d.GetOk(cisGLBPoolNotificationEMail); ok {
+			opt.SetNotificationEmail(notEmail.(string))
+		}
+
+		if enabled, ok := d.GetOk(cisGLBPoolEnabled); ok {
+			opt.SetEnabled(enabled.(bool))
+		}
+		if minOrigins, ok := d.GetOk(cisGLBPoolMinimumOrigins); ok {
+			opt.SetMinimumOrigins(int64(minOrigins.(int)))
+		}
+		if description, ok := d.GetOk(cisGLBPoolDesc); ok {
+			opt.SetDescription(description.(string))
+		}
+		_, resp, err := cisClient.EditLoadBalancerPool(opt)
+		if err != nil {
+			log.Printf("[WARN] Error getting zone during PoolUpdate %v\n", resp)
+			return err
+		}
+	}
+	return resourceCISPoolRead(d, meta)
+}
+
+func resourceCISPoolDelete(d *schema.ResourceData, meta interface{}) error {
+	cisClient, err := meta.(ClientSession).CisGLBPoolClientSession()
+	if err != nil {
+		return err
+	}
+	cisID := d.Get(cisID).(string)
+	cisClient.Crn = core.StringPtr(cisID)
+	poolID := d.Get(cisGLBPoolID).(string)
+	opt := cisClient.NewDeleteLoadBalancerPoolOptions(poolID)
+	result, resp, err := cisClient.DeleteLoadBalancerPool(opt)
+	if err != nil {
+		log.Printf("[WARN] Delete GLB Pools failed %s\n", resp)
+		return err
+	}
+	log.Printf("Pool %s deleted successfully.", *result.Result.ID)
+	return nil
+}
+
+func resourceCISPoolExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	cisClient, err := meta.(ClientSession).CisGLBPoolClientSession()
+	if err != nil {
+		return false, err
 	}
 	poolID, cisID, err := convertTftoCisTwoVar(d.Id())
 	if err != nil {
-		return err
+		return false, err
 	}
-	poolUpdate := v1.PoolBody{}
-	if d.HasChange("name") || d.HasChange("origins") || d.HasChange("check_regions") || d.HasChange("notification_email") || d.HasChange("monitor") || d.HasChange("enabled") || d.HasChange("minimum_origins") || d.HasChange("description") {
-		if name, ok := d.GetOk("name"); ok {
-			poolUpdate.Name = name.(string)
+	cisClient.Crn = core.StringPtr(cisID)
+	opt := cisClient.NewGetLoadBalancerPoolOptions(poolID)
+	result, response, err := cisClient.GetLoadBalancerPool(opt)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			log.Printf("global load balancer pool does not exist.")
+			return false, nil
 		}
-		if origin, ok := d.GetOk("origins"); ok {
-			origins := origin.(*schema.Set)
-			poolUpdate.Origins = expandOrigins(origins)
-		}
-		if checkregions, ok := d.GetOk("check_regions"); ok {
-			checkRegions := checkregions.(*schema.Set).List()
-			poolUpdate.CheckRegions = expandStringList(checkRegions)
-		}
-		if notEmail, ok := d.GetOk("notification_email"); ok {
-			poolUpdate.NotEmail = notEmail.(string)
-		}
-		if monitor, ok := d.GetOk("monitor"); ok {
-			monitorID, _, _ := convertTftoCisTwoVar(monitor.(string))
-			poolUpdate.Monitor = monitorID
-		}
-		if enabled, ok := d.GetOk("enabled"); ok {
-			poolUpdate.Enabled = enabled.(bool)
-		}
-		if minOrigins, ok := d.GetOk("minimum_origins"); ok {
-			poolUpdate.MinOrigins = minOrigins.(int)
-		}
-		if description, ok := d.GetOk("description"); ok {
-			poolUpdate.Description = description.(string)
-		}
-		_, err = cisClient.Pools().UpdatePool(cisID, poolID, poolUpdate)
-		if err != nil {
-			log.Printf("[WARN] Error getting zone during PoolUpdate %v\n", err)
-			return err
-		}
+		log.Printf("Error : %s", response)
+		return false, err
 	}
-
-	return resourceCISpoolRead(d, meta)
+	log.Printf("global load balancer pool exist : %s", *result.Result.ID)
+	return true, nil
 }
 
-func resourceCISpoolDelete(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
-	if err != nil {
-		return err
-	}
-	poolId, cisId, err := convertTftoCisTwoVar(d.Id())
-	var pool *v1.Pool
-	emptyPool := new(v1.Pool)
-	pool, err = cisClient.Pools().GetPool(cisId, poolId)
-	if err != nil {
-		if checkCisPoolDeleted(d, meta, err, pool) {
-			d.SetId("")
-			return nil
+// Cloud Internet Services
+func flattenOrigins(list []globalloadbalancerpoolsv0.LoadBalancerPoolPackOriginsItem) []map[string]interface{} {
+	origins := []map[string]interface{}{}
+	for _, origin := range list {
+		l := map[string]interface{}{
+			cisGLBPoolOriginsName:    origin.Name,
+			cisGLBPoolOriginsAddress: origin.Address,
+			cisGLBPoolOriginsEnabled: origin.Enabled,
+			cisGLBPoolOriginsHealthy: origin.Healthy,
+			cisGLBPoolOriginsWeight:  origin.Weight,
 		}
-		log.Printf("[WARN] Error getting zone during PoolRead %v\n", err)
-		return err
-	}
-
-	poolObj := *pool
-	if !reflect.DeepEqual(emptyPool, poolObj) {
-		err = cisClient.Pools().DeletePool(cisId, poolId)
-		if err != nil {
-			log.Printf("[WARN] DeletePool Failed %s\n", err)
-			return err
+		if origin.DisabledAt != nil {
+			l[cisGLBPoolOriginsDisabledAt] = *origin.DisabledAt
 		}
+		if origin.FailureReason != nil {
+			l[cisGLBPoolOriginsFailureReason] = *origin.FailureReason
+		}
+		origins = append(origins, l)
 	}
-
-	d.SetId("")
-	return nil
-}
-
-func checkCisPoolDeleted(d *schema.ResourceData, meta interface{}, errCheck error, pool *v1.Pool) bool {
-	// Check if error is due to removal of Cis resource and hence all subresources
-	if strings.Contains(errCheck.Error(), "Object not found") ||
-		strings.Contains(errCheck.Error(), "status code: 404") ||
-		strings.Contains(errCheck.Error(), "Invalid zone identifier") { //code 400
-		log.Printf("[WARN] Removing resource from state because it's not found via the CIS API")
-		return true
-	}
-	_, cisId, _ := convertTftoCisTwoVar(d.Id())
-	exists, errNew := rcInstanceExists(cisId, "ibm_cis", meta)
-	if errNew != nil {
-		log.Printf("[WARN] resourceCISpoolRead - Failure validating service exists %s\n", errNew)
-		return false
-	}
-	if !exists {
-		log.Printf("[WARN] Removing pool from state because parent cis instance is in removed state")
-		return true
-	}
-	return false
+	return origins
 }
