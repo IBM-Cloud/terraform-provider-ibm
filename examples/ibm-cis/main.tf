@@ -189,3 +189,12 @@ data "ibm_cis_edge_functions_triggers" "test_triggers" {
   cis_id    = ibm_cis_edge_functions_trigger.test_trigger.cis_id
   domain_id = ibm_cis_edge_functions_trigger.test_trigger.domain_id
 }
+
+# CIS TLS Settings
+resource "ibm_cis_tls_settings" "tls_settings" {
+  cis_id          = data.ibm_cis.cis.id
+  domain_id       = data.ibm_cis_domain.cis_domain.domain_id
+  tls_1_3         = "off"
+  min_tls_version = "1.2"
+  universal_ssl   = true
+}
