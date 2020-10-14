@@ -94,6 +94,13 @@ func resourceIBMKmskey() *schema.Resource {
 				Computed:    true,
 				Description: "Crn of the key",
 			},
+			"expiration_date": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The date the key material expires. The date format follows RFC 3339. You can set an expiration date on any key on its creation. A key moves into the Deactivated state within one hour past its expiration date, if one is assigned. If you create a key without specifying an expiration date, the key does not expire",
+				ForceNew:    true,
+				Default:     "Default",
+			},
 			ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -185,13 +192,23 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	kpAPI.Config.InstanceID = instanceID
 	name := d.Get("key_name").(string)
 	standardKey := d.Get("standard_key").(bool)
-
+	expiration_string := d.Get("expiration_date").(string)
+	var expiration_time time.Time
+	expiration := &expiration_time
+	if expiration_string != "Default" {
+		expiration_time, err = time.Parse(time.RFC3339, expiration_string)
+		if err != nil {
+			return fmt.Errorf("Invalid time format: %s", err)
+		}
+	} else {
+		expiration = nil
+	}
 	var keyCRN string
 	if standardKey {
 		if v, ok := d.GetOk("payload"); ok {
 			//import standard key
 			payload := v.(string)
-			stkey, err := kpAPI.CreateImportedStandardKey(context.Background(), name, nil, payload)
+			stkey, err := kpAPI.CreateImportedStandardKey(context.Background(), name, expiration, payload)
 			if err != nil {
 				return fmt.Errorf(
 					"Error while creating standard key with payload: %s", err)
@@ -200,7 +217,7 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 			keyCRN = stkey.CRN
 		} else {
 			//create standard key
-			stkey, err := kpAPI.CreateStandardKey(context.Background(), name, nil)
+			stkey, err := kpAPI.CreateStandardKey(context.Background(), name, expiration)
 			if err != nil {
 				return fmt.Errorf(
 					"Error while creating standard key: %s", err)
@@ -214,7 +231,7 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 			payload := v.(string)
 			encryptedNonce := d.Get("encrypted_nonce").(string)
 			iv := d.Get("iv_value").(string)
-			stkey, err := kpAPI.CreateImportedRootKey(context.Background(), name, nil, payload, encryptedNonce, iv)
+			stkey, err := kpAPI.CreateImportedRootKey(context.Background(), name, expiration, payload, encryptedNonce, iv)
 			if err != nil {
 				return fmt.Errorf(
 					"Error while creating Root key with payload: %s", err)
@@ -222,7 +239,7 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 			log.Printf("New key created: %v", *stkey)
 			keyCRN = stkey.CRN
 		} else {
-			stkey, err := kpAPI.CreateRootKey(context.Background(), name, nil)
+			stkey, err := kpAPI.CreateRootKey(context.Background(), name, expiration)
 			if err != nil {
 				return fmt.Errorf(
 					"Error while creating Root key: %s", err)
@@ -304,6 +321,7 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("endpoint_type", endpointType)
 	d.Set("type", instanceType)
 	d.Set("force_delete", d.Get("force_delete").(bool))
+	d.Set("expiration_date", key.Expiration)
 	d.Set(ResourceName, key.Name)
 	d.Set(ResourceCRN, key.CRN)
 	d.Set(ResourceStatus, key.State)
