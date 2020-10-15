@@ -99,7 +99,7 @@ func resourceIBMKmskey() *schema.Resource {
 				Optional:    true,
 				Description: "The date the key material expires. The date format follows RFC 3339. You can set an expiration date on any key on its creation. A key moves into the Deactivated state within one hour past its expiration date, if one is assigned. If you create a key without specifying an expiration date, the key does not expire",
 				ForceNew:    true,
-				Default:     "Default",
+				Default:     "nil",
 			},
 			ResourceName: {
 				Type:        schema.TypeString,
@@ -195,7 +195,8 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	expiration_string := d.Get("expiration_date").(string)
 	var expiration_time time.Time
 	expiration := &expiration_time
-	if expiration_string != "Default" {
+	if expiration_string != "nil" {
+		// parse string to required time format
 		expiration_time, err = time.Parse(time.RFC3339, expiration_string)
 		if err != nil {
 			return fmt.Errorf("Invalid time format: %s", err)
