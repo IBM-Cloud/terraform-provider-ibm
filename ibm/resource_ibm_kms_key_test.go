@@ -2,7 +2,9 @@ package ibm
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -15,27 +17,34 @@ func TestAccIBMKMSResource_basic(t *testing.T) {
 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
 	payload := "LqMWNtSi3Snr4gFNO0PsFFLFRNs57mSXCQE7O2oE+g0="
 	hpcskeyName := fmt.Sprintf("hpcs_%d", acctest.RandIntRange(10, 100))
+	hours := time.Duration(rand.Intn(24) + 1)
+	mins := time.Duration(rand.Intn(60) + 1)
+	sec := time.Duration(rand.Intn(60) + 1)
+	expirationdate := ((time.Now().Add(time.Hour*hours + time.Minute*mins + time.Second*sec)).Format(time.RFC3339))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMKmsResourceStandardConfig(instanceName, keyName),
+				Config: testAccCheckIBMKmsResourceStandardConfig(instanceName, keyName, expirationdate),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "expiration_date", expirationdate),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMKmsResourceImportStandardConfig(instanceName, keyName, payload),
+				Config: testAccCheckIBMKmsResourceImportStandardConfig(instanceName, keyName, payload, expirationdate),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "expiration_date", expirationdate),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, keyName, cosInstanceName, bucketName),
+				Config: testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, keyName, expirationdate, cosInstanceName, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "expiration_date", expirationdate),
 				),
 			},
 			resource.TestStep{
@@ -48,7 +57,7 @@ func TestAccIBMKMSResource_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMKmsResourceStandardConfig(instanceName, KeyName string) string {
+func testAccCheckIBMKmsResourceStandardConfig(instanceName, KeyName, expirationdate string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_instance" "kms_instance" {
 		name              = "%s"
@@ -61,12 +70,13 @@ func testAccCheckIBMKmsResourceStandardConfig(instanceName, KeyName string) stri
 		key_name = "%s"
 		standard_key =  true
 		force_delete = true
+		expiration_date = "%s"
 	}
 	
-`, instanceName, KeyName)
+`, instanceName, KeyName, expirationdate)
 }
 
-func testAccCheckIBMKmsResourceImportStandardConfig(instanceName, KeyName, payload string) string {
+func testAccCheckIBMKmsResourceImportStandardConfig(instanceName, KeyName, payload, expirationdate string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_instance" "kms_instance" {
 		name              = "%s"
@@ -80,12 +90,13 @@ func testAccCheckIBMKmsResourceImportStandardConfig(instanceName, KeyName, paylo
 		standard_key =  true
 		payload = "%s"
 		force_delete = true
+		expiration_date = "%s"
 	}
 
-`, instanceName, KeyName, payload)
+`, instanceName, KeyName, payload, expirationdate)
 }
 
-func testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, KeyName, cosInstanceName, bucketName string) string {
+func testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, KeyName, expirationdate, cosInstanceName, bucketName string) string {
 	return fmt.Sprintf(`
 	provider "ibm" {
 		region = "us-south"
@@ -101,6 +112,7 @@ func testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, KeyName, cosIn
 		key_name = "%s"
 		standard_key =  false
 		force_delete = true
+		expiration_date = "%s"
 	}
 
 	resource "ibm_resource_instance" "cos_instance" {
@@ -125,7 +137,7 @@ func testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, KeyName, cosIn
 		key_protect          = ibm_kms_key.test.id
 	}
 	
-`, instanceName, KeyName, cosInstanceName, bucketName)
+`, instanceName, KeyName, expirationdate, cosInstanceName, bucketName)
 }
 
 func testAccCheckIBMKmsResourceHpcsConfig(hpcsInstanceID, KeyName string) string {
