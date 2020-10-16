@@ -343,6 +343,7 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(90 * time.Minute),
+			Update: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(45 * time.Minute),
 		},
 	}
@@ -577,6 +578,11 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 				if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {
 					return fmt.Errorf("Error replacing the worker node from the cluster: %s", err)
 				}
+			}
+			_, Err := WaitForVpcClusterWokersVersionUpdate(d, meta, targetEnv, masterVersion)
+			if Err != nil {
+				return fmt.Errorf(
+					"Error waiting for cluster (%s) worker nodes kube version to be updated: %s", d.Id(), Err)
 			}
 		}
 	}
@@ -1093,12 +1099,13 @@ func WaitForVpcClusterVersionUpdate(d *schema.ResourceData, meta interface{}, ta
 	id := d.Id()
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", versionUpdating},
-		Target:     []string{clusterNormal},
-		Refresh:    vpcClusterVersionRefreshFunc(csClient.Clusters(), id, d, target),
-		Timeout:    d.Timeout(schema.TimeoutUpdate),
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
+		Pending:                   []string{"retry", versionUpdating},
+		Target:                    []string{clusterNormal},
+		Refresh:                   vpcClusterVersionRefreshFunc(csClient.Clusters(), id, d, target),
+		Timeout:                   d.Timeout(schema.TimeoutUpdate),
+		Delay:                     10 * time.Second,
+		MinTimeout:                10 * time.Second,
+		ContinuousTargetOccurence: 5,
 	}
 
 	return stateConf.WaitForState()
@@ -1113,9 +1120,59 @@ func vpcClusterVersionRefreshFunc(client v2.Clusters, instanceID string, d *sche
 
 		// Check active transactions
 		log.Println("Checking cluster version", cls.MasterKubeVersion, d.Get("kube_version").(string))
-		if strings.Contains(cls.MasterKubeVersion, "pending") {
+		if strings.Contains(cls.MasterKubeVersion, "(pending)") {
 			return cls, versionUpdating, nil
 		}
 		return cls, clusterNormal, nil
+	}
+}
+
+// WaitForVpcClusterWokersVersionUpdate Waits for Cluster version Update
+func WaitForVpcClusterWokersVersionUpdate(d *schema.ResourceData, meta interface{}, target v2.ClusterTargetHeader, masterVersion string) (interface{}, error) {
+	csClient, err := meta.(ClientSession).VpcContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+
+	log.Printf("Waiting for workers (%s) version to be updated.", d.Id())
+	id := d.Id()
+
+	stateConf := &resource.StateChangeConf{
+		Pending:                   []string{"retry", versionUpdating},
+		Target:                    []string{clusterNormal},
+		Refresh:                   vpcClusterWorkersVersionRefreshFunc(csClient.Workers(), id, d, target, masterVersion),
+		Timeout:                   d.Timeout(schema.TimeoutUpdate),
+		Delay:                     10 * time.Second,
+		MinTimeout:                10 * time.Second,
+		ContinuousTargetOccurence: 5,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func vpcClusterWorkersVersionRefreshFunc(client v2.Workers, clusterID string, d *schema.ResourceData, target v2.ClusterTargetHeader, masterVersion string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		workers, err := client.ListWorkers(clusterID, false, target)
+		if err != nil {
+			return nil, "retry", fmt.Errorf("Error retrieving workers of container vpc cluster: %s", err)
+		}
+
+		// Check active updates
+
+		if len(workers) == 0 {
+			return workers, versionUpdating, nil
+		}
+
+		updatedWorkers := 0
+		for _, worker := range workers {
+			if worker.Health.State == "normal" && strings.Contains(worker.KubeVersion.Actual, masterVersion) {
+				updatedWorkers++
+			}
+		}
+		if updatedWorkers == len(workers) {
+			return workers, clusterNormal, nil
+		}
+
+		return workers, versionUpdating, nil
 	}
 }

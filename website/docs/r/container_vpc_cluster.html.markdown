@@ -112,6 +112,14 @@ resource "ibm_container_vpc_cluster" "cluster" {
 }
 ```
 
+## Timeouts
+
+ibm_container_vpc_cluster provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 90 minutes) Used for creating Cluster.
+* `update` - (Default 60 minutes) Used for updating Cluster.
+* `delete` - (Default 45 minutes) Used for deleting Cluster.
+
 ## Argument Reference
 
 The following arguments are supported:
