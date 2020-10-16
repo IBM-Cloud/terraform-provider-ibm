@@ -1534,7 +1534,6 @@ func UpdateTags(d *schema.ResourceData, meta interface{}) error {
 	for i, v := range addInt {
 		add[i] = fmt.Sprint(v)
 	}
-	add = append(add, "mytag")
 	remove := make([]string, len(removeInt))
 	for i, v := range removeInt {
 		remove[i] = fmt.Sprint(v)
