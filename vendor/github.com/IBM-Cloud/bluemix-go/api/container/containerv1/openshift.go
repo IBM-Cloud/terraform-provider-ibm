@@ -108,7 +108,7 @@ func (r *clusters) FetchOCTokenForKubeConfig(kubecfg []byte, cMeta *ClusterInfo,
 	defer func() {
 		err := PanicCatch(recover())
 		if err != nil {
-			rerr = fmt.Errorf("Could not login to openshift account")
+			rerr = fmt.Errorf("Could not login to openshift account %s", err)
 		}
 	}()
 
