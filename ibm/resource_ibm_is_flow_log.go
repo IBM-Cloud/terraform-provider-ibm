@@ -346,13 +346,23 @@ func resourceIBMISFlowLogUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if d.HasChange(isFlowLogActive) || d.HasChange(isFlowLogName) {
-		active := d.Get(isFlowLogActive).(bool)
-		name := d.Get(isFlowLogName).(string)
 		updoptions := &vpcv1.UpdateFlowLogCollectorOptions{
-			ID:     &ID,
-			Active: &active,
-			Name:   &name,
+			ID: &ID,
 		}
+
+		// Construct an instance of the FlowLogCollectorPatch model
+		flowLogCollectorPatchModel := new(vpcv1.FlowLogCollectorPatch)
+
+		if _, ok := d.GetOkExists(isFlowLogActive); ok {
+			activebool := d.Get(isFlowLogActive).(bool)
+			flowLogCollectorPatchModel.Active = &activebool
+		}
+		if _, ok := d.GetOk(isFlowLogName); ok {
+			namestr := d.Get(isFlowLogName).(string)
+			flowLogCollectorPatchModel.Name = &namestr
+		}
+		flowLogCollectorPatchModelAsPatch, _ := flowLogCollectorPatchModel.AsPatch()
+		updoptions.FlowLogCollectorPatch = flowLogCollectorPatchModelAsPatch
 		_, response, err = sess.UpdateFlowLogCollector(updoptions)
 		if err != nil {
 			return fmt.Errorf("Error updating flow log collector:%s\n%s", err, response)
