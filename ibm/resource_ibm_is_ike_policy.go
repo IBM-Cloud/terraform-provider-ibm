@@ -459,12 +459,15 @@ func classicIkepUpdate(d *schema.ResourceData, meta interface{}, id string) erro
 		dhGroup := int64(d.Get(isIKEDhGroup).(int))
 		ikeVersion := int64(d.Get(isIKEVERSION).(int))
 
-		options.Name = &name
-		options.AuthenticationAlgorithm = &authenticationAlg
-		options.EncryptionAlgorithm = &encryptionAlg
-		options.KeyLifetime = &keyLifetime
-		options.DhGroup = &dhGroup
-		options.IkeVersion = &ikeVersion
+		policyPatchList := make(map[string]interface{})
+		policyPatchList[isIKEName] = &name
+		policyPatchList[isIKEAuthenticationAlg] = &authenticationAlg
+		policyPatchList[isIKEEncryptionAlg] = &encryptionAlg
+		policyPatchList[isIKEKeyLifeTime] = &keyLifetime
+		policyPatchList[isIKEDhGroup] = &dhGroup
+		policyPatchList[isIKEVERSION] = &ikeVersion
+
+		options.IkePolicyPatch = policyPatchList
 
 		_, response, err := sess.UpdateIkePolicy(options)
 		if err != nil {
@@ -490,12 +493,15 @@ func ikepUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 		dhGroup := int64(d.Get(isIKEDhGroup).(int))
 		ikeVersion := int64(d.Get(isIKEVERSION).(int))
 
-		options.Name = &name
-		options.AuthenticationAlgorithm = &authenticationAlg
-		options.EncryptionAlgorithm = &encryptionAlg
-		options.KeyLifetime = &keyLifetime
-		options.DhGroup = &dhGroup
-		options.IkeVersion = &ikeVersion
+		policyPatchList := make(map[string]interface{})
+		policyPatchList[isIKEName] = &name
+		policyPatchList[isIKEAuthenticationAlg] = &authenticationAlg
+		policyPatchList[isIKEEncryptionAlg] = &encryptionAlg
+		policyPatchList[isIKEKeyLifeTime] = &keyLifetime
+		policyPatchList[isIKEDhGroup] = &dhGroup
+		policyPatchList[isIKEVERSION] = &ikeVersion
+
+		options.IkePolicyPatch = policyPatchList
 
 		_, response, err := sess.UpdateIkePolicy(options)
 		if err != nil {
