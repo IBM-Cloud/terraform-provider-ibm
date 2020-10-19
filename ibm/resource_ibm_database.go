@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	validation "github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -67,6 +69,11 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 			Update: schema.DefaultTimeout(20 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
+		CustomizeDiff: customdiff.Sequence(
+			func(diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -194,8 +201,9 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Set:      resourceIBMVPCHash,
 			},
 			"point_in_time_recovery_deployment_id": {
 				Description:      "The CRN of source instance",
@@ -777,10 +785,6 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	//paramString := string(parameters[:])
 	rsInst.Parameters = raw
 
-	if _, ok := d.GetOk("tags"); ok {
-		rsInst.Tags = getServiceTags(d)
-	}
-
 	instance, err := rsConClient.ResourceServiceInstance().CreateInstance(rsInst)
 	if err != nil {
 		return fmt.Errorf("Error creating database instance: %s", err)
@@ -796,6 +800,16 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	d.SetId(instance.ID)
+
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk("tags"); ok || v != "" {
+		oldList, newList := d.GetChange("tags")
+		err = UpdateTagsUsingCRN(oldList, newList, meta, instance.Crn.String())
+		if err != nil {
+			log.Printf(
+				"Error on create of ibm database (%s) tags: %s", d.Id(), err)
+		}
+	}
 
 	icdId := EscapeUrlParm(instance.ID)
 	icdClient, err := meta.(ClientSession).ICDAPI()
@@ -955,11 +969,12 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 		return nil
 	}
 
-	err = GetTags(d, meta)
+	tags, err := GetTagsUsingCRN(meta, instance.Crn.String())
 	if err != nil {
-		return fmt.Errorf(
-			"Error on get of resource instance (%s) tags: %s", d.Id(), err)
+		log.Printf(
+			"Error on get of ibm database tags (%s) tags: %s", d.Id(), err)
 	}
+	d.Set("tags", tags)
 	d.Set("name", instance.Name)
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
@@ -1103,9 +1118,11 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 	}
 
 	if d.HasChange("tags") {
-		err = UpdateTags(d, meta)
+
+		oldList, newList := d.GetChange("tags")
+		err = UpdateTagsUsingCRN(oldList, newList, meta, instanceID)
 		if err != nil {
-			return fmt.Errorf(
+			log.Printf(
 				"Error on update of resource instance (%s) tags: %s", d.Id(), err)
 		}
 	}
