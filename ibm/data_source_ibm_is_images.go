@@ -26,32 +26,49 @@ func dataSourceIBMISImages() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Image name",
 						},
 						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this image",
 						},
 						"status": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The status of this image",
 						},
 						"visibility": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Whether the image is publicly visible or private to the account",
 						},
 						"os": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Image Operating system",
 						},
 						"architecture": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The operating system architecture",
 						},
 						"crn": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this image",
+						},
+						isImageEncryptionKey: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource",
+						},
+						isImageEncryption: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of encryption used on the image",
 						},
 					},
 				},
@@ -153,6 +170,12 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 			"visibility":   *image.Visibility,
 			"os":           *image.OperatingSystem.Name,
 			"architecture": *image.OperatingSystem.Architecture,
+		}
+		if image.Encryption != nil {
+			l["encryption"] = *image.Encryption
+		}
+		if image.EncryptionKey != nil {
+			l["encryption_key"] = *image.EncryptionKey.CRN
 		}
 		imagesInfo = append(imagesInfo, l)
 	}
