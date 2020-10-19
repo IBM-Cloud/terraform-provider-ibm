@@ -438,18 +438,24 @@ func classicFipUpdate(d *schema.ResourceData, meta interface{}, id string) error
 	options := &vpcclassicv1.UpdateFloatingIPOptions{
 		ID: &id,
 	}
-	if d.HasChange(isFloatingIPName) {
-		name := d.Get(isFloatingIPName).(string)
-		options.Name = &name
+	if d.HasChange(isFloatingIPTarget) || d.HasChange(isFloatingIPName) {
 		hasChanged = true
-	}
-
-	if d.HasChange(isFloatingIPTarget) {
-		target := d.Get(isFloatingIPTarget).(string)
-		options.Target = &vpcclassicv1.FloatingIPPatchTargetNetworkInterfaceIdentity{
-			ID: &target,
+		// Construct an instance of the FloatingIPPatch model
+		floatingIPPatchModel := new(vpcclassicv1.FloatingIPPatch)
+		if d.HasChange(isFloatingIPName) {
+			name := d.Get(isFloatingIPName).(string)
+			floatingIPPatchModel.Name = &name
 		}
-		hasChanged = true
+
+		if d.HasChange(isFloatingIPTarget) {
+			target := d.Get(isFloatingIPTarget).(string)
+			floatingIPPatchModel.Target = &vpcclassicv1.FloatingIPPatchTargetNetworkInterfaceIdentity{
+				ID: &target,
+			}
+		}
+
+		floatingIPPatchModelAsPatch, asPatchErr := floatingIPPatchModel.AsPatch()
+		options.FloatingIPPatch = floatingIPPatchModelAsPatch
 	}
 	if hasChanged {
 		_, response, err := sess.UpdateFloatingIP(options)
@@ -484,18 +490,24 @@ func fipUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 	options := &vpcv1.UpdateFloatingIPOptions{
 		ID: &id,
 	}
-	if d.HasChange(isFloatingIPName) {
-		name := d.Get(isFloatingIPName).(string)
-		options.Name = &name
+	if d.HasChange(isFloatingIPTarget) || d.HasChange(isFloatingIPName) {
 		hasChanged = true
-	}
-
-	if d.HasChange(isFloatingIPTarget) {
-		target := d.Get(isFloatingIPTarget).(string)
-		options.Target = &vpcv1.FloatingIPPatchTargetNetworkInterfaceIdentity{
-			ID: &target,
+		// Construct an instance of the FloatingIPPatch model
+		floatingIPPatchModel := new(vpcclassicv1.FloatingIPPatch)
+		if d.HasChange(isFloatingIPName) {
+			name := d.Get(isFloatingIPName).(string)
+			floatingIPPatchModel.Name = &name
 		}
-		hasChanged = true
+
+		if d.HasChange(isFloatingIPTarget) {
+			target := d.Get(isFloatingIPTarget).(string)
+			floatingIPPatchModel.Target = &vpcclassicv1.FloatingIPPatchTargetNetworkInterfaceIdentity{
+				ID: &target,
+			}
+		}
+
+		floatingIPPatchModelAsPatch, _ := floatingIPPatchModel.AsPatch()
+		options.FloatingIPPatch = floatingIPPatchModelAsPatch
 	}
 	if hasChanged {
 		_, response, err := sess.UpdateFloatingIP(options)
