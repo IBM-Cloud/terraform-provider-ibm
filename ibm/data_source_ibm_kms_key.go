@@ -67,11 +67,6 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	hpcsEndpointApi, err := meta.(ClientSession).HpcsEndpointAPI()
-	if err != nil {
-		return err
-	}
-
 	rContollerClient, err := meta.(ClientSession).ResourceControllerAPIV2()
 	if err != nil {
 		return err
@@ -92,6 +87,11 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 	crnData := strings.Split(instanceCRN, ":")
 
 	if crnData[4] == "hs-crypto" {
+
+		hpcsEndpointApi, err := meta.(ClientSession).HpcsEndpointAPI()
+		if err != nil {
+			return err
+		}
 		resp, err := hpcsEndpointApi.Endpoint().GetAPIEndpoint(instanceID)
 		if err != nil {
 			return err

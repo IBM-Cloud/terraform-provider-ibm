@@ -24,3 +24,7 @@ output "ibm_cis_edge_function_trigger_output" {
 output "domain_setting" {
   value = ibm_cis_domain_settings.test_domain_settings
 }
+
+output "ibm_cis_tls_settings_output" {
+  value = ibm_cis_tls_settings.tls_settings
+}

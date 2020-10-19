@@ -15,6 +15,7 @@ These types of resources are supported:
 * [ CIS Rate Limit ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-rate-limit)
 * [ CIS Edge Functions Action ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-edge-functions-action)
 * [ CIS Edge Functions Trigger ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-edge-functions-trigger)
+* [ CIS TLS Settings](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-tls-settings)
 
 ## Terraform versions
 
@@ -206,6 +207,17 @@ resource "ibm_cis_edge_functions_trigger" "test_trigger" {
 }
 ```
 
+`CIS TLS Settings`
+```hcl
+resource "ibm_cis_tls_settings" "tls_settings" {
+  cis_id          = data.ibm_cis.cis.id
+  domain_id       = data.ibm_cis_domain.cis_domain.domain_id
+  tls_1_3         = "off"
+  min_tls_version = "1.2"
+  universal_ssl   = true
+}
+```
+
 ## CIS Data Sources
 `CIS Instance`
 ```hcl
@@ -262,6 +274,7 @@ data "ibm_cis_edge_functions_triggers" "test_triggers" {
 - [Rate Limiting Cloud Docs](https://cloud.ibm.com/docs/cis?topic=cis-cis-rate-limiting#rate-limiting-configure-response)
 - [Rate Limiting CLI](https://cloud.ibm.com/docs/cis?topic=cis-cli-plugin-cis-cli#ratelimit)
 - [Edge Functions CLI](https://cloud.ibm.com/docs/cis?topic=cis-cli-plugin-cis-cli#edge-functions)
+- [TLS Settings CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#show-tls-setting)
 
 ## Notes
 
@@ -334,6 +347,9 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | action_name | The Edge Functions action name | `string` | yes |
 | script | script content | `string` | yes |
 | pattern_url | domain name pattern url| `string` | yes |
+| tls_1_3 | The TLS Version 1.3 `on`, `off`, `zrt` setting | `string` | no |
+| min_tls_version | The Minimum TLS Version setting | `string` | no |
+| universal_ssl | The Universal SSL enable/disable setting | `boolean` | no |
 
 ## Outputs
 
