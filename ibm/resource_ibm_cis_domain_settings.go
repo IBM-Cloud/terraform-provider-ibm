@@ -1184,14 +1184,24 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 				log.Printf("Security header setting get request failed : %v", resp)
 				return err
 			}
-			securityHeader := result.Result.Value.StrictTransportSecurity
-			value := map[string]interface{}{
-				cisDomainSettingsSecurityHeaderEnabled:           *securityHeader.Enabled,
-				cisDomainSettingsSecurityHeaderNoSniff:           *securityHeader.Nosniff,
-				cisDomainSettingsSecurityHeaderIncludeSubdomains: *securityHeader.IncludeSubdomains,
-				cisDomainSettingsSecurityHeaderMaxAge:            *securityHeader.MaxAge,
+			if result.Result.Value != nil && result.Result.Value.StrictTransportSecurity != nil {
+
+				securityHeader := result.Result.Value.StrictTransportSecurity
+				value := map[string]interface{}{}
+				if securityHeader.Enabled != nil {
+					value[cisDomainSettingsSecurityHeaderEnabled] = *securityHeader.Enabled
+				}
+				if securityHeader.Nosniff != nil {
+					value[cisDomainSettingsSecurityHeaderNoSniff] = *securityHeader.Nosniff
+				}
+				if securityHeader.IncludeSubdomains != nil {
+					value[cisDomainSettingsSecurityHeaderIncludeSubdomains] = *securityHeader.IncludeSubdomains
+				}
+				if securityHeader.MaxAge != nil {
+					value[cisDomainSettingsSecurityHeaderMaxAge] = *securityHeader.MaxAge
+				}
+				d.Set(cisDomainSettingsSecurityHeader, []interface{}{value})
 			}
-			d.Set(cisDomainSettingsSecurityHeader, []interface{}{value})
 
 		case cisDomainSettingsMobileRedirect:
 			opt := cisClient.NewGetMobileRedirectOptions()
@@ -1200,13 +1210,22 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 				log.Printf("Mobile redirect strip URI setting get request failed : %v", resp)
 				return err
 			}
-			value := result.Result.Value
-			uri := map[string]interface{}{
-				cisDomainSettingsMobileRedirectMobileSubdomain: *value.MobileSubdomain,
-				cisDomainSettingsMobileRedirectStatus:          *value.Status,
-				cisDomainSettingsMobileRedirectStripURI:        *value.StripURI,
+			if result.Result.Value != nil {
+
+				value := result.Result.Value
+
+				uri := map[string]interface{}{}
+				if value.MobileSubdomain != nil {
+					uri[cisDomainSettingsMobileRedirectMobileSubdomain] = *value.MobileSubdomain
+				}
+				if value.Status != nil {
+					uri[cisDomainSettingsMobileRedirectStatus] = *value.Status
+				}
+				if value.StripURI != nil {
+					uri[cisDomainSettingsMobileRedirectStripURI] = *value.StripURI
+				}
+				d.Set(cisDomainSettingsMobileRedirect, []interface{}{uri})
 			}
-			d.Set(cisDomainSettingsMobileRedirect, []interface{}{uri})
 		}
 	}
 	d.Set(cisID, crn)
