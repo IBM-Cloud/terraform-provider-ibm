@@ -3,38 +3,61 @@ package ibm
 import (
 	"fmt"
 	"log"
-	"reflect"
-	"strings"
 
+	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+)
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
+const (
+	cisGLBID                 = "glb_id"
+	cisGLBName               = "name"
+	cisGLBFallbackPoolID     = "fallback_pool_id"
+	cisGLBDefaultPoolIDs     = "default_pool_ids"
+	cisGLBDesc               = "description"
+	cisGLBProxied            = "proxied"
+	cisGLBTTL                = "ttl"
+	cisGLBSessionAffinity    = "session_affinity"
+	cisGLBEnabled            = "enabled"
+	cisGLBPopPools           = "pop_pools"
+	cisGLBPopPoolsPop        = "pop"
+	cisGLBPopPoolsPoolIDs    = "pool_ids"
+	cisGLBRegionPools        = "region_pools"
+	cisGLBRegionPoolsRegion  = "region"
+	cisGLBRegionPoolsPoolIDs = "pool_ids"
+	cisGLBCreatedOn          = "created_on"
+	cisGLBModifiedOn         = "modified_on"
 )
 
 func resourceIBMCISGlb() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"cis_id": {
+			cisID: {
 				Type:        schema.TypeString,
 				Description: "CIS instance crn",
 				Required:    true,
 			},
-			"domain_id": {
-				Type:        schema.TypeString,
-				Description: "Associated CIS domain",
-				Required:    true,
+			cisDomainID: {
+				Type:             schema.TypeString,
+				Description:      "Associated CIS domain",
+				Required:         true,
+				DiffSuppressFunc: suppressDomainIDDiff,
 			},
-			"name": {
+			cisGLBID: {
+				Type:        schema.TypeString,
+				Description: "global load balancer id",
+				Computed:    true,
+			},
+			cisGLBName: {
 				Type:        schema.TypeString,
 				Description: "name",
 				Required:    true,
 			},
-			"fallback_pool_id": {
+			cisGLBFallbackPoolID: {
 				Type:        schema.TypeString,
 				Description: "fallback pool ID",
 				Required:    true,
 			},
-			"default_pool_ids": {
+			cisGLBDefaultPoolIDs: {
 				Type:     schema.TypeSet,
 				Required: true,
 				Elem: &schema.Schema{
@@ -43,27 +66,28 @@ func resourceIBMCISGlb() *schema.Resource {
 				Description: "List of default Pool IDs",
 				//ValidateFunc: validation.StringLenBetween(1, 32),
 			},
-			"description": {
+			cisGLBDesc: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Description for the load balancer instance",
 				//ValidateFunc: validation.StringLenBetween(0, 1024),
 			},
-			"ttl": {
+			cisGLBTTL: {
 				Type:          schema.TypeInt,
 				Optional:      true,
+				Default:       60,
 				ConflictsWith: []string{"proxied"},
 				Description:   "TTL value", // this is set to zero regardless of config when proxied=true
 
 			},
-			"proxied": {
+			cisGLBProxied: {
 				Type:          schema.TypeBool,
 				Optional:      true,
 				Default:       false,
-				ConflictsWith: []string{"ttl"},
+				ConflictsWith: []string{cisGLBTTL},
 				Description:   "set to true if proxy needs to be enabled",
 			},
-			"session_affinity": {
+			cisGLBSessionAffinity: {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "none",
@@ -71,23 +95,24 @@ func resourceIBMCISGlb() *schema.Resource {
 				ValidateFunc: validateAllowedStringValue([]string{"none", "cookie"}),
 				Description:  "Session affinity info",
 			},
-			"enabled": {
+			cisGLBEnabled: {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
 				Description: "set to true of LB needs to enabled",
 			},
-			"pop_pools": {
+			cisGLBPopPools: {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"pop": {
-							Type:     schema.TypeString,
-							Required: true,
+						cisGLBPopPoolsPop: {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "pop pools region",
 						},
 
-						"pool_ids": {
+						cisGLBPopPoolsPoolIDs: {
 							Type:     schema.TypeList,
 							Required: true,
 							Elem: &schema.Schema{
@@ -98,17 +123,17 @@ func resourceIBMCISGlb() *schema.Resource {
 				},
 			},
 
-			"region_pools": {
+			cisGLBRegionPools: {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"region": {
+						cisGLBRegionPoolsRegion: {
 							Type:     schema.TypeString,
 							Required: true,
 						},
 
-						"pool_ids": {
+						cisGLBRegionPoolsPoolIDs: {
 							Type:     schema.TypeList,
 							Required: true,
 							Elem: &schema.Schema{
@@ -118,209 +143,180 @@ func resourceIBMCISGlb() *schema.Resource {
 					},
 				},
 			},
-			"created_on": {
+			cisGLBCreatedOn: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Load balancer creation date",
 			},
-			"modified_on": {
+			cisGLBModifiedOn: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Load balancer modified date",
 			},
 		},
 
-		Create: resourceCISGlbCreate,
-		Read:   resourceCISGlbRead,
-		Update: resourceCISGlbUpdate,
-		Delete: resourceCISGlbDelete,
-		// No Exists due to errors in CIS API returning incorrect return codes on 404
+		Create:   resourceCISGlbCreate,
+		Read:     resourceCISGlbRead,
+		Update:   resourceCISGlbUpdate,
+		Delete:   resourceCISGlbDelete,
 		Importer: &schema.ResourceImporter{},
 	}
 }
 
 func resourceCISGlbCreate(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
+	cisClient, err := meta.(ClientSession).CisGLBClientSession()
 	if err != nil {
 		return err
 	}
 
-	cisId := d.Get("cis_id").(string)
-	name := d.Get("name").(string)
-	zoneId, _, err := convertTftoCisTwoVar(d.Get("domain_id").(string))
-	if err != nil {
-		return err
+	crn := d.Get(cisID).(string)
+	zoneID, _, err := convertTftoCisTwoVar(d.Get(cisDomainID).(string))
+	cisClient.Crn = core.StringPtr(crn)
+	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
+
+	tfDefaultPoolIds := expandStringList(d.Get(cisGLBDefaultPoolIDs).(*schema.Set).List())
+	defaultPoolIds, _, err := convertTfToCisTwoVarSlice(tfDefaultPoolIds)
+	fbPoolID := d.Get(cisGLBFallbackPoolID).(string)
+	fallbackPool, _, err := convertTftoCisTwoVar(fbPoolID)
+
+	opt := cisClient.NewCreateLoadBalancerOptions()
+	opt.SetName(d.Get(cisGLBName).(string))
+	opt.SetDefaultPools(defaultPoolIds)
+	opt.SetFallbackPool(fallbackPool)
+	opt.SetProxied(d.Get(cisGLBProxied).(bool))
+	opt.SetSessionAffinity(d.Get(cisGLBSessionAffinity).(string))
+
+	if description, ok := d.GetOk(cisGLBDesc); ok {
+		opt.SetDescription(description.(string))
 	}
-
-	var glb *v1.Glb
-	var glbObj v1.Glb
-	glbNew := v1.GlbBody{}
-	glbNew.Name = name
-
-	tfDefaultPools := expandStringList(d.Get("default_pool_ids").(*schema.Set).List())
-	defaultPoolIds, _, err := convertTfToCisTwoVarSlice(tfDefaultPools)
-	glbNew.DefaultPools = defaultPoolIds
-	// glbNew.RegionPools
-	// glbNew.PopPools
-
-	fbPoolId := d.Get("fallback_pool_id").(string)
-	glbNew.FallbackPool, _, err = convertTftoCisTwoVar(fbPoolId)
-	glbNew.Proxied = d.Get("proxied").(bool)
-	glbNew.SessionAffinity = d.Get("session_affinity").(string)
-
-	if description, ok := d.GetOk("description"); ok {
-		glbNew.Desc = description.(string)
+	if ttl, ok := d.GetOk(cisGLBTTL); ok {
+		opt.SetTTL(int64(ttl.(int)))
 	}
-	if ttl, ok := d.GetOk("ttl"); ok {
-		glbNew.Ttl = ttl.(int)
-	}
-	if regionPools, ok := d.GetOk("region_pools"); ok {
-		expandedRegionPools, err := expandGeoPools(regionPools, "region")
+	if regionPools, ok := d.GetOk(cisGLBRegionPools); ok {
+		expandedRegionPools, err := expandGeoPools(regionPools, cisGLBRegionPoolsRegion)
 		if err != nil {
 			return err
 		}
-		glbNew.RegionPools = expandedRegionPools
+		opt.SetRegionPools(expandedRegionPools)
 	}
-
-	if popPools, ok := d.GetOk("pop_pools"); ok {
-		expandedPopPools, err := expandGeoPools(popPools, "pop")
+	if popPools, ok := d.GetOk(cisGLBPopPools); ok {
+		expandedPopPools, err := expandGeoPools(popPools, cisGLBPopPoolsPop)
 		if err != nil {
 			return err
 		}
-		glbNew.PopPools = expandedPopPools
+		opt.SetPopPools(expandedPopPools)
 	}
 
-	glb, err = cisClient.Glbs().CreateGlb(cisId, zoneId, glbNew)
+	result, resp, err := cisClient.CreateLoadBalancer(opt)
 	if err != nil {
-		log.Printf("CreateGlbs Failed %s\n", err)
+		log.Printf("Create GLB failed %s\n", resp)
 		return err
 	}
-	glbObj = *glb
-	d.SetId(convertCisToTfThreeVar(glbObj.Id, zoneId, cisId))
-
+	d.SetId(convertCisToTfThreeVar(*result.Result.ID, zoneID, crn))
 	return resourceCISGlbUpdate(d, meta)
-}
-func expandGeoPools(pool interface{}, geoType string) (map[string][]string, error) {
-	pools := pool.(*schema.Set).List()
-	expandPool := make(map[string][]string)
-	for _, v := range pools {
-		locationConfig := v.(map[string]interface{})
-		location := locationConfig[geoType].(string)
-		if _, p := expandPool[location]; !p {
-			geoPools := expandStringList(locationConfig["pool_ids"].([]interface{}))
-			expandPool[location], _, _ = convertTfToCisTwoVarSlice(geoPools)
-		} else {
-			return nil, fmt.Errorf("duplicate entry specified for %s pool in location %q. each location must only be specified once", geoType, location)
-		}
-	}
-	return expandPool, nil
 }
 
 func resourceCISGlbRead(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
+	cisClient, err := meta.(ClientSession).CisGLBClientSession()
 	if err != nil {
 		return err
 	}
+
 	// Extract CIS Ids from TF Id
-	glbId, zoneId, cisId, err := convertTfToCisThreeVar(d.Id())
+	glbID, zoneID, crn, err := convertTfToCisThreeVar(d.Id())
 	if err != nil {
 		return err
 	}
-	var glb *v1.Glb
 
-	glb, err = cisClient.Glbs().GetGlb(cisId, zoneId, glbId)
+	cisClient.Crn = core.StringPtr(crn)
+	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
+
+	opt := cisClient.NewGetLoadBalancerSettingsOptions(glbID)
+
+	result, resp, err := cisClient.GetLoadBalancerSettings(opt)
 	if err != nil {
-		if checkCisGlbDeleted(d, meta, err, glb) {
-			d.SetId("")
-			return nil
-		}
-		log.Printf("[WARN] Error getting zone during GlbRead %v\n", err)
+		log.Printf("[WARN] GLB Read failed: %v\n", resp)
 		return err
 	}
-	glbObj := *glb
-	d.Set("cis_id", cisId)
-	d.Set("domain_id", convertCisToTfTwoVar(zoneId, cisId))
-	d.Set("name", glbObj.Name)
-	d.Set("default_pool_ids", convertCisToTfTwoVarSlice(glbObj.DefaultPools, cisId))
-	d.Set("description", glbObj.Desc)
-	d.Set("fallback_pool_id", convertCisToTfTwoVar(glbObj.FallbackPool, cisId))
-	d.Set("ttl", glbObj.Ttl)
-	d.Set("proxied", glbObj.Proxied)
-	d.Set("enabled", glbObj.Enabled)
-	d.Set("session_affinity", glbObj.SessionAffinity)
-	if err := d.Set("pop_pools", flattenPools(glbObj.PopPools, "pop", cisId)); err != nil {
-		log.Printf("[WARN] Error setting pop_pools on cis load balancer %q: %s", d.Id(), err)
-	}
-
-	if err := d.Set("region_pools", flattenPools(glbObj.RegionPools, "region", cisId)); err != nil {
-		log.Printf("[WARN] Error setting region_pools on cis  load balancer %q: %s", d.Id(), err)
-	}
+	glbObj := result.Result
+	d.Set(cisID, crn)
+	d.Set(cisDomainID, zoneID)
+	d.Set(cisGLBID, glbObj.ID)
+	d.Set(cisGLBName, glbObj.Name)
+	d.Set(cisGLBDefaultPoolIDs, convertCisToTfTwoVarSlice(glbObj.DefaultPools, crn))
+	d.Set(cisGLBDesc, glbObj.Description)
+	d.Set(cisGLBFallbackPoolID, convertCisToTfTwoVar(*glbObj.FallbackPool, crn))
+	d.Set(cisGLBTTL, glbObj.TTL)
+	d.Set(cisGLBProxied, glbObj.Proxied)
+	d.Set(cisGLBEnabled, glbObj.Enabled)
+	d.Set(cisGLBSessionAffinity, glbObj.SessionAffinity)
+	flattenPopPools := flattenPools(
+		glbObj.PopPools, cisGLBPopPoolsPop, crn)
+	d.Set(cisGLBPopPools, flattenPopPools)
+	flattenRegionPools := flattenPools(
+		glbObj.RegionPools, cisGLBRegionPoolsRegion, crn)
+	d.Set(cisGLBRegionPools, flattenRegionPools)
 
 	return nil
 }
-func flattenPools(pools map[string][]string, geoType string, cisId string) []interface{} {
-	result := make([]interface{}, 0)
-	for k, v := range pools {
-		pool := map[string]interface{}{
-			geoType:    k,
-			"pool_ids": convertCisToTfTwoVarSlice(v, cisId),
-		}
-		result = append(result, pool)
-	}
-	return result
-}
 
 func resourceCISGlbUpdate(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
+	cisClient, err := meta.(ClientSession).CisGLBClientSession()
 	if err != nil {
 		return err
 	}
 	// Extract CIS Ids from TF Id
-	glbId, zoneId, cisId, err := convertTfToCisThreeVar(d.Id())
+	glbID, zoneID, crn, err := convertTfToCisThreeVar(d.Id())
 	if err != nil {
 		return err
 	}
-	glbUpdate := v1.GlbBody{}
+	cisClient.Crn = core.StringPtr(crn)
+	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 
-	if d.HasChange("name") || d.HasChange("default_pool_ids") || d.HasChange("fallback_pool_id") || d.HasChange("proxied") || d.HasChange("session_affinity") || d.HasChange("description") || d.HasChange("ttl") || d.HasChange("enabled") || d.HasChange("pop_pools") || d.HasChange("region_pools") {
+	if d.HasChange(cisGLBName) || d.HasChange(cisGLBDefaultPoolIDs) ||
+		d.HasChange(cisGLBFallbackPoolID) || d.HasChange(cisGLBProxied) ||
+		d.HasChange(cisGLBSessionAffinity) || d.HasChange(cisGLBDesc) ||
+		d.HasChange(cisGLBTTL) || d.HasChange(cisGLBEnabled) ||
+		d.HasChange(cisGLBPopPools) || d.HasChange(cisGLBRegionPools) {
 
-		name := d.Get("name").(string)
-		glbUpdate.Name = name
-		tfDefaultPools := expandStringList(d.Get("default_pool_ids").(*schema.Set).List())
+		tfDefaultPools := expandStringList(d.Get(cisGLBDefaultPoolIDs).(*schema.Set).List())
 		defaultPoolIds, _, err := convertTfToCisTwoVarSlice(tfDefaultPools)
-		glbUpdate.DefaultPools = defaultPoolIds
-		fbPoolId := d.Get("fallback_pool_id").(string)
-		glbUpdate.FallbackPool, _, err = convertTftoCisTwoVar(fbPoolId)
-		glbUpdate.Proxied = d.Get("proxied").(bool)
-		glbUpdate.SessionAffinity = d.Get("session_affinity").(string)
+		fbPoolID := d.Get(cisGLBFallbackPoolID).(string)
+		fallbackPool, _, _ := convertTftoCisTwoVar(fbPoolID)
 
-		if description, ok := d.GetOk("description"); ok {
-			glbUpdate.Desc = description.(string)
+		opt := cisClient.NewEditLoadBalancerOptions(glbID)
+		opt.SetName(d.Get(cisGLBName).(string))
+		opt.SetProxied(d.Get(cisGLBProxied).(bool))
+		opt.SetSessionAffinity(d.Get(cisGLBSessionAffinity).(string))
+		opt.SetDefaultPools(defaultPoolIds)
+		opt.SetFallbackPool(fallbackPool)
+		if description, ok := d.GetOk(cisGLBDesc); ok {
+			opt.SetDescription(description.(string))
 		}
-		if ttl, ok := d.GetOk("ttl"); ok {
-			glbUpdate.Ttl = ttl.(int)
+		if ttl, ok := d.GetOk(cisGLBTTL); ok {
+			opt.SetTTL(int64(ttl.(int)))
 		}
-		if enabled, ok := d.GetOk("enabled"); ok {
-			glbUpdate.Enabled = enabled.(bool)
+		if enabled, ok := d.GetOk(cisGLBEnabled); ok {
+			opt.SetEnabled(enabled.(bool))
 		}
-		if regionPools, ok := d.GetOk("region_pools"); ok {
-			expandedRegionPools, err := expandGeoPools(regionPools, "region")
+		if regionPools, ok := d.GetOk(cisGLBRegionPools); ok {
+			expandedRegionPools, err := expandGeoPools(regionPools, cisGLBRegionPoolsRegion)
 			if err != nil {
 				return err
 			}
-			glbUpdate.RegionPools = expandedRegionPools
+			opt.SetRegionPools(expandedRegionPools)
 		}
-
-		if popPools, ok := d.GetOk("pop_pools"); ok {
-			expandedPopPools, err := expandGeoPools(popPools, "pop")
+		if popPools, ok := d.GetOk(cisGLBPopPools); ok {
+			expandedPopPools, err := expandGeoPools(popPools, cisGLBPopPoolsPop)
 			if err != nil {
 				return err
 			}
-			glbUpdate.PopPools = expandedPopPools
+			opt.SetPopPools(expandedPopPools)
 		}
-		_, err = cisClient.Glbs().UpdateGlb(cisId, zoneId, glbId, glbUpdate)
+
+		_, resp, err := cisClient.EditLoadBalancer(opt)
 		if err != nil {
-			log.Printf("[WARN] Error getting zone during GlbUpdate %v\n", err)
+			log.Printf("[WARN] Error updating GLB %v\n", resp)
 			return err
 		}
 	}
@@ -329,54 +325,80 @@ func resourceCISGlbUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceCISGlbDelete(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
+	cisClient, err := meta.(ClientSession).CisGLBClientSession()
 	if err != nil {
 		return err
 	}
-	glbId, zoneId, cisId, _ := convertTfToCisThreeVar(d.Id())
-	var glb *v1.Glb
-	emptyGlb := new(v1.Glb)
-
-	glb, err = cisClient.Glbs().GetGlb(cisId, zoneId, glbId)
+	// Extract CIS Ids from TF Id
+	glbID, zoneID, crn, err := convertTfToCisThreeVar(d.Id())
 	if err != nil {
-		if checkCisGlbDeleted(d, meta, err, glb) {
-			d.SetId("")
-			return nil
-		}
-		log.Printf("[WARN] Error getting zone during GlbRead %v\n", err)
 		return err
 	}
+	cisClient.Crn = core.StringPtr(crn)
+	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
+	opt := cisClient.NewDeleteLoadBalancerOptions(glbID)
 
-	glbObj := *glb
-	if !reflect.DeepEqual(emptyGlb, glbObj) {
-		err = cisClient.Glbs().DeleteGlb(cisId, zoneId, glbId)
-		if err != nil {
-			log.Printf("[WARN] DeleteGlb Failed %s\n", err)
-			return err
-		}
+	result, resp, err := cisClient.DeleteLoadBalancer(opt)
+	if err != nil {
+		log.Printf("[WARN] Error deleting GLB %v\n", resp)
+		return err
 	}
-
-	d.SetId("")
+	log.Printf("Deletion successful : %s", *result.Result.ID)
 	return nil
 }
 
-func checkCisGlbDeleted(d *schema.ResourceData, meta interface{}, errCheck error, glb *v1.Glb) bool {
-	// Check if error is due to removal of Cis resource and hence all subresources
-	if strings.Contains(errCheck.Error(), "Object not found") ||
-		strings.Contains(errCheck.Error(), "status code: 404") ||
-		strings.Contains(errCheck.Error(), "Invalid zone identifier") { //code 400
-		log.Printf("[WARN] Removing resource from state because it's not found via the CIS API")
-		return true
+func resourceCISGlbExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	cisClient, err := meta.(ClientSession).CisGLBClientSession()
+	if err != nil {
+		return false, err
 	}
-	_, _, cisId, _ := convertTfToCisThreeVar(d.Id())
-	exists, errNew := rcInstanceExists(cisId, "ibm_cis", meta)
-	if errNew != nil {
-		log.Printf("resourceCISglbRead - Failure validating service exists %s\n", errNew)
-		return false
+	// Extract CIS Ids from TF Id
+	glbID, zoneID, crn, err := convertTfToCisThreeVar(d.Id())
+	if err != nil {
+		return false, err
 	}
-	if !exists {
-		log.Printf("[WARN] Removing glb from state because parent cis instance is in removed state")
-		return true
+	cisClient.Crn = core.StringPtr(crn)
+	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
+	opt := cisClient.NewGetLoadBalancerSettingsOptions(glbID)
+
+	_, response, err := cisClient.GetLoadBalancerSettings(opt)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			log.Printf("global load balancer does not exist.")
+			return false, nil
+		}
+		log.Printf("[WARN] Error getting GLB %v\n", response)
+		return false, err
 	}
-	return false
+	return true, nil
+}
+
+func expandGeoPools(pool interface{}, geoType string) (map[string][]string, error) {
+	pools := pool.(*schema.Set).List()
+	expandPool := make(map[string][]string)
+	for _, v := range pools {
+		locationConfig := v.(map[string]interface{})
+		location := locationConfig[geoType].(string)
+		if _, p := expandPool[location]; !p {
+			geoPools := expandStringList(locationConfig[cisGLBRegionPoolsPoolIDs].([]interface{}))
+			expandPool[location], _, _ = convertTfToCisTwoVarSlice(geoPools)
+		} else {
+			return nil, fmt.Errorf("duplicate entry specified for %s pool in location %q. "+
+				"each location must only be specified once", geoType, location)
+		}
+	}
+	return expandPool, nil
+}
+
+func flattenPools(pools interface{}, geoType string, cisID string) []interface{} {
+	result := make([]interface{}, 0)
+	for k, v := range pools.(map[string]interface{}) {
+		poolIds := convertCisToTfTwoVarSlice(expandStringList(v.([]interface{})), cisID)
+		pool := map[string]interface{}{
+			cisGLBRegionPoolsRegion: k,
+			cisGLBPopPoolsPoolIDs:   poolIds,
+		}
+		result = append(result, pool)
+	}
+	return result
 }
