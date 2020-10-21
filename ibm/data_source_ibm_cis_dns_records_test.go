@@ -26,10 +26,10 @@ func TestAccIBMCisDNSRecordsDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMCisDNSRecordsDataSourceConfig() string {
 	// status filter defaults to empty
-	return testAccCheckIBMCisDomainDataSourceConfigBasic1() +
+	return testAccCheckIBMCisDNSRecordConfigCisDSBasic("test", cisDomainStatic) +
 		fmt.Sprintf(`
 	data "ibm_cis_dns_records" "test_dns_records" {
 		cis_id    = data.ibm_cis.cis.id
-		domain_id = data.ibm_cis_domain.cis_domain.domain_id
+		domain_id = ibm_cis_dns_record.test.domain_id
 	  }`)
 }

@@ -25,7 +25,6 @@ func TestAccIBMCisTLSSettings_Basic(t *testing.T) {
 			{
 				Config: testAccCheckCisTLSSettingsConfigBasic2("test", cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(name, "tls_1_3", "zrt"),
 					resource.TestCheckResourceAttr(name, "universal_ssl", "false"),
 					resource.TestCheckResourceAttr(name, "min_tls_version", "1.2"),
 				),
