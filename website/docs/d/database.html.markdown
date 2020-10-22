@@ -43,7 +43,7 @@ The following attributes are exported:
 * `status` - Status of the ICD instance.
 * `id` - The unique identifier of the new database instance (CRN).
 * `status` - Status of resource instance.
-* `adminuser` - userid of the default admistration user for the database, usually `admin` or `root`.
+* `adminuser` - userid of the default administration user for the database, usually `admin` or `root`.
 * `version` - Database version.
 * `platform_options` - Platform-specific options for this deployment.
   * `key_protect_key_id` - The CRN of Key protect key.

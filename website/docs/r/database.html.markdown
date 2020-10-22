@@ -195,7 +195,7 @@ The following attributes are exported:
 
 * `id` - The unique identifier of the new database instance (CRN).
 * `status` - Status of resource instance.
-* `adminuser` - userid of the default admistration user for the database, usually `admin` or `root`.
+* `adminuser` - userid of the default administration user for the database, usually `admin` or `root`.
 * `version` - Database version. 
 * `connectionstrings` - List of connection strings by userid for the database. See the IBM Cloud documentation for more details of how to use connection strings in ICD for database access: https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-getting-connection-strings.html#getting-your-connection-strings. The results are returned in pairs of the userid and string:
   `connectionstrings.1.name = admin`
