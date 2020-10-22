@@ -39,6 +39,7 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataName, "connectionstrings.0.hosts.#", "1"),
 					resource.TestCheckResourceAttr(dataName, "connectionstrings.0.scheme", "postgres"),
 					resource.TestCheckResourceAttr(dataName, "tags.#", "1"),
+					resource.TestCheckResourceAttrSet(dataName, "cert_file_path"),
 				),
 			},
 		},
@@ -50,12 +51,12 @@ func testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup string, name 
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
 	}
-	  
+
 	data "ibm_database" "%[2]s" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
 		name              = ibm_database.db.name
 	}
-	  
+
 	resource "ibm_database" "db" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
 		name              = "%[2]s"
