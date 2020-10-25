@@ -1515,7 +1515,7 @@ func classicInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			ID: &id,
 		}
 
-		instancePatchModel := &vpcv1.InstancePatch{
+		instancePatchModel := &vpcclassicv1.InstancePatch{
 			Name: &name,
 		}
 		instancePatch, err := instancePatchModel.AsPatch()

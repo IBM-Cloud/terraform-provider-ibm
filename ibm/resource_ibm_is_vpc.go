@@ -1036,7 +1036,7 @@ func classicVpcUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 		updateVpcOptions := &vpcclassicv1.UpdateVPCOptions{
 			ID: &id,
 		}
-		vpcPatchModel := &vpcv1.VPCPatch{
+		vpcPatchModel := &vpcclassicv1.VPCPatch{
 			Name: &name,
 		}
 		vpcPatch, err := vpcPatchModel.AsPatch()

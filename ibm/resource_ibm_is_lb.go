@@ -281,7 +281,7 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 
 	if _, ok := d.GetOk(isLBProfile); ok {
 		profile := d.Get(isLBProfile).(string)
-		// Construct an instance of the LoadBalancerPoolIdentityByName loadBalancerPatchModel
+		// Construct an instance of the LoadBalancerPoolIdentityByName model
 		loadBalancerProfileIdentityModel := new(vpcv1.LoadBalancerProfileIdentityByName)
 		loadBalancerProfileIdentityModel.Name = &profile
 		options.Profile = loadBalancerProfileIdentityModel
