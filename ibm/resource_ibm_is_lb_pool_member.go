@@ -548,12 +548,22 @@ func classiclbpmemberUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPo
 			LoadBalancerID: &lbID,
 			PoolID:         &lbPoolID,
 			ID:             &lbPoolMemID,
-			Port:           &port,
+		}
+
+		model := &vpcclassicv1.LoadBalancerPoolMemberPatch{
+			Port: &port,
 			Target: &vpcclassicv1.LoadBalancerPoolMemberTargetPrototype{
 				Address: &targetAddress,
 			},
 			Weight: &weight,
 		}
+
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerPoolMemberPatch: %s", err)
+		}
+		updatelbpmoptions.LoadBalancerPoolMemberPatch = patchBody
+
 		_, response, err := sess.UpdateLoadBalancerPoolMember(updatelbpmoptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Load Balancer Pool Member: %s\n%s", err, response)
@@ -614,8 +624,11 @@ func lbpmemberUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID, l
 			LoadBalancerID: &lbID,
 			PoolID:         &lbPoolID,
 			ID:             &lbPoolMemID,
-			Port:           &port,
-			Weight:         &weight,
+		}
+
+		model := &vpcv1.LoadBalancerPoolMemberPatch{
+			Port:   &port,
+			Weight: &weight,
 		}
 
 		if _, ok := d.GetOk(isLBPoolMemberTargetAddress); ok {
@@ -623,14 +636,20 @@ func lbpmemberUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID, l
 			target := &vpcv1.LoadBalancerPoolMemberTargetPrototype{
 				Address: &targetAddress,
 			}
-			updatelbpmoptions.Target = target
+			model.Target = target
 		} else {
 			targetID := d.Get(isLBPoolMemberTargetID).(string)
 			target := &vpcv1.LoadBalancerPoolMemberTargetPrototype{
 				ID: &targetID,
 			}
-			updatelbpmoptions.Target = target
+			model.Target = target
 		}
+
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerPoolMemberPatch: %s", err)
+		}
+		updatelbpmoptions.LoadBalancerPoolMemberPatch = patchBody
 
 		_, response, err := sess.UpdateLoadBalancerPoolMember(updatelbpmoptions)
 		if err != nil {

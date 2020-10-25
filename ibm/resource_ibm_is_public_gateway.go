@@ -525,9 +525,18 @@ func classicPgwUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 	}
 	if hasChanged {
 		updatePublicGatewayOptions := &vpcclassicv1.UpdatePublicGatewayOptions{
-			ID:   &id,
+			ID: &id,
+		}
+
+		model := &vpcclassicv1.PublicGatewayPatch{
 			Name: &name,
 		}
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for PublicGatewayPatch: %s", err)
+		}
+		updatePublicGatewayOptions.PublicGatewayPatch = patchBody
+
 		_, response, err := sess.UpdatePublicGateway(updatePublicGatewayOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Public Gateway  : %s\n%s", err, response)
@@ -558,9 +567,16 @@ func pgwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 	}
 	if hasChanged {
 		updatePublicGatewayOptions := &vpcv1.UpdatePublicGatewayOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		model := &vpcv1.PublicGatewayPatch{
 			Name: &name,
 		}
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for PublicGatewayPatch: %s", err)
+		}
+		updatePublicGatewayOptions.PublicGatewayPatch = patchBody
 		_, response, err := sess.UpdatePublicGateway(updatePublicGatewayOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Public Gateway  : %s\n%s", err, response)

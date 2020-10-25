@@ -535,9 +535,18 @@ func classicLBUpdate(d *schema.ResourceData, meta interface{}, id, name string, 
 	}
 	if hasChanged {
 		updateLoadBalancerOptions := &vpcclassicv1.UpdateLoadBalancerOptions{
-			ID:   &id,
+			ID: &id,
+		}
+
+		model := &vpcclassicv1.LoadBalancerPatch{
 			Name: &name,
 		}
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerPatch: %s", err)
+		}
+		updateLoadBalancerOptions.LoadBalancerPatch = patchBody
+
 		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating vpc Load Balancer : %s\n%s", err, response)
@@ -568,9 +577,18 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 	}
 	if hasChanged {
 		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
-			ID:   &id,
+			ID: &id,
+		}
+
+		model := &vpcv1.LoadBalancerPatch{
 			Name: &name,
 		}
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerPatch: %s", err)
+		}
+		updateLoadBalancerOptions.LoadBalancerPatch = patchBody
+
 		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating vpc Load Balancer : %s\n%s", err, response)

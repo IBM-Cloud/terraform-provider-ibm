@@ -381,8 +381,15 @@ func classicVpcRouteUpdate(d *schema.ResourceData, meta interface{}, vpcID, rout
 		updateVpcRouteOptions := &vpcclassicv1.UpdateVPCRouteOptions{
 			VPCID: &vpcID,
 			ID:    &routeID,
-			Name:  &name,
 		}
+		model := &vpcclassicv1.RoutePatch{
+			Name: &name,
+		}
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for RoutePatch: %s", err)
+		}
+		updateVpcRouteOptions.RoutePatch = patchBody
 		_, response, err := sess.UpdateVPCRoute(updateVpcRouteOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC Route: %s\n%s", err, response)
@@ -400,8 +407,15 @@ func vpcRouteUpdate(d *schema.ResourceData, meta interface{}, vpcID, routeID, na
 		updateVpcRouteOptions := &vpcv1.UpdateVPCRouteOptions{
 			VPCID: &vpcID,
 			ID:    &routeID,
-			Name:  &name,
 		}
+		model := &vpcv1.RoutePatch{
+			Name: &name,
+		}
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for RoutePatch: %s", err)
+		}
+		updateVpcRouteOptions.RoutePatch = patchBody
 		_, response, err := sess.UpdateVPCRoute(updateVpcRouteOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC Route: %s\n%s", err, response)

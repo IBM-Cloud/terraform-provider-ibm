@@ -524,14 +524,17 @@ func classicSubnetUpdate(d *schema.ResourceData, meta interface{}, id string) er
 	name := ""
 	acl := ""
 	updateSubnetOptions := &vpcclassicv1.UpdateSubnetOptions{}
+	model := &vpcclassicv1.SubnetPatch{
+		Name: &name,
+	}
 	if d.HasChange(isSubnetName) {
 		name = d.Get(isSubnetName).(string)
-		updateSubnetOptions.Name = &name
+		model.Name = &name
 		hasChanged = true
 	}
 	if d.HasChange(isSubnetNetworkACL) {
 		acl = d.Get(isSubnetNetworkACL).(string)
-		updateSubnetOptions.NetworkACL = &vpcclassicv1.NetworkACLIdentity{
+		model.NetworkACL = &vpcclassicv1.NetworkACLIdentity{
 			ID: &acl,
 		}
 		hasChanged = true
@@ -568,6 +571,11 @@ func classicSubnetUpdate(d *schema.ResourceData, meta interface{}, id string) er
 		}
 	}
 	if hasChanged {
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for SubnetPatch: %s", err)
+		}
+		updateSubnetOptions.SubnetPatch = patchBody
 		updateSubnetOptions.ID = &id
 		_, response, err := sess.UpdateSubnet(updateSubnetOptions)
 		if err != nil {
@@ -586,14 +594,15 @@ func subnetUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 	name := ""
 	acl := ""
 	updateSubnetOptions := &vpcv1.UpdateSubnetOptions{}
+	model := &vpcv1.SubnetPatch{}
 	if d.HasChange(isSubnetName) {
 		name = d.Get(isSubnetName).(string)
-		updateSubnetOptions.Name = &name
+		model.Name = &name
 		hasChanged = true
 	}
 	if d.HasChange(isSubnetNetworkACL) {
 		acl = d.Get(isSubnetNetworkACL).(string)
-		updateSubnetOptions.NetworkACL = &vpcv1.NetworkACLIdentity{
+		model.NetworkACL = &vpcv1.NetworkACLIdentity{
 			ID: &acl,
 		}
 		hasChanged = true
@@ -630,6 +639,11 @@ func subnetUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 	}
 	if hasChanged {
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for SubnetPatch: %s", err)
+		}
+		updateSubnetOptions.SubnetPatch = patchBody
 		updateSubnetOptions.ID = &id
 		_, response, err := sess.UpdateSubnet(updateSubnetOptions)
 		if err != nil {

@@ -646,9 +646,17 @@ func instanceTemplateUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange(isInstanceName) {
 		name := d.Get(isInstanceTemplateName).(string)
 		updnetoptions := &vpcv1.UpdateInstanceTemplateOptions{
-			ID:   &ID,
+			ID: &ID,
+		}
+
+		instanceTemplatePatchModel := &vpcv1.InstanceTemplatePatch{
 			Name: &name,
 		}
+		instanceTemplatePatch, err := instanceTemplatePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstanceTemplatePatch: %s", err)
+		}
+		updnetoptions.InstanceTemplatePatch = instanceTemplatePatch
 
 		_, _, err = instanceC.UpdateInstanceTemplate(updnetoptions)
 		if err != nil {

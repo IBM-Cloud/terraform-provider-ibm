@@ -389,9 +389,17 @@ func classicImgUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 	}
 	if hasChanged {
 		options := &vpcclassicv1.UpdateImageOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		imagePatchModel := &vpcclassicv1.ImagePatch{
 			Name: &name,
 		}
+		imagePatch, err := imagePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for ImagePatch: %s", err)
+		}
+		options.ImagePatch = imagePatch
+
 		_, response, err := sess.UpdateImage(options)
 		if err != nil {
 			return fmt.Errorf("Error on update of resource vpc Image: %s\n%s", err, response)
@@ -422,9 +430,16 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 	}
 	if hasChanged {
 		options := &vpcv1.UpdateImageOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		imagePatchModel := &vpcv1.ImagePatch{
 			Name: &name,
 		}
+		imagePatch, err := imagePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for ImagePatch: %s", err)
+		}
+		options.ImagePatch = imagePatch
 		_, response, err := sess.UpdateImage(options)
 		if err != nil {
 			return fmt.Errorf("Error on update of resource vpc Image: %s\n%s", err, response)

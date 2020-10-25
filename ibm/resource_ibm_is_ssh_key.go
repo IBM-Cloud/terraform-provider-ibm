@@ -362,9 +362,16 @@ func classicKeyUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 	}
 	if hasChanged {
 		options := &vpcclassicv1.UpdateKeyOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		model := &vpcclassicv1.KeyPatch{
 			Name: &name,
 		}
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for KeyPatch: %s", err)
+		}
+		options.KeyPatch = patchBody
 		_, response, err := sess.UpdateKey(options)
 		if err != nil {
 			return fmt.Errorf("Error updating vpc SSH Key: %s\n%s", err, response)
@@ -395,9 +402,16 @@ func keyUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 	}
 	if hasChanged {
 		options := &vpcv1.UpdateKeyOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		model := &vpcv1.KeyPatch{
 			Name: &name,
 		}
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for KeyPatch: %s", err)
+		}
+		options.KeyPatch = patchBody
 		_, response, err := sess.UpdateKey(options)
 		if err != nil {
 			return fmt.Errorf("Error updating vpc SSH Key: %s\n%s", err, response)

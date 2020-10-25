@@ -853,16 +853,18 @@ func classicLbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbI
 	updatePolicyOptions.ListenerID = &listenerID
 	updatePolicyOptions.ID = &ID
 
+	model := &vpcclassicv1.LoadBalancerListenerPolicyPatch{}
+
 	if d.HasChange(isLBListenerPolicyName) {
 		policy := d.Get(isLBListenerPolicyName).(string)
-		updatePolicyOptions.Name = &policy
+		model.Name = &policy
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerPolicyPriority) {
 		prio := d.Get(isLBListenerPolicyPriority).(int)
 		priority := int64(prio)
-		updatePolicyOptions.Priority = &priority
+		model.Priority = &priority
 		hasChanged = true
 	}
 
@@ -881,7 +883,7 @@ func classicLbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbI
 			ID: &id,
 		}
 
-		updatePolicyOptions.Target = target
+		model.Target = target
 		hasChanged = true
 	} else if d.Get(isLBListenerPolicyAction).(string) == "redirect" {
 		//if Action is redirect and either status code or URL chnaged, set accordingly
@@ -908,7 +910,7 @@ func classicLbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbI
 		//Update the target only if there is a change in either statusCode or URL
 		if targetChange {
 			target = &redirectPatch
-			updatePolicyOptions.Target = target
+			model.Target = target
 		}
 	}
 
@@ -917,7 +919,11 @@ func classicLbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbI
 	defer ibmMutexKV.Unlock(isLBListenerPolicyKey)
 
 	if hasChanged {
-
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerListenerPolicyPatch: %s", err)
+		}
+		updatePolicyOptions.LoadBalancerListenerPolicyPatch = patchBody
 		_, err = isWaitForClassicLbAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return fmt.Errorf(
@@ -947,16 +953,18 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 	updatePolicyOptions.ListenerID = &listenerID
 	updatePolicyOptions.ID = &ID
 
+	model := &vpcv1.LoadBalancerListenerPolicyPatch{}
+
 	if d.HasChange(isLBListenerPolicyName) {
 		policy := d.Get(isLBListenerPolicyName).(string)
-		updatePolicyOptions.Name = &policy
+		model.Name = &policy
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerPolicyPriority) {
 		prio := d.Get(isLBListenerPolicyPriority).(int)
 		priority := int64(prio)
-		updatePolicyOptions.Priority = &priority
+		model.Priority = &priority
 		hasChanged = true
 	}
 
@@ -973,7 +981,7 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 			ID: &id,
 		}
 
-		updatePolicyOptions.Target = target
+		model.Target = target
 		hasChanged = true
 	} else if d.Get(isLBListenerPolicyAction).(string) == "redirect" {
 		//if Action is redirect and either status code or URL chnaged, set accordingly
@@ -1000,11 +1008,16 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 		//Update the target only if there is a change in either statusCode or URL
 		if targetChange {
 			target = &redirectPatch
-			updatePolicyOptions.Target = target
+			model.Target = target
 		}
 	}
 
 	if hasChanged {
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerListenerPolicyPatch: %s", err)
+		}
+		updatePolicyOptions.LoadBalancerListenerPolicyPatch = patchBody
 		isLBListenerPolicyKey := "load_balancer_listener_policy_key_" + lbID + listenerID
 		ibmMutexKV.Lock(isLBListenerPolicyKey)
 		defer ibmMutexKV.Unlock(isLBListenerPolicyKey)
@@ -1261,11 +1274,11 @@ func classicLbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, 
 	// `LoadBalancerListenerPolicyRedirectURL` is in the response if `action` is `redirect`.
 
 	if *(policy.Action) == "forward" {
-		target := policy.Target.(*vpcclassicv1.LoadBalancerListenerPolicyTargetReference)
+		target := policy.Target.(*vpcclassicv1.LoadBalancerListenerPolicyTargetLoadBalancerPoolReference)
 		d.Set(isLBListenerPolicyTargetID, target.ID)
 
 	} else if *(policy.Action) == "redirect" {
-		target := policy.Target.(*vpcclassicv1.LoadBalancerListenerPolicyTargetReference)
+		target := policy.Target.(*vpcclassicv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyRedirectURL)
 		d.Set(isLBListenerPolicyTargetURL, target.URL)
 		d.Set(isLBListenerPolicyTargetHTTPStatusCode, target.HTTPStatusCode)
 
@@ -1333,11 +1346,11 @@ func lbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, listene
 	// `LoadBalancerListenerPolicyRedirectURL` is in the response if `action` is `redirect`.
 
 	if *(policy.Action) == "forward" {
-		target := policy.Target.(*vpcv1.LoadBalancerListenerPolicyTargetReference)
+		target := policy.Target.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerPoolReference)
 		d.Set(isLBListenerPolicyTargetID, target.ID)
 
 	} else if *(policy.Action) == "redirect" {
-		target := policy.Target.(*vpcv1.LoadBalancerListenerPolicyTargetReference)
+		target := policy.Target.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyRedirectURL)
 		d.Set(isLBListenerPolicyTargetURL, target.URL)
 		d.Set(isLBListenerPolicyTargetHTTPStatusCode, target.HTTPStatusCode)
 

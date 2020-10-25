@@ -575,11 +575,11 @@ func classicSgRuleUpdate(d *schema.ResourceData, meta interface{}) error {
 	isSecurityGroupRuleKey := "security_group_rule_key_" + parsed.secgrpID
 	ibmMutexKV.Lock(isSecurityGroupRuleKey)
 	defer ibmMutexKV.Unlock(isSecurityGroupRuleKey)
-
+	securityGroupRulePatchBody, _ := sgTemplate.AsPatch()
 	updateSecurityGroupRuleOptions := &vpcclassicv1.UpdateSecurityGroupRuleOptions{
 		SecurityGroupID:        &parsed.secgrpID,
 		ID:                     &parsed.ruleID,
-		SecurityGroupRulePatch: sgTemplate,
+		SecurityGroupRulePatch: securityGroupRulePatchBody,
 	}
 	_, response, err := sess.UpdateSecurityGroupRule(updateSecurityGroupRuleOptions)
 	if err != nil {
@@ -952,18 +952,20 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 		sgTemplateUpdate.ID = &parsed.ruleID
 	}
 
+	model := &vpcv1.SecurityGroupRulePatch{}
+
 	parsed.direction = d.Get(isSecurityGroupRuleDirection).(string)
 	sgTemplate.Direction = &parsed.direction
-	sgTemplateUpdate.Direction = &parsed.direction
+	model.Direction = &parsed.direction
 
 	if version, ok := d.GetOk(isSecurityGroupRuleIPVersion); ok {
 		parsed.ipversion = version.(string)
 		sgTemplate.IPVersion = &parsed.ipversion
-		sgTemplateUpdate.IPVersion = &parsed.ipversion
+		model.IPVersion = &parsed.ipversion
 	} else {
 		parsed.ipversion = "IPv4"
 		sgTemplate.IPVersion = &parsed.ipversion
-		sgTemplateUpdate.IPVersion = &parsed.ipversion
+		model.IPVersion = &parsed.ipversion
 	}
 
 	parsed.remote = ""
@@ -989,7 +991,7 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 			remoteTemplateUpdate.ID = &parsed.remoteSecGrpID
 		}
 		sgTemplate.Remote = remoteTemplate
-		sgTemplateUpdate.Remote = remoteTemplateUpdate
+		model.Remote = remoteTemplateUpdate
 	}
 	if err != nil {
 		return nil, nil, nil, err
@@ -1020,8 +1022,8 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 			sgTemplate.Code = &parsed.icmpCode
 		}
 		sgTemplate.Protocol = &parsed.protocol
-		sgTemplateUpdate.Type = &parsed.icmpType
-		sgTemplateUpdate.Code = &parsed.icmpCode
+		model.Type = &parsed.icmpType
+		model.Code = &parsed.icmpCode
 	}
 	for _, prot := range []string{"tcp", "udp"} {
 		if tcpInterface, ok := d.GetOk(prot); ok {
@@ -1054,13 +1056,18 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 			}
 			sgTemplate.PortMax = &parsed.portMax
 			sgTemplate.PortMin = &parsed.portMin
-			sgTemplateUpdate.PortMax = &parsed.portMax
-			sgTemplateUpdate.PortMin = &parsed.portMin
+			model.PortMax = &parsed.portMax
+			model.PortMin = &parsed.portMin
 		}
 	}
 	if parsed.protocol == "all" {
 		sgTemplate.Protocol = &parsed.protocol
 	}
+	patchBody, err := model.AsPatch()
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("Error calling asPatch for SecurityGroupRulePatch: %s", err)
+	}
+	sgTemplateUpdate.SecurityGroupRulePatch = patchBody
 	//	log.Printf("[DEBUG] parse tag=%s\n\t%v  \n\t%v  \n\t%v  \n\t%v  \n\t%v \n\t%v \n\t%v \n\t%v  \n\t%v  \n\t%v  \n\t%v  \n\t%v ",
 	//		tag, parsed.secgrpID, parsed.ruleID, parsed.direction, parsed.ipversion, parsed.protocol, parsed.remoteAddress,
 	//		parsed.remoteCIDR, parsed.remoteSecGrpID, parsed.icmpType, parsed.icmpCode, parsed.portMin, parsed.portMax)

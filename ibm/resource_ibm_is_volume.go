@@ -472,9 +472,16 @@ func classicVolUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 	}
 	if hasChanged {
 		options := &vpcclassicv1.UpdateVolumeOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		model := &vpcclassicv1.VolumePatch{
 			Name: &name,
 		}
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for VolumePatch: %s", err)
+		}
+		options.VolumePatch = patchBody
 		_, response, err := sess.UpdateVolume(options)
 		if err != nil {
 			return fmt.Errorf("Error updating vpc volume: %s\n%s", err, response)
@@ -505,9 +512,16 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 	}
 	if hasChanged {
 		options := &vpcv1.UpdateVolumeOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		model := &vpcv1.VolumePatch{
 			Name: &name,
 		}
+		patchBody, err := model.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for VolumePatch: %s", err)
+		}
+		options.VolumePatch = patchBody
 		_, response, err := sess.UpdateVolume(options)
 		if err != nil {
 			return fmt.Errorf("Error updating vpc volume: %s\n%s", err, response)
