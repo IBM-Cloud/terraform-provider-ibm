@@ -94,7 +94,9 @@ func testAccCheckIBMIAMAccessGroupDestroy(s *terraform.State) error {
 		// Try to find the key
 		_, _, err := accClient.AccessGroup().Get(agID)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("Access group still exists: %s", rs.Primary.ID)
+		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for access group (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}
