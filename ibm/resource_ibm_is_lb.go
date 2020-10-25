@@ -281,7 +281,7 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 
 	if _, ok := d.GetOk(isLBProfile); ok {
 		profile := d.Get(isLBProfile).(string)
-		// Construct an instance of the LoadBalancerPoolIdentityByName model
+		// Construct an instance of the LoadBalancerPoolIdentityByName loadBalancerPatchModel
 		loadBalancerProfileIdentityModel := new(vpcv1.LoadBalancerProfileIdentityByName)
 		loadBalancerProfileIdentityModel.Name = &profile
 		options.Profile = loadBalancerProfileIdentityModel
@@ -538,14 +538,14 @@ func classicLBUpdate(d *schema.ResourceData, meta interface{}, id, name string, 
 			ID: &id,
 		}
 
-		model := &vpcclassicv1.LoadBalancerPatch{
+		loadBalancerPatchModel := &vpcclassicv1.LoadBalancerPatch{
 			Name: &name,
 		}
-		patchBody, err := model.AsPatch()
+		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for LoadBalancerPatch: %s", err)
 		}
-		updateLoadBalancerOptions.LoadBalancerPatch = patchBody
+		updateLoadBalancerOptions.LoadBalancerPatch = loadBalancerPatch
 
 		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
 		if err != nil {
@@ -580,14 +580,14 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 			ID: &id,
 		}
 
-		model := &vpcv1.LoadBalancerPatch{
+		loadBalancerPatchModel := &vpcv1.LoadBalancerPatch{
 			Name: &name,
 		}
-		patchBody, err := model.AsPatch()
+		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for LoadBalancerPatch: %s", err)
 		}
-		updateLoadBalancerOptions.LoadBalancerPatch = patchBody
+		updateLoadBalancerOptions.LoadBalancerPatch = loadBalancerPatch
 
 		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
 		if err != nil {

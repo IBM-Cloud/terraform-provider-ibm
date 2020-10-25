@@ -747,14 +747,14 @@ func classicNwaclUpdate(d *schema.ResourceData, meta interface{}, id, name strin
 		updateNetworkAclOptions := &vpcclassicv1.UpdateNetworkACLOptions{
 			ID: &id,
 		}
-		model := &vpcclassicv1.NetworkACLPatch{
+		networkACLPatchModel := &vpcclassicv1.NetworkACLPatch{
 			Name: &name,
 		}
-		patchBody, err := model.AsPatch()
+		networkACLPatch, err := networkACLPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for NetworkACLPatch: %s", err)
 		}
-		updateNetworkAclOptions.NetworkACLPatch = patchBody
+		updateNetworkAclOptions.NetworkACLPatch = networkACLPatch
 
 		_, response, err := sess.UpdateNetworkACL(updateNetworkAclOptions)
 		if err != nil {
@@ -790,14 +790,14 @@ func nwaclUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 		updateNetworkACLOptions := &vpcv1.UpdateNetworkACLOptions{
 			ID: &id,
 		}
-		model := &vpcv1.NetworkACLPatch{
+		networkACLPatchModel := &vpcv1.NetworkACLPatch{
 			Name: &name,
 		}
-		patchBody, err := model.AsPatch()
+		networkACLPatch, err := networkACLPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for NetworkACLPatch: %s", err)
 		}
-		updateNetworkACLOptions.NetworkACLPatch = patchBody
+		updateNetworkACLOptions.NetworkACLPatch = networkACLPatch
 		_, response, err := sess.UpdateNetworkACL(updateNetworkACLOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Network ACL(%s) : %s\n%s", id, err, response)

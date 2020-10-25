@@ -456,22 +456,22 @@ func classicVpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnI
 		VPNGatewayID: &gID,
 		ID:           &gConnID,
 	}
-	model := &vpcclassicv1.VPNGatewayConnectionPatch{}
+	vpnGatewayConnectionPatchModel := &vpcclassicv1.VPNGatewayConnectionPatch{}
 	if d.HasChange(isVPNGatewayConnectionName) {
 		name := d.Get(isVPNGatewayConnectionName).(string)
-		model.Name = &name
+		vpnGatewayConnectionPatchModel.Name = &name
 		hasChanged = true
 	}
 
 	if d.HasChange(isVPNGatewayConnectionPeerAddress) {
 		peerAddress := d.Get(isVPNGatewayConnectionPeerAddress).(string)
-		model.PeerAddress = &peerAddress
+		vpnGatewayConnectionPatchModel.PeerAddress = &peerAddress
 		hasChanged = true
 	}
 
 	if d.HasChange(isVPNGatewayConnectionPreSharedKey) {
 		psk := d.Get(isVPNGatewayConnectionPreSharedKey).(string)
-		model.Psk = &psk
+		vpnGatewayConnectionPatchModel.Psk = &psk
 		hasChanged = true
 	}
 
@@ -479,44 +479,44 @@ func classicVpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnI
 		action := d.Get(isVPNGatewayConnectionDeadPeerDetectionAction).(string)
 		interval := int64(d.Get(isVPNGatewayConnectionDeadPeerDetectionInterval).(int))
 		timeout := int64(d.Get(isVPNGatewayConnectionDeadPeerDetectionTimeout).(int))
-		model.DeadPeerDetection.Action = &action
-		model.DeadPeerDetection.Interval = &interval
-		model.DeadPeerDetection.Timeout = &timeout
+		vpnGatewayConnectionPatchModel.DeadPeerDetection.Action = &action
+		vpnGatewayConnectionPatchModel.DeadPeerDetection.Interval = &interval
+		vpnGatewayConnectionPatchModel.DeadPeerDetection.Timeout = &timeout
 		hasChanged = true
 	}
 
 	if d.HasChange(isVPNGatewayConnectionIKEPolicy) {
 		ikePolicyIdentity := d.Get(isVPNGatewayConnectionIKEPolicy).(string)
-		model.IkePolicy = &vpcclassicv1.IkePolicyIdentity{
+		vpnGatewayConnectionPatchModel.IkePolicy = &vpcclassicv1.IkePolicyIdentity{
 			ID: &ikePolicyIdentity,
 		}
 		hasChanged = true
 	} else {
-		model.IkePolicy = nil
+		vpnGatewayConnectionPatchModel.IkePolicy = nil
 	}
 
 	if d.HasChange(isVPNGatewayConnectionIPSECPolicy) {
 		ipsecPolicyIdentity := d.Get(isVPNGatewayConnectionIPSECPolicy).(string)
-		model.IpsecPolicy = &vpcclassicv1.IPsecPolicyIdentity{
+		vpnGatewayConnectionPatchModel.IpsecPolicy = &vpcclassicv1.IPsecPolicyIdentity{
 			ID: &ipsecPolicyIdentity,
 		}
 		hasChanged = true
 	} else {
-		model.IpsecPolicy = nil
+		vpnGatewayConnectionPatchModel.IpsecPolicy = nil
 	}
 
 	if d.HasChange(isVPNGatewayConnectionAdminStateup) {
 		adminStateUp := d.Get(isVPNGatewayConnectionAdminStateup).(bool)
-		model.AdminStateUp = &adminStateUp
+		vpnGatewayConnectionPatchModel.AdminStateUp = &adminStateUp
 		hasChanged = true
 	}
 
 	if hasChanged {
-		patchBody, err := model.AsPatch()
+		vpnGatewayConnectionPatch, err := vpnGatewayConnectionPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for VPNGatewayConnectionPatch: %s", err)
 		}
-		updateVpnGatewayConnectionOptions.VPNGatewayConnectionPatch = patchBody
+		updateVpnGatewayConnectionOptions.VPNGatewayConnectionPatch = vpnGatewayConnectionPatch
 		_, response, err := sess.UpdateVPNGatewayConnection(updateVpnGatewayConnectionOptions)
 		if err != nil {
 			return fmt.Errorf("Error updating Vpn Gateway Connection: %s\n%s", err, response)
@@ -535,22 +535,22 @@ func vpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 		VPNGatewayID: &gID,
 		ID:           &gConnID,
 	}
-	model := &vpcv1.VPNGatewayConnectionPatch{}
+	vpnGatewayConnectionPatchModel := &vpcv1.VPNGatewayConnectionPatch{}
 	if d.HasChange(isVPNGatewayConnectionName) {
 		name := d.Get(isVPNGatewayConnectionName).(string)
-		model.Name = &name
+		vpnGatewayConnectionPatchModel.Name = &name
 		hasChanged = true
 	}
 
 	if d.HasChange(isVPNGatewayConnectionPeerAddress) {
 		peerAddress := d.Get(isVPNGatewayConnectionPeerAddress).(string)
-		model.PeerAddress = &peerAddress
+		vpnGatewayConnectionPatchModel.PeerAddress = &peerAddress
 		hasChanged = true
 	}
 
 	if d.HasChange(isVPNGatewayConnectionPreSharedKey) {
 		psk := d.Get(isVPNGatewayConnectionPreSharedKey).(string)
-		model.Psk = &psk
+		vpnGatewayConnectionPatchModel.Psk = &psk
 		hasChanged = true
 	}
 
@@ -558,44 +558,44 @@ func vpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 		action := d.Get(isVPNGatewayConnectionDeadPeerDetectionAction).(string)
 		interval := int64(d.Get(isVPNGatewayConnectionDeadPeerDetectionInterval).(int))
 		timeout := int64(d.Get(isVPNGatewayConnectionDeadPeerDetectionTimeout).(int))
-		model.DeadPeerDetection.Action = &action
-		model.DeadPeerDetection.Interval = &interval
-		model.DeadPeerDetection.Timeout = &timeout
+		vpnGatewayConnectionPatchModel.DeadPeerDetection.Action = &action
+		vpnGatewayConnectionPatchModel.DeadPeerDetection.Interval = &interval
+		vpnGatewayConnectionPatchModel.DeadPeerDetection.Timeout = &timeout
 		hasChanged = true
 	}
 
 	if d.HasChange(isVPNGatewayConnectionIKEPolicy) {
 		ikePolicyIdentity := d.Get(isVPNGatewayConnectionIKEPolicy).(string)
-		model.IkePolicy = &vpcv1.IkePolicyIdentity{
+		vpnGatewayConnectionPatchModel.IkePolicy = &vpcv1.IkePolicyIdentity{
 			ID: &ikePolicyIdentity,
 		}
 		hasChanged = true
 	} else {
-		model.IkePolicy = nil
+		vpnGatewayConnectionPatchModel.IkePolicy = nil
 	}
 
 	if d.HasChange(isVPNGatewayConnectionIPSECPolicy) {
 		ipsecPolicyIdentity := d.Get(isVPNGatewayConnectionIPSECPolicy).(string)
-		model.IpsecPolicy = &vpcv1.IPsecPolicyIdentity{
+		vpnGatewayConnectionPatchModel.IpsecPolicy = &vpcv1.IPsecPolicyIdentity{
 			ID: &ipsecPolicyIdentity,
 		}
 		hasChanged = true
 	} else {
-		model.IpsecPolicy = nil
+		vpnGatewayConnectionPatchModel.IpsecPolicy = nil
 	}
 
 	if d.HasChange(isVPNGatewayConnectionAdminStateup) {
 		adminStateUp := d.Get(isVPNGatewayConnectionAdminStateup).(bool)
-		model.AdminStateUp = &adminStateUp
+		vpnGatewayConnectionPatchModel.AdminStateUp = &adminStateUp
 		hasChanged = true
 	}
 
 	if hasChanged {
-		patchBody, err := model.AsPatch()
+		vpnGatewayConnectionPatch, err := vpnGatewayConnectionPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for VPNGatewayConnectionPatch: %s", err)
 		}
-		updateVpnGatewayConnectionOptions.VPNGatewayConnectionPatch = patchBody
+		updateVpnGatewayConnectionOptions.VPNGatewayConnectionPatch = vpnGatewayConnectionPatch
 		_, response, err := sess.UpdateVPNGatewayConnection(updateVpnGatewayConnectionOptions)
 		if err != nil {
 			return fmt.Errorf("Error updating Vpn Gateway Connection: %s\n%s", err, response)

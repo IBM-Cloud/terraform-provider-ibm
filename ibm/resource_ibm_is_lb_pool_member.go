@@ -550,7 +550,7 @@ func classiclbpmemberUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPo
 			ID:             &lbPoolMemID,
 		}
 
-		model := &vpcclassicv1.LoadBalancerPoolMemberPatch{
+		loadBalancerPoolMemberPatchModel := &vpcclassicv1.LoadBalancerPoolMemberPatch{
 			Port: &port,
 			Target: &vpcclassicv1.LoadBalancerPoolMemberTargetPrototype{
 				Address: &targetAddress,
@@ -558,11 +558,11 @@ func classiclbpmemberUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPo
 			Weight: &weight,
 		}
 
-		patchBody, err := model.AsPatch()
+		loadBalancerPoolMemberPatch, err := loadBalancerPoolMemberPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for LoadBalancerPoolMemberPatch: %s", err)
 		}
-		updatelbpmoptions.LoadBalancerPoolMemberPatch = patchBody
+		updatelbpmoptions.LoadBalancerPoolMemberPatch = loadBalancerPoolMemberPatch
 
 		_, response, err := sess.UpdateLoadBalancerPoolMember(updatelbpmoptions)
 		if err != nil {
@@ -626,7 +626,7 @@ func lbpmemberUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID, l
 			ID:             &lbPoolMemID,
 		}
 
-		model := &vpcv1.LoadBalancerPoolMemberPatch{
+		loadBalancerPoolMemberPatchModel := &vpcv1.LoadBalancerPoolMemberPatch{
 			Port:   &port,
 			Weight: &weight,
 		}
@@ -636,20 +636,20 @@ func lbpmemberUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID, l
 			target := &vpcv1.LoadBalancerPoolMemberTargetPrototype{
 				Address: &targetAddress,
 			}
-			model.Target = target
+			loadBalancerPoolMemberPatchModel.Target = target
 		} else {
 			targetID := d.Get(isLBPoolMemberTargetID).(string)
 			target := &vpcv1.LoadBalancerPoolMemberTargetPrototype{
 				ID: &targetID,
 			}
-			model.Target = target
+			loadBalancerPoolMemberPatchModel.Target = target
 		}
 
-		patchBody, err := model.AsPatch()
+		loadBalancerPoolMemberPatch, err := loadBalancerPoolMemberPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for LoadBalancerPoolMemberPatch: %s", err)
 		}
-		updatelbpmoptions.LoadBalancerPoolMemberPatch = patchBody
+		updatelbpmoptions.LoadBalancerPoolMemberPatch = loadBalancerPoolMemberPatch
 
 		_, response, err := sess.UpdateLoadBalancerPoolMember(updatelbpmoptions)
 		if err != nil {

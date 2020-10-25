@@ -406,18 +406,18 @@ func classicIpsecpUpdate(d *schema.ResourceData, meta interface{}, id string) er
 		pfs := d.Get(isIpSecPFS).(string)
 		keyLifetime := int64(d.Get(isIpSecKeyLifeTime).(int))
 
-		model := &vpcclassicv1.IPsecPolicyPatch{
+		ipsecPolicyPatchModel := &vpcclassicv1.IPsecPolicyPatch{
 			Name:                    &name,
 			AuthenticationAlgorithm: &authenticationAlg,
 			EncryptionAlgorithm:     &encryptionAlg,
 			Pfs:                     &pfs,
 			KeyLifetime:             &keyLifetime,
 		}
-		patchBody, err := model.AsPatch()
+		ipsecPolicyPatch, err := ipsecPolicyPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for IPsecPolicyPatch: %s", err)
 		}
-		options.IPsecPolicyPatch = patchBody
+		options.IPsecPolicyPatch = ipsecPolicyPatch
 
 		_, response, err := sess.UpdateIpsecPolicy(options)
 		if err != nil {
@@ -443,18 +443,18 @@ func ipsecpUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 		pfs := d.Get(isIpSecPFS).(string)
 		keyLifetime := int64(d.Get(isIpSecKeyLifeTime).(int))
 
-		model := &vpcv1.IPsecPolicyPatch{
+		ipsecPolicyPatchModel := &vpcv1.IPsecPolicyPatch{
 			Name:                    &name,
 			AuthenticationAlgorithm: &authenticationAlg,
 			EncryptionAlgorithm:     &encryptionAlg,
 			Pfs:                     &pfs,
 			KeyLifetime:             &keyLifetime,
 		}
-		patchBody, err := model.AsPatch()
+		ipsecPolicyPatch, err := ipsecPolicyPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for IPsecPolicyPatch: %s", err)
 		}
-		options.IPsecPolicyPatch = patchBody
+		options.IPsecPolicyPatch = ipsecPolicyPatch
 
 		_, response, err := sess.UpdateIpsecPolicy(options)
 		if err != nil {

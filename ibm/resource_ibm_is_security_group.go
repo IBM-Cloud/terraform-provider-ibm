@@ -475,14 +475,14 @@ func classicSgUpdate(d *schema.ResourceData, meta interface{}, id, name string, 
 		updateSecurityGroupOptions := &vpcclassicv1.UpdateSecurityGroupOptions{
 			ID: &id,
 		}
-		model := &vpcclassicv1.SecurityGroupPatch{
+		securityGroupPatchModel := &vpcclassicv1.SecurityGroupPatch{
 			Name: &name,
 		}
-		patchBody, err := model.AsPatch()
+		securityGroupPatch, err := securityGroupPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for SecurityGroupPatch: %s", err)
 		}
-		updateSecurityGroupOptions.SecurityGroupPatch = patchBody
+		updateSecurityGroupOptions.SecurityGroupPatch = securityGroupPatch
 		_, response, err := sess.UpdateSecurityGroup(updateSecurityGroupOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Security Group : %s\n%s", err, response)
@@ -500,14 +500,14 @@ func sgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		updateSecurityGroupOptions := &vpcv1.UpdateSecurityGroupOptions{
 			ID: &id,
 		}
-		model := &vpcv1.SecurityGroupPatch{
+		securityGroupPatchModel := &vpcv1.SecurityGroupPatch{
 			Name: &name,
 		}
-		patchBody, err := model.AsPatch()
+		securityGroupPatch, err := securityGroupPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for SecurityGroupPatch: %s", err)
 		}
-		updateSecurityGroupOptions.SecurityGroupPatch = patchBody
+		updateSecurityGroupOptions.SecurityGroupPatch = securityGroupPatch
 		_, response, err := sess.UpdateSecurityGroup(updateSecurityGroupOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Security Group : %s\n%s", err, response)

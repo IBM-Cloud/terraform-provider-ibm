@@ -453,14 +453,14 @@ func classicVpngwUpdate(d *schema.ResourceData, meta interface{}, id, name strin
 		options := &vpcclassicv1.UpdateVPNGatewayOptions{
 			ID: &id,
 		}
-		model := &vpcclassicv1.VPNGatewayPatch{
+		vpnGatewayPatchModel := &vpcclassicv1.VPNGatewayPatch{
 			Name: &name,
 		}
-		patchBody, err := model.AsPatch()
+		vpnGatewayPatch, err := vpnGatewayPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for VPNGatewayPatch: %s", err)
 		}
-		options.VPNGatewayPatch = patchBody
+		options.VPNGatewayPatch = vpnGatewayPatch
 		_, response, err := sess.UpdateVPNGateway(options)
 		if err != nil {
 			return fmt.Errorf("Error updating vpc Vpn Gateway: %s\n%s", err, response)
@@ -493,14 +493,14 @@ func vpngwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 		options := &vpcv1.UpdateVPNGatewayOptions{
 			ID: &id,
 		}
-		model := &vpcv1.VPNGatewayPatch{
+		vpnGatewayPatchModel := &vpcv1.VPNGatewayPatch{
 			Name: &name,
 		}
-		patchBody, err := model.AsPatch()
+		vpnGatewayPatch, err := vpnGatewayPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for VPNGatewayPatch: %s", err)
 		}
-		options.VPNGatewayPatch = patchBody
+		options.VPNGatewayPatch = vpnGatewayPatch
 		_, response, err := sess.UpdateVPNGateway(options)
 		if err != nil {
 			return fmt.Errorf("Error updating vpc Vpn Gateway: %s\n%s", err, response)

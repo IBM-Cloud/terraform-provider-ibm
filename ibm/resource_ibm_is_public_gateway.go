@@ -528,14 +528,14 @@ func classicPgwUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 			ID: &id,
 		}
 
-		model := &vpcclassicv1.PublicGatewayPatch{
+		PublicGatewayPatchModel := &vpcclassicv1.PublicGatewayPatch{
 			Name: &name,
 		}
-		patchBody, err := model.AsPatch()
+		PublicGatewayPatch, err := PublicGatewayPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for PublicGatewayPatch: %s", err)
 		}
-		updatePublicGatewayOptions.PublicGatewayPatch = patchBody
+		updatePublicGatewayOptions.PublicGatewayPatch = PublicGatewayPatch
 
 		_, response, err := sess.UpdatePublicGateway(updatePublicGatewayOptions)
 		if err != nil {
@@ -569,14 +569,14 @@ func pgwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		updatePublicGatewayOptions := &vpcv1.UpdatePublicGatewayOptions{
 			ID: &id,
 		}
-		model := &vpcv1.PublicGatewayPatch{
+		PublicGatewayPatchModel := &vpcv1.PublicGatewayPatch{
 			Name: &name,
 		}
-		patchBody, err := model.AsPatch()
+		PublicGatewayPatch, err := PublicGatewayPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for PublicGatewayPatch: %s", err)
 		}
-		updatePublicGatewayOptions.PublicGatewayPatch = patchBody
+		updatePublicGatewayOptions.PublicGatewayPatch = PublicGatewayPatch
 		_, response, err := sess.UpdatePublicGateway(updatePublicGatewayOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Public Gateway  : %s\n%s", err, response)

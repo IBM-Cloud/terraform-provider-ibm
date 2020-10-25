@@ -294,14 +294,14 @@ func classicVpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{}, vpc
 			VPCID: &vpcID,
 			ID:    &addrPrefixID,
 		}
-		model := &vpcclassicv1.AddressPrefixPatch{
+		addressPrefixPatchModel := &vpcclassicv1.AddressPrefixPatch{
 			Name: &name,
 		}
-		patchBody, err := model.AsPatch()
+		addressPrefixPatch, err := addressPrefixPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for AddressPrefixPatch: %s", err)
 		}
-		updatevpcAddressPrefixoptions.AddressPrefixPatch = patchBody
+		updatevpcAddressPrefixoptions.AddressPrefixPatch = addressPrefixPatch
 		_, response, err := sess.UpdateVPCAddressPrefix(updatevpcAddressPrefixoptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC Address Prefix: %s\n%s", err, response)
@@ -320,14 +320,14 @@ func vpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{}, vpcID, add
 			VPCID: &vpcID,
 			ID:    &addrPrefixID,
 		}
-		model := &vpcv1.AddressPrefixPatch{
+		addressPrefixPatchModel := &vpcv1.AddressPrefixPatch{
 			Name: &name,
 		}
-		patchBody, err := model.AsPatch()
+		addressPrefixPatch, err := addressPrefixPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for AddressPrefixPatch: %s", err)
 		}
-		updatevpcAddressPrefixoptions.AddressPrefixPatch = patchBody
+		updatevpcAddressPrefixoptions.AddressPrefixPatch = addressPrefixPatch
 		_, response, err := sess.UpdateVPCAddressPrefix(updatevpcAddressPrefixoptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC Address Prefix: %s\n%s", err, response)

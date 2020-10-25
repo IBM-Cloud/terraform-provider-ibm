@@ -1515,10 +1515,10 @@ func classicInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			ID: &id,
 		}
 
-		model := &vpcv1.InstancePatch{
+		instancePatchModel := &vpcv1.InstancePatch{
 			Name: &name,
 		}
-		instancePatch, err := model.AsPatch()
+		instancePatch, err := instancePatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for ImagePatch: %s", err)
 		}
@@ -1662,10 +1662,10 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			ID:         &networkID,
 		}
 
-		model := &vpcv1.NetworkInterfacePatch{
+		networkInterfacePatchModel := &vpcv1.NetworkInterfacePatch{
 			Name: &newName,
 		}
-		networkInterfacePatch, err := model.AsPatch()
+		networkInterfacePatch, err := networkInterfacePatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for NetworkInterfacePatch: %s", err)
 		}
@@ -1741,10 +1741,10 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					ID:         &networkID,
 				}
 
-				model := &vpcv1.NetworkInterfacePatch{
+				instancePatchModel := &vpcv1.NetworkInterfacePatch{
 					Name: &newName,
 				}
-				networkInterfacePatch, err := model.AsPatch()
+				networkInterfacePatch, err := instancePatchModel.AsPatch()
 				if err != nil {
 					return fmt.Errorf("Error calling asPatch for NetworkInterfacePatch: %s", err)
 				}
@@ -1768,10 +1768,10 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			ID: &id,
 		}
 
-		model := &vpcv1.InstancePatch{
+		instancePatchModel := &vpcv1.InstancePatch{
 			Name: &name,
 		}
-		instancePatch, err := model.AsPatch()
+		instancePatch, err := instancePatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for InstancePatch: %s", err)
 		}

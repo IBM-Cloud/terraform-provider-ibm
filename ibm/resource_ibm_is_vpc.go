@@ -1036,14 +1036,14 @@ func classicVpcUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 		updateVpcOptions := &vpcclassicv1.UpdateVPCOptions{
 			ID: &id,
 		}
-		model := &vpcv1.VPCPatch{
+		vpcPatchModel := &vpcv1.VPCPatch{
 			Name: &name,
 		}
-		patchBody, err := model.AsPatch()
+		vpcPatch, err := vpcPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for VPCPatch: %s", err)
 		}
-		updateVpcOptions.VPCPatch = patchBody
+		updateVpcOptions.VPCPatch = vpcPatch
 		_, response, err := sess.UpdateVPC(updateVpcOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC : %s\n%s", err, response)
@@ -1076,14 +1076,14 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		updateVpcOptions := &vpcv1.UpdateVPCOptions{
 			ID: &id,
 		}
-		model := &vpcv1.VPCPatch{
+		vpcPatchModel := &vpcv1.VPCPatch{
 			Name: &name,
 		}
-		patchBody, err := model.AsPatch()
+		vpcPatch, err := vpcPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for VPCPatch: %s", err)
 		}
-		updateVpcOptions.VPCPatch = patchBody
+		updateVpcOptions.VPCPatch = vpcPatch
 		_, response, err := sess.UpdateVPC(updateVpcOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC : %s\n%s", err, response)

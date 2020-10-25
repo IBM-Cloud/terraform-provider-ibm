@@ -853,18 +853,18 @@ func classicLbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbI
 	updatePolicyOptions.ListenerID = &listenerID
 	updatePolicyOptions.ID = &ID
 
-	model := &vpcclassicv1.LoadBalancerListenerPolicyPatch{}
+	loadBalancerListenerPolicyPatchModel := &vpcclassicv1.LoadBalancerListenerPolicyPatch{}
 
 	if d.HasChange(isLBListenerPolicyName) {
 		policy := d.Get(isLBListenerPolicyName).(string)
-		model.Name = &policy
+		loadBalancerListenerPolicyPatchModel.Name = &policy
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerPolicyPriority) {
 		prio := d.Get(isLBListenerPolicyPriority).(int)
 		priority := int64(prio)
-		model.Priority = &priority
+		loadBalancerListenerPolicyPatchModel.Priority = &priority
 		hasChanged = true
 	}
 
@@ -883,7 +883,7 @@ func classicLbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbI
 			ID: &id,
 		}
 
-		model.Target = target
+		loadBalancerListenerPolicyPatchModel.Target = target
 		hasChanged = true
 	} else if d.Get(isLBListenerPolicyAction).(string) == "redirect" {
 		//if Action is redirect and either status code or URL chnaged, set accordingly
@@ -910,7 +910,7 @@ func classicLbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbI
 		//Update the target only if there is a change in either statusCode or URL
 		if targetChange {
 			target = &redirectPatch
-			model.Target = target
+			loadBalancerListenerPolicyPatchModel.Target = target
 		}
 	}
 
@@ -919,11 +919,11 @@ func classicLbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbI
 	defer ibmMutexKV.Unlock(isLBListenerPolicyKey)
 
 	if hasChanged {
-		patchBody, err := model.AsPatch()
+		loadBalancerListenerPolicyPatch, err := loadBalancerListenerPolicyPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for LoadBalancerListenerPolicyPatch: %s", err)
 		}
-		updatePolicyOptions.LoadBalancerListenerPolicyPatch = patchBody
+		updatePolicyOptions.LoadBalancerListenerPolicyPatch = loadBalancerListenerPolicyPatch
 		_, err = isWaitForClassicLbAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return fmt.Errorf(
@@ -953,18 +953,18 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 	updatePolicyOptions.ListenerID = &listenerID
 	updatePolicyOptions.ID = &ID
 
-	model := &vpcv1.LoadBalancerListenerPolicyPatch{}
+	loadBalancerListenerPolicyPatchModel := &vpcv1.LoadBalancerListenerPolicyPatch{}
 
 	if d.HasChange(isLBListenerPolicyName) {
 		policy := d.Get(isLBListenerPolicyName).(string)
-		model.Name = &policy
+		loadBalancerListenerPolicyPatchModel.Name = &policy
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerPolicyPriority) {
 		prio := d.Get(isLBListenerPolicyPriority).(int)
 		priority := int64(prio)
-		model.Priority = &priority
+		loadBalancerListenerPolicyPatchModel.Priority = &priority
 		hasChanged = true
 	}
 
@@ -981,7 +981,7 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 			ID: &id,
 		}
 
-		model.Target = target
+		loadBalancerListenerPolicyPatchModel.Target = target
 		hasChanged = true
 	} else if d.Get(isLBListenerPolicyAction).(string) == "redirect" {
 		//if Action is redirect and either status code or URL chnaged, set accordingly
@@ -1008,16 +1008,16 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 		//Update the target only if there is a change in either statusCode or URL
 		if targetChange {
 			target = &redirectPatch
-			model.Target = target
+			loadBalancerListenerPolicyPatchModel.Target = target
 		}
 	}
 
 	if hasChanged {
-		patchBody, err := model.AsPatch()
+		loadBalancerListenerPolicyPatch, err := loadBalancerListenerPolicyPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for LoadBalancerListenerPolicyPatch: %s", err)
 		}
-		updatePolicyOptions.LoadBalancerListenerPolicyPatch = patchBody
+		updatePolicyOptions.LoadBalancerListenerPolicyPatch = loadBalancerListenerPolicyPatch
 		isLBListenerPolicyKey := "load_balancer_listener_policy_key_" + lbID + listenerID
 		ibmMutexKV.Lock(isLBListenerPolicyKey)
 		defer ibmMutexKV.Unlock(isLBListenerPolicyKey)
