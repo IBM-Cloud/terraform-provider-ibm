@@ -124,7 +124,9 @@ The following arguments are supported:
   * `name` - (Required, string) Name of the zone.
 * `disable_public_service_endpoint` - (Optional,Bool) Disable the public service endpoint to prevent public access to the master. Default Value 'true'.
 * `kube_version` - (Optional,String) Specify the Kubernetes version, including at least the major.minor version. If you do not include this flag, the default version is used. To see available versions, run 'ibmcloud ks versions'.
-* `update_all_workers` - (Optional, bool)  Set to `true` if you want to update workers kube version along with the cluster kube_version
+* `update_all_workers` - (Optional, bool)  Set to `true` if you want to update workers kube version.
+* `wait_for_worker_update` - (Optional, bool) Set to `true` to wait for kube version of woker nodes to update during the wokrer node kube version update.
+  **NOTE**: setting `wait_for_worker_update` to `false` is not recommended. This results in upgradign all the worker nodes in the cluster at the same time causing the cluster downtime
 * `pod_subnet` - (Optional, Forces new resource,String) Specify a custom subnet CIDR to provide private IP addresses for pods. The subnet must be at least '/23' or larger. For more info, refer [here](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#pod-subnet).
 * `service_subnet` - (Optional, Forces new resource,String) Specify a custom subnet CIDR to provide private IP addresses for services. The subnet must be at least '/24' or larger. For more info, refer [here](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#service-subnet).
 * `worker_count` - (Optional, Int) The number of worker nodes per zone in the default worker pool. Default value '1'.
