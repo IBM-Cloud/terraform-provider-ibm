@@ -14,16 +14,15 @@ Import the details of an existing IBM Cloud Infrastructure transit gateway as a 
 ## Example Usage
 
 ```hcl
-
-resource "ibm_tg_gateway" "new_tg_gw"{
-name="transit-gateway-1"
-location="us-south"
-global=true
-resource_group="30951d2dff914dafb26455a88c0c0092"
-} 
+resource "ibm_tg_gateway" "new_tg_gw" {
+  name           = "transit-gateway-1"
+  location       = "us-south"
+  global         = true
+  resource_group = "30951d2dff914dafb26455a88c0c0092"
+}
 
 data "ibm_tg_gateway" "ds_tggateway" {
-    id=ibm_tg_gateway.new_tg_gw.id
+  name = ibm_tg_gateway.new_tg_gw.name
 }
 ```
 
