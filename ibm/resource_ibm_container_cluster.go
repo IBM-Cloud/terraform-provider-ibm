@@ -23,6 +23,7 @@ const (
 	subnetNormal         = "normal"
 	workerReadyState     = "Ready"
 	workerDeleteState    = "deleted"
+	workerDeletePending  = "deleting"
 
 	versionUpdating     = "updating"
 	clusterProvisioning = "provisioning"
@@ -282,6 +283,14 @@ func resourceIBMContainerCluster() *schema.Resource {
 				DiffSuppressFunc: applyOnce,
 				Description:      "Entitlement option reduces additional OCP Licence cost in Openshift Clusters",
 			},
+
+			"wait_for_worker_update": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Wait for worker node to update during kube version update.",
+			},
+
 			"ingress_hostname": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -835,6 +844,11 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 				"Error waiting for cluster (%s) version to be updated: %s", d.Id(), err)
 		}
 
+	}
+
+	// "update_all_workers" deafult is false, enable to true when all eorker nodes to be updated
+	// with major and minor updates.
+	if d.HasChange("update_all_workers") && !d.IsNewResource() {
 		updateAllWorkers := d.Get("update_all_workers").(bool)
 		if updateAllWorkers {
 			workerFields, err := wrkAPI.List(clusterID, targetEnv)
@@ -846,6 +860,8 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 				return fmt.Errorf("Error retrieving cluster %s: %s", clusterID, err)
 			}
 
+			waitForWorkerUpdate := d.Get("wait_for_worker_update").(bool)
+
 			for _, w := range workerFields {
 				if strings.Split(w.KubeVersion, "_")[0] != strings.Split(cluster.MasterKubeVersion, "_")[0] {
 					params := v1.WorkerUpdateParam{
@@ -855,10 +871,12 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 					if err != nil {
 						return fmt.Errorf("Error updating worker %s: %s", w.ID, err)
 					}
-					_, err = WaitForWorkerAvailable(d, meta, targetEnv)
-					if err != nil {
-						return fmt.Errorf(
-							"Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
+					if waitForWorkerUpdate {
+						_, err = WaitForWorkerAvailable(d, meta, targetEnv)
+						if err != nil {
+							return fmt.Errorf(
+								"Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
+						}
 					}
 				}
 			}
@@ -1490,12 +1508,13 @@ func WaitForClusterVersionUpdate(d *schema.ResourceData, meta interface{}, targe
 	id := d.Id()
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", versionUpdating},
-		Target:     []string{clusterNormal},
-		Refresh:    clusterVersionRefreshFunc(csClient.Clusters(), id, d, target),
-		Timeout:    d.Timeout(schema.TimeoutUpdate),
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
+		Pending:                   []string{"retry", versionUpdating},
+		Target:                    []string{clusterNormal},
+		Refresh:                   clusterVersionRefreshFunc(csClient.Clusters(), id, d, target),
+		Timeout:                   d.Timeout(schema.TimeoutUpdate),
+		Delay:                     20 * time.Second,
+		MinTimeout:                10 * time.Second,
+		ContinuousTargetOccurence: 5,
 	}
 
 	return stateConf.WaitForState()
@@ -1508,8 +1527,11 @@ func clusterVersionRefreshFunc(client v1.Clusters, instanceID string, d *schema.
 			return nil, "", fmt.Errorf("Error retrieving cluster: %s", err)
 		}
 		// Check active transactions
+		kubeversion := d.Get("kube_version").(string)
 		log.Println("Checking cluster version", clusterFields.MasterKubeVersion, d.Get("kube_version").(string))
 		if strings.Contains(clusterFields.MasterKubeVersion, "pending") {
+			return clusterFields, versionUpdating, nil
+		} else if !strings.Contains(clusterFields.MasterKubeVersion, kubeversion) {
 			return clusterFields, versionUpdating, nil
 		}
 		return clusterFields, clusterNormal, nil
