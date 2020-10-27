@@ -69,7 +69,7 @@ func testAccCheckCisTLSSettingsConfigBasic1(id string, cisDomainStatic string) s
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_tls_settings" "%[1]s" {
 		cis_id          = data.ibm_cis.cis.id
-		domain_id       = data.ibm_cis_domain.cis_domain.domain_id
+		domain_id       = data.ibm_cis_domain.cis_domain.id
 		tls_1_3         = "off"
 		min_tls_version = "1.1"
 		universal_ssl   = true
@@ -80,7 +80,7 @@ func testAccCheckCisTLSSettingsConfigBasic2(id string, cisDomainStatic string) s
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_tls_settings" "%[1]s" {
 		cis_id          = data.ibm_cis.cis.id
-		domain_id       = data.ibm_cis_domain.cis_domain.domain_id
+		domain_id       = data.ibm_cis_domain.cis_domain.id
 		tls_1_3         = "on"
 		min_tls_version = "1.2"
 		universal_ssl   = false

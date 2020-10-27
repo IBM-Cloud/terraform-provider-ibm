@@ -28,3 +28,7 @@ output "domain_setting" {
 output "ibm_cis_tls_settings_output" {
   value = ibm_cis_tls_settings.tls_settings
 }
+
+output "ibm_cis_routing_output" {
+  value = ibm_cis_routing.routing
+}

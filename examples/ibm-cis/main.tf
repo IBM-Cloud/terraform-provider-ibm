@@ -198,3 +198,10 @@ resource "ibm_cis_tls_settings" "tls_settings" {
   min_tls_version = "1.2"
   universal_ssl   = true
 }
+
+# CIS Routing
+resource "ibm_cis_routing" "routing" {
+  cis_id        = data.ibm_cis.cis.id
+  domain_id     = data.ibm_cis_domain.cis_domain.domain_id
+  smart_routing = "on"
+}

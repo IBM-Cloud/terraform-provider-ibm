@@ -64,13 +64,11 @@ func resourceIBMCISGlb() *schema.Resource {
 					Type: schema.TypeString,
 				},
 				Description: "List of default Pool IDs",
-				//ValidateFunc: validation.StringLenBetween(1, 32),
 			},
 			cisGLBDesc: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Description for the load balancer instance",
-				//ValidateFunc: validation.StringLenBetween(0, 1024),
 			},
 			cisGLBTTL: {
 				Type:          schema.TypeInt,

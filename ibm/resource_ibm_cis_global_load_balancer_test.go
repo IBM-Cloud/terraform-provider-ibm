@@ -23,8 +23,7 @@ func TestAccIBMCisGlb_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckCisGlbDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:             testAccCheckCisGlbConfigCisDSBasic("test", cisDomainStatic),
-				ExpectNonEmptyPlan: true,
+				Config: testAccCheckCisGlbConfigCisDSBasic("test", cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisGlbExists(name, &glb),
 					// dont check that specified values are set, this will be evident by lack of plan diff
@@ -35,8 +34,7 @@ func TestAccIBMCisGlb_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config:             testAccCheckCisGlbConfigCisDSUpdate("test", cisDomainStatic),
-				ExpectNonEmptyPlan: true,
+				Config: testAccCheckCisGlbConfigCisDSUpdate("test", cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisGlbExists(name, &glb),
 					// dont check that specified values are set, this will be evident by lack of plan diff
