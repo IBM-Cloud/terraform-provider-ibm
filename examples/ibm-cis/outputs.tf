@@ -32,3 +32,7 @@ output "ibm_cis_tls_settings_output" {
 output "ibm_cis_routing_output" {
   value = ibm_cis_routing.routing
 }
+
+output "cache_settings" {
+  value = ibm_cis_cache_settings.test
+}

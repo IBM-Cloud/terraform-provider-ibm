@@ -17,6 +17,7 @@ import (
 	"github.com/IBM/go-sdk-core/v3/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
+	ciscachev1 "github.com/IBM/networking-go-sdk/cachingapiv1"
 	dl "github.com/IBM/networking-go-sdk/directlinkv1"
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
 	cisedgefunctionv1 "github.com/IBM/networking-go-sdk/edgefunctionsapiv1"
@@ -201,6 +202,7 @@ type ClientSession interface {
 	CisSSLClientSession() (*cissslv1.SslCertificateApiV1, error)
 	CisDomainSettingsClientSession() (*cisdomainsettingsv1.ZonesSettingsV1, error)
 	CisRoutingClientSession() (*cisroutingv1.RoutingV1, error)
+	CisCacheClientSession() (*ciscachev1.CachingApiV1, error)
 }
 
 type clientSession struct {
@@ -356,6 +358,10 @@ type clientSession struct {
 	// CIS Routing service options
 	cisRoutingErr    error
 	cisRoutingClient *cisroutingv1.RoutingV1
+
+	// CIS Caching service options
+	cisCacheErr    error
+	cisCacheClient *ciscachev1.CachingApiV1
 }
 
 // BluemixAcccountAPI ...
@@ -594,6 +600,11 @@ func (sess clientSession) CisRoutingClientSession() (*cisroutingv1.RoutingV1, er
 	return sess.cisRoutingClient, sess.cisRoutingErr
 }
 
+// CIS Cache service
+func (sess clientSession) CisCacheClientSession() (*ciscachev1.CachingApiV1, error) {
+	return sess.cisCacheClient, sess.cisCacheErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -656,6 +667,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisSSLErr = errEmptyBluemixCredentials
 		session.cisDomainSettingsErr = errEmptyBluemixCredentials
 		session.cisRoutingErr = errEmptyBluemixCredentials
+		session.cisCacheErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1126,6 +1138,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 				session.cisRoutingErr)
 	}
 
+	// IBM Network CIS Cache service
+	cisCacheOpt := &ciscachev1.CachingApiV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		ZoneID:        core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisCacheClient, session.cisCacheErr =
+		ciscachev1.NewCachingApiV1(cisCacheOpt)
+	if session.cisCacheErr != nil {
+		session.cisCacheErr =
+			fmt.Errorf("Error occured while configuring CIS Caching service: %s",
+				session.cisCacheErr)
+	}
 	return session, nil
 }
 

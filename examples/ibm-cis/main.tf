@@ -205,3 +205,13 @@ resource "ibm_cis_routing" "routing" {
   domain_id     = data.ibm_cis_domain.cis_domain.domain_id
   smart_routing = "on"
 }
+
+# CIS Cache Settings
+resource "ibm_cis_cache_settings" "test" {
+  cis_id             = var.cis_crn
+  domain_id          = var.zone_id
+  caching_level      = "aggressive"
+  browser_expiration = 14400
+  development_mode   = "off"
+  query_string_sort  = "off"
+}
