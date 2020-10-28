@@ -28,3 +28,7 @@ output "domain_setting" {
 output "ibm_cis_tls_settings_output" {
   value = ibm_cis_tls_settings.tls_settings
 }
+
+output "cache_settings" {
+  value = ibm_cis_cache_settings.test
+}

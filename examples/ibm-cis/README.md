@@ -16,6 +16,7 @@ These types of resources are supported:
 * [ CIS Edge Functions Action ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-edge-functions-action)
 * [ CIS Edge Functions Trigger ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-edge-functions-trigger)
 * [ CIS TLS Settings](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-tls-settings)
+* [ CIS Cache Settings](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-cache-settings)
 
 ## Terraform versions
 
@@ -216,6 +217,16 @@ resource "ibm_cis_tls_settings" "tls_settings" {
   min_tls_version = "1.2"
   universal_ssl   = true
 }
+
+`CIS Cache Settings`
+resource "ibm_cis_cache_settings" "test" {
+  cis_id             = data.ibm_cis.cis.id
+  domain_id          = data.ibm_cis_domain.cis_domain.domain_id
+  caching_level      = "aggressive"
+  browser_expiration = 14400
+  development_mode   = "off"
+  query_string_sort  = "off"
+}
 ```
 
 ## CIS Data Sources
@@ -275,6 +286,7 @@ data "ibm_cis_edge_functions_triggers" "test_triggers" {
 - [Rate Limiting CLI](https://cloud.ibm.com/docs/cis?topic=cis-cli-plugin-cis-cli#ratelimit)
 - [Edge Functions CLI](https://cloud.ibm.com/docs/cis?topic=cis-cli-plugin-cis-cli#edge-functions)
 - [TLS Settings CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#show-tls-setting)
+- [Cache Settings CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#show-cache)
 
 ## Notes
 
@@ -350,6 +362,10 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | tls_1_3 | The TLS Version 1.3 `on`, `off`, `zrt` setting | `string` | no |
 | min_tls_version | The Minimum TLS Version setting | `string` | no |
 | universal_ssl | The Universal SSL enable/disable setting | `boolean` | no |
+| cache_level | The Cache level setting | `string` | no |
+| browser_expiratin | The Browser cache expiration setting | `number` | no |
+| development_mode | The Development mode setting | `string` | no |
+| query_string_sort | The Query string sort setting | `string` | no |
 
 ## Outputs
 

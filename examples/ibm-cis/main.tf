@@ -198,3 +198,13 @@ resource "ibm_cis_tls_settings" "tls_settings" {
   min_tls_version = "1.2"
   universal_ssl   = true
 }
+
+# CIS Cache Settings
+resource "ibm_cis_cache_settings" "test" {
+  cis_id             = var.cis_crn
+  domain_id          = var.zone_id
+  caching_level      = "aggressive"
+  browser_expiration = 14400
+  development_mode   = "off"
+  query_string_sort  = "off"
+}
