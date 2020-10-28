@@ -211,40 +211,41 @@ func resourceIBMISInstanceGroupManagerUpdate(d *schema.ResourceData, meta interf
 
 	var changed bool
 	updateInstanceGroupManagerOptions := vpcv1.UpdateInstanceGroupManagerOptions{}
+	instanceGroupManagerPatchModel := &vpcv1.InstanceGroupManagerPatch{}
 
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
-		updateInstanceGroupManagerOptions.Name = &name
+		instanceGroupManagerPatchModel.Name = &name
 		changed = true
 	}
 
 	if d.HasChange("aggregation_window") {
 		aggregationWindow := int64(d.Get("aggregation_window").(int))
-		updateInstanceGroupManagerOptions.AggregationWindow = &aggregationWindow
+		instanceGroupManagerPatchModel.AggregationWindow = &aggregationWindow
 		changed = true
 	}
 
 	if d.HasChange("cooldown") {
 		cooldown := int64(d.Get("cooldown").(int))
-		updateInstanceGroupManagerOptions.Cooldown = &cooldown
+		instanceGroupManagerPatchModel.Cooldown = &cooldown
 		changed = true
 	}
 
 	if d.HasChange("max_membership_count") {
 		maxMembershipCount := int64(d.Get("max_membership_count").(int))
-		updateInstanceGroupManagerOptions.MaxMembershipCount = &maxMembershipCount
+		instanceGroupManagerPatchModel.MaxMembershipCount = &maxMembershipCount
 		changed = true
 	}
 
 	if d.HasChange("min_membership_count") {
 		minMembershipCount := int64(d.Get("min_membership_count").(int))
-		updateInstanceGroupManagerOptions.MinMembershipCount = &minMembershipCount
+		instanceGroupManagerPatchModel.MinMembershipCount = &minMembershipCount
 		changed = true
 	}
 
 	if d.HasChange("enable_manager") {
 		enableManager := d.Get("enable_manager").(bool)
-		updateInstanceGroupManagerOptions.ManagementEnabled = &enableManager
+		instanceGroupManagerPatchModel.ManagementEnabled = &enableManager
 		changed = true
 	}
 
@@ -257,6 +258,11 @@ func resourceIBMISInstanceGroupManagerUpdate(d *schema.ResourceData, meta interf
 		instanceGroupManagerID := parts[1]
 		updateInstanceGroupManagerOptions.ID = &instanceGroupManagerID
 		updateInstanceGroupManagerOptions.InstanceGroupID = &instanceGroupID
+		instanceGroupManagerPatch, err := instanceGroupManagerPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstanceGroupManagerPatch: %s", err)
+		}
+		updateInstanceGroupManagerOptions.InstanceGroupManagerPatch = instanceGroupManagerPatch
 		_, response, err := sess.UpdateInstanceGroupManager(&updateInstanceGroupManagerOptions)
 		if err != nil {
 			return fmt.Errorf("Error updating InstanceGroup manager: %s\n%s", err, response)

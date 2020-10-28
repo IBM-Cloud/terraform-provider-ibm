@@ -1512,9 +1512,18 @@ func classicInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange(isInstanceName) {
 		name := d.Get(isInstanceName).(string)
 		updnetoptions := &vpcclassicv1.UpdateInstanceOptions{
-			ID:   &id,
+			ID: &id,
+		}
+
+		instancePatchModel := &vpcclassicv1.InstancePatch{
 			Name: &name,
 		}
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for ImagePatch: %s", err)
+		}
+		updnetoptions.InstancePatch = instancePatch
+
 		_, _, err = instanceC.UpdateInstance(updnetoptions)
 		if err != nil {
 			return err
@@ -1651,8 +1660,17 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		updatepnicfoptions := &vpcv1.UpdateInstanceNetworkInterfaceOptions{
 			InstanceID: &id,
 			ID:         &networkID,
-			Name:       &newName,
 		}
+
+		networkInterfacePatchModel := &vpcv1.NetworkInterfacePatch{
+			Name: &newName,
+		}
+		networkInterfacePatch, err := networkInterfacePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for NetworkInterfacePatch: %s", err)
+		}
+		updatepnicfoptions.NetworkInterfacePatch = networkInterfacePatch
+
 		_, response, err := instanceC.UpdateInstanceNetworkInterface(updatepnicfoptions)
 		if err != nil {
 			return fmt.Errorf("Error while updating name %s for primary network interface of instance %s\n%s: %q", newName, d.Id(), err, response)
@@ -1721,8 +1739,17 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				updatepnicfoptions := &vpcv1.UpdateInstanceNetworkInterfaceOptions{
 					InstanceID: &id,
 					ID:         &networkID,
-					Name:       &newName,
 				}
+
+				instancePatchModel := &vpcv1.NetworkInterfacePatch{
+					Name: &newName,
+				}
+				networkInterfacePatch, err := instancePatchModel.AsPatch()
+				if err != nil {
+					return fmt.Errorf("Error calling asPatch for NetworkInterfacePatch: %s", err)
+				}
+				updatepnicfoptions.NetworkInterfacePatch = networkInterfacePatch
+
 				_, response, err := instanceC.UpdateInstanceNetworkInterface(updatepnicfoptions)
 				if err != nil {
 					return fmt.Errorf("Error while updating name %s for network interface of instance %s\n%s: %q", newName, d.Id(), err, response)
@@ -1738,9 +1765,18 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange(isInstanceName) {
 		name := d.Get(isInstanceName).(string)
 		updnetoptions := &vpcv1.UpdateInstanceOptions{
-			ID:   &id,
+			ID: &id,
+		}
+
+		instancePatchModel := &vpcv1.InstancePatch{
 			Name: &name,
 		}
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstancePatch: %s", err)
+		}
+		updnetoptions.InstancePatch = instancePatch
+
 		_, _, err = instanceC.UpdateInstance(updnetoptions)
 		if err != nil {
 			return err

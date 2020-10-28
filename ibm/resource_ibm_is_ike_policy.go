@@ -459,12 +459,18 @@ func classicIkepUpdate(d *schema.ResourceData, meta interface{}, id string) erro
 		dhGroup := int64(d.Get(isIKEDhGroup).(int))
 		ikeVersion := int64(d.Get(isIKEVERSION).(int))
 
-		options.Name = &name
-		options.AuthenticationAlgorithm = &authenticationAlg
-		options.EncryptionAlgorithm = &encryptionAlg
-		options.KeyLifetime = &keyLifetime
-		options.DhGroup = &dhGroup
-		options.IkeVersion = &ikeVersion
+		ikePolicyPatchModel := &vpcclassicv1.IkePolicyPatch{}
+		ikePolicyPatchModel.Name = &name
+		ikePolicyPatchModel.AuthenticationAlgorithm = &authenticationAlg
+		ikePolicyPatchModel.EncryptionAlgorithm = &encryptionAlg
+		ikePolicyPatchModel.KeyLifetime = &keyLifetime
+		ikePolicyPatchModel.DhGroup = &dhGroup
+		ikePolicyPatchModel.IkeVersion = &ikeVersion
+		ikePolicyPatch, err := ikePolicyPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for ikePolicyPatch: %s", err)
+		}
+		options.IkePolicyPatch = ikePolicyPatch
 
 		_, response, err := sess.UpdateIkePolicy(options)
 		if err != nil {
@@ -490,12 +496,18 @@ func ikepUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 		dhGroup := int64(d.Get(isIKEDhGroup).(int))
 		ikeVersion := int64(d.Get(isIKEVERSION).(int))
 
-		options.Name = &name
-		options.AuthenticationAlgorithm = &authenticationAlg
-		options.EncryptionAlgorithm = &encryptionAlg
-		options.KeyLifetime = &keyLifetime
-		options.DhGroup = &dhGroup
-		options.IkeVersion = &ikeVersion
+		ikePolicyPatchModel := &vpcv1.IkePolicyPatch{}
+		ikePolicyPatchModel.Name = &name
+		ikePolicyPatchModel.AuthenticationAlgorithm = &authenticationAlg
+		ikePolicyPatchModel.EncryptionAlgorithm = &encryptionAlg
+		ikePolicyPatchModel.KeyLifetime = &keyLifetime
+		ikePolicyPatchModel.DhGroup = &dhGroup
+		ikePolicyPatchModel.IkeVersion = &ikeVersion
+		ikePolicyPatch, err := ikePolicyPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for IkePolicyPatch: %s", err)
+		}
+		options.IkePolicyPatch = ikePolicyPatch
 
 		_, response, err := sess.UpdateIkePolicy(options)
 		if err != nil {

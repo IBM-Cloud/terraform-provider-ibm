@@ -438,19 +438,31 @@ func classicFipUpdate(d *schema.ResourceData, meta interface{}, id string) error
 	options := &vpcclassicv1.UpdateFloatingIPOptions{
 		ID: &id,
 	}
+	floatingIPPatchModel := &vpcclassicv1.FloatingIPPatch{}
 	if d.HasChange(isFloatingIPName) {
 		name := d.Get(isFloatingIPName).(string)
-		options.Name = &name
+		floatingIPPatchModel.Name = &name
 		hasChanged = true
+		floatingIPPatch, err := floatingIPPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for FloatingIPPatch: %s", err)
+		}
+		options.FloatingIPPatch = floatingIPPatch
 	}
 
 	if d.HasChange(isFloatingIPTarget) {
 		target := d.Get(isFloatingIPTarget).(string)
-		options.Target = &vpcclassicv1.FloatingIPPatchTargetNetworkInterfaceIdentity{
+		floatingIPPatchModel.Target = &vpcclassicv1.FloatingIPPatchTargetNetworkInterfaceIdentity{
 			ID: &target,
 		}
 		hasChanged = true
+		floatingIPPatch, err := floatingIPPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for FloatingIPPatch: %s", err)
+		}
+		options.FloatingIPPatch = floatingIPPatch
 	}
+
 	if hasChanged {
 		_, response, err := sess.UpdateFloatingIP(options)
 		if err != nil {
@@ -484,18 +496,29 @@ func fipUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 	options := &vpcv1.UpdateFloatingIPOptions{
 		ID: &id,
 	}
+	floatingIPPatchModel := &vpcv1.FloatingIPPatch{}
 	if d.HasChange(isFloatingIPName) {
 		name := d.Get(isFloatingIPName).(string)
-		options.Name = &name
+		floatingIPPatchModel.Name = &name
 		hasChanged = true
+		floatingIPPatch, err := floatingIPPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for FloatingIPPatch: %s", err)
+		}
+		options.FloatingIPPatch = floatingIPPatch
 	}
 
 	if d.HasChange(isFloatingIPTarget) {
 		target := d.Get(isFloatingIPTarget).(string)
-		options.Target = &vpcv1.FloatingIPPatchTargetNetworkInterfaceIdentity{
+		floatingIPPatchModel.Target = &vpcv1.FloatingIPPatchTargetNetworkInterfaceIdentity{
 			ID: &target,
 		}
 		hasChanged = true
+		floatingIPPatch, err := floatingIPPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for floatingIPPatch: %s", err)
+		}
+		options.FloatingIPPatch = floatingIPPatch
 	}
 	if hasChanged {
 		_, response, err := sess.UpdateFloatingIP(options)

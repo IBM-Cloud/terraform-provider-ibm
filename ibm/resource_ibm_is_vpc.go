@@ -1034,9 +1034,16 @@ func classicVpcUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 	}
 	if hasChanged {
 		updateVpcOptions := &vpcclassicv1.UpdateVPCOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		vpcPatchModel := &vpcclassicv1.VPCPatch{
 			Name: &name,
 		}
+		vpcPatch, err := vpcPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for VPCPatch: %s", err)
+		}
+		updateVpcOptions.VPCPatch = vpcPatch
 		_, response, err := sess.UpdateVPC(updateVpcOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC : %s\n%s", err, response)
@@ -1067,9 +1074,16 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 	}
 	if hasChanged {
 		updateVpcOptions := &vpcv1.UpdateVPCOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		vpcPatchModel := &vpcv1.VPCPatch{
 			Name: &name,
 		}
+		vpcPatch, err := vpcPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for VPCPatch: %s", err)
+		}
+		updateVpcOptions.VPCPatch = vpcPatch
 		_, response, err := sess.UpdateVPC(updateVpcOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC : %s\n%s", err, response)

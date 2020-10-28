@@ -634,27 +634,29 @@ func classicLbListenerPolicyRuleUpdate(d *schema.ResourceData, meta interface{},
 	updatePolicyRuleOptions.PolicyID = &policyID
 	updatePolicyRuleOptions.ID = &ID
 
+	loadBalancerListenerPolicyRulePatchModel := &vpcclassicv1.LoadBalancerListenerPolicyRulePatch{}
+
 	if d.HasChange(isLBListenerPolicyRulecondition) {
 		condition := d.Get(isLBListenerPolicyRulecondition).(string)
-		updatePolicyRuleOptions.Condition = &condition
+		loadBalancerListenerPolicyRulePatchModel.Condition = &condition
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerPolicyRuletype) {
 		ty := d.Get(isLBListenerPolicyRuletype).(string)
-		updatePolicyRuleOptions.Type = &ty
+		loadBalancerListenerPolicyRulePatchModel.Type = &ty
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerPolicyRulevalue) {
 		value := d.Get(isLBListenerPolicyRulevalue).(string)
-		updatePolicyRuleOptions.Value = &value
+		loadBalancerListenerPolicyRulePatchModel.Value = &value
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerPolicyRulefield) {
 		field := d.Get(isLBListenerPolicyRulefield).(string)
-		updatePolicyRuleOptions.Field = &field
+		loadBalancerListenerPolicyRulePatchModel.Field = &field
 		hasChanged = true
 	}
 
@@ -663,6 +665,11 @@ func classicLbListenerPolicyRuleUpdate(d *schema.ResourceData, meta interface{},
 	defer ibmMutexKV.Unlock(isLBListenerPolicyRuleKey)
 
 	if hasChanged {
+		loadBalancerListenerPolicyRulePatch, err := loadBalancerListenerPolicyRulePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerListenerPolicyRulePatch: %s", err)
+		}
+		updatePolicyRuleOptions.LoadBalancerListenerPolicyRulePatch = loadBalancerListenerPolicyRulePatch
 
 		_, err = isWaitForClassicLoadbalancerAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
@@ -694,31 +701,39 @@ func lbListenerPolicyRuleUpdate(d *schema.ResourceData, meta interface{}, lbID, 
 	updatePolicyRuleOptions.PolicyID = &policyID
 	updatePolicyRuleOptions.ID = &ID
 
+	loadBalancerListenerPolicyRulePatchModel := &vpcv1.LoadBalancerListenerPolicyRulePatch{}
+
 	if d.HasChange(isLBListenerPolicyRulecondition) {
 		condition := d.Get(isLBListenerPolicyRulecondition).(string)
-		updatePolicyRuleOptions.Condition = &condition
+		loadBalancerListenerPolicyRulePatchModel.Condition = &condition
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerPolicyRuletype) {
 		ty := d.Get(isLBListenerPolicyRuletype).(string)
-		updatePolicyRuleOptions.Type = &ty
+		loadBalancerListenerPolicyRulePatchModel.Type = &ty
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerPolicyRulevalue) {
 		value := d.Get(isLBListenerPolicyRulevalue).(string)
-		updatePolicyRuleOptions.Value = &value
+		loadBalancerListenerPolicyRulePatchModel.Value = &value
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerPolicyRulefield) {
 		field := d.Get(isLBListenerPolicyRulefield).(string)
-		updatePolicyRuleOptions.Field = &field
+		loadBalancerListenerPolicyRulePatchModel.Field = &field
 		hasChanged = true
 	}
 
 	if hasChanged {
+		loadBalancerListenerPolicyRulePatch, err := loadBalancerListenerPolicyRulePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerListenerPolicyRulePatch: %s", err)
+		}
+		updatePolicyRuleOptions.LoadBalancerListenerPolicyRulePatch = loadBalancerListenerPolicyRulePatch
+
 		isLBListenerPolicyRuleKey := "load_balancer_listener_policy_rule_key_" + lbID + listenerID + policyID
 		ibmMutexKV.Lock(isLBListenerPolicyRuleKey)
 		defer ibmMutexKV.Unlock(isLBListenerPolicyRuleKey)

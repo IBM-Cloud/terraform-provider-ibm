@@ -491,6 +491,8 @@ func classicLBPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolI
 		ID:             &lbPoolID,
 	}
 
+	loadBalancerPoolPatchModel := &vpcclassicv1.LoadBalancerPoolPatch{}
+
 	if d.HasChange(isLBPoolHealthDelay) || d.HasChange(isLBPoolHealthRetries) ||
 		d.HasChange(isLBPoolHealthTimeout) || d.HasChange(isLBPoolHealthType) || d.HasChange(isLBPoolHealthMonitorURL) || d.HasChange(isLBPoolHealthMonitorPort) {
 
@@ -510,7 +512,8 @@ func classicLBPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolI
 		if port > int64(0) {
 			healthMonitorTemplate.Port = &port
 		}
-		updateLoadBalancerPoolOptions.HealthMonitor = healthMonitorTemplate
+
+		loadBalancerPoolPatchModel.HealthMonitor = healthMonitorTemplate
 		hasChanged = true
 	}
 
@@ -519,7 +522,7 @@ func classicLBPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolI
 		sessionPersistence := &vpcclassicv1.LoadBalancerPoolSessionPersistencePatch{
 			Type: &sesspersistancetype,
 		}
-		updateLoadBalancerPoolOptions.SessionPersistence = sessionPersistence
+		loadBalancerPoolPatchModel.SessionPersistence = sessionPersistence
 		hasChanged = true
 	}
 
@@ -528,9 +531,9 @@ func classicLBPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolI
 		algorithm := d.Get(isLBPoolAlgorithm).(string)
 		protocol := d.Get(isLBPoolProtocol).(string)
 
-		updateLoadBalancerPoolOptions.Algorithm = &algorithm
-		updateLoadBalancerPoolOptions.Name = &name
-		updateLoadBalancerPoolOptions.Protocol = &protocol
+		loadBalancerPoolPatchModel.Algorithm = &algorithm
+		loadBalancerPoolPatchModel.Name = &name
+		loadBalancerPoolPatchModel.Protocol = &protocol
 
 		isLBPoolKey := "load_balancer_pool_key_" + lbID + lbPoolID
 		ibmMutexKV.Lock(isLBPoolKey)
@@ -546,6 +549,12 @@ func classicLBPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolI
 			return fmt.Errorf(
 				"Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
 		}
+
+		LoadBalancerPoolPatch, err := loadBalancerPoolPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerPoolPatch: %s", err)
+		}
+		updateLoadBalancerPoolOptions.LoadBalancerPoolPatch = LoadBalancerPoolPatch
 
 		_, response, err := sess.UpdateLoadBalancerPool(updateLoadBalancerPoolOptions)
 		if err != nil {
@@ -580,6 +589,8 @@ func lbPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 		ID:             &lbPoolID,
 	}
 
+	loadBalancerPoolPatchModel := &vpcv1.LoadBalancerPoolPatch{}
+
 	if d.HasChange(isLBPoolHealthDelay) || d.HasChange(isLBPoolHealthRetries) ||
 		d.HasChange(isLBPoolHealthTimeout) || d.HasChange(isLBPoolHealthType) || d.HasChange(isLBPoolHealthMonitorURL) || d.HasChange(isLBPoolHealthMonitorPort) {
 
@@ -599,7 +610,7 @@ func lbPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 		if port > int64(0) {
 			healthMonitorTemplate.Port = &port
 		}
-		updateLoadBalancerPoolOptions.HealthMonitor = healthMonitorTemplate
+		loadBalancerPoolPatchModel.HealthMonitor = healthMonitorTemplate
 		hasChanged = true
 	}
 
@@ -608,7 +619,7 @@ func lbPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 		sessionPersistence := &vpcv1.LoadBalancerPoolSessionPersistencePatch{
 			Type: &sesspersistancetype,
 		}
-		updateLoadBalancerPoolOptions.SessionPersistence = sessionPersistence
+		loadBalancerPoolPatchModel.SessionPersistence = sessionPersistence
 		hasChanged = true
 	}
 
@@ -617,9 +628,9 @@ func lbPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 		algorithm := d.Get(isLBPoolAlgorithm).(string)
 		protocol := d.Get(isLBPoolProtocol).(string)
 
-		updateLoadBalancerPoolOptions.Algorithm = &algorithm
-		updateLoadBalancerPoolOptions.Name = &name
-		updateLoadBalancerPoolOptions.Protocol = &protocol
+		loadBalancerPoolPatchModel.Algorithm = &algorithm
+		loadBalancerPoolPatchModel.Name = &name
+		loadBalancerPoolPatchModel.Protocol = &protocol
 
 		isLBPoolKey := "load_balancer_pool_key_" + lbID + lbPoolID
 		ibmMutexKV.Lock(isLBPoolKey)
@@ -635,6 +646,12 @@ func lbPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 			return fmt.Errorf(
 				"Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
 		}
+
+		LoadBalancerPoolPatch, err := loadBalancerPoolPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerPoolPatch: %s", err)
+		}
+		updateLoadBalancerPoolOptions.LoadBalancerPoolPatch = LoadBalancerPoolPatch
 
 		_, response, err := sess.UpdateLoadBalancerPool(updateLoadBalancerPoolOptions)
 		if err != nil {
