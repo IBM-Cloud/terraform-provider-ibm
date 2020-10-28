@@ -1,3 +1,36 @@
+## 1.14.0 (Oct28, 2020)
+
+FEATURES:
+
+* Support for subnet network interface attachment `ibm_is_subnet_network_acl_attachment` resource ([#1941](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1941))
+
+* Support for CIS tls settigns `ibm_cis_tls_settings` resource ([#1954](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1954))
+
+* Support `ibm_cis_origin_pools` datasource ([#1959](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1959))
+
+ENHANCEMENTS:
+
+* resource: Support additional domain settings (max_upload, cipher, minify, security_header, mobile_redirect, challenge_ttl, dnssec, browser_check) for `ibm_cis_domain_settings` ([#1939](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1939))
+
+* resource: Support `expiration_date` argument to ibm_kms_key resource ([#1967](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1967))
+
+* resource: Support `wait_for_worker_update` argument to `ibm_container_cluster` and `ibm_container_voc_cluster` to control the upgrade of worker nodes ([#1969](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1969))
+
+* data: Support `cert_file_path` attribute to `ibm_database` ([#1985](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1985))
+
+BUGFIXES
+
+* Remove forcenew for IS instance group ([#1951](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1951))
+
+* Support resource instance's parameter to be an array type ([#1953](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1953))
+
+* Fix the tags attachemnt for ibm_databse resource ([#1971](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1971))
+
+* Fix changing allowed_ip to a list of IPs to nothing leads to an error when configuring a COS bucket ([#1661](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1661))
+
+* Fix the update of VPC worker nodes kube verison ([#1952](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1952))
+
+
 ## 1.13.1 (Oct07, 2020)
 
 ENHANCEMENTS:
