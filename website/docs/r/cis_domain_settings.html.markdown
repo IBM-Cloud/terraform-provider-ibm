@@ -69,7 +69,7 @@ The following arguments are supported:
 
 - `cis_id` - (Required) The ID of the CIS service instance.
 - `domain_id` - (Required) The ID of the domain.
-- `dnssec` - (Optional, string) Allowed values: "active", "disabled".  It is not allowed to set to "active" more than once.
+- `dnssec` - (Optional, string) Allowed values: "active", "disabled". It is not allowed to set to "active" more than once.
 - `waf`. (Optional, string) Allowed values: "off", "on"
 - `min_tls_version`. (Optional, string) Allowed values: 1.1", "1.2", "1.3".
 - `ssl`. (Optional, string) Allowed values: "off", "flexible", "full", "strict", "origin_pull".
