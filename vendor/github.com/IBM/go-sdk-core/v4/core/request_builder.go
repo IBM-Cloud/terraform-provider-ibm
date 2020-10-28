@@ -47,8 +47,9 @@ const (
 	CONTENT_TYPE            = "Content-Type"
 	FORM_URL_ENCODED_HEADER = "application/x-www-form-urlencoded"
 
-	ERRORMSG_SERVICE_URL_MISSING = "The service URL is required."
-	ERRORMSG_SERVICE_URL_INVALID = "There was an error parsing the service URL: %s"
+	ERRORMSG_SERVICE_URL_MISSING = "service URL is empty"
+	ERRORMSG_SERVICE_URL_INVALID = "error parsing service URL: %s"
+	ERRORMSG_PATH_PARAM_EMPTY    = "path parameter '%s' is empty"
 )
 
 // FormData stores information for form data.
@@ -98,9 +99,74 @@ func (requestBuilder *RequestBuilder) ConstructHTTPURL(serviceURL string, pathSe
 		}
 
 		if pathParameters != nil && i < len(pathParameters) {
+			if pathParameters[i] == "" {
+				return requestBuilder, fmt.Errorf(ERRORMSG_PATH_PARAM_EMPTY, fmt.Sprintf("[%d]", i))
+			}
 			URL.Path += "/" + pathParameters[i]
 		}
 	}
+	requestBuilder.URL = URL
+	return requestBuilder, nil
+}
+
+//
+// ResolveRequestURL creates a properly-encoded URL with path params.
+// This function returns an error if the serviceURL is "" or is an
+// invalid URL string (e.g. ":<badscheme>").
+// Parameters:
+// serviceURL - the base URL associated with the service endpoint (e.g. "https://myservice.cloud.ibm.com")
+// path - the unresolved path string (e.g. "/resource/{resource_id}/type/{type_id}")
+// pathParams - a map containing the path params, keyed by the path param base name
+// (e.g. {"type_id": "type-1", "resource_id": "res-123-456-789-abc"})
+// The resulting request URL: "https://myservice.cloud.ibm.com/resource/res-123-456-789-abc/type/type-1"
+//
+func (requestBuilder *RequestBuilder) ResolveRequestURL(serviceURL string, path string, pathParams map[string]string) (*RequestBuilder, error) {
+	if serviceURL == "" {
+		return requestBuilder, fmt.Errorf(ERRORMSG_SERVICE_URL_MISSING)
+	}
+
+	urlString := serviceURL
+
+	// If we have a non-empty "path" input parameter, then process it for possible path param references.
+	if path != "" {
+
+		// If path parameter values were passed in, then for each one, replace any references to it
+		// within "path" with the path parameter's encoded value.
+		if len(pathParams) > 0 {
+			for k, v := range pathParams {
+				if v == "" {
+					return requestBuilder, fmt.Errorf(ERRORMSG_PATH_PARAM_EMPTY, k)
+				}
+				encodedValue := url.PathEscape(v)
+				ref := fmt.Sprintf("{%s}", k)
+				path = strings.ReplaceAll(path, ref, encodedValue)
+			}
+		}
+
+		// Next, we need to append "path" to "urlString".
+		// We need to pay particular attention to any trailing slash on "urlString" and
+		// a leading slash on "path".  Ultimately, we do not want a double slash.
+		if strings.HasSuffix(urlString, "/") {
+			// If urlString has a trailing slash, then make sure path does not have a leading slash.
+			path = strings.TrimPrefix(path, "/")
+		} else {
+			// If urlString does not have a trailing slash and path does not have a
+			// leading slash, then append a slash to urlString.
+			if !strings.HasPrefix(path, "/") {
+				urlString += "/"
+			}
+		}
+
+		urlString += path
+	}
+
+	var URL *url.URL
+
+	URL, err := url.Parse(urlString)
+	if err != nil {
+		return requestBuilder, fmt.Errorf(ERRORMSG_SERVICE_URL_INVALID, err.Error())
+	}
+
 	requestBuilder.URL = URL
 	return requestBuilder, nil
 }
@@ -274,7 +340,7 @@ func (requestBuilder *RequestBuilder) SetBodyContent(contentType string, jsonCon
 		if err != nil {
 			return
 		}
-	} else {
+	} else if !IsNil(nonJSONContent) {
 		// Set the non-JSON body content based on the type of value passed in,
 		// which should be a "string", "*string" or an "io.Reader"
 		if str, ok := nonJSONContent.(string); ok {
@@ -289,6 +355,9 @@ func (requestBuilder *RequestBuilder) SetBodyContent(contentType string, jsonCon
 			builder = requestBuilder
 			err = fmt.Errorf("Invalid type for non-JSON body content: %s", reflect.TypeOf(nonJSONContent).String())
 		}
+	} else {
+		builder = requestBuilder
+		err = fmt.Errorf("No body content provided")
 	}
 	return
 }
