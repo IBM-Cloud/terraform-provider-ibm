@@ -36,3 +36,7 @@ output "ibm_cis_routing_output" {
 output "cache_settings" {
   value = ibm_cis_cache_settings.test
 }
+
+output "ibm_cis_custom_page_output" {
+  value = ibm_cis_custom_page.custom_page
+}

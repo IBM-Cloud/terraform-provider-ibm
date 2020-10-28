@@ -18,6 +18,7 @@ import (
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
 	ciscachev1 "github.com/IBM/networking-go-sdk/cachingapiv1"
+	ciscustompagev1 "github.com/IBM/networking-go-sdk/custompagesv1"
 	dl "github.com/IBM/networking-go-sdk/directlinkv1"
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
 	cisedgefunctionv1 "github.com/IBM/networking-go-sdk/edgefunctionsapiv1"
@@ -203,6 +204,7 @@ type ClientSession interface {
 	CisDomainSettingsClientSession() (*cisdomainsettingsv1.ZonesSettingsV1, error)
 	CisRoutingClientSession() (*cisroutingv1.RoutingV1, error)
 	CisCacheClientSession() (*ciscachev1.CachingApiV1, error)
+	CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error)
 }
 
 type clientSession struct {
@@ -362,6 +364,10 @@ type clientSession struct {
 	// CIS Caching service options
 	cisCacheErr    error
 	cisCacheClient *ciscachev1.CachingApiV1
+
+	// CIS Custom Pages service options
+	cisCustomPageErr    error
+	cisCustomPageClient *ciscustompagev1.CustomPagesV1
 }
 
 // BluemixAcccountAPI ...
@@ -605,6 +611,11 @@ func (sess clientSession) CisCacheClientSession() (*ciscachev1.CachingApiV1, err
 	return sess.cisCacheClient, sess.cisCacheErr
 }
 
+// CIS Zone Settings
+func (sess clientSession) CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error) {
+	return sess.cisCustomPageClient, sess.cisCustomPageErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -668,6 +679,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisDomainSettingsErr = errEmptyBluemixCredentials
 		session.cisRoutingErr = errEmptyBluemixCredentials
 		session.cisCacheErr = errEmptyBluemixCredentials
+		session.cisCustomPageErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1151,6 +1163,21 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisCacheErr =
 			fmt.Errorf("Error occured while configuring CIS Caching service: %s",
 				session.cisCacheErr)
+	}
+
+	// IBM Network CIS Custom pages service
+	cisCustomPageOpt := &ciscustompagev1.CustomPagesV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisCustomPageClient, session.cisCustomPageErr =
+		ciscustompagev1.NewCustomPagesV1(cisCustomPageOpt)
+	if session.cisCustomPageErr != nil {
+		session.cisCustomPageErr =
+			fmt.Errorf("Error occured while configuring CIS Custom Pages service: %s",
+				session.cisCustomPageErr)
 	}
 	return session, nil
 }
