@@ -13,6 +13,10 @@ const (
 	cisCacheSettingsBrowserExpiration = "browser_expiration"
 	cisCacheSettingsDevelopmentMode   = "development_mode"
 	cisCacheSettingsQueryStringSort   = "query_string_sort"
+	cisCachePurgeAll                  = "purge_all"
+	cisCachePurgeByURLs               = "purge_by_urls"
+	cisCachePurgeByCacheTags          = "purge_by_tags"
+	cisCachePurgeByHosts              = "purge_by_hosts"
 	cisCacheSettingsOnOffValidatorID  = "on_off_validator_id"
 )
 
@@ -25,9 +29,10 @@ func resourceIBMCISCacheSettings() *schema.Resource {
 				Required:    true,
 			},
 			cisDomainID: {
-				Type:        schema.TypeString,
-				Description: "Associated CIS domain",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "Associated CIS domain",
+				Required:         true,
+				DiffSuppressFunc: suppressDomainIDDiff,
 			},
 			cisCacheSettingsCachingLevel: {
 				Type:        schema.TypeString,
@@ -44,7 +49,6 @@ func resourceIBMCISCacheSettings() *schema.Resource {
 				Computed:    true,
 				ValidateFunc: InvokeValidator(ibmCISCacheSettings,
 					cisCacheSettingsBrowserExpiration),
-				DiffSuppressFunc: suppressTLS13Diff,
 			},
 			cisCacheSettingsDevelopmentMode: {
 				Type:        schema.TypeString,
@@ -61,6 +65,52 @@ func resourceIBMCISCacheSettings() *schema.Resource {
 				Computed:    true,
 				ValidateFunc: InvokeValidator(ibmCISCacheSettings,
 					cisCacheSettingsOnOffValidatorID),
+			},
+			cisCachePurgeAll: {
+				Type:        schema.TypeBool,
+				Description: "Purge all setting",
+				Optional:    true,
+				ConflictsWith: []string{
+					cisCachePurgeByURLs,
+					cisCachePurgeByCacheTags,
+					cisCachePurgeByHosts},
+			},
+			cisCachePurgeByURLs: {
+				Type:        schema.TypeList,
+				Description: "Purge by URLs",
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				ConflictsWith: []string{
+					cisCachePurgeAll,
+					cisCachePurgeByCacheTags,
+					cisCachePurgeByHosts},
+			},
+			cisCachePurgeByCacheTags: {
+				Type:        schema.TypeList,
+				Description: "Purge by tags",
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				ConflictsWith: []string{
+					cisCachePurgeAll,
+					cisCachePurgeByURLs,
+					cisCachePurgeByHosts},
+			},
+			cisCachePurgeByHosts: {
+				Type:        schema.TypeList,
+				Description: "Purge by hosts",
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				ConflictsWith: []string{
+					cisCachePurgeAll,
+					cisCachePurgeByURLs,
+					cisCachePurgeByCacheTags,
+				},
 			},
 		},
 		Create:   resourceCISCacheSettingsUpdate,
@@ -109,14 +159,18 @@ func resourceCISCacheSettingsUpdate(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 	crn := d.Get(cisID).(string)
-	zoneID := d.Get(cisDomainID).(string)
+	zoneID, _, err := convertTftoCisTwoVar(d.Get(cisDomainID).(string))
 	cisClient.Crn = core.StringPtr(crn)
 	cisClient.ZoneID = core.StringPtr(zoneID)
 
 	if d.HasChange(cisCacheSettingsCachingLevel) ||
 		d.HasChange(cisCacheSettingsBrowserExpiration) ||
 		d.HasChange(cisCacheSettingsDevelopmentMode) ||
-		d.HasChange(cisCacheSettingsQueryStringSort) {
+		d.HasChange(cisCacheSettingsQueryStringSort) ||
+		d.HasChange(cisCachePurgeAll) ||
+		d.HasChange(cisCachePurgeByURLs) ||
+		d.HasChange(cisCachePurgeByCacheTags) ||
+		d.HasChange(cisCachePurgeByHosts) {
 
 		// Caching Level Setting
 		if value, ok := d.GetOk(cisCacheSettingsCachingLevel); ok {
@@ -159,6 +213,51 @@ func resourceCISCacheSettingsUpdate(d *schema.ResourceData, meta interface{}) er
 				log.Printf("Update query string sort setting failed : %v\n", resp)
 				return err
 			}
+		}
+
+		if value, ok := d.GetOkExists(cisCachePurgeAll); ok {
+			if value.(bool) == true {
+				opt := cisClient.NewPurgeAllOptions()
+				result, response, err := cisClient.PurgeAll(opt)
+				if err != nil {
+					log.Printf("Purge all failed : %v", response)
+					return err
+				}
+				log.Printf("Purge all successful : %s", *result.Result.ID)
+			}
+		}
+		if value, ok := d.GetOk(cisCachePurgeByURLs); ok {
+			urls := expandStringList(value.([]interface{}))
+			opt := cisClient.NewPurgeByUrlsOptions()
+			opt.SetFiles(urls)
+			_, response, err := cisClient.PurgeByUrls(opt)
+			if err != nil {
+				log.Printf("Purge by urls failed : %v", response)
+				return err
+			}
+		}
+		if value, ok := d.GetOk(cisCachePurgeByCacheTags); ok {
+			cacheTags := expandStringList(value.([]interface{}))
+			opt := cisClient.NewPurgeByCacheTagsOptions()
+			opt.SetTags(cacheTags)
+			result, response, err := cisClient.PurgeByCacheTags(opt)
+			if err != nil {
+				log.Printf("Purge by cache tags failed : %v", response)
+				return err
+			}
+			log.Printf("Purge by tags successful : %s", *result.Result.ID)
+
+		}
+		if value, ok := d.GetOk(cisCachePurgeByHosts); ok {
+			hosts := expandStringList(value.([]interface{}))
+			opt := cisClient.NewPurgeByHostsOptions()
+			opt.SetHosts(hosts)
+			result, response, err := cisClient.PurgeByHosts(opt)
+			if err != nil {
+				log.Printf("Purge by hosts failed : %v", response)
+				return err
+			}
+			log.Printf("Purge by hosts successful : %s", *result.Result.ID)
 		}
 	}
 	d.SetId(convertCisToTfTwoVar(zoneID, crn))

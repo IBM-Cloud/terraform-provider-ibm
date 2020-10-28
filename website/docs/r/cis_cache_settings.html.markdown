@@ -15,13 +15,14 @@ Provides a IBM CIS Cache Settings resource. This resource is associated with an 
 ```hcl
 # Change Cache Settings of the domain
 
-resource "ibm_cis_cache_settings" "%[1]s" {
+resource "ibm_cis_cache_settings" "cache_settings" {
   cis_id             = data.ibm_cis.cis.id
   domain_id          = data.ibm_cis_domain.cis_domain.domain_id
   caching_level      = "aggressive"
   browser_expiration = 14400
   development_mode   = "off"
   query_string_sort  = "off"
+  purge_all          = true
 }
 ```
 
@@ -31,10 +32,19 @@ The following arguments are supported:
 
 - `cis_id` - (Required,string) The ID of the CIS service instance.
 - `domain_id` - (Required,string) The ID of the domain to change Cache Settings.
-- `caching_level` - (Optional, string) The cache leve setting. Valid values are `basic`, `simplified`, `aggressive`.
+- `caching_level` - (Optional, string) The cache level setting. Valid values are `basic`, `simplified`, `aggressive`.
 - `browser_expiration` - (Optional, integer) The Browser expiration setting. Valid values are `0, 30, 60, 300, 1200, 1800, 3600, 7200, 10800, 14400, 18000, 28800, 43200, 57600, 72000, 86400, 172800, 259200, 345600, 432000, 691200, 1382400, 2073600, 2678400, 5356800, 16070400, 31536000`.
 - `development_mode` - (Optional, string) The Development mode enable/disable setting. Valid values are `on` and `off`.
 - `query_string_sort` - (Optional, string) The Query string sort settings. Valid values are `on` and `off`.
+- `purge_all` - (Optional, boolean) Purge all cached files.
+- `purge_by_urls` - (Optional, list(string)) Purge cached urls.
+- `purge_by_hosts` - (Optional, list(string)) Purge cached hosts.
+- `purge_by_tags` - (Optional, list(string)) Purge cached item which matches the tags.
+
+**Note**:
+
+- Among all the purge actions `purge_all`, `purge_by-urls`, `purge_by_hosts` and `purge_by_tags`, only one is allowed to give inside a resource.
+- `serve_stale_content` is not supported yet.
 
 ## Attributes Reference
 

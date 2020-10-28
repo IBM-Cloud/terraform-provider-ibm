@@ -214,4 +214,5 @@ resource "ibm_cis_cache_settings" "test" {
   browser_expiration = 14400
   development_mode   = "off"
   query_string_sort  = "off"
+  purge_all          = true
 }
