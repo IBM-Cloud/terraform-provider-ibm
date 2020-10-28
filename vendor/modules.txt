@@ -131,6 +131,7 @@ github.com/IBM/keyprotect-go-client/iam
 # github.com/IBM/networking-go-sdk v0.11.2
 github.com/IBM/networking-go-sdk/cachingapiv1
 github.com/IBM/networking-go-sdk/common
+github.com/IBM/networking-go-sdk/custompagesv1
 github.com/IBM/networking-go-sdk/directlinkv1
 github.com/IBM/networking-go-sdk/dnsrecordsv1
 github.com/IBM/networking-go-sdk/edgefunctionsapiv1
