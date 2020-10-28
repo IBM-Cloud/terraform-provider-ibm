@@ -216,3 +216,17 @@ resource "ibm_cis_cache_settings" "test" {
   query_string_sort  = "off"
   purge_all          = true
 }
+
+# CIS Custom Page service
+resource "ibm_cis_custom_page" "custom_page" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+  page_id   = "basic_challenge"
+  url       = "https://test.com/index.html"
+}
+
+# CIS Custom Page service data source
+data "ibm_cis_custom_pages" "custom_pages" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+}

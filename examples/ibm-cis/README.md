@@ -18,6 +18,7 @@ These types of resources are supported:
 * [ CIS TLS Settings](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-tls-settings)
 * [ CIS Routing](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-routing)
 * [ CIS Cache Settings](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-cache-settings)
+* [ CIS Custom Page](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-custom-page)
 
 ## Terraform versions
 
@@ -230,6 +231,15 @@ resource "ibm_cis_cache_settings" "test" {
   purge_all          = true
 }
 ```
+`CIS Custom Page service`
+```hcl
+resource "ibm_cis_custom_page" "custom_page" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+  page_id   = "basic_challenge"
+  url       = "https://test.com/index.html"
+}
+```
 
 `CIS Routing`
 ```hcl
@@ -284,6 +294,15 @@ data "ibm_cis_edge_functions_triggers" "test_triggers" {
   domain_id = ibm_cis_edge_functions_trigger.test_trigger.domain_id
 }
 ```
+
+`CIS Custom Page service data source`
+```hcl
+data "ibm_cis_custom_pages" "custom_pages" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+}
+```
+
 ## Dependencies
 
 - User has IAM security rights to create and configure an Internet Services instance
@@ -299,6 +318,7 @@ data "ibm_cis_edge_functions_triggers" "test_triggers" {
 - [TLS Settings CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#show-tls-setting)
 - [Routing CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#routing)
 - [Cache Settings CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#show-cache)
+- [Custom Page CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#custom-page)
 
 ## Notes
 
@@ -379,6 +399,7 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | browser_expiratin | The Browser cache expiration setting | `number` | no |
 | development_mode | The Development mode setting | `string` | no |
 | query_string_sort | The Query string sort setting | `string` | no |
+| url | The URL | `string` | yes |
 
 ## Outputs
 
@@ -391,6 +412,7 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | rate_limit_id | Resource ID. It is a combination of `rule_id`:`domain_id`:`cis_id`|
 | edge_functions_action_id | Resource ID. It is combination of `action_name`:`domain_id`:`cis_id`|
 | edge_functions_trigger_id | Resource ID. It is combination of `trigger_id`:`domain_id`:`cis_id`|
+| page_id | Custom Page ID |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
