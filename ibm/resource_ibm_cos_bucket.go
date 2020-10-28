@@ -210,6 +210,8 @@ func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
 				ips = append(ips, i.(string))
 			}
 			firewall.AllowedIp = ips
+		} else {
+			firewall.AllowedIp = []string{}
 		}
 		hasChanged = true
 		updateBucketConfigOptions.Firewall = firewall

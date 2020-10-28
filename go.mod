@@ -11,7 +11,7 @@ require (
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.3.1
 	github.com/IBM/ibm-cos-sdk-go v1.3.1
-	github.com/IBM/ibm-cos-sdk-go-config v1.0.0
+	github.com/IBM/ibm-cos-sdk-go-config v1.0.1
 	github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
 	github.com/IBM/networking-go-sdk v0.10.0
 	github.com/IBM/vpc-go-sdk v0.2.0

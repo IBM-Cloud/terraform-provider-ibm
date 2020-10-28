@@ -56,6 +56,8 @@ github.com/IBM/ibm-cos-sdk-go v1.3.1 h1:6SHueqFpznp7S/9b39/WiJ9mt3TgD322j2pArzyd
 github.com/IBM/ibm-cos-sdk-go v1.3.1/go.mod h1:YLBAYobEA8bD27P7xpMwSQeNQu6W3DNBtBComXrRzRY=
 github.com/IBM/ibm-cos-sdk-go-config v1.0.0 h1:Sx6vIGr6U+NibFVhuesr4TKtDrWpGB3Q1/KxLBmG3b0=
 github.com/IBM/ibm-cos-sdk-go-config v1.0.0/go.mod h1:BAbdv1Zf8mRP6rj40Cem7KgBp+UQn9Fe2EWxIBrp5sM=
+github.com/IBM/ibm-cos-sdk-go-config v1.0.1 h1:Nld42UysaZ16hPl4XMnkCgbuwW+s4OVctqEf2QbE5ec=
+github.com/IBM/ibm-cos-sdk-go-config v1.0.1/go.mod h1:BAbdv1Zf8mRP6rj40Cem7KgBp+UQn9Fe2EWxIBrp5sM=
 github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26 h1:ktAExgvUrXaXvHjsnUtQqRhoqi5fyQjLXQIlD3YH60o=
 github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26/go.mod h1:5TwDM/4FRJq1ZOlwQL1xFahLWQ3TveR88VmL1u3njyI=
 github.com/IBM/networking-go-sdk v0.8.0 h1:70M3kAYi93SiyjttYGUAXXfiz39F8b2cvaJVih/2MAc=
