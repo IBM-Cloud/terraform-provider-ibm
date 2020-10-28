@@ -284,7 +284,7 @@ type Firewall struct {
 
 	// List of IPv4 or IPv6 addresses in CIDR notation to be affected by firewall in CIDR notation is supported. Passing an
 	// empty array will lift the IP address filter.  The `allowed_ip` array can contain a maximum of 1000 items.
-	AllowedIp []string `json:"allowed_ip,omitempty"`
+	AllowedIp []string `json:"allowed_ip"`
 }
 
 // GetBucketConfigOptions : The GetBucketConfig options.

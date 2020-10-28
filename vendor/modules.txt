@@ -121,7 +121,7 @@ github.com/IBM/ibm-cos-sdk-go/private/protocol/restxml
 github.com/IBM/ibm-cos-sdk-go/private/protocol/xml/xmlutil
 github.com/IBM/ibm-cos-sdk-go/service/s3
 github.com/IBM/ibm-cos-sdk-go/service/s3/internal/arn
-# github.com/IBM/ibm-cos-sdk-go-config v1.0.0
+# github.com/IBM/ibm-cos-sdk-go-config v1.0.1
 github.com/IBM/ibm-cos-sdk-go-config/common
 github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1
 # github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
@@ -133,8 +133,8 @@ github.com/IBM/networking-go-sdk/directlinkv1
 github.com/IBM/networking-go-sdk/dnsrecordsv1
 github.com/IBM/networking-go-sdk/edgefunctionsapiv1
 github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1
-github.com/IBM/networking-go-sdk/sslcertificateapiv1
 github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0
+github.com/IBM/networking-go-sdk/sslcertificateapiv1
 github.com/IBM/networking-go-sdk/transitgatewayapisv1
 github.com/IBM/networking-go-sdk/zoneratelimitsv1
 github.com/IBM/networking-go-sdk/zonessettingsv1
