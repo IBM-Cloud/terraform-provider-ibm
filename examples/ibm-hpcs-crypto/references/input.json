@@ -1,0 +1,22 @@
+{
+    "admin_name":"admin",
+    "admin_password":"Test@123456",
+    "threshold":"1",
+    "rev_threshold":"1",
+    "random_mk":[{
+        "description":"key1",
+        "password":"asdf@123"
+    },
+    {
+        "description":"key2",
+        "password":"asdf@12345"
+    }],
+    "custom_mk":[
+        {
+            "description":"key3",
+            "key":"0363E5A872242B0A0BF67CE85807D75DA17F43A9FFB22DE9F29E6EAA78CEBF9E",
+            "password":"asdf@123456"
+        }
+    ]
+
+}
