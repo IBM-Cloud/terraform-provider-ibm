@@ -63,6 +63,10 @@ func dataSourceIBMPINetworkPort() *schema.Resource {
 							Type:     schema.TypeString,
 							Required: true,
 						},
+						"public_ip": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -103,6 +107,7 @@ func flattenNetworkPorts(networkPorts []*models.NetworkPort) interface{} {
 			"href":       i.Href,
 			"ipaddress":  *i.IPAddress,
 			"macaddress": *i.MacAddress,
+			"public_ip":  i.ExternalIP,
 		}
 
 		result = append(result, l)
