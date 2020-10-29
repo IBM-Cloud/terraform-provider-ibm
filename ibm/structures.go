@@ -23,6 +23,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
+	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -656,6 +657,36 @@ func flattenMetricsMonitor(in *resourceconfigurationv1.MetricsMonitoring) []inte
 		}
 	}
 	return []interface{}{att}
+}
+
+func archiveRuleGet(in []*s3.LifecycleRule) []interface{} {
+	rule := make(map[string]interface{})
+	for _, rule := range in {
+		att := make(map[string]interface{})
+
+		if rule.Status != nil {
+			if *rule.Status == "Enabled" {
+				att["enable"] = true
+
+			} else {
+				att["enable"] = false
+			}
+
+		}
+		if rule.ID != nil {
+			att["rule_id"] = *rule.ID
+		}
+
+		for _, transition := range rule.Transitions {
+			if transition.Days != nil {
+				att["days"] = *transition.Days
+			}
+			if transition.StorageClass != nil {
+				att["type"] = *transition.StorageClass
+			}
+		}
+	}
+	return []interface{}{rule}
 }
 
 func flattenLimits(in *whisk.Limits) []interface{} {
