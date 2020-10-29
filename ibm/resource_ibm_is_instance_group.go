@@ -178,16 +178,16 @@ func resourceIBMISInstanceGroupUpdate(d *schema.ResourceData, meta interface{}) 
 
 	var changed bool
 	instanceGroupUpdateOptions := vpcv1.UpdateInstanceGroupOptions{}
-
+	instanceGroupPatchModel := vpcv1.InstanceGroupPatch{}
 	if d.HasChange("name") && !d.IsNewResource() {
 		name := d.Get("name").(string)
-		instanceGroupUpdateOptions.Name = &name
+		instanceGroupPatchModel.Name = &name
 		changed = true
 	}
 
 	if d.HasChange("instance_template") && !d.IsNewResource() {
 		instanceTemplate := d.Get("instance_template").(string)
-		instanceGroupUpdateOptions.InstanceTemplate = &vpcv1.InstanceTemplateIdentity{
+		instanceGroupPatchModel.InstanceTemplate = &vpcv1.InstanceTemplateIdentity{
 			ID: &instanceTemplate,
 		}
 		changed = true
@@ -196,7 +196,7 @@ func resourceIBMISInstanceGroupUpdate(d *schema.ResourceData, meta interface{}) 
 	if d.HasChange("instance_count") && !d.IsNewResource() {
 		membershipCount := d.Get("instance_count").(int)
 		mc := int64(membershipCount)
-		instanceGroupUpdateOptions.MembershipCount = &mc
+		instanceGroupPatchModel.MembershipCount = &mc
 		changed = true
 	}
 
@@ -207,7 +207,7 @@ func resourceIBMISInstanceGroupUpdate(d *schema.ResourceData, meta interface{}) 
 			subnet := s.(string)
 			subnetIDs = append(subnetIDs, &vpcv1.SubnetIdentity{ID: &subnet})
 		}
-		instanceGroupUpdateOptions.Subnets = subnetIDs
+		instanceGroupPatchModel.Subnets = subnetIDs
 		changed = true
 	}
 
@@ -215,15 +215,18 @@ func resourceIBMISInstanceGroupUpdate(d *schema.ResourceData, meta interface{}) 
 		applicationPort := int64(d.Get("application_port").(int))
 		lbID := d.Get("load_balancer").(string)
 		lbPoolID := d.Get("load_balancer_pool").(string)
-		instanceGroupUpdateOptions.ApplicationPort = &applicationPort
-		instanceGroupUpdateOptions.LoadBalancer = &vpcv1.LoadBalancerIdentity{ID: &lbID}
-		instanceGroupUpdateOptions.LoadBalancerPool = &vpcv1.LoadBalancerPoolIdentity{ID: &lbPoolID}
+		instanceGroupPatchModel.ApplicationPort = &applicationPort
+		instanceGroupPatchModel.LoadBalancer = &vpcv1.LoadBalancerIdentity{ID: &lbID}
+		instanceGroupPatchModel.LoadBalancerPool = &vpcv1.LoadBalancerPoolIdentity{ID: &lbPoolID}
 		changed = true
 	}
 
 	if changed {
 		instanceGroupID := d.Id()
+		instanceGroupPatchModelAsPath, _ := instanceGroupPatchModel.AsPatch()
 		instanceGroupUpdateOptions.ID = &instanceGroupID
+		instanceGroupUpdateOptions.InstanceGroupPatch = instanceGroupPatchModelAsPath
+
 		_, response, err := sess.UpdateInstanceGroup(&instanceGroupUpdateOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
@@ -296,9 +299,13 @@ func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) 
 	// Inorder to delete instance group, need to update membership count to 0
 	zeroMembers := int64(0)
 	instanceGroupUpdateOptions := vpcv1.UpdateInstanceGroupOptions{}
-	instanceGroupUpdateOptions.MembershipCount = &zeroMembers
+
+	instanceGroupPatchModel := vpcv1.InstanceGroupPatch{}
+	instanceGroupPatchModel.MembershipCount = &zeroMembers
+	instanceGroupPatchModelAsPatch, _ := instanceGroupPatchModel.AsPatch()
 
 	instanceGroupUpdateOptions.ID = &instanceGroupID
+	instanceGroupUpdateOptions.InstanceGroupPatch = instanceGroupPatchModelAsPatch
 	_, response, err := sess.UpdateInstanceGroup(&instanceGroupUpdateOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {

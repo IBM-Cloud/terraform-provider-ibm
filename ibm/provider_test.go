@@ -77,6 +77,10 @@ var isWinImage string
 var image_cos_url string
 var image_operating_system string
 
+// For VPC
+
+var isVpcID string
+
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
 	if cfOrganization == "" {
@@ -414,6 +418,13 @@ func init() {
 	if hpcsInstanceID == "" {
 		hpcsInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
 		fmt.Println("[INFO] Set the environment variable HPCS_INSTANCE_ID for testing data_source_ibm_kms_key_test else it is set to default value")
+	}
+
+	// Added for vpc vpe testing
+	isVpcID = os.Getenv("IBM_IS_VPC_ID")
+	if isVpcID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_IS_VPC_ID for testing " +
+			"ibm_is_endpoint_gateway resource else tests will fail if this is not set correctly")
 	}
 }
 

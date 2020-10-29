@@ -376,10 +376,10 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 	log.Println("Creating Instance Template after boot volume")
 	if volsintf, ok := d.GetOk("volume_attachments"); ok {
 		vols := volsintf.([]interface{})
-		var intfs []vpcv1.VolumeAttachmentPrototypeInstanceContext
+		var intfs []vpcv1.VolumeAttachmentPrototype
 		for _, resource := range vols {
 			vol := resource.(map[string]interface{})
-			volInterface := &vpcv1.VolumeAttachmentPrototypeInstanceContext{}
+			volInterface := &vpcv1.VolumeAttachmentPrototype{}
 			deleteVol, _ := vol["delete_volume_on_instance_delete"]
 			deleteVolBool := deleteVol.(bool)
 			volInterface.DeleteVolumeOnInstanceDelete = &deleteVolBool
@@ -388,7 +388,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			volInterface.Name = &namestr
 			volintf, _ := vol["volume"]
 			volintfstr := volintf.(string)
-			volInterface.Volume = &vpcv1.VolumeAttachmentPrototypeInstanceContextVolume{
+			volInterface.Volume = &vpcv1.VolumeAttachmentPrototypeVolume{
 				ID: &volintfstr,
 			}
 			intfs = append(intfs, *volInterface)
@@ -667,7 +667,7 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			volumeAttach[isInstanceTemplateDeleteVolume] = *volume.DeleteVolumeOnInstanceDelete
 			volumeID := map[string]interface{}{}
 			volumeIntf := volume.Volume
-			volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentPrototypeInstanceContextVolume)
+			volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentPrototypeVolume)
 			if volumeInst.Name != nil {
 				volumeID["name"] = *volumeInst.Name
 			}
@@ -732,9 +732,12 @@ func instanceTemplateUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if d.HasChange(isInstanceName) && !d.IsNewResource() {
 		name := d.Get(isInstanceTemplateName).(string)
+		instanceTemplatePatchModel := vpcv1.InstanceTemplatePatch{}
+		instanceTemplatePatchModel.Name = &name
+		instanceTemplatePatchModelAsPatch, _ := instanceTemplatePatchModel.AsPatch()
 		updnetoptions := &vpcv1.UpdateInstanceTemplateOptions{
-			ID:   &ID,
-			Name: &name,
+			ID:                    &ID,
+			InstanceTemplatePatch: instanceTemplatePatchModelAsPatch,
 		}
 
 		_, _, err = instanceC.UpdateInstanceTemplate(updnetoptions)

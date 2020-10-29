@@ -354,7 +354,7 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 				log.Println("Volume attachment delete:", *volume.DeleteVolumeOnInstanceDelete)
 
 				volumeIntf := volume.Volume
-				volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentPrototypeInstanceContextVolume)
+				volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentPrototypeVolume)
 				volumeAttach[isInstanceTemplateVolAttVolume] = volumeInst.Name
 				interfacesList = append(interfacesList, volumeAttach)
 			}

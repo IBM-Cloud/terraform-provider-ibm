@@ -107,31 +107,37 @@ func resourceIBMISInstanceGroupManagerPolicyUpdate(d *schema.ResourceData, meta 
 	var changed bool
 	updateInstanceGroupManagerPolicyOptions := vpcv1.UpdateInstanceGroupManagerPolicyOptions{}
 
+	// Construct an instance of the InstanceGroupManagerPolicyPatch model
+	instanceGroupManagerPolicyPatchModel := new(vpcv1.InstanceGroupManagerPolicyPatch)
+
 	if d.HasChange("name") && !d.IsNewResource() {
 		name := d.Get("name").(string)
-		updateInstanceGroupManagerPolicyOptions.Name = &name
+		instanceGroupManagerPolicyPatchModel.Name = &name
 		changed = true
 	}
 
 	if d.HasChange("metric_type") && !d.IsNewResource() {
 		metricType := d.Get("metric_type").(string)
-		updateInstanceGroupManagerPolicyOptions.MetricType = &metricType
+		instanceGroupManagerPolicyPatchModel.MetricType = &metricType
 		changed = true
 	}
 
 	if d.HasChange("metric_value") && !d.IsNewResource() {
 		metricValue := int64(d.Get("metric_value").(int))
-		updateInstanceGroupManagerPolicyOptions.MetricValue = &metricValue
+		instanceGroupManagerPolicyPatchModel.MetricValue = &metricValue
 		changed = true
 	}
 
 	if changed {
+		instanceGroupManagerPolicyPatchModelAsPatch, _ := instanceGroupManagerPolicyPatchModel.AsPatch()
+
 		instanceGroupManagerPolicyID := d.Id()
 		instanceGroupID := d.Get("instance_group").(string)
 		instanceGroupManagerID := d.Get("instance_group_manager").(string)
 		updateInstanceGroupManagerPolicyOptions.ID = &instanceGroupManagerPolicyID
 		updateInstanceGroupManagerPolicyOptions.InstanceGroupID = &instanceGroupID
 		updateInstanceGroupManagerPolicyOptions.InstanceGroupManagerID = &instanceGroupManagerID
+		updateInstanceGroupManagerPolicyOptions.InstanceGroupManagerPolicyPatch = instanceGroupManagerPolicyPatchModelAsPatch
 
 		_, response, err := sess.UpdateInstanceGroupManagerPolicy(&updateInstanceGroupManagerPolicyOptions)
 		if err != nil {
