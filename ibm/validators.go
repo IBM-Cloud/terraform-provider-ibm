@@ -967,8 +967,6 @@ func validateDiffieHellmanGroup(v interface{}, k string) (ws []string, errors []
 	return
 }
 
-////************ Validate Day for archive  *****
-
 func validateAllowedRangeInt(start, end int) schema.SchemaValidateFunc {
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		value := v.(int)
@@ -979,7 +977,8 @@ func validateAllowedRangeInt(start, end int) schema.SchemaValidateFunc {
 		}
 		return
 	}
-} ////************ Validate Day for archive   *****
+}
+
 func validateDeadPeerDetectionTimeout(v interface{}, k string) (ws []string, errors []error) {
 	secs := v.(int)
 	if secs < 15 || secs > 86399 {

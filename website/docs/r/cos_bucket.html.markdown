@@ -116,7 +116,6 @@ resource "ibm_cos_bucket" "cold-ap-firewall" {
 
 ### Configure archive rules on COS Bucket
 
-```hcl
 resource "ibm_cos_bucket" "archive_rule_cos"{
   bucket_name          = "a-bucket-archive"
   resource_instance_id = ibm_resource_instance.cos_instance.id
