@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -129,6 +130,32 @@ func dataSourceIBMCosBucket() *schema.Resource {
 					},
 				},
 			},
+			"archive_rule": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Enable configuration archive_rule (glacier/accelerated) to COS Bucket after a defined period of time",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rule_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"enable": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Enable or disable an archive rule for a bucket",
+						},
+						"days": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -176,6 +203,23 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	s3Sess := session.Must(session.NewSession())
 	s3Client := s3.New(s3Sess, s3Conf)
+
+	// Read the lifecycle configuration (archive)
+
+	gInput := &s3.GetBucketLifecycleConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+
+	archiveptr, err := s3Client.GetBucketLifecycleConfiguration(gInput)
+
+	if err != nil {
+		log.Println("error during read lifecycle for bucket", err)
+		//return err
+	}
+
+	if archiveptr != nil {
+		d.Set("archive_rule", archiveRuleGet(archiveptr.Rules))
+	}
 
 	headInput := &s3.HeadBucketInput{
 		Bucket: aws.String(bucketName),
