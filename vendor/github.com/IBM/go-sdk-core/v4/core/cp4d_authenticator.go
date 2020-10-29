@@ -258,11 +258,17 @@ func (authenticator *CloudPakForDataAuthenticator) requestToken() (*cp4dTokenSer
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		if resp != nil {
-			buff := new(bytes.Buffer)
-			_, _ = buff.ReadFrom(resp.Body)
-			return nil, fmt.Errorf(buff.String())
+		buff := new(bytes.Buffer)
+		_, _ = buff.ReadFrom(resp.Body)
+
+		// Create a DetailedResponse to be included in the error below.
+		detailedResponse := &DetailedResponse{
+			StatusCode: resp.StatusCode,
+			Headers:    resp.Header,
+			RawResult:  buff.Bytes(),
 		}
+
+		return nil, NewAuthenticationError(detailedResponse, fmt.Errorf(buff.String()))
 	}
 
 	tokenResponse := &cp4dTokenServerResponse{}
@@ -329,7 +335,7 @@ func (this *cp4dTokenData) needsRefresh() bool {
 
 	// Advance refresh by one minute
 	if this.RefreshTime >= 0 && GetCurrentTime() > this.RefreshTime {
-		this.RefreshTime += 60
+		this.RefreshTime = GetCurrentTime() + 60
 		return true
 	}
 
