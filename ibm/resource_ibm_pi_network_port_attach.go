@@ -57,6 +57,10 @@ func resourceIBMPINetworkPortAttach() *schema.Resource {
 				Description: "A human readable description for this network Port",
 				Default:     "Port Created via Terraform",
 			},
+			"public_ip": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 
@@ -121,6 +125,7 @@ func resourceIBMPINetworkPortAttachRead(d *schema.ResourceData, meta interface{}
 	d.Set("status", networkdata.Status)
 	d.Set("portid", networkdata.PortID)
 	d.Set("pvminstance", networkdata.PvmInstance.Href)
+	d.Set("public_ip", networkdata.ExternalIP)
 
 	return nil
 }
