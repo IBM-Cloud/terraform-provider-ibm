@@ -114,6 +114,23 @@ resource "ibm_cos_bucket" "cold-ap-firewall" {
   allowed_ip =  ["223.196.168.27","223.196.161.38","192.168.0.1"]
 }
 
+### Configure archive rules on COS Bucket
+
+```hcl
+resource "ibm_cos_bucket" "archive_rule_cos"{
+  bucket_name          = "a-bucket-archive"
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = "us-south"
+  storage_class        = "standard"
+  archive_rule{ 
+      rule_id = ""
+      enable = true
+      days = 0
+      type = "GLACIER"
+  }
+} 
+
+
 ```
 
 ## Argument Reference
@@ -139,6 +156,16 @@ The following arguments are supported:
 * `storage_class` - (Required, string) Storage class of the bucket. Accepted values: 'standard', 'vault', 'cold', 'flex', 'smart'.
 
 * `endpoint_type` - (Optional, string) The type of the endpoint (public or private) to be used for buckets. Default value is `public`.
+
+* Nested `archive_rule` block have the following structure:
+	*	`archive_rule.rule_id` : (Optional, string) Unique identifier for the rule. Archive rules allow you to set a specific time frame after which objects transition to the archive. 
+	*	`archive_rule.enable` :* (Required, bool) (Required) Specifies archive rule status either enable or disable for a bucket.
+
+  *	`archive_rule.days` :* (Required, string)  Specifies the number of days when the specific rule action takes effect.
+
+  *	`archive_rule.type` :* (Required, string) Specifies the storage class/archive type to which you want the object to transition. It can be Glacier or Accelerated.
+* **Note** - Archive is available in certain regions only. See Integrated Services for more details-https://cloud.ibm.com/docs/cloud-object-storage/basics?topic=cloud-object-storage-service-availability
+
 
 ## Attribute Reference
 

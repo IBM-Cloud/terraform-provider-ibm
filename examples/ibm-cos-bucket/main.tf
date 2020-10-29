@@ -38,3 +38,16 @@ resource "ibm_cos_bucket" "standard-ams03" {
   }
   allowed_ip =  ["223.196.168.27","223.196.161.38","192.168.0.1"]
 }
+
+resource "ibm_cos_bucket" "archive_rule_cos"{
+  bucket_name          = var.bucket_name
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = var.regional_loc
+  storage_class        = var.storage
+  archive_rule{ 
+      rule_id = var.archive_rule
+      enable = true
+      days = var.archive_days
+      type = var.archive_types
+  }
+} 
