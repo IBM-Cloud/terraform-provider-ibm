@@ -1,5 +1,5 @@
 variable "bucket_name" {
-  default     = "a-standard-bucket-at-ams-firewall-2"
+  default     = "a-standard-bucket-at-ams-firewall-1"
 }
 
 variable "resource_group_name" {
@@ -23,10 +23,10 @@ variable "archive_days"{
 }
 
 variable "archive_types"{
-  default = "Accelerated"
+  default = "ACCELERATED"
 }
 
-variable "archive_rule"{
+variable "archive_ruleid"{
   default = ""
 }
 
