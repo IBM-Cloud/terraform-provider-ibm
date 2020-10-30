@@ -92,6 +92,47 @@ func TestAccIBMCosBucket_ActivityTracker_Monitor(t *testing.T) {
 	})
 }
 
+func TestAccIBMCosBucket_Archive(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	ruleId := "my-rule-id-bucket-arch"
+	enable := true
+	archiveDays := 2
+	ruleType := "GLACIER"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_archive(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, archiveDays, ruleType),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance5", "ibm_cos_bucket.bucket5", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "archive_rule.#", "1"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_update_archive(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, archiveDays, ruleType),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance5", "ibm_cos_bucket.bucket5", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "archive_rule.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMCosBucket_Smart_Type(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
@@ -412,4 +453,58 @@ func testAccCheckIBMCosBucket_update_activityTracker_monitor(cosServiceName, act
 		storage_class        = "%s"
 	}	  
 	`, cosServiceName, activityServiceName, monitorServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_archive(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, ruleId string, enable bool, archiveDays int, ruleType string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "default"
+	}
+
+	resource "ibm_resource_instance" "instance5" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "lite"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+
+	resource "ibm_cos_bucket" "bucket5" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance5.id
+	    region_location       = "%s"
+		storage_class         = "%s"
+		archive_rule {
+		  rule_id             = "%s"
+		  enable              = true
+		  days                = %d
+		  type                = "%s"
+		}
+	}
+	`, cosServiceName, bucketName, region, storageClass, ruleId, archiveDays, ruleType)
+}
+
+func testAccCheckIBMCosBucket_update_archive(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, ruleId string, enable bool, archiveDays int, ruleType string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "default"
+	}
+
+	resource "ibm_resource_instance" "instance5" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "lite"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+
+	resource "ibm_cos_bucket" "bucket5" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance5.id
+	    region_location       = "%s"
+		storage_class         = "%s"
+	}
+	`, cosServiceName, bucketName, region, storageClass)
 }
