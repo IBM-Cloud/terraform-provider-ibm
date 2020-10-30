@@ -122,7 +122,7 @@ resource "ibm_cos_bucket" "archive_rule_cos"{
   region_location      = "us-south"
   storage_class        = "standard"
   archive_rule{ 
-      rule_id = ""
+      rule_id = "a-bucket-arch-rule"
       enable = true
       days = 0
       type = "GLACIER"
@@ -157,7 +157,7 @@ The following arguments are supported:
 * `endpoint_type` - (Optional, string) The type of the endpoint (public or private) to be used for buckets. Default value is `public`.
 
 * Nested `archive_rule` block have the following structure:
-	*	`archive_rule.rule_id` : (Optional, string) Unique identifier for the rule. Archive rules allow you to set a specific time frame after which objects transition to the archive. 
+	*	`archive_rule.rule_id` : (Optional, Computed, string) Unique identifier for the rule. Archive rules allow you to set a specific time frame after which objects transition to the archive. 
 	*	`archive_rule.enable` :* (Required, bool) (Required) Specifies archive rule status either enable or disable for a bucket.
 
   *	`archive_rule.days` :* (Required, string)  Specifies the number of days when the specific rule action takes effect.

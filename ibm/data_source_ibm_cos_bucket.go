@@ -2,7 +2,6 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -212,13 +211,14 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 
 	archiveptr, err := s3Client.GetBucketLifecycleConfiguration(gInput)
 
-	if err != nil {
-		log.Println("error during read lifecycle for bucket", err)
-		//return err
+	if err != nil && !strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist") {
+		return err
 	}
 
 	if archiveptr != nil {
-		d.Set("archive_rule", archiveRuleGet(archiveptr.Rules))
+		if len(archiveptr.Rules) > 0 {
+			d.Set("archive_rule", archiveRuleGet(archiveptr.Rules))
+		}
 	}
 
 	headInput := &s3.HeadBucketInput{
