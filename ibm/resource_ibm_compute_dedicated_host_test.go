@@ -192,7 +192,9 @@ func testAccCheckIBMComputerDedicatedHostDestroy(s *terraform.State) error {
 		// Try to find the key
 		_, err := service.Id(dedicatedId).GetObject()
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("Dedicated host still exists: %s", rs.Primary.ID)
+		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for dedicated host (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}
