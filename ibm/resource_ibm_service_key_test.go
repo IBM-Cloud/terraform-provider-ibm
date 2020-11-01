@@ -127,7 +127,9 @@ func testAccCheckIBMServiceKeyDestroy(s *terraform.State) error {
 		// Try to find the key
 		_, err := cfClient.ServiceKeys().Get(serviceKeyGuid)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("CF service key still exists: %s", rs.Primary.ID)
+		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for CF service key (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}

@@ -95,7 +95,9 @@ func testAccCheckIBMIAMCustomRoleDestroy(s *terraform.State) error {
 		// Try to find the role
 		_, _, err := accClient.IAMRoles().Get(roleID)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("Custom Role still exists: %s", rs.Primary.ID)
+		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for Custom Role (%s) to be destroyed: %s", roleID, err)
 		}
 	}

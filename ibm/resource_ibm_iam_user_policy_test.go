@@ -232,7 +232,9 @@ func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
 		// Try to find the key
 		_, err = rsContClient.V1Policy().Get(userPolicyID)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("User policy still exists: %s", rs.Primary.ID)
+		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for user policy (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}

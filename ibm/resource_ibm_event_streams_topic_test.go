@@ -305,7 +305,9 @@ func testAccCheckIBMEventStreamsInstanceDestroy(s *terraform.State) error {
 		instanceID := rs.Primary.ID
 		_, err := rsContClient.ResourceServiceInstance().GetInstance(instanceID)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("Instance still exists: %s", rs.Primary.ID)
+		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}

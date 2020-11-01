@@ -86,7 +86,9 @@ func testAccCheckIBMIAMDynamicRuleDestroy(s *terraform.State) error {
 		// Try to find the key
 		_, _, err = accClient.DynamicRule().Get(grpID, ruleID)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("Dynamic rule still exists: %s", rs.Primary.ID)
+		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for Dynamic rule (%s) to be destroyed: %s", ruleID, err)
 		}
 	}

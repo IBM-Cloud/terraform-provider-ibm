@@ -92,7 +92,9 @@ func testAccCheckIBMVpcContainerWorkerPoolDestroy(s *terraform.State) error {
 		// Try to find the key
 		_, err = wpClient.WorkerPools().GetWorkerPool(cluster, workerPoolID, target)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("Worker pool still exists: %s", rs.Primary.ID)
+		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for worker pool (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}

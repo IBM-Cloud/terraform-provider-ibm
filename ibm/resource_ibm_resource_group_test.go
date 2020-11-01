@@ -118,7 +118,9 @@ func testAccCheckIBMResourceGroupDestroy(s *terraform.State) error {
 		// Try to find the key
 		_, err := rsContClient.ResourceGroup().Get(resourceGroupID)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("Resource group still exists: %s", rs.Primary.ID)
+		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for resource group (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}
