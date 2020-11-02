@@ -14,20 +14,20 @@ variable "region" {
   default     = "us"
 }
 
-variable "regional_loc"{
-  default = "us-south"
+variable "regional_loc" {
+  default     = "us-south"
 }
 
-variable "archive_days"{
-  default = 0
+variable "archive_days" {
+  default     = 0
 }
 
-variable "archive_types"{
-  default = "ACCELERATED"
+variable "archive_types" {
+  default     = "ACCELERATED"
 }
 
-variable "archive_ruleid"{
-  default = ""
+variable "archive_ruleid" {
+  default     = ""
 }
 
 
