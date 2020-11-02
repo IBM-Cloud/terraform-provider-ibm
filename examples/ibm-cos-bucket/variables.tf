@@ -1,5 +1,5 @@
 variable "bucket_name" {
-  default     = "a-standard-bucket-at-ams-firewall-1"
+  default     = "a-standard-bucket-at-ams-firewall"
 }
 
 variable "resource_group_name" {
