@@ -289,3 +289,15 @@ func (f *IBMPIInstanceClient) GetSAPProfiles(powerinstanceid string) (*models.SA
 	}
 	return resp.Payload, nil
 }
+
+// Get an SAP profile
+
+func (f *IBMPIInstanceClient) GetSap(powerinstanceid, sap_profile_id string) (*models.SAPProfile, error) {
+	params := p_cloud_s_a_p.NewPcloudSapGetParamsWithTimeout(f.session.Timeout).WithCloudInstanceID(powerinstanceid).WithSapProfileID(sap_profile_id)
+	resp, err := f.session.Power.PCloudSAP.PcloudSapGet(params, ibmpisession.NewAuth(f.session, powerinstanceid))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get the sap profile %v", err)
+	}
+	return resp.Payload, nil
+
+}
