@@ -26,6 +26,7 @@ resource "ibm_resource_instance" "es_instance_1" {
 
   #   throughput   = "150"  # for enterprise instance only. Options are: "150", "300", "450". Default is "150" when not specified.
   #   storage_size = "2048" # for enterprise instance only. Options are: "2048", "4096", "6144", "8192", "10240", "12288". Default is "2048" when not specified.
+  #   kms_key_crn  = "crn:v1:bluemix:public:kms:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:0aa69b09-941b-41b2-bbf9-9f9f0f6a6f79:key:dd37a0b6-eff4-4708-8459-e29ae0a8f256" # for enterprise instance only. Specify the CRN of a root key from a Key Management Service instance used to encrypt disks.
   #   # Note: when throughput is "300", storage_size starts from "4096",  when throughput is "450", storage_size starts from "6144"
   #   # document about supported combinations of throughput and storage_size: https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-ES_scaling_capacity#ES_scaling_combinations
   # }
