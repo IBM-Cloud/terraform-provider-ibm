@@ -9,7 +9,9 @@ import (
 )
 
 const (
-	dlGateway = "gateway"
+	dlGateway        = "gateway"
+	dlSecurityPolicy = "security_policy"
+	dlActiveCak      = "active_cak"
 )
 
 func dataSourceIBMDLGateway() *schema.Resource {
@@ -97,6 +99,80 @@ func dataSourceIBMDLGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Gateway BGP status",
+			},
+			dlMacSecConfig: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "MACsec configuration information",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						dlActive: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicate whether MACsec protection should be active (true) or inactive (false) for this MACsec enabled gateway",
+						},
+						dlActiveCak: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Active connectivity association key.",
+						},
+						dlPrimaryCak: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Desired primary connectivity association key.",
+						},
+						dlFallbackCak: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Fallback connectivity association key.",
+						},
+						dlSakExpiryTime: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Secure Association Key (SAK) expiry time in seconds",
+						},
+						dlSecurityPolicy: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Packets without MACsec headers are not dropped when security_policy is should_secure.",
+						},
+						dlWindowSize: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Replay protection window size",
+						},
+						dlCipherSuite: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "SAK cipher suite",
+						},
+						dlConfidentialityOffset: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Confidentiality Offset",
+						},
+						dlCryptographicAlgorithm: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Cryptographic Algorithm",
+						},
+						dlKeyServerPriority: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Key Server Priority",
+						},
+						dlMacSecConfigStatus: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The current status of MACsec on the device for this gateway",
+						},
+					},
+				},
+			},
+			dlChangeRequest: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Changes pending approval for provider managed Direct Link Connect gateways",
 			},
 			dlCompletionNoticeRejectReason: {
 				Type:        schema.TypeString,
@@ -315,6 +391,62 @@ func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error 
 			}
 			if instance.CreatedAt != nil {
 				d.Set(dlCreatedAt, instance.CreatedAt.String())
+			}
+			dtype := *instance.Type
+			if dtype == "dedicated" {
+				if instance.MacsecConfig != nil {
+					macsecList := make([]map[string]interface{}, 0)
+					currentMacSec := map[string]interface{}{}
+					// Construct an instance of the GatewayMacsecConfigTemplate model
+					gatewayMacsecConfigTemplateModel := instance.MacsecConfig
+					if gatewayMacsecConfigTemplateModel.Active != nil {
+						currentMacSec[dlActive] = *gatewayMacsecConfigTemplateModel.Active
+					}
+					if gatewayMacsecConfigTemplateModel.ActiveCak != nil {
+						if gatewayMacsecConfigTemplateModel.ActiveCak.Crn != nil {
+							currentMacSec[dlActiveCak] = *gatewayMacsecConfigTemplateModel.ActiveCak.Crn
+						}
+					}
+					if gatewayMacsecConfigTemplateModel.PrimaryCak != nil {
+						currentMacSec[dlPrimaryCak] = *gatewayMacsecConfigTemplateModel.PrimaryCak.Crn
+					}
+					if gatewayMacsecConfigTemplateModel.FallbackCak != nil {
+						if gatewayMacsecConfigTemplateModel.FallbackCak.Crn != nil {
+							currentMacSec[dlFallbackCak] = *gatewayMacsecConfigTemplateModel.FallbackCak.Crn
+						}
+					}
+					if gatewayMacsecConfigTemplateModel.SakExpiryTime != nil {
+						currentMacSec[dlSakExpiryTime] = *gatewayMacsecConfigTemplateModel.SakExpiryTime
+					}
+					if gatewayMacsecConfigTemplateModel.SecurityPolicy != nil {
+						currentMacSec[dlSecurityPolicy] = *gatewayMacsecConfigTemplateModel.SecurityPolicy
+					}
+					if gatewayMacsecConfigTemplateModel.WindowSize != nil {
+						currentMacSec[dlWindowSize] = *gatewayMacsecConfigTemplateModel.WindowSize
+					}
+					if gatewayMacsecConfigTemplateModel.CipherSuite != nil {
+						currentMacSec[dlCipherSuite] = *gatewayMacsecConfigTemplateModel.CipherSuite
+					}
+					if gatewayMacsecConfigTemplateModel.ConfidentialityOffset != nil {
+						currentMacSec[dlConfidentialityOffset] = *gatewayMacsecConfigTemplateModel.ConfidentialityOffset
+					}
+					if gatewayMacsecConfigTemplateModel.CryptographicAlgorithm != nil {
+						currentMacSec[dlCryptographicAlgorithm] = *gatewayMacsecConfigTemplateModel.CryptographicAlgorithm
+					}
+					if gatewayMacsecConfigTemplateModel.KeyServerPriority != nil {
+						currentMacSec[dlKeyServerPriority] = *gatewayMacsecConfigTemplateModel.KeyServerPriority
+					}
+					if gatewayMacsecConfigTemplateModel.Status != nil {
+						currentMacSec[dlMacSecConfigStatus] = *gatewayMacsecConfigTemplateModel.Status
+					}
+					macsecList = append(macsecList, currentMacSec)
+					d.Set(dlMacSecConfig, macsecList)
+				}
+			}
+			if instance.ChangeRequest != nil {
+				gatewayChangeRequestIntf := instance.ChangeRequest
+				gatewayChangeRequest := gatewayChangeRequestIntf.(*directlinkv1.GatewayChangeRequest)
+				d.Set(dlChangeRequest, *gatewayChangeRequest.Type)
 			}
 			if instance.ResourceGroup != nil {
 				rg := instance.ResourceGroup
