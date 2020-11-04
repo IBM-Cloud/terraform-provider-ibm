@@ -100,7 +100,9 @@ func testAccCheckIBMAppDomainSharedDestroy(s *terraform.State) error {
 		// Try to find the shared domain
 		_, err := cfClient.SharedDomains().Get(sharedDomainGUID)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("CF shared domain still exists: %s", rs.Primary.ID)
+		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for CF shared domain (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}

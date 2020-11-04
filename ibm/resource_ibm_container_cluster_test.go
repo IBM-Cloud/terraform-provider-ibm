@@ -337,7 +337,9 @@ func testAccCheckIBMContainerClusterDestroy(s *terraform.State) error {
 		// Try to find the key
 		_, err := csClient.Clusters().Find(rs.Primary.ID, targetEnv)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("Cluster still exists: %s", rs.Primary.ID)
+		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for cluster (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}

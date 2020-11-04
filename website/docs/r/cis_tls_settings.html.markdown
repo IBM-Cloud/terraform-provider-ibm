@@ -15,7 +15,7 @@ Provides a IBM CIS TLS Settings resource. This resource is associated with an IB
 ```hcl
 # Change TLS Settings of the domain
 
-resource "ibm_cis_tls_settings" "%[1]s" {
+resource "ibm_cis_tls_settings" "tls_settings" {
 	cis_id          = data.ibm_cis.cis.id
 	domain_id       = data.ibm_cis_domain.cis_domain.domain_id
 	tls_1_3         = "off"

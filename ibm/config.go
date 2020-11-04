@@ -22,6 +22,8 @@ import (
 	cisedgefunctionv1 "github.com/IBM/networking-go-sdk/edgefunctionsapiv1"
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
 	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
+	cisglbv1 "github.com/IBM/networking-go-sdk/globalloadbalancerv1"
+	cisroutingv1 "github.com/IBM/networking-go-sdk/routingv1"
 	cissslv1 "github.com/IBM/networking-go-sdk/sslcertificateapiv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
@@ -191,12 +193,14 @@ type ClientSession interface {
 	IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
+	CisGLBClientSession() (*cisglbv1.GlobalLoadBalancerV1, error)
 	CisGLBPoolClientSession() (*cisglbpoolv0.GlobalLoadBalancerPoolsV0, error)
 	CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error)
 	CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1, error)
 	CisEdgeFunctionClientSession() (*cisedgefunctionv1.EdgeFunctionsApiV1, error)
 	CisSSLClientSession() (*cissslv1.SslCertificateApiV1, error)
 	CisDomainSettingsClientSession() (*cisdomainsettingsv1.ZonesSettingsV1, error)
+	CisRoutingClientSession() (*cisroutingv1.RoutingV1, error)
 }
 
 type clientSession struct {
@@ -325,6 +329,10 @@ type clientSession struct {
 	cisGLBPoolErr    error
 	cisGLBPoolClient *cisglbpoolv0.GlobalLoadBalancerPoolsV0
 
+	// CIS GLB service options
+	cisGLBErr    error
+	cisGLBClient *cisglbv1.GlobalLoadBalancerV1
+
 	// CIS GLB health check service options
 	cisGLBHealthCheckErr    error
 	cisGLBHealthCheckClient *cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1
@@ -344,6 +352,10 @@ type clientSession struct {
 	// CIS Zone Setting service options
 	cisDomainSettingsErr    error
 	cisDomainSettingsClient *cisdomainsettingsv1.ZonesSettingsV1
+
+	// CIS Routing service options
+	cisRoutingErr    error
+	cisRoutingClient *cisroutingv1.RoutingV1
 }
 
 // BluemixAcccountAPI ...
@@ -547,6 +559,11 @@ func (sess clientSession) CisGLBPoolClientSession() (*cisglbpoolv0.GlobalLoadBal
 	return sess.cisGLBPoolClient, sess.cisGLBPoolErr
 }
 
+// CIS GLB
+func (sess clientSession) CisGLBClientSession() (*cisglbv1.GlobalLoadBalancerV1, error) {
+	return sess.cisGLBClient, sess.cisGLBErr
+}
+
 // CIS GLB Health Check/Monitor
 func (sess clientSession) CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error) {
 	return sess.cisGLBHealthCheckClient, sess.cisGLBHealthCheckErr
@@ -570,6 +587,11 @@ func (sess clientSession) CisSSLClientSession() (*cissslv1.SslCertificateApiV1, 
 // CIS Zone Settings
 func (sess clientSession) CisDomainSettingsClientSession() (*cisdomainsettingsv1.ZonesSettingsV1, error) {
 	return sess.cisDomainSettingsClient, sess.cisDomainSettingsErr
+}
+
+// CIS Routing
+func (sess clientSession) CisRoutingClientSession() (*cisroutingv1.RoutingV1, error) {
+	return sess.cisRoutingClient, sess.cisRoutingErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -626,12 +648,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamNamespaceErr = errEmptyBluemixCredentials
 		session.cisDNSErr = errEmptyBluemixCredentials
 		session.cisGLBPoolErr = errEmptyBluemixCredentials
+		session.cisGLBErr = errEmptyBluemixCredentials
 		session.cisGLBHealthCheckErr = errEmptyBluemixCredentials
 		session.cisZonesErr = errEmptyBluemixCredentials
 		session.cisRLErr = errEmptyBluemixCredentials
 		session.cisEdgeFunctionErr = errEmptyBluemixCredentials
 		session.cisSSLErr = errEmptyBluemixCredentials
 		session.cisDomainSettingsErr = errEmptyBluemixCredentials
+		session.cisRoutingErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -999,6 +1023,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 				session.cisGLBPoolErr)
 	}
 
+	// IBM Network CIS Global load balancer
+	cisGLBOpt := &cisglbv1.GlobalLoadBalancerV1Options{
+		URL:            cisEndPoint,
+		Authenticator:  authenticator,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+	}
+	session.cisGLBClient, session.cisGLBErr = cisglbv1.NewGlobalLoadBalancerV1(cisGLBOpt)
+	if session.cisGLBErr != nil {
+		session.cisGLBErr =
+			fmt.Errorf("Error occured while configuring CIS GLB service: %s",
+				session.cisGLBErr)
+	}
+
 	// IBM Network CIS Global load balancer health check/monitor
 	cisGLBHealthCheckOpt := &cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1Options{
 		URL:           cisEndPoint,
@@ -1067,11 +1105,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.cisDomainSettingsClient, session.cisDomainSettingsErr =
 		cisdomainsettingsv1.NewZonesSettingsV1(cisDomainSettingsOpt)
-	if session.cisSSLErr != nil {
-		session.cisSSLErr =
-			fmt.Errorf("Error occured while configuring CIS SSL certificate service: %s",
-				session.cisSSLErr)
+	if session.cisDomainSettingsErr != nil {
+		session.cisDomainSettingsErr =
+			fmt.Errorf("Error occured while configuring CIS Domain Settings service: %s",
+				session.cisDomainSettingsErr)
 	}
+
+	// IBM Network CIS Routing
+	cisRoutingOpt := &cisroutingv1.RoutingV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisRoutingClient, session.cisRoutingErr =
+		cisroutingv1.NewRoutingV1(cisRoutingOpt)
+	if session.cisRoutingErr != nil {
+		session.cisRoutingErr =
+			fmt.Errorf("Error occured while configuring CIS Routing service: %s",
+				session.cisRoutingErr)
+	}
+
 	return session, nil
 }
 

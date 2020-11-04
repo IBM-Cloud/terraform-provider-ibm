@@ -106,7 +106,9 @@ func testAccCheckIBMAppDomainPrivateDestroy(s *terraform.State) error {
 		// Try to find the private domain
 		_, err := cfClient.PrivateDomains().Get(privateDomainGUID)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("CF private domain still exists: %s", rs.Primary.ID)
+		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for CF private domain (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}

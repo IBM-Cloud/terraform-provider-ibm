@@ -24,9 +24,10 @@ func resourceIBMCISTLSSettings() *schema.Resource {
 				Required:    true,
 			},
 			cisDomainID: {
-				Type:        schema.TypeString,
-				Description: "Associated CIS domain",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "Associated CIS domain",
+				Required:         true,
+				DiffSuppressFunc: suppressDomainIDDiff,
 			},
 			cisTLSSettingsUniversalSSL: {
 				Type:        schema.TypeBool,
@@ -87,7 +88,7 @@ func resourceCISTLSSettingsUpdate(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 	crn := d.Get(cisID).(string)
-	zoneID := d.Get(cisDomainID).(string)
+	zoneID, _, err := convertTftoCisTwoVar(d.Get(cisDomainID).(string))
 	cisClient.Crn = core.StringPtr(crn)
 	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 
