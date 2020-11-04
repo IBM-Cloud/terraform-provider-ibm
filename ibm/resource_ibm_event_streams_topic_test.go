@@ -153,6 +153,7 @@ func TestAccIBMEventStreamsEnterprise(t *testing.T) {
 		"private_ip_allowlist": "[9.0.0.0/8]", // allowing jenkins access
 		"throughput":           "150",
 		"storage_size":         "2048",
+		"kms_key_crn":          "crn:v1:staging:public:kms:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:0aa69b09-941b-41b2-bbf9-9f9f0f6a6f79:key:dd37a0b6-eff4-4708-8459-e29ae0a8f256", //preprod-byok-customer-key from KMS instance keyprotect-preprod-customer-keys
 	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -246,6 +247,7 @@ func createPlatformResources(instanceName, serviceName, planID, location string,
 		  private_ip_allowlist = "%s"
 		  throughput           = "%s"
 		  storage_size         = "%s"
+		  kms_key_crn          = "%s"
 		}
 		timeouts {
 		  create = "3h"
@@ -253,7 +255,7 @@ func createPlatformResources(instanceName, serviceName, planID, location string,
 		  delete = "15m"
 		}
 	  }`, instanceName, serviceName, planID, location,
-		parameters["service-endpoints"], parameters["private_ip_allowlist"], parameters["throughput"], parameters["storage_size"])
+		parameters["service-endpoints"], parameters["private_ip_allowlist"], parameters["throughput"], parameters["storage_size"], parameters["kms_key_crn"])
 }
 
 func createEventStreamsTopicResourceWithoutConfig(createInstance bool, topicName string, partitions int) string {
