@@ -33,6 +33,25 @@ func TestAccIBMISImage_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISImage_encrypted(t *testing.T) {
+	var image string
+	name := fmt.Sprintf("tfimg-enc-name-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEncryptedImage(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: checkImageDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMISImageEncryptedConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImageEncrypted", image),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImageEncrypted", "name", name),
+				),
+			},
+		},
+	})
+}
 func checkImageDestroy(s *terraform.State) error {
 	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
@@ -117,4 +136,15 @@ func testAccCheckIBMISImageConfig(name string) string {
 			operating_system = "%s"
 		}
 	`, image_cos_url, name, image_operating_system)
+}
+func testAccCheckIBMISImageEncryptedConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_image" "isExampleImageEncrypted" {
+			encrypted_data_key = "%s"
+  			encryption_key = "%s"
+			href = "%s"
+			name = "%s"
+			operating_system = "%s"
+		}
+		`, IsImageEncryptedDataKey, IsImageEncryptionKey, image_cos_url_encrypted, name, image_operating_system)
 }

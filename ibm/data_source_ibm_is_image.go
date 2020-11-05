@@ -15,32 +15,48 @@ func dataSourceIBMISImage() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Image name",
 			},
 
 			"visibility": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
+				Description:  "Whether the image is publicly visible or private to the account",
 			},
 
 			"status": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of this image",
 			},
 
 			"os": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Image Operating system",
 			},
 			"architecture": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The operating system architecture",
 			},
 			"crn": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN for this image",
+			},
+			isImageEncryptionKey: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource",
+			},
+			isImageEncryption: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of encryption used on the image",
 			},
 		},
 	}
@@ -144,6 +160,12 @@ func imageGet(d *schema.ResourceData, meta interface{}, name, visibility string)
 			d.Set("os", *image.OperatingSystem.Name)
 			d.Set("architecture", *image.OperatingSystem.Architecture)
 			d.Set("crn", *image.CRN)
+			if image.Encryption != nil {
+				d.Set("encryption", *image.Encryption)
+			}
+			if image.EncryptionKey != nil {
+				d.Set("encryption_key", *image.EncryptionKey.CRN)
+			}
 			return nil
 		}
 	}
