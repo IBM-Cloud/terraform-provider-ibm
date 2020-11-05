@@ -14,6 +14,7 @@ variable "region" {
   default     = "us"
 }
 
+
 variable "archive_ruleid" {
   default     = ""
 }
