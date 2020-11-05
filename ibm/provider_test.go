@@ -73,8 +73,11 @@ var pi_instance_name string
 
 var IsImageName string
 var isImage string
+var IsImageEncryptedDataKey string
+var IsImageEncryptionKey string
 var isWinImage string
 var image_cos_url string
+var image_cos_url_encrypted string
 var image_operating_system string
 
 // Transit Gateway cross account
@@ -398,6 +401,12 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IMAGE_COS_URL with a VALID COS Image SQL URL for testing ibm_is_image resources on staging/test")
 	}
 
+	// Added for resource image testing
+	image_cos_url_encrypted = os.Getenv("IMAGE_COS_URL_ENCRYPTED")
+	if image_cos_url_encrypted == "" {
+		image_cos_url_encrypted = "cos://us-south/cosbucket-vpc-image-gen2/rhel-guest-image-7.0-encrypted.qcow2"
+		fmt.Println("[WARN] Set the environment variable IMAGE_COS_URL_ENCRYPTED with a VALID COS Image SQL URL for testing ibm_is_image resources on staging/test")
+	}
 	image_operating_system = os.Getenv("IMAGE_OPERATING_SYSTEM")
 	if image_operating_system == "" {
 		image_operating_system = "red-7-amd64"
@@ -409,6 +418,16 @@ func init() {
 		IsImageName = "ibm-ubuntu-18-04-2-minimal-amd64-1" // for classic infrastructure
 		// IsImageName = "ibm-ubuntu-18-04-1-minimal-amd64-2" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE_NAME for testing data source ibm_is_image else it is set to default value `ubuntu-18.04-amd64`")
+	}
+	IsImageEncryptedDataKey = os.Getenv("IS_IMAGE_ENCRYPTED_DATA_KEY")
+	if IsImageEncryptedDataKey == "" {
+		IsImageEncryptedDataKey = "eyJjaXBoZXJ0ZXh0IjoidElsZnRjUXB5L0krSGJsMlVIK2ZxZ1FGK1diR3loV1dPRFk9IiwiaXYiOiJ3SlhSVklsSHUzMzFqUEY0IiwidmVyc2lvbiI6IjQuMC4wIiwiaGFuZGxlIjoiZjM2YTA2NGUtY2E2My00NmU0LThlNjAtYmJiMzEyNTY5YzM1In0="
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE_ENCRYPTED_DATA_KEY for testing resource ibm_is_image else it is set to default value")
+	}
+	IsImageEncryptionKey = os.Getenv("IS_IMAGE_ENCRYPTION_KEY")
+	if IsImageEncryptionKey == "" {
+		IsImageEncryptionKey = "crn:v1:bluemix:public:kms:us-south:a/52b2e14f385aca5da781baa1b9c28e53:21d9f13d-5895-49a1-9e80-b4aff69dfc1f:key:f36a064e-ca63-46e4-8e60-bbb312569c35"
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE_ENCRYPTION_KEY for testing resource ibm_is_image else it is set to default value")
 	}
 
 	functionNamespace = os.Getenv("IBM_FUNCTION_NAMESPACE")
@@ -487,5 +506,20 @@ func testAccPreCheckImage(t *testing.T) {
 	}
 	if image_operating_system == "" {
 		t.Fatal("IMAGE_OPERATING_SYSTEM must be set for acceptance tests")
+	}
+}
+func testAccPreCheckEncryptedImage(t *testing.T) {
+	testAccPreCheck(t)
+	if image_cos_url_encrypted == "" {
+		t.Fatal("IMAGE_COS_URL_ENCRYPTED must be set for acceptance tests")
+	}
+	if image_operating_system == "" {
+		t.Fatal("IMAGE_OPERATING_SYSTEM must be set for acceptance tests")
+	}
+	if IsImageEncryptedDataKey == "" {
+		t.Fatal("IS_IMAGE_ENCRYPTED_DATA_KEY must be set for acceptance tests")
+	}
+	if IsImageEncryptionKey == "" {
+		t.Fatal("IS_IMAGE_ENCRYPTION_KEY must be set for acceptance tests")
 	}
 }

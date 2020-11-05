@@ -32,6 +32,7 @@ The following attributes are exported:
   * `status` - The status of this image.
   * `architecture` - The architecture for this image.
   * `visibility` - The visibility of the image public or private.
-
+  * `encryption` - The type of encryption used on the image.
+  * `encryption_key` - The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource.
 
 

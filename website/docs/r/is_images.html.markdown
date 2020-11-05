@@ -19,6 +19,9 @@ resource "ibm_is_image" "test_is_images" {
  name                   = "test_image"
  href                   = "cos://us-south/buckettesttest/livecd.ubuntu-cpc.azure.vhd"
  operating_system       = "ubuntu-16-04-amd64"
+ encrypted_data_key     = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
+ encryption_key         = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
+   
 }
 ```
 
@@ -29,7 +32,9 @@ The following arguments are supported:
 * `name` - (Required, string) The descriptive name used to identify an image.
 * `href` - (Required, string) The path(SQL URL of COS Bucket Object) of an image to be uploaded.
 * `operating_system` - (Required, string) Description of underlying OS of an image.
-*  `resource_group` - (Optional, Forces new resource, string) The resource group ID for this image.
+* `resource_group` - (Optional, Forces new resource, string) The resource group ID for this image.
+* `encrypted_data_key` - (Optional, Forces new resource, string) A base64-encoded, encrypted representation of the key that was used to encrypt the data for this image.
+* `encryption_key` - (Optional, Forces new resource, string) The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource.
 * `tags` - (Optional, array of strings) Tags associated with the image.
 
 ## Attribute Reference
@@ -44,5 +49,6 @@ The following attributes are exported:
 * `resourceGroup` - The resource group which image is belonging to
 * `status` - The status of an image such as corrupt, available
 * `visibility` - The access scope of an image such as private or public
+* `encryption` - The type of encryption used on the image
 
 ``
