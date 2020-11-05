@@ -14,6 +14,10 @@ variable "region" {
   default     = "us"
 }
 
+variable "archive_ruleid" {
+  default     = ""
+}
+
 variable "regional_loc" {
   default     = "us-south"
 }
@@ -26,9 +30,7 @@ variable "archive_types" {
   default     = "ACCELERATED"
 }
 
-variable "archive_ruleid" {
-  default     = ""
-}
+
 
 
 

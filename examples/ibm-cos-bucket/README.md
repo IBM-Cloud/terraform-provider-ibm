@@ -114,3 +114,9 @@ data "ibm_cos_bucket" "standard-ams03" {
 | resource\_group\_name | Name of the resource group. | `string` | yes |
 | storage | The storage class that you want to use for the bucket. Supported values are standard, vault, cold, flex, and smart.| `string` | no |
 | region | The location for a cross-regional bucket. Supported values are us, eu, and ap. | `string` | no |
+| archive_ruleid | Unique identifier for the rule. | `string` | no
+| regional_loc | The location for a regional bucket. Supported values are au-syd, eu-de, eu-gb, jp-tok,,us-east,us-south. | `string` | no
+| archive_days | Specifies the number of days when the specific archive rule action takes effect. | `int` | yes
+| archive_types | Specifies the archive type to which you want the object to transition. Supported values are  Glacier or Accelerated. | `string` | yes
+
+

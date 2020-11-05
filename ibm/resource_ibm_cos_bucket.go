@@ -220,93 +220,6 @@ func resourceIBMCOS() *schema.Resource {
 }
 
 func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).CosConfigV1API()
-	if err != nil {
-		return err
-	}
-	endpointType := parseBucketId(d.Id(), "endpointType")
-	if endpointType == "private" {
-		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
-	}
-
-	hasChanged := false
-	updateBucketConfigOptions := &resourceconfigurationv1.UpdateBucketConfigOptions{}
-
-	//BucketName
-	bucketName := d.Get("bucket_name").(string)
-	updateBucketConfigOptions.Bucket = &bucketName
-
-	if d.HasChange("allowed_ip") {
-		firewall := &resourceconfigurationv1.Firewall{}
-		var ips = make([]string, 0)
-		if ip, ok := d.GetOk("allowed_ip"); ok && ip != nil {
-			for _, i := range ip.([]interface{}) {
-				ips = append(ips, i.(string))
-			}
-			firewall.AllowedIp = ips
-		} else {
-			firewall.AllowedIp = []string{}
-		}
-		hasChanged = true
-		updateBucketConfigOptions.Firewall = firewall
-	}
-
-	if d.HasChange("activity_tracking") {
-		activityTracker := &resourceconfigurationv1.ActivityTracking{}
-		if activity, ok := d.GetOk("activity_tracking"); ok {
-			activitylist := activity.([]interface{})
-			for _, l := range activitylist {
-				activityMap, _ := l.(map[string]interface{})
-
-				//Read event - as its optional check for existence
-				if readEvent := activityMap["read_data_events"]; readEvent != nil {
-					readSet := readEvent.(bool)
-					activityTracker.ReadDataEvents = &readSet
-				}
-
-				//Write Event - as its optional check for existence
-				if writeEvent := activityMap["write_data_events"]; writeEvent != nil {
-					writeSet := writeEvent.(bool)
-					activityTracker.WriteDataEvents = &writeSet
-				}
-
-				//crn - Required field
-				crn := activityMap["activity_tracker_crn"].(string)
-				activityTracker.ActivityTrackerCrn = &crn
-			}
-		}
-		hasChanged = true
-		updateBucketConfigOptions.ActivityTracking = activityTracker
-	}
-
-	if d.HasChange("metrics_monitoring") {
-		metricsMonitor := &resourceconfigurationv1.MetricsMonitoring{}
-		if metrics, ok := d.GetOk("metrics_monitoring"); ok {
-			metricslist := metrics.([]interface{})
-			for _, l := range metricslist {
-				metricsMap, _ := l.(map[string]interface{})
-
-				//metrics enabled - as its optional check for existence
-				if metricsSet := metricsMap["usage_metrics_enabled"]; metricsSet != nil {
-					metrics := metricsSet.(bool)
-					metricsMonitor.UsageMetricsEnabled = &metrics
-				}
-
-				//crn - Required field
-				crn := metricsMap["metrics_monitoring_crn"].(string)
-				metricsMonitor.MetricsMonitoringCrn = &crn
-			}
-		}
-		hasChanged = true
-		updateBucketConfigOptions.MetricsMonitoring = metricsMonitor
-	}
-
-	if hasChanged {
-		response, err := sess.UpdateBucketConfig(updateBucketConfigOptions)
-		if err != nil {
-			return fmt.Errorf("Error Update COS Bucket: %s\n%s", err, response)
-		}
-	}
 
 	//// Update  the lifecycle (Archive)
 	if d.HasChange("archive_rule") {
@@ -420,6 +333,94 @@ func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	}
 
+	sess, err := meta.(ClientSession).CosConfigV1API()
+	if err != nil {
+		return err
+	}
+	endpointType := parseBucketId(d.Id(), "endpointType")
+	if endpointType == "private" {
+		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
+	}
+
+	hasChanged := false
+	updateBucketConfigOptions := &resourceconfigurationv1.UpdateBucketConfigOptions{}
+
+	//BucketName
+	bucketName := d.Get("bucket_name").(string)
+	updateBucketConfigOptions.Bucket = &bucketName
+
+	if d.HasChange("allowed_ip") {
+		firewall := &resourceconfigurationv1.Firewall{}
+		var ips = make([]string, 0)
+		if ip, ok := d.GetOk("allowed_ip"); ok && ip != nil {
+			for _, i := range ip.([]interface{}) {
+				ips = append(ips, i.(string))
+			}
+			firewall.AllowedIp = ips
+		} else {
+			firewall.AllowedIp = []string{}
+		}
+		hasChanged = true
+		updateBucketConfigOptions.Firewall = firewall
+	}
+
+	if d.HasChange("activity_tracking") {
+		activityTracker := &resourceconfigurationv1.ActivityTracking{}
+		if activity, ok := d.GetOk("activity_tracking"); ok {
+			activitylist := activity.([]interface{})
+			for _, l := range activitylist {
+				activityMap, _ := l.(map[string]interface{})
+
+				//Read event - as its optional check for existence
+				if readEvent := activityMap["read_data_events"]; readEvent != nil {
+					readSet := readEvent.(bool)
+					activityTracker.ReadDataEvents = &readSet
+				}
+
+				//Write Event - as its optional check for existence
+				if writeEvent := activityMap["write_data_events"]; writeEvent != nil {
+					writeSet := writeEvent.(bool)
+					activityTracker.WriteDataEvents = &writeSet
+				}
+
+				//crn - Required field
+				crn := activityMap["activity_tracker_crn"].(string)
+				activityTracker.ActivityTrackerCrn = &crn
+			}
+		}
+		hasChanged = true
+		updateBucketConfigOptions.ActivityTracking = activityTracker
+	}
+
+	if d.HasChange("metrics_monitoring") {
+		metricsMonitor := &resourceconfigurationv1.MetricsMonitoring{}
+		if metrics, ok := d.GetOk("metrics_monitoring"); ok {
+			metricslist := metrics.([]interface{})
+			for _, l := range metricslist {
+				metricsMap, _ := l.(map[string]interface{})
+
+				//metrics enabled - as its optional check for existence
+				if metricsSet := metricsMap["usage_metrics_enabled"]; metricsSet != nil {
+					metrics := metricsSet.(bool)
+					metricsMonitor.UsageMetricsEnabled = &metrics
+				}
+
+				//crn - Required field
+				crn := metricsMap["metrics_monitoring_crn"].(string)
+				metricsMonitor.MetricsMonitoringCrn = &crn
+			}
+		}
+		hasChanged = true
+		updateBucketConfigOptions.MetricsMonitoring = metricsMonitor
+	}
+
+	if hasChanged {
+		response, err := sess.UpdateBucketConfig(updateBucketConfigOptions)
+		if err != nil {
+			return fmt.Errorf("Error Update COS Bucket: %s\n%s", err, response)
+		}
+	}
+
 	return resourceIBMCOSRead(d, meta)
 }
 
@@ -461,24 +462,6 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	s3Sess := session.Must(session.NewSession())
 	s3Client := s3.New(s3Sess, s3Conf)
-
-	// Read the lifecycle configuration (archive)
-
-	gInput := &s3.GetBucketLifecycleConfigurationInput{
-		Bucket: aws.String(bucketName),
-	}
-
-	archiveptr, err := s3Client.GetBucketLifecycleConfiguration(gInput)
-
-	if err != nil && !strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist") {
-		return err
-	}
-
-	if archiveptr != nil {
-		if len(archiveptr.Rules) > 0 {
-			d.Set("archive_rule", archiveRuleGet(archiveptr.Rules))
-		}
-	}
 
 	headInput := &s3.HeadBucketInput{
 		Bucket: aws.String(bucketName),
@@ -566,6 +549,24 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 			d.Set("metrics_monitoring", flattenMetricsMonitor(bucketPtr.MetricsMonitoring))
 		}
 	}
+	// Read the lifecycle configuration (archive)
+
+	gInput := &s3.GetBucketLifecycleConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+
+	archiveptr, err := s3Client.GetBucketLifecycleConfiguration(gInput)
+
+	if (err != nil && !strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist")) && (err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied")) {
+		return err
+	}
+
+	if archiveptr != nil {
+		if len(archiveptr.Rules) > 0 {
+			d.Set("archive_rule", archiveRuleGet(archiveptr.Rules))
+		}
+	}
+
 	return nil
 }
 
