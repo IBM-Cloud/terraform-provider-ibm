@@ -38,7 +38,7 @@ resource "null_resource" "download_from_cos" {
 
   provisioner "local-exec" {
     command = <<EOT
-    python3 ./scripts/download_from_cos.py
+    python ./scripts/download_from_cos.py
         EOT
     environment = {
       API_KEY         = var.api_key
@@ -59,7 +59,7 @@ resource "null_resource" "hpcs_init" {
   depends_on = [null_resource.download_from_cos] // Dependson can be removed if the download_from_cos null resource is not used..
   provisioner "local-exec" {
     command = <<EOT
-    python3 ./scripts/init.py
+    python ./scripts/init.py
         EOT
     environment = {
       CLOUDTKEFILES = var.tke_files_path
@@ -78,7 +78,7 @@ resource "null_resource" "upload_to_cos" {
   depends_on = [null_resource.hpcs_init]
   provisioner "local-exec" {
     command = <<EOT
-    python3 ./scripts/upload_to_cos.py
+    python ./scripts/upload_to_cos.py
         EOT
     environment = {
       API_KEY         = var.api_key
@@ -98,7 +98,7 @@ resource "null_resource" "remove_tke_files" {
   depends_on = [null_resource.upload_to_cos]
   provisioner "local-exec" {
     command = <<EOT
-    python3 ./scripts/remove_tkefiles.py
+    python ./scripts/remove_tkefiles.py
         EOT
     environment = {
       CLOUDTKEFILES   = var.tke_files_path
