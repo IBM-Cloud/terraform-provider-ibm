@@ -50,5 +50,8 @@ resource "ibm_cos_bucket" "archive_rule_cos" {
       days = var.archive_days
       type = var.archive_types
   }
+<<<<<<< HEAD
   allowed_ip =  ["223.196.168.27","223.196.161.38","192.168.0.1"]
+=======
+>>>>>>> ff8413eaa699e05b639d5110fcfe0c3b771e9f95
 } 

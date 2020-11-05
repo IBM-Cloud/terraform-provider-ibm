@@ -203,6 +203,24 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	s3Sess := session.Must(session.NewSession())
 	s3Client := s3.New(s3Sess, s3Conf)
 
+	// Read the lifecycle configuration (archive)
+
+	gInput := &s3.GetBucketLifecycleConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+
+	archiveptr, err := s3Client.GetBucketLifecycleConfiguration(gInput)
+
+	if err != nil && !strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist") {
+		return err
+	}
+
+	if archiveptr != nil {
+		if len(archiveptr.Rules) > 0 {
+			d.Set("archive_rule", archiveRuleGet(archiveptr.Rules))
+		}
+	}
+
 	headInput := &s3.HeadBucketInput{
 		Bucket: aws.String(bucketName),
 	}
