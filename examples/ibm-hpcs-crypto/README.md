@@ -60,7 +60,7 @@ resource "ibm_resource_instance" "hpcs_instance" {
 resource "null_resource" "hpcs_init" {
   provisioner "local-exec" {
     command = <<EOT
-    python3 ./scripts/init.py
+    python ./scripts/init.py
         EOT
     environment = {
       CLOUDTKEFILES = var.tke_files_path
