@@ -21,6 +21,9 @@ type NetworkPort struct {
 	// Required: true
 	Description *string `json:"description"`
 
+	// The external ip address (for pub-vlan networks)
+	ExternalIP string `json:"externalIP,omitempty"`
+
 	// Link to port resource
 	Href string `json:"href,omitempty"`
 

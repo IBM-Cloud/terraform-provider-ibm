@@ -12,17 +12,42 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // VolumesCloneDetail volumes clone detail
 // swagger:model VolumesCloneDetail
 type VolumesCloneDetail struct {
 
+	// Current action performed for the volumes-clone request
+	Action string `json:"action,omitempty"`
+
 	// List of cloned volumes created from the volumes-clone request
 	ClonedVolumes []*ClonedVolumeDetail `json:"clonedVolumes"`
 
-	// volumes clone
-	VolumesClone *VolumesClone `json:"volumesClone,omitempty"`
+	// Creation Date
+	// Format: date-time
+	CreationDate strfmt.DateTime `json:"creationDate,omitempty"`
+
+	// Failure reason for a failed volumes-clone request
+	FailureMessage string `json:"failureMessage,omitempty"`
+
+	// Last Update Date
+	// Format: date-time
+	LastUpdateDate strfmt.DateTime `json:"lastUpdateDate,omitempty"`
+
+	// Name assigned to a volumes-clone request
+	Name string `json:"name,omitempty"`
+
+	// The percent completion for the current action
+	// Required: true
+	PercentComplete *int64 `json:"percentComplete"`
+
+	// Current status of the volumes-clone request
+	Status string `json:"status,omitempty"`
+
+	// ID assigned to a volumes-clone request
+	VolumesCloneID string `json:"volumesCloneID,omitempty"`
 }
 
 // Validate validates this volumes clone detail
@@ -33,7 +58,15 @@ func (m *VolumesCloneDetail) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateVolumesClone(formats); err != nil {
+	if err := m.validateCreationDate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLastUpdateDate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePercentComplete(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -68,19 +101,36 @@ func (m *VolumesCloneDetail) validateClonedVolumes(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *VolumesCloneDetail) validateVolumesClone(formats strfmt.Registry) error {
+func (m *VolumesCloneDetail) validateCreationDate(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.VolumesClone) { // not required
+	if swag.IsZero(m.CreationDate) { // not required
 		return nil
 	}
 
-	if m.VolumesClone != nil {
-		if err := m.VolumesClone.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("volumesClone")
-			}
-			return err
-		}
+	if err := validate.FormatOf("creationDate", "body", "date-time", m.CreationDate.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumesCloneDetail) validateLastUpdateDate(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.LastUpdateDate) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("lastUpdateDate", "body", "date-time", m.LastUpdateDate.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumesCloneDetail) validatePercentComplete(formats strfmt.Registry) error {
+
+	if err := validate.Required("percentComplete", "body", m.PercentComplete); err != nil {
+		return err
 	}
 
 	return nil
