@@ -179,7 +179,7 @@ func (sslCertificateApi *SslCertificateApiV1) ListCertificates(listCertificatesO
 // OrderCertificate : Order dedicated certificate
 // Order a dedicated certificate for a given zone. The zone should be active before placing an order of a dedicated
 // certificate.
-func (sslCertificateApi *SslCertificateApiV1) OrderCertificate(orderCertificateOptions *OrderCertificateOptions) (result *DedicatedCertificatePack, response *core.DetailedResponse, err error) {
+func (sslCertificateApi *SslCertificateApiV1) OrderCertificate(orderCertificateOptions *OrderCertificateOptions) (result *DedicatedCertificateResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(orderCertificateOptions, "orderCertificateOptions")
 	if err != nil {
 		return
@@ -230,7 +230,7 @@ func (sslCertificateApi *SslCertificateApiV1) OrderCertificate(orderCertificateO
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDedicatedCertificatePack)
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDedicatedCertificateResp)
 	if err != nil {
 		return
 	}
@@ -1740,7 +1740,7 @@ func (options *UploadCustomCertificateOptions) SetHeaders(param map[string]strin
 // Certificate : certificate.
 type Certificate struct {
 	// identifier.
-	ID *int64 `json:"id" validate:"required"`
+	ID interface{} `json:"id" validate:"required"`
 
 	// host name.
 	Hosts []string `json:"hosts" validate:"required"`
@@ -1911,7 +1911,7 @@ type DedicatedCertificatePack struct {
 	Certificates []Certificate `json:"certificates" validate:"required"`
 
 	// primary certificate.
-	PrimaryCertificate *int64 `json:"primary_certificate" validate:"required"`
+	PrimaryCertificate interface{} `json:"primary_certificate" validate:"required"`
 
 	// status.
 	Status *string `json:"status" validate:"required"`
@@ -1942,6 +1942,52 @@ func UnmarshalDedicatedCertificatePack(m map[string]json.RawMessage, result inte
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedCertificateResp : certificate response.
+type DedicatedCertificateResp struct {
+	// dedicated certificate packs.
+	Result *DedicatedCertificatePack `json:"result" validate:"required"`
+
+	// result information.
+	ResultInfo *ResultInfo `json:"result_info" validate:"required"`
+
+	// success.
+	Success *bool `json:"success" validate:"required"`
+
+	// errors.
+	Errors [][]string `json:"errors" validate:"required"`
+
+	// messages.
+	Messages []Tls12SettingRespMessagesItem `json:"messages" validate:"required"`
+}
+
+
+// UnmarshalDedicatedCertificateResp unmarshals an instance of DedicatedCertificateResp from the specified map of raw messages.
+func UnmarshalDedicatedCertificateResp(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedCertificateResp)
+	err = core.UnmarshalModel(m, "result", &obj.Result, UnmarshalDedicatedCertificatePack)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "result_info", &obj.ResultInfo, UnmarshalResultInfo)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "success", &obj.Success)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "errors", &obj.Errors)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "messages", &obj.Messages, UnmarshalTls12SettingRespMessagesItem)
 	if err != nil {
 		return
 	}

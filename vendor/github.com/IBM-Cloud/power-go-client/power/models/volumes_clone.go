@@ -20,9 +20,6 @@ type VolumesClone struct {
 	// Current action performed for the volumes-clone request
 	Action string `json:"action,omitempty"`
 
-	// The percent completion for the current action
-	ActionPercentComplete int64 `json:"actionPercentComplete,omitempty"`
-
 	// Creation Date
 	// Format: date-time
 	CreationDate strfmt.DateTime `json:"creationDate,omitempty"`
@@ -36,6 +33,10 @@ type VolumesClone struct {
 
 	// Name assigned to a volumes-clone request
 	Name string `json:"name,omitempty"`
+
+	// The percent completion for the current action
+	// Required: true
+	PercentComplete *int64 `json:"percentComplete"`
 
 	// Current status of the volumes-clone request
 	Status string `json:"status,omitempty"`
@@ -53,6 +54,10 @@ func (m *VolumesClone) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateLastUpdateDate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePercentComplete(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -82,6 +87,15 @@ func (m *VolumesClone) validateLastUpdateDate(formats strfmt.Registry) error {
 	}
 
 	if err := validate.FormatOf("lastUpdateDate", "body", "date-time", m.LastUpdateDate.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumesClone) validatePercentComplete(formats strfmt.Registry) error {
+
+	if err := validate.Required("percentComplete", "body", m.PercentComplete); err != nil {
 		return err
 	}
 

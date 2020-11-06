@@ -24,6 +24,9 @@ type Network struct {
 	// Required: true
 	Cidr *string `json:"cidr"`
 
+	// (optional) cloud connections this network is attached
+	CloudConnections []*NetworkCloudConnectionsItems0 `json:"cloudConnections"`
+
 	// DNS Servers
 	// Required: true
 	DNSServers []string `json:"dnsServers"`
@@ -69,6 +72,10 @@ func (m *Network) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCidr(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCloudConnections(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -118,6 +125,31 @@ func (m *Network) validateCidr(formats strfmt.Registry) error {
 
 	if err := validate.Required("cidr", "body", m.Cidr); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Network) validateCloudConnections(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.CloudConnections) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.CloudConnections); i++ {
+		if swag.IsZero(m.CloudConnections[i]) { // not required
+			continue
+		}
+
+		if m.CloudConnections[i] != nil {
+			if err := m.CloudConnections[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("cloudConnections" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -290,6 +322,40 @@ func (m *Network) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *Network) UnmarshalBinary(b []byte) error {
 	var res Network
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NetworkCloudConnectionsItems0 network cloud connections items0
+// swagger:model NetworkCloudConnectionsItems0
+type NetworkCloudConnectionsItems0 struct {
+
+	// the cloud connection id
+	CloudConnectionID string `json:"cloudConnectionID,omitempty"`
+
+	// link to the cloud connection resource
+	Href string `json:"href,omitempty"`
+}
+
+// Validate validates this network cloud connections items0
+func (m *NetworkCloudConnectionsItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NetworkCloudConnectionsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NetworkCloudConnectionsItems0) UnmarshalBinary(b []byte) error {
+	var res NetworkCloudConnectionsItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ClonedVolumeDetail cloned volume detail
@@ -17,10 +18,12 @@ import (
 type ClonedVolumeDetail struct {
 
 	// clone
-	Clone *VolumeInfo `json:"clone,omitempty"`
+	// Required: true
+	Clone *VolumeInfo `json:"clone"`
 
 	// source
-	Source *VolumeInfo `json:"source,omitempty"`
+	// Required: true
+	Source *VolumeInfo `json:"source"`
 }
 
 // Validate validates this cloned volume detail
@@ -43,8 +46,8 @@ func (m *ClonedVolumeDetail) Validate(formats strfmt.Registry) error {
 
 func (m *ClonedVolumeDetail) validateClone(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Clone) { // not required
-		return nil
+	if err := validate.Required("clone", "body", m.Clone); err != nil {
+		return err
 	}
 
 	if m.Clone != nil {
@@ -61,8 +64,8 @@ func (m *ClonedVolumeDetail) validateClone(formats strfmt.Registry) error {
 
 func (m *ClonedVolumeDetail) validateSource(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Source) { // not required
-		return nil
+	if err := validate.Required("source", "body", m.Source); err != nil {
+		return err
 	}
 
 	if m.Source != nil {

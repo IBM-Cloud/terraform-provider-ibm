@@ -43,7 +43,7 @@ github.com/IBM-Cloud/bluemix-go/rest
 github.com/IBM-Cloud/bluemix-go/session
 github.com/IBM-Cloud/bluemix-go/trace
 github.com/IBM-Cloud/bluemix-go/utils
-# github.com/IBM-Cloud/power-go-client v1.0.48
+# github.com/IBM-Cloud/power-go-client v1.0.53
 github.com/IBM-Cloud/power-go-client/clients/instance
 github.com/IBM-Cloud/power-go-client/errors
 github.com/IBM-Cloud/power-go-client/helpers
@@ -55,6 +55,7 @@ github.com/IBM-Cloud/power-go-client/power/client/catalog
 github.com/IBM-Cloud/power-go-client/power/client/hardware_platforms
 github.com/IBM-Cloud/power-go-client/power/client/iaas_service_broker
 github.com/IBM-Cloud/power-go-client/power/client/open_stacks
+github.com/IBM-Cloud/power-go-client/power/client/p_cloud_cloud_connections
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_events
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_images
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_instances
@@ -127,7 +128,7 @@ github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1
 # github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
 github.com/IBM/keyprotect-go-client
 github.com/IBM/keyprotect-go-client/iam
-# github.com/IBM/networking-go-sdk v0.10.0
+# github.com/IBM/networking-go-sdk v0.11.2
 github.com/IBM/networking-go-sdk/cachingapiv1
 github.com/IBM/networking-go-sdk/common
 github.com/IBM/networking-go-sdk/directlinkv1
