@@ -262,7 +262,6 @@ func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		var rule_id, archive_status, archiveStorgaeClass string
 		var days int64
-
 		if archive, ok := d.GetOk("archive_rule"); ok {
 			archivelist := archive.([]interface{})
 			for _, l := range archivelist {
