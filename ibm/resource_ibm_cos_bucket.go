@@ -260,10 +260,8 @@ func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
 		s3Sess := session.Must(session.NewSession())
 		s3Client := s3.New(s3Sess, s3Conf)
 
-		var rule_id string
-		var archive_status string
+		var rule_id, archive_status, archiveStorgaeClass string
 		var days int64
-		var archiveStorgaeClass string
 
 		if archive, ok := d.GetOk("archive_rule"); ok {
 			archivelist := archive.([]interface{})
