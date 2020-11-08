@@ -6,7 +6,6 @@ import (
 	"time"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -447,21 +446,11 @@ func getWorkerPoolTargetHeader(d *schema.ResourceData, meta interface{}) (v1.Clu
 		resourceGroup = sess.Config.ResourceGroup
 
 		if resourceGroup == "" {
-			rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
+			defaultRg, err := defaultResourceGroup(meta)
 			if err != nil {
 				return v1.ClusterTargetHeader{}, err
 			}
-			resourceGroupQuery := managementv2.ResourceGroupQuery{
-				Default: true,
-			}
-			grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
-			if err != nil {
-				return v1.ClusterTargetHeader{}, err
-			}
-			if len(grpList) <= 0 {
-				return v1.ClusterTargetHeader{}, fmt.Errorf("The targeted resource group could not be found. Make sure you have required permissions to access the resource group.")
-			}
-			resourceGroup = grpList[0].ID
+			resourceGroup = defaultRg
 		}
 	}
 

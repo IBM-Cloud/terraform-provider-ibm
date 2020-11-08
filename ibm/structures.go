@@ -19,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
@@ -1725,4 +1726,23 @@ func GetNext(next interface{}) string {
 
 	q := u.Query()
 	return q.Get("start")
+}
+
+/* Return the default resource group */
+func defaultResourceGroup(meta interface{}) (string, error) {
+	rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
+	if err != nil {
+		return "", err
+	}
+	resourceGroupQuery := managementv2.ResourceGroupQuery{
+		Default: true,
+	}
+	grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
+	if err != nil {
+		return "", err
+	}
+	if len(grpList) <= 0 {
+		return "", fmt.Errorf("The targeted resource group could not be found. Make sure you have required permissions to access the resource group.")
+	}
+	return grpList[0].ID, nil
 }
