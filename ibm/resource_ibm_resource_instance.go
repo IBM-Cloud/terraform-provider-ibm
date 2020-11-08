@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
@@ -226,21 +225,11 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
 		rsInst.ResourceGroupID = rsGrpID.(string)
 	} else {
-		rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
+		defaultRg, err := defaultResourceGroup(meta)
 		if err != nil {
 			return err
 		}
-		resourceGroupQuery := managementv2.ResourceGroupQuery{
-			Default: true,
-		}
-		grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
-		if err != nil {
-			return err
-		}
-		if len(grpList) <= 0 {
-			return fmt.Errorf("The targeted resource group could not be found. Make sure you have required permissions to access the resource group.")
-		}
-		rsInst.ResourceGroupID = grpList[0].ID
+		rsInst.ResourceGroupID = defaultRg
 	}
 	params := map[string]interface{}{}
 
