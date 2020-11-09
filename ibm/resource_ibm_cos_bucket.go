@@ -181,11 +181,155 @@ func resourceIBMCOS() *schema.Resource {
 					},
 				},
 			},
+			"archive_rule": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Enable configuration archive_rule (glacier/accelerated) to COS Bucket after a defined period of time",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rule_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Unique identifier for the rule.Archive rules allow you to set a specific time frame after which objects transition to the archive. Set Rule ID for cos bucket",
+						},
+						"enable": {
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "Enable or disable an archive rule for a bucket",
+						},
+						"days": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							ValidateFunc: validateAllowedRangeInt(0, 3650),
+							Description:  "Specifies the number of days when the specific rule action takes effect.",
+						},
+						"type": {
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateFunc:     validateAllowedStringValue([]string{"GLACIER", "ACCELERATED", "Glacier", "Accelerated", "glacier", "accelerated"}),
+							DiffSuppressFunc: caseDiffSuppress,
+							Description:      "Specifies the storage class/archive type to which you want the object to transition. It can be Glacier or Accelerated",
+						},
+					},
+				},
+			},
 		},
 	}
 }
 
 func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
+
+	//// Update  the lifecycle (Archive)
+	if d.HasChange("archive_rule") {
+		var s3Conf *aws.Config
+		rsConClient, err := meta.(ClientSession).BluemixSession()
+		if err != nil {
+			return err
+		}
+		bucketName := parseBucketId(d.Id(), "bucketName")
+		serviceID := parseBucketId(d.Id(), "serviceID")
+		endpointType := parseBucketId(d.Id(), "endpointType")
+		apiEndpoint, apiEndpointPrivate := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
+		if endpointType == "private" {
+			apiEndpoint = apiEndpointPrivate
+		}
+		authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
+		if err != nil {
+			return err
+		}
+		authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
+		apiKey := rsConClient.Config.BluemixAPIKey
+		if apiKey != "" {
+			s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
+		}
+		iamAccessToken := rsConClient.Config.IAMAccessToken
+		if iamAccessToken != "" {
+			initFunc := func() (*token.Token, error) {
+				return &token.Token{
+					AccessToken:  rsConClient.Config.IAMAccessToken,
+					RefreshToken: rsConClient.Config.IAMRefreshToken,
+					TokenType:    "Bearer",
+					ExpiresIn:    int64((time.Hour * 248).Seconds()) * -1,
+					Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
+				}, nil
+			}
+			s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
+		}
+		s3Sess := session.Must(session.NewSession())
+		s3Client := s3.New(s3Sess, s3Conf)
+
+		var rule_id, archive_status, archiveStorgaeClass string
+		var days int64
+		if archive, ok := d.GetOk("archive_rule"); ok {
+			archivelist := archive.([]interface{})
+			for _, l := range archivelist {
+				archiveMap, _ := l.(map[string]interface{})
+				//Rule ID
+				if rule_idSet, exist := archiveMap["rule_id"]; exist {
+					id := rule_idSet.(string)
+					rule_id = id
+				}
+
+				//Status Enable/Disable
+				if archive_statusSet, exist := archiveMap["enable"]; exist {
+					archiveStatusEnabled := archive_statusSet.(bool)
+					if archiveStatusEnabled == true {
+						archive_status = "Enabled"
+					} else {
+						archive_status = "Disabled"
+					}
+				}
+				//Days
+				if daysarchiveSet, exist := archiveMap["days"]; exist {
+					daysarchive := int64(daysarchiveSet.(int))
+					days = daysarchive
+				}
+				//Archive Type
+				if archiveStorgaeClassSet, exist := archiveMap["type"]; exist {
+					archiveType := archiveStorgaeClassSet.(string)
+					archiveStorgaeClass = archiveType
+				}
+
+			}
+			lInput := &s3.PutBucketLifecycleConfigurationInput{
+				Bucket: aws.String(bucketName),
+				LifecycleConfiguration: &s3.LifecycleConfiguration{
+					Rules: []*s3.LifecycleRule{
+						{
+							Status: aws.String(archive_status),
+							Filter: &s3.LifecycleRuleFilter{},
+							ID:     aws.String(rule_id),
+							Transitions: []*s3.Transition{
+								{
+									Days:         aws.Int64(days),
+									StorageClass: aws.String(archiveStorgaeClass),
+								},
+							},
+						},
+					},
+				},
+			}
+			_, err := s3Client.PutBucketLifecycleConfiguration(lInput)
+			if err != nil {
+				return fmt.Errorf("failed to update the archive rule on COS bucket %s, %v", bucketName, err)
+			}
+
+		} else {
+			DelInput := &s3.DeleteBucketLifecycleInput{
+				Bucket: aws.String(bucketName),
+			}
+
+			delarchive, _ := s3Client.DeleteBucketLifecycleRequest(DelInput)
+			err := delarchive.Send()
+			if err != nil {
+				return err
+			}
+		}
+
+	}
+
 	sess, err := meta.(ClientSession).CosConfigV1API()
 	if err != nil {
 		return err
@@ -273,6 +417,7 @@ func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
 			return fmt.Errorf("Error Update COS Bucket: %s\n%s", err, response)
 		}
 	}
+
 	return resourceIBMCOSRead(d, meta)
 }
 
@@ -401,6 +546,24 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 			d.Set("metrics_monitoring", flattenMetricsMonitor(bucketPtr.MetricsMonitoring))
 		}
 	}
+	// Read the lifecycle configuration (archive)
+
+	gInput := &s3.GetBucketLifecycleConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+
+	archiveptr, err := s3Client.GetBucketLifecycleConfiguration(gInput)
+
+	if (err != nil && !strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist")) && (err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied")) {
+		return err
+	}
+
+	if archiveptr != nil {
+		if len(archiveptr.Rules) > 0 {
+			d.Set("archive_rule", archiveRuleGet(archiveptr.Rules))
+		}
+	}
+
 	return nil
 }
 

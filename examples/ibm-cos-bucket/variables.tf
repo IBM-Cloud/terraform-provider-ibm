@@ -15,6 +15,25 @@ variable "region" {
 }
 
 
+variable "archive_ruleid" {
+  default     = ""
+}
+
+variable "regional_loc" {
+  default     = "us-south"
+}
+
+variable "archive_days" {
+  default     = 0
+}
+
+variable "archive_types" {
+  default     = "ACCELERATED"
+}
+
+
+
+
 
 
 

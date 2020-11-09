@@ -129,6 +129,32 @@ func dataSourceIBMCosBucket() *schema.Resource {
 					},
 				},
 			},
+			"archive_rule": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Enable configuration archive_rule (glacier/accelerated) to COS Bucket after a defined period of time",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rule_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"enable": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Enable or disable an archive rule for a bucket",
+						},
+						"days": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -263,6 +289,24 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 			d.Set("metrics_monitoring", flattenMetricsMonitor(bucketPtr.MetricsMonitoring))
 		}
 
+	}
+
+	// Read the lifecycle configuration (archive)
+
+	gInput := &s3.GetBucketLifecycleConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+
+	archiveptr, err := s3Client.GetBucketLifecycleConfiguration(gInput)
+
+	if (err != nil && !strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist")) && (err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied")) {
+		return err
+	}
+
+	if archiveptr != nil {
+		if len(archiveptr.Rules) > 0 {
+			d.Set("archive_rule", archiveRuleGet(archiveptr.Rules))
+		}
 	}
 
 	return nil
