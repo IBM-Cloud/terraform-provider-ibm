@@ -25,10 +25,19 @@ install:
   # See: https://github.com/golang/go/issues/12933
   - bash scripts/gogetcookie.sh
   - go get github.com/kardianos/govendor
+  - chmod +x ./install-sonar-scanner.sh
+  - source ./install-sonar-scanner.sh $SQ_URL
+  - go get -u github.com/jstemmer/go-junit-report
+  - go get github.com/axw/gocov/gocov
+  - go get github.com/AlekSi/gocov-xml
+  - if [[ $SQ_URL =~ ^https ]]; then sudo su -c "yes | keytool -import -alias mySonarServer -file sonarqubeibmcom.crt -keystore /tmp/$SQ_VERSION/jre/lib/security/cacerts -storepass changeit"; fi
+  - go get github.com/rakyll/statik
 
 script:
   - make test
   - make vet
+  - chmod +x ./scannerExec.sh
+  - ./scannerExec.sh
 
 branches:
   only:
