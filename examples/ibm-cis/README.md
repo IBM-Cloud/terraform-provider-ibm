@@ -367,8 +367,19 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | record\_content | DNS Record Content | `string` | yes |
 | firewall\_type | Firewall Type | `string` | yes |
 | lockdown\_url | Lockdown URL | `string` | yes |
-| lockdown\_target | Lockdown Configuration target | `string` | yes |
-| lockdown\_value | Lockdown Configuration Value | `string` | yes |
+| lockdown\_paused | Locdown rule paused or not | `boolean` | no
+| lockdown\_description | Lockdown description | `string` | no
+| lockdown\_priority | Lockdown priority | `integer` | no
+| lockdown\_configurations\_target | Lockdown Configuration target | `string` | yes |
+| lockdown\_configurations\_value | Lockdown Configuration Value | `string` | yes |
+| access_rule\_notes | Access rule notes | `string` | no
+| access_rule\_mode | Access rule mode | `string` | yes
+| access_rule\_configuration\_target | Access rule configuration target | `string` | yes |
+| access_rule\_configuration\_value | Access rule configuration Value | `string` | yes |
+| ua_rule\_description | User Agent rule description | `string` | no
+| ua_rule\_mode | User Agent rule mode | `string` | yes
+| ua_rule\_configuration\_target | User Agent rule configuration target | `string` | yes |
+| ua_rule\_configuration\_value | User Agent rule configuration Value | `string` | yes |
 | threshold | Rate Limiting Threshold | `number` | yes |
 | period | Rate Limiting Period | `number` | yes |
 | match\_request\_url | URL pattern of matching request | `string` | no |
@@ -413,6 +424,9 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | edge_functions_action_id | Resource ID. It is combination of `action_name`:`domain_id`:`cis_id`|
 | edge_functions_trigger_id | Resource ID. It is combination of `trigger_id`:`domain_id`:`cis_id`|
 | page_id | Custom Page ID |
+| lockdown\_lockdown_id | Firewall Lockdown ID
+| access_rule\_access_rule_id | Firewall Access rule ID
+| ua_rule\_ua_rule_id | Firewall User Agent rule ID
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 

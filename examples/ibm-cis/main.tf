@@ -104,7 +104,7 @@ resource "ibm_cis_dns_record" "example" {
 
 }
 
-# CIS Firewall - Present resource supports only lockdown
+# CIS Firewall
 resource "ibm_cis_firewall" "lockdown" {
   cis_id        = ibm_cis.web_domain.id
   domain_id     = ibm_cis_domain.web_domain.id
@@ -119,6 +119,13 @@ resource "ibm_cis_firewall" "lockdown" {
       value  = var.lockdown_value
     }
   }
+}
+
+# CIS Firewall data source
+data "ibm_cis_firewall" "ua_rules" {
+  cis_id        = ibm_cis.web_domain.id
+  domain_id     = ibm_cis_domain.web_domain.id
+  firewall_type = "ua_rules"
 }
 
 #CIS Rate Limit

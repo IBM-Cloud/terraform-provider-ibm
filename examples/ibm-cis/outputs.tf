@@ -40,3 +40,7 @@ output "cache_settings" {
 output "ibm_cis_custom_page_output" {
   value = ibm_cis_custom_page.custom_page
 }
+
+output "ibm_cis_firewall_ouput" {
+  value = ibm_cis_firewall.lockdown
+}
