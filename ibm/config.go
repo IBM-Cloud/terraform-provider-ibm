@@ -28,6 +28,9 @@ import (
 	cisroutingv1 "github.com/IBM/networking-go-sdk/routingv1"
 	cissslv1 "github.com/IBM/networking-go-sdk/sslcertificateapiv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
+	cisuarulev1 "github.com/IBM/networking-go-sdk/useragentblockingrulesv1"
+	cisaccessrulev1 "github.com/IBM/networking-go-sdk/zonefirewallaccessrulesv1"
+	cislockdownv1 "github.com/IBM/networking-go-sdk/zonelockdownv1"
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
@@ -205,6 +208,9 @@ type ClientSession interface {
 	CisRoutingClientSession() (*cisroutingv1.RoutingV1, error)
 	CisCacheClientSession() (*ciscachev1.CachingApiV1, error)
 	CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error)
+	CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error)
+	CisUARuleClientSession() (*cisuarulev1.UserAgentBlockingRulesV1, error)
+	CisLockdownClientSession() (*cislockdownv1.ZoneLockdownV1, error)
 }
 
 type clientSession struct {
@@ -368,6 +374,18 @@ type clientSession struct {
 	// CIS Custom Pages service options
 	cisCustomPageErr    error
 	cisCustomPageClient *ciscustompagev1.CustomPagesV1
+
+	// CIS Firewall Access rule service option
+	cisAccessRuleErr    error
+	cisAccessRuleClient *cisaccessrulev1.ZoneFirewallAccessRulesV1
+
+	// CIS User Agent Blocking Rule service option
+	cisUARuleErr    error
+	cisUARuleClient *cisuarulev1.UserAgentBlockingRulesV1
+
+	// CIS Firewall Lockdwon Rule service option
+	cisLockdownErr    error
+	cisLockdownClient *cislockdownv1.ZoneLockdownV1
 }
 
 // BluemixAcccountAPI ...
@@ -616,6 +634,21 @@ func (sess clientSession) CisCustomPageClientSession() (*ciscustompagev1.CustomP
 	return sess.cisCustomPageClient, sess.cisCustomPageErr
 }
 
+// CIS Firewall access rule
+func (sess clientSession) CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error) {
+	return sess.cisAccessRuleClient, sess.cisAccessRuleErr
+}
+
+// CIS User Agent Blocking rule
+func (sess clientSession) CisUARuleClientSession() (*cisuarulev1.UserAgentBlockingRulesV1, error) {
+	return sess.cisUARuleClient, sess.cisUARuleErr
+}
+
+// CIS Firewall Lockdown rule
+func (sess clientSession) CisLockdownClientSession() (*cislockdownv1.ZoneLockdownV1, error) {
+	return sess.cisLockdownClient, sess.cisLockdownErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -680,6 +713,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisRoutingErr = errEmptyBluemixCredentials
 		session.cisCacheErr = errEmptyBluemixCredentials
 		session.cisCustomPageErr = errEmptyBluemixCredentials
+		session.cisAccessRuleErr = errEmptyBluemixCredentials
+		session.cisUARuleErr = errEmptyBluemixCredentials
+		session.cisLockdownErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1172,12 +1208,58 @@ func (c *Config) ClientSession() (interface{}, error) {
 		ZoneIdentifier: core.StringPtr(""),
 		Authenticator:  authenticator,
 	}
+
 	session.cisCustomPageClient, session.cisCustomPageErr =
 		ciscustompagev1.NewCustomPagesV1(cisCustomPageOpt)
 	if session.cisCustomPageErr != nil {
 		session.cisCustomPageErr =
 			fmt.Errorf("Error occured while configuring CIS Custom Pages service: %s",
 				session.cisCustomPageErr)
+	}
+
+	// IBM Network CIS Firewall Access rule
+	cisAccessRuleOpt := &cisaccessrulev1.ZoneFirewallAccessRulesV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisAccessRuleClient, session.cisAccessRuleErr =
+		cisaccessrulev1.NewZoneFirewallAccessRulesV1(cisAccessRuleOpt)
+	if session.cisAccessRuleErr != nil {
+		session.cisAccessRuleErr =
+			fmt.Errorf("Error occured while configuring CIS Firewall Access Rule service: %s",
+				session.cisAccessRuleErr)
+	}
+
+	// IBM Network CIS Firewall User Agent Blocking rule
+	cisUARuleOpt := &cisuarulev1.UserAgentBlockingRulesV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisUARuleClient, session.cisUARuleErr =
+		cisuarulev1.NewUserAgentBlockingRulesV1(cisUARuleOpt)
+	if session.cisUARuleErr != nil {
+		session.cisUARuleErr =
+			fmt.Errorf("Error occured while configuring CIS Firewall User Agent Blocking Rule service: %s",
+				session.cisUARuleErr)
+	}
+
+	// IBM Network CIS Firewall Lockdown rule
+	cisLockdownOpt := &cislockdownv1.ZoneLockdownV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisLockdownClient, session.cisLockdownErr =
+		cislockdownv1.NewZoneLockdownV1(cisLockdownOpt)
+	if session.cisLockdownErr != nil {
+		session.cisLockdownErr =
+			fmt.Errorf("Error occured while configuring CIS Firewall Lockdown Rule service: %s",
+				session.cisLockdownErr)
 	}
 	return session, nil
 }
