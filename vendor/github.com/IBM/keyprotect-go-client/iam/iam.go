@@ -236,6 +236,17 @@ type iamRequestContext struct {
 }
 
 func (ie Error) Error() string {
+
+	reqId := ""
+	if ie.Context != nil {
+		reqId = ie.Context.RequestID
+	}
+
+	statusCode := 0
+	if ie.HTTPResponse != nil {
+		statusCode = ie.HTTPResponse.StatusCode
+	}
+
 	return fmt.Sprintf("iam.Error: HTTP %d requestId='%s' message='%s %s'",
-		ie.HTTPResponse.StatusCode, ie.Context.RequestID, ie.ErrorCode, ie.ErrorMessage)
+		statusCode, reqId, ie.ErrorCode, ie.ErrorMessage)
 }

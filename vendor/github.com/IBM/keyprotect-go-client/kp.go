@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// keyprotect-go-client is a Go client library for interacting with the IBM KeyProtect service.
 package kp
 
 import (
@@ -190,6 +191,9 @@ type reason struct {
 }
 
 func (r reason) String() string {
+	if r.MoreInfo != "" {
+		return fmt.Sprintf("%s: %s - FOR_MORE_INFO_REFER: %s", r.Code, r.Message, r.MoreInfo)
+	}
 	return fmt.Sprintf("%s: %s", r.Code, r.Message)
 }
 
