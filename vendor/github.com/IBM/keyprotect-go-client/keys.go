@@ -28,8 +28,7 @@ const (
 	ReturnMinimal        PreferReturn = 0
 	ReturnRepresentation PreferReturn = 1
 
-	keyType    = "application/vnd.ibm.kms.key+json"
-	policyType = "application/vnd.ibm.kms.policy+json"
+	keyType = "application/vnd.ibm.kms.key+json"
 )
 
 var (
@@ -41,24 +40,29 @@ type PreferReturn int
 
 // Key represents a key as returned by the KP API.
 type Key struct {
-	ID                  string     `json:"id,omitempty"`
-	Name                string     `json:"name,omitempty"`
-	Description         string     `json:"description,omitempty"`
-	Type                string     `json:"type,omitempty"`
-	Tags                []string   `json:"Tags,omitempty"`
-	AlgorithmType       string     `json:"algorithmType,omitempty"`
-	CreatedBy           string     `json:"createdBy,omitempty"`
-	CreationDate        *time.Time `json:"creationDate,omitempty"`
-	LastUpdateDate      *time.Time `json:"lastUpdateDate,omitempty"`
-	LastRotateDate      *time.Time `json:"lastRotateDate,omitempty"`
-	Extractable         bool       `json:"extractable"`
-	Expiration          *time.Time `json:"expirationDate,omitempty"`
-	Payload             string     `json:"payload,omitempty"`
-	State               int        `json:"state,omitempty"`
-	EncryptionAlgorithm string     `json:"encryptionAlgorithm,omitempty"`
-	CRN                 string     `json:"crn,omitempty"`
-	EncryptedNonce      string     `json:"encryptedNonce,omitempty"`
-	IV                  string     `json:"iv,omitempty"`
+	ID                  string      `json:"id,omitempty"`
+	Name                string      `json:"name,omitempty"`
+	Description         string      `json:"description,omitempty"`
+	Type                string      `json:"type,omitempty"`
+	Tags                []string    `json:"Tags,omitempty"`
+	AlgorithmType       string      `json:"algorithmType,omitempty"`
+	CreatedBy           string      `json:"createdBy,omitempty"`
+	CreationDate        *time.Time  `json:"creationDate,omitempty"`
+	LastUpdateDate      *time.Time  `json:"lastUpdateDate,omitempty"`
+	LastRotateDate      *time.Time  `json:"lastRotateDate,omitempty"`
+	KeyVersion          *KeyVersion `json:"keyVersion,omitempty" mapstructure:keyVersion`
+	Extractable         bool        `json:"extractable"`
+	Expiration          *time.Time  `json:"expirationDate,omitempty"`
+	Payload             string      `json:"payload,omitempty"`
+	State               int         `json:"state,omitempty"`
+	EncryptionAlgorithm string      `json:"encryptionAlgorithm,omitempty"`
+	CRN                 string      `json:"crn,omitempty"`
+	EncryptedNonce      string      `json:"encryptedNonce,omitempty"`
+	IV                  string      `json:"iv,omitempty"`
+	Deleted             *bool       `json:"deleted,omitempty"`
+	DeletedBy           *string     `json:"deletedBy,omitempty"`
+	DeletionDate        *time.Time  `json:"deletionDate,omitempty"`
+	DualAuthDelete      *DualAuth   `json:"dualAuthDelete,omitempty"`
 }
 
 // KeysMetadata represents the metadata of a collection of keys.
@@ -80,6 +84,11 @@ type KeysActionRequest struct {
 	AAD        []string `json:"aad,omitempty"`
 	CipherText string   `json:"ciphertext,omitempty"`
 	Payload    string   `json:"payload,omitempty"`
+}
+
+type KeyVersion struct {
+	ID           string     `json:"id,omitempty"`
+	CreationDate *time.Time `json:"creationDate,omitempty"`
 }
 
 // CreateKey creates a new KP key.
@@ -178,9 +187,23 @@ func (c *Client) GetKeys(ctx context.Context, limit int, offset int) (*Keys, err
 
 // GetKey retrieves a key by ID.
 func (c *Client) GetKey(ctx context.Context, id string) (*Key, error) {
+	return c.getKey(ctx, id, "keys/%s")
+}
+
+// GetKeyMetadata retrieves the metadata of a Key.
+// Note that the "/api/v2/keys/{id}/metadata" API does not return the payload,
+// therefore the payload attribute in the Key pointer will always be empty.
+// If you need the payload, you need to use the GetKey() function with the
+// correct service access role.
+// https://cloud.ibm.com/docs/key-protect?topic=key-protect-manage-access#service-access-roles
+func (c *Client) GetKeyMetadata(ctx context.Context, id string) (*Key, error) {
+	return c.getKey(ctx, id, "keys/%s/metadata")
+}
+
+func (c *Client) getKey(ctx context.Context, id string, path string) (*Key, error) {
 	keys := Keys{}
 
-	req, err := c.newRequest("GET", fmt.Sprintf("keys/%s", id), nil)
+	req, err := c.newRequest("GET", fmt.Sprintf(path, id), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -231,6 +254,50 @@ func (c *Client) DeleteKey(ctx context.Context, id string, prefer PreferReturn, 
 	}
 
 	return nil, nil
+}
+
+// RestoreKey restores a deleted imported root key by specifying the ID of the key
+func (c *Client) RestoreKey(ctx context.Context, id, payload, encryptedNonce, iv string) (*Key, error) {
+
+	if payload == "" {
+		return nil, fmt.Errorf("Please provide payload to restore the key")
+	}
+
+	key := Key{
+		Payload:        payload,
+		IV:             iv,
+		EncryptedNonce: encryptedNonce,
+	}
+
+	if encryptedNonce != "" && iv != "" {
+		key.EncryptionAlgorithm = importTokenEncAlgo
+	}
+
+	keysRequest := Keys{
+		Metadata: KeysMetadata{
+			CollectionType: keyType,
+			NumberOfKeys:   1,
+		},
+		Keys: []Key{key},
+	}
+
+	v := url.Values{}
+	v.Set("action", "restore")
+
+	req, err := c.newRequest("POST", fmt.Sprintf("keys/%s", id), &keysRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	req.URL.RawQuery = v.Encode()
+
+	keysResponse := Keys{}
+
+	if _, err := c.do(ctx, req, &keysResponse); err != nil {
+		return nil, err
+	}
+
+	return &keysResponse.Keys[0], nil
 }
 
 // Wrap calls the wrap action with the given plain text.
@@ -316,79 +383,41 @@ func (c *Client) Rotate(ctx context.Context, id, payload string) error {
 	return nil
 }
 
-// Policy represents a policy as returned by the KP API.
-type Policy struct {
-	Type      string     `json:"type,omitempty"`
-	CreatedBy string     `json:"createdBy,omitempty"`
-	CreatedAt *time.Time `json:"creationDate,omitempty"`
-	CRN       string     `json:"crn,omitempty"`
-	UpdatedAt *time.Time `json:"lastUpdateDate,omitempty"`
-	UpdatedBy string     `json:"updatedBy,omitempty"`
-	Rotation  struct {
-		Interval int `json:"interval_month,omitempty"`
-	} `json:"rotation,omitempty"`
+// Disable a key. The key will not be deleted but it will not be active
+// and key operations cannot be performed on a disabled key.
+// For more information can refer to the Key Protect docs in the link below:
+// https://cloud.ibm.com/docs/key-protect?topic=key-protect-disable-keys
+func (c *Client) DisableKey(ctx context.Context, id string) error {
+	_, err := c.doKeysAction(ctx, id, "disable", nil)
+	return err
 }
 
-// PoliciesMetadata represents the metadata of a collection of keys.
-type PoliciesMetadata struct {
-	CollectionType   string `json:"collectionType"`
-	NumberOfPolicies int    `json:"collectionTotal"`
+// Enable a key. Only disabled keys can be enabled. After enable
+// the key becomes active and key operations can be performed on it.
+// Note: This does not recover Deleted keys.
+// For more information can refer to the Key Protect docs in the link below:
+// https://cloud.ibm.com/docs/key-protect?topic=key-protect-disable-keys#enable-api
+func (c *Client) EnableKey(ctx context.Context, id string) error {
+	_, err := c.doKeysAction(ctx, id, "enable", nil)
+	return err
 }
 
-// Policies represents a collection of Policies.
-type Policies struct {
-	Metadata PoliciesMetadata `json:"metadata"`
-	Policies []Policy         `json:"resources"`
+// InitiateDualAuthDelete sets a key for deletion. The key must be configured with a DualAuthDelete policy.
+// After the key is set to deletion it can be deleted by another user who has Manager access.
+// For more information refer to the Key Protect docs in the link below:
+// https://cloud.ibm.com/docs/key-protect?topic=key-protect-delete-dual-auth-keys#set-key-deletion-api
+func (c *Client) InitiateDualAuthDelete(ctx context.Context, id string) error {
+	_, err := c.doKeysAction(ctx, id, "setKeyForDeletion", nil)
+	return err
 }
 
-// GetPolicy retrieves a policy by Key ID.
-func (c *Client) GetPolicy(ctx context.Context, id string) (*Policy, error) {
-	policyresponse := Policies{}
-
-	req, err := c.newRequest("GET", fmt.Sprintf("keys/%s/policies", id), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = c.do(ctx, req, &policyresponse)
-	if err != nil {
-		return nil, err
-	}
-
-	return &policyresponse.Policies[0], nil
-}
-
-// SetPolicy updates a policy resource by specifying the ID of the key and the rotation interval needed.
-func (c *Client) SetPolicy(ctx context.Context, id string, prefer PreferReturn, rotationInterval int) (*Policy, error) {
-
-	policy := Policy{
-		Type: policyType,
-	}
-	policy.Rotation.Interval = rotationInterval
-
-	policyRequest := Policies{
-		Metadata: PoliciesMetadata{
-			CollectionType:   keyType,
-			NumberOfPolicies: 1,
-		},
-		Policies: []Policy{policy},
-	}
-
-	policyresponse := Policies{}
-
-	req, err := c.newRequest("PUT", fmt.Sprintf("keys/%s/policies", id), &policyRequest)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Prefer", preferHeaders[prefer])
-
-	_, err = c.do(ctx, req, &policyresponse)
-	if err != nil {
-		return nil, err
-	}
-
-	return &policyresponse.Policies[0], nil
+// CancelDualAuthDelete unsets the key for deletion. If a key is set for deletion, it can
+// be prevented from getting deleted by unsetting the key for deletion.
+// For more information refer to the Key Protect docs in the link below:
+//https://cloud.ibm.com/docs/key-protect?topic=key-protect-delete-dual-auth-keys#unset-key-deletion-api
+func (c *Client) CancelDualAuthDelete(ctx context.Context, id string) error {
+	_, err := c.doKeysAction(ctx, id, "unsetKeyForDeletion", nil)
+	return err
 }
 
 // doKeysAction calls the KP Client to perform an action on a key.

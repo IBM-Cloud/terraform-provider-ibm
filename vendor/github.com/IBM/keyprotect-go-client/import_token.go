@@ -15,16 +15,19 @@
 package kp
 
 import (
+	"bytes"
 	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
+	"hash"
 	"io"
 	"time"
 )
@@ -133,7 +136,61 @@ func encryptNonce(key, value, iv string) (string, string, error) {
 	return base64.StdEncoding.EncodeToString(cipherText), iv, nil
 }
 
+// EncryptNonceWithCBCPAD encrypts the nonce using the user's key-material
+// with CBC encrypter. It will also pad the nonce using pkcs7. This is needed
+// for Hyper Protect Crypto Services, since it supports only CBC Encryption.
+func EncryptNonceWithCBCPAD(key, value, iv string) (string, string, error) {
+	keyMat, err := base64.StdEncoding.DecodeString(key)
+	if err != nil {
+		return "", "", fmt.Errorf("Failed to decode Key: %s", err)
+	}
+
+	nonce, err := base64.StdEncoding.DecodeString(value)
+	if err != nil {
+		return "", "", fmt.Errorf("Failed to decode Nonce: %s", err)
+	}
+
+	block, err := aes.NewCipher(keyMat)
+	if err != nil {
+		return "", "", err
+	}
+
+	// PKCS7 Padding
+	paddingLength := aes.BlockSize - (len(nonce) % aes.BlockSize)
+	paddingBytes := []byte{byte(paddingLength)}
+	paddingText := bytes.Repeat(paddingBytes, paddingLength)
+	nonce = append(nonce, paddingText...)
+
+	var newIv []byte
+	if iv != "" {
+		newIv = []byte(iv)
+	} else {
+		newIv = make([]byte, aes.BlockSize)
+		// Generate an IV to achieve semantic security
+		if _, err := io.ReadFull(rand.Reader, newIv); err != nil {
+			return "", "", fmt.Errorf("Failed to generate IV: %s", err)
+		}
+	}
+
+	cipherText := make([]byte, len(nonce))
+
+	mode := cipher.NewCBCEncrypter(block, newIv)
+	mode.CryptBlocks(cipherText, nonce)
+
+	return base64.StdEncoding.EncodeToString(cipherText), base64.StdEncoding.EncodeToString(newIv), nil
+}
+
+// encryptKey uses sha256 to encrypt the key
 func encryptKey(key, pubKey string) (string, error) {
+	return encryptKeyWithSHA(key, pubKey, sha256.New())
+}
+
+// EncryptKeyWithSHA1 uses sha1 to encrypt the key
+func EncryptKeyWithSHA1(key, pubKey string) (string, error) {
+	return encryptKeyWithSHA(key, pubKey, sha1.New())
+}
+
+func encryptKeyWithSHA(key, pubKey string, sha hash.Hash) (string, error) {
 	decodedPubKey, err := base64.StdEncoding.DecodeString(pubKey)
 	if err != nil {
 		return "", fmt.Errorf("Failed to decode public key: %s", err)
@@ -154,7 +211,7 @@ func encryptKey(key, pubKey string) (string, error) {
 	if !isRSAPublicKey {
 		return "", fmt.Errorf("invalid public key")
 	}
-	encryptedKey, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, publicKey, keyMat, []byte(""))
+	encryptedKey, err := rsa.EncryptOAEP(sha, rand.Reader, publicKey, keyMat, []byte(""))
 	if err != nil {
 		return "", fmt.Errorf("Failed to encrypt key: %s", err)
 	}

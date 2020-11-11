@@ -972,7 +972,7 @@ func validateAllowedRangeInt(start, end int) schema.SchemaValidateFunc {
 		value := v.(int)
 		if value < start || value > end {
 			errors = append(errors, fmt.Errorf(
-				"%q must contain a valid int value should be in range(%d, %d), got %q",
+				"%q must contain a valid int value should be in range(%d, %d), got %d",
 				k, start, end, value))
 		}
 		return

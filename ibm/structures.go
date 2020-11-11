@@ -25,6 +25,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
+	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -1745,4 +1746,35 @@ func defaultResourceGroup(meta interface{}) (string, error) {
 		return "", fmt.Errorf("The targeted resource group could not be found. Make sure you have required permissions to access the resource group.")
 	}
 	return grpList[0].ID, nil
+}
+
+func flattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
+	policyMap := make([]map[string]interface{}, 0, 1)
+	rotationMap := make([]map[string]interface{}, 0, 1)
+	dualAuthMap := make([]map[string]interface{}, 0, 1)
+	for _, policy := range policies {
+		policyCRNData := strings.Split(policy.CRN, ":")
+		policyInstance := map[string]interface{}{
+			"id":               policyCRNData[9],
+			"crn":              policy.CRN,
+			"created_by":       policy.CreatedBy,
+			"creation_date":    (*(policy.CreatedAt)).String(),
+			"updated_by":       policy.UpdatedBy,
+			"last_update_date": (*(policy.UpdatedAt)).String(),
+		}
+
+		if policy.Rotation != nil {
+			policyInstance["interval_month"] = policy.Rotation.Interval
+			rotationMap = append(rotationMap, policyInstance)
+		} else if policy.DualAuth != nil {
+			policyInstance["enabled"] = *(policy.DualAuth.Enabled)
+			dualAuthMap = append(dualAuthMap, policyInstance)
+		}
+	}
+	tempMap := map[string]interface{}{
+		"rotation":         rotationMap,
+		"dual_auth_delete": dualAuthMap,
+	}
+	policyMap = append(policyMap, tempMap)
+	return policyMap
 }
