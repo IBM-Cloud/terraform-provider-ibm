@@ -3,10 +3,12 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -73,9 +75,8 @@ func TestAccIBMEventStreamsTopicResourceWithExistingInstance(t *testing.T) {
 	retentionMs := 3600000
 	segmentBytes := 10485760
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMEventStreamsInstanceDestroy,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMEventStreamsTopicWithExistingInstanceWithoutConfig(existingInstanceName, topicName, partitions),
@@ -307,10 +308,14 @@ func testAccCheckIBMEventStreamsInstanceDestroy(s *terraform.State) error {
 		instanceID := rs.Primary.ID
 		instance, err := rsContClient.ResourceServiceInstance().GetInstance(instanceID)
 
-		if err == nil && instance.State == "active" {
-			return fmt.Errorf("Instance still exists: %s", rs.Primary.ID)
-		} else if !strings.Contains(err.Error(), "404") {
-			return fmt.Errorf("Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+		if err == nil {
+			if !reflect.DeepEqual(instance, models.ServiceInstance{}) && instance.State == "active" {
+				return fmt.Errorf("Instance still exists: %s", rs.Primary.ID)
+			}
+		} else {
+			if !strings.Contains(err.Error(), "404") {
+				return fmt.Errorf("Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+			}
 		}
 	}
 	return nil
