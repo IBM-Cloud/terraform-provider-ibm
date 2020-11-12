@@ -75,7 +75,7 @@ func dataSourceIBMPrivateDNSZones() *schema.Resource {
 
 func dataSourceIBMPrivateDNSZonesRead(d *schema.ResourceData, meta interface{}) error {
 
-	sess, err := meta.(ClientSession).PrivateDnsClientSession()
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}

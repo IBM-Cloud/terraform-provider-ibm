@@ -7,13 +7,12 @@ require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20201019071904-51caa09553fb
 	github.com/IBM-Cloud/power-go-client v1.0.53
 	github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
-	github.com/IBM/dns-svcs-go-sdk v0.0.3
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.3.1
 	github.com/IBM/ibm-cos-sdk-go v1.3.1
 	github.com/IBM/ibm-cos-sdk-go-config v1.0.1
 	github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
-	github.com/IBM/networking-go-sdk v0.11.2
+	github.com/IBM/networking-go-sdk v0.12.0
 	github.com/IBM/vpc-go-sdk v0.2.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.26.4

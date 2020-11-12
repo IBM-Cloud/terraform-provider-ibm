@@ -24,10 +24,10 @@ var allowedNetworkTypes = []string{
 
 func resourceIBMPrivateDNSPermittedNetwork() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMPrivateDnsPermittedNetworkCreate,
-		Read:     resourceIBMPrivateDnsPermittedNetworkRead,
-		Delete:   resourceIBMPrivateDnsPermittedNetworkDelete,
-		Exists:   resourceIBMPrivateDnsPermittedNetworkExists,
+		Create:   resourceIBMPrivateDNSPermittedNetworkCreate,
+		Read:     resourceIBMPrivateDNSPermittedNetworkRead,
+		Delete:   resourceIBMPrivateDNSPermittedNetworkDelete,
+		Exists:   resourceIBMPrivateDNSPermittedNetworkExists,
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -93,8 +93,8 @@ func resourceIBMPrivateDNSPermittedNetwork() *schema.Resource {
 	}
 }
 
-func resourceIBMPrivateDnsPermittedNetworkCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).PrivateDnsClientSession()
+func resourceIBMPrivateDNSPermittedNetworkCreate(d *schema.ResourceData, meta interface{}) error {
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}
@@ -121,28 +121,27 @@ func resourceIBMPrivateDnsPermittedNetworkCreate(d *schema.ResourceData, meta in
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", instanceID, zoneID, *response.ID))
-	d.Set(pdnsPermittedNetworkID, *response.ID)
 
-	return resourceIBMPrivateDnsPermittedNetworkRead(d, meta)
+	return resourceIBMPrivateDNSPermittedNetworkRead(d, meta)
 }
 
-func resourceIBMPrivateDnsPermittedNetworkRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).PrivateDnsClientSession()
+func resourceIBMPrivateDNSPermittedNetworkRead(d *schema.ResourceData, meta interface{}) error {
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}
 
-	id_set := strings.Split(d.Id(), "/")
-	getPermittedNetworkOptions := sess.NewGetPermittedNetworkOptions(id_set[0], id_set[1], id_set[2])
+	idSet := strings.Split(d.Id(), "/")
+	getPermittedNetworkOptions := sess.NewGetPermittedNetworkOptions(idSet[0], idSet[1], idSet[2])
 	response, detail, err := sess.GetPermittedNetwork(getPermittedNetworkOptions)
 
 	if err != nil {
 		return fmt.Errorf("Error reading pdns permitted network:%s\n%s", err, detail)
 	}
 
-	d.Set("id", response.ID)
-	d.Set(pdnsInstanceID, id_set[0])
-	d.Set(pdnsZoneID, id_set[1])
+	d.Set(pdnsPermittedNetworkID, *response.ID)
+	d.Set(pdnsInstanceID, idSet[0])
+	d.Set(pdnsZoneID, idSet[1])
 	d.Set(pdnsPermittedNetworkID, response.ID)
 	d.Set(pdnsPermittedNetworkCreatedOn, response.CreatedOn)
 	d.Set(pdnsPermittedNetworkModifiedOn, response.ModifiedOn)
@@ -153,17 +152,17 @@ func resourceIBMPrivateDnsPermittedNetworkRead(d *schema.ResourceData, meta inte
 	return nil
 }
 
-func resourceIBMPrivateDnsPermittedNetworkDelete(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).PrivateDnsClientSession()
+func resourceIBMPrivateDNSPermittedNetworkDelete(d *schema.ResourceData, meta interface{}) error {
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}
 
-	id_set := strings.Split(d.Id(), "/")
-	mk := "private_dns_permitted_network_" + id_set[0] + id_set[1]
+	idSet := strings.Split(d.Id(), "/")
+	mk := "private_dns_permitted_network_" + idSet[0] + idSet[1]
 	ibmMutexKV.Lock(mk)
 	defer ibmMutexKV.Unlock(mk)
-	deletePermittedNetworkOptions := sess.NewDeletePermittedNetworkOptions(id_set[0], id_set[1], id_set[2])
+	deletePermittedNetworkOptions := sess.NewDeletePermittedNetworkOptions(idSet[0], idSet[1], idSet[2])
 	_, response, err := sess.DeletePermittedNetwork(deletePermittedNetworkOptions)
 
 	if err != nil {
@@ -174,17 +173,17 @@ func resourceIBMPrivateDnsPermittedNetworkDelete(d *schema.ResourceData, meta in
 	return nil
 }
 
-func resourceIBMPrivateDnsPermittedNetworkExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, err := meta.(ClientSession).PrivateDnsClientSession()
+func resourceIBMPrivateDNSPermittedNetworkExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return false, err
 	}
 
-	id_set := strings.Split(d.Id(), "/")
-	mk := "private_dns_permitted_network_" + id_set[0] + id_set[1]
+	idSet := strings.Split(d.Id(), "/")
+	mk := "private_dns_permitted_network_" + idSet[0] + idSet[1]
 	ibmMutexKV.Lock(mk)
 	defer ibmMutexKV.Unlock(mk)
-	getPermittedNetworkOptions := sess.NewGetPermittedNetworkOptions(id_set[0], id_set[1], id_set[2])
+	getPermittedNetworkOptions := sess.NewGetPermittedNetworkOptions(idSet[0], idSet[1], idSet[2])
 	_, response, err := sess.GetPermittedNetwork(getPermittedNetworkOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
