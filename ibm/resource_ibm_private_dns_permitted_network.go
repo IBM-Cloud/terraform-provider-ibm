@@ -139,7 +139,6 @@ func resourceIBMPrivateDNSPermittedNetworkRead(d *schema.ResourceData, meta inte
 		return fmt.Errorf("Error reading pdns permitted network:%s\n%s", err, detail)
 	}
 
-	d.Set(pdnsPermittedNetworkID, *response.ID)
 	d.Set(pdnsInstanceID, idSet[0])
 	d.Set(pdnsZoneID, idSet[1])
 	d.Set(pdnsPermittedNetworkID, response.ID)

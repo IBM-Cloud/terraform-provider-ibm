@@ -440,7 +440,8 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 			log.Printf("%s is a required field", dlCustomerName)
 			return err
 		}
-		gatewayDedicatedTemplateModel, _ := directLink.NewGatewayTemplateGatewayTypeDedicatedTemplate(bgpAsn, bgpBaseCidr, global, metered, name, speed, dtype, carrierName, crossConnectRouter, customerName, locationName)
+		gatewayDedicatedTemplateModel, _ := directLink.NewGatewayTemplateGatewayTypeDedicatedTemplate(bgpAsn, global, metered, name, speed, dtype, carrierName, crossConnectRouter, customerName, locationName)
+		gatewayDedicatedTemplateModel.BgpBaseCidr = &bgpBaseCidr
 
 		if _, ok := d.GetOk(dlBgpIbmCidr); ok {
 			bgpIbmCidr := d.Get(dlBgpIbmCidr).(string)
@@ -491,7 +492,8 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 		if portID != "" {
 			portIdentity, _ := directLink.NewGatewayPortIdentity(portID)
-			gatewayConnectTemplateModel, _ := directLink.NewGatewayTemplateGatewayTypeConnectTemplate(bgpAsn, bgpBaseCidr, global, metered, name, speed, dtype, portIdentity)
+			gatewayConnectTemplateModel, _ := directLink.NewGatewayTemplateGatewayTypeConnectTemplate(bgpAsn, global, metered, name, speed, dtype, portIdentity)
+			gatewayConnectTemplateModel.BgpBaseCidr = &bgpBaseCidr
 
 			if _, ok := d.GetOk(dlBgpIbmCidr); ok {
 				bgpIbmCidr := d.Get(dlBgpIbmCidr).(string)

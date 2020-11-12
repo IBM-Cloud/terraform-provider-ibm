@@ -78,6 +78,7 @@ func resourceIBMPrivateDNSResourceRecord() *schema.Resource {
 			pdnsRecordType: {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 				ValidateFunc: func(val interface{}, field string) (warnings []string, errors []error) {
 					value := val.(string)
 					for _, rtype := range allowedPrivateDomainRecordTypes {
@@ -289,7 +290,6 @@ func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta inte
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", instanceID, zoneID, *response.ID))
-	d.Set(pdnsResourceRecordID, *response.ID)
 
 	return resourceIBMPrivateDNSResourceRecordRead(d, meta)
 }
@@ -356,32 +356,28 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 		return err
 	}
 
-	getResourceRecordOptions := sess.NewGetResourceRecordOptions(idSet[0], idSet[1], idSet[2])
 	mk := "private_dns_resource_record_" + idSet[0] + idSet[1]
 	ibmMutexKV.Lock(mk)
 	defer ibmMutexKV.Unlock(mk)
-	response, detail, err := sess.GetResourceRecord(getResourceRecordOptions)
-	if err != nil {
-		return fmt.Errorf("Error fetching pdns resource record:%s\n%s", err, detail)
-	}
 
 	updateResourceRecordOptions := sess.NewUpdateResourceRecordOptions(idSet[0], idSet[1], idSet[2])
-	recordName := d.Get(pdnsRecordName).(string)
-	if *response.Type != "PTR" {
-		updateResourceRecordOptions.SetName(recordName)
-	}
 
-	//
-	var ttl int64
 	var rdata string
 
-	temp := d.Get(pdnsRecordTTL).(int)
-	ttl = int64(temp)
+	if d.HasChange(pdnsRecordName) || d.HasChange(pdnsRecordTTL) || d.HasChange(pdnsRdata) ||
+		d.HasChange(pdnsSrvPort) || d.HasChange(pdnsSrvPriority) ||
+		d.HasChange(pdnsSrvWeight) || d.HasChange(pdnsSrvService) ||
+		d.HasChange(pdnsSrvProtocol) || d.HasChange(pdnsMxPreference) {
 
-	recordType := *response.Type
-	switch recordType {
-	case "A":
-		if d.HasChange(pdnsRecordTTL) || d.HasChange(pdnsRdata) {
+		recordName := d.Get(pdnsRecordName).(string)
+		recordType := d.Get(pdnsRecordType).(string)
+		ttl := int64(d.Get(pdnsRecordTTL).(int))
+
+		if recordType != "PTR" {
+			updateResourceRecordOptions.SetName(recordName)
+		}
+		switch recordType {
+		case "A":
 			updateResourceRecordOptions.SetTTL(ttl)
 			rdata = d.Get(pdnsRdata).(string)
 			resourceRecordAData, err := sess.NewResourceRecordUpdateInputRdataRdataARecord(rdata)
@@ -389,9 +385,8 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 				return fmt.Errorf("Error creating pdns resource record A data:%s", err)
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordAData)
-		}
-	case "AAAA":
-		if d.HasChange(pdnsRecordTTL) || d.HasChange(pdnsRdata) {
+
+		case "AAAA":
 			updateResourceRecordOptions.SetTTL(ttl)
 			rdata = d.Get(pdnsRdata).(string)
 			resourceRecordAaaaData, err := sess.NewResourceRecordUpdateInputRdataRdataAaaaRecord(rdata)
@@ -399,9 +394,8 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 				return fmt.Errorf("Error creating pdns resource record Aaaa data:%s", err)
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordAaaaData)
-		}
-	case "CNAME":
-		if d.HasChange(pdnsRecordTTL) || d.HasChange(pdnsRdata) {
+
+		case "CNAME":
 			updateResourceRecordOptions.SetTTL(ttl)
 			rdata = d.Get(pdnsRdata).(string)
 			resourceRecordCnameData, err := sess.NewResourceRecordUpdateInputRdataRdataCnameRecord(rdata)
@@ -409,13 +403,11 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 				return fmt.Errorf("Error creating pdns resource record Cname data:%s", err)
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordCnameData)
-		}
-	case "PTR":
-		if d.HasChange(pdnsRecordTTL) {
+
+		case "PTR":
 			updateResourceRecordOptions.SetTTL(ttl)
-		}
-	case "TXT":
-		if d.HasChange(pdnsRecordTTL) || d.HasChange(pdnsRdata) {
+
+		case "TXT":
 			updateResourceRecordOptions.SetTTL(ttl)
 			rdata = d.Get(pdnsRdata).(string)
 			resourceRecordTxtData, err := sess.NewResourceRecordUpdateInputRdataRdataTxtRecord(rdata)
@@ -423,11 +415,8 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 				return fmt.Errorf("Error creating pdns resource record Txt data:%s", err)
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordTxtData)
-		}
-	case "MX":
-		if d.HasChange(pdnsRecordTTL) || d.HasChange(pdnsRdata) ||
-			d.HasChange(pdnsMxPreference) {
 
+		case "MX":
 			updateResourceRecordOptions.SetTTL(ttl)
 			rdata = d.Get(pdnsRdata).(string)
 			preference := d.Get(pdnsMxPreference).(int)
@@ -437,13 +426,8 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 				return fmt.Errorf("Error creating pdns resource record Mx data:%s", err)
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordMxData)
-		}
-	case "SRV":
-		if d.HasChange(pdnsRecordTTL) || d.HasChange(pdnsRdata) ||
-			d.HasChange(pdnsSrvPort) || d.HasChange(pdnsSrvPriority) ||
-			d.HasChange(pdnsSrvWeight) || d.HasChange(pdnsSrvService) ||
-			d.HasChange(pdnsSrvProtocol) {
 
+		case "SRV":
 			updateResourceRecordOptions.SetTTL(ttl)
 			rdata = d.Get(pdnsRdata).(string)
 			port := d.Get(pdnsSrvPort).(int)
@@ -461,12 +445,11 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 			updateResourceRecordOptions.SetService(service)
 			updateResourceRecordOptions.SetProtocol(protocol)
 		}
-	}
 
-	//
-	_, detail, err = sess.UpdateResourceRecord(updateResourceRecordOptions)
-	if err != nil {
-		return fmt.Errorf("Error updating pdns resource record:%s\n%s", err, detail)
+		_, detail, err := sess.UpdateResourceRecord(updateResourceRecordOptions)
+		if err != nil {
+			return fmt.Errorf("Error updating pdns resource record:%s\n%s", err, detail)
+		}
 	}
 
 	return resourceIBMPrivateDNSResourceRecordRead(d, meta)
@@ -516,7 +499,7 @@ func resourceIBMPrivateDNSResourceRecordExists(d *schema.ResourceData, meta inte
 }
 
 func suppressPDNSRecordNameDiff(k, old, new string, d *schema.ResourceData) bool {
-	// CIS concantenates name with domain. So just check name is the same
+	// PDNS concantenates name with domain. So just check name is the same
 	if strings.ToUpper(strings.SplitN(old, ".", 2)[0]) == strings.ToUpper(strings.SplitN(new, ".", 2)[0]) {
 		return true
 	}

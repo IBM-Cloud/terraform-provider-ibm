@@ -86,10 +86,10 @@ The following arguments are supported:
 
 * `instance_id` - (Required, string) The ID of the private DNS instance.
 * `zone_id` - (Required, string)  The ID of the DNS zone.
-* `type` - (Required, string) The type of the DNS resource record to be created. Supported Resource Record types are: A, AAAA, CNAME, PTR, TXT, MX, SRV.
+* `type` - (Required, string) The type of the DNS resource record to be created. Supported Resource Record types are: A, AAAA, CNAME, PTR, TXT, MX, SRV. Update is not allowed for this attribute.
 * `name` -  (Required, string) The name of a DNS resource record.
 * `rdata` -  (Required, string) The resource data of a DNS resource record.
-* `ttl` - (Optional, int) The time-to-live value of the DNS record to be created. 
+* `ttl` - (Optional, int) The time-to-live value of the DNS record to be created.
 * `preference` - (Optional, int) The preference of the MX record. Mandatory field for MX record type.
 * `priority` - (Optional, int) The priority of the record. Mandatory field for SRV record type.
 * `weight` - (Optional, int) The weight of distributing queries among multiple target servers. Mandatory field for SRV record
@@ -104,7 +104,7 @@ The following attributes are exported:
 * `id` - The unique identifier of the private DNS resource record. The id is composed of <instance_id>/<zone_id>/<resource_record_id>.
 * `zone_id` - The unique identifier of the private DNS zone.
 * `resource_record_id` - The unique identifier of the private DNS resource record.
-* `created_on` - The time (Created On) of the DNS resource record. 
+* `created_on` - The time (Created On) of the DNS resource record.
 * `modified_on` - The time (Modified On) of the DNS rsource record.
 
 ## Import
