@@ -18,7 +18,7 @@ func TestAccIBMPrivateDNSResourceRecordsDataSource_basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMPrivateDNSResourceRecordsDataSourceConfig(riname, zonename, vpcname, recname),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(node, "dns_resource_records.0.name"),
@@ -35,7 +35,7 @@ func testAccCheckIBMPrivateDNSResourceRecordsDataSourceConfig(riname, zonename, 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
 		name = "default"
-	}	
+	}
 
 	resource "ibm_resource_instance" "test-pdns-instance" {
 		name = "%s"
@@ -56,7 +56,7 @@ func testAccCheckIBMPrivateDNSResourceRecordsDataSourceConfig(riname, zonename, 
 		depends_on = [data.ibm_resource_group.rg]
 		name = "%s"
 		resource_group = data.ibm_resource_group.rg.id
-	}  
+	}
 
 	resource "ibm_dns_permitted_network" "test-pdns-permitted-network-nw" {
 		depends_on = [ibm_dns_zone.test-pdns-zone]
@@ -71,10 +71,10 @@ func testAccCheckIBMPrivateDNSResourceRecordsDataSourceConfig(riname, zonename, 
 		type = "A"
 		name = "%s"
 		rdata = "5.6.7.8"
-	}  
-	
+	}
+
     data "ibm_dns_resource_records" "test1" {
-		instance_id = ibm_dns_zone.test-pdns-zone.instance_id	
+		instance_id = ibm_dns_zone.test-pdns-zone.instance_id
 		zone_id = 	ibm_dns_resource_record.test-pdns-resource-record-a.zone_id
 	}`, riname, zonename, vpcname, recname)
 }

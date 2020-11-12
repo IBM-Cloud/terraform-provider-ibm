@@ -1544,7 +1544,11 @@ type Gateway struct {
 	// Customer BGP ASN.
 	BgpAsn *int64 `json:"bgp_asn" validate:"required"`
 
-	// BGP base CIDR.
+	// (DEPRECATED) BGP base CIDR is deprecated and no longer recognized the Direct Link APIs.
+	//
+	// See bgp_cer_cidr and bgp_ibm_cidr fields instead for IP related information.
+	//
+	// Deprecated field bgp_base_cidr will be removed from the API specificiation after 15-MAR-2021.
 	BgpBaseCidr *string `json:"bgp_base_cidr,omitempty"`
 
 	// BGP customer edge router CIDR.
@@ -1556,11 +1560,12 @@ type Gateway struct {
 	// BGP IBM CIDR.
 	BgpIbmCidr *string `json:"bgp_ibm_cidr,omitempty"`
 
-	// Gateway BGP status.
-	//
-	// The list of enumerated values for this property may expand in the future. Code and processes using this field  must
-	// tolerate unexpected values.
+	// Gateway BGP status. The list of enumerated values for this property may expand in the future. Code and processes
+	// using this field  must tolerate unexpected values.
 	BgpStatus *string `json:"bgp_status,omitempty"`
+
+	// Carrier name.  Only set for type=dedicated gateways.
+	CarrierName *string `json:"carrier_name,omitempty"`
 
 	// Changes pending approval for provider managed Direct Link Connect gateways.
 	ChangeRequest GatewayChangeRequestIntf `json:"change_request,omitempty"`
@@ -1577,16 +1582,17 @@ type Gateway struct {
 	// Cross connect router.  Only included on type=dedicated gateways.
 	CrossConnectRouter *string `json:"cross_connect_router,omitempty"`
 
+	// Customer name.  Only set for type=dedicated gateways.
+	CustomerName *string `json:"customer_name,omitempty"`
+
 	// Gateways with global routing (`true`) can connect to networks outside their associated region.
 	Global *bool `json:"global" validate:"required"`
 
 	// The unique identifier of this gateway.
 	ID *string `json:"id" validate:"required"`
 
-	// Gateway link status.  Only included on type=dedicated gateways.
-	//
-	// The list of enumerated values for this property may expand in the future. Code and processes using this field  must
-	// tolerate unexpected values.
+	// Gateway link status.  Only included on type=dedicated gateways. The list of enumerated values for this property may
+	// expand in the future. Code and processes using this field  must tolerate unexpected values.
 	LinkStatus *string `json:"link_status,omitempty"`
 
 	// Gateway location long name.
@@ -1606,10 +1612,8 @@ type Gateway struct {
 	// The unique user-defined name for this gateway.
 	Name *string `json:"name" validate:"required"`
 
-	// Gateway operational status.
-	//
-	// The list of enumerated values for this property may expand in the future. Code and processes using this field  must
-	// tolerate unexpected values.
+	// Gateway operational status. The list of enumerated values for this property may expand in the future. Code and
+	// processes using this field  must tolerate unexpected values.
 	OperationalStatus *string `json:"operational_status" validate:"required"`
 
 	// gateway port for type=connect gateways.
@@ -1624,10 +1628,8 @@ type Gateway struct {
 	// Gateway speed in megabits per second.
 	SpeedMbps *int64 `json:"speed_mbps" validate:"required"`
 
-	// Gateway type.
-	//
-	// The list of enumerated values for this property may expand in the future. Code and processes using this field  must
-	// tolerate unexpected values.
+	// Gateway type. The list of enumerated values for this property may expand in the future. Code and processes using
+	// this field  must tolerate unexpected values.
 	Type *string `json:"type" validate:"required"`
 
 	// VLAN allocated for this gateway.  Only set for type=connect gateways.
@@ -1635,10 +1637,8 @@ type Gateway struct {
 }
 
 // Constants associated with the Gateway.BgpStatus property.
-// Gateway BGP status.
-//
-// The list of enumerated values for this property may expand in the future. Code and processes using this field  must
-// tolerate unexpected values.
+// Gateway BGP status. The list of enumerated values for this property may expand in the future. Code and processes
+// using this field  must tolerate unexpected values.
 const (
 	Gateway_BgpStatus_Active      = "active"
 	Gateway_BgpStatus_Connect     = "connect"
@@ -1647,20 +1647,16 @@ const (
 )
 
 // Constants associated with the Gateway.LinkStatus property.
-// Gateway link status.  Only included on type=dedicated gateways.
-//
-// The list of enumerated values for this property may expand in the future. Code and processes using this field  must
-// tolerate unexpected values.
+// Gateway link status.  Only included on type=dedicated gateways. The list of enumerated values for this property may
+// expand in the future. Code and processes using this field  must tolerate unexpected values.
 const (
 	Gateway_LinkStatus_Down = "down"
 	Gateway_LinkStatus_Up   = "up"
 )
 
 // Constants associated with the Gateway.OperationalStatus property.
-// Gateway operational status.
-//
-// The list of enumerated values for this property may expand in the future. Code and processes using this field  must
-// tolerate unexpected values.
+// Gateway operational status. The list of enumerated values for this property may expand in the future. Code and
+// processes using this field  must tolerate unexpected values.
 const (
 	Gateway_OperationalStatus_AwaitingCompletionNotice = "awaiting_completion_notice"
 	Gateway_OperationalStatus_AwaitingLoa              = "awaiting_loa"
@@ -1678,10 +1674,8 @@ const (
 )
 
 // Constants associated with the Gateway.Type property.
-// Gateway type.
-//
-// The list of enumerated values for this property may expand in the future. Code and processes using this field  must
-// tolerate unexpected values.
+// Gateway type. The list of enumerated values for this property may expand in the future. Code and processes using this
+// field  must tolerate unexpected values.
 const (
 	Gateway_Type_Connect   = "connect"
 	Gateway_Type_Dedicated = "dedicated"
@@ -1714,6 +1708,10 @@ func UnmarshalGateway(m map[string]json.RawMessage, result interface{}) (err err
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "carrier_name", &obj.CarrierName)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "change_request", &obj.ChangeRequest, UnmarshalGatewayChangeRequest)
 	if err != nil {
 		return
@@ -1731,6 +1729,10 @@ func UnmarshalGateway(m map[string]json.RawMessage, result interface{}) (err err
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "cross_connect_router", &obj.CrossConnectRouter)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "customer_name", &obj.CustomerName)
 	if err != nil {
 		return
 	}
@@ -1975,11 +1977,9 @@ type GatewayMacsecConfig struct {
 	// Packets without MACsec headers are not dropped when security_policy is `should_secure`.
 	SecurityPolicy *string `json:"security_policy,omitempty"`
 
-	// Current status of MACsec on the device for this gateway.  Status 'unknown' is returned during gateway creation and
-	// deletion. Status `key_error` indicates Direct Link was unable to retrieve key materials for one of the specified.
-	// This usually due to inadequate service to service authorization.   Verify the key exists and verify a service to
-	// service policy exists authorization the Direct Link service to access its key material. Correct any problems and
-	// respecify the desired key.  If the problem persists contact IBM support.
+	// Current status of MACsec on this gateway.
+	//
+	// Status 'unknown' is returned during gateway creation and deletion.
 	Status *string `json:"status" validate:"required"`
 
 	// replay protection window size.
@@ -2005,17 +2005,14 @@ const (
 )
 
 // Constants associated with the GatewayMacsecConfig.Status property.
-// Current status of MACsec on the device for this gateway.  Status 'unknown' is returned during gateway creation and
-// deletion. Status `key_error` indicates Direct Link was unable to retrieve key materials for one of the specified.
-// This usually due to inadequate service to service authorization.   Verify the key exists and verify a service to
-// service policy exists authorization the Direct Link service to access its key material. Correct any problems and
-// respecify the desired key.  If the problem persists contact IBM support.
+// Current status of MACsec on this gateway.
+//
+// Status 'unknown' is returned during gateway creation and deletion.
 const (
-	GatewayMacsecConfig_Status_Init     = "init"
-	GatewayMacsecConfig_Status_KeyError = "key_error"
-	GatewayMacsecConfig_Status_Pending  = "pending"
-	GatewayMacsecConfig_Status_Secured  = "secured"
-	GatewayMacsecConfig_Status_Unknown  = "unknown"
+	GatewayMacsecConfig_Status_Init    = "init"
+	GatewayMacsecConfig_Status_Pending = "pending"
+	GatewayMacsecConfig_Status_Secured = "secured"
+	GatewayMacsecConfig_Status_Unknown = "unknown"
 )
 
 // UnmarshalGatewayMacsecConfig unmarshals an instance of GatewayMacsecConfig from the specified map of raw messages.
@@ -2134,8 +2131,6 @@ type GatewayMacsecConfigPatchTemplate struct {
 
 	// Fallback connectivity association key.
 	//
-	// The `fallback_cak` crn cannot match the `primary_cak` crn.
-	//
 	// MACsec keys must be type=standard with key name lengths between 2 to 64 inclusive and contain only characters
 	// [a-fA-F0-9].
 	// The key material must be exactly 64 characters in length and contain only [a-fA-F0-9].
@@ -2182,8 +2177,6 @@ func UnmarshalGatewayMacsecConfigPatchTemplate(m map[string]json.RawMessage, res
 }
 
 // GatewayMacsecConfigPatchTemplateFallbackCak : Fallback connectivity association key.
-//
-// The `fallback_cak` crn cannot match the `primary_cak` crn.
 //
 // MACsec keys must be type=standard with key name lengths between 2 to 64 inclusive and contain only characters
 // [a-fA-F0-9]. The key material must be exactly 64 characters in length and contain only [a-fA-F0-9].
@@ -2494,15 +2487,32 @@ type GatewayTemplate struct {
 	// BGP ASN.
 	BgpAsn *int64 `json:"bgp_asn" validate:"required"`
 
-	// BGP base CIDR.
-	BgpBaseCidr *string `json:"bgp_base_cidr" validate:"required"`
+	// (DEPRECATED) BGP base CIDR.
+	//
+	// Field is deprecated.  See bgp_ibm_cidr and bgp_cer_cidr for details on how to create a gateway using either
+	// automatic or explicit IP assignment.  Any bgp_base_cidr value set will be ignored.
+	//
+	// Deprecated field bgp_base_cidr will be removed from the API specificiation after 15-MAR-2021.
+	BgpBaseCidr *string `json:"bgp_base_cidr,omitempty"`
 
-	// BGP customer edge router CIDR.  Specify a value within `bgp_base_cidr`.  If `bgp_base_cidr` is 169.254.0.0/16 this
-	// field can  be ommitted and a CIDR will be selected automatically.
+	// BGP customer edge router CIDR.
+	//
+	// For auto IP assignment, omit bgp_cer_cidr and bgp_ibm_cidr.  IBM will automatically select values for bgp_cer_cidr
+	// and bgp_ibm_cidr.
+	//
+	// For explicit IP assignment set a valid bgp_cer_cidr and bgp_ibm_cidr CIDR, the value must reside in one of
+	// "10.254.0.0/16", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16" or an owned public CIDR.  bgp_cer_cidr and
+	// bgp_ibm_cidr must have matching network and subnet mask values.
 	BgpCerCidr *string `json:"bgp_cer_cidr,omitempty"`
 
-	// BGP IBM CIDR.  Specify a value within `bgp_base_cidr`.  If `bgp_base_cidr` is 169.254.0.0/16 this field can  be
-	// ommitted and a CIDR will be selected automatically.
+	// BGP IBM CIDR.
+	//
+	// For auto IP assignment, omit bgp_cer_cidr and bgp_ibm_cidr.  IBM will automatically select values for bgp_cer_cidr
+	// and bgp_ibm_cidr.
+	//
+	// For explicit IP assignment set a valid bgp_cer_cidr and bgp_ibm_cidr CIDR, the value must reside in one of
+	// "10.254.0.0/16", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16" or an owned public CIDR.  bgp_cer_cidr and
+	// bgp_ibm_cidr must have matching network and subnet mask values.
 	BgpIbmCidr *string `json:"bgp_ibm_cidr,omitempty"`
 
 	// Gateways with global routing (`true`) can connect to networks outside their associated region.
@@ -3845,15 +3855,32 @@ type GatewayTemplateGatewayTypeConnectTemplate struct {
 	// BGP ASN.
 	BgpAsn *int64 `json:"bgp_asn" validate:"required"`
 
-	// BGP base CIDR.
-	BgpBaseCidr *string `json:"bgp_base_cidr" validate:"required"`
+	// (DEPRECATED) BGP base CIDR.
+	//
+	// Field is deprecated.  See bgp_ibm_cidr and bgp_cer_cidr for details on how to create a gateway using either
+	// automatic or explicit IP assignment.  Any bgp_base_cidr value set will be ignored.
+	//
+	// Deprecated field bgp_base_cidr will be removed from the API specificiation after 15-MAR-2021.
+	BgpBaseCidr *string `json:"bgp_base_cidr,omitempty"`
 
-	// BGP customer edge router CIDR.  Specify a value within `bgp_base_cidr`.  If `bgp_base_cidr` is 169.254.0.0/16 this
-	// field can  be ommitted and a CIDR will be selected automatically.
+	// BGP customer edge router CIDR.
+	//
+	// For auto IP assignment, omit bgp_cer_cidr and bgp_ibm_cidr.  IBM will automatically select values for bgp_cer_cidr
+	// and bgp_ibm_cidr.
+	//
+	// For explicit IP assignment set a valid bgp_cer_cidr and bgp_ibm_cidr CIDR, the value must reside in one of
+	// "10.254.0.0/16", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16" or an owned public CIDR.  bgp_cer_cidr and
+	// bgp_ibm_cidr must have matching network and subnet mask values.
 	BgpCerCidr *string `json:"bgp_cer_cidr,omitempty"`
 
-	// BGP IBM CIDR.  Specify a value within `bgp_base_cidr`.  If `bgp_base_cidr` is 169.254.0.0/16 this field can  be
-	// ommitted and a CIDR will be selected automatically.
+	// BGP IBM CIDR.
+	//
+	// For auto IP assignment, omit bgp_cer_cidr and bgp_ibm_cidr.  IBM will automatically select values for bgp_cer_cidr
+	// and bgp_ibm_cidr.
+	//
+	// For explicit IP assignment set a valid bgp_cer_cidr and bgp_ibm_cidr CIDR, the value must reside in one of
+	// "10.254.0.0/16", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16" or an owned public CIDR.  bgp_cer_cidr and
+	// bgp_ibm_cidr must have matching network and subnet mask values.
 	BgpIbmCidr *string `json:"bgp_ibm_cidr,omitempty"`
 
 	// Gateways with global routing (`true`) can connect to networks outside their associated region.
@@ -3888,16 +3915,15 @@ const (
 )
 
 // NewGatewayTemplateGatewayTypeConnectTemplate : Instantiate GatewayTemplateGatewayTypeConnectTemplate (Generic Model Constructor)
-func (*DirectLinkV1) NewGatewayTemplateGatewayTypeConnectTemplate(bgpAsn int64, bgpBaseCidr string, global bool, metered bool, name string, speedMbps int64, typeVar string, port *GatewayPortIdentity) (model *GatewayTemplateGatewayTypeConnectTemplate, err error) {
+func (*DirectLinkV1) NewGatewayTemplateGatewayTypeConnectTemplate(bgpAsn int64, global bool, metered bool, name string, speedMbps int64, typeVar string, port *GatewayPortIdentity) (model *GatewayTemplateGatewayTypeConnectTemplate, err error) {
 	model = &GatewayTemplateGatewayTypeConnectTemplate{
-		BgpAsn:      core.Int64Ptr(bgpAsn),
-		BgpBaseCidr: core.StringPtr(bgpBaseCidr),
-		Global:      core.BoolPtr(global),
-		Metered:     core.BoolPtr(metered),
-		Name:        core.StringPtr(name),
-		SpeedMbps:   core.Int64Ptr(speedMbps),
-		Type:        core.StringPtr(typeVar),
-		Port:        port,
+		BgpAsn:    core.Int64Ptr(bgpAsn),
+		Global:    core.BoolPtr(global),
+		Metered:   core.BoolPtr(metered),
+		Name:      core.StringPtr(name),
+		SpeedMbps: core.Int64Ptr(speedMbps),
+		Type:      core.StringPtr(typeVar),
+		Port:      port,
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
@@ -3964,15 +3990,32 @@ type GatewayTemplateGatewayTypeDedicatedTemplate struct {
 	// BGP ASN.
 	BgpAsn *int64 `json:"bgp_asn" validate:"required"`
 
-	// BGP base CIDR.
-	BgpBaseCidr *string `json:"bgp_base_cidr" validate:"required"`
+	// (DEPRECATED) BGP base CIDR.
+	//
+	// Field is deprecated.  See bgp_ibm_cidr and bgp_cer_cidr for details on how to create a gateway using either
+	// automatic or explicit IP assignment.  Any bgp_base_cidr value set will be ignored.
+	//
+	// Deprecated field bgp_base_cidr will be removed from the API specificiation after 15-MAR-2021.
+	BgpBaseCidr *string `json:"bgp_base_cidr,omitempty"`
 
-	// BGP customer edge router CIDR.  Specify a value within `bgp_base_cidr`.  If `bgp_base_cidr` is 169.254.0.0/16 this
-	// field can  be ommitted and a CIDR will be selected automatically.
+	// BGP customer edge router CIDR.
+	//
+	// For auto IP assignment, omit bgp_cer_cidr and bgp_ibm_cidr.  IBM will automatically select values for bgp_cer_cidr
+	// and bgp_ibm_cidr.
+	//
+	// For explicit IP assignment set a valid bgp_cer_cidr and bgp_ibm_cidr CIDR, the value must reside in one of
+	// "10.254.0.0/16", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16" or an owned public CIDR.  bgp_cer_cidr and
+	// bgp_ibm_cidr must have matching network and subnet mask values.
 	BgpCerCidr *string `json:"bgp_cer_cidr,omitempty"`
 
-	// BGP IBM CIDR.  Specify a value within `bgp_base_cidr`.  If `bgp_base_cidr` is 169.254.0.0/16 this field can  be
-	// ommitted and a CIDR will be selected automatically.
+	// BGP IBM CIDR.
+	//
+	// For auto IP assignment, omit bgp_cer_cidr and bgp_ibm_cidr.  IBM will automatically select values for bgp_cer_cidr
+	// and bgp_ibm_cidr.
+	//
+	// For explicit IP assignment set a valid bgp_cer_cidr and bgp_ibm_cidr CIDR, the value must reside in one of
+	// "10.254.0.0/16", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16" or an owned public CIDR.  bgp_cer_cidr and
+	// bgp_ibm_cidr must have matching network and subnet mask values.
 	BgpIbmCidr *string `json:"bgp_ibm_cidr,omitempty"`
 
 	// Gateways with global routing (`true`) can connect to networks outside their associated region.
@@ -4019,10 +4062,9 @@ const (
 )
 
 // NewGatewayTemplateGatewayTypeDedicatedTemplate : Instantiate GatewayTemplateGatewayTypeDedicatedTemplate (Generic Model Constructor)
-func (*DirectLinkV1) NewGatewayTemplateGatewayTypeDedicatedTemplate(bgpAsn int64, bgpBaseCidr string, global bool, metered bool, name string, speedMbps int64, typeVar string, carrierName string, crossConnectRouter string, customerName string, locationName string) (model *GatewayTemplateGatewayTypeDedicatedTemplate, err error) {
+func (*DirectLinkV1) NewGatewayTemplateGatewayTypeDedicatedTemplate(bgpAsn int64, global bool, metered bool, name string, speedMbps int64, typeVar string, carrierName string, crossConnectRouter string, customerName string, locationName string) (model *GatewayTemplateGatewayTypeDedicatedTemplate, err error) {
 	model = &GatewayTemplateGatewayTypeDedicatedTemplate{
 		BgpAsn:             core.Int64Ptr(bgpAsn),
-		BgpBaseCidr:        core.StringPtr(bgpBaseCidr),
 		Global:             core.BoolPtr(global),
 		Metered:            core.BoolPtr(metered),
 		Name:               core.StringPtr(name),

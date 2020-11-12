@@ -18,10 +18,11 @@ func TestAccIBMPrivateDNSPermittedNetwork_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMPrivateDNSPermittedNetworkDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMPrivateDNSPermittedNetworkBasic(name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPrivateDNSPermittedNetworkExists("ibm_dns_permitted_network.test-pdns-permitted-network-nw", resultprivatedns),
+					resource.TestCheckResourceAttr("ibm_dns_permitted_network.test-pdns-permitted-network-nw", "type", "vpc"),
 				),
 			},
 		},
@@ -36,13 +37,14 @@ func TestAccIBMPrivateDNSPermittedNetworkImport(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMPrivateDNSPermittedNetworkDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMPrivateDNSPermittedNetworkBasic(name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPrivateDNSPermittedNetworkExists("ibm_dns_permitted_network.test-pdns-permitted-network-nw", resultprivatedns),
+					resource.TestCheckResourceAttr("ibm_dns_permitted_network.test-pdns-permitted-network-nw", "type", "vpc"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_dns_permitted_network.test-pdns-permitted-network-nw",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -90,7 +92,7 @@ func testAccCheckIBMPrivateDNSPermittedNetworkDestroy(s *terraform.State) error 
 			continue
 		}
 
-		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDnsClientSession()
+		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDNSClientSession()
 		if err != nil {
 			return err
 		}
@@ -119,7 +121,7 @@ func testAccCheckIBMPrivateDNSPermittedNetworkExists(n string, result string) re
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDnsClientSession()
+		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDNSClientSession()
 		if err != nil {
 			return err
 		}

@@ -77,9 +77,6 @@ github.com/IBM-Cloud/power-go-client/utils
 # github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
 github.com/IBM/apigateway-go-sdk
 github.com/IBM/apigateway-go-sdk/common
-# github.com/IBM/dns-svcs-go-sdk v0.0.3
-github.com/IBM/dns-svcs-go-sdk/common
-github.com/IBM/dns-svcs-go-sdk/dnssvcsv1
 # github.com/IBM/go-sdk-core v1.1.0
 github.com/IBM/go-sdk-core/core
 # github.com/IBM/go-sdk-core/v3 v3.3.1
@@ -128,12 +125,13 @@ github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1
 # github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
 github.com/IBM/keyprotect-go-client
 github.com/IBM/keyprotect-go-client/iam
-# github.com/IBM/networking-go-sdk v0.11.2
+# github.com/IBM/networking-go-sdk v0.12.0
 github.com/IBM/networking-go-sdk/cachingapiv1
 github.com/IBM/networking-go-sdk/common
 github.com/IBM/networking-go-sdk/custompagesv1
 github.com/IBM/networking-go-sdk/directlinkv1
 github.com/IBM/networking-go-sdk/dnsrecordsv1
+github.com/IBM/networking-go-sdk/dnssvcsv1
 github.com/IBM/networking-go-sdk/edgefunctionsapiv1
 github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1
 github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0

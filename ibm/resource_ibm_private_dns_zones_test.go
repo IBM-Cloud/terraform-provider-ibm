@@ -18,7 +18,7 @@ func TestAccIBMPrivateDNSZone_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMPrivateDNSZoneDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMPrivateDNSZoneBasic(name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPrivateDNSZoneExists("ibm_dns_zone.test-pdns-zone-zone", resultprivatedns),
@@ -39,14 +39,14 @@ func TestAccIBMPrivateDNSZoneImport(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMPrivateDNSZoneDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMPrivateDNSZoneBasic(name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPrivateDNSZoneExists("ibm_dns_zone.test-pdns-zone-zone", resultprivatedns),
 					resource.TestCheckResourceAttr("ibm_dns_zone.test-pdns-zone-zone", "name", name),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_dns_zone.test-pdns-zone-zone",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -84,7 +84,7 @@ func testAccCheckIBMPrivateDNSZoneDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_dns_zone" {
 			continue
 		}
-		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDnsClientSession()
+		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDNSClientSession()
 		if err != nil {
 			return err
 		}
@@ -110,7 +110,7 @@ func testAccCheckIBMPrivateDNSZoneExists(n string, result string) resource.TestC
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
-		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDnsClientSession()
+		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDNSClientSession()
 		if err != nil {
 			return err
 		}

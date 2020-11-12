@@ -17,7 +17,7 @@ func TestAccIBMPrivateDNSNetworkDataSource_basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMpDNSPermittedNetworksDataSourceConfig(riname, vpcname, zonename),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(node, "dns_permitted_networks.0.permitted_network_id"),

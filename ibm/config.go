@@ -13,7 +13,6 @@ import (
 	// Added code for the Power Colo Offering
 
 	apigateway "github.com/IBM/apigateway-go-sdk"
-	dns "github.com/IBM/dns-svcs-go-sdk/dnssvcsv1"
 	"github.com/IBM/go-sdk-core/v3/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
@@ -21,6 +20,7 @@ import (
 	ciscustompagev1 "github.com/IBM/networking-go-sdk/custompagesv1"
 	dl "github.com/IBM/networking-go-sdk/directlinkv1"
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
+	dns "github.com/IBM/networking-go-sdk/dnssvcsv1"
 	cisedgefunctionv1 "github.com/IBM/networking-go-sdk/edgefunctionsapiv1"
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
 	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
@@ -187,7 +187,7 @@ type ClientSession interface {
 	VpcClassicV1API() (*vpcclassic.VpcClassicV1, error)
 	VpcV1API() (*vpc.VpcV1, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
-	PrivateDnsClientSession() (*dns.DnsSvcsV1, error)
+	PrivateDNSClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
 	DirectlinkV1API() (*dl.DirectLinkV1, error)
 	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
@@ -298,8 +298,8 @@ type clientSession struct {
 	hpcsEndpointErr error
 	hpcsEndpointAPI hpcs.HPCSV2
 
-	pDnsClient *dns.DnsSvcsV1
-	pDnsErr    error
+	pDNSClient *dns.DnsSvcsV1
+	pDNSErr    error
 
 	bluemixSessionErr error
 
@@ -546,8 +546,8 @@ func (sess clientSession) IBMPISession() (*ibmpisession.IBMPISession, error) {
 
 // Private DNS Service
 
-func (sess clientSession) PrivateDnsClientSession() (*dns.DnsSvcsV1, error) {
-	return sess.pDnsClient, sess.pDnsErr
+func (sess clientSession) PrivateDNSClientSession() (*dns.DnsSvcsV1, error) {
+	return sess.pDNSClient, sess.pDNSErr
 }
 
 // Session to the Namespace cloud function
@@ -662,7 +662,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.vpcClassicErr = errEmptyBluemixCredentials
 		session.vpcErr = errEmptyBluemixCredentials
 		session.apigatewayErr = errEmptyBluemixCredentials
-		session.pDnsErr = errEmptyBluemixCredentials
+		session.pDNSErr = errEmptyBluemixCredentials
 		session.bmxUserFetchErr = errEmptyBluemixCredentials
 		session.directlinkErr = errEmptyBluemixCredentials
 		session.cosConfigErr = errEmptyBluemixCredentials
@@ -960,9 +960,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		},
 	}
 
-	session.pDnsClient, session.pDnsErr = dns.NewDnsSvcsV1(dnsOptions)
-	if session.pDnsErr != nil {
-		session.pDnsErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", session.pDnsErr)
+	session.pDNSClient, session.pDNSErr = dns.NewDnsSvcsV1(dnsOptions)
+	if session.pDNSErr != nil {
+		session.pDNSErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", session.pDNSErr)
 	}
 	version := time.Now().Format("2006-01-02")
 

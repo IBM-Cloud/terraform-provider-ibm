@@ -16,7 +16,7 @@ func TestAccIBMPrivateDNSZonesDataSource_basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMPrivateDNSZonesDataSourceConfig(riname, zonename),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(node, "dns_zones.0.name"),
@@ -33,7 +33,7 @@ func testAccCheckIBMPrivateDNSZonesDataSourceConfig(riname, zonename string) str
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
 		name = "default"
-	}	
+	}
 
 	resource "ibm_resource_instance" "test-pdns-instance" {
 		name = "%s"
@@ -49,8 +49,8 @@ func testAccCheckIBMPrivateDNSZonesDataSourceConfig(riname, zonename string) str
 		description = "testdescription6"
 		label       = "testlabel-updated6"
 	  }
-	
+
     data "ibm_dns_zones" "test1" {
-		instance_id = ibm_dns_zone.test-pdns-zone.instance_id		
+		instance_id = ibm_dns_zone.test-pdns-zone.instance_id
 	}`, riname, zonename)
 }

@@ -71,15 +71,13 @@ func resourceIBMPrivateDNSResourceRecord() *schema.Resource {
 			pdnsRecordName: {
 				Type:             schema.TypeString,
 				Required:         true,
-				ForceNew:         true,
-				DiffSuppressFunc: caseDiffSuppress,
+				DiffSuppressFunc: suppressPDNSRecordNameDiff,
 				Description:      "DNS record name",
 			},
 
 			pdnsRecordType: {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
 				ValidateFunc: func(val interface{}, field string) (warnings []string, errors []error) {
 					value := val.(string)
 					for _, rtype := range allowedPrivateDomainRecordTypes {
@@ -183,7 +181,7 @@ func resourceIBMPrivateDNSResourceRecord() *schema.Resource {
 }
 
 func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).PrivateDnsClientSession()
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}
@@ -297,12 +295,12 @@ func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta inte
 }
 
 func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interface{}) error {
-	id_set := strings.Split(d.Id(), "/")
-	sess, err := meta.(ClientSession).PrivateDnsClientSession()
+	idSet := strings.Split(d.Id(), "/")
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}
-	getResourceRecordOptions := sess.NewGetResourceRecordOptions(id_set[0], id_set[1], id_set[2])
+	getResourceRecordOptions := sess.NewGetResourceRecordOptions(idSet[0], idSet[1], idSet[2])
 	response, detail, err := sess.GetResourceRecord(getResourceRecordOptions)
 	if err != nil {
 		return fmt.Errorf("Error reading pdns resource record:%s\n%s", err, detail)
@@ -310,7 +308,7 @@ func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interf
 
 	// extract the record name by removing zone details
 	var recordName string
-	zone := strings.Split(id_set[1], ":")
+	zone := strings.Split(idSet[1], ":")
 	name := strings.Split(*response.Name, zone[0])
 	name[0] = strings.Trim(name[0], ".")
 	recordName = name[0]
@@ -321,10 +319,9 @@ func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interf
 		recordName = temp[2]
 	}
 
-	d.Set("id", response.ID)
 	d.Set(pdnsResourceRecordID, response.ID)
-	d.Set(pdnsInstanceID, id_set[0])
-	d.Set(pdnsZoneID, id_set[1])
+	d.Set(pdnsInstanceID, idSet[0])
+	d.Set(pdnsZoneID, idSet[1])
 	d.Set(pdnsRecordName, recordName)
 	d.Set(pdnsRdata, response.Rdata)
 	d.Set(pdnsRecordType, response.Type)
@@ -352,15 +349,15 @@ func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interf
 }
 
 func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta interface{}) error {
-	id_set := strings.Split(d.Id(), "/")
+	idSet := strings.Split(d.Id(), "/")
 
-	sess, err := meta.(ClientSession).PrivateDnsClientSession()
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}
 
-	getResourceRecordOptions := sess.NewGetResourceRecordOptions(id_set[0], id_set[1], id_set[2])
-	mk := "private_dns_resource_record_" + id_set[0] + id_set[1]
+	getResourceRecordOptions := sess.NewGetResourceRecordOptions(idSet[0], idSet[1], idSet[2])
+	mk := "private_dns_resource_record_" + idSet[0] + idSet[1]
 	ibmMutexKV.Lock(mk)
 	defer ibmMutexKV.Unlock(mk)
 	response, detail, err := sess.GetResourceRecord(getResourceRecordOptions)
@@ -368,7 +365,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 		return fmt.Errorf("Error fetching pdns resource record:%s\n%s", err, detail)
 	}
 
-	updateResourceRecordOptions := sess.NewUpdateResourceRecordOptions(id_set[0], id_set[1], id_set[2])
+	updateResourceRecordOptions := sess.NewUpdateResourceRecordOptions(idSet[0], idSet[1], idSet[2])
 	recordName := d.Get(pdnsRecordName).(string)
 	if *response.Type != "PTR" {
 		updateResourceRecordOptions.SetName(recordName)
@@ -476,15 +473,15 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 }
 
 func resourceIBMPrivateDNSResourceRecordDelete(d *schema.ResourceData, meta interface{}) error {
-	id_set := strings.Split(d.Id(), "/")
+	idSet := strings.Split(d.Id(), "/")
 
-	sess, err := meta.(ClientSession).PrivateDnsClientSession()
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}
 
-	deleteResourceRecordOptions := sess.NewDeleteResourceRecordOptions(id_set[0], id_set[1], id_set[2])
-	mk := "private_dns_resource_record_" + id_set[0] + id_set[1]
+	deleteResourceRecordOptions := sess.NewDeleteResourceRecordOptions(idSet[0], idSet[1], idSet[2])
+	mk := "private_dns_resource_record_" + idSet[0] + idSet[1]
 	ibmMutexKV.Lock(mk)
 	defer ibmMutexKV.Unlock(mk)
 	response, err := sess.DeleteResourceRecord(deleteResourceRecordOptions)
@@ -497,14 +494,14 @@ func resourceIBMPrivateDNSResourceRecordDelete(d *schema.ResourceData, meta inte
 }
 
 func resourceIBMPrivateDNSResourceRecordExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, err := meta.(ClientSession).PrivateDnsClientSession()
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return false, err
 	}
 
-	id_set := strings.Split(d.Id(), "/")
-	getResourceRecordOptions := sess.NewGetResourceRecordOptions(id_set[0], id_set[1], id_set[2])
-	mk := "private_dns_resource_record_" + id_set[0] + id_set[1]
+	idSet := strings.Split(d.Id(), "/")
+	getResourceRecordOptions := sess.NewGetResourceRecordOptions(idSet[0], idSet[1], idSet[2])
+	mk := "private_dns_resource_record_" + idSet[0] + idSet[1]
 	ibmMutexKV.Lock(mk)
 	defer ibmMutexKV.Unlock(mk)
 	_, response, err := sess.GetResourceRecord(getResourceRecordOptions)
@@ -516,4 +513,17 @@ func resourceIBMPrivateDNSResourceRecordExists(d *schema.ResourceData, meta inte
 		return false, err
 	}
 	return true, nil
+}
+
+func suppressPDNSRecordNameDiff(k, old, new string, d *schema.ResourceData) bool {
+	// CIS concantenates name with domain. So just check name is the same
+	if strings.ToUpper(strings.SplitN(old, ".", 2)[0]) == strings.ToUpper(strings.SplitN(new, ".", 2)[0]) {
+		return true
+	}
+	// If name is @, its replaced by the domain name. So ignore check.
+	if new == "@" {
+		return true
+	}
+
+	return false
 }

@@ -18,11 +18,11 @@ func TestAccIBMPrivateDNSResourceRecord_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMPrivateDNSResourceRecordDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMPrivateDNSResourceRecordBasic(name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPrivateDNSResourceRecordExists("ibm_dns_resource_record.test-pdns-resource-record-txt", resultprivatedns),
-					resource.TestCheckResourceAttr("ibm_dns_resource_record.test-pdns-resource-record-txt", "name", "testtxt"),
+					resource.TestCheckResourceAttr("ibm_dns_resource_record.test-pdns-resource-record-txt", "type", "TXT"),
 				),
 			},
 		},
@@ -37,14 +37,14 @@ func TestAccIBMPrivateDNSResourceRecordImport(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMPrivateDNSResourceRecordDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMPrivateDNSResourceRecordBasic(name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPrivateDNSResourceRecordExists("ibm_dns_resource_record.test-pdns-resource-record-txt", resultprivatedns),
-					resource.TestCheckResourceAttr("ibm_dns_resource_record.test-pdns-resource-record-txt", "name", "testtxt"),
+					resource.TestCheckResourceAttr("ibm_dns_resource_record.test-pdns-resource-record-txt", "type", "TXT"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_dns_resource_record.test-pdns-resource-record-txt",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -64,22 +64,22 @@ func testAccCheckIBMPrivateDNSResourceRecordBasic(name string) string {
 	data "ibm_resource_group" "rg" {
 		name = "default"
 	}
-	
+
 	resource "ibm_is_vpc" "test_pdns_vpc" {
 		depends_on = [data.ibm_resource_group.rg]
-		name = "test-pdns-vpc"
+		name = "test-pdns-record-vpc"
 		resource_group = data.ibm_resource_group.rg.id
 	}
-	
+
 	resource "ibm_resource_instance" "test-pdns-instance" {
 		depends_on = [ibm_is_vpc.test_pdns_vpc]
-		name = "test-pdns"
+		name = "test-pdns-record-instance"
 		resource_group_id = data.ibm_resource_group.rg.id
 		location = "global"
 		service = "dns-svcs"
 		plan = "standard-dns"
 	}
-	
+
 	resource "ibm_dns_zone" "test-pdns-zone" {
 		depends_on = [ibm_resource_instance.test-pdns-instance]
 		name = "%s"
@@ -87,7 +87,7 @@ func testAccCheckIBMPrivateDNSResourceRecordBasic(name string) string {
 		description = "testdescription"
 		label = "testlabel-updated"
 	}
-	
+
 	resource "ibm_dns_permitted_network" "test-pdns-permitted-network-nw" {
 		depends_on = [ibm_dns_zone.test-pdns-zone]
 		instance_id = ibm_resource_instance.test-pdns-instance.guid
@@ -102,7 +102,7 @@ func testAccCheckIBMPrivateDNSResourceRecordBasic(name string) string {
 		name = "testA"
 		rdata = "1.2.3.4"
 	}
-	
+
 	resource "ibm_dns_resource_record" "test-pdns-resource-record-aaaa" {
 		depends_on = [ibm_dns_resource_record.test-pdns-resource-record-a]
 		instance_id = ibm_resource_instance.test-pdns-instance.guid
@@ -111,7 +111,7 @@ func testAccCheckIBMPrivateDNSResourceRecordBasic(name string) string {
 		name = "testAAAA"
 		rdata = "2001:0db8:0012:0001:3c5e:7354:0000:5db5"
 	}
-	
+
 	resource "ibm_dns_resource_record" "test-pdns-resource-record-cname" {
 		depends_on = [ibm_dns_resource_record.test-pdns-resource-record-aaaa]
 		instance_id = ibm_resource_instance.test-pdns-instance.guid
@@ -120,7 +120,7 @@ func testAccCheckIBMPrivateDNSResourceRecordBasic(name string) string {
 		name = "testCNAME"
 		rdata = "%s"
 	}
-	
+
 	resource "ibm_dns_resource_record" "test-pdns-resource-record-ptr" {
 		depends_on = [ibm_dns_resource_record.test-pdns-resource-record-cname]
 		instance_id = ibm_resource_instance.test-pdns-instance.guid
@@ -129,7 +129,7 @@ func testAccCheckIBMPrivateDNSResourceRecordBasic(name string) string {
 		name = "1.2.3.4"
 		rdata = "testA.%s"
 	}
-	
+
 	resource "ibm_dns_resource_record" "test-pdns-resource-record-mx" {
 		depends_on = [ibm_dns_resource_record.test-pdns-resource-record-ptr]
 		instance_id = ibm_resource_instance.test-pdns-instance.guid
@@ -161,7 +161,7 @@ func testAccCheckIBMPrivateDNSResourceRecordBasic(name string) string {
 		type = "TXT"
 		name = "testTXT"
 		rdata = "textinformation"
-	}		
+	}
 	  `, name, name, name, name)
 }
 
@@ -170,7 +170,7 @@ func testAccCheckIBMPrivateDNSResourceRecordDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_dns_resource_record" {
 			continue
 		}
-		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDnsClientSession()
+		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDNSClientSession()
 		if err != nil {
 			return err
 		}
@@ -196,7 +196,7 @@ func testAccCheckIBMPrivateDNSResourceRecordExists(n string, result string) reso
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
-		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDnsClientSession()
+		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDNSClientSession()
 		if err != nil {
 			return err
 		}
