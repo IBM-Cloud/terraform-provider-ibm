@@ -57,7 +57,7 @@ func resourceIBMPrivateDNSGLBMonitor() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The GUID of the private DNS. ",
+				Description: "Instance Id",
 			},
 
 			pdnsGlbMonitorName: {

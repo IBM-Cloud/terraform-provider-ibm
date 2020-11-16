@@ -283,6 +283,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_permitted_networks": dataSourceIBMPrivateDNSPermittedNetworks(),
 			"ibm_dns_resource_records":   dataSourceIBMPrivateDNSResourceRecords(),
 			"ibm_dns_glb_monitors":       dataSourceIBMPrivateDNSGLBMonitors(),
+			"ibm_dns_glb_pools":          dataSourceIBMPrivateDNSGLBPools(),
 
 			// Added for Direct Link
 
@@ -461,6 +462,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_permitted_network": resourceIBMPrivateDNSPermittedNetwork(),
 			"ibm_dns_resource_record":   resourceIBMPrivateDNSResourceRecord(),
 			"ibm_dns_glb_monitor":       resourceIBMPrivateDNSGLBMonitor(),
+			"ibm_dns_glb_pool":          resourceIBMPrivateDNSGLBPool(),
 
 			//Direct Link related resources
 			"ibm_dl_gateway":            resourceIBMDLGateway(),
@@ -526,6 +528,7 @@ func Validator() ValidatorDict {
 				"ibm_is_vpn_gateway_connection":        resourceIBMISVPNGatewayConnectionValidator(),
 				"ibm_is_vpn_gateway":                   resourceIBMISVPNGatewayValidator(),
 				"ibm_dns_glb_monitor":                  resourceIBMPrivateDNSGLBMonitorValidator(),
+				"ibm_dns_glb_pool":                     resourceIBMPrivateDNSGLBPoolValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":          dataSourceIBMISSubnetValidator(),

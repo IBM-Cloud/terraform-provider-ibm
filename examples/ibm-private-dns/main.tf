@@ -145,3 +145,26 @@ resource "ibm_dns_glb_monitor" "test-pdns-monitor" {
 data "ibm_dns_glb_monitors" "test1" {
   instance_id = ibm_resource_instance.test-pdns-instance.guid
 }
+
+resource "ibm_dns_glb_pool" "test-pdns-pool-nw" {
+  name                      = "testpool"
+  instance_id               = ibm_resource_instance.test-pdns-instance.guid
+  description               = "new test pool"
+  enabled                   = true
+  healthy_origins_threshold = 1
+  origins {
+    name        = "example-1"
+    address     = "www.google.com"
+    enabled     = true
+    description = "test origin pool"
+  }
+  monitor              = "7dd6841c-264e-11ea-88df-062967242a6a"
+  notification_channel = "https://mywebsite.com/dns/webhook"
+  healthcheck_region   = "us-south"
+  healthcheck_subnets  = ["0716-a4c0c123-594c-4ef4-ace3-a08858540b5e"]
+
+}
+
+data "ibm_dns_glb_pools" "test-pdns-pools" {
+  instance_id = ibm_resource_instance.test-pdns-instance.guid
+}
