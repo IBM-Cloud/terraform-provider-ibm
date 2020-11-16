@@ -52,12 +52,14 @@ func dataSourceIBMPrivateDNSGLBPools() *schema.Resource {
 							Description: "The minimum number of origins that must be healthy for this pool to serve traffic",
 						},
 						pdnsGlbPoolCreatedOn: {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The time when a load balancer pool is created.",
+							Computed:    true,
 						},
 						pdnsGlbPoolModifiedOn: {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The recent time when a load balancer pool is modified.",
+							Computed:    true,
 						},
 						pdnsGlbPoolMonitor: {
 							Type:        schema.TypeString,
@@ -67,7 +69,7 @@ func dataSourceIBMPrivateDNSGLBPools() *schema.Resource {
 						pdnsGlbPoolChannel: {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The notification channel",
+							Description: "The notification channel,It is a webhook url",
 						},
 						pdnsGlbPoolRegion: {
 							Type:        schema.TypeString,
@@ -86,28 +88,34 @@ func dataSourceIBMPrivateDNSGLBPools() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									pdnsGlbPoolOriginsName: {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Description: "The name of the origin server.",
+										Computed:    true,
 									},
 									pdnsGlbPoolOriginsAddress: {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Description: "The address of the origin server. It can be a hostname or an IP address.",
+										Computed:    true,
 									},
 									pdnsGlbPoolOriginsEnabled: {
-										Type:     schema.TypeBool,
-										Computed: true,
+										Type:        schema.TypeBool,
+										Description: "Whether the origin server is enabled.",
+										Computed:    true,
 									},
 									pdnsGlbPoolOriginsDescription: {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Description: "Description of the origin server.",
+										Computed:    true,
 									},
 									pdnsGlbPoolOriginsHealth: {
-										Type:     schema.TypeBool,
-										Computed: true,
+										Type:        schema.TypeBool,
+										Description: "Whether the health is `true` or `false`.",
+										Computed:    true,
 									},
 									pdnsGlbPoolOriginsHealthFailureReason: {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Description: "The Reason for health check failure",
+										Computed:    true,
 									},
 								},
 							},
@@ -115,7 +123,7 @@ func dataSourceIBMPrivateDNSGLBPools() *schema.Resource {
 						pdnsGlbPoolSubnet: {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Health check subnet IDs of VSIs",
+							Description: "Health check subnet crn of VSIs",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -139,7 +147,7 @@ func dataSourceIBMPrivateDNSGLBPoolsRead(d *schema.ResourceData, meta interface{
 	if err != nil {
 		return fmt.Errorf("Error reading list of pdns GLB pools:%s\n%s", err, detail)
 	}
-
+	d.Set(pdnsInstanceID, instanceID)
 	dnsPools := make([]map[string]interface{}, 0)
 	for _, instance := range availableGLBPools.Pools {
 		dnsPool := map[string]interface{}{}
