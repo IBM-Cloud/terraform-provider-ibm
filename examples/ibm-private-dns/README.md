@@ -4,7 +4,6 @@ This example shows how to private dns zone, permitted network, records and GLB m
 
 This sample configuration will create the vpc network that needs to be associated, private dns instance, zone under private dns instance which will get mapped to vpc network , p-dns record and GLB monitor.
 
-
 To run, configure your IBM Cloud provider
 
 Running the example
