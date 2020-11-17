@@ -168,3 +168,22 @@ resource "ibm_dns_glb_pool" "test-pdns-pool-nw" {
 data "ibm_dns_glb_pools" "test-pdns-pools" {
   instance_id = ibm_resource_instance.test-pdns-instance.guid
 }
+
+resource "ibm_dns_glb" "test_pdns_glb" {
+  name          = "testglb"
+  instance_id   = ibm_resource_instance.test-pdns-instance.guid
+  zone_id       = ibm_dns_zone.test-pdns-zone.zone_id
+  description   = "new glb"
+  ttl           = 120
+  fallback_pool = ibm_dns_glb_pool.test-pdns-pool-nw.pool_id
+  default_pools = [ibm_dns_glb_pool.test-pdns-pool-nw.pool_id]
+  az_pools {
+    availability_zone = "us-south-1"
+    pools             = [ibm_dns_glb_pool.test-pdns-pool-nw.pool_id]
+  }
+}
+
+data "ibm_dns_glbs" "test1" {
+  instance_id = ibm_resource_instance.test-pdns-instance.guid
+  zone_id     = ibm_dns_zone.test-pdns-zone.zone_id
+}

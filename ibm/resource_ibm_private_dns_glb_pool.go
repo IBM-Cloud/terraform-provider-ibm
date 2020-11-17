@@ -8,27 +8,33 @@ import (
 
 	"github.com/IBM/go-sdk-core/v3/core"
 	dns "github.com/IBM/networking-go-sdk/dnssvcsv1"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 const (
-	ibmDNSGlbPool                      = "ibm_dns_glb_pool"
-	pdnsGlbPoolID                      = "pool_id"
-	pdnsGlbPoolName                    = "name"
-	pdnsGlbPoolDescription             = "description"
-	pdnsGlbPoolEnabled                 = "enabled"
-	pdnsGlbPoolHealthyOriginsThreshold = "healthy_origins_threshold"
-	pdnsGlbPoolOrigins                 = "origins"
-	pdnsGlbPoolOriginsName             = "name"
-	pdnsGlbPoolOriginsDescription      = "description"
-	pdnsGlbPoolOriginsAddress          = "address"
-	pdnsGlbPoolOriginsEnabled          = "enabled"
-	pdnsGlbPoolMonitor                 = "monitor"
-	pdnsGlbPoolChannel                 = "notification_channel"
-	pdnsGlbPoolRegion                  = "healthcheck_region"
-	pdnsGlbPoolSubnet                  = "healthcheck_subnets"
-	pdnsGlbPoolCreatedOn               = "created_on"
-	pdnsGlbPoolModifiedOn              = "modified_on"
+	ibmDNSGlbPool                         = "ibm_dns_glb_pool"
+	pdnsGlbPoolID                         = "pool_id"
+	pdnsGlbPoolName                       = "name"
+	pdnsGlbPoolDescription                = "description"
+	pdnsGlbPoolEnabled                    = "enabled"
+	pdnsGlbPoolHealth                     = "health"
+	pdnsGlbPoolHealthyOriginsThreshold    = "healthy_origins_threshold"
+	pdnsGlbPoolOrigins                    = "origins"
+	pdnsGlbPoolOriginsName                = "name"
+	pdnsGlbPoolOriginsDescription         = "description"
+	pdnsGlbPoolOriginsAddress             = "address"
+	pdnsGlbPoolOriginsEnabled             = "enabled"
+	pdnsGlbPoolOriginsHealth              = "health"
+	pdnsGlbPoolOriginsHealthFailureReason = "health_failure_reason"
+	pdnsGlbPoolMonitor                    = "monitor"
+	pdnsGlbPoolChannel                    = "notification_channel"
+	pdnsGlbPoolRegion                     = "healthcheck_region"
+	pdnsGlbPoolSubnet                     = "healthcheck_subnets"
+	pdnsGlbPoolCreatedOn                  = "created_on"
+	pdnsGlbPoolModifiedOn                 = "modified_on"
+	pdnsGlbPoolDeletePending              = "deleting"
+	pdnsGlbPoolDeleted                    = "deleted"
 )
 
 func resourceIBMPrivateDNSGLBPool() *schema.Resource {
@@ -57,7 +63,7 @@ func resourceIBMPrivateDNSGLBPool() *schema.Resource {
 			pdnsGlbPoolID: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Monitor Id",
+				Description: "Pool Id",
 			},
 			pdnsGlbPoolName: {
 				Type:        schema.TypeString,
@@ -74,6 +80,11 @@ func resourceIBMPrivateDNSGLBPool() *schema.Resource {
 				Optional:    true,
 				Description: "Whether the load balancer pool is enabled",
 			},
+			pdnsGlbPoolHealth: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Whether the load balancer pool is enabled",
+			},
 			pdnsGlbPoolHealthyOriginsThreshold: {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -86,20 +97,34 @@ func resourceIBMPrivateDNSGLBPool() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						pdnsGlbPoolOriginsName: {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The name of the origin server.",
+							Required:    true,
 						},
 						pdnsGlbPoolOriginsAddress: {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The address of the origin server. It can be a hostname or an IP address.",
+							Required:    true,
 						},
 						pdnsGlbPoolOriginsEnabled: {
-							Type:     schema.TypeBool,
-							Required: true,
+							Type:        schema.TypeBool,
+							Description: "Whether the origin server is enabled.",
+							Required:    true,
 						},
 						pdnsGlbPoolOriginsDescription: {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Description: "Description of the origin server.",
+							Optional:    true,
+						},
+						pdnsGlbPoolOriginsHealth: {
+							Type:        schema.TypeBool,
+							Description: "Whether the health is `true` or `false`.",
+							Computed:    true,
+						},
+						pdnsGlbPoolOriginsHealthFailureReason: {
+							Type:        schema.TypeString,
+							Description: "The Reason for health check failure",
+							Computed:    true,
 						},
 					},
 				},
@@ -112,7 +137,7 @@ func resourceIBMPrivateDNSGLBPool() *schema.Resource {
 			pdnsGlbPoolChannel: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The notification channel",
+				Description: "The notification channel,It is a webhook url",
 			},
 			pdnsGlbPoolRegion: {
 				Type:         schema.TypeString,
@@ -123,18 +148,20 @@ func resourceIBMPrivateDNSGLBPool() *schema.Resource {
 			pdnsGlbPoolSubnet: {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Health check subnet IDs of VSIs",
+				Description: "Health check subnet crn of VSIs",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
 			pdnsGlbPoolCreatedOn: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The time when a load balancer pool is created.",
+				Computed:    true,
 			},
 			pdnsGlbPoolModifiedOn: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The recent time when a load balancer pool is modified.",
+				Computed:    true,
 			},
 		},
 	}
@@ -177,7 +204,8 @@ func resourceIBMPrivateDNSGLBPoolCreate(d *schema.ResourceData, meta interface{}
 		CreatePoolOptions.SetHealthyOriginsThreshold(int64(threshold.(int)))
 	}
 	if monitor, ok := d.GetOk(pdnsGlbPoolMonitor); ok {
-		CreatePoolOptions.SetMonitor(monitor.(string))
+		monitorID, _, _ := convertTftoCisTwoVar(monitor.(string))
+		CreatePoolOptions.SetMonitor(monitorID)
 	}
 	if chanel, ok := d.GetOk(pdnsGlbPoolChannel); ok {
 		CreatePoolOptions.SetNotificationChannel(chanel.(string))
@@ -185,8 +213,8 @@ func resourceIBMPrivateDNSGLBPoolCreate(d *schema.ResourceData, meta interface{}
 	if region, ok := d.GetOk(pdnsGlbPoolRegion); ok {
 		CreatePoolOptions.SetHealthcheckRegion(region.(string))
 	}
-	if _, ok := d.GetOk(pdnsGlbPoolSubnet); ok {
-		CreatePoolOptions.SetHealthcheckSubnets(expandStringList(d.Get(pdnsGlbPoolSubnet).([]interface{})))
+	if subnets, ok := d.GetOk(pdnsGlbPoolSubnet); ok {
+		CreatePoolOptions.SetHealthcheckSubnets(expandStringList(subnets.([]interface{})))
 	}
 
 	poolorigins := d.Get(pdnsGlbPoolOrigins).(*schema.Set)
@@ -197,7 +225,6 @@ func resourceIBMPrivateDNSGLBPoolCreate(d *schema.ResourceData, meta interface{}
 		log.Printf("create global load balancer pool failed %s", resp)
 		return err
 	}
-
 	d.SetId(fmt.Sprintf("%s/%s", instanceID, *result.ID))
 
 	return resourceIBMPrivateDNSGLBPoolRead(d, meta)
@@ -222,6 +249,7 @@ func resourceIBMPrivateDNSGLBPoolRead(d *schema.ResourceData, meta interface{}) 
 	d.Set(pdnsInstanceID, idset[0])
 	d.Set(pdnsGlbPoolDescription, response.Description)
 	d.Set(pdnsGlbPoolEnabled, response.Enabled)
+	d.Set(pdnsGlbPoolHealth, response.Health)
 	d.Set(pdnsGlbPoolHealthyOriginsThreshold, response.HealthyOriginsThreshold)
 	d.Set(pdnsGlbPoolMonitor, response.Monitor)
 	d.Set(pdnsGlbPoolChannel, response.NotificationChannel)
@@ -231,7 +259,6 @@ func resourceIBMPrivateDNSGLBPoolRead(d *schema.ResourceData, meta interface{}) 
 	d.Set(pdnsGlbPoolModifiedOn, response.ModifiedOn)
 	d.Set(pdnsGlbPoolOrigins, flattenPDNSGlbPoolOrigins(response.Origins))
 
-	log.Printf("global load balancer pool created successfully : %s", *presponse.ID)
 	return nil
 }
 
@@ -239,10 +266,12 @@ func flattenPDNSGlbPoolOrigins(list []dns.Origin) []map[string]interface{} {
 	origins := []map[string]interface{}{}
 	for _, origin := range list {
 		l := map[string]interface{}{
-			pdnsGlbPoolOriginsName:        *origin.Name,
-			pdnsGlbPoolOriginsAddress:     *origin.Address,
-			pdnsGlbPoolOriginsEnabled:     *origin.Enabled,
-			pdnsGlbPoolOriginsDescription: *origin.Description,
+			pdnsGlbPoolOriginsName:                *origin.Name,
+			pdnsGlbPoolOriginsAddress:             *origin.Address,
+			pdnsGlbPoolOriginsEnabled:             *origin.Enabled,
+			pdnsGlbPoolOriginsDescription:         *origin.Description,
+			pdnsGlbPoolOriginsHealth:              *origin.Health,
+			pdnsGlbPoolOriginsHealthFailureReason: *origin.HealthFailureReason,
 		}
 		origins = append(origins, l)
 	}
@@ -280,7 +309,8 @@ func resourceIBMPrivateDNSGLBPoolUpdate(d *schema.ResourceData, meta interface{}
 			updatePoolOptions.SetHealthyOriginsThreshold(int64(threshold.(int)))
 		}
 		if monitor, ok := d.GetOk(pdnsGlbPoolMonitor); ok {
-			updatePoolOptions.SetMonitor(monitor.(string))
+			monitorID, _, _ := convertTftoCisTwoVar(monitor.(string))
+			updatePoolOptions.SetMonitor(monitorID)
 		}
 		if chanel, ok := d.GetOk(pdnsGlbPoolChannel); ok {
 			updatePoolOptions.SetNotificationChannel(chanel.(string))
@@ -296,11 +326,10 @@ func resourceIBMPrivateDNSGLBPoolUpdate(d *schema.ResourceData, meta interface{}
 			updatePoolOptions.SetOrigins(expandPDNSGlbPoolOrigins(poolorigins))
 
 		}
-		result, detail, err := sess.UpdatePool(updatePoolOptions)
+		_, detail, err := sess.UpdatePool(updatePoolOptions)
 		if err != nil {
 			return fmt.Errorf("Error updating pdns GLB Pool:%s\n%s", err, detail)
 		}
-		log.Printf("Pool update succesful : %s", *result.ID)
 	}
 
 	return resourceIBMPrivateDNSGLBPoolRead(d, meta)
@@ -318,7 +347,10 @@ func resourceIBMPrivateDNSGLBPoolDelete(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return fmt.Errorf("Error deleting pdns GLB Pool:%s\n%s", err, response)
 	}
-
+	_, err = waitForPDNSGlbPoolDelete(d, meta)
+	if err != nil {
+		return err
+	}
 	d.SetId("")
 	return nil
 }
@@ -354,4 +386,33 @@ func expandPDNSGlbPoolOrigins(originsList *schema.Set) (origins []dns.OriginInpu
 		origins = append(origins, origin)
 	}
 	return
+}
+
+func waitForPDNSGlbPoolDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	cisClient, err := meta.(ClientSession).PrivateDNSClientSession()
+	if err != nil {
+		return nil, err
+	}
+	idset := strings.Split(d.Id(), "/")
+	getPoolOptions := cisClient.NewGetPoolOptions(idset[0], idset[1])
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{pdnsGlbPoolDeletePending},
+		Target:  []string{pdnsGlbPoolDeleted},
+		Refresh: func() (interface{}, string, error) {
+			_, detail, err := cisClient.GetPool(getPoolOptions)
+			if err != nil {
+				if detail != nil && detail.StatusCode == 404 {
+					return detail, clusterDeleted, nil
+				}
+				return nil, "", err
+			}
+			return detail, clusterDeletePending, nil
+		},
+		Timeout:      d.Timeout(schema.TimeoutDelete),
+		Delay:        60 * time.Second,
+		MinTimeout:   10 * time.Second,
+		PollInterval: 60 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }

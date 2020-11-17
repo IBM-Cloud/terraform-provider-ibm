@@ -284,6 +284,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_resource_records":   dataSourceIBMPrivateDNSResourceRecords(),
 			"ibm_dns_glb_monitors":       dataSourceIBMPrivateDNSGLBMonitors(),
 			"ibm_dns_glb_pools":          dataSourceIBMPrivateDNSGLBPools(),
+			"ibm_dns_glbs":               dataSourceIBMPrivateDNSGLBs(),
 
 			// Added for Direct Link
 
@@ -463,7 +464,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_resource_record":   resourceIBMPrivateDNSResourceRecord(),
 			"ibm_dns_glb_monitor":       resourceIBMPrivateDNSGLBMonitor(),
 			"ibm_dns_glb_pool":          resourceIBMPrivateDNSGLBPool(),
-			"ibm_dns_glb":               resourceIBMPrivateDNSGLBLoadbalancer(),
+			"ibm_dns_glb":               resourceIBMPrivateDNSGLB(),
 
 			//Direct Link related resources
 			"ibm_dl_gateway":            resourceIBMDLGateway(),
