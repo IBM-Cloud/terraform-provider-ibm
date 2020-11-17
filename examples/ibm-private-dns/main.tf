@@ -41,7 +41,7 @@ resource "ibm_dns_permitted_network" "test-pdns-permitted-network-nw" {
 
 data "ibm_dns_permitted_networks" "test" {
   instance_id = ibm_dns_permitted_network.test-pdns-permitted-network-nw.instance_id
-  zone_id = ibm_dns_permitted_network.test-pdns-permitted-network-nw.zone_id
+  zone_id     = ibm_dns_permitted_network.test-pdns-permitted-network-nw.zone_id
 }
 
 output "dns_permitted_nw_output" {
@@ -74,7 +74,7 @@ resource "ibm_dns_resource_record" "test-pdns-resource-record-cname" {
 }
 
 resource "ibm_dns_resource_record" "test-pdns-resource-record-ptr" {
-  depends_on = [ibm_dns_resource_record.test-pdns-resource-record-a]
+  depends_on  = [ibm_dns_resource_record.test-pdns-resource-record-a]
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   zone_id     = ibm_dns_zone.test-pdns-zone.zone_id
   type        = "PTR"
@@ -113,11 +113,35 @@ resource "ibm_dns_resource_record" "test-pdns-resource-record-txt" {
 }
 
 data "ibm_dns_zones" "test" {
-  depends_on = [ibm_dns_zone.test-pdns-zone]
+  depends_on  = [ibm_dns_zone.test-pdns-zone]
   instance_id = ibm_resource_instance.test-pdns-instance.guid
 }
 
 data "ibm_dns_resource_records" "test-res-rec" {
   instance_id = ibm_resource_instance.test-pdns-instance.guid
-  zone_id = ibm_dns_resource_record.test-pdns-resource-record-a.zone_id
+  zone_id     = ibm_dns_resource_record.test-pdns-resource-record-a.zone_id
+}
+
+resource "ibm_dns_glb_monitor" "test-pdns-monitor" {
+  depends_on     = [ibm_dns_zone.test-pdns-zone]
+  name           = "test-pdns-glb-monitor"
+  instance_id    = ibm_resource_instance.test-pdns-instance.guid
+  description    = "test monitor description"
+  interval       = 63
+  retries        = 3
+  timeout        = 8
+  port           = 8080
+  type           = "HTTP"
+  expected_codes = "200"
+  path           = "/health"
+  method         = "GET"
+  expected_body  = "alive"
+  headers {
+    name  = "headerName"
+    value = ["example", "abc"]
+  }
+}
+
+data "ibm_dns_glb_monitors" "test1" {
+  instance_id = ibm_resource_instance.test-pdns-instance.guid
 }
