@@ -36,6 +36,9 @@ github.com/IBM-Cloud/power-go-client v1.0.53/go.mod h1:+mOxjyLeLIloR4EMHTpiDbN+F
 github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a h1:lX3vP+9Y5gTP0w6l+4oL0mvNfgXZYJsMdlsiUG43GBw=
 github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a/go.mod h1:sNVpGpUv3jvA2dQbRPFjVrRFNdmnQrf2QTtKa/c2XrI=
 github.com/IBM/cloudpakfordata-go-sdk v0.0.0-20191003093330-fead1522985f/go.mod h1:j6hKoyzMruySTcVstW/FLiu2ZewGukmgSeVGaDYY9hY=
+github.com/IBM/dns-svcs-go-sdk v0.0.7 h1:Yo6QM1ClwweMGEG8rCAHOSOxclSEiVNSA/McGJtjQ8c=
+github.com/IBM/dns-svcs-go-sdk v0.0.7/go.mod h1:NZ0QLpvIAWv0PTA/WBNC8Fij35mG8ccazAvuimZMnrs=
+github.com/IBM/go-sdk-core v0.0.0-20200217212347-fe152a0e9e89/go.mod h1:2pcx9YWsIsZ3I7kH+1amiAkXvLTZtAq9kbxsfXilSoY=
 github.com/IBM/go-sdk-core v1.1.0 h1:pV73lZqr9r1xKb3h08c1uNG3AphwoV5KzUzhS+pfEqY=
 github.com/IBM/go-sdk-core v1.1.0/go.mod h1:2pcx9YWsIsZ3I7kH+1amiAkXvLTZtAq9kbxsfXilSoY=
 github.com/IBM/go-sdk-core/v3 v3.0.0/go.mod h1:JI5NS2+iCoY/D8Oq3JNEZNA7qO42agu6fnaUmDsRcJA=
