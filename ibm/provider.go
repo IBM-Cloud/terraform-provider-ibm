@@ -463,7 +463,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_resource_record":   resourceIBMPrivateDNSResourceRecord(),
 			"ibm_dns_glb_monitor":       resourceIBMPrivateDNSGLBMonitor(),
 			"ibm_dns_glb_pool":          resourceIBMPrivateDNSGLBPool(),
-			"ibm_dns_glb":               resourceIBMPrivateDNSGLB(),
+			"ibm_dns_glb":               resourceIBMPrivateDNSGLBLoadbalancer(),
 
 			//Direct Link related resources
 			"ibm_dl_gateway":            resourceIBMDLGateway(),
