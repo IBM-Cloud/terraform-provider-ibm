@@ -69,6 +69,23 @@ resource "ibm_kms_key" "key" {
 }
 ```
 
+## Example usage to provision Key Management Service and Import a Key
+
+```hcl
+resource "ibm_resource_instance" "kp_instance" {
+  name     = "test_kp"
+  service  = "kms"
+  plan     = "tiered-pricing"
+  location = "us-south"
+}
+resource "ibm_kms_key" "key" {
+  instance_id = ibm_resource_instance.kp_instance.guid
+  key_name       = "key"
+  standard_key   = false
+  payload = "aW1wb3J0ZWQucGF5bG9hZA=="
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
