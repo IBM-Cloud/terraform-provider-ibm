@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -1299,15 +1300,23 @@ func classicLbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, 
 	// `LoadBalancerListenerPolicyRedirectURL` is in the response if `action` is `redirect`.
 
 	if *(policy.Action) == "forward" {
-		target := policy.Target.(*vpcclassicv1.LoadBalancerListenerPolicyTargetLoadBalancerPoolReference)
-		d.Set(isLBListenerPolicyTargetID, target.ID)
+		if reflect.TypeOf(policy.Target).String() == "*vpcclassicv1.LoadBalancerListenerPolicyTargetLoadBalancerPoolReference" {
+			target, ok := policy.Target.(*vpcclassicv1.LoadBalancerListenerPolicyTargetLoadBalancerPoolReference)
+			if ok {
+				d.Set(isLBListenerPolicyTargetID, target.ID)
+			}
+		}
 
 	} else if *(policy.Action) == "redirect" {
-		target := policy.Target.(*vpcclassicv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyRedirectURL)
-		d.Set(isLBListenerPolicyTargetURL, target.URL)
-		d.Set(isLBListenerPolicyTargetHTTPStatusCode, target.HTTPStatusCode)
-
+		if reflect.TypeOf(policy.Target).String() == "*vpcclassicv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyRedirectURL" {
+			target, ok := policy.Target.(*vpcclassicv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyRedirectURL)
+			if ok {
+				d.Set(isLBListenerPolicyTargetURL, target.URL)
+				d.Set(isLBListenerPolicyTargetHTTPStatusCode, target.HTTPStatusCode)
+			}
+		}
 	}
+
 	getLoadBalancerOptions := &vpcclassicv1.GetLoadBalancerOptions{
 		ID: &lbID,
 	}
@@ -1371,15 +1380,23 @@ func lbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, listene
 	// `LoadBalancerListenerPolicyRedirectURL` is in the response if `action` is `redirect`.
 
 	if *(policy.Action) == "forward" {
-		target := policy.Target.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerPoolReference)
-		d.Set(isLBListenerPolicyTargetID, target.ID)
+		if reflect.TypeOf(policy.Target).String() == "*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerPoolReference" {
+			target, ok := policy.Target.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerPoolReference)
+			if ok {
+				d.Set(isLBListenerPolicyTargetID, target.ID)
+			}
+		}
 
 	} else if *(policy.Action) == "redirect" {
-		target := policy.Target.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyRedirectURL)
-		d.Set(isLBListenerPolicyTargetURL, target.URL)
-		d.Set(isLBListenerPolicyTargetHTTPStatusCode, target.HTTPStatusCode)
-
+		if reflect.TypeOf(policy.Target).String() == "*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyRedirectURL" {
+			target, ok := policy.Target.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyRedirectURL)
+			if ok {
+				d.Set(isLBListenerPolicyTargetURL, target.URL)
+				d.Set(isLBListenerPolicyTargetHTTPStatusCode, target.HTTPStatusCode)
+			}
+		}
 	}
+
 	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
 		ID: &lbID,
 	}

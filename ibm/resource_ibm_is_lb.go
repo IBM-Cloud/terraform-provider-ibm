@@ -105,6 +105,7 @@ func resourceIBMISLB() *schema.Resource {
 			isLBProfile: {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ForceNew:     true,
 				Description:  "The profile to use for this load balancer.",
 				ValidateFunc: InvokeValidator("ibm_is_lb", isLBProfile),
