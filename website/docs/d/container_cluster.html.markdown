@@ -27,6 +27,7 @@ The following arguments are supported:
 * `cluster_name_id` - (Deprecated, string) Name of the Cluster
 * `name` - (Optional, string) Name or ID of the cluster.
 * `alb_type` - (Optional, string) Used to filter the albs based on type. Valid values are `private`, `public` and `all`. The default value is `all`.
+* `list_bounded_services` - (Optional, bool) If set to false services which are bound to the cluster are not going to be listed. The default value is `true`.
 * `org_guid` - (Deprecated, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from the `ibm_org` data source or by running the `ibmcloud iam orgs --guid` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 * `space_guid` - (Deprecated, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from the `ibm_space` data source or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
 * `account_guid` - (Deprecated, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from the `ibm_account` data source or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
