@@ -740,7 +740,7 @@ func isPIInstanceDeleteRefreshFunc(client *st.IBMPIInstanceClient, id, powerinst
 			return pvm, helpers.PIInstanceNotFound, nil
 
 		}
-		return pvm, helpers.PIInstanceNotFound, nil
+		return pvm, helpers.PIInstanceDeleting, nil
 
 	}
 }
