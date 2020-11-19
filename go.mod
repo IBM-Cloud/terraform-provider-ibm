@@ -11,8 +11,8 @@ require (
 	github.com/IBM/go-sdk-core/v3 v3.3.1
 	github.com/IBM/ibm-cos-sdk-go v1.3.1
 	github.com/IBM/ibm-cos-sdk-go-config v1.0.1
-	github.com/IBM/networking-go-sdk v0.12.0
 	github.com/IBM/keyprotect-go-client v0.5.2
+	github.com/IBM/networking-go-sdk v0.12.0
 	github.com/IBM/vpc-go-sdk v0.2.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.26.4
