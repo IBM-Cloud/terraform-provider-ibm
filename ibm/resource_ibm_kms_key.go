@@ -669,17 +669,15 @@ func handlePolicies(d *schema.ResourceData, kpAPI *kp.Client, meta interface{}, 
 
 		if rpd, ok := policyData["rotation"]; ok {
 			rpdList := rpd.([]interface{})
-			rd := rpdList[0].(map[string]interface{})
-			if ri, ok := rd["interval_month"]; ok {
-				rotationInterval = ri.(int)
+			if len(rpdList) != 0 {
+				rotationInterval = rpdList[0].(map[string]interface{})["interval_month"].(int)
 				setRotation = true
 			}
 		}
 		if dadp, ok := policyData["dual_auth_delete"]; ok {
 			dadpList := dadp.([]interface{})
-			dad := dadpList[0].(map[string]interface{})
-			if da, ok := dad["enabled"]; ok {
-				dualAuthEnable = da.(bool)
+			if len(dadpList) != 0 {
+				dualAuthEnable = dadpList[0].(map[string]interface{})["enabled"].(bool)
 				setDualAuthDelete = true
 			}
 		}
