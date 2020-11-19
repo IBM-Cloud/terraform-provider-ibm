@@ -2,11 +2,11 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"log"
 	"strconv"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccIBMCisIPDataSource_Basic(t *testing.T) {
@@ -15,8 +15,8 @@ func TestAccIBMCisIPDataSource_Basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: fmt.Sprintf(testAccCheckIBMCisIPDataSourceConfig_basic),
+			{
+				Config: fmt.Sprintf(testAccCheckIBMCisIPDataSourceConfigBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccIBMCisIPAddrs("data.ibm_cis_ip_addresses.test_acc"),
 				),
@@ -29,8 +29,6 @@ func testAccIBMCisIPAddrs(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
 		a := r.Primary.Attributes
-		log.Printf("%#v\n", a["ipv4_cidrs"])
-		log.Printf("%#v\n", len(a["ipv4_cidrs"]))
 
 		cidrs, _ := strconv.Atoi(a["ipv4_cidrs.#"])
 		if cidrs == 0 {
@@ -44,7 +42,6 @@ func testAccIBMCisIPAddrs(n string) resource.TestCheckFunc {
 	}
 }
 
-const testAccCheckIBMCisIPDataSourceConfig_basic = `
-data "ibm_cis_ip_addresses" "test_acc" {
-}
+const testAccCheckIBMCisIPDataSourceConfigBasic = `
+data "ibm_cis_ip_addresses" "test_acc" {}
 `

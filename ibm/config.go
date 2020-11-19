@@ -17,6 +17,7 @@ import (
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
 	ciscachev1 "github.com/IBM/networking-go-sdk/cachingapiv1"
+	cisipv1 "github.com/IBM/networking-go-sdk/cisipapiv1"
 	ciscustompagev1 "github.com/IBM/networking-go-sdk/custompagesv1"
 	dl "github.com/IBM/networking-go-sdk/directlinkv1"
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
@@ -201,6 +202,7 @@ type ClientSession interface {
 	CisGLBClientSession() (*cisglbv1.GlobalLoadBalancerV1, error)
 	CisGLBPoolClientSession() (*cisglbpoolv0.GlobalLoadBalancerPoolsV0, error)
 	CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error)
+	CisIPClientSession() (*cisipv1.CisIpApiV1, error)
 	CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1, error)
 	CisEdgeFunctionClientSession() (*cisedgefunctionv1.EdgeFunctionsApiV1, error)
 	CisSSLClientSession() (*cissslv1.SslCertificateApiV1, error)
@@ -346,6 +348,10 @@ type clientSession struct {
 	// CIS GLB health check service options
 	cisGLBHealthCheckErr    error
 	cisGLBHealthCheckClient *cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1
+
+	// CIS IP service options
+	cisIPErr    error
+	cisIPClient *cisipv1.CisIpApiV1
 
 	// CIS Zone Rate Limits service options
 	cisRLErr    error
@@ -604,6 +610,11 @@ func (sess clientSession) CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1
 	return sess.cisRLClient, sess.cisRLErr
 }
 
+// CIS IP
+func (sess clientSession) CisIPClientSession() (*cisipv1.CisIpApiV1, error) {
+	return sess.cisIPClient, sess.cisIPErr
+}
+
 // cCIS Edge Function
 func (sess clientSession) CisEdgeFunctionClientSession() (*cisedgefunctionv1.EdgeFunctionsApiV1, error) {
 	return sess.cisEdgeFunctionClient, sess.cisEdgeFunctionErr
@@ -705,6 +716,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisGLBPoolErr = errEmptyBluemixCredentials
 		session.cisGLBErr = errEmptyBluemixCredentials
 		session.cisGLBHealthCheckErr = errEmptyBluemixCredentials
+		session.cisIPErr = errEmptyBluemixCredentials
 		session.cisZonesErr = errEmptyBluemixCredentials
 		session.cisRLErr = errEmptyBluemixCredentials
 		session.cisEdgeFunctionErr = errEmptyBluemixCredentials
@@ -1109,6 +1121,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisGLBHealthCheckErr =
 			fmt.Errorf("Error occured while configuring CIS GLB Health Check service: %s",
 				session.cisGLBHealthCheckErr)
+	}
+
+	// IBM Network CIS IP
+	cisIPOpt := &cisipv1.CisIpApiV1Options{
+		URL:           cisEndPoint,
+		Authenticator: authenticator,
+	}
+	session.cisIPClient, session.cisIPErr = cisipv1.NewCisIpApiV1(cisIPOpt)
+	if session.cisIPErr != nil {
+		session.cisIPErr = fmt.Errorf("Error occured while configuring CIS IP service: %s",
+			session.cisIPErr)
 	}
 
 	// IBM Network CIS Zone Rate Limit
