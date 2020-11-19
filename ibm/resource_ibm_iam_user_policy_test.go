@@ -3,14 +3,14 @@ package ibm
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
-	"strings"
-
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 )
 
 func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {
@@ -184,7 +184,7 @@ func TestAccIBMIAMUserPolicy_Invalid_User(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMIAMUserPolicyInvalidUser(),
-				ExpectError: regexp.MustCompile(`User test@in.ibm.com is not found under current account`),
+				ExpectError: regexp.MustCompile(`User test@in.ibm.com is not found`),
 			},
 		},
 	})

@@ -35,7 +35,7 @@ func TestAccIBMIAMUserPolicyDataSource_Multiple_Policies(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMIAMUserPolicyDataSourceMultiplePolicies(name),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_iam_user_policy.testacc_ds_user_policy", "policies.#", "6"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_user_policy.testacc_ds_user_policy", "policies.#"),
 				),
 			},
 		},

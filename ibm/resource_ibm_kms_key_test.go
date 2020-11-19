@@ -225,12 +225,12 @@ func testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, KeyName, cosIn
 		roles               = ["Reader"]
 	}
 	
-	resource "ibm_cos_bucket" "flex-us-south" {
+	resource "ibm_cos_bucket" "smart-us-south" {
 		depends_on           = [ibm_iam_authorization_policy.policy]
 		bucket_name          = "%s"
 		resource_instance_id = ibm_resource_instance.cos_instance.id
 		region_location      = "us-south"
-		storage_class        = "flex"
+		storage_class        = "smart"
 		key_protect          = ibm_kms_key.test.id
 	}
 	
