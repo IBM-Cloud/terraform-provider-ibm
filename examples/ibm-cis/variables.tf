@@ -34,7 +34,7 @@ variable "dns_name" {
 variable "record_name" {
   description = "DNS Record Name"
   type        = string
-  
+
 }
 variable "record_type" {
   description = "DNS Record Type"

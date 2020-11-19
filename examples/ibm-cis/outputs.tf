@@ -44,3 +44,7 @@ output "ibm_cis_custom_page_output" {
 output "ibm_cis_firewall_ouput" {
   value = ibm_cis_firewall.lockdown
 }
+
+output "ibm_cis_page_rule_output" {
+  value = ibm_cis_page_rule.page_rule
+}

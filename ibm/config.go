@@ -26,6 +26,7 @@ import (
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
 	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
 	cisglbv1 "github.com/IBM/networking-go-sdk/globalloadbalancerv1"
+	cispagerulev1 "github.com/IBM/networking-go-sdk/pageruleapiv1"
 	cisroutingv1 "github.com/IBM/networking-go-sdk/routingv1"
 	cissslv1 "github.com/IBM/networking-go-sdk/sslcertificateapiv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
@@ -74,7 +75,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 )
 
-//RetryDelay
+// RetryAPIDelay - retry api delay
 const RetryAPIDelay = 5 * time.Second
 
 //BluemixRegion ...
@@ -203,6 +204,7 @@ type ClientSession interface {
 	CisGLBPoolClientSession() (*cisglbpoolv0.GlobalLoadBalancerPoolsV0, error)
 	CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error)
 	CisIPClientSession() (*cisipv1.CisIpApiV1, error)
+	CisPageRuleClientSession() (*cispagerulev1.PageRuleApiV1, error)
 	CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1, error)
 	CisEdgeFunctionClientSession() (*cisedgefunctionv1.EdgeFunctionsApiV1, error)
 	CisSSLClientSession() (*cissslv1.SslCertificateApiV1, error)
@@ -356,6 +358,10 @@ type clientSession struct {
 	// CIS Zone Rate Limits service options
 	cisRLErr    error
 	cisRLClient *cisratelimitv1.ZoneRateLimitsV1
+
+	// CIS Page Rules service options
+	cisPageRuleErr    error
+	cisPageRuleClient *cispagerulev1.PageRuleApiV1
 
 	// CIS Edge Functions service options
 	cisEdgeFunctionErr    error
@@ -615,6 +621,11 @@ func (sess clientSession) CisIPClientSession() (*cisipv1.CisIpApiV1, error) {
 	return sess.cisIPClient, sess.cisIPErr
 }
 
+// CIS Page Rules
+func (sess clientSession) CisPageRuleClientSession() (*cispagerulev1.PageRuleApiV1, error) {
+	return sess.cisPageRuleClient, sess.cisPageRuleErr
+}
+
 // cCIS Edge Function
 func (sess clientSession) CisEdgeFunctionClientSession() (*cisedgefunctionv1.EdgeFunctionsApiV1, error) {
 	return sess.cisEdgeFunctionClient, sess.cisEdgeFunctionErr
@@ -719,6 +730,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisIPErr = errEmptyBluemixCredentials
 		session.cisZonesErr = errEmptyBluemixCredentials
 		session.cisRLErr = errEmptyBluemixCredentials
+		session.cisPageRuleErr = errEmptyBluemixCredentials
 		session.cisEdgeFunctionErr = errEmptyBluemixCredentials
 		session.cisSSLErr = errEmptyBluemixCredentials
 		session.cisDomainSettingsErr = errEmptyBluemixCredentials
@@ -1146,6 +1158,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisRLErr = fmt.Errorf(
 			"Error occured while cofiguring CIS Zone Rate Limit service: %s",
 			session.cisRLErr)
+	}
+
+	// IBM Network CIS Page Rules
+	cisPageRuleOpt := &cispagerulev1.PageRuleApiV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		ZoneID:        core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisPageRuleClient, session.cisPageRuleErr = cispagerulev1.NewPageRuleApiV1(cisPageRuleOpt)
+	if session.cisPageRuleErr != nil {
+		session.cisPageRuleErr = fmt.Errorf(
+			"Error occured while cofiguring CIS Page Rule service: %s",
+			session.cisPageRuleErr)
 	}
 
 	// IBM Network CIS Edge Function
