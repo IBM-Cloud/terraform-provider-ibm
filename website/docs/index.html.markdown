@@ -12,16 +12,48 @@ The IBM Cloud provider is used to manage IBM Cloud resources. The provider must 
 
 Use the navigation menu on the left to read about the available data sources and resources.
 
-## Example Usage
+## Example Usage of Provider
 
+Terraform 0.13 and later:
+```hcl
+terraform {
+  required_providers {
+    ibm = {
+      source = "IBM-Cloud/ibm"
+      version = "~> 1.12.0"
+    }
+  }
+}
+
+# Configure the IBM Provider
+provider "ibm" {
+  region = "us-south"
+}
+
+# Create a VPC
+resource "ibm_is_vpc" "testacc_vpc" {
+  name = "test-vpc"
+}
+
+```
+
+Terraform 0.12 and earlier:
+```hcl
+# Configure the IBM Provider
+
+provider "ibm" {
+  version = "~> 1.12.0"
+  region = "us-south"
+}
+
+# Create a VPC
+resource "ibm_is_vpc" "testacc_vpc" {
+  name = "test-vpc"
+}
+```
+## Example Usage of Resources:
 
 ```hcl
-# Configure the IBM Cloud Provider
-provider "ibm" {
-  ibmcloud_api_key      = var.ibm_bmx_api_key
-  iaas_classic_username = var.ibm_sl_username
-  iaas_classic_api_key  = var.ibm_sl_api_key
-}
 
 # Create an IBM Cloud infrastructure SSH key. You can find the SSH key surfaces in the infrastructure console under Devices > Manage > SSH Keys
 resource "ibm_compute_ssh_key" "test_key_1" {
@@ -80,7 +112,7 @@ resource "ibm_is_subnet" "testacc_subnet" {
 
 resource "ibm_is_ssh_key" "testacc_sshkey" {
   name       = "testssh1"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
+  public_key = "<your_public_ssh_key>"
 }
 
 resource "ibm_is_instance" "testacc_instance" {
@@ -126,7 +158,6 @@ provider "ibm" {
 }
 ```
 
-
 ### Environment variables
 
 You can provide your credentials by exporting the `IC_API_KEY`, `IAAS_CLASSIC_USERNAME`, and `IAAS_CLASSIC_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud Classic Infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.
@@ -138,11 +169,20 @@ provider "ibm" {}
 Usage:
 
 ```shell
-export IC_API_KEY="bmx_api_key"
-export IAAS_CLASSIC_USERNAME="sl_username"
-export IAAS_CLASSIC_API_KEY="sl_api_key"
+export IC_API_KEY="ibmcloud_api_key"
+export IAAS_CLASSIC_USERNAME="iaas_classic_username"
+export IAAS_CLASSIC_API_KEY="iaas_classic_api_key"
 terraform plan
 ```
+***Note:***
+1. Create or find your `ibmcloud_api_key` and `iaas_classic_api_key` [here](https://cloud.ibm.com/iam/apikeys).
+  * Select `My IBM Cloud API Keys` option from view dropdown for `ibmcloud_api_key`
+  * Select `Classic Infrastructure API Keys` option from view dropdown for `iaas_classic_api_key`
+2. For `iaas_classic_username` 
+  * Go to [Users](https://cloud.ibm.com/iam/users)
+  * Click on user.
+  * Find user name in the `VPN password` section under `User Details` tab
+
 
 ## Argument Reference
 
@@ -192,3 +232,7 @@ The CloudFoundry endpoint has been updated in this release of IBM Cloud Terrafor
 ```shell
 export IBMCLOUD_UAA_ENDPOINT="https://iam.cloud.ibm.com/cloudfoundry/login/<region>/"
 ```
+
+## References 
+
+* [IBM Cloud Terraform Docs](https://cloud.ibm.com/docs/terraform?topic=terraform-tf-provider)
