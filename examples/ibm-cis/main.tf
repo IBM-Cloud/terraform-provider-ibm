@@ -237,3 +237,26 @@ data "ibm_cis_custom_pages" "custom_pages" {
   cis_id    = data.ibm_cis.cis.id
   domain_id = data.ibm_cis_domain.cis_domain.domain_id
 }
+
+# CIS Page Rule service
+resource "ibm_cis_page_rule" "page_rule" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+  targets {
+    target = "url"
+    constraint {
+      operator = "matches"
+      value    = "example.com"
+    }
+  }
+  actions {
+    id    = "email_obfuscation"
+    value = "on"
+  }
+}
+
+# CIS Page Rule data source
+data "ibm_cis_page_rules" "rules" {
+  cis_id    = ibm_cis.instance.id
+  domain_id = ibm_cis_domain.example.id
+}

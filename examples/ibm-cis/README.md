@@ -1,6 +1,6 @@
-# This example shows how to create and IBM Cloud Internet Services instance, monitor, pools, global load balancer, DNS Records, Firewall, Rate Limiting
+# This example shows how to create and IBM Cloud Internet Services instance, monitor, pools, global load balancer, DNS Records, Firewall, Rate Limiting, Page Rule, Custom Page, Routing, Cache Settings, TLS Settings, Edge Function Actions, Edge Function Tirggers
 
-This sample configuration will configure CIS instance, a health check monitor, origin pool, global load balancer, DNS Record, Firewall, Rate Limit. Also see the example  `ibm-website-multi-region` for an example of using CIS with a working website deployed across multiple regions. 
+This sample configuration will configure CIS instance, a health check monitor, origin pool, global load balancer, DNS Record, Firewall, Rate Limit, Page Rule, Custom Page, Routing, Cache Settings, TLS Settings, Edge Function Actions, Edge Function Tirggers. Also see the example `ibm-website-multi-region` for an example of using CIS with a working website deployed across multiple regions.
 
 These types of resources are supported:
 
@@ -19,6 +19,7 @@ These types of resources are supported:
 * [ CIS Routing](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-routing)
 * [ CIS Cache Settings](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-cache-settings)
 * [ CIS Custom Page](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-custom-page)
+* [ CIS Page Rule](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-page-rule)
 
 ## Terraform versions
 
@@ -26,7 +27,7 @@ Terraform 0.12. Pin module version to `~> v1.7`. Branch - `master`.
 
 Terraform 0.11. Pin module version to `~> v0.29.0`. Branch - `terraform_v0.11.x`.
 
-## Running the configuration 
+## Running the configuration
 ```shell
 terraform init
 terraform plan
@@ -38,17 +39,17 @@ For apply phase
 terraform apply
 ```
 
-For destroy see notes under **Costs** for how to preserve the CIS service instance to avoid additional billing costs for further instances. Otherwise destroy all resources. 
+For destroy see notes under **Costs** for how to preserve the CIS service instance to avoid additional billing costs for further instances. Otherwise destroy all resources.
 
 ```shell
 terraform destroy
-```  
+```
 
 ## Costs
 
-This sample uses chargable services and **will** incur costs. Billing for the CIS service instance is pro-rata'd for the remaining duration of the month it is deployed in. Execution of `terraform destroy` will result in deletion of all resources including the CIS service instance. Billing for VSIs and Cloud Load Balancing will terminate on the hour. The billing for the CIS service instance will be pro-rata'd to the end of the month. For each delete and recreate of the environment a new CIS service instance will be created and result in an additional billing instance pro-rata'd for the month. 
+This sample uses chargable services and **will** incur costs. Billing for the CIS service instance is pro-rata'd for the remaining duration of the month it is deployed in. Execution of `terraform destroy` will result in deletion of all resources including the CIS service instance. Billing for VSIs and Cloud Load Balancing will terminate on the hour. The billing for the CIS service instance will be pro-rata'd to the end of the month. For each delete and recreate of the environment a new CIS service instance will be created and result in an additional billing instance pro-rata'd for the month.
 
-To avoid additional CIS service instance costs if the sample confifuration is executed additional times, after creation the `ibm_cis` resource should be removed from the configuration and replaced with a `ibm_cis` data source. All dependent CIS Terraform resource definitions must also be updated to reference the `data source`. 
+To avoid additional CIS service instance costs if the sample confifuration is executed additional times, after creation the `ibm_cis` resource should be removed from the configuration and replaced with a `ibm_cis` data source. All dependent CIS Terraform resource definitions must also be updated to reference the `data source`.
 
 ## CIS Resources
 
@@ -141,7 +142,7 @@ resource "ibm_cis_firewall" "lockdown" {
   lockdown {
     paused = "true"
     urls   = [var.lockdown_url]
-   
+
     configurations {
       target = var.firewall_target
       value  = var.firewall_value
@@ -250,6 +251,25 @@ resource "ibm_cis_routing" "routing" {
 }
 ```
 
+`CIS Page Rule`
+```hcl
+resource "ibm_cis_page_rule" "page_rule" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+  targets {
+    target = "url"
+    constraint {
+      operator = "matches"
+      value    = "example.com"
+    }
+  }
+  actions {
+    id    = "email_obfuscation"
+    value = "on"
+  }
+}
+```
+
 ## CIS Data Sources
 `CIS Instance`
 ```hcl
@@ -303,6 +323,14 @@ data "ibm_cis_custom_pages" "custom_pages" {
 }
 ```
 
+`CIS Page rules service data source
+```hcl
+data "ibm_cis_page_rules" "rules" {
+  cis_id    = ibm_cis.instance.id
+  domain_id = ibm_cis_domain.example.id
+}
+```
+
 ## Dependencies
 
 - User has IAM security rights to create and configure an Internet Services instance
@@ -319,6 +347,7 @@ data "ibm_cis_custom_pages" "custom_pages" {
 - [Routing CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#routing)
 - [Cache Settings CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#show-cache)
 - [Custom Page CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#custom-page)
+- [Page Rule CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#page-rule-cli-ref)
 
 ## Notes
 
@@ -342,7 +371,7 @@ data "ibm_cis_custom_pages" "custom_pages" {
 |------|---------|
 | ibm | n/a |
 
-## Configuration 
+## Configuration
 
 The following variables need to be set in the `terraform.tf` file before use
 
@@ -351,7 +380,7 @@ The following variables need to be set in the `terraform.tf` file before use
 * `ibmcloud_api_key` - An API key for IBM Cloud services. If you don't have one already, go to https://cloud.ibm.com/iam/#/apikeys and create a new key.
 
 
-Customise the variables in `variables.tf` to your local environment and chosen DNS domain name. 
+Customise the variables in `variables.tf` to your local environment and chosen DNS domain name.
 
 ## Inputs
 
@@ -411,6 +440,16 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | development_mode | The Development mode setting | `string` | no |
 | query_string_sort | The Query string sort setting | `string` | no |
 | url | The URL | `string` | yes |
+| targets\_target | The Targets, which rule is added | `string` | yes |
+| constraint\_operator | The Constraint operator for page rule | `string` | yes |
+| constraint\_value | The constraint value for page rule | `string` | yes |
+| actions\_id | The page rule actions id | `string` | yes |
+| actions\_value | The value correspondig to action identifier | `string` | yes |
+| actions\_url | The url on which forwarding page rule is applied. This is required field for `forwarding_url` | `string` | no |
+| actions\_status_code | The status code of url. This is required field for `forwarding_url` | `string` | no |
+| priority | The priority of page rule | `number` | no |
+| status | The status of page rule. Default value is `active` | `string` | no |
+
 
 ## Outputs
 
@@ -419,7 +458,7 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | web\_dns\_name | Web DNS name. |
 | instance\_id | CIS Instance Id |
 | domain\_id | Domain Id. It is a combination of `domain_id`:`cis_id`|
-| monitor |Monitor Id |
+| monitor | Monitor Id |
 | rate_limit_id | Resource ID. It is a combination of `rule_id`:`domain_id`:`cis_id`|
 | edge_functions_action_id | Resource ID. It is combination of `action_name`:`domain_id`:`cis_id`|
 | edge_functions_trigger_id | Resource ID. It is combination of `trigger_id`:`domain_id`:`cis_id`|
@@ -427,6 +466,8 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | lockdown\_lockdown_id | Firewall Lockdown ID
 | access_rule\_access_rule_id | Firewall Access rule ID
 | ua_rule\_ua_rule_id | Firewall User Agent rule ID
+| rule_id | Page rule ID |
+
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
