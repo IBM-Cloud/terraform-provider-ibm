@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
@@ -842,6 +843,9 @@ func isSubnetDeleteRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.StateRe
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				return subnet, isSubnetDeleted, nil
+			}
+			if response != nil && strings.Contains(err.Error(), "please detach all network interfaces from subnet before deleting it") {
+				return subnet, isSubnetDeleting, nil
 			}
 			return subnet, "", fmt.Errorf("The Subnet %s failed to delete: %s\n%s", id, err, response)
 		}
