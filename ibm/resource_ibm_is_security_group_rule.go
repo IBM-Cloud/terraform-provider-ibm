@@ -893,8 +893,8 @@ func parseIBMISClassicSecurityGroupRuleDictionary(d *schema.ResourceData, tag st
 	err = nil
 	if parsed.remote != "" {
 		parsed.remoteAddress, parsed.remoteCIDR, parsed.remoteSecGrpID, err = inferRemoteSecurityGroup(parsed.remote)
-		remoteTemplate := &vpcclassicv1.SecurityGroupRulePrototypeRemote{}
-		remoteTemplateUpdate := &vpcclassicv1.SecurityGroupRulePatchRemote{}
+		remoteTemplate := &vpcclassicv1.SecurityGroupRuleRemotePrototype{}
+		remoteTemplateUpdate := &vpcclassicv1.SecurityGroupRuleRemotePatch{}
 		if parsed.remoteAddress != "" {
 			remoteTemplate.Address = &parsed.remoteAddress
 			remoteTemplateUpdate.Address = &parsed.remoteAddress
@@ -1030,8 +1030,8 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 	err = nil
 	if parsed.remote != "" {
 		parsed.remoteAddress, parsed.remoteCIDR, parsed.remoteSecGrpID, err = inferRemoteSecurityGroup(parsed.remote)
-		remoteTemplate := &vpcv1.SecurityGroupRulePrototypeRemote{}
-		remoteTemplateUpdate := &vpcv1.SecurityGroupRulePatchRemote{}
+		remoteTemplate := &vpcv1.SecurityGroupRuleRemotePrototype{}
+		remoteTemplateUpdate := &vpcv1.SecurityGroupRuleRemotePatch{}
 		if parsed.remoteAddress != "" {
 			remoteTemplate.Address = &parsed.remoteAddress
 			remoteTemplateUpdate.Address = &parsed.remoteAddress

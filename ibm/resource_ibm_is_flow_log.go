@@ -206,7 +206,7 @@ func resourceIBMISFlowLogCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	target := d.Get(isFlowLogTarget).(string)
-	FlowLogCollectorTargetModel := &vpcv1.FlowLogCollectorPrototypeTarget{}
+	FlowLogCollectorTargetModel := &vpcv1.FlowLogCollectorTargetPrototype{}
 	FlowLogCollectorTargetModel.ID = &target
 	createFlowLogCollectorOptionsModel.Target = FlowLogCollectorTargetModel
 
