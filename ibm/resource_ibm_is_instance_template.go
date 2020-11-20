@@ -386,7 +386,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			volInterface.Name = &namestr
 			volintf, _ := vol["volume"]
 			volintfstr := volintf.(string)
-			volInterface.Volume = &vpcv1.VolumeAttachmentPrototypeInstanceContextVolume{
+			volInterface.Volume = &vpcv1.VolumeAttachmentVolumePrototypeInstanceContext{
 				ID: &volintfstr,
 			}
 			intfs = append(intfs, *volInterface)
@@ -608,7 +608,7 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			volumeAttach[isInstanceTemplateDeleteVolume] = *volume.DeleteVolumeOnInstanceDelete
 			volumeID := map[string]interface{}{}
 			volumeIntf := volume.Volume
-			volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentPrototypeInstanceContextVolume)
+			volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentVolumePrototypeInstanceContext)
 			if volumeInst.Name != nil {
 				volumeID["name"] = *volumeInst.Name
 			}

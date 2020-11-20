@@ -206,7 +206,7 @@ func classicFipCreate(d *schema.ResourceData, meta interface{}, name string) err
 
 	if tgt, ok := d.GetOk(isFloatingIPTarget); ok {
 		target = tgt.(string)
-		floatingIPPrototype.Target = &vpcclassicv1.FloatingIPByTargetTarget{
+		floatingIPPrototype.Target = &vpcclassicv1.FloatingIPByTargetNetworkInterfaceIdentity{
 			ID: &target,
 		}
 	}
@@ -259,7 +259,7 @@ func fipCreate(d *schema.ResourceData, meta interface{}, name string) error {
 
 	if tgt, ok := d.GetOk(isFloatingIPTarget); ok {
 		target = tgt.(string)
-		floatingIPPrototype.Target = &vpcv1.FloatingIPByTargetTarget{
+		floatingIPPrototype.Target = &vpcv1.FloatingIPByTargetNetworkInterfaceIdentity{
 			ID: &target,
 		}
 	}

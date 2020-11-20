@@ -288,7 +288,7 @@ func imgCreate(d *schema.ResourceData, meta interface{}, href, name, operatingSy
 	if encryptionKey, ok := d.GetOk(isImageEncryptionKey); ok {
 		encryptionKeyStr := encryptionKey.(string)
 		// Construct an instance of the EncryptionKeyReference model
-		encryptionKeyReferenceModel := new(vpcv1.EncryptionKeyReference)
+		encryptionKeyReferenceModel := new(vpcv1.EncryptionKeyIdentity)
 		encryptionKeyReferenceModel.CRN = &encryptionKeyStr
 		imagePrototype.EncryptionKey = encryptionKeyReferenceModel
 	}

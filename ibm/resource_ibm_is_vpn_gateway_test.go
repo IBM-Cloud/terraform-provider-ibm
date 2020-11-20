@@ -94,20 +94,22 @@ func testAccCheckIBMISVPNGatewayExists(n, vpnGatewayID string) resource.TestChec
 			getvpngcptions := &vpcclassicv1.GetVPNGatewayOptions{
 				ID: &rs.Primary.ID,
 			}
-			foundvpnGateway, _, err := sess.GetVPNGateway(getvpngcptions)
+			foundvpnGatewayIntf, _, err := sess.GetVPNGateway(getvpngcptions)
 			if err != nil {
 				return err
 			}
+			foundvpnGateway := foundvpnGatewayIntf.(*vpcclassicv1.VPNGateway)
 			vpnGatewayID = *foundvpnGateway.ID
 		} else {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
 			getvpngcptions := &vpcv1.GetVPNGatewayOptions{
 				ID: &rs.Primary.ID,
 			}
-			foundvpnGateway, _, err := sess.GetVPNGateway(getvpngcptions)
+			foundvpnGatewayIntf, _, err := sess.GetVPNGateway(getvpngcptions)
 			if err != nil {
 				return err
 			}
+			foundvpnGateway := foundvpnGatewayIntf.(*vpcv1.VPNGateway)
 			vpnGatewayID = *foundvpnGateway.ID
 		}
 		return nil
@@ -119,7 +121,7 @@ func testAccCheckIBMISVPNGatewayConfig(vpc, subnet, name string) string {
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
-	
+
 	resource "ibm_is_subnet" "testacc_subnet" {
 		name = "%s"
 		vpc = "${ibm_is_vpc.testacc_vpc.id}"

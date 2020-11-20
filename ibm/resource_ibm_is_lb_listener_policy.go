@@ -317,7 +317,7 @@ func classicLbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbI
 	statusCode, statusSet := d.GetOk(isLBListenerPolicyTargetHTTPStatusCode)
 	url, urlSet := d.GetOk(isLBListenerPolicyTargetURL)
 
-	var target vpcclassicv1.LoadBalancerListenerPolicyPrototypeTargetIntf
+	var target vpcclassicv1.LoadBalancerListenerPolicyTargetPrototypeIntf
 
 	if actionChk.(string) == "forward" {
 		if targetIDSet {
@@ -329,7 +329,7 @@ func classicLbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbI
 			}
 
 			//id := lbPoolID.(string)
-			target = &vpcclassicv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity{
+			target = &vpcclassicv1.LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity{
 				ID: &id,
 			}
 		} else {
@@ -337,7 +337,7 @@ func classicLbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbI
 		}
 	} else if actionChk.(string) == "redirect" {
 
-		urlPrototype := vpcclassicv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype{}
+		urlPrototype := vpcclassicv1.LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype{}
 
 		if statusSet {
 			sc := int64(statusCode.(int))
@@ -533,7 +533,7 @@ func lbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, list
 	statusCode, statusSet := d.GetOk(isLBListenerPolicyTargetHTTPStatusCode)
 	url, urlSet := d.GetOk(isLBListenerPolicyTargetURL)
 
-	var target vpcv1.LoadBalancerListenerPolicyPrototypeTargetIntf
+	var target vpcv1.LoadBalancerListenerPolicyTargetPrototypeIntf
 
 	if actionChk.(string) == "forward" {
 		if targetIDSet {
@@ -544,7 +544,7 @@ func lbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, list
 				return err
 			}
 
-			target = &vpcv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity{
+			target = &vpcv1.LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity{
 				ID: &id,
 			}
 		} else {
@@ -552,7 +552,7 @@ func lbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, list
 		}
 	} else if actionChk.(string) == "redirect" {
 
-		urlPrototype := vpcv1.LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype{}
+		urlPrototype := vpcv1.LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype{}
 
 		if statusSet {
 			sc := int64(statusCode.(int))
@@ -894,7 +894,7 @@ func classicLbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbI
 		hasChanged = true
 	}
 
-	var target vpcclassicv1.LoadBalancerListenerPolicyPatchTargetIntf
+	var target vpcclassicv1.LoadBalancerListenerPolicyTargetPatchIntf
 
 	//If Action is forward and TargetID is changed, set the target to pool ID
 	if d.Get(isLBListenerPolicyAction).(string) == "forward" && d.HasChange(isLBListenerPolicyTargetID) {
@@ -905,7 +905,7 @@ func classicLbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbI
 			return err
 		}
 
-		target = &vpcclassicv1.LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity{
+		target = &vpcclassicv1.LoadBalancerListenerPolicyTargetPatch{
 			ID: &id,
 		}
 
@@ -915,7 +915,7 @@ func classicLbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbI
 		//if Action is redirect and either status code or URL chnaged, set accordingly
 		//LoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRedirectURLPatch
 
-		redirectPatch := vpcclassicv1.LoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRedirectURLPatch{}
+		redirectPatch := vpcclassicv1.LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerPolicyRedirectURLPatch{}
 
 		targetChange := false
 		if d.HasChange(isLBListenerPolicyTargetHTTPStatusCode) {
@@ -994,7 +994,7 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 		hasChanged = true
 	}
 
-	var target vpcv1.LoadBalancerListenerPolicyPatchTargetIntf
+	var target vpcv1.LoadBalancerListenerPolicyTargetPatchIntf
 	//If Action is forward and TargetID is changed, set the target to pool ID
 	if d.Get(isLBListenerPolicyAction).(string) == "forward" && d.HasChange(isLBListenerPolicyTargetID) {
 
@@ -1003,7 +1003,7 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 		if err != nil {
 			return err
 		}
-		target = &vpcv1.LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity{
+		target = &vpcv1.LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity{
 			ID: &id,
 		}
 
@@ -1013,7 +1013,7 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 		//if Action is redirect and either status code or URL chnaged, set accordingly
 		//LoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRedirectURLPatch
 
-		redirectPatch := vpcv1.LoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRedirectURLPatch{}
+		redirectPatch := vpcv1.LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerPolicyRedirectURLPatch{}
 
 		targetChange := false
 		if d.HasChange(isLBListenerPolicyTargetHTTPStatusCode) {

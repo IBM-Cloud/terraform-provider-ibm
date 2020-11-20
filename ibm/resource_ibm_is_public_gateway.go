@@ -212,7 +212,7 @@ func classicPgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone 
 	floatingipID := ""
 	floatingipadd := ""
 	if floatingipdataIntf, ok := d.GetOk(isPublicGatewayFloatingIP); ok && floatingipdataIntf != nil {
-		fip := &vpcclassicv1.PublicGatewayPrototypeFloatingIP{}
+		fip := &vpcclassicv1.PublicGatewayFloatingIPPrototype{}
 		floatingipdata := floatingipdataIntf.(map[string]interface{})
 		if floatingipidintf, ok := floatingipdata["id"]; ok && floatingipidintf != nil {
 			floatingipID = floatingipidintf.(string)
@@ -267,7 +267,7 @@ func pgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone string)
 	floatingipID := ""
 	floatingipadd := ""
 	if floatingipdataIntf, ok := d.GetOk(isPublicGatewayFloatingIP); ok && floatingipdataIntf != nil {
-		fip := &vpcv1.PublicGatewayPrototypeFloatingIP{}
+		fip := &vpcv1.PublicGatewayFloatingIPPrototype{}
 		floatingipdata := floatingipdataIntf.(map[string]interface{})
 		if floatingipidintf, ok := floatingipdata["id"]; ok && floatingipidintf != nil {
 			floatingipID = floatingipidintf.(string)

@@ -66,7 +66,7 @@ func classicZoneGet(d *schema.ResourceData, meta interface{}, regionName, zoneNa
 	}
 	getRegionZoneOptions := &vpcclassicv1.GetRegionZoneOptions{
 		RegionName: &regionName,
-		ZoneName:   &zoneName,
+		Name:       &zoneName,
 	}
 	zone, _, err := sess.GetRegionZone(getRegionZoneOptions)
 	if err != nil {
@@ -88,7 +88,7 @@ func zoneGet(d *schema.ResourceData, meta interface{}, regionName, zoneName stri
 	}
 	getRegionZoneOptions := &vpcv1.GetRegionZoneOptions{
 		RegionName: &regionName,
-		ZoneName:   &zoneName,
+		Name:       &zoneName,
 	}
 	zone, _, err := sess.GetRegionZone(getRegionZoneOptions)
 	if err != nil {
