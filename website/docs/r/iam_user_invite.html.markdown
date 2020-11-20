@@ -232,6 +232,44 @@ Nested `resources` blocks have the following structure:
 
 **NOTE**: ibmcloud `Lite account` does not support classic infrastructure roles. For more info refer [whats available in lite account?](https://cloud.ibm.com/docs/account?topic=account-accounts#lite-account-features).
 
+## Attribute Reference
+
+The following attributes are exported:
+* `number_of_invited_users` - Number of users invited to a particular account
+* `invited_users` - List of invited users.
+Nested `invited_users` block have the following structure:
+  * `user_id` - Email Id of the member
+  * `user_policies` - List of policies associated to a particular user.
+  Nested `user_policies` block have the following structure:
+    * `id` - Policy ID
+    * `roles` - comma separated list of roles
+    * `resources` - A nested block describes the resource of this policy.
+    Nested `resources` block have the following structure: 
+      * `service` - service name of the policy definition.
+      * `resource_instance_id` - ID of the resource instance of the policy definition.
+      * `region` - region of the policy definition.
+      * `resource_type` - resource type of the policy definition.
+      * `resource` - resource of the policy definition.
+      * `resource_group_id` - ID of the resource group.
+      * `attributes` - set of resource attributes
+* `access_groups` - List of access groups
+Nested `access_groups` block have the following structure: 
+  * `name` - Name of the access group
+  * `policies` - access group policies of invited user
+  Nested `policies` block have the following structure: 
+    * `id` - policy ID
+    * `roles` - roles associted to policy
+    * `resources` - A nested block describes the resource of this policy.
+    Nested `resources` block have the following structure: 
+      * `service` - service name of the policy definition.
+      * `resource_instance_id` - ID of the resource instance of the policy definition.
+      * `region` - region of the policy definition.
+      * `resource_type` - resource type of the policy definition.
+      * `resource` - resource of the policy definition.
+      * `resource_group_id` - ID of the resource group.
+      * `attributes` - set of resource attributes
+
+
 ## Import
 
 Import functionality not supported for this resource.
