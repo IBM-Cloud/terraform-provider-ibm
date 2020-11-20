@@ -19,11 +19,8 @@ These types of resources are supported:
 * [ CIS Routing](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-routing)
 * [ CIS Cache Settings](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-cache-settings)
 * [ CIS Custom Page](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-custom-page)
-<<<<<<< HEAD
 * [ CIS Page Rule](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-page-rule)
-=======
 * [ CIS WAF Package ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-waf-package)
->>>>>>> d286395d... CIS WAF Package resource changes
 
 ## Terraform versions
 
@@ -255,7 +252,6 @@ resource "ibm_cis_routing" "routing" {
 }
 ```
 
-<<<<<<< HEAD
 `CIS Page Rule`
 ```hcl
 resource "ibm_cis_page_rule" "page_rule" {
@@ -272,7 +268,8 @@ resource "ibm_cis_page_rule" "page_rule" {
     id    = "email_obfuscation"
     value = "on"
   }
-=======
+```
+
 `CIS WAF Package`
 ```hcl
 resource "ibm_cis_waf_package" "test" {
@@ -281,7 +278,6 @@ resource "ibm_cis_waf_package" "test" {
   package_id  = "c504870194831cd12c3fc0284f294abb"
   sensitivity = "low"
   action_mode = "block"
->>>>>>> d286395d... CIS WAF Package resource changes
 }
 ```
 
@@ -338,19 +334,19 @@ data "ibm_cis_custom_pages" "custom_pages" {
 }
 ```
 
-<<<<<<< HEAD
-`CIS Page rules service data source
+`CIS Page rules service data source`
 ```hcl
 data "ibm_cis_page_rules" "rules" {
   cis_id    = ibm_cis.instance.id
   domain_id = ibm_cis_domain.example.id
-=======
+}
+```
+
 `CIS WAF Packages data source`
 ```hcl
 data "ibm_cis_waf_packages" "packages" {
   cis_id    = data.ibm_cis.cis.id
   domain_id = data.ibm_cis_domain.cis_domain.domain_id
->>>>>>> d286395d... CIS WAF Package resource changes
 }
 ```
 
@@ -370,11 +366,8 @@ data "ibm_cis_waf_packages" "packages" {
 - [Routing CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#routing)
 - [Cache Settings CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#show-cache)
 - [Custom Page CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#custom-page)
-<<<<<<< HEAD
 - [Page Rule CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#page-rule-cli-ref)
-=======
 - [WAF Packages CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#list-waf-packages)
->>>>>>> d286395d... CIS WAF Package resource changes
 
 ## Notes
 
@@ -467,7 +460,6 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | development_mode | The Development mode setting | `string` | no |
 | query_string_sort | The Query string sort setting | `string` | no |
 | url | The URL | `string` | yes |
-<<<<<<< HEAD
 | targets\_target | The Targets, which rule is added | `string` | yes |
 | constraint\_operator | The Constraint operator for page rule | `string` | yes |
 | constraint\_value | The constraint value for page rule | `string` | yes |
@@ -477,12 +469,9 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | actions\_status_code | The status code of url. This is required field for `forwarding_url` | `string` | no |
 | priority | The priority of page rule | `number` | no |
 | status | The status of page rule. Default value is `active` | `string` | no |
-
-=======
 | package_id | The WAF Rule Package ID | `string` | yes |
 | sensitivity | The WAF package sensitivity. Valid values are `high`, `medium`, `low`, `off` | `string` | yes |
 | action_mode | The WAF package action mode. Valid values are `simulate`, `block`, `challenge` | `string` | yes |
->>>>>>> d286395d... CIS WAF Package resource changes
 
 ## Outputs
 
@@ -499,14 +488,10 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | lockdown\_lockdown_id | Firewall Lockdown ID
 | access_rule\_access_rule_id | Firewall Access rule ID
 | ua_rule\_ua_rule_id | Firewall User Agent rule ID
-<<<<<<< HEAD
 | rule_id | Page rule ID |
-
-=======
 | name | waf package name |
 | description | waf package description |
 | detection_mode | waf package detection mode |
->>>>>>> d286395d... CIS WAF Package resource changes
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 

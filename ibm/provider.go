@@ -501,11 +501,8 @@ func Validator() ValidatorDict {
 				"ibm_cis_domain_settings":              resourceIBMCISDomainSettingValidator(),
 				"ibm_cis_tls_settings":                 resourceIBMCISTLSSettingsValidator(),
 				"ibm_cis_routing":                      resourceIBMCISRoutingValidator(),
-<<<<<<< HEAD
 				"ibm_cis_page_rule":                    resourceCISPageRuleValidator(),
-=======
 				"ibm_cis_waf_package":                  resourceIBMCISWAFPackageValidator(),
->>>>>>> d286395d... CIS WAF Package resource changes
 				"ibm_cis_cache_settings":               resourceIBMCISCacheSettingsValidator(),
 				"ibm_cis_custom_page":                  resourceIBMCISCustomPageValidator(),
 				"ibm_cis_firewall":                     resourceIBMCISFirewallValidator(),
