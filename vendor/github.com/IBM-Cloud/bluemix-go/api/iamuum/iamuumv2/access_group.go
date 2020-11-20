@@ -24,7 +24,7 @@ func (g *Groups) Resources() []interface{} {
 }
 
 type AccessGroupRepository interface {
-	List(accountID string) ([]models.AccessGroupV2, error)
+	List(accountID string, queryParams ...string) ([]models.AccessGroupV2, error)
 	Create(group models.AccessGroupV2, accountID string) (*models.AccessGroupV2, error)
 	FindByName(name string, accountID string) ([]models.AccessGroupV2, error)
 	Delete(accessGroupID string, recursive bool) error
@@ -47,12 +47,20 @@ func NewAccessGroupRepository(c *client.Client) AccessGroupRepository {
 	}
 }
 
-func (r *accessGroupRepository) List(accountID string) ([]models.AccessGroupV2, error) {
+func (r *accessGroupRepository) List(accountID string, queryParams ...string) ([]models.AccessGroupV2, error) {
 	var groups []models.AccessGroupV2
-	_, err := r.client.GetPaginated(fmt.Sprintf("/v2/groups?account_id=%s", url.QueryEscape(accountID)), NewPaginatedResourcesHandler(&Groups{}), func(v interface{}) bool {
-		groups = append(groups, v.(models.AccessGroupV2))
-		return true
-	})
+	var err error
+	if len(queryParams) != 0 {
+		_, err = r.client.GetPaginated(fmt.Sprintf("/v2/groups?account_id=%s&iam_id=%s", url.QueryEscape(accountID), queryParams[0]), NewPaginatedResourcesHandler(&Groups{}), func(v interface{}) bool {
+			groups = append(groups, v.(models.AccessGroupV2))
+			return true
+		})
+	} else {
+		_, err = r.client.GetPaginated(fmt.Sprintf("/v2/groups?account_id=%s", url.QueryEscape(accountID)), NewPaginatedResourcesHandler(&Groups{}), func(v interface{}) bool {
+			groups = append(groups, v.(models.AccessGroupV2))
+			return true
+		})
+	}
 	if err != nil {
 		return []models.AccessGroupV2{}, err
 	}

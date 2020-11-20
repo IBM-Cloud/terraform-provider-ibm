@@ -220,6 +220,184 @@ func resourceIBMUserInvite() *schema.Resource {
 					},
 				},
 			},
+			"number_of_invited_users": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Number of users invited to an account",
+			},
+			"invited_users": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+
+						"user_id": {
+							Description: "ibm id or email of user",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+
+						"user_policies": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+
+									"roles": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Elem:        &schema.Schema{Type: schema.TypeString},
+										Description: "Role names of the policy definition",
+									},
+
+									"resources": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"service": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Service name of the policy definition",
+												},
+
+												"resource_instance_id": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "ID of resource instance of the policy definition",
+												},
+
+												"region": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Region of the policy definition",
+												},
+
+												"resource_type": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Resource type of the policy definition",
+												},
+
+												"resource": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Resource of the policy definition",
+												},
+
+												"resource_group_id": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "ID of the resource group.",
+												},
+
+												"attributes": {
+													Type:        schema.TypeMap,
+													Computed:    true,
+													Description: "Set resource attributes in the form of 'name=value,name=value....",
+													Elem:        schema.TypeString,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+
+						"access_groups": {
+							Description: "access group ids to associate the inviting user",
+							Type:        schema.TypeList,
+							Computed:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+
+									"name": {
+										Description: "Name of the access group",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+
+									"policies": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+
+												"id": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+
+												"roles": {
+													Type:        schema.TypeList,
+													Computed:    true,
+													Elem:        &schema.Schema{Type: schema.TypeString},
+													Description: "Role names of the policy definition",
+												},
+
+												"resources": {
+													Type:     schema.TypeList,
+													Computed: true,
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"service": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Service name of the policy definition",
+															},
+
+															"resource_instance_id": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "ID of resource instance of the policy definition",
+															},
+
+															"region": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Region of the policy definition",
+															},
+
+															"resource_type": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Resource type of the policy definition",
+															},
+
+															"resource": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Resource of the policy definition",
+															},
+
+															"resource_group_id": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "ID of the resource group.",
+															},
+
+															"attributes": {
+																Type:        schema.TypeMap,
+																Computed:    true,
+																Description: "Set resource attributes in the form of 'name=value,name=value....",
+																Elem:        schema.TypeString,
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"classic_infra_roles": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -359,25 +537,117 @@ func resourceIBMIAMGetUsers(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	Client := userManagement.UserInvite()
-
+	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	if err != nil {
+		return err
+	}
+	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
+	if err != nil {
+		return err
+	}
 	accountID, err := getAccountID(d, meta)
 	if err != nil {
 		return err
 	}
-
 	res, err := Client.GetUsers(accountID)
 	if err != nil {
 		return err
 	}
-
 	users := make([]string, 0)
+	invitedUsers := make([]map[string]interface{}, 0, len(res.Resources))
+
 	for _, user := range res.Resources {
+
 		if user.AccountID != accountID {
 			users = append(users, user.Email)
 		}
-	}
-	return nil
+		/****** For each user *******************
+		    1) user_id
+		    2) user_level_policies
+		    3) List of access groups
+		            > Name of access group
+		            > acees group level policies
+		********************************************/
+		//Get User level IAM policies
+		policies, err := iampapClient.V1Policy().List(iampapv1.SearchParams{
+			AccountID: accountID,
+			IAMID:     user.IamID,
+			Type:      iampapv1.AccessPolicyType,
+		})
 
+		if err != nil {
+			return fmt.Errorf("Error retrieving user policies: %s", err)
+		}
+		userPolicies := make([]map[string]interface{}, 0, len(policies))
+		for _, policy := range policies {
+			//populate ploicy Roles
+			roles := make([]string, len(policy.Roles))
+			for i, role := range policy.Roles {
+				roles[i] = role.Name
+			}
+			//populate policy resources
+			resources := flattenPolicyResource(policy.Resources)
+			p := map[string]interface{}{
+				"id":        policy.ID,
+				"roles":     roles,
+				"resources": resources,
+			}
+			userPolicies = append(userPolicies, p)
+		}
+
+		// Get AccessGroups associated with user
+		retreivedGroups, err := iamuumClient.AccessGroup().List(accountID, user.IamID)
+		if err != nil {
+			return fmt.Errorf("Error retrieving access groups: %s", err)
+		}
+
+		accGroupList := make([]map[string]interface{}, 0, len(retreivedGroups))
+		//Get the policies for each access group
+		for _, grpData := range retreivedGroups {
+			accgrpPolicy, err := iampapClient.V1Policy().List(iampapv1.SearchParams{
+				AccountID:     accountID,
+				AccessGroupID: grpData.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("Error retrieving access group policy: %s", err)
+			}
+
+			//Fetch access group policies
+			grpPolicies := make([]map[string]interface{}, 0, len(accgrpPolicy))
+			for _, policy := range accgrpPolicy {
+				//populate ploicy Roles
+				roles := make([]string, len(policy.Roles))
+				for i, role := range policy.Roles {
+					roles[i] = role.Name
+				}
+				//populate policy resources
+				resources := flattenPolicyResource(policy.Resources)
+				p := map[string]interface{}{
+					"id":        policy.ID,
+					"roles":     roles,
+					"resources": resources,
+				}
+				grpPolicies = append(grpPolicies, p)
+			}
+			//populate name & policies of a access group
+			agInfo := map[string]interface{}{
+				"name":     grpData.Name,
+				"policies": grpPolicies,
+			}
+			//add agInfo to list of access groups
+			accGroupList = append(accGroupList, agInfo)
+		}
+		userInfo := map[string]interface{}{
+			"user_id":       user.Email,
+			"user_policies": userPolicies,
+			"access_groups": accGroupList,
+		}
+		invitedUsers = append(invitedUsers, userInfo)
+	}
+	//set the number of users in an account
+	d.Set("number_of_invited_users", len(res.Resources)-1)
+	d.Set("invited_users", invitedUsers)
+	return nil
 }
 
 func resourceIBMIAMUpdateUserProfile(d *schema.ResourceData, meta interface{}) error {
