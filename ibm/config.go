@@ -31,6 +31,7 @@ import (
 	cissslv1 "github.com/IBM/networking-go-sdk/sslcertificateapiv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	cisuarulev1 "github.com/IBM/networking-go-sdk/useragentblockingrulesv1"
+	ciswafpackagev1 "github.com/IBM/networking-go-sdk/wafrulepackagesapiv1"
 	cisaccessrulev1 "github.com/IBM/networking-go-sdk/zonefirewallaccessrulesv1"
 	cislockdownv1 "github.com/IBM/networking-go-sdk/zonelockdownv1"
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
@@ -208,6 +209,7 @@ type ClientSession interface {
 	CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1, error)
 	CisEdgeFunctionClientSession() (*cisedgefunctionv1.EdgeFunctionsApiV1, error)
 	CisSSLClientSession() (*cissslv1.SslCertificateApiV1, error)
+	CisWAFPackageClientSession() (*ciswafpackagev1.WafRulePackagesApiV1, error)
 	CisDomainSettingsClientSession() (*cisdomainsettingsv1.ZonesSettingsV1, error)
 	CisRoutingClientSession() (*cisroutingv1.RoutingV1, error)
 	CisCacheClientSession() (*ciscachev1.CachingApiV1, error)
@@ -370,6 +372,10 @@ type clientSession struct {
 	// CIS SSL certificate service options
 	cisSSLErr    error
 	cisSSLClient *cissslv1.SslCertificateApiV1
+
+	// CIS WAF Package service options
+	cisWAFPackageErr    error
+	cisWAFPackageClient *ciswafpackagev1.WafRulePackagesApiV1
 
 	// CIS Zone Setting service options
 	cisDomainSettingsErr    error
@@ -636,6 +642,11 @@ func (sess clientSession) CisSSLClientSession() (*cissslv1.SslCertificateApiV1, 
 	return sess.cisSSLClient, sess.cisSSLErr
 }
 
+// CIS WAF Packages
+func (sess clientSession) CisWAFPackageClientSession() (*ciswafpackagev1.WafRulePackagesApiV1, error) {
+	return sess.cisWAFPackageClient, sess.cisWAFPackageErr
+}
+
 // CIS Zone Settings
 func (sess clientSession) CisDomainSettingsClientSession() (*cisdomainsettingsv1.ZonesSettingsV1, error) {
 	return sess.cisDomainSettingsClient, sess.cisDomainSettingsErr
@@ -733,6 +744,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisPageRuleErr = errEmptyBluemixCredentials
 		session.cisEdgeFunctionErr = errEmptyBluemixCredentials
 		session.cisSSLErr = errEmptyBluemixCredentials
+		session.cisWAFPackageErr = errEmptyBluemixCredentials
 		session.cisDomainSettingsErr = errEmptyBluemixCredentials
 		session.cisRoutingErr = errEmptyBluemixCredentials
 		session.cisCacheErr = errEmptyBluemixCredentials
@@ -1197,12 +1209,26 @@ func (c *Config) ClientSession() (interface{}, error) {
 		Authenticator:  authenticator,
 	}
 
-	// IBM Network CIS Edge Function
 	session.cisSSLClient, session.cisSSLErr = cissslv1.NewSslCertificateApiV1(cisSSLOpt)
 	if session.cisSSLErr != nil {
 		session.cisSSLErr =
 			fmt.Errorf("Error occured while configuring CIS SSL certificate service: %s",
 				session.cisSSLErr)
+	}
+
+	// IBM Network CIS WAF Package
+	cisWAFPackageOpt := &ciswafpackagev1.WafRulePackagesApiV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		ZoneID:        core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisWAFPackageClient, session.cisWAFPackageErr =
+		ciswafpackagev1.NewWafRulePackagesApiV1(cisWAFPackageOpt)
+	if session.cisWAFPackageErr != nil {
+		session.cisWAFPackageErr =
+			fmt.Errorf("Error occured while configuration CIS WAF Package service: %s",
+				session.cisWAFPackageErr)
 	}
 
 	// IBM Network CIS Domain settings
