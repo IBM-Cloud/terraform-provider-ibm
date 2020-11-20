@@ -174,6 +174,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_cis_healthchecks":                   dataSourceIBMCISHealthChecks(),
 			"ibm_cis_domain":                         dataSourceIBMCISDomain(),
 			"ibm_cis_firewall":                       dataIBMCISFirewallsRecord(),
+			"ibm_cis_waf_packages":                   dataSourceIBMCISWAFPackages(),
 			"ibm_cis_rate_limit":                     dataSourceIBMCISRateLimit(),
 			"ibm_cis_ip_addresses":                   dataSourceIBMCISIP(),
 			"ibm_cis_edge_functions_actions":         dataSourceIBMCISEdgeFunctionsActions(),
@@ -335,6 +336,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_cis_edge_functions_action":                      resourceIBMCISEdgeFunctionsAction(),
 			"ibm_cis_edge_functions_trigger":                     resourceIBMCISEdgeFunctionsTrigger(),
 			"ibm_cis_tls_settings":                               resourceIBMCISTLSSettings(),
+			"ibm_cis_waf_package":                                resourceIBMCISWAFPackage(),
 			"ibm_cis_routing":                                    resourceIBMCISRouting(),
 			"ibm_cis_cache_settings":                             resourceIBMCISCacheSettings(),
 			"ibm_cis_custom_page":                                resourceIBMCISCustomPage(),
@@ -499,7 +501,11 @@ func Validator() ValidatorDict {
 				"ibm_cis_domain_settings":              resourceIBMCISDomainSettingValidator(),
 				"ibm_cis_tls_settings":                 resourceIBMCISTLSSettingsValidator(),
 				"ibm_cis_routing":                      resourceIBMCISRoutingValidator(),
+<<<<<<< HEAD
 				"ibm_cis_page_rule":                    resourceCISPageRuleValidator(),
+=======
+				"ibm_cis_waf_package":                  resourceIBMCISWAFPackageValidator(),
+>>>>>>> d286395d... CIS WAF Package resource changes
 				"ibm_cis_cache_settings":               resourceIBMCISCacheSettingsValidator(),
 				"ibm_cis_custom_page":                  resourceIBMCISCustomPageValidator(),
 				"ibm_cis_firewall":                     resourceIBMCISFirewallValidator(),

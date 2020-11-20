@@ -238,6 +238,7 @@ data "ibm_cis_custom_pages" "custom_pages" {
   domain_id = data.ibm_cis_domain.cis_domain.domain_id
 }
 
+<<<<<<< HEAD
 # CIS Page Rule service
 resource "ibm_cis_page_rule" "page_rule" {
   cis_id    = data.ibm_cis.cis.id
@@ -259,4 +260,19 @@ resource "ibm_cis_page_rule" "page_rule" {
 data "ibm_cis_page_rules" "rules" {
   cis_id    = ibm_cis.instance.id
   domain_id = ibm_cis_domain.example.id
+=======
+# CIS WAF Packages
+resource "ibm_cis_waf_package" "test" {
+  cis_id      = data.ibm_cis.cis.id
+  domain_id   = data.ibm_cis_domain.cis_domain.domain_id
+  package_id  = "c504870194831cd12c3fc0284f294abb"
+  sensitivity = "low"
+  action_mode = "block"
+}
+
+# CIS WAF Packages data source
+data "ibm_cis_waf_packages" "packages" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+>>>>>>> d286395d... CIS WAF Package resource changes
 }

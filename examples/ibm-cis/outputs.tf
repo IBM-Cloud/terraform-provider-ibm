@@ -45,6 +45,11 @@ output "ibm_cis_firewall_ouput" {
   value = ibm_cis_firewall.lockdown
 }
 
+<<<<<<< HEAD
 output "ibm_cis_page_rule_output" {
   value = ibm_cis_page_rule.page_rule
+=======
+output "ibm_cis_waf_package_output" {
+  value = ibm_cis_waf_package.test
+>>>>>>> d286395d... CIS WAF Package resource changes
 }
