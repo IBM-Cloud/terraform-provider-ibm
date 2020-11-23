@@ -19,7 +19,6 @@ const (
 	isFlowLogTarget                = "target"
 	isFlowLogResourceGroup         = "resource_group"
 	isFlowLogTargetType            = "resource_type"
-	isFlowLogTargetID              = "id"
 	isFlowLogCreatedAt             = "created_at"
 	isFlowLogCrn                   = "crn"
 	isFlowLogLifecycleState        = "lifecycle_state"
@@ -253,9 +252,6 @@ func resourceIBMISFlowLogRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error Getting Flow Log Collector: %s\n%s", err, response)
 	}
 
-	if flowlogCollector.ID != nil {
-		d.Set("id", *flowlogCollector.ID)
-	}
 	if flowlogCollector.Name != nil {
 		d.Set(isFlowLogName, *flowlogCollector.Name)
 	}

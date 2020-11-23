@@ -139,7 +139,6 @@ func resourceIBMPrivateDNSZoneRead(d *schema.ResourceData, meta interface{}) err
 		return fmt.Errorf("Error fetching pdns zone:%s\n%s", err, detail)
 	}
 
-	d.Set("id", response.ID)
 	d.Set(pdnsZoneID, response.ID)
 	d.Set(pdnsInstanceID, response.InstanceID)
 	d.Set(pdnsZoneName, response.Name)

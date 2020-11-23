@@ -17,7 +17,6 @@ func TestAccIBMKMSResource_basic(t *testing.T) {
 	bucketName := fmt.Sprintf("bucket-test77")
 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
 	payload := "LqMWNtSi3Snr4gFNO0PsFFLFRNs57mSXCQE7O2oE+g0="
-	hpcskeyName := fmt.Sprintf("hpcs_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -41,6 +40,17 @@ func TestAccIBMKMSResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
 				),
 			},
+		},
+	})
+}
+func TestAccIBMKMSHPCSResource_basic(t *testing.T) {
+	t.Skip()
+	hpcskeyName := fmt.Sprintf("hpcs_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMKmsResourceHpcsConfig(hpcsInstanceID, hpcskeyName),
 				Check: resource.ComposeTestCheckFunc(
@@ -60,7 +70,8 @@ func TestAccIBMKMSResource_ValidExpDate(t *testing.T) {
 	hours := time.Duration(rand.Intn(24) + 1)
 	mins := time.Duration(rand.Intn(60) + 1)
 	sec := time.Duration(rand.Intn(60) + 1)
-	expirationDateValid := ((time.Now().Add(time.Hour*hours + time.Minute*mins + time.Second*sec)).Format(time.RFC3339))
+	loc, _ := time.LoadLocation("UTC")
+	expirationDateValid := ((time.Now().In(loc).Add(time.Hour*hours + time.Minute*mins + time.Second*sec)).Format(time.RFC3339))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

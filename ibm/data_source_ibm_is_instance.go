@@ -425,7 +425,6 @@ func classicInstanceGetByName(d *schema.ResourceData, meta interface{}, name str
 		if *instance.Name == name {
 			d.SetId(*instance.ID)
 			id := *instance.ID
-			d.Set("id", *instance.ID)
 			d.Set(isInstanceName, *instance.Name)
 			if instance.Profile != nil {
 				d.Set(isInstanceProfile, *instance.Profile.Name)
@@ -706,7 +705,6 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		if *instance.Name == name {
 			d.SetId(*instance.ID)
 			id := *instance.ID
-			d.Set("id", *instance.ID)
 			d.Set(isInstanceName, *instance.Name)
 			if instance.Profile != nil {
 				d.Set(isInstanceProfile, *instance.Profile.Name)

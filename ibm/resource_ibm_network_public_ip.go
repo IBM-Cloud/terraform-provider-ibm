@@ -124,7 +124,6 @@ func resourceIBMNetworkPublicIpRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("Error retrieving network public Ip: %s", err)
 	}
 
-	d.Set("id", *globalIp.Id)
 	d.Set("ip_address", *globalIp.IpAddress.IpAddress)
 	if globalIp.DestinationIpAddress != nil {
 		d.Set("routes_to", *globalIp.DestinationIpAddress.IpAddress)

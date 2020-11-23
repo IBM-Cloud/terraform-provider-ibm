@@ -539,7 +539,6 @@ func classicImgGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("Error Getting Image (%s): %s\n%s", id, err, response)
 	}
-	d.Set("id", *image.ID)
 	// d.Set(isImageArchitecure, image.Architecture)
 	d.Set(isImageMinimumProvisionedSize, *image.MinimumProvisionedSize)
 	d.Set(isImageName, *image.Name)
@@ -594,7 +593,6 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("Error Getting Image (%s): %s\n%s", id, err, response)
 	}
-	d.Set("id", *image.ID)
 	// d.Set(isImageArchitecure, image.Architecture)
 	d.Set(isImageMinimumProvisionedSize, *image.MinimumProvisionedSize)
 	d.Set(isImageName, *image.Name)

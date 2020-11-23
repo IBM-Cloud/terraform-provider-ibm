@@ -570,7 +570,6 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		return fmt.Errorf("Error getting VPC : %s\n%s", err, response)
 	}
 
-	d.Set("id", *vpc.ID)
 	d.Set(isVPCName, *vpc.Name)
 	d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
 	d.Set(isVPCStatus, *vpc.Status)
@@ -791,7 +790,6 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		return fmt.Errorf("Error getting VPC : %s\n%s", err, response)
 	}
 
-	d.Set("id", *vpc.ID)
 	d.Set(isVPCName, *vpc.Name)
 	d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
 	d.Set(isVPCStatus, *vpc.Status)

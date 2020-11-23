@@ -133,8 +133,8 @@ func testAccCheckIBMDatabaseInstance_Mongodb_basic(databaseResourceGroup string,
 		plan                         = "standard"
 		location                     = "us-south"
 		adminpassword                = "password12"
-		members_memory_allocation_mb = 2048
-		members_disk_allocation_mb   = 20480
+		members_memory_allocation_mb = 3072
+		members_disk_allocation_mb   = 30720
 		users {
 		  name     = "user123"
 		  password = "password12"

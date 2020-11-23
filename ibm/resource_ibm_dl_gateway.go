@@ -580,9 +580,6 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		return fmt.Errorf("Error Getting Direct Link Gateway (%s Template): %s\n%s", dtype, err, response)
 	}
-	if instance.ID != nil {
-		d.Set("id", *instance.ID)
-	}
 	if instance.Name != nil {
 		d.Set(dlName, *instance.Name)
 	}

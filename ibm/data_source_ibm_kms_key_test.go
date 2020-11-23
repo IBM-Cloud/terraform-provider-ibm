@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccIBMKmsKeyDataSource_basic(t *testing.T) {
+func TestAccIBMKMSKeyDataSource_basic(t *testing.T) {
 	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
 	// bucketName := fmt.Sprintf("bucket", acctest.RandIntRange(10, 100))
 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
@@ -23,6 +23,17 @@ func TestAccIBMKmsKeyDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
 				),
 			},
+		},
+	})
+}
+func TestAccIBMKMSKeyDataSourceHPCS_basic(t *testing.T) {
+	// bucketName := fmt.Sprintf("bucket", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMKmsKeyDataSourceHpcsConfig(hpcsInstanceID, keyName),
 				Check: resource.ComposeTestCheckFunc(

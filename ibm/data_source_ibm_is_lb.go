@@ -309,7 +309,6 @@ func classiclbGetbyName(d *schema.ResourceData, meta interface{}, name string) e
 	for _, lb := range lbs.LoadBalancers {
 		if *lb.Name == name {
 			d.SetId(*lb.ID)
-			d.Set("id", *lb.ID)
 			d.Set(isLBName, *lb.Name)
 			if *lb.IsPublic {
 				d.Set(isLBType, "public")
@@ -445,7 +444,6 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 	for _, lb := range lbs.LoadBalancers {
 		if *lb.Name == name {
 			d.SetId(*lb.ID)
-			d.Set("id", *lb.ID)
 			d.Set(isLBName, *lb.Name)
 			if *lb.IsPublic {
 				d.Set(isLBType, "public")

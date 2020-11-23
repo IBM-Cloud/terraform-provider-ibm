@@ -412,7 +412,6 @@ func classicPgwGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("Error getting Public Gateway : %s\n%s", err, response)
 	}
-	d.Set("id", *publicgw.ID)
 	d.Set(isPublicGatewayName, *publicgw.Name)
 	if publicgw.FloatingIP != nil {
 		floatIP := map[string]interface{}{
@@ -458,7 +457,6 @@ func pgwGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("Error getting Public Gateway : %s\n%s", err, response)
 	}
-	d.Set("id", *publicgw.ID)
 	d.Set(isPublicGatewayName, *publicgw.Name)
 	if publicgw.FloatingIP != nil {
 		floatIP := map[string]interface{}{

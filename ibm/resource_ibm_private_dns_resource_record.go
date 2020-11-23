@@ -99,8 +99,9 @@ func resourceIBMPrivateDNSResourceRecord() *schema.Resource {
 			},
 
 			pdnsRdata: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:             schema.TypeString,
+				Required:         true,
+				DiffSuppressFunc: caseDiffSuppress,
 				ValidateFunc: func(val interface{}, field string) (warnings []string, errors []error) {
 					value := val.(string)
 					if ipv6Regexp.MatchString(value) && upcaseRegexp.MatchString(value) {
@@ -323,7 +324,6 @@ func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interf
 	d.Set(pdnsInstanceID, idSet[0])
 	d.Set(pdnsZoneID, idSet[1])
 	d.Set(pdnsRecordName, recordName)
-	d.Set(pdnsRdata, response.Rdata)
 	d.Set(pdnsRecordType, response.Type)
 	d.Set(pdnsRecordTTL, response.TTL)
 	d.Set(pdnsRecordCreatedOn, response.CreatedOn)
@@ -334,7 +334,7 @@ func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interf
 		d.Set(pdnsSrvPort, data["port"])
 		d.Set(pdnsSrvPriority, data["priority"])
 		d.Set(pdnsSrvWeight, data["weight"])
-		d.Set(pdnsRdata, data["target"])
+		d.Set(pdnsRdata, data["target"].(string))
 		d.Set(pdnsSrvService, response.Service)
 		d.Set(pdnsSrvProtocol, response.Protocol)
 	}
@@ -342,7 +342,23 @@ func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interf
 	if *response.Type == "MX" {
 		data := response.Rdata.(map[string]interface{})
 		d.Set(pdnsMxPreference, data["preference"])
-		d.Set(pdnsRdata, data["exchange"])
+		d.Set(pdnsRdata, data["exchange"].(string))
+	}
+	if *response.Type == "A" || *response.Type == "AAAA" {
+		data := response.Rdata.(map[string]interface{})
+		d.Set(pdnsRdata, data["ip"].(string))
+	}
+	if *response.Type == "CNAME" {
+		data := response.Rdata.(map[string]interface{})
+		d.Set(pdnsRdata, data["cname"].(string))
+	}
+	if *response.Type == "PTR" {
+		data := response.Rdata.(map[string]interface{})
+		d.Set(pdnsRdata, data["ptrdname"].(string))
+	}
+	if *response.Type == "TXT" {
+		data := response.Rdata.(map[string]interface{})
+		d.Set(pdnsRdata, data["text"].(string))
 	}
 
 	return nil

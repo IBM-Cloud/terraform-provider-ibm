@@ -616,13 +616,13 @@ func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isNetworkACLResourceGroup, *nwacl.ResourceGroup.ID)
 		d.Set(ResourceGroupName, *nwacl.ResourceGroup.Name)
 	}
-	d.Set(isNetworkACLSubnets, len(nwacl.Subnets))
 
 	rules := make([]interface{}, 0)
 	if len(nwacl.Rules) > 0 {
 		for _, rulex := range nwacl.Rules {
 			log.Println("[DEBUG] Type of the Rule", reflect.TypeOf(rulex))
 			rule := make(map[string]interface{})
+			rule[isNetworkACLSubnets] = len(nwacl.Subnets)
 			switch reflect.TypeOf(rulex).String() {
 			case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmp":
 				{

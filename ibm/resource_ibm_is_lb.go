@@ -362,7 +362,6 @@ func classicLBGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("Error getting Load Balancer : %s\n%s", err, response)
 	}
-	d.Set("id", *lb.ID)
 	d.Set(isLBName, *lb.Name)
 	if *lb.IsPublic {
 		d.Set(isLBType, "public")
@@ -437,7 +436,6 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("Error getting Load Balancer : %s\n%s", err, response)
 	}
-	d.Set("id", *lb.ID)
 	d.Set(isLBName, *lb.Name)
 	if *lb.IsPublic {
 		d.Set(isLBType, "public")

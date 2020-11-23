@@ -184,7 +184,6 @@ func resourceIBMComputeMonitorRead(d *schema.ResourceData, meta interface{}) err
 
 	guestId := *basicMonitor.GuestId
 
-	d.Set("id", basicMonitor.Id)
 	d.Set("guest_id", guestId)
 	d.Set("ip_address", strings.TrimSpace(*basicMonitor.IpAddress))
 	d.Set("query_type_id", basicMonitor.QueryTypeId)

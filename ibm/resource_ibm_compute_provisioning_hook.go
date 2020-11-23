@@ -82,7 +82,6 @@ func resourceIBMComputeProvisioningHookRead(d *schema.ResourceData, meta interfa
 		return fmt.Errorf("Error retrieving Provisioning Hook: %s", err)
 	}
 
-	d.Set("id", hook.Id)
 	d.Set("name", hook.Name)
 	d.Set("uri", hook.Uri)
 
