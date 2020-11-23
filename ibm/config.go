@@ -31,6 +31,7 @@ import (
 	cissslv1 "github.com/IBM/networking-go-sdk/sslcertificateapiv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	cisuarulev1 "github.com/IBM/networking-go-sdk/useragentblockingrulesv1"
+	ciswafgroupv1 "github.com/IBM/networking-go-sdk/wafrulegroupsapiv1"
 	ciswafpackagev1 "github.com/IBM/networking-go-sdk/wafrulepackagesapiv1"
 	cisaccessrulev1 "github.com/IBM/networking-go-sdk/zonefirewallaccessrulesv1"
 	cislockdownv1 "github.com/IBM/networking-go-sdk/zonelockdownv1"
@@ -212,6 +213,7 @@ type ClientSession interface {
 	CisWAFPackageClientSession() (*ciswafpackagev1.WafRulePackagesApiV1, error)
 	CisDomainSettingsClientSession() (*cisdomainsettingsv1.ZonesSettingsV1, error)
 	CisRoutingClientSession() (*cisroutingv1.RoutingV1, error)
+	CisWAFGroupClientSession() (*ciswafgroupv1.WafRuleGroupsApiV1, error)
 	CisCacheClientSession() (*ciscachev1.CachingApiV1, error)
 	CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error)
 	CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error)
@@ -384,6 +386,10 @@ type clientSession struct {
 	// CIS Routing service options
 	cisRoutingErr    error
 	cisRoutingClient *cisroutingv1.RoutingV1
+
+	// CIS WAF Group service options
+	cisWAFGroupErr    error
+	cisWAFGroupClient *ciswafgroupv1.WafRuleGroupsApiV1
 
 	// CIS Caching service options
 	cisCacheErr    error
@@ -697,6 +703,14 @@ func (sess clientSession) CisRoutingClientSession() (*cisroutingv1.RoutingV1, er
 	return sess.cisRoutingClient.Clone(), nil
 }
 
+// CIS WAF Group
+func (sess clientSession) CisWAFGroupClientSession() (*ciswafgroupv1.WafRuleGroupsApiV1, error) {
+	if sess.cisWAFGroupErr != nil {
+		return sess.cisWAFGroupClient, sess.cisWAFGroupErr
+	}
+	return sess.cisWAFGroupClient.Clone(), nil
+}
+
 // CIS Cache service
 func (sess clientSession) CisCacheClientSession() (*ciscachev1.CachingApiV1, error) {
 	if sess.cisCacheErr != nil {
@@ -802,6 +816,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisWAFPackageErr = errEmptyBluemixCredentials
 		session.cisDomainSettingsErr = errEmptyBluemixCredentials
 		session.cisRoutingErr = errEmptyBluemixCredentials
+		session.cisWAFGroupErr = errEmptyBluemixCredentials
 		session.cisCacheErr = errEmptyBluemixCredentials
 		session.cisCustomPageErr = errEmptyBluemixCredentials
 		session.cisAccessRuleErr = errEmptyBluemixCredentials
@@ -1314,6 +1329,21 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisRoutingErr =
 			fmt.Errorf("Error occured while configuring CIS Routing service: %s",
 				session.cisRoutingErr)
+	}
+
+	// IBM Network CIS WAF Group
+	cisWAFGroupOpt := &ciswafgroupv1.WafRuleGroupsApiV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		ZoneID:        core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisWAFGroupClient, session.cisWAFGroupErr =
+		ciswafgroupv1.NewWafRuleGroupsApiV1(cisWAFGroupOpt)
+	if session.cisWAFGroupErr != nil {
+		session.cisWAFGroupErr =
+			fmt.Errorf("Error occured while configuring CIS WAF Group service: %s",
+				session.cisWAFGroupErr)
 	}
 
 	// IBM Network CIS Cache service

@@ -52,3 +52,7 @@ output "ibm_cis_page_rule_output" {
 output "ibm_cis_waf_package_output" {
   value = ibm_cis_waf_package.test
 }
+
+output "ibm_cis_waf_group_output" {
+  value = ibm_cis_waf_group.test
+}
