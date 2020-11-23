@@ -6,11 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/softlayer/softlayer-go/sl"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
+	"github.com/softlayer/softlayer-go/sl"
 )
 
 const str string = ".cdn.appdomain.cloud"
@@ -348,7 +347,6 @@ func resourceIBMCDNRead(d *schema.ResourceData, meta interface{}) error {
 	///read the changes in the remote resource and update in the local resource.
 	read, err := service.ListDomainMappingByUniqueId(cdnId)
 	///Print the response of the requested the service.
-	d.Set("id", *read[0].UniqueId)
 	d.Set("originaddress", *read[0].OriginHost)
 	d.Set("vendorname", *read[0].VendorName)
 	d.Set("domain", *read[0].Domain)

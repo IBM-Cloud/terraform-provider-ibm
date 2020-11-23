@@ -56,7 +56,7 @@ func TestAccIBMCosBucket_ActivityTracker_Monitor(t *testing.T) {
 	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
 	activityServiceName := fmt.Sprintf("activity_tracker_%d", acctest.RandIntRange(10, 100))
 	monitorServiceName := fmt.Sprintf("metrics_monitor_%d", acctest.RandIntRange(10, 100))
-	bucketName := fmt.Sprintf("bucket%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "us"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
@@ -193,7 +193,7 @@ func TestAccIBMCosBucket_import(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "parameters"},
+					"wait_time_minutes", "parameters", "force_delete"},
 			},
 		},
 	})
@@ -330,7 +330,7 @@ func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regio
 	resource "ibm_resource_instance" "instance" {
 		name              = "%s"
 		service           = "cloud-object-storage"
-		plan              = "lite"
+		plan              = "standard"
 		location          = "global"
 		resource_group_id = data.ibm_resource_group.group.id
 	}
@@ -356,7 +356,7 @@ func testAccCheckIBMCosBucket_updateWithSameName(serviceName string, bucketName 
 	resource "ibm_resource_instance" "instance" {
 		name              = "%s"
 		service           = "cloud-object-storage"
-		plan              = "lite"
+		plan              = "standard"
 		location          = "global"
 		resource_group_id = data.ibm_resource_group.group.id
 	}
@@ -465,7 +465,7 @@ func testAccCheckIBMCosBucket_archive(cosServiceName string, bucketName string, 
 	resource "ibm_resource_instance" "instance5" {
 		name              = "%s"
 		service           = "cloud-object-storage"
-		plan              = "lite"
+		plan              = "standard"
 		location          = "global"
 		resource_group_id = data.ibm_resource_group.cos_group.id
 	}
@@ -495,7 +495,7 @@ func testAccCheckIBMCosBucket_update_archive(cosServiceName string, bucketName s
 	resource "ibm_resource_instance" "instance5" {
 		name              = "%s"
 		service           = "cloud-object-storage"
-		plan              = "lite"
+		plan              = "standard"
 		location          = "global"
 		resource_group_id = data.ibm_resource_group.cos_group.id
 	}

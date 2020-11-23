@@ -377,7 +377,6 @@ func resourceIBMComputeAutoScaleGroupRead(d *schema.ResourceData, meta interface
 		return fmt.Errorf("Error retrieving autoscale Group: %s", err)
 	}
 
-	d.Set("id", slGroupObj.Id)
 	d.Set("name", slGroupObj.Name)
 	if slGroupObj.RegionalGroup != nil && slGroupObj.RegionalGroup.Name != nil {
 		d.Set("regional_group", slGroupObj.RegionalGroup.Name)

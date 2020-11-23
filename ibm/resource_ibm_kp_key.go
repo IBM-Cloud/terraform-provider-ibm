@@ -3,8 +3,8 @@ package ibm
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -131,7 +131,6 @@ func resourceIBMKeyCreate(d *schema.ResourceData, meta interface{}) error {
 				return fmt.Errorf(
 					"Error while creating standard key: %s", err)
 			}
-			log.Printf("New key created: %v", *stkey)
 			keyCRN = stkey.CRN
 		} else {
 			//create standard key
@@ -140,7 +139,6 @@ func resourceIBMKeyCreate(d *schema.ResourceData, meta interface{}) error {
 				return fmt.Errorf(
 					"Error while creating standard key: %s", err)
 			}
-			log.Printf("New key created: %v", *stkey)
 			keyCRN = stkey.CRN
 		}
 		d.SetId(keyCRN)
@@ -154,7 +152,6 @@ func resourceIBMKeyCreate(d *schema.ResourceData, meta interface{}) error {
 				return fmt.Errorf(
 					"Error while creating Root key: %s", err)
 			}
-			log.Printf("New key created: %v", *stkey)
 			keyCRN = stkey.CRN
 		} else {
 			stkey, err := api.CreateRootKey(context.Background(), name, nil)
@@ -162,7 +159,6 @@ func resourceIBMKeyCreate(d *schema.ResourceData, meta interface{}) error {
 				return fmt.Errorf(
 					"Error while creating Root key: %s", err)
 			}
-			log.Printf("New key created: %v", *stkey)
 			keyCRN = stkey.CRN
 		}
 
@@ -194,14 +190,17 @@ func resourceIBMKeyRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("key_id", keyid)
 	d.Set("standard_key", key.Extractable)
 	d.Set("payload", key.Payload)
-	d.Set("exncrypted_nonce", key.EncryptedNonce)
+	d.Set("encrypted_nonce", key.EncryptedNonce)
 	d.Set("iv_value", key.IV)
 	d.Set("key_name", key.Name)
 	d.Set("crn", key.CRN)
 
 	d.Set(ResourceName, key.Name)
 	d.Set(ResourceCRN, key.CRN)
-	d.Set(ResourceStatus, key.State)
+
+	state := key.State
+	d.Set(ResourceStatus, strconv.Itoa(state))
+
 	rcontroller, err := getBaseController(meta)
 	if err != nil {
 		return err

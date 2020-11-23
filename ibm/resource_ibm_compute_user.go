@@ -281,7 +281,6 @@ func resourceIBMComputeUserRead(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Error retrieving IBM Cloud User: %s", err)
 	}
 
-	d.Set("id", sluserObj.Id)
 	d.Set("username", sluserObj.Username)
 	d.Set("email", sluserObj.Email)
 	d.Set("first_name", sluserObj.FirstName)

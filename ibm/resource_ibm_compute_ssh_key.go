@@ -148,7 +148,6 @@ func resourceIBMComputeSSHKeyRead(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error retrieving SSH key: %s", err)
 	}
 
-	d.Set("id", key.Id)
 	d.Set("label", key.Label)
 	d.Set("public_key", key.Key)
 	d.Set("fingerprint", key.Fingerprint)

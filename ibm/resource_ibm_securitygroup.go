@@ -106,7 +106,6 @@ func resourceIBMSecurityGroupRead(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error retrieving Security Group: %s", err)
 	}
 
-	d.Set("id", group.Id)
 	d.Set("name", group.Name)
 	d.Set("description", group.Description)
 	return nil

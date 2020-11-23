@@ -54,7 +54,7 @@ func dataSourceIBMCISInstance() *schema.Resource {
 
 			"status": {
 				Description: "The resource instance status",
-				Type:        schema.TypeMap,
+				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			ResourceName: {

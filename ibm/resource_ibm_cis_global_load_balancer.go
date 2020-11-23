@@ -393,8 +393,8 @@ func flattenPools(pools interface{}, geoType string, cisID string) []interface{}
 	for k, v := range pools.(map[string]interface{}) {
 		poolIds := convertCisToTfTwoVarSlice(expandStringList(v.([]interface{})), cisID)
 		pool := map[string]interface{}{
-			cisGLBRegionPoolsRegion: k,
-			cisGLBPopPoolsPoolIDs:   poolIds,
+			geoType:               k,
+			cisGLBPopPoolsPoolIDs: poolIds,
 		}
 		result = append(result, pool)
 	}

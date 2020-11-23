@@ -32,7 +32,7 @@ func dataSourceIBMISSubnet() *schema.Resource {
 			},
 
 			isSubnetAvailableIpv4AddressCount: {
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 
@@ -181,7 +181,6 @@ func classicSubnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 	d.SetId(*subnet.ID)
-	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)
 	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CIDRBlock)
 	d.Set(isSubnetAvailableIpv4AddressCount, *subnet.AvailableIpv4AddressCount)
@@ -242,7 +241,6 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(*subnet.ID)
-	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)
 	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CIDRBlock)
 	d.Set(isSubnetAvailableIpv4AddressCount, *subnet.AvailableIpv4AddressCount)

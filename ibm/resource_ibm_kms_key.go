@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"time"
-
+	"strconv"
 	"strings"
+	"time"
 
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -320,7 +320,6 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 				return fmt.Errorf(
 					"Error while creating standard key with payload: %s", err)
 			}
-			log.Printf("New key created: %v", *stkey)
 			keyCRN = stkey.CRN
 			d.SetId(keyCRN)
 
@@ -331,7 +330,6 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 				return fmt.Errorf(
 					"Error while creating standard key: %s", err)
 			}
-			log.Printf("New key created: %v", *stkey)
 			keyCRN = stkey.CRN
 			d.SetId(keyCRN)
 
@@ -346,7 +344,6 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 				return fmt.Errorf(
 					"Error while creating Root key with payload: %s", err)
 			}
-			log.Printf("New key created: %v", *stkey)
 
 			keyCRN = stkey.CRN
 			d.SetId(keyCRN)
@@ -357,7 +354,6 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 				return fmt.Errorf(
 					"Error while creating Root key: %s", err)
 			}
-			log.Printf("New key created: %v", *stkey)
 			keyCRN = stkey.CRN
 			d.SetId(keyCRN)
 
@@ -442,10 +438,16 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("endpoint_type", endpointType)
 	d.Set("type", instanceType)
 	d.Set("force_delete", d.Get("force_delete").(bool))
-	d.Set("expiration_date", key.Expiration)
+	if key.Expiration != nil {
+		expiration := key.Expiration
+		d.Set("expiration_date", expiration.Format(time.RFC3339))
+	} else {
+		d.Set("expiration_date", "")
+	}
 	d.Set(ResourceName, key.Name)
 	d.Set(ResourceCRN, key.CRN)
-	d.Set(ResourceStatus, key.State)
+	state := key.State
+	d.Set(ResourceStatus, strconv.Itoa(state))
 	rcontroller, err := getBaseController(meta)
 	if err != nil {
 		return err

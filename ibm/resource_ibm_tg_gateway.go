@@ -90,6 +90,26 @@ func resourceIBMTransitGateway() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+			tgCrn: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+			tgCreatedAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The creation time of the resource",
+			},
+			tgUpdatedAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The updation time of the resource",
+			},
+			tgStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Status of the resource",
+			},
 
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
@@ -249,16 +269,16 @@ func resourceIBMTransitGatewayRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	d.SetId(*tgw.ID)
-	d.Set("crn", tgw.Crn)
-	d.Set("name", tgw.Name)
-	d.Set("location", tgw.Location)
-	d.Set("created_at", tgw.CreatedAt.String())
+	d.Set(tgCrn, tgw.Crn)
+	d.Set(tgName, tgw.Name)
+	d.Set(tgLocation, tgw.Location)
+	d.Set(tgCreatedAt, tgw.CreatedAt.String())
 
 	if tgw.UpdatedAt != nil {
-		d.Set("updated_at", tgw.UpdatedAt.String())
+		d.Set(tgUpdatedAt, tgw.UpdatedAt.String())
 	}
-	d.Set("global", tgw.Global)
-	d.Set("status", tgw.Status)
+	d.Set(tgGlobal, tgw.Global)
+	d.Set(tgStatus, tgw.Status)
 
 	tags, err := GetTagsUsingCRN(meta, *tgw.Crn)
 	if err != nil {
@@ -278,7 +298,7 @@ func resourceIBMTransitGatewayRead(d *schema.ResourceData, meta interface{}) err
 	d.Set(ResourceStatus, *tgw.Status)
 	if tgw.ResourceGroup != nil {
 		rg := tgw.ResourceGroup
-		d.Set("resource_group", *rg.ID)
+		d.Set(tgResourceGroup, *rg.ID)
 		d.Set(ResourceGroupName, *rg.ID)
 	}
 	return nil

@@ -6,11 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 const (
@@ -1369,7 +1368,7 @@ func lbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, listene
 		for _, index := range policyRules {
 
 			l := map[string]interface{}{
-				"id": index.ID,
+				isLBListenerPolicyRuleID: index.ID,
 			}
 			rulesInfo = append(rulesInfo, l)
 		}

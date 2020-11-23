@@ -294,7 +294,6 @@ func classicVpcGetByName(d *schema.ResourceData, meta interface{}, name string) 
 	for _, vpc := range allrecs {
 		if *vpc.Name == name {
 			d.SetId(*vpc.ID)
-			d.Set("id", *vpc.ID)
 			d.Set(isVPCName, *vpc.Name)
 			d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
 			d.Set(isVPCStatus, *vpc.Status)
@@ -509,7 +508,6 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 	for _, vpc := range allrecs {
 		if *vpc.Name == name {
 			d.SetId(*vpc.ID)
-			d.Set("id", *vpc.ID)
 			d.Set(isVPCName, *vpc.Name)
 			d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
 			d.Set(isVPCStatus, *vpc.Status)

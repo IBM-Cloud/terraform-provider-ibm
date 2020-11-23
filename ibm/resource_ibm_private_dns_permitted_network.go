@@ -144,7 +144,7 @@ func resourceIBMPrivateDNSPermittedNetworkRead(d *schema.ResourceData, meta inte
 	d.Set(pdnsPermittedNetworkID, response.ID)
 	d.Set(pdnsPermittedNetworkCreatedOn, response.CreatedOn)
 	d.Set(pdnsPermittedNetworkModifiedOn, response.ModifiedOn)
-	d.Set(pdnsVpcCRN, response.PermittedNetwork)
+	d.Set(pdnsVpcCRN, response.PermittedNetwork.VpcCrn)
 	d.Set(pdnsNetworkType, response.Type)
 	d.Set(pdnsPermittedNetworkState, response.State)
 

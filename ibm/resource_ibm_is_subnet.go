@@ -65,7 +65,7 @@ func resourceIBMISSubnet() *schema.Resource {
 			},
 
 			isSubnetAvailableIpv4AddressCount: {
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The number of IPv4 addresses in this subnet that are not in-use, and have not been reserved by the user or the provider.",
 			},
@@ -474,7 +474,6 @@ func classicSubnetGet(d *schema.ResourceData, meta interface{}, id string) error
 		}
 		return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
 	}
-	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)
 	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CIDRBlock)
 	// d.Set(isSubnetIpv6CidrBlock, *subnet.IPV6CidrBlock)
@@ -519,7 +518,6 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
 	}
-	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)
 	d.Set(isSubnetIPVersion, *subnet.IPVersion)
 	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CIDRBlock)

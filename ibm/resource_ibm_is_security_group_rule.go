@@ -160,6 +160,11 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 				Computed:    true,
 				Description: "The crn of the Security Group",
 			},
+			isSecurityGroupRuleProtocol: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Security Group Rule Protocol",
+			},
 		},
 	}
 }
