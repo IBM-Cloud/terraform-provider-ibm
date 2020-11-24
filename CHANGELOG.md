@@ -1,3 +1,40 @@
+## 1.15.0 (Nov24, 2020)
+
+FEATURES:
+
+* Support for subnet network interface attachment `ibm_is_subnet_network_acl_attachment` resource ([#1941]
+
+* Support `ibm_cis_routing` resource ([#1991](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1991))
+
+* Support `ibm_cis_cache_settings` resource ([#1995](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1995))
+
+* Support `ibm_cis_global_load_balancers` datasource ([#1981](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1981))
+
+* Supoort `ibm_cis_custom_page`resource and `ibm_cis_custom_pages` datasoruce ([#1997](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1997))
+
+* Support `ibm_dns_glb`, `ibm_dns_glb_monitor`, `ibm_dns_glb_pool` resource for IBM Cloud PDNS Service ([#1887](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1887))
+
+* Support `ibm_dns_glbs`, `ibm_dns_glb_monitors`, `ibm_dns_glb_pools` datasources for IBM Cloud PDNS Service ([#1887](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1887))
+
+ENHANCEMENTS:
+
+* resource: Support `public_ip` attribute in ibm_pi_network_port resource ([#1930](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1930)) 
+
+* resource: Support encrypted images `encrypted_data_key` and `encryption_key` arguments in ibm_is_image resource ([#1938](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1938)) 
+
+* resource: Support archive rule `archive_rule` for ibm_cos_bucket ([#1950](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1950)) 
+
+* resource: Support Polcies for ibm_kms_key ([#1928](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1928))
+
+
+* data: Support `list_bounded_services` argument for ibm_container_cluster ([#2051](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2051))
+
+BUGFIXES:
+
+* Fix provision of cloud funciton resources ([#837](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/837))
+
+* Fix the destroy of ibm_pi_instance wait ([#2047](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2047))
+
 ## 1.14.0 (Oct28, 2020)
 
 FEATURES:
