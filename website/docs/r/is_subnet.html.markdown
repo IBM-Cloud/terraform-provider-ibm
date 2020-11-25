@@ -18,11 +18,18 @@ resource "ibm_is_vpc" "testacc_vpc" {
   name = "test"
 }
 
+resource "ibm_is_vpc_routing_table" "test_cr_route_table1" {
+  name   = "test-cr-route-table1"
+  vpc    = data.ibm_is_vpc.testacc_vpc.id
+}
+
+
 resource "ibm_is_subnet" "testacc_subnet" {
   name            = "test_subnet"
   vpc             = ibm_is_vpc.testacc_vpc.id
   zone            = "us-south-1"
   ipv4_cidr_block = "192.168.0.0/1"
+  routing_table   = ibm_is_vpc_routing_table.test_cr_route_table1.routing_table  
 
   //User can configure timeouts
   timeouts {
@@ -55,6 +62,7 @@ The following arguments are supported:
 * `public_gateway` - (Optional, string) The ID of the public-gateway for the subnet.
 * `vpc` - (Required, Forces new resource, string) The vpc id.
 * `zone` - (Required, Forces new resource, string) The subnet zone name.
+* `routing_table` - (Optional, string) The routing table identifier that is associated with the subnet. 
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID where the Subnet to be created (This argument is supported only for Generation `2` infrastructure)
 
 ## Attribute Reference

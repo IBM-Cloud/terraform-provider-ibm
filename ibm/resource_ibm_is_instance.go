@@ -22,6 +22,7 @@ const (
 	isInstanceNicName                 = "name"
 	isInstanceProfile                 = "profile"
 	isInstanceNicPortSpeed            = "port_speed"
+	isInstanceNicAllowIPSpoofing      = "allow_ip_spoofing"
 	isInstanceNicPrimaryIpv4Address   = "primary_ipv4_address"
 	isInstanceNicPrimaryIpv6Address   = "primary_ipv6_address"
 	isInstanceNicSecondaryAddress     = "secondary_addresses"
@@ -194,6 +195,12 @@ func resourceIBMISInstance() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						isInstanceNicAllowIPSpoofing: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Indicates whether IP spoofing is allowed on this interface.",
+						},
 						isInstanceNicName: {
 							Type:     schema.TypeString,
 							Optional: true,
@@ -235,6 +242,12 @@ func resourceIBMISInstance() *schema.Resource {
 						"id": {
 							Type:     schema.TypeString,
 							Computed: true,
+						},
+						isInstanceNicAllowIPSpoofing: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Indicates whether IP spoofing is allowed on this interface.",
 						},
 						isInstanceNicName: {
 							Type:     schema.TypeString,
@@ -699,6 +712,11 @@ func instanceCreate(d *schema.ResourceData, meta interface{}, profile, name, vpc
 		if ipv4str != "" {
 			primnicobj.PrimaryIpv4Address = &ipv4str
 		}
+		allowIPSpoofing, ok := primnic[isInstanceNicAllowIPSpoofing]
+		allowIPSpoofingbool := allowIPSpoofing.(bool)
+		if ok {
+			primnicobj.AllowIPSpoofing = &allowIPSpoofingbool
+		}
 		secgrpintf, ok := primnic[isInstanceNicSecurityGroups]
 		if ok {
 			secgrpSet := secgrpintf.(*schema.Set)
@@ -736,6 +754,11 @@ func instanceCreate(d *schema.ResourceData, meta interface{}, profile, name, vpc
 			ipv4str := ipv4.(string)
 			if ipv4str != "" {
 				nwInterface.PrimaryIpv4Address = &ipv4str
+			}
+			allowIPSpoofing, ok := nic[isInstanceNicAllowIPSpoofing]
+			allowIPSpoofingbool := allowIPSpoofing.(bool)
+			if ok {
+				nwInterface.AllowIPSpoofing = &allowIPSpoofingbool
 			}
 			secgrpintf, ok := nic[isInstanceNicSecurityGroups]
 			if ok {
@@ -1217,6 +1240,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		if err != nil {
 			return fmt.Errorf("Error getting network interfaces attached to the instance %s\n%s", err, response)
 		}
+		currentPrimNic[isInstanceNicAllowIPSpoofing] = *insnic.AllowIPSpoofing
 		currentPrimNic[isInstanceNicSubnet] = *insnic.Subnet.ID
 		if len(insnic.SecurityGroups) != 0 {
 			secgrpList := []string{}
@@ -1246,6 +1270,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				if err != nil {
 					return fmt.Errorf("Error getting network interfaces attached to the instance %s\n%s", err, response)
 				}
+				currentNic[isInstanceNicAllowIPSpoofing] = *insnic.AllowIPSpoofing
 				currentNic[isInstanceNicSubnet] = *insnic.Subnet.ID
 				if len(insnic.SecurityGroups) != 0 {
 					secgrpList := []string{}
@@ -1671,16 +1696,18 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if d.HasChange("primary_network_interface.0.name") && !d.IsNewResource() {
+	if (d.HasChange("primary_network_interface.0.allow_ip_spoofing") || d.HasChange("primary_network_interface.0.name")) && !d.IsNewResource() {
 		newName := d.Get("primary_network_interface.0.name").(string)
 		networkID := d.Get("primary_network_interface.0.id").(string)
+		allowIPSpoofing := d.Get("primary_network_interface.0.allow_ip_spoofing").(bool)
 		updatepnicfoptions := &vpcv1.UpdateInstanceNetworkInterfaceOptions{
 			InstanceID: &id,
 			ID:         &networkID,
 		}
 
 		networkInterfacePatchModel := &vpcv1.NetworkInterfacePatch{
-			Name: &newName,
+			Name:            &newName,
+			AllowIPSpoofing: &allowIPSpoofing,
 		}
 		networkInterfacePatch, err := networkInterfacePatchModel.AsPatch()
 		if err != nil {
@@ -1703,6 +1730,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		for i := range nics {
 			securitygrpKey := fmt.Sprintf("network_interfaces.%d.security_groups", i)
 			networkNameKey := fmt.Sprintf("network_interfaces.%d.name", i)
+			ipSpoofingKey := fmt.Sprintf("network_interfaces.%d.allow_ip_spoofing", i)
 			if d.HasChange(securitygrpKey) {
 				ovs, nvs := d.GetChange(securitygrpKey)
 				ov := ovs.(*schema.Set)
@@ -1749,17 +1777,19 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 			}
 
-			if d.HasChange(networkNameKey) {
+			if d.HasChange(networkNameKey) || d.HasChange(ipSpoofingKey) {
 				newName := d.Get(networkNameKey).(string)
 				networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
 				networkID := d.Get(networkIDKey).(string)
+				ipSpoofing := d.Get(ipSpoofingKey).(bool)
 				updatepnicfoptions := &vpcv1.UpdateInstanceNetworkInterfaceOptions{
 					InstanceID: &id,
 					ID:         &networkID,
 				}
 
 				instancePatchModel := &vpcv1.NetworkInterfacePatch{
-					Name: &newName,
+					Name:            &newName,
+					AllowIPSpoofing: &ipSpoofing,
 				}
 				networkInterfacePatch, err := instancePatchModel.AsPatch()
 				if err != nil {

@@ -38,11 +38,13 @@ resource "ibm_is_instance" "testacc_instance" {
   primary_network_interface {
     subnet = ibm_is_subnet.testacc_subnet.id
     primary_ipv4_address = "10.240.0.6"
+    allow_ip_spoofing = true
   }
 
   network_interfaces {
     name   = "eth1"
     subnet = ibm_is_subnet.testacc_subnet.id
+    allow_ip_spoofing = false
   }
 
   vpc  = ibm_is_vpc.testacc_vpc.id
@@ -168,13 +170,14 @@ Nested `primary_network_interface` block have the following structure:
   * `primary_ipv4_address` - (Optional, Forces new resource, string) The IPV4 address of the interface
   * `subnet` -  (Required, string) ID of the subnet.
   * `security_groups` - (Optional, list) Comma separated IDs of security groups.
+  * `allow_ip_spoofing` - (Optional, bool) Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If true, IP spoofing is allowed on this interface.
 * `network_interfaces` - (Optional, Forces new resource, list) A nested block describing the additional network interface of this instance.
 Nested `network_interfaces` block have the following structure:
   * `name` - (Optional, string) The name of the network interface.
   * `primary_ipv4_address` - (Optional, Forces new resource, string) The IPV4 address of the interface
   * `subnet` -  (Required, string) ID of the subnet.
   * `security_groups` - (Optional, list) Comma separated IDs of security groups.
-
+  * `allow_ip_spoofing` - (Optional, bool) Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If true, IP spoofing is allowed on this interface.
 * `volumes` - (Optional, list) Comma separated IDs of volumes. 
 * `user_data` - (Optional, string) User data to transfer to the server instance.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID for this instance.
@@ -206,6 +209,7 @@ Nested `primary_network_interface` blocks have the following structure:
   * `subnet` -  ID of the subnet.
   * `security_groups` -  List of security groups.
   * `primary_ipv4_address` - The primary IPv4 address.
+  * `allow_ip_spoofing` - Indicates whether IP spoofing is allowed on this interface.
 * `network_interfaces` - A nested block describing the additional network interface of this instance.
 Nested `network_interfaces` blocks have the following structure:
   * `id` - The id of the network interface.
@@ -213,6 +217,7 @@ Nested `network_interfaces` blocks have the following structure:
   * `subnet` -  ID of the subnet.
   * `security_groups` -  List of security groups.
   * `primary_ipv4_address` - The primary IPv4 address.
+  * `allow_ip_spoofing` - Indicates whether IP spoofing is allowed on this interface.
 * `boot_volume` - A nested block describing the boot volume.
 Nested `boot_volume` blocks have the following structure:
   * `name` - The name of the boot volume.
