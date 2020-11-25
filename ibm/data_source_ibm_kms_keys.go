@@ -54,6 +54,78 @@ func dataSourceIBMKMSkeys() *schema.Resource {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
+						"policies": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"rotation": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"created_by": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"creation_date": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"updated_by": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"last_update_date": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"interval_month": {
+													Type:     schema.TypeInt,
+													Computed: true,
+												},
+											},
+										},
+									},
+									"dual_auth_delete": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"created_by": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"creation_date": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"updated_by": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"last_update_date": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"enabled": {
+													Type:     schema.TypeBool,
+													Computed: true,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
