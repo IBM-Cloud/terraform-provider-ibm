@@ -542,38 +542,39 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 
 	}
 
-	if d.HasChange("kube_version") && !d.IsNewResource() {
-		ClusterClient, err := meta.(ClientSession).ContainerAPI()
-		if err != nil {
-			return err
-		}
-		var masterVersion string
-		if v, ok := d.GetOk("kube_version"); ok {
-			masterVersion = v.(string)
-		}
-		params := v1.ClusterUpdateParam{
-			Action:  "update",
-			Force:   true,
-			Version: masterVersion,
+	if (d.HasChange("kube_version") || d.HasChange("update_all_workers")) && !d.IsNewResource() {
+
+		if d.HasChange("kube_version") {
+			ClusterClient, err := meta.(ClientSession).ContainerAPI()
+			if err != nil {
+				return err
+			}
+			var masterVersion string
+			if v, ok := d.GetOk("kube_version"); ok {
+				masterVersion = v.(string)
+			}
+			params := v1.ClusterUpdateParam{
+				Action:  "update",
+				Force:   true,
+				Version: masterVersion,
+			}
+
+			Env, err := getClusterTargetHeader(d, meta)
+
+			if err != nil {
+				return err
+			}
+			Error := ClusterClient.Clusters().Update(clusterID, params, Env)
+			if Error != nil {
+				return Error
+			}
+			_, err = WaitForVpcClusterVersionUpdate(d, meta, targetEnv)
+			if err != nil {
+				return fmt.Errorf(
+					"Error waiting for cluster (%s) version to be updated: %s", d.Id(), err)
+			}
 		}
 
-		Env, err := getClusterTargetHeader(d, meta)
-
-		if err != nil {
-			return err
-		}
-		Error := ClusterClient.Clusters().Update(clusterID, params, Env)
-		if Error != nil {
-			return Error
-		}
-		_, err = WaitForVpcClusterVersionUpdate(d, meta, targetEnv)
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for cluster (%s) version to be updated: %s", d.Id(), err)
-		}
-	}
-
-	if d.HasChange("update_all_workers") && !d.IsNewResource() {
 		csClient, err := meta.(ClientSession).VpcContainerAPI()
 		if err != nil {
 			return err
