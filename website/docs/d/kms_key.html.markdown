@@ -43,4 +43,19 @@ The following attributes are exported:
   * `id` - The unique identifier for this key
   * `crn` - The crn of the key.
   * `standard_key` - This flag is true in case of standard key, else false for root key.
+  * `policy` - The policies associated with the key.
+    * `rotation` - The key rotation time interval in months, with a minimum of 1, and a maximum of 12.
+      * `created_by` - The unique identifier for the resource that created the policy.
+      * `creation_date` - The date the policy was created. The date format follows RFC 3339.
+      * `id` - The v4 UUID used to uniquely identify the policy resource, as specified by RFC 4122.
+      * `interval_month` - The key rotation time interval in months.
+      * `last_update_date` - The date when the policy was last replaced or modified. The date format follows RFC 3339.
+      * `updated_by` - The unique identifier for the resource that updated the policy.
+    * `dual_auth_delete` - The data associated with the dual authorization delete policy.
+      * `created_by` - The unique identifier for the resource that created the policy.
+      * `creation_date` - The date the policy was created. The date format follows RFC 3339.
+      * `id` - The v4 UUID used to uniquely identify the policy resource, as specified by RFC 4122.
+      * `enabled` - If set to true, Key Protect enables a dual authorization policy on the key.
+      * `last_update_date` - The date when the policy was last replaced or modified. The date format follows RFC 3339.
+      * `updated_by` - The unique identifier for the resource that updated the policy.
 
