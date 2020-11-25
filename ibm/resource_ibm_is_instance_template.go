@@ -123,6 +123,11 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 				Description: "Primary Network interface info",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						isInstanceTemplateNicAllowIPSpoofing: {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
 						isInstanceTemplateNicName: {
 							Type:     schema.TypeString,
 							Optional: true,
@@ -154,6 +159,11 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						isInstanceTemplateNicAllowIPSpoofing: {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
 						isInstanceTemplateNicName: {
 							Type:     schema.TypeString,
 							Optional: true,
@@ -410,6 +420,11 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 				primnicobj.Name = &namestr
 			}
 		}
+		allowIPSpoofing, ok := primnic[isInstanceTemplateNicAllowIPSpoofing]
+		allowIPSpoofingbool := allowIPSpoofing.(bool)
+		if ok {
+			primnicobj.AllowIPSpoofing = &allowIPSpoofingbool
+		}
 
 		secgrpintf, ok := primnic[isInstanceTemplateNicSecurityGroups]
 		if ok {
@@ -452,7 +467,11 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			if ok && namestr != "" {
 				nwInterface.Name = &namestr
 			}
-
+			allowIPSpoofing, ok := nic[isInstanceTemplateNicAllowIPSpoofing]
+			allowIPSpoofingbool := allowIPSpoofing.(bool)
+			if ok {
+				nwInterface.AllowIPSpoofing = &allowIPSpoofingbool
+			}
 			secgrpintf, ok := nic[isInstanceTemplateNicSecurityGroups]
 			if ok {
 				secgrpSet := secgrpintf.(*schema.Set)
@@ -548,7 +567,9 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 		subInf := instance.PrimaryNetworkInterface.Subnet
 		subnetIdentity := subInf.(*vpcv1.SubnetIdentity)
 		currentPrimNic[isInstanceTemplateNicSubnet] = *subnetIdentity.ID
-
+		if instance.PrimaryNetworkInterface.AllowIPSpoofing != nil {
+			currentPrimNic[isInstanceTemplateNicAllowIPSpoofing] = *instance.PrimaryNetworkInterface.AllowIPSpoofing
+		}
 		if len(instance.PrimaryNetworkInterface.SecurityGroups) != 0 {
 			secgrpList := []string{}
 			for i := 0; i < len(instance.PrimaryNetworkInterface.SecurityGroups); i++ {
@@ -570,7 +591,9 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			if intfc.PrimaryIpv4Address != nil {
 				currentNic[isInstanceTemplateNicPrimaryIpv4Address] = *intfc.PrimaryIpv4Address
 			}
-
+			if intfc.AllowIPSpoofing != nil {
+				currentNic[isInstanceTemplateNicAllowIPSpoofing] = *intfc.AllowIPSpoofing
+			}
 			subInf := intfc.Subnet
 			subnetIdentity := subInf.(*vpcv1.SubnetIdentity)
 			currentNic[isInstanceTemplateNicSubnet] = *subnetIdentity.ID

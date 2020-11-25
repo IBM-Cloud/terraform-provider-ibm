@@ -355,9 +355,39 @@ data "ibm_is_vpc" "vpc1" {
   name = ibm_is_vpc.vpc1.name
 }
 data "ibm_is_lb" "test_lb" {
-name = ibm_is_lb.lb1.name
+  name = ibm_is_lb.lb1.name
 }
 data ibm_is_lb_profiles "test_lb_profiles" {
 }
 data "ibm_is_lbs" "test_lbs" {
 }
+
+//custom route table for subnet 1
+resource "ibm_is_vpc_routing_table" "test_cr_route_table1" {
+  name = "test-cr-route-table1"
+  vpc  = ibm_is_vpc.vpc1.id
+}
+
+// subnet 
+resource "ibm_is_subnet" "test_cr_subnet1" {
+  depends_on      = [ibm_is_vpc_routing_table.test_cr_route_table1]
+  name            = "test-cr-subnet1"
+  vpc             = data.ibm_is_vpc.vpc1.id
+  zone            = "us-south-1"
+  ipv4_cidr_block = "10.240.10.0/24"
+  routing_table   = ibm_is_vpc_routing_table.test_cr_route_table1.routing_table
+}
+
+//custom route 
+resource "ibm_is_vpc_routing_table_route" "test_custom_route1" {
+  depends_on    = [ibm_is_subnet.test_cr_subnet1]
+  vpc           = ibm_is_vpc.vpc1.id
+  routing_table = ibm_is_vpc_routing_table.test_cr_route_table1.routing_table
+  zone          = "us-south-1"
+  name          = "custom-route-1"
+  next_hop      = ibm_is_instance.instance2.primary_network_interface[0].primary_ipv4_address
+  action        = "deliver"
+  destination   = ibm_is_subnet.test_cr_subnet1.ipv4_cidr_block
+}
+
+
