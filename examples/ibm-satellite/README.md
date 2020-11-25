@@ -35,13 +35,6 @@ you can add hosts that you run in your on-prem data center, in IBM Cloud, or in 
 ### 1. Setup the IBM terraform-satellite Project
 
 
-* Clone the repo [Terraform Satellite](https://github.ibm.com/soumyda1/terraform-satellite) 
-
-    ``` console
-      $ git clone https://github.ibm.com/soumyda1/terraform-satellite.git
-      $ cd terraform-satellite/
-    ```
-
 * Generate the private and public key pair which is required to provision the   virtual machines in softlayer.(Put the private key inside ~/.ssh/id_rsa).Follow the instruction [here](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/) to generate ssh key pair
 
 * Paste the private key file in the root directory of this project.
