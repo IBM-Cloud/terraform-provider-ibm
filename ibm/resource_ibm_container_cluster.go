@@ -824,31 +824,29 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 
 	clusterID := d.Id()
 
-	if d.HasChange("kube_version") && !d.IsNewResource() {
-		var masterVersion string
-		if v, ok := d.GetOk("kube_version"); ok {
-			masterVersion = v.(string)
+	if (d.HasChange("kube_version") || d.HasChange("update_all_workers")) && !d.IsNewResource() {
+		if d.HasChange("kube_version") {
+			var masterVersion string
+			if v, ok := d.GetOk("kube_version"); ok {
+				masterVersion = v.(string)
+			}
+			params := v1.ClusterUpdateParam{
+				Action:  "update",
+				Force:   true,
+				Version: masterVersion,
+			}
+			err := clusterAPI.Update(clusterID, params, targetEnv)
+			if err != nil {
+				return err
+			}
+			_, err = WaitForClusterVersionUpdate(d, meta, targetEnv)
+			if err != nil {
+				return fmt.Errorf(
+					"Error waiting for cluster (%s) version to be updated: %s", d.Id(), err)
+			}
 		}
-		params := v1.ClusterUpdateParam{
-			Action:  "update",
-			Force:   true,
-			Version: masterVersion,
-		}
-		err := clusterAPI.Update(clusterID, params, targetEnv)
-		if err != nil {
-			return err
-		}
-		_, err = WaitForClusterVersionUpdate(d, meta, targetEnv)
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for cluster (%s) version to be updated: %s", d.Id(), err)
-		}
-
-	}
-
-	// "update_all_workers" deafult is false, enable to true when all eorker nodes to be updated
-	// with major and minor updates.
-	if d.HasChange("update_all_workers") && !d.IsNewResource() {
+		// "update_all_workers" deafult is false, enable to true when all eorker nodes to be updated
+		// with major and minor updates.
 		updateAllWorkers := d.Get("update_all_workers").(bool)
 		if updateAllWorkers {
 			workerFields, err := wrkAPI.List(clusterID, targetEnv)
