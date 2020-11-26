@@ -34,6 +34,7 @@ import (
 	cisuarulev1 "github.com/IBM/networking-go-sdk/useragentblockingrulesv1"
 	ciswafgroupv1 "github.com/IBM/networking-go-sdk/wafrulegroupsapiv1"
 	ciswafpackagev1 "github.com/IBM/networking-go-sdk/wafrulepackagesapiv1"
+	ciswafrulev1 "github.com/IBM/networking-go-sdk/wafrulesapiv1"
 	cisaccessrulev1 "github.com/IBM/networking-go-sdk/zonefirewallaccessrulesv1"
 	cislockdownv1 "github.com/IBM/networking-go-sdk/zonelockdownv1"
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
@@ -221,6 +222,7 @@ type ClientSession interface {
 	CisUARuleClientSession() (*cisuarulev1.UserAgentBlockingRulesV1, error)
 	CisLockdownClientSession() (*cislockdownv1.ZoneLockdownV1, error)
 	CisRangeAppClientSession() (*cisrangeappv1.RangeApplicationsV1, error)
+	CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1, error)
 }
 
 type clientSession struct {
@@ -416,6 +418,10 @@ type clientSession struct {
 	// CIS Range app service option
 	cisRangeAppErr    error
 	cisRangeAppClient *cisrangeappv1.RangeApplicationsV1
+
+	// CIS WAF rule service options
+	cisWAFRuleErr    error
+	cisWAFRuleClient *ciswafrulev1.WafRulesApiV1
 }
 
 // BluemixAcccountAPI ...
@@ -765,6 +771,14 @@ func (sess clientSession) CisRangeAppClientSession() (*cisrangeappv1.RangeApplic
 	return sess.cisRangeAppClient.Clone(), nil
 }
 
+// CIS WAF Rule
+func (sess clientSession) CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1, error) {
+	if sess.cisWAFRuleErr != nil {
+		return sess.cisWAFRuleClient, sess.cisWAFRuleErr
+	}
+	return sess.cisWAFRuleClient.Clone(), nil
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -837,6 +851,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisUARuleErr = errEmptyBluemixCredentials
 		session.cisLockdownErr = errEmptyBluemixCredentials
 		session.cisRangeAppErr = errEmptyBluemixCredentials
+		session.cisWAFRuleErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1452,6 +1467,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 				session.cisRangeAppErr)
 	}
 
+	// IBM Network CIS WAF Rule Service
+	cisWAFRuleOpt := &ciswafrulev1.WafRulesApiV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		ZoneID:        core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisWAFRuleClient, session.cisWAFRuleErr =
+		ciswafrulev1.NewWafRulesApiV1(cisWAFRuleOpt)
+	if session.cisWAFRuleErr != nil {
+		session.cisWAFRuleErr = fmt.Errorf(
+			"Error occured while configuring CIS WAF Rules service: %s",
+			session.cisWAFRuleErr)
+	}
 	return session, nil
 }
 

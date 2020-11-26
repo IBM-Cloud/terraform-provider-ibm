@@ -311,3 +311,19 @@ data "ibm_cis_range_apps" "test" {
   cis_id    = ibm_cis_range_app.app.cis_id
   domain_id = ibm_cis_range_app.app.domain_id
 }
+
+# CIS WAF Rule service
+resource "ibm_cis_waf_rule" "test" {
+  cis_id     = data.ibm_cis.cis.id
+  domain_id  = data.ibm_cis_domain.cis_domain.id
+  package_id = "c504870194831cd12c3fc0284f294abb"
+  rule_id    = "100000356"
+  mode       = "on"
+}
+
+# CIS WAF Rule data source
+data "ibm_cis_waf_rules" "rules" {
+  cis_id     = data.ibm_cis.cis.id
+  domain_id  = data.ibm_cis_domain.cis_domain.id
+  package_id = "1e334934fd7ae32ad705667f8c1057aa"
+}
