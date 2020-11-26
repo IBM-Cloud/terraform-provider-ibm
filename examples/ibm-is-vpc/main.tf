@@ -390,4 +390,19 @@ resource "ibm_is_vpc_routing_table_route" "test_custom_route1" {
   destination   = ibm_is_subnet.test_cr_subnet1.ipv4_cidr_block
 }
 
+// data source for vpc default routing table
+data "ibm_is_vpc_default_routing_table" "default_table_test" {
+  vpc = ibm_is_vpc.vpc1.id
+}
+
+// data source for vpc routing tables
+data "ibm_is_vpc_routing_tables" "tables_test" {
+  vpc = ibm_is_vpc.vpc1.id
+}
+
+// data source for vpc routing table routes
+data "ibm_is_vpc_routing_table_routes" "routes_test" {
+  vpc = ibm_is_vpc.vpc1.id
+  routing_table = ibm_is_vpc_routing_table.test_cr_route_table1.routing_table
+}
 
