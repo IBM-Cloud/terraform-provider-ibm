@@ -52,3 +52,11 @@ The following attributes are exported:
 * `encryption` - The type of encryption used on the image
 
 ``
+
+## Import
+
+ibm_is_image can be imported using Image ID, eg
+
+```
+$ terraform import ibm_is_image.example d7bec597-4726-451f-8a63-e62e6f19c32c
+```
