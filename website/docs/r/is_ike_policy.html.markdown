@@ -49,3 +49,11 @@ The following attributes are exported:
 	* `name` - The name given to this VPN connection.
 	* `id` -  The unique identifier of a VPN connection.
 	* `href` - The VPN connection's canonical URL.
+
+## Import
+
+ibm_is_ike_policy can be imported using IKE Policy ID, eg
+
+```
+$ terraform import ibm_is_ike_policy.example d7bec597-4726-451f-8a63-e62e6f19c32c
+```

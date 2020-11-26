@@ -64,3 +64,12 @@ The following attributes are exported:
 * `id` - The unique identifier of the volume.
 * `status` - The status of volume.
 * `crn` - The CRN for the volume.
+
+
+## Import
+
+ibm_is_volume can be imported using volume ID, eg
+
+```
+$ terraform import ibm_is_volume.example d7bec597-4726-451f-8a63-e62e6f19c32c
+```
