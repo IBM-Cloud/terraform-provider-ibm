@@ -147,6 +147,7 @@ github.com/IBM/networking-go-sdk/wafrulepackagesapiv1
 github.com/IBM/networking-go-sdk/zonefirewallaccessrulesv1
 github.com/IBM/networking-go-sdk/zonelockdownv1
 github.com/IBM/networking-go-sdk/wafrulegroupsapiv1
+github.com/IBM/networking-go-sdk/wafrulesapiv1
 github.com/IBM/networking-go-sdk/zoneratelimitsv1
 github.com/IBM/networking-go-sdk/zonessettingsv1
 github.com/IBM/networking-go-sdk/zonesv1
