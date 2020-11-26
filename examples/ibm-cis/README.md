@@ -23,6 +23,7 @@ These types of resources are supported:
 * [ CIS WAF Package ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-waf-package)
 * [ CIS WAF Rule Group](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-waf-group)
 * [ CIS Range Application](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-range-application)
+* [ CIS WAF Rule](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-waf-rule)
 
 ## Terraform versions
 
@@ -310,6 +311,17 @@ resource "ibm_cis_range_app" "app" {
 }
 ```
 
+`CIS WAF Rule service`
+```hcl
+resource "ibm_cis_waf_rule" "test" {
+  cis_id     = data.ibm_cis.cis.id
+  domain_id  = data.ibm_cis_domain.cis_domain.id
+  package_id = "c504870194831cd12c3fc0284f294abb"
+  rule_id    = "100000356"
+  mode       = "on"
+}
+```
+
 ## CIS Data Sources
 `CIS Instance`
 ```hcl
@@ -396,6 +408,15 @@ data "ibm_cis_range_apps" "test" {
 }
 ```
 
+`CIS WAF Rule data source`
+```hcl
+data "ibm_cis_waf_rules" "rules" {
+  cis_id     = data.ibm_cis.cis.id
+  domain_id  = data.ibm_cis_domain.cis_domain.id
+  package_id = "1e334934fd7ae32ad705667f8c1057aa"
+}
+```
+
 ## Dependencies
 
 - User has IAM security rights to create and configure an Internet Services instance
@@ -416,6 +437,7 @@ data "ibm_cis_range_apps" "test" {
 - [WAF Packages CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#list-waf-packages)
 - [WAF Rule Group CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#list-waf-groups)
 - [Range App CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#range-app)
+- [WAF Rule CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#list-waf-rules)
 
 ## Notes
 
@@ -535,6 +557,10 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | edge_ips_connectivity | Specifies the IP version. | `string` | no |
 | traffic_type | Configure how traffic is handled at the edge. | `string` | no |
 | tls | Configure if and how TLS connections are terminated at the edge. | `string` | no |
+| package_id | The WAF Rule package ID  | `string` | yes |
+| rule_id | The WAF Rule ID | `string`| yes |
+| mode | The WAF Rule mode | `string` | yes |
+
 
 ## Outputs
 
@@ -559,6 +585,10 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | modified_rules_count | The modified waf rules count in WAF Group |
 | name | The WAF Rule Group name |
 | app_id | Range application id |
+| group\_id | WAF Rule group id |
+| group\_name | WAF Rule group name |
+| allowed_modes | WAF rule allowed modes |
+
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
