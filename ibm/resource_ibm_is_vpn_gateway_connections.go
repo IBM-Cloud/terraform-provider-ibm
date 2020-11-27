@@ -785,9 +785,9 @@ func isClassicVPNGatewayConnectionDeleteRefreshFunc(vpnGatewayConnection *vpccla
 		vpngwcon, response, err := vpnGatewayConnection.GetVPNGatewayConnection(getVpnGatewayConnectionOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return vpngwcon, isVPNGatewayConnectionDeleted, nil
+				return "", isVPNGatewayConnectionDeleted, nil
 			}
-			return nil, "", fmt.Errorf("The Vpn Gateway Connection %s failed to delete: %s\n%s", gConnID, err, response)
+			return "", "", fmt.Errorf("The Vpn Gateway Connection %s failed to delete: %s\n%s", gConnID, err, response)
 		}
 		return vpngwcon, isVPNGatewayConnectionDeleting, nil
 	}
@@ -817,9 +817,9 @@ func isVPNGatewayConnectionDeleteRefreshFunc(vpnGatewayConnection *vpcv1.VpcV1, 
 		vpngwcon, response, err := vpnGatewayConnection.GetVPNGatewayConnection(getVpnGatewayConnectionOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return vpngwcon, isVPNGatewayConnectionDeleted, nil
+				return "", isVPNGatewayConnectionDeleted, nil
 			}
-			return nil, "", fmt.Errorf("The Vpn Gateway Connection %s failed to delete: %s\n%s", gConnID, err, response)
+			return "", "", fmt.Errorf("The Vpn Gateway Connection %s failed to delete: %s\n%s", gConnID, err, response)
 		}
 		return vpngwcon, isVPNGatewayConnectionDeleting, nil
 	}
