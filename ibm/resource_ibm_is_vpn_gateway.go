@@ -24,6 +24,7 @@ const (
 	isVPNGatewayProvisioning     = "provisioning"
 	isVPNGatewayProvisioningDone = "done"
 	isVPNGatewayPublicIPAddress  = "public_ip_address"
+	isVPNGatewayPublicIPAddress2 = "public_ip_address2"
 )
 
 func resourceIBMISVPNGateway() *schema.Resource {
@@ -76,6 +77,11 @@ func resourceIBMISVPNGateway() *schema.Resource {
 			},
 
 			isVPNGatewayPublicIPAddress: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			isVPNGatewayPublicIPAddress2: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -366,7 +372,14 @@ func classicVpngwGet(d *schema.ResourceData, meta interface{}, id string) error 
 	d.Set(isVPNGatewayName, *vpnGateway.Name)
 	d.Set(isVPNGatewaySubnet, *vpnGateway.Subnet.ID)
 	d.Set(isVPNGatewayStatus, *vpnGateway.Status)
-	// d.Set(isVPNGatewayPublicIPAddress, *vpnGateway.PublicIP.Address)
+	members := []vpcclassicv1.VPNGatewayMember{}
+	for _, member := range vpnGateway.Members {
+		members = append(members, member)
+	}
+	if len(members) > 1 {
+		d.Set(isVPNGatewayPublicIPAddress, *members[0].PublicIP.Address)
+		d.Set(isVPNGatewayPublicIPAddress2, *members[1].PublicIP.Address)
+	}
 	tags, err := GetTagsUsingCRN(meta, *vpnGateway.CRN)
 	if err != nil {
 		log.Printf(
@@ -409,7 +422,14 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isVPNGatewayName, *vpnGateway.Name)
 	d.Set(isVPNGatewaySubnet, *vpnGateway.Subnet.ID)
 	d.Set(isVPNGatewayStatus, *vpnGateway.Status)
-	// d.Set(isVPNGatewayPublicIPAddress, *vpnGateway.PublicIP.Address)
+	members := []vpcv1.VPNGatewayMember{}
+	for _, member := range vpnGateway.Members {
+		members = append(members, member)
+	}
+	if len(members) > 1 {
+		d.Set(isVPNGatewayPublicIPAddress, *members[0].PublicIP.Address)
+		d.Set(isVPNGatewayPublicIPAddress2, *members[1].PublicIP.Address)
+	}
 	tags, err := GetTagsUsingCRN(meta, *vpnGateway.CRN)
 	if err != nil {
 		log.Printf(
@@ -651,9 +671,9 @@ func isClassicVpnGatewayDeleteRefreshFunc(vpnGateway *vpcclassicv1.VpcClassicV1,
 		vpngw, response, err := vpnGateway.GetVPNGateway(getVpnGatewayOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return vpngw, isVPNGatewayDeleted, nil
+				return "", isVPNGatewayDeleted, nil
 			}
-			return nil, "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
+			return "", "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
 		}
 		return vpngw, isVPNGatewayDeleting, err
 	}
@@ -682,9 +702,9 @@ func isVpnGatewayDeleteRefreshFunc(vpnGateway *vpcv1.VpcV1, id string) resource.
 		vpngw, response, err := vpnGateway.GetVPNGateway(getVpnGatewayOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return vpngw, isVPNGatewayDeleted, nil
+				return "", isVPNGatewayDeleted, nil
 			}
-			return nil, "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
+			return "", "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
 		}
 		return vpngw, isVPNGatewayDeleting, err
 	}
