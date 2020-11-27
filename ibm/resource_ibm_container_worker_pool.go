@@ -427,36 +427,25 @@ func workerPoolDeleteStateRefreshFunc(client v1.Workers, instanceID, workerPoolN
 
 func getWorkerPoolTargetHeader(d *schema.ResourceData, meta interface{}) (v1.ClusterTargetHeader, error) {
 
-	region, resourceGroup := "", ""
-	if r, ok := d.GetOk("region"); ok {
-		region = r.(string)
-	}
-	if rg, ok := d.GetOk("resource_group_id"); ok {
-		resourceGroup = rg.(string)
-	}
-	sess, err := meta.(ClientSession).BluemixSession()
+	_, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
 		return v1.ClusterTargetHeader{}, err
 	}
 
-	if region == "" {
-		region = sess.Config.Region
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return v1.ClusterTargetHeader{}, err
 	}
-	if resourceGroup == "" {
-		resourceGroup = sess.Config.ResourceGroup
-
-		if resourceGroup == "" {
-			defaultRg, err := defaultResourceGroup(meta)
-			if err != nil {
-				return v1.ClusterTargetHeader{}, err
-			}
-			resourceGroup = defaultRg
-		}
-	}
+	accountID := userDetails.userAccount
 
 	targetEnv := v1.ClusterTargetHeader{
-		Region:        region,
-		ResourceGroup: resourceGroup,
+		AccountID: accountID,
+	}
+
+	resourceGroup := ""
+	if v, ok := d.GetOk("resource_group_id"); ok {
+		resourceGroup = v.(string)
+		targetEnv.ResourceGroup = resourceGroup
 	}
 	return targetEnv, nil
 }
