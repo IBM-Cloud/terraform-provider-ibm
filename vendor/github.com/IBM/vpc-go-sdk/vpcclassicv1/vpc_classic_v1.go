@@ -34,7 +34,7 @@ import (
 // VpcClassicV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage
 // infrastructure resources, including virtual server instances, subnets, volumes, and load balancers.
 //
-// Version: 2020-10-06
+// Version: 2020-11-17
 type VpcClassicV1 struct {
 	Service *core.BaseService
 
@@ -118,7 +118,7 @@ func NewVpcClassicV1(options *VpcClassicV1Options) (service *VpcClassicV1, err e
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2020-10-06")
+		options.Version = core.StringPtr("2020-11-17")
 	}
 
 	service = &VpcClassicV1{
@@ -222,14 +222,14 @@ func (vpcClassic *VpcClassicV1) CreateVPC(createVPCOptions *CreateVPCOptions) (r
 	builder.AddQuery("generation", fmt.Sprint(*vpcClassic.generation))
 
 	body := make(map[string]interface{})
-	if createVPCOptions.Name != nil {
-		body["name"] = createVPCOptions.Name
-	}
 	if createVPCOptions.AddressPrefixManagement != nil {
 		body["address_prefix_management"] = createVPCOptions.AddressPrefixManagement
 	}
 	if createVPCOptions.ClassicAccess != nil {
 		body["classic_access"] = createVPCOptions.ClassicAccess
+	}
+	if createVPCOptions.Name != nil {
+		body["name"] = createVPCOptions.Name
 	}
 	if createVPCOptions.ResourceGroup != nil {
 		body["resource_group"] = createVPCOptions.ResourceGroup
@@ -577,11 +577,11 @@ func (vpcClassic *VpcClassicV1) CreateVPCAddressPrefix(createVPCAddressPrefixOpt
 	if createVPCAddressPrefixOptions.Zone != nil {
 		body["zone"] = createVPCAddressPrefixOptions.Zone
 	}
-	if createVPCAddressPrefixOptions.Name != nil {
-		body["name"] = createVPCAddressPrefixOptions.Name
-	}
 	if createVPCAddressPrefixOptions.IsDefault != nil {
 		body["is_default"] = createVPCAddressPrefixOptions.IsDefault
+	}
+	if createVPCAddressPrefixOptions.Name != nil {
+		body["name"] = createVPCAddressPrefixOptions.Name
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -868,11 +868,11 @@ func (vpcClassic *VpcClassicV1) CreateVPCRoute(createVPCRouteOptions *CreateVPCR
 	builder.AddQuery("generation", fmt.Sprint(*vpcClassic.generation))
 
 	body := make(map[string]interface{})
-	if createVPCRouteOptions.NextHop != nil {
-		body["next_hop"] = createVPCRouteOptions.NextHop
-	}
 	if createVPCRouteOptions.Destination != nil {
 		body["destination"] = createVPCRouteOptions.Destination
+	}
+	if createVPCRouteOptions.NextHop != nil {
+		body["next_hop"] = createVPCRouteOptions.NextHop
 	}
 	if createVPCRouteOptions.Zone != nil {
 		body["zone"] = createVPCRouteOptions.Zone
@@ -1180,9 +1180,7 @@ func (vpcClassic *VpcClassicV1) CreateSubnet(createSubnetOptions *CreateSubnetOp
 // DeleteSubnet : Delete specified subnet
 // This request deletes a subnet. This operation cannot be reversed. For this request to succeed, the subnet must not be
 // referenced by any network interfaces, VPN gateways, or load balancers. A delete operation automatically detaches the
-// subnet from any network ACLs, public gateways, or endpoint gateways. All flow log collectors with `auto_delete` set
-// to
-// `true` targeting the subnet or any resource in the subnet are automatically deleted.
+// subnet from any network ACLs or public gateways.
 func (vpcClassic *VpcClassicV1) DeleteSubnet(deleteSubnetOptions *DeleteSubnetOptions) (response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteSubnetOptions, "deleteSubnetOptions cannot be nil")
 	if err != nil {
@@ -2098,11 +2096,11 @@ func (vpcClassic *VpcClassicV1) CreateKey(createKeyOptions *CreateKeyOptions) (r
 	if createKeyOptions.Name != nil {
 		body["name"] = createKeyOptions.Name
 	}
-	if createKeyOptions.Type != nil {
-		body["type"] = createKeyOptions.Type
-	}
 	if createKeyOptions.ResourceGroup != nil {
 		body["resource_group"] = createKeyOptions.ResourceGroup
+	}
+	if createKeyOptions.Type != nil {
+		body["type"] = createKeyOptions.Type
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -3966,11 +3964,11 @@ func (vpcClassic *VpcClassicV1) GetRegionZone(getRegionZoneOptions *GetRegionZon
 
 	pathParamsMap := map[string]string{
 		"region_name": *getRegionZoneOptions.RegionName,
-		"zone_name":   *getRegionZoneOptions.ZoneName,
+		"name":        *getRegionZoneOptions.Name,
 	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ResolveRequestURL(vpcClassic.Service.Options.URL, `/regions/{region_name}/zones/{zone_name}`, pathParamsMap)
+	_, err = builder.ResolveRequestURL(vpcClassic.Service.Options.URL, `/regions/{region_name}/zones/{name}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -4105,11 +4103,11 @@ func (vpcClassic *VpcClassicV1) CreatePublicGateway(createPublicGatewayOptions *
 	if createPublicGatewayOptions.Zone != nil {
 		body["zone"] = createPublicGatewayOptions.Zone
 	}
-	if createPublicGatewayOptions.Name != nil {
-		body["name"] = createPublicGatewayOptions.Name
-	}
 	if createPublicGatewayOptions.FloatingIP != nil {
 		body["floating_ip"] = createPublicGatewayOptions.FloatingIP
+	}
+	if createPublicGatewayOptions.Name != nil {
+		body["name"] = createPublicGatewayOptions.Name
 	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
@@ -5179,7 +5177,7 @@ func (vpcClassic *VpcClassicV1) ListSecurityGroups(listSecurityGroupsOptions *Li
 // CreateSecurityGroup : Create a security group
 // This request creates a new security group from a security group prototype object. The prototype object is structured
 // in the same way as a retrieved security group, and contains the information necessary to create the new security
-// group. If security group rules are included in the protoype object, those rules will be added to the security group.
+// group. If security group rules are included in the prototype object, those rules will be added to the security group.
 // Each security group is scoped to one VPC. Only network interfaces on instances in that VPC can be added to the
 // security group.
 func (vpcClassic *VpcClassicV1) CreateSecurityGroup(createSecurityGroupOptions *CreateSecurityGroupOptions) (result *SecurityGroup, response *core.DetailedResponse, err error) {
@@ -6009,11 +6007,11 @@ func (vpcClassic *VpcClassicV1) CreateIkePolicy(createIkePolicyOptions *CreateIk
 	if createIkePolicyOptions.IkeVersion != nil {
 		body["ike_version"] = createIkePolicyOptions.IkeVersion
 	}
-	if createIkePolicyOptions.Name != nil {
-		body["name"] = createIkePolicyOptions.Name
-	}
 	if createIkePolicyOptions.KeyLifetime != nil {
 		body["key_lifetime"] = createIkePolicyOptions.KeyLifetime
+	}
+	if createIkePolicyOptions.Name != nil {
+		body["name"] = createIkePolicyOptions.Name
 	}
 	if createIkePolicyOptions.ResourceGroup != nil {
 		body["resource_group"] = createIkePolicyOptions.ResourceGroup
@@ -6348,11 +6346,11 @@ func (vpcClassic *VpcClassicV1) CreateIpsecPolicy(createIpsecPolicyOptions *Crea
 	if createIpsecPolicyOptions.Pfs != nil {
 		body["pfs"] = createIpsecPolicyOptions.Pfs
 	}
-	if createIpsecPolicyOptions.Name != nil {
-		body["name"] = createIpsecPolicyOptions.Name
-	}
 	if createIpsecPolicyOptions.KeyLifetime != nil {
 		body["key_lifetime"] = createIpsecPolicyOptions.KeyLifetime
+	}
+	if createIpsecPolicyOptions.Name != nil {
+		body["name"] = createIpsecPolicyOptions.Name
 	}
 	if createIpsecPolicyOptions.ResourceGroup != nil {
 		body["resource_group"] = createIpsecPolicyOptions.ResourceGroup
@@ -6628,6 +6626,9 @@ func (vpcClassic *VpcClassicV1) ListVPNGateways(listVPNGatewaysOptions *ListVPNG
 	if listVPNGatewaysOptions.ResourceGroupID != nil {
 		builder.AddQuery("resource_group.id", fmt.Sprint(*listVPNGatewaysOptions.ResourceGroupID))
 	}
+	if listVPNGatewaysOptions.Mode != nil {
+		builder.AddQuery("mode", fmt.Sprint(*listVPNGatewaysOptions.Mode))
+	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -6650,7 +6651,7 @@ func (vpcClassic *VpcClassicV1) ListVPNGateways(listVPNGatewaysOptions *ListVPNG
 
 // CreateVPNGateway : Create a VPN gateway
 // This request creates a new VPN gateway.
-func (vpcClassic *VpcClassicV1) CreateVPNGateway(createVPNGatewayOptions *CreateVPNGatewayOptions) (result *VPNGateway, response *core.DetailedResponse, err error) {
+func (vpcClassic *VpcClassicV1) CreateVPNGateway(createVPNGatewayOptions *CreateVPNGatewayOptions) (result VPNGatewayIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(createVPNGatewayOptions, "createVPNGatewayOptions cannot be nil")
 	if err != nil {
 		return
@@ -6680,17 +6681,7 @@ func (vpcClassic *VpcClassicV1) CreateVPNGateway(createVPNGatewayOptions *Create
 	builder.AddQuery("version", fmt.Sprint(*vpcClassic.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcClassic.generation))
 
-	body := make(map[string]interface{})
-	if createVPNGatewayOptions.Subnet != nil {
-		body["subnet"] = createVPNGatewayOptions.Subnet
-	}
-	if createVPNGatewayOptions.Name != nil {
-		body["name"] = createVPNGatewayOptions.Name
-	}
-	if createVPNGatewayOptions.ResourceGroup != nil {
-		body["resource_group"] = createVPNGatewayOptions.ResourceGroup
-	}
-	_, err = builder.SetBodyContentJSON(body)
+	_, err = builder.SetBodyContentJSON(createVPNGatewayOptions.VPNGatewayPrototype)
 	if err != nil {
 		return
 	}
@@ -6761,7 +6752,7 @@ func (vpcClassic *VpcClassicV1) DeleteVPNGateway(deleteVPNGatewayOptions *Delete
 
 // GetVPNGateway : Retrieve the specified VPN gateway
 // This request retrieves a single VPN gateway specified by the identifier in the URL.
-func (vpcClassic *VpcClassicV1) GetVPNGateway(getVPNGatewayOptions *GetVPNGatewayOptions) (result *VPNGateway, response *core.DetailedResponse, err error) {
+func (vpcClassic *VpcClassicV1) GetVPNGateway(getVPNGatewayOptions *GetVPNGatewayOptions) (result VPNGatewayIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getVPNGatewayOptions, "getVPNGatewayOptions cannot be nil")
 	if err != nil {
 		return
@@ -6815,7 +6806,7 @@ func (vpcClassic *VpcClassicV1) GetVPNGateway(getVPNGatewayOptions *GetVPNGatewa
 
 // UpdateVPNGateway : Update a VPN gateway
 // This request updates the properties of an existing VPN gateway.
-func (vpcClassic *VpcClassicV1) UpdateVPNGateway(updateVPNGatewayOptions *UpdateVPNGatewayOptions) (result *VPNGateway, response *core.DetailedResponse, err error) {
+func (vpcClassic *VpcClassicV1) UpdateVPNGateway(updateVPNGatewayOptions *UpdateVPNGatewayOptions) (result VPNGatewayIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateVPNGatewayOptions, "updateVPNGatewayOptions cannot be nil")
 	if err != nil {
 		return
@@ -6932,7 +6923,7 @@ func (vpcClassic *VpcClassicV1) ListVPNGatewayConnections(listVPNGatewayConnecti
 
 // CreateVPNGatewayConnection : Create a VPN gateway connection
 // This request creates a new VPN gateway connection.
-func (vpcClassic *VpcClassicV1) CreateVPNGatewayConnection(createVPNGatewayConnectionOptions *CreateVPNGatewayConnectionOptions) (result *VPNGatewayConnection, response *core.DetailedResponse, err error) {
+func (vpcClassic *VpcClassicV1) CreateVPNGatewayConnection(createVPNGatewayConnectionOptions *CreateVPNGatewayConnectionOptions) (result VPNGatewayConnectionIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(createVPNGatewayConnectionOptions, "createVPNGatewayConnectionOptions cannot be nil")
 	if err != nil {
 		return
@@ -6966,35 +6957,7 @@ func (vpcClassic *VpcClassicV1) CreateVPNGatewayConnection(createVPNGatewayConne
 	builder.AddQuery("version", fmt.Sprint(*vpcClassic.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcClassic.generation))
 
-	body := make(map[string]interface{})
-	if createVPNGatewayConnectionOptions.PeerAddress != nil {
-		body["peer_address"] = createVPNGatewayConnectionOptions.PeerAddress
-	}
-	if createVPNGatewayConnectionOptions.Psk != nil {
-		body["psk"] = createVPNGatewayConnectionOptions.Psk
-	}
-	if createVPNGatewayConnectionOptions.AdminStateUp != nil {
-		body["admin_state_up"] = createVPNGatewayConnectionOptions.AdminStateUp
-	}
-	if createVPNGatewayConnectionOptions.Name != nil {
-		body["name"] = createVPNGatewayConnectionOptions.Name
-	}
-	if createVPNGatewayConnectionOptions.DeadPeerDetection != nil {
-		body["dead_peer_detection"] = createVPNGatewayConnectionOptions.DeadPeerDetection
-	}
-	if createVPNGatewayConnectionOptions.IkePolicy != nil {
-		body["ike_policy"] = createVPNGatewayConnectionOptions.IkePolicy
-	}
-	if createVPNGatewayConnectionOptions.IpsecPolicy != nil {
-		body["ipsec_policy"] = createVPNGatewayConnectionOptions.IpsecPolicy
-	}
-	if createVPNGatewayConnectionOptions.LocalCIDRs != nil {
-		body["local_cidrs"] = createVPNGatewayConnectionOptions.LocalCIDRs
-	}
-	if createVPNGatewayConnectionOptions.PeerCIDRs != nil {
-		body["peer_cidrs"] = createVPNGatewayConnectionOptions.PeerCIDRs
-	}
-	_, err = builder.SetBodyContentJSON(body)
+	_, err = builder.SetBodyContentJSON(createVPNGatewayConnectionOptions.VPNGatewayConnectionPrototype)
 	if err != nil {
 		return
 	}
@@ -7065,7 +7028,7 @@ func (vpcClassic *VpcClassicV1) DeleteVPNGatewayConnection(deleteVPNGatewayConne
 
 // GetVPNGatewayConnection : Retrieve the specified VPN gateway connection
 // This request retrieves a single VPN gateway connection specified by the identifier in the URL.
-func (vpcClassic *VpcClassicV1) GetVPNGatewayConnection(getVPNGatewayConnectionOptions *GetVPNGatewayConnectionOptions) (result *VPNGatewayConnection, response *core.DetailedResponse, err error) {
+func (vpcClassic *VpcClassicV1) GetVPNGatewayConnection(getVPNGatewayConnectionOptions *GetVPNGatewayConnectionOptions) (result VPNGatewayConnectionIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getVPNGatewayConnectionOptions, "getVPNGatewayConnectionOptions cannot be nil")
 	if err != nil {
 		return
@@ -7120,7 +7083,7 @@ func (vpcClassic *VpcClassicV1) GetVPNGatewayConnection(getVPNGatewayConnectionO
 
 // UpdateVPNGatewayConnection : Update a VPN gateway connection
 // This request updates the properties of an existing VPN gateway connection.
-func (vpcClassic *VpcClassicV1) UpdateVPNGatewayConnection(updateVPNGatewayConnectionOptions *UpdateVPNGatewayConnectionOptions) (result *VPNGatewayConnection, response *core.DetailedResponse, err error) {
+func (vpcClassic *VpcClassicV1) UpdateVPNGatewayConnection(updateVPNGatewayConnectionOptions *UpdateVPNGatewayConnectionOptions) (result VPNGatewayConnectionIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateVPNGatewayConnectionOptions, "updateVPNGatewayConnectionOptions cannot be nil")
 	if err != nil {
 		return
@@ -7658,11 +7621,11 @@ func (vpcClassic *VpcClassicV1) CreateLoadBalancer(createLoadBalancerOptions *Cr
 	if createLoadBalancerOptions.Subnets != nil {
 		body["subnets"] = createLoadBalancerOptions.Subnets
 	}
-	if createLoadBalancerOptions.Name != nil {
-		body["name"] = createLoadBalancerOptions.Name
-	}
 	if createLoadBalancerOptions.Listeners != nil {
 		body["listeners"] = createLoadBalancerOptions.Listeners
+	}
+	if createLoadBalancerOptions.Name != nil {
+		body["name"] = createLoadBalancerOptions.Name
 	}
 	if createLoadBalancerOptions.Pools != nil {
 		body["pools"] = createLoadBalancerOptions.Pools
@@ -8003,11 +7966,14 @@ func (vpcClassic *VpcClassicV1) CreateLoadBalancerListener(createLoadBalancerLis
 	if createLoadBalancerListenerOptions.Protocol != nil {
 		body["protocol"] = createLoadBalancerListenerOptions.Protocol
 	}
-	if createLoadBalancerListenerOptions.ConnectionLimit != nil {
-		body["connection_limit"] = createLoadBalancerListenerOptions.ConnectionLimit
+	if createLoadBalancerListenerOptions.AcceptProxyProtocol != nil {
+		body["accept_proxy_protocol"] = createLoadBalancerListenerOptions.AcceptProxyProtocol
 	}
 	if createLoadBalancerListenerOptions.CertificateInstance != nil {
 		body["certificate_instance"] = createLoadBalancerListenerOptions.CertificateInstance
+	}
+	if createLoadBalancerListenerOptions.ConnectionLimit != nil {
+		body["connection_limit"] = createLoadBalancerListenerOptions.ConnectionLimit
 	}
 	if createLoadBalancerListenerOptions.DefaultPool != nil {
 		body["default_pool"] = createLoadBalancerListenerOptions.DefaultPool
@@ -8293,11 +8259,11 @@ func (vpcClassic *VpcClassicV1) CreateLoadBalancerListenerPolicy(createLoadBalan
 	builder.AddQuery("generation", fmt.Sprint(*vpcClassic.generation))
 
 	body := make(map[string]interface{})
-	if createLoadBalancerListenerPolicyOptions.Priority != nil {
-		body["priority"] = createLoadBalancerListenerPolicyOptions.Priority
-	}
 	if createLoadBalancerListenerPolicyOptions.Action != nil {
 		body["action"] = createLoadBalancerListenerPolicyOptions.Action
+	}
+	if createLoadBalancerListenerPolicyOptions.Priority != nil {
+		body["priority"] = createLoadBalancerListenerPolicyOptions.Priority
 	}
 	if createLoadBalancerListenerPolicyOptions.Name != nil {
 		body["name"] = createLoadBalancerListenerPolicyOptions.Name
@@ -8888,17 +8854,20 @@ func (vpcClassic *VpcClassicV1) CreateLoadBalancerPool(createLoadBalancerPoolOpt
 	if createLoadBalancerPoolOptions.Algorithm != nil {
 		body["algorithm"] = createLoadBalancerPoolOptions.Algorithm
 	}
+	if createLoadBalancerPoolOptions.HealthMonitor != nil {
+		body["health_monitor"] = createLoadBalancerPoolOptions.HealthMonitor
+	}
 	if createLoadBalancerPoolOptions.Protocol != nil {
 		body["protocol"] = createLoadBalancerPoolOptions.Protocol
 	}
-	if createLoadBalancerPoolOptions.HealthMonitor != nil {
-		body["health_monitor"] = createLoadBalancerPoolOptions.HealthMonitor
+	if createLoadBalancerPoolOptions.Members != nil {
+		body["members"] = createLoadBalancerPoolOptions.Members
 	}
 	if createLoadBalancerPoolOptions.Name != nil {
 		body["name"] = createLoadBalancerPoolOptions.Name
 	}
-	if createLoadBalancerPoolOptions.Members != nil {
-		body["members"] = createLoadBalancerPoolOptions.Members
+	if createLoadBalancerPoolOptions.ProxyProtocol != nil {
+		body["proxy_protocol"] = createLoadBalancerPoolOptions.ProxyProtocol
 	}
 	if createLoadBalancerPoolOptions.SessionPersistence != nil {
 		body["session_persistence"] = createLoadBalancerPoolOptions.SessionPersistence
@@ -8928,7 +8897,8 @@ func (vpcClassic *VpcClassicV1) CreateLoadBalancerPool(createLoadBalancerPoolOpt
 }
 
 // DeleteLoadBalancerPool : Delete a pool
-// This request deletes a load balancer pool. This operation cannot be reversed.
+// This request deletes a load balancer pool. This operation cannot be reversed. The pool must not currently be the
+// default pool for any listener in the load balancer.
 func (vpcClassic *VpcClassicV1) DeleteLoadBalancerPool(deleteLoadBalancerPoolOptions *DeleteLoadBalancerPoolOptions) (response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteLoadBalancerPoolOptions, "deleteLoadBalancerPoolOptions cannot be nil")
 	if err != nil {
@@ -9647,20 +9617,6 @@ func (options *AddVPNGatewayConnectionPeerCIDROptions) SetHeaders(param map[stri
 
 // AddressPrefix : AddressPrefix struct
 type AddressPrefix struct {
-	// The unique identifier for this address prefix.
-	ID *string `json:"id" validate:"required"`
-
-	// The URL for this address prefix.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this address prefix. Names must be unique within the VPC the address prefix resides in.
-	Name *string `json:"name" validate:"required"`
-
-	// Indicates whether this is the default prefix for this zone in this VPC. If a default prefix was automatically
-	// created when the VPC was created, the prefix is automatically named using a hyphenated list of randomly-selected
-	// words, but may be updated with a user-specified name.
-	IsDefault *bool `json:"is_default" validate:"required"`
-
 	// The CIDR block for this prefix.
 	CIDR *string `json:"cidr" validate:"required"`
 
@@ -9670,6 +9626,20 @@ type AddressPrefix struct {
 	// Indicates whether subnets exist with addresses from this prefix.
 	HasSubnets *bool `json:"has_subnets" validate:"required"`
 
+	// The URL for this address prefix.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this address prefix.
+	ID *string `json:"id" validate:"required"`
+
+	// Indicates whether this is the default prefix for this zone in this VPC. If a default prefix was automatically
+	// created when the VPC was created, the prefix is automatically named using a hyphenated list of randomly-selected
+	// words, but may be updated with a user-specified name.
+	IsDefault *bool `json:"is_default" validate:"required"`
+
+	// The user-defined name for this address prefix. Names must be unique within the VPC the address prefix resides in.
+	Name *string `json:"name" validate:"required"`
+
 	// The zone this address prefix resides in.
 	Zone *ZoneReference `json:"zone" validate:"required"`
 }
@@ -9677,22 +9647,6 @@ type AddressPrefix struct {
 // UnmarshalAddressPrefix unmarshals an instance of AddressPrefix from the specified map of raw messages.
 func UnmarshalAddressPrefix(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(AddressPrefix)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "is_default", &obj.IsDefault)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "cidr", &obj.CIDR)
 	if err != nil {
 		return
@@ -9702,6 +9656,22 @@ func UnmarshalAddressPrefix(m map[string]json.RawMessage, result interface{}) (e
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "has_subnets", &obj.HasSubnets)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "is_default", &obj.IsDefault)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -9715,23 +9685,27 @@ func UnmarshalAddressPrefix(m map[string]json.RawMessage, result interface{}) (e
 
 // AddressPrefixCollection : AddressPrefixCollection struct
 type AddressPrefixCollection struct {
-	// A reference to the first page of resources.
+	// Collection of address prefixes.
+	AddressPrefixes []AddressPrefix `json:"address_prefixes" validate:"required"`
+
+	// A link to the first page of resources.
 	First *AddressPrefixCollectionFirst `json:"first" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *AddressPrefixCollectionNext `json:"next,omitempty"`
-
-	// Collection of address prefixes.
-	AddressPrefixes []AddressPrefix `json:"address_prefixes" validate:"required"`
 }
 
 // UnmarshalAddressPrefixCollection unmarshals an instance of AddressPrefixCollection from the specified map of raw messages.
 func UnmarshalAddressPrefixCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(AddressPrefixCollection)
+	err = core.UnmarshalModel(m, "address_prefixes", &obj.AddressPrefixes, UnmarshalAddressPrefix)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalAddressPrefixCollectionFirst)
 	if err != nil {
 		return
@@ -9744,17 +9718,13 @@ func UnmarshalAddressPrefixCollection(m map[string]json.RawMessage, result inter
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "address_prefixes", &obj.AddressPrefixes, UnmarshalAddressPrefix)
-	if err != nil {
-		return
-	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
-// AddressPrefixCollectionFirst : A reference to the first page of resources.
+// AddressPrefixCollectionFirst : A link to the first page of resources.
 type AddressPrefixCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -9769,9 +9739,9 @@ func UnmarshalAddressPrefixCollectionFirst(m map[string]json.RawMessage, result 
 	return
 }
 
-// AddressPrefixCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// AddressPrefixCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type AddressPrefixCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -9788,23 +9758,23 @@ func UnmarshalAddressPrefixCollectionNext(m map[string]json.RawMessage, result i
 
 // AddressPrefixPatch : AddressPrefixPatch struct
 type AddressPrefixPatch struct {
-	// The user-defined name for this address prefix. Names must be unique within the VPC the address prefix resides in.
-	Name *string `json:"name,omitempty"`
-
 	// Indicates whether this is the default prefix for this zone in this VPC. Updating to true makes this prefix the
 	// default prefix for this zone in this VPC, provided the VPC currently has no default address prefix for this zone.
 	// Updating to false removes the default prefix for this zone in this VPC.
 	IsDefault *bool `json:"is_default,omitempty"`
+
+	// The user-defined name for this address prefix. Names must be unique within the VPC the address prefix resides in.
+	Name *string `json:"name,omitempty"`
 }
 
 // UnmarshalAddressPrefixPatch unmarshals an instance of AddressPrefixPatch from the specified map of raw messages.
 func UnmarshalAddressPrefixPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(AddressPrefixPatch)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "is_default", &obj.IsDefault)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "is_default", &obj.IsDefault)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -10024,11 +9994,11 @@ type CreateIkePolicyOptions struct {
 	// The IKE protocol version.
 	IkeVersion *int64 `json:"ike_version" validate:"required"`
 
-	// The user-defined name for this IKE policy.
-	Name *string `json:"name,omitempty"`
-
 	// The key lifetime in seconds.
 	KeyLifetime *int64 `json:"key_lifetime,omitempty"`
+
+	// The user-defined name for this IKE policy.
+	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
@@ -10088,15 +10058,15 @@ func (options *CreateIkePolicyOptions) SetIkeVersion(ikeVersion int64) *CreateIk
 	return options
 }
 
-// SetName : Allow user to set Name
-func (options *CreateIkePolicyOptions) SetName(name string) *CreateIkePolicyOptions {
-	options.Name = core.StringPtr(name)
-	return options
-}
-
 // SetKeyLifetime : Allow user to set KeyLifetime
 func (options *CreateIkePolicyOptions) SetKeyLifetime(keyLifetime int64) *CreateIkePolicyOptions {
 	options.KeyLifetime = core.Int64Ptr(keyLifetime)
+	return options
+}
+
+// SetName : Allow user to set Name
+func (options *CreateIkePolicyOptions) SetName(name string) *CreateIkePolicyOptions {
+	options.Name = core.StringPtr(name)
 	return options
 }
 
@@ -10283,11 +10253,11 @@ type CreateIpsecPolicyOptions struct {
 	// Perfect Forward Secrecy.
 	Pfs *string `json:"pfs" validate:"required"`
 
-	// The user-defined name for this IPsec policy.
-	Name *string `json:"name,omitempty"`
-
 	// The key lifetime in seconds.
 	KeyLifetime *int64 `json:"key_lifetime,omitempty"`
+
+	// The user-defined name for this IPsec policy.
+	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
@@ -10349,15 +10319,15 @@ func (options *CreateIpsecPolicyOptions) SetPfs(pfs string) *CreateIpsecPolicyOp
 	return options
 }
 
-// SetName : Allow user to set Name
-func (options *CreateIpsecPolicyOptions) SetName(name string) *CreateIpsecPolicyOptions {
-	options.Name = core.StringPtr(name)
-	return options
-}
-
 // SetKeyLifetime : Allow user to set KeyLifetime
 func (options *CreateIpsecPolicyOptions) SetKeyLifetime(keyLifetime int64) *CreateIpsecPolicyOptions {
 	options.KeyLifetime = core.Int64Ptr(keyLifetime)
+	return options
+}
+
+// SetName : Allow user to set Name
+func (options *CreateIpsecPolicyOptions) SetName(name string) *CreateIpsecPolicyOptions {
+	options.Name = core.StringPtr(name)
 	return options
 }
 
@@ -10382,19 +10352,19 @@ type CreateKeyOptions struct {
 	// The user-defined name for this key.
 	Name *string `json:"name,omitempty"`
 
-	// The cryptosystem used by this key.
-	Type *string `json:"type,omitempty"`
-
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The crypto-system used by this key.
+	Type *string `json:"type,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
 
 // Constants associated with the CreateKeyOptions.Type property.
-// The cryptosystem used by this key.
+// The crypto-system used by this key.
 const (
 	CreateKeyOptionsTypeRsaConst = "rsa"
 )
@@ -10418,15 +10388,15 @@ func (options *CreateKeyOptions) SetName(name string) *CreateKeyOptions {
 	return options
 }
 
-// SetType : Allow user to set Type
-func (options *CreateKeyOptions) SetType(typeVar string) *CreateKeyOptions {
-	options.Type = core.StringPtr(typeVar)
-	return options
-}
-
 // SetResourceGroup : Allow user to set ResourceGroup
 func (options *CreateKeyOptions) SetResourceGroup(resourceGroup ResourceGroupIdentityIntf) *CreateKeyOptions {
 	options.ResourceGroup = resourceGroup
+	return options
+}
+
+// SetType : Allow user to set Type
+func (options *CreateKeyOptions) SetType(typeVar string) *CreateKeyOptions {
+	options.Type = core.StringPtr(typeVar)
 	return options
 }
 
@@ -10441,20 +10411,29 @@ type CreateLoadBalancerListenerOptions struct {
 	// The load balancer identifier.
 	LoadBalancerID *string `json:"load_balancer_id" validate:"required,ne="`
 
-	// The listener port number.
+	// The listener port number. Each listener in the load balancer must have a unique
+	// `port` and `protocol` combination.
 	Port *int64 `json:"port" validate:"required"`
 
 	// The listener protocol.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The connection limit of the listener.
-	ConnectionLimit *int64 `json:"connection_limit,omitempty"`
+	// If set to `true`, this listener will accept and forward PROXY protocol information. Supported by load balancers in
+	// the `application` family (otherwise always `false`).
+	AcceptProxyProtocol *bool `json:"accept_proxy_protocol,omitempty"`
 
 	// The certificate instance used for SSL termination. It is applicable only to `https`
 	// protocol.
 	CertificateInstance CertificateInstanceIdentityIntf `json:"certificate_instance,omitempty"`
 
-	// The default pool associated with the listener.
+	// The connection limit of the listener.
+	ConnectionLimit *int64 `json:"connection_limit,omitempty"`
+
+	// The default pool associated with the listener. The specified pool must:
+	//
+	// - Belong to this load balancer
+	// - Have the same `protocol` as this listener
+	// - Not already be the default pool for another listener.
 	DefaultPool LoadBalancerPoolIdentityIntf `json:"default_pool,omitempty"`
 
 	// The list of policies of this listener.
@@ -10499,15 +10478,21 @@ func (options *CreateLoadBalancerListenerOptions) SetProtocol(protocol string) *
 	return options
 }
 
-// SetConnectionLimit : Allow user to set ConnectionLimit
-func (options *CreateLoadBalancerListenerOptions) SetConnectionLimit(connectionLimit int64) *CreateLoadBalancerListenerOptions {
-	options.ConnectionLimit = core.Int64Ptr(connectionLimit)
+// SetAcceptProxyProtocol : Allow user to set AcceptProxyProtocol
+func (options *CreateLoadBalancerListenerOptions) SetAcceptProxyProtocol(acceptProxyProtocol bool) *CreateLoadBalancerListenerOptions {
+	options.AcceptProxyProtocol = core.BoolPtr(acceptProxyProtocol)
 	return options
 }
 
 // SetCertificateInstance : Allow user to set CertificateInstance
 func (options *CreateLoadBalancerListenerOptions) SetCertificateInstance(certificateInstance CertificateInstanceIdentityIntf) *CreateLoadBalancerListenerOptions {
 	options.CertificateInstance = certificateInstance
+	return options
+}
+
+// SetConnectionLimit : Allow user to set ConnectionLimit
+func (options *CreateLoadBalancerListenerOptions) SetConnectionLimit(connectionLimit int64) *CreateLoadBalancerListenerOptions {
+	options.ConnectionLimit = core.Int64Ptr(connectionLimit)
 	return options
 }
 
@@ -10537,11 +10522,11 @@ type CreateLoadBalancerListenerPolicyOptions struct {
 	// The listener identifier.
 	ListenerID *string `json:"listener_id" validate:"required,ne="`
 
-	// Priority of the policy. Lower value indicates higher priority.
-	Priority *int64 `json:"priority" validate:"required"`
-
 	// The policy action.
 	Action *string `json:"action" validate:"required"`
+
+	// Priority of the policy. Lower value indicates higher priority.
+	Priority *int64 `json:"priority" validate:"required"`
 
 	// The user-defined name for this policy. Names must be unique within the load balancer listener the policy resides in.
 	Name *string `json:"name,omitempty"`
@@ -10553,7 +10538,7 @@ type CreateLoadBalancerListenerPolicyOptions struct {
 	// pool the load balancer forwards the traffic to. When `action` is `redirect`,
 	// `LoadBalancerListenerPolicyRedirectURLPrototype` is required to specify the url and
 	// http status code used in the redirect response.
-	Target LoadBalancerListenerPolicyPrototypeTargetIntf `json:"target,omitempty"`
+	Target LoadBalancerListenerPolicyTargetPrototypeIntf `json:"target,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -10568,12 +10553,12 @@ const (
 )
 
 // NewCreateLoadBalancerListenerPolicyOptions : Instantiate CreateLoadBalancerListenerPolicyOptions
-func (*VpcClassicV1) NewCreateLoadBalancerListenerPolicyOptions(loadBalancerID string, listenerID string, priority int64, action string) *CreateLoadBalancerListenerPolicyOptions {
+func (*VpcClassicV1) NewCreateLoadBalancerListenerPolicyOptions(loadBalancerID string, listenerID string, action string, priority int64) *CreateLoadBalancerListenerPolicyOptions {
 	return &CreateLoadBalancerListenerPolicyOptions{
 		LoadBalancerID: core.StringPtr(loadBalancerID),
 		ListenerID:     core.StringPtr(listenerID),
-		Priority:       core.Int64Ptr(priority),
 		Action:         core.StringPtr(action),
+		Priority:       core.Int64Ptr(priority),
 	}
 }
 
@@ -10589,15 +10574,15 @@ func (options *CreateLoadBalancerListenerPolicyOptions) SetListenerID(listenerID
 	return options
 }
 
-// SetPriority : Allow user to set Priority
-func (options *CreateLoadBalancerListenerPolicyOptions) SetPriority(priority int64) *CreateLoadBalancerListenerPolicyOptions {
-	options.Priority = core.Int64Ptr(priority)
-	return options
-}
-
 // SetAction : Allow user to set Action
 func (options *CreateLoadBalancerListenerPolicyOptions) SetAction(action string) *CreateLoadBalancerListenerPolicyOptions {
 	options.Action = core.StringPtr(action)
+	return options
+}
+
+// SetPriority : Allow user to set Priority
+func (options *CreateLoadBalancerListenerPolicyOptions) SetPriority(priority int64) *CreateLoadBalancerListenerPolicyOptions {
+	options.Priority = core.Int64Ptr(priority)
 	return options
 }
 
@@ -10614,7 +10599,7 @@ func (options *CreateLoadBalancerListenerPolicyOptions) SetRules(rules []LoadBal
 }
 
 // SetTarget : Allow user to set Target
-func (options *CreateLoadBalancerListenerPolicyOptions) SetTarget(target LoadBalancerListenerPolicyPrototypeTargetIntf) *CreateLoadBalancerListenerPolicyOptions {
+func (options *CreateLoadBalancerListenerPolicyOptions) SetTarget(target LoadBalancerListenerPolicyTargetPrototypeIntf) *CreateLoadBalancerListenerPolicyOptions {
 	options.Target = target
 	return options
 }
@@ -10730,18 +10715,18 @@ func (options *CreateLoadBalancerListenerPolicyRuleOptions) SetHeaders(param map
 
 // CreateLoadBalancerOptions : The CreateLoadBalancer options.
 type CreateLoadBalancerOptions struct {
-	// The type of this load balancer, public or private.
+	// Indicates whether this load balancer is public or private.
 	IsPublic *bool `json:"is_public" validate:"required"`
 
 	// The subnets to provision this load balancer.
 	Subnets []SubnetIdentityIntf `json:"subnets" validate:"required"`
 
+	// The listeners of this load balancer.
+	Listeners []LoadBalancerListenerPrototypeLoadBalancerContext `json:"listeners,omitempty"`
+
 	// The user-defined name for this load balancer. If unspecified, the name will be a hyphenated list of
 	// randomly-selected words.
 	Name *string `json:"name,omitempty"`
-
-	// The listeners of this load balancer.
-	Listeners []LoadBalancerListenerPrototypeLoadBalancerContext `json:"listeners,omitempty"`
 
 	// The pools of this load balancer.
 	Pools []LoadBalancerPoolPrototype `json:"pools,omitempty"`
@@ -10774,15 +10759,15 @@ func (options *CreateLoadBalancerOptions) SetSubnets(subnets []SubnetIdentityInt
 	return options
 }
 
-// SetName : Allow user to set Name
-func (options *CreateLoadBalancerOptions) SetName(name string) *CreateLoadBalancerOptions {
-	options.Name = core.StringPtr(name)
-	return options
-}
-
 // SetListeners : Allow user to set Listeners
 func (options *CreateLoadBalancerOptions) SetListeners(listeners []LoadBalancerListenerPrototypeLoadBalancerContext) *CreateLoadBalancerOptions {
 	options.Listeners = listeners
+	return options
+}
+
+// SetName : Allow user to set Name
+func (options *CreateLoadBalancerOptions) SetName(name string) *CreateLoadBalancerOptions {
+	options.Name = core.StringPtr(name)
 	return options
 }
 
@@ -10818,7 +10803,7 @@ type CreateLoadBalancerPoolMemberOptions struct {
 	// The pool member target.
 	Target LoadBalancerPoolMemberTargetPrototypeIntf `json:"target" validate:"required"`
 
-	// Weight of the server member. This takes effect only when the load balancing algorithm of its belonging pool is
+	// Weight of the server member. Applicable only if the pool algorithm is
 	// `weighted_round_robin`.
 	Weight *int64 `json:"weight,omitempty"`
 
@@ -10880,23 +10865,29 @@ type CreateLoadBalancerPoolOptions struct {
 	// The load balancing algorithm.
 	Algorithm *string `json:"algorithm" validate:"required"`
 
-	// The protocol used for this load balancer pool.
-	//
-	// The enumerated values for this property are expected to expand in the future. When processing this property, check
-	// for and log unknown values. Optionally halt processing and surface the error, or bypass the pool on which the
-	// unexpected property value was encountered.
-	Protocol *string `json:"protocol" validate:"required"`
-
 	// The health monitor of this pool.
 	HealthMonitor *LoadBalancerPoolHealthMonitorPrototype `json:"health_monitor" validate:"required"`
+
+	// The protocol used for this load balancer pool. Load balancers in the `network` family support `tcp`. Load balancers
+	// in the `application` family support `tcp`, `http`, and
+	// `https`.
+	Protocol *string `json:"protocol" validate:"required"`
+
+	// The members for this load balancer pool. For load balancers in the `network` family, the same `port` and `target`
+	// tuple cannot be shared by a pool member of any other load balancer in the same VPC.
+	Members []LoadBalancerPoolMemberPrototype `json:"members,omitempty"`
 
 	// The user-defined name for this load balancer pool. If unspecified, the name will be a hyphenated list of
 	// randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
-	// The members for this load balancer pool. For load balancers in the `network` family, the same `port` and `target`
-	// tuple cannot be shared by a member of any other load balancer.
-	Members []LoadBalancerPoolMemberPrototype `json:"members,omitempty"`
+	// The PROXY protocol setting for this pool:
+	// - `v1`: Enabled with version 1 (human-readable header format)
+	// - `v2`: Enabled with version 2 (binary header format)
+	// - `disabled`: Disabled
+	//
+	// Supported by load balancers in the `application` family (otherwise always `disabled`).
+	ProxyProtocol *string `json:"proxy_protocol,omitempty"`
 
 	// The session persistence of this pool.
 	SessionPersistence *LoadBalancerPoolSessionPersistencePrototype `json:"session_persistence,omitempty"`
@@ -10914,24 +10905,35 @@ const (
 )
 
 // Constants associated with the CreateLoadBalancerPoolOptions.Protocol property.
-// The protocol used for this load balancer pool.
-//
-// The enumerated values for this property are expected to expand in the future. When processing this property, check
-// for and log unknown values. Optionally halt processing and surface the error, or bypass the pool on which the
-// unexpected property value was encountered.
+// The protocol used for this load balancer pool. Load balancers in the `network` family support `tcp`. Load balancers
+// in the `application` family support `tcp`, `http`, and
+// `https`.
 const (
 	CreateLoadBalancerPoolOptionsProtocolHTTPConst  = "http"
 	CreateLoadBalancerPoolOptionsProtocolHTTPSConst = "https"
 	CreateLoadBalancerPoolOptionsProtocolTCPConst   = "tcp"
 )
 
+// Constants associated with the CreateLoadBalancerPoolOptions.ProxyProtocol property.
+// The PROXY protocol setting for this pool:
+// - `v1`: Enabled with version 1 (human-readable header format)
+// - `v2`: Enabled with version 2 (binary header format)
+// - `disabled`: Disabled
+//
+// Supported by load balancers in the `application` family (otherwise always `disabled`).
+const (
+	CreateLoadBalancerPoolOptionsProxyProtocolDisabledConst = "disabled"
+	CreateLoadBalancerPoolOptionsProxyProtocolV1Const       = "v1"
+	CreateLoadBalancerPoolOptionsProxyProtocolV2Const       = "v2"
+)
+
 // NewCreateLoadBalancerPoolOptions : Instantiate CreateLoadBalancerPoolOptions
-func (*VpcClassicV1) NewCreateLoadBalancerPoolOptions(loadBalancerID string, algorithm string, protocol string, healthMonitor *LoadBalancerPoolHealthMonitorPrototype) *CreateLoadBalancerPoolOptions {
+func (*VpcClassicV1) NewCreateLoadBalancerPoolOptions(loadBalancerID string, algorithm string, healthMonitor *LoadBalancerPoolHealthMonitorPrototype, protocol string) *CreateLoadBalancerPoolOptions {
 	return &CreateLoadBalancerPoolOptions{
 		LoadBalancerID: core.StringPtr(loadBalancerID),
 		Algorithm:      core.StringPtr(algorithm),
-		Protocol:       core.StringPtr(protocol),
 		HealthMonitor:  healthMonitor,
+		Protocol:       core.StringPtr(protocol),
 	}
 }
 
@@ -10947,15 +10949,21 @@ func (options *CreateLoadBalancerPoolOptions) SetAlgorithm(algorithm string) *Cr
 	return options
 }
 
+// SetHealthMonitor : Allow user to set HealthMonitor
+func (options *CreateLoadBalancerPoolOptions) SetHealthMonitor(healthMonitor *LoadBalancerPoolHealthMonitorPrototype) *CreateLoadBalancerPoolOptions {
+	options.HealthMonitor = healthMonitor
+	return options
+}
+
 // SetProtocol : Allow user to set Protocol
 func (options *CreateLoadBalancerPoolOptions) SetProtocol(protocol string) *CreateLoadBalancerPoolOptions {
 	options.Protocol = core.StringPtr(protocol)
 	return options
 }
 
-// SetHealthMonitor : Allow user to set HealthMonitor
-func (options *CreateLoadBalancerPoolOptions) SetHealthMonitor(healthMonitor *LoadBalancerPoolHealthMonitorPrototype) *CreateLoadBalancerPoolOptions {
-	options.HealthMonitor = healthMonitor
+// SetMembers : Allow user to set Members
+func (options *CreateLoadBalancerPoolOptions) SetMembers(members []LoadBalancerPoolMemberPrototype) *CreateLoadBalancerPoolOptions {
+	options.Members = members
 	return options
 }
 
@@ -10965,9 +10973,9 @@ func (options *CreateLoadBalancerPoolOptions) SetName(name string) *CreateLoadBa
 	return options
 }
 
-// SetMembers : Allow user to set Members
-func (options *CreateLoadBalancerPoolOptions) SetMembers(members []LoadBalancerPoolMemberPrototype) *CreateLoadBalancerPoolOptions {
-	options.Members = members
+// SetProxyProtocol : Allow user to set ProxyProtocol
+func (options *CreateLoadBalancerPoolOptions) SetProxyProtocol(proxyProtocol string) *CreateLoadBalancerPoolOptions {
+	options.ProxyProtocol = core.StringPtr(proxyProtocol)
 	return options
 }
 
@@ -11055,11 +11063,11 @@ type CreatePublicGatewayOptions struct {
 	// The zone where this public gateway will be created.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
+	FloatingIP PublicGatewayFloatingIPPrototypeIntf `json:"floating_ip,omitempty"`
+
 	// The user-defined name for this public gateway. Names must be unique within the VPC the public gateway resides in. If
 	// unspecified, the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
-
-	FloatingIP PublicGatewayPrototypeFloatingIPIntf `json:"floating_ip,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -11085,15 +11093,15 @@ func (options *CreatePublicGatewayOptions) SetZone(zone ZoneIdentityIntf) *Creat
 	return options
 }
 
-// SetName : Allow user to set Name
-func (options *CreatePublicGatewayOptions) SetName(name string) *CreatePublicGatewayOptions {
-	options.Name = core.StringPtr(name)
+// SetFloatingIP : Allow user to set FloatingIP
+func (options *CreatePublicGatewayOptions) SetFloatingIP(floatingIP PublicGatewayFloatingIPPrototypeIntf) *CreatePublicGatewayOptions {
+	options.FloatingIP = floatingIP
 	return options
 }
 
-// SetFloatingIP : Allow user to set FloatingIP
-func (options *CreatePublicGatewayOptions) SetFloatingIP(floatingIP PublicGatewayPrototypeFloatingIPIntf) *CreatePublicGatewayOptions {
-	options.FloatingIP = floatingIP
+// SetName : Allow user to set Name
+func (options *CreatePublicGatewayOptions) SetName(name string) *CreatePublicGatewayOptions {
+	options.Name = core.StringPtr(name)
 	return options
 }
 
@@ -11260,20 +11268,27 @@ type CreateVPCAddressPrefixOptions struct {
 	// The VPC identifier.
 	VPCID *string `json:"vpc_id" validate:"required,ne="`
 
-	// The CIDR block for this address prefix. The request must not overlap with any existing address prefixes in the VPC,
-	// or the reserved CIDR blocks 169.254.0.0/16 and 161.26.0.0/16.
+	// The IPv4 range of the address prefix, expressed in CIDR format. The request must not overlap with any existing
+	// address prefixes in the VPC or any of the following reserved address ranges:
+	//   - `127.0.0.0/8` (IPv4 loopback addresses)
+	//   - `161.26.0.0/16` (IBM services)
+	//   - `166.8.0.0/14` (Cloud Service Endpoints)
+	//   - `169.254.0.0/16` (IPv4 link-local addresses)
+	//   - `224.0.0.0/4` (IPv4 multicast addresses)
+	//
+	// The prefix length of the address prefix's CIDR must be between `/9` (8,388,608 addresses) and `/29` (8 addresses).
 	CIDR *string `json:"cidr" validate:"required"`
 
 	// The zone this address prefix is to belong to.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
-	// The user-defined name for this address prefix. Names must be unique within the VPC the address prefix resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
 	// Indicates whether this is the default prefix for this zone in this VPC. If true, this prefix will become the default
 	// prefix for this zone in this VPC. This fails if the VPC currently has a default address prefix for this zone.
 	IsDefault *bool `json:"is_default,omitempty"`
+
+	// The user-defined name for this address prefix. Names must be unique within the VPC the address prefix resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -11306,15 +11321,15 @@ func (options *CreateVPCAddressPrefixOptions) SetZone(zone ZoneIdentityIntf) *Cr
 	return options
 }
 
-// SetName : Allow user to set Name
-func (options *CreateVPCAddressPrefixOptions) SetName(name string) *CreateVPCAddressPrefixOptions {
-	options.Name = core.StringPtr(name)
-	return options
-}
-
 // SetIsDefault : Allow user to set IsDefault
 func (options *CreateVPCAddressPrefixOptions) SetIsDefault(isDefault bool) *CreateVPCAddressPrefixOptions {
 	options.IsDefault = core.BoolPtr(isDefault)
+	return options
+}
+
+// SetName : Allow user to set Name
+func (options *CreateVPCAddressPrefixOptions) SetName(name string) *CreateVPCAddressPrefixOptions {
+	options.Name = core.StringPtr(name)
 	return options
 }
 
@@ -11326,10 +11341,6 @@ func (options *CreateVPCAddressPrefixOptions) SetHeaders(param map[string]string
 
 // CreateVPCOptions : The CreateVPC options.
 type CreateVPCOptions struct {
-	// The unique user-defined name for this VPC. If unspecified, the name will be a hyphenated list of randomly-selected
-	// words.
-	Name *string `json:"name,omitempty"`
-
 	// Indicates whether a default address prefix should be automatically created for each zone in this VPC. If `manual`,
 	// this VPC will be created with no default address prefixes.
 	AddressPrefixManagement *string `json:"address_prefix_management,omitempty"`
@@ -11338,6 +11349,10 @@ type CreateVPCOptions struct {
 	// private network connectivity to the account's Classic Infrastructure resources. Only one VPC, per region, may be
 	// connected in this way. This value is set at creation and subsequently immutable.
 	ClassicAccess *bool `json:"classic_access,omitempty"`
+
+	// The unique user-defined name for this VPC. If unspecified, the name will be a hyphenated list of randomly-selected
+	// words.
+	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
@@ -11360,12 +11375,6 @@ func (*VpcClassicV1) NewCreateVPCOptions() *CreateVPCOptions {
 	return &CreateVPCOptions{}
 }
 
-// SetName : Allow user to set Name
-func (options *CreateVPCOptions) SetName(name string) *CreateVPCOptions {
-	options.Name = core.StringPtr(name)
-	return options
-}
-
 // SetAddressPrefixManagement : Allow user to set AddressPrefixManagement
 func (options *CreateVPCOptions) SetAddressPrefixManagement(addressPrefixManagement string) *CreateVPCOptions {
 	options.AddressPrefixManagement = core.StringPtr(addressPrefixManagement)
@@ -11375,6 +11384,12 @@ func (options *CreateVPCOptions) SetAddressPrefixManagement(addressPrefixManagem
 // SetClassicAccess : Allow user to set ClassicAccess
 func (options *CreateVPCOptions) SetClassicAccess(classicAccess bool) *CreateVPCOptions {
 	options.ClassicAccess = core.BoolPtr(classicAccess)
+	return options
+}
+
+// SetName : Allow user to set Name
+func (options *CreateVPCOptions) SetName(name string) *CreateVPCOptions {
+	options.Name = core.StringPtr(name)
 	return options
 }
 
@@ -11395,13 +11410,11 @@ type CreateVPCRouteOptions struct {
 	// The VPC identifier.
 	VPCID *string `json:"vpc_id" validate:"required,ne="`
 
+	// The destination of the route. Must not overlap with destinations for existing user-defined routes within the VPC.
+	Destination *string `json:"destination" validate:"required"`
+
 	// The next hop that packets will be delivered to.
 	NextHop RouteNextHopPrototypeIntf `json:"next_hop" validate:"required"`
-
-	// The destination of the route. At most two routes per `zone` in a table can have the same destination, and only if
-	// both routes have an `action` of `deliver` and the
-	// `next_hop` is an IP address.
-	Destination *string `json:"destination" validate:"required"`
 
 	// The zone to apply the route to. (Traffic from subnets in this zone will be
 	// subject to this route.).
@@ -11416,11 +11429,11 @@ type CreateVPCRouteOptions struct {
 }
 
 // NewCreateVPCRouteOptions : Instantiate CreateVPCRouteOptions
-func (*VpcClassicV1) NewCreateVPCRouteOptions(vpcID string, nextHop RouteNextHopPrototypeIntf, destination string, zone ZoneIdentityIntf) *CreateVPCRouteOptions {
+func (*VpcClassicV1) NewCreateVPCRouteOptions(vpcID string, destination string, nextHop RouteNextHopPrototypeIntf, zone ZoneIdentityIntf) *CreateVPCRouteOptions {
 	return &CreateVPCRouteOptions{
 		VPCID:       core.StringPtr(vpcID),
-		NextHop:     nextHop,
 		Destination: core.StringPtr(destination),
+		NextHop:     nextHop,
 		Zone:        zone,
 	}
 }
@@ -11431,15 +11444,15 @@ func (options *CreateVPCRouteOptions) SetVPCID(vpcID string) *CreateVPCRouteOpti
 	return options
 }
 
-// SetNextHop : Allow user to set NextHop
-func (options *CreateVPCRouteOptions) SetNextHop(nextHop RouteNextHopPrototypeIntf) *CreateVPCRouteOptions {
-	options.NextHop = nextHop
-	return options
-}
-
 // SetDestination : Allow user to set Destination
 func (options *CreateVPCRouteOptions) SetDestination(destination string) *CreateVPCRouteOptions {
 	options.Destination = core.StringPtr(destination)
+	return options
+}
+
+// SetNextHop : Allow user to set NextHop
+func (options *CreateVPCRouteOptions) SetNextHop(nextHop RouteNextHopPrototypeIntf) *CreateVPCRouteOptions {
+	options.NextHop = nextHop
 	return options
 }
 
@@ -11466,44 +11479,18 @@ type CreateVPNGatewayConnectionOptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required,ne="`
 
-	// The IP address of the peer VPN gateway.
-	PeerAddress *string `json:"peer_address" validate:"required"`
-
-	// The preshared key.
-	Psk *string `json:"psk" validate:"required"`
-
-	// If set to false, the VPN connection is shut down.
-	AdminStateUp *bool `json:"admin_state_up,omitempty"`
-
-	// The user-defined name for this VPN gateway connection.
-	Name *string `json:"name,omitempty"`
-
-	// The Dead Peer Detection settings.
-	DeadPeerDetection *VPNGatewayConnectionDpdPrototype `json:"dead_peer_detection,omitempty"`
-
-	// Optional IKE policy configuration. The absence of a policy indicates autonegotiation.
-	IkePolicy IkePolicyIdentityIntf `json:"ike_policy,omitempty"`
-
-	// Optional IPsec policy configuration. The absence of a policy indicates
-	// autonegotiation.
-	IpsecPolicy IPsecPolicyIdentityIntf `json:"ipsec_policy,omitempty"`
-
-	// A collection of local CIDRs for this resource.
-	LocalCIDRs []string `json:"local_cidrs,omitempty"`
-
-	// A collection of peer CIDRs for this resource.
-	PeerCIDRs []string `json:"peer_cidrs,omitempty"`
+	// The VPN gateway connection prototype object.
+	VPNGatewayConnectionPrototype VPNGatewayConnectionPrototypeIntf `json:"VPNGatewayConnectionPrototype" validate:"required"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
 
 // NewCreateVPNGatewayConnectionOptions : Instantiate CreateVPNGatewayConnectionOptions
-func (*VpcClassicV1) NewCreateVPNGatewayConnectionOptions(vpnGatewayID string, peerAddress string, psk string) *CreateVPNGatewayConnectionOptions {
+func (*VpcClassicV1) NewCreateVPNGatewayConnectionOptions(vpnGatewayID string, vpnGatewayConnectionPrototype VPNGatewayConnectionPrototypeIntf) *CreateVPNGatewayConnectionOptions {
 	return &CreateVPNGatewayConnectionOptions{
-		VPNGatewayID: core.StringPtr(vpnGatewayID),
-		PeerAddress:  core.StringPtr(peerAddress),
-		Psk:          core.StringPtr(psk),
+		VPNGatewayID:                  core.StringPtr(vpnGatewayID),
+		VPNGatewayConnectionPrototype: vpnGatewayConnectionPrototype,
 	}
 }
 
@@ -11513,57 +11500,9 @@ func (options *CreateVPNGatewayConnectionOptions) SetVPNGatewayID(vpnGatewayID s
 	return options
 }
 
-// SetPeerAddress : Allow user to set PeerAddress
-func (options *CreateVPNGatewayConnectionOptions) SetPeerAddress(peerAddress string) *CreateVPNGatewayConnectionOptions {
-	options.PeerAddress = core.StringPtr(peerAddress)
-	return options
-}
-
-// SetPsk : Allow user to set Psk
-func (options *CreateVPNGatewayConnectionOptions) SetPsk(psk string) *CreateVPNGatewayConnectionOptions {
-	options.Psk = core.StringPtr(psk)
-	return options
-}
-
-// SetAdminStateUp : Allow user to set AdminStateUp
-func (options *CreateVPNGatewayConnectionOptions) SetAdminStateUp(adminStateUp bool) *CreateVPNGatewayConnectionOptions {
-	options.AdminStateUp = core.BoolPtr(adminStateUp)
-	return options
-}
-
-// SetName : Allow user to set Name
-func (options *CreateVPNGatewayConnectionOptions) SetName(name string) *CreateVPNGatewayConnectionOptions {
-	options.Name = core.StringPtr(name)
-	return options
-}
-
-// SetDeadPeerDetection : Allow user to set DeadPeerDetection
-func (options *CreateVPNGatewayConnectionOptions) SetDeadPeerDetection(deadPeerDetection *VPNGatewayConnectionDpdPrototype) *CreateVPNGatewayConnectionOptions {
-	options.DeadPeerDetection = deadPeerDetection
-	return options
-}
-
-// SetIkePolicy : Allow user to set IkePolicy
-func (options *CreateVPNGatewayConnectionOptions) SetIkePolicy(ikePolicy IkePolicyIdentityIntf) *CreateVPNGatewayConnectionOptions {
-	options.IkePolicy = ikePolicy
-	return options
-}
-
-// SetIpsecPolicy : Allow user to set IpsecPolicy
-func (options *CreateVPNGatewayConnectionOptions) SetIpsecPolicy(ipsecPolicy IPsecPolicyIdentityIntf) *CreateVPNGatewayConnectionOptions {
-	options.IpsecPolicy = ipsecPolicy
-	return options
-}
-
-// SetLocalCIDRs : Allow user to set LocalCIDRs
-func (options *CreateVPNGatewayConnectionOptions) SetLocalCIDRs(localCIDRs []string) *CreateVPNGatewayConnectionOptions {
-	options.LocalCIDRs = localCIDRs
-	return options
-}
-
-// SetPeerCIDRs : Allow user to set PeerCIDRs
-func (options *CreateVPNGatewayConnectionOptions) SetPeerCIDRs(peerCIDRs []string) *CreateVPNGatewayConnectionOptions {
-	options.PeerCIDRs = peerCIDRs
+// SetVPNGatewayConnectionPrototype : Allow user to set VPNGatewayConnectionPrototype
+func (options *CreateVPNGatewayConnectionOptions) SetVPNGatewayConnectionPrototype(vpnGatewayConnectionPrototype VPNGatewayConnectionPrototypeIntf) *CreateVPNGatewayConnectionOptions {
+	options.VPNGatewayConnectionPrototype = vpnGatewayConnectionPrototype
 	return options
 }
 
@@ -11575,42 +11514,23 @@ func (options *CreateVPNGatewayConnectionOptions) SetHeaders(param map[string]st
 
 // CreateVPNGatewayOptions : The CreateVPNGateway options.
 type CreateVPNGatewayOptions struct {
-	// Identifies a subnet by a unique property.
-	Subnet SubnetIdentityIntf `json:"subnet" validate:"required"`
-
-	// The user-defined name for this VPN gateway.
-	Name *string `json:"name,omitempty"`
-
-	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
-	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+	// The VPN gateway prototype object.
+	VPNGatewayPrototype VPNGatewayPrototypeIntf `json:"VPNGatewayPrototype" validate:"required"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
 
 // NewCreateVPNGatewayOptions : Instantiate CreateVPNGatewayOptions
-func (*VpcClassicV1) NewCreateVPNGatewayOptions(subnet SubnetIdentityIntf) *CreateVPNGatewayOptions {
+func (*VpcClassicV1) NewCreateVPNGatewayOptions(vpnGatewayPrototype VPNGatewayPrototypeIntf) *CreateVPNGatewayOptions {
 	return &CreateVPNGatewayOptions{
-		Subnet: subnet,
+		VPNGatewayPrototype: vpnGatewayPrototype,
 	}
 }
 
-// SetSubnet : Allow user to set Subnet
-func (options *CreateVPNGatewayOptions) SetSubnet(subnet SubnetIdentityIntf) *CreateVPNGatewayOptions {
-	options.Subnet = subnet
-	return options
-}
-
-// SetName : Allow user to set Name
-func (options *CreateVPNGatewayOptions) SetName(name string) *CreateVPNGatewayOptions {
-	options.Name = core.StringPtr(name)
-	return options
-}
-
-// SetResourceGroup : Allow user to set ResourceGroup
-func (options *CreateVPNGatewayOptions) SetResourceGroup(resourceGroup ResourceGroupIdentityIntf) *CreateVPNGatewayOptions {
-	options.ResourceGroup = resourceGroup
+// SetVPNGatewayPrototype : Allow user to set VPNGatewayPrototype
+func (options *CreateVPNGatewayOptions) SetVPNGatewayPrototype(vpnGatewayPrototype VPNGatewayPrototypeIntf) *CreateVPNGatewayOptions {
+	options.VPNGatewayPrototype = vpnGatewayPrototype
 	return options
 }
 
@@ -11622,8 +11542,8 @@ func (options *CreateVPNGatewayOptions) SetHeaders(param map[string]string) *Cre
 
 // DefaultSecurityGroup : Collection of rules in a default security group.
 type DefaultSecurityGroup struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id" validate:"required"`
+	// The date and time that this security group was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The security group's CRN.
 	CRN *string `json:"crn" validate:"required"`
@@ -11631,17 +11551,17 @@ type DefaultSecurityGroup struct {
 	// The security group's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
+	// The unique identifier for this security group.
+	ID *string `json:"id" validate:"required"`
+
 	// The name of the default security group created for a VPC. The name will be a hyphenated list of randomly-selected
 	// words at creation, but may be user-specified with a subsequent request.
 	Name *string `json:"name" validate:"required"`
 
 	// Array of rules for the default security group for a VPC. Defaults to allowing all outbound traffic, and allowing all
-	// inbound traffic from other interfaces in the VPC’s default security group. Rules in the default security group may
+	// inbound traffic from other interfaces in the VPC's default security group. Rules in the default security group may
 	// be changed, added or removed.
 	Rules []SecurityGroupRuleIntf `json:"rules" validate:"required"`
-
-	// The date and time that this security group was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The VPC this security group is a part of.
 	VPC *VPCReference `json:"vpc" validate:"required"`
@@ -11650,7 +11570,7 @@ type DefaultSecurityGroup struct {
 // UnmarshalDefaultSecurityGroup unmarshals an instance of DefaultSecurityGroup from the specified map of raw messages.
 func UnmarshalDefaultSecurityGroup(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(DefaultSecurityGroup)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -11662,15 +11582,15 @@ func UnmarshalDefaultSecurityGroup(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "rules", &obj.Rules, UnmarshalSecurityGroupRule)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -12582,8 +12502,11 @@ func UnmarshalEncryptionKeyReference(m map[string]json.RawMessage, result interf
 
 // FloatingIP : FloatingIP struct
 type FloatingIP struct {
-	// The unique identifier for this floating IP.
-	ID *string `json:"id" validate:"required"`
+	// The globally unique IP address.
+	Address *string `json:"address" validate:"required"`
+
+	// The date and time that the floating IP was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The CRN for this floating IP.
 	CRN *string `json:"crn" validate:"required"`
@@ -12591,14 +12514,11 @@ type FloatingIP struct {
 	// The URL for this floating IP.
 	Href *string `json:"href" validate:"required"`
 
-	// The globally unique IP address.
-	Address *string `json:"address" validate:"required"`
+	// The unique identifier for this floating IP.
+	ID *string `json:"id" validate:"required"`
 
 	// The unique user-defined name for this floating IP.
 	Name *string `json:"name" validate:"required"`
-
-	// The date and time that the floating IP was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The status of the floating IP.
 	Status *string `json:"status" validate:"required"`
@@ -12622,7 +12542,11 @@ const (
 // UnmarshalFloatingIP unmarshals an instance of FloatingIP from the specified map of raw messages.
 func UnmarshalFloatingIP(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FloatingIP)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -12634,15 +12558,11 @@ func UnmarshalFloatingIP(m map[string]json.RawMessage, result interface{}) (err 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -12662,11 +12582,11 @@ func UnmarshalFloatingIP(m map[string]json.RawMessage, result interface{}) (err 
 	return
 }
 
-// FloatingIPByTargetTarget : The network interface this floating IP is to be bound to.
+// FloatingIPByTargetNetworkInterfaceIdentity : The network interface this floating IP is to be bound to.
 // Models which "extend" this model:
-// - FloatingIPByTargetTargetNetworkInterfaceIdentityByID
-// - FloatingIPByTargetTargetNetworkInterfaceIdentityByHref
-type FloatingIPByTargetTarget struct {
+// - FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID
+// - FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref
+type FloatingIPByTargetNetworkInterfaceIdentity struct {
 	// The unique identifier for this network interface.
 	ID *string `json:"id,omitempty"`
 
@@ -12674,17 +12594,17 @@ type FloatingIPByTargetTarget struct {
 	Href *string `json:"href,omitempty"`
 }
 
-func (*FloatingIPByTargetTarget) isaFloatingIPByTargetTarget() bool {
+func (*FloatingIPByTargetNetworkInterfaceIdentity) isaFloatingIPByTargetNetworkInterfaceIdentity() bool {
 	return true
 }
 
-type FloatingIPByTargetTargetIntf interface {
-	isaFloatingIPByTargetTarget() bool
+type FloatingIPByTargetNetworkInterfaceIdentityIntf interface {
+	isaFloatingIPByTargetNetworkInterfaceIdentity() bool
 }
 
-// UnmarshalFloatingIPByTargetTarget unmarshals an instance of FloatingIPByTargetTarget from the specified map of raw messages.
-func UnmarshalFloatingIPByTargetTarget(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(FloatingIPByTargetTarget)
+// UnmarshalFloatingIPByTargetNetworkInterfaceIdentity unmarshals an instance of FloatingIPByTargetNetworkInterfaceIdentity from the specified map of raw messages.
+func UnmarshalFloatingIPByTargetNetworkInterfaceIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(FloatingIPByTargetNetworkInterfaceIdentity)
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
@@ -12699,24 +12619,28 @@ func UnmarshalFloatingIPByTargetTarget(m map[string]json.RawMessage, result inte
 
 // FloatingIPCollection : FloatingIPCollection struct
 type FloatingIPCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *FloatingIPCollectionFirst `json:"first" validate:"required"`
+
+	// Collection of floating IPs.
+	FloatingIps []FloatingIP `json:"floating_ips" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *FloatingIPCollectionNext `json:"next,omitempty"`
-
-	// Collection of floating IPs.
-	FloatingIps []FloatingIP `json:"floating_ips" validate:"required"`
 }
 
 // UnmarshalFloatingIPCollection unmarshals an instance of FloatingIPCollection from the specified map of raw messages.
 func UnmarshalFloatingIPCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FloatingIPCollection)
 	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalFloatingIPCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "floating_ips", &obj.FloatingIps, UnmarshalFloatingIP)
 	if err != nil {
 		return
 	}
@@ -12728,17 +12652,13 @@ func UnmarshalFloatingIPCollection(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "floating_ips", &obj.FloatingIps, UnmarshalFloatingIP)
-	if err != nil {
-		return
-	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
-// FloatingIPCollectionFirst : A reference to the first page of resources.
+// FloatingIPCollectionFirst : A link to the first page of resources.
 type FloatingIPCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -12753,9 +12673,9 @@ func UnmarshalFloatingIPCollectionFirst(m map[string]json.RawMessage, result int
 	return
 }
 
-// FloatingIPCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// FloatingIPCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type FloatingIPCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -12855,7 +12775,7 @@ type FloatingIPPrototype struct {
 	Zone ZoneIdentityIntf `json:"zone,omitempty"`
 
 	// The network interface this floating IP is to be bound to.
-	Target FloatingIPByTargetTargetIntf `json:"target,omitempty"`
+	Target FloatingIPByTargetNetworkInterfaceIdentityIntf `json:"target,omitempty"`
 }
 
 func (*FloatingIPPrototype) isaFloatingIPPrototype() bool {
@@ -12877,7 +12797,7 @@ func UnmarshalFloatingIPPrototype(m map[string]json.RawMessage, result interface
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalFloatingIPByTargetTarget)
+	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalFloatingIPByTargetNetworkInterfaceIdentity)
 	if err != nil {
 		return
 	}
@@ -12887,8 +12807,8 @@ func UnmarshalFloatingIPPrototype(m map[string]json.RawMessage, result interface
 
 // FloatingIPReference : FloatingIPReference struct
 type FloatingIPReference struct {
-	// The unique identifier for this floating IP.
-	ID *string `json:"id" validate:"required"`
+	// The globally unique IP address.
+	Address *string `json:"address" validate:"required"`
 
 	// The CRN for this floating IP.
 	CRN *string `json:"crn" validate:"required"`
@@ -12896,8 +12816,8 @@ type FloatingIPReference struct {
 	// The URL for this floating IP.
 	Href *string `json:"href" validate:"required"`
 
-	// The globally unique IP address.
-	Address *string `json:"address" validate:"required"`
+	// The unique identifier for this floating IP.
+	ID *string `json:"id" validate:"required"`
 
 	// The unique user-defined name for this floating IP.
 	Name *string `json:"name" validate:"required"`
@@ -12906,7 +12826,7 @@ type FloatingIPReference struct {
 // UnmarshalFloatingIPReference unmarshals an instance of FloatingIPReference from the specified map of raw messages.
 func UnmarshalFloatingIPReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FloatingIPReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
 	if err != nil {
 		return
 	}
@@ -12918,7 +12838,7 @@ func UnmarshalFloatingIPReference(m map[string]json.RawMessage, result interface
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -12935,14 +12855,14 @@ func UnmarshalFloatingIPReference(m map[string]json.RawMessage, result interface
 // - FloatingIPTargetNetworkInterfaceReference
 // - FloatingIPTargetPublicGatewayReference
 type FloatingIPTarget struct {
-	// The user-defined name for this network interface.
-	Name *string `json:"name,omitempty"`
+	// The URL for this network interface.
+	Href *string `json:"href,omitempty"`
 
 	// The unique identifier for this network interface.
 	ID *string `json:"id,omitempty"`
 
-	// The URL for this network interface.
-	Href *string `json:"href,omitempty"`
+	// The user-defined name for this network interface.
+	Name *string `json:"name,omitempty"`
 
 	// The primary IPv4 address.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address,omitempty"`
@@ -12971,7 +12891,7 @@ type FloatingIPTargetIntf interface {
 // UnmarshalFloatingIPTarget unmarshals an instance of FloatingIPTarget from the specified map of raw messages.
 func UnmarshalFloatingIPTarget(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FloatingIPTarget)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -12979,7 +12899,7 @@ func UnmarshalFloatingIPTarget(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -13806,17 +13726,17 @@ type GetRegionZoneOptions struct {
 	RegionName *string `json:"region_name" validate:"required,ne="`
 
 	// The zone name.
-	ZoneName *string `json:"zone_name" validate:"required,ne="`
+	Name *string `json:"name" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
 
 // NewGetRegionZoneOptions : Instantiate GetRegionZoneOptions
-func (*VpcClassicV1) NewGetRegionZoneOptions(regionName string, zoneName string) *GetRegionZoneOptions {
+func (*VpcClassicV1) NewGetRegionZoneOptions(regionName string, name string) *GetRegionZoneOptions {
 	return &GetRegionZoneOptions{
 		RegionName: core.StringPtr(regionName),
-		ZoneName:   core.StringPtr(zoneName),
+		Name:       core.StringPtr(name),
 	}
 }
 
@@ -13826,9 +13746,9 @@ func (options *GetRegionZoneOptions) SetRegionName(regionName string) *GetRegion
 	return options
 }
 
-// SetZoneName : Allow user to set ZoneName
-func (options *GetRegionZoneOptions) SetZoneName(zoneName string) *GetRegionZoneOptions {
-	options.ZoneName = core.StringPtr(zoneName)
+// SetName : Allow user to set Name
+func (options *GetRegionZoneOptions) SetName(name string) *GetRegionZoneOptions {
+	options.Name = core.StringPtr(name)
 	return options
 }
 
@@ -14282,35 +14202,8 @@ func (options *GetVPNGatewayOptions) SetHeaders(param map[string]string) *GetVPN
 
 // IkePolicy : IkePolicy struct
 type IkePolicy struct {
-	// The unique identifier for this IKE policy.
-	ID *string `json:"id" validate:"required"`
-
-	// The IKE policy's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this IKE policy.
-	Name *string `json:"name" validate:"required"`
-
-	// The resource type.
-	ResourceType *string `json:"resource_type" validate:"required"`
-
 	// The authentication algorithm.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
-
-	// The Diffie-Hellman group.
-	DhGroup *int64 `json:"dh_group" validate:"required"`
-
-	// The encryption algorithm.
-	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
-
-	// The IKE protocol version.
-	IkeVersion *int64 `json:"ike_version" validate:"required"`
-
-	// The key lifetime in seconds.
-	KeyLifetime *int64 `json:"key_lifetime" validate:"required"`
-
-	// The resource group for this IKE policy.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
 	// Collection of references to VPN gateway connections that use this IKE policy.
 	Connections []VPNGatewayConnectionReference `json:"connections" validate:"required"`
@@ -14318,15 +14211,36 @@ type IkePolicy struct {
 	// The date and time that this IKE policy was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
+	// The Diffie-Hellman group.
+	DhGroup *int64 `json:"dh_group" validate:"required"`
+
+	// The encryption algorithm.
+	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
+
+	// The IKE policy's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this IKE policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The IKE protocol version.
+	IkeVersion *int64 `json:"ike_version" validate:"required"`
+
+	// The key lifetime in seconds.
+	KeyLifetime *int64 `json:"key_lifetime" validate:"required"`
+
+	// The user-defined name for this IKE policy.
+	Name *string `json:"name" validate:"required"`
+
 	// The IKE negotiation mode. Only `main` is supported.
 	NegotiationMode *string `json:"negotiation_mode" validate:"required"`
-}
 
-// Constants associated with the IkePolicy.ResourceType property.
-// The resource type.
-const (
-	IkePolicyResourceTypeIkePolicyConst = "ike_policy"
-)
+	// The resource group for this IKE policy.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
 
 // Constants associated with the IkePolicy.AuthenticationAlgorithm property.
 // The authentication algorithm.
@@ -14350,46 +14264,16 @@ const (
 	IkePolicyNegotiationModeMainConst = "main"
 )
 
+// Constants associated with the IkePolicy.ResourceType property.
+// The resource type.
+const (
+	IkePolicyResourceTypeIkePolicyConst = "ike_policy"
+)
+
 // UnmarshalIkePolicy unmarshals an instance of IkePolicy from the specified map of raw messages.
 func UnmarshalIkePolicy(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(IkePolicy)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "authentication_algorithm", &obj.AuthenticationAlgorithm)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "dh_group", &obj.DhGroup)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "encryption_algorithm", &obj.EncryptionAlgorithm)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "ike_version", &obj.IkeVersion)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "key_lifetime", &obj.KeyLifetime)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
@@ -14401,7 +14285,43 @@ func UnmarshalIkePolicy(m map[string]json.RawMessage, result interface{}) (err e
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "dh_group", &obj.DhGroup)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "encryption_algorithm", &obj.EncryptionAlgorithm)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ike_version", &obj.IkeVersion)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "key_lifetime", &obj.KeyLifetime)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "negotiation_mode", &obj.NegotiationMode)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
 	if err != nil {
 		return
 	}
@@ -14411,27 +14331,31 @@ func UnmarshalIkePolicy(m map[string]json.RawMessage, result interface{}) (err e
 
 // IkePolicyCollection : IkePolicyCollection struct
 type IkePolicyCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *IkePolicyCollectionFirst `json:"first" validate:"required"`
+
+	// Collection of IKE policies.
+	IkePolicies []IkePolicy `json:"ike_policies" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *IkePolicyCollectionNext `json:"next,omitempty"`
 
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
-
-	// Collection of IKE policies.
-	IkePolicies []IkePolicy `json:"ike_policies" validate:"required"`
 }
 
 // UnmarshalIkePolicyCollection unmarshals an instance of IkePolicyCollection from the specified map of raw messages.
 func UnmarshalIkePolicyCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(IkePolicyCollection)
 	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalIkePolicyCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "ike_policies", &obj.IkePolicies, UnmarshalIkePolicy)
 	if err != nil {
 		return
 	}
@@ -14444,10 +14368,6 @@ func UnmarshalIkePolicyCollection(m map[string]json.RawMessage, result interface
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "ike_policies", &obj.IkePolicies, UnmarshalIkePolicy)
 	if err != nil {
 		return
 	}
@@ -14492,9 +14412,6 @@ func UnmarshalIkePolicyIdentity(m map[string]json.RawMessage, result interface{}
 
 // IkePolicyPatch : IkePolicyPatch struct
 type IkePolicyPatch struct {
-	// The user-defined name for this IKE policy.
-	Name *string `json:"name,omitempty"`
-
 	// The authentication algorithm.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm,omitempty"`
 
@@ -14509,6 +14426,9 @@ type IkePolicyPatch struct {
 
 	// The key lifetime in seconds.
 	KeyLifetime *int64 `json:"key_lifetime,omitempty"`
+
+	// The user-defined name for this IKE policy.
+	Name *string `json:"name,omitempty"`
 }
 
 // Constants associated with the IkePolicyPatch.AuthenticationAlgorithm property.
@@ -14530,10 +14450,6 @@ const (
 // UnmarshalIkePolicyPatch unmarshals an instance of IkePolicyPatch from the specified map of raw messages.
 func UnmarshalIkePolicyPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(IkePolicyPatch)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "authentication_algorithm", &obj.AuthenticationAlgorithm)
 	if err != nil {
 		return
@@ -14554,6 +14470,10 @@ func UnmarshalIkePolicyPatch(m map[string]json.RawMessage, result interface{}) (
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
@@ -14570,11 +14490,11 @@ func (ikePolicyPatch *IkePolicyPatch) AsPatch() (patch map[string]interface{}, e
 
 // IkePolicyReference : IkePolicyReference struct
 type IkePolicyReference struct {
-	// The unique identifier for this IKE policy.
-	ID *string `json:"id" validate:"required"`
-
 	// The IKE policy's canonical URL.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this IKE policy.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this IKE policy.
 	Name *string `json:"name" validate:"required"`
@@ -14592,11 +14512,11 @@ const (
 // UnmarshalIkePolicyReference unmarshals an instance of IkePolicyReference from the specified map of raw messages.
 func UnmarshalIkePolicyReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(IkePolicyReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -14633,32 +14553,8 @@ func UnmarshalIP(m map[string]json.RawMessage, result interface{}) (err error) {
 
 // IPsecPolicy : IPsecPolicy struct
 type IPsecPolicy struct {
-	// The unique identifier for this IPsec policy.
-	ID *string `json:"id" validate:"required"`
-
-	// The IPsec policy's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this IPsec policy.
-	Name *string `json:"name" validate:"required"`
-
-	// The resource type.
-	ResourceType *string `json:"resource_type" validate:"required"`
-
 	// The authentication algorithm.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
-
-	// The encryption algorithm.
-	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
-
-	// The key lifetime in seconds.
-	KeyLifetime *int64 `json:"key_lifetime" validate:"required"`
-
-	// Perfect Forward Secrecy.
-	Pfs *string `json:"pfs" validate:"required"`
-
-	// The resource group for this IPsec policy.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
 	// Collection of references to VPN gateway connections that use this IPsec policy.
 	Connections []VPNGatewayConnectionReference `json:"connections" validate:"required"`
@@ -14669,15 +14565,33 @@ type IPsecPolicy struct {
 	// The encapsulation mode used. Only `tunnel` is supported.
 	EncapsulationMode *string `json:"encapsulation_mode" validate:"required"`
 
+	// The encryption algorithm.
+	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
+
+	// The IPsec policy's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this IPsec policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The key lifetime in seconds.
+	KeyLifetime *int64 `json:"key_lifetime" validate:"required"`
+
+	// The user-defined name for this IPsec policy.
+	Name *string `json:"name" validate:"required"`
+
+	// Perfect Forward Secrecy.
+	Pfs *string `json:"pfs" validate:"required"`
+
+	// The resource group for this IPsec policy.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
 	// The transform protocol used. Only `esp` is supported.
 	TransformProtocol *string `json:"transform_protocol" validate:"required"`
 }
-
-// Constants associated with the IPsecPolicy.ResourceType property.
-// The resource type.
-const (
-	IPsecPolicyResourceTypeIpsecPolicyConst = "ipsec_policy"
-)
 
 // Constants associated with the IPsecPolicy.AuthenticationAlgorithm property.
 // The authentication algorithm.
@@ -14685,6 +14599,12 @@ const (
 	IPsecPolicyAuthenticationAlgorithmMd5Const    = "md5"
 	IPsecPolicyAuthenticationAlgorithmSha1Const   = "sha1"
 	IPsecPolicyAuthenticationAlgorithmSha256Const = "sha256"
+)
+
+// Constants associated with the IPsecPolicy.EncapsulationMode property.
+// The encapsulation mode used. Only `tunnel` is supported.
+const (
+	IPsecPolicyEncapsulationModeTunnelConst = "tunnel"
 )
 
 // Constants associated with the IPsecPolicy.EncryptionAlgorithm property.
@@ -14704,10 +14624,10 @@ const (
 	IPsecPolicyPfsGroup5Const   = "group_5"
 )
 
-// Constants associated with the IPsecPolicy.EncapsulationMode property.
-// The encapsulation mode used. Only `tunnel` is supported.
+// Constants associated with the IPsecPolicy.ResourceType property.
+// The resource type.
 const (
-	IPsecPolicyEncapsulationModeTunnelConst = "tunnel"
+	IPsecPolicyResourceTypeIpsecPolicyConst = "ipsec_policy"
 )
 
 // Constants associated with the IPsecPolicy.TransformProtocol property.
@@ -14719,39 +14639,7 @@ const (
 // UnmarshalIPsecPolicy unmarshals an instance of IPsecPolicy from the specified map of raw messages.
 func UnmarshalIPsecPolicy(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(IPsecPolicy)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "authentication_algorithm", &obj.AuthenticationAlgorithm)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "encryption_algorithm", &obj.EncryptionAlgorithm)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "key_lifetime", &obj.KeyLifetime)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "pfs", &obj.Pfs)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
@@ -14767,6 +14655,38 @@ func UnmarshalIPsecPolicy(m map[string]json.RawMessage, result interface{}) (err
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "encryption_algorithm", &obj.EncryptionAlgorithm)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "key_lifetime", &obj.KeyLifetime)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "pfs", &obj.Pfs)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "transform_protocol", &obj.TransformProtocol)
 	if err != nil {
 		return
@@ -14777,27 +14697,31 @@ func UnmarshalIPsecPolicy(m map[string]json.RawMessage, result interface{}) (err
 
 // IPsecPolicyCollection : IPsecPolicyCollection struct
 type IPsecPolicyCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *IPsecPolicyCollectionFirst `json:"first" validate:"required"`
+
+	// Collection of IPsec policies.
+	IpsecPolicies []IPsecPolicy `json:"ipsec_policies" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *IPsecPolicyCollectionNext `json:"next,omitempty"`
 
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
-
-	// Collection of IPsec policies.
-	IpsecPolicies []IPsecPolicy `json:"ipsec_policies" validate:"required"`
 }
 
 // UnmarshalIPsecPolicyCollection unmarshals an instance of IPsecPolicyCollection from the specified map of raw messages.
 func UnmarshalIPsecPolicyCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(IPsecPolicyCollection)
 	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalIPsecPolicyCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "ipsec_policies", &obj.IpsecPolicies, UnmarshalIPsecPolicy)
 	if err != nil {
 		return
 	}
@@ -14813,17 +14737,13 @@ func UnmarshalIPsecPolicyCollection(m map[string]json.RawMessage, result interfa
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "ipsec_policies", &obj.IpsecPolicies, UnmarshalIPsecPolicy)
-	if err != nil {
-		return
-	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
-// IPsecPolicyCollectionFirst : A reference to the first page of resources.
+// IPsecPolicyCollectionFirst : A link to the first page of resources.
 type IPsecPolicyCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -14838,9 +14758,9 @@ func UnmarshalIPsecPolicyCollectionFirst(m map[string]json.RawMessage, result in
 	return
 }
 
-// IPsecPolicyCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// IPsecPolicyCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type IPsecPolicyCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -14892,9 +14812,6 @@ func UnmarshalIPsecPolicyIdentity(m map[string]json.RawMessage, result interface
 
 // IPsecPolicyPatch : IPsecPolicyPatch struct
 type IPsecPolicyPatch struct {
-	// The user-defined name for this IPsec policy.
-	Name *string `json:"name,omitempty"`
-
 	// The authentication algorithm.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm,omitempty"`
 
@@ -14903,6 +14820,9 @@ type IPsecPolicyPatch struct {
 
 	// The key lifetime in seconds.
 	KeyLifetime *int64 `json:"key_lifetime,omitempty"`
+
+	// The user-defined name for this IPsec policy.
+	Name *string `json:"name,omitempty"`
 
 	// Perfect Forward Secrecy.
 	Pfs *string `json:"pfs,omitempty"`
@@ -14936,10 +14856,6 @@ const (
 // UnmarshalIPsecPolicyPatch unmarshals an instance of IPsecPolicyPatch from the specified map of raw messages.
 func UnmarshalIPsecPolicyPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(IPsecPolicyPatch)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "authentication_algorithm", &obj.AuthenticationAlgorithm)
 	if err != nil {
 		return
@@ -14949,6 +14865,10 @@ func UnmarshalIPsecPolicyPatch(m map[string]json.RawMessage, result interface{})
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "key_lifetime", &obj.KeyLifetime)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -14972,11 +14892,11 @@ func (iPsecPolicyPatch *IPsecPolicyPatch) AsPatch() (patch map[string]interface{
 
 // IPsecPolicyReference : IPsecPolicyReference struct
 type IPsecPolicyReference struct {
-	// The unique identifier for this IPsec policy.
-	ID *string `json:"id" validate:"required"`
-
 	// The IPsec policy's canonical URL.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this IPsec policy.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this IPsec policy.
 	Name *string `json:"name" validate:"required"`
@@ -14994,11 +14914,11 @@ const (
 // UnmarshalIPsecPolicyReference unmarshals an instance of IPsecPolicyReference from the specified map of raw messages.
 func UnmarshalIPsecPolicyReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(IPsecPolicyReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -15014,9 +14934,9 @@ func UnmarshalIPsecPolicyReference(m map[string]json.RawMessage, result interfac
 	return
 }
 
-// IkePolicyCollectionFirst : A reference to the first page of resources.
+// IkePolicyCollectionFirst : A link to the first page of resources.
 type IkePolicyCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -15031,9 +14951,9 @@ func UnmarshalIkePolicyCollectionFirst(m map[string]json.RawMessage, result inte
 	return
 }
 
-// IkePolicyCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// IkePolicyCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type IkePolicyCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -15050,17 +14970,20 @@ func UnmarshalIkePolicyCollectionNext(m map[string]json.RawMessage, result inter
 
 // Image : Image struct
 type Image struct {
-	// The unique identifier for this image.
-	ID *string `json:"id" validate:"required"`
+	// The date and time that the image was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The CRN for this image.
 	CRN *string `json:"crn" validate:"required"`
 
+	// Details for the stored image file.
+	File *ImageFile `json:"file" validate:"required"`
+
 	// The URL for this image.
 	Href *string `json:"href" validate:"required"`
 
-	// The user-defined or system-provided name for this image.
-	Name *string `json:"name" validate:"required"`
+	// The unique identifier for this image.
+	ID *string `json:"id" validate:"required"`
 
 	// The minimum size (in gigabytes) of a volume onto which this image may be provisioned.
 	//
@@ -15068,17 +14991,14 @@ type Image struct {
 	// `failed`.
 	MinimumProvisionedSize *int64 `json:"minimum_provisioned_size,omitempty"`
 
-	// The resource group for this image.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
-
-	// The date and time that the image was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// Details for the stored image file.
-	File *ImageFile `json:"file" validate:"required"`
+	// The user-defined or system-provided name for this image.
+	Name *string `json:"name" validate:"required"`
 
 	// The operating system included in this image.
 	OperatingSystem *OperatingSystem `json:"operating_system,omitempty"`
+
+	// The resource group for this image.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
 	// The status of this image.
 	Status *string `json:"status" validate:"required"`
@@ -15096,6 +15016,7 @@ const (
 	ImageStatusFailedConst     = "failed"
 	ImageStatusPendingConst    = "pending"
 	ImageStatusTentativeConst  = "tentative"
+	ImageStatusUnusableConst   = "unusable"
 )
 
 // Constants associated with the Image.Visibility property.
@@ -15108,7 +15029,7 @@ const (
 // UnmarshalImage unmarshals an instance of Image from the specified map of raw messages.
 func UnmarshalImage(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Image)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -15116,11 +15037,15 @@ func UnmarshalImage(m map[string]json.RawMessage, result interface{}) (err error
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "file", &obj.File, UnmarshalImageFile)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -15128,19 +15053,15 @@ func UnmarshalImage(m map[string]json.RawMessage, result interface{}) (err error
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "file", &obj.File, UnmarshalImageFile)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "operating_system", &obj.OperatingSystem, UnmarshalOperatingSystem)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
@@ -15158,24 +15079,28 @@ func UnmarshalImage(m map[string]json.RawMessage, result interface{}) (err error
 
 // ImageCollection : ImageCollection struct
 type ImageCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *ImageCollectionFirst `json:"first" validate:"required"`
+
+	// Collection of images.
+	Images []Image `json:"images" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *ImageCollectionNext `json:"next,omitempty"`
-
-	// Collection of images.
-	Images []Image `json:"images" validate:"required"`
 }
 
 // UnmarshalImageCollection unmarshals an instance of ImageCollection from the specified map of raw messages.
 func UnmarshalImageCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ImageCollection)
 	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalImageCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "images", &obj.Images, UnmarshalImage)
 	if err != nil {
 		return
 	}
@@ -15187,17 +15112,13 @@ func UnmarshalImageCollection(m map[string]json.RawMessage, result interface{}) 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "images", &obj.Images, UnmarshalImage)
-	if err != nil {
-		return
-	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
-// ImageCollectionFirst : A reference to the first page of resources.
+// ImageCollectionFirst : A link to the first page of resources.
 type ImageCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -15212,9 +15133,9 @@ func UnmarshalImageCollectionFirst(m map[string]json.RawMessage, result interfac
 	return
 }
 
-// ImageCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// ImageCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type ImageCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -15361,7 +15282,7 @@ type ImagePrototype struct {
 	File *ImageFilePrototype `json:"file,omitempty"`
 
 	// The identity of the [supported operating
-	// system](https://cloud.ibm.com/apidocs/vpc#retrieves-all-operating-systems) included in
+	// system](https://cloud.ibm.com/apidocs/vpc#list-operating-systems) included in
 	// this image.
 	OperatingSystem OperatingSystemIdentityIntf `json:"operating_system,omitempty"`
 }
@@ -15399,14 +15320,14 @@ func UnmarshalImagePrototype(m map[string]json.RawMessage, result interface{}) (
 
 // ImageReference : ImageReference struct
 type ImageReference struct {
-	// The unique identifier for this image.
-	ID *string `json:"id" validate:"required"`
-
 	// The CRN for this image.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this image.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this image.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined or system-provided name for this image.
 	Name *string `json:"name" validate:"required"`
@@ -15415,15 +15336,15 @@ type ImageReference struct {
 // UnmarshalImageReference unmarshals an instance of ImageReference from the specified map of raw messages.
 func UnmarshalImageReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ImageReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -15437,21 +15358,6 @@ func UnmarshalImageReference(m map[string]json.RawMessage, result interface{}) (
 
 // Instance : Instance struct
 type Instance struct {
-	// The unique identifier for this virtual server instance.
-	ID *string `json:"id" validate:"required"`
-
-	// The CRN for this virtual server instance.
-	CRN *string `json:"crn" validate:"required"`
-
-	// The URL for this virtual server instance.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this virtual server instance (and default system hostname).
-	Name *string `json:"name" validate:"required"`
-
-	// The resource group for this instance.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
-
 	// The total bandwidth (in megabits per second) shared across the virtual server instance's network interfaces.
 	Bandwidth *int64 `json:"bandwidth" validate:"required"`
 
@@ -15461,11 +15367,23 @@ type Instance struct {
 	// The date and time that the virtual server instance was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
+	// The CRN for this virtual server instance.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The URL for this virtual server instance.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this virtual server instance.
+	ID *string `json:"id" validate:"required"`
+
 	// The image the virtual server instance was provisioned from.
 	Image *ImageReference `json:"image,omitempty"`
 
 	// The amount of memory in gigabytes.
 	Memory *int64 `json:"memory" validate:"required"`
+
+	// The user-defined name for this virtual server instance (and default system hostname).
+	Name *string `json:"name" validate:"required"`
 
 	// Collection of the virtual server instance's network interfaces, including the primary network interface.
 	NetworkInterfaces []NetworkInterfaceInstanceContextReference `json:"network_interfaces" validate:"required"`
@@ -15475,6 +15393,9 @@ type Instance struct {
 
 	// The profile this virtual server instance uses.
 	Profile *InstanceProfileReference `json:"profile" validate:"required"`
+
+	// The resource group for this instance.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
 	// The status of the virtual server instance.
 	Status *string `json:"status" validate:"required"`
@@ -15510,26 +15431,6 @@ const (
 // UnmarshalInstance unmarshals an instance of Instance from the specified map of raw messages.
 func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Instance)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "bandwidth", &obj.Bandwidth)
 	if err != nil {
 		return
@@ -15542,11 +15443,27 @@ func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err er
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageReference)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "memory", &obj.Memory)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -15559,6 +15476,10 @@ func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err er
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
@@ -15588,36 +15509,27 @@ func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err er
 
 // InstanceAction : InstanceAction struct
 type InstanceAction struct {
-	// The identifier for this instance action.
-	ID *string `json:"id" validate:"required"`
-
-	// The URL for this instance action.
-	Href *string `json:"href" validate:"required"`
-
-	// The type of action.
-	Type *string `json:"type" validate:"required"`
-
 	// The date and time that the action was completed.
 	CompletedAt *strfmt.DateTime `json:"completed_at,omitempty"`
 
 	// The date and time that the action was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
+	// The URL for this instance action.
+	Href *string `json:"href" validate:"required"`
+
+	// The identifier for this instance action.
+	ID *string `json:"id" validate:"required"`
+
 	// The date and time that the action was started.
 	StartedAt *strfmt.DateTime `json:"started_at,omitempty"`
 
 	// The current status of this action.
 	Status *string `json:"status" validate:"required"`
-}
 
-// Constants associated with the InstanceAction.Type property.
-// The type of action.
-const (
-	InstanceActionTypeRebootConst = "reboot"
-	InstanceActionTypeResetConst  = "reset"
-	InstanceActionTypeStartConst  = "start"
-	InstanceActionTypeStopConst   = "stop"
-)
+	// The type of action.
+	Type *string `json:"type" validate:"required"`
+}
 
 // Constants associated with the InstanceAction.Status property.
 // The current status of this action.
@@ -15628,10 +15540,23 @@ const (
 	InstanceActionStatusRunningConst   = "running"
 )
 
+// Constants associated with the InstanceAction.Type property.
+// The type of action.
+const (
+	InstanceActionTypeRebootConst = "reboot"
+	InstanceActionTypeResetConst  = "reset"
+	InstanceActionTypeStartConst  = "start"
+	InstanceActionTypeStopConst   = "stop"
+)
+
 // UnmarshalInstanceAction unmarshals an instance of InstanceAction from the specified map of raw messages.
 func UnmarshalInstanceAction(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceAction)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "completed_at", &obj.CompletedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -15639,15 +15564,7 @@ func UnmarshalInstanceAction(m map[string]json.RawMessage, result interface{}) (
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "completed_at", &obj.CompletedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -15659,33 +15576,41 @@ func UnmarshalInstanceAction(m map[string]json.RawMessage, result interface{}) (
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
 // InstanceCollection : InstanceCollection struct
 type InstanceCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *InstanceCollectionFirst `json:"first" validate:"required"`
+
+	// Collection of virtual server instances.
+	Instances []Instance `json:"instances" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *InstanceCollectionNext `json:"next,omitempty"`
 
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
-
-	// Collection of virtual server instances.
-	Instances []Instance `json:"instances" validate:"required"`
 }
 
 // UnmarshalInstanceCollection unmarshals an instance of InstanceCollection from the specified map of raw messages.
 func UnmarshalInstanceCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceCollection)
 	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalInstanceCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "instances", &obj.Instances, UnmarshalInstance)
 	if err != nil {
 		return
 	}
@@ -15701,17 +15626,13 @@ func UnmarshalInstanceCollection(m map[string]json.RawMessage, result interface{
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "instances", &obj.Instances, UnmarshalInstance)
-	if err != nil {
-		return
-	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
-// InstanceCollectionFirst : A reference to the first page of resources.
+// InstanceCollectionFirst : A link to the first page of resources.
 type InstanceCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -15726,9 +15647,9 @@ func UnmarshalInstanceCollectionFirst(m map[string]json.RawMessage, result inter
 	return
 }
 
-// InstanceCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// InstanceCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type InstanceCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -15819,27 +15740,27 @@ func (instancePatch *InstancePatch) AsPatch() (patch map[string]interface{}, err
 
 // InstanceProfile : InstanceProfile struct
 type InstanceProfile struct {
-	// The name for this virtual server instance profile.
-	Name *string `json:"name" validate:"required"`
+	Bandwidth InstanceProfileBandwidthIntf `json:"bandwidth" validate:"required"`
 
 	// The CRN for this virtual server instance profile.
 	CRN *string `json:"crn" validate:"required"`
 
+	// The product family this virtual server instance profile belongs to.
+	Family *string `json:"family,omitempty"`
+
 	// The URL for this virtual server instance profile.
 	Href *string `json:"href" validate:"required"`
 
-	Bandwidth InstanceProfileBandwidthIntf `json:"bandwidth" validate:"required"`
+	// The globally unique name for this virtual server instance profile.
+	Name *string `json:"name" validate:"required"`
 
 	PortSpeed InstanceProfilePortSpeedIntf `json:"port_speed" validate:"required"`
-
-	// The product family this virtual server instance profile belongs to.
-	Family *string `json:"family,omitempty"`
 }
 
 // UnmarshalInstanceProfile unmarshals an instance of InstanceProfile from the specified map of raw messages.
 func UnmarshalInstanceProfile(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfile)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalModel(m, "bandwidth", &obj.Bandwidth, UnmarshalInstanceProfileBandwidth)
 	if err != nil {
 		return
 	}
@@ -15847,19 +15768,19 @@ func UnmarshalInstanceProfile(m map[string]json.RawMessage, result interface{}) 
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "bandwidth", &obj.Bandwidth, UnmarshalInstanceProfileBandwidth)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "port_speed", &obj.PortSpeed, UnmarshalInstanceProfilePortSpeed)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
 	if err != nil {
 		return
 	}
@@ -15947,21 +15868,21 @@ func UnmarshalInstanceProfileBandwidth(m map[string]json.RawMessage, result inte
 
 // InstanceProfileCollection : InstanceProfileCollection struct
 type InstanceProfileCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *InstanceProfileCollectionFirst `json:"first" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *InstanceProfileCollectionNext `json:"next,omitempty"`
 
-	// The total number of resources across all pages.
-	TotalCount *int64 `json:"total_count" validate:"required"`
-
 	// Collection of virtual server instance profiles.
 	Profiles []InstanceProfile `json:"profiles" validate:"required"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
 }
 
 // UnmarshalInstanceProfileCollection unmarshals an instance of InstanceProfileCollection from the specified map of raw messages.
@@ -15979,11 +15900,11 @@ func UnmarshalInstanceProfileCollection(m map[string]json.RawMessage, result int
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	err = core.UnmarshalModel(m, "profiles", &obj.Profiles, UnmarshalInstanceProfile)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "profiles", &obj.Profiles, UnmarshalInstanceProfile)
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
 	if err != nil {
 		return
 	}
@@ -15991,9 +15912,9 @@ func UnmarshalInstanceProfileCollection(m map[string]json.RawMessage, result int
 	return
 }
 
-// InstanceProfileCollectionFirst : A reference to the first page of resources.
+// InstanceProfileCollectionFirst : A link to the first page of resources.
 type InstanceProfileCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -16008,9 +15929,9 @@ func UnmarshalInstanceProfileCollectionFirst(m map[string]json.RawMessage, resul
 	return
 }
 
-// InstanceProfileCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// InstanceProfileCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type InstanceProfileCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -16031,7 +15952,7 @@ func UnmarshalInstanceProfileCollectionNext(m map[string]json.RawMessage, result
 // - InstanceProfileIdentityByCRN
 // - InstanceProfileIdentityByHref
 type InstanceProfileIdentity struct {
-	// The name for this virtual server instance profile.
+	// The globally unique name for this virtual server instance profile.
 	Name *string `json:"name,omitempty"`
 
 	// The CRN for this virtual server instance profile.
@@ -16111,28 +16032,28 @@ func UnmarshalInstanceProfilePortSpeed(m map[string]json.RawMessage, result inte
 
 // InstanceProfileReference : InstanceProfileReference struct
 type InstanceProfileReference struct {
-	// The name for this virtual server instance profile.
-	Name *string `json:"name" validate:"required"`
-
 	// The CRN for this virtual server instance profile.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this virtual server instance profile.
 	Href *string `json:"href" validate:"required"`
+
+	// The globally unique name for this virtual server instance profile.
+	Name *string `json:"name" validate:"required"`
 }
 
 // UnmarshalInstanceProfileReference unmarshals an instance of InstanceProfileReference from the specified map of raw messages.
 func UnmarshalInstanceProfileReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfileReference)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -16144,10 +16065,6 @@ func UnmarshalInstanceProfileReference(m map[string]json.RawMessage, result inte
 // Models which "extend" this model:
 // - InstancePrototypeInstanceByImage
 type InstancePrototype struct {
-	// The user-defined name for this virtual server instance (and default system hostname). If unspecified, the name will
-	// be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
 	// The public SSH keys for the administrative user of the virtual server instance. Up to 10 keys may be provided; if no
 	// keys are provided the instance will be inaccessible unless the image used provides another means of access. For
 	// Windows instances, one of the keys will be used to encrypt the administrator password.
@@ -16156,11 +16073,19 @@ type InstancePrototype struct {
 	// these keys will also be added as SSH authorized keys for the administrative user.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
+	// The user-defined name for this virtual server instance (and default system hostname). If unspecified, the name will
+	// be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// Collection of additional network interfaces to create for the virtual server instance.
 	NetworkInterfaces []NetworkInterfacePrototype `json:"network_interfaces,omitempty"`
 
 	// The profile to use for this virtual server instance.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// User data to be made available when setting up the virtual server instance.
 	UserData *string `json:"user_data,omitempty"`
@@ -16172,21 +16097,17 @@ type InstancePrototype struct {
 	// VPC tied to the subnets of the instance's network interfaces.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
-	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
-	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+	// The boot volume attachment for the virtual server instance.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
+
+	// The identity of the image to use when provisioning the virtual server instance.
+	Image ImageIdentityIntf `json:"image,omitempty"`
 
 	// Primary network interface.
 	PrimaryNetworkInterface *NetworkInterfacePrototype `json:"primary_network_interface,omitempty"`
 
 	// The identity of the zone to provision the virtual server instance in.
 	Zone ZoneIdentityIntf `json:"zone,omitempty"`
-
-	// The boot volume attachment for the virtual server instance.
-	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
-
-	// The identity of the image to be used when provisioning the virtual server instance.
-	Image ImageIdentityIntf `json:"image,omitempty"`
 }
 
 func (*InstancePrototype) isaInstancePrototype() bool {
@@ -16200,11 +16121,11 @@ type InstancePrototypeIntf interface {
 // UnmarshalInstancePrototype unmarshals an instance of InstancePrototype from the specified map of raw messages.
 func UnmarshalInstancePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstancePrototype)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -16213,6 +16134,10 @@ func UnmarshalInstancePrototype(m map[string]json.RawMessage, result interface{}
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
 	if err != nil {
 		return
 	}
@@ -16228,7 +16153,11 @@ func UnmarshalInstancePrototype(m map[string]json.RawMessage, result interface{}
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
 	if err != nil {
 		return
 	}
@@ -16240,28 +16169,20 @@ func UnmarshalInstancePrototype(m map[string]json.RawMessage, result interface{}
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
-	if err != nil {
-		return
-	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
 // InstanceReference : InstanceReference struct
 type InstanceReference struct {
-	// The unique identifier for this virtual server instance.
-	ID *string `json:"id" validate:"required"`
-
 	// The CRN for this virtual server instance.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this virtual server instance.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this virtual server instance.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this virtual server instance (and default system hostname).
 	Name *string `json:"name" validate:"required"`
@@ -16270,15 +16191,15 @@ type InstanceReference struct {
 // UnmarshalInstanceReference unmarshals an instance of InstanceReference from the specified map of raw messages.
 func UnmarshalInstanceReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -16316,18 +16237,24 @@ func UnmarshalInstanceVcpu(m map[string]json.RawMessage, result interface{}) (er
 
 // Key : Key struct
 type Key struct {
-	// The unique identifier for this key.
-	ID *string `json:"id" validate:"required"`
+	// The date and time that the key was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The CRN for this key.
 	CRN *string `json:"crn" validate:"required"`
 
-	// The URL for this key.
-	Href *string `json:"href" validate:"required"`
-
 	// The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm (always
 	// `SHA256`).
 	Fingerprint *string `json:"fingerprint" validate:"required"`
+
+	// The URL for this key.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this key.
+	ID *string `json:"id" validate:"required"`
+
+	// The length of this key (in bits).
+	Length *int64 `json:"length" validate:"required"`
 
 	// The user-defined name for this key.
 	Name *string `json:"name" validate:"required"`
@@ -16335,21 +16262,15 @@ type Key struct {
 	// The public SSH key.
 	PublicKey *string `json:"public_key" validate:"required"`
 
-	// The cryptosystem used by this key.
-	Type *string `json:"type" validate:"required"`
-
 	// The resource group for this key.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
-	// The date and time that the key was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// The length of this key (in bits).
-	Length *int64 `json:"length" validate:"required"`
+	// The crypto-system used by this key.
+	Type *string `json:"type" validate:"required"`
 }
 
 // Constants associated with the Key.Type property.
-// The cryptosystem used by this key.
+// The crypto-system used by this key.
 const (
 	KeyTypeRsaConst = "rsa"
 )
@@ -16357,7 +16278,7 @@ const (
 // UnmarshalKey unmarshals an instance of Key from the specified map of raw messages.
 func UnmarshalKey(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Key)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -16365,11 +16286,19 @@ func UnmarshalKey(m map[string]json.RawMessage, result interface{}) (err error) 
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "fingerprint", &obj.Fingerprint)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "fingerprint", &obj.Fingerprint)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "length", &obj.Length)
 	if err != nil {
 		return
 	}
@@ -16381,19 +16310,11 @@ func UnmarshalKey(m map[string]json.RawMessage, result interface{}) (err error) 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "length", &obj.Length)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		return
 	}
@@ -16403,27 +16324,31 @@ func UnmarshalKey(m map[string]json.RawMessage, result interface{}) (err error) 
 
 // KeyCollection : KeyCollection struct
 type KeyCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *KeyCollectionFirst `json:"first" validate:"required"`
+
+	// Collection of keys.
+	Keys []Key `json:"keys" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *KeyCollectionNext `json:"next,omitempty"`
 
 	// The total number of resources across all pages.
 	TotalCount *int64 `json:"total_count" validate:"required"`
-
-	// Collection of keys.
-	Keys []Key `json:"keys" validate:"required"`
 }
 
 // UnmarshalKeyCollection unmarshals an instance of KeyCollection from the specified map of raw messages.
 func UnmarshalKeyCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(KeyCollection)
 	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalKeyCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKey)
 	if err != nil {
 		return
 	}
@@ -16439,17 +16364,13 @@ func UnmarshalKeyCollection(m map[string]json.RawMessage, result interface{}) (e
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKey)
-	if err != nil {
-		return
-	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
-// KeyCollectionFirst : A reference to the first page of resources.
+// KeyCollectionFirst : A link to the first page of resources.
 type KeyCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -16464,9 +16385,9 @@ func UnmarshalKeyCollectionFirst(m map[string]json.RawMessage, result interface{
 	return
 }
 
-// KeyCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// KeyCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type KeyCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -16565,18 +16486,18 @@ func (keyPatch *KeyPatch) AsPatch() (patch map[string]interface{}, err error) {
 // - KeyReferenceInstanceInitializationContextKeyReference
 // - KeyReferenceInstanceInitializationContextKeyIdentityByFingerprint
 type KeyReferenceInstanceInitializationContext struct {
-	// The unique identifier for this key.
-	ID *string `json:"id,omitempty"`
-
 	// The CRN for this key.
 	CRN *string `json:"crn,omitempty"`
-
-	// The URL for this key.
-	Href *string `json:"href,omitempty"`
 
 	// The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm (always
 	// `SHA256`).
 	Fingerprint *string `json:"fingerprint,omitempty"`
+
+	// The URL for this key.
+	Href *string `json:"href,omitempty"`
+
+	// The unique identifier for this key.
+	ID *string `json:"id,omitempty"`
 
 	// The user-defined name for this key.
 	Name *string `json:"name,omitempty"`
@@ -16593,11 +16514,11 @@ type KeyReferenceInstanceInitializationContextIntf interface {
 // UnmarshalKeyReferenceInstanceInitializationContext unmarshals an instance of KeyReferenceInstanceInitializationContext from the specified map of raw messages.
 func UnmarshalKeyReferenceInstanceInitializationContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(KeyReferenceInstanceInitializationContext)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	err = core.UnmarshalPrimitive(m, "fingerprint", &obj.Fingerprint)
 	if err != nil {
 		return
 	}
@@ -16605,7 +16526,7 @@ func UnmarshalKeyReferenceInstanceInitializationContext(m map[string]json.RawMes
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "fingerprint", &obj.Fingerprint)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -17962,9 +17883,19 @@ type ListVPNGatewaysOptions struct {
 	// resource group identifiers.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
+	// Filters the collection to VPN gateways with the specified mode.
+	Mode *string `json:"mode,omitempty"`
+
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
+
+// Constants associated with the ListVPNGatewaysOptions.Mode property.
+// Filters the collection to VPN gateways with the specified mode.
+const (
+	ListVPNGatewaysOptionsModePolicyConst = "policy"
+	ListVPNGatewaysOptionsModeRouteConst  = "route"
+)
 
 // NewListVPNGatewaysOptions : Instantiate ListVPNGatewaysOptions
 func (*VpcClassicV1) NewListVPNGatewaysOptions() *ListVPNGatewaysOptions {
@@ -17989,6 +17920,12 @@ func (options *ListVPNGatewaysOptions) SetResourceGroupID(resourceGroupID string
 	return options
 }
 
+// SetMode : Allow user to set Mode
+func (options *ListVPNGatewaysOptions) SetMode(mode string) *ListVPNGatewaysOptions {
+	options.Mode = core.StringPtr(mode)
+	return options
+}
+
 // SetHeaders : Allow user to set Headers
 func (options *ListVPNGatewaysOptions) SetHeaders(param map[string]string) *ListVPNGatewaysOptions {
 	options.Headers = param
@@ -17997,29 +17934,29 @@ func (options *ListVPNGatewaysOptions) SetHeaders(param map[string]string) *List
 
 // LoadBalancer : LoadBalancer struct
 type LoadBalancer struct {
-	// The unique identifier for this load balancer.
-	ID *string `json:"id" validate:"required"`
+	// The date and time that this load balancer was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The load balancer's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
+	// Fully qualified domain name assigned to this load balancer.
+	Hostname *string `json:"hostname" validate:"required"`
+
 	// The load balancer's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
-	// The unique user-defined name for this load balancer.
-	Name *string `json:"name" validate:"required"`
-
-	// The date and time that this load balancer was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// Fully qualified domain name assigned to this load balancer.
-	Hostname *string `json:"hostname" validate:"required"`
+	// The unique identifier for this load balancer.
+	ID *string `json:"id" validate:"required"`
 
 	// The type of this load balancer, public or private.
 	IsPublic *bool `json:"is_public" validate:"required"`
 
 	// The listeners of this load balancer.
 	Listeners []LoadBalancerListenerReference `json:"listeners" validate:"required"`
+
+	// The unique user-defined name for this load balancer.
+	Name *string `json:"name" validate:"required"`
 
 	// The operating status of this load balancer.
 	OperatingStatus *string `json:"operating_status" validate:"required"`
@@ -18033,7 +17970,7 @@ type LoadBalancer struct {
 	// The provisioning status of this load balancer.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
 
-	// The public IP addresses assigned to this load balancer. These are applicable only for public load balancers.
+	// The public IP addresses assigned to this load balancer. Applicable only for public load balancers.
 	PublicIps []IP `json:"public_ips" validate:"required"`
 
 	// The resource group for this load balancer.
@@ -18064,7 +18001,7 @@ const (
 // UnmarshalLoadBalancer unmarshals an instance of LoadBalancer from the specified map of raw messages.
 func UnmarshalLoadBalancer(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancer)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -18072,19 +18009,15 @@ func UnmarshalLoadBalancer(m map[string]json.RawMessage, result interface{}) (er
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "hostname", &obj.Hostname)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "hostname", &obj.Hostname)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -18093,6 +18026,10 @@ func UnmarshalLoadBalancer(m map[string]json.RawMessage, result interface{}) (er
 		return
 	}
 	err = core.UnmarshalModel(m, "listeners", &obj.Listeners, UnmarshalLoadBalancerListenerReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -18147,24 +18084,16 @@ func UnmarshalLoadBalancerCollection(m map[string]json.RawMessage, result interf
 
 // LoadBalancerListener : LoadBalancerListener struct
 type LoadBalancerListener struct {
-	// The unique identifier for this load balancer listener.
-	ID *string `json:"id" validate:"required"`
-
-	// The listener's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
-	// The connection limit of the listener.
-	ConnectionLimit *int64 `json:"connection_limit,omitempty"`
-
-	// The listener port number.
-	Port *int64 `json:"port" validate:"required"`
-
-	// The listener protocol.
-	Protocol *string `json:"protocol" validate:"required"`
+	// If set to `true`, this listener will accept and forward PROXY protocol information. Supported by load balancers in
+	// the `application` family (otherwise always `false`).
+	AcceptProxyProtocol *bool `json:"accept_proxy_protocol" validate:"required"`
 
 	// The certificate instance used for SSL termination. It is applicable only to `https`
 	// protocol.
 	CertificateInstance *CertificateInstanceReference `json:"certificate_instance,omitempty"`
+
+	// The connection limit of the listener.
+	ConnectionLimit *int64 `json:"connection_limit,omitempty"`
 
 	// The date and time that this listener was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
@@ -18172,8 +18101,21 @@ type LoadBalancerListener struct {
 	// The default pool associated with the listener.
 	DefaultPool *LoadBalancerPoolReference `json:"default_pool,omitempty"`
 
+	// The listener's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this load balancer listener.
+	ID *string `json:"id" validate:"required"`
+
 	// The list of policies of this listener.
 	Policies []LoadBalancerListenerPolicyReference `json:"policies,omitempty"`
+
+	// The listener port number. Each listener in the load balancer must have a unique
+	// `port` and `protocol` combination.
+	Port *int64 `json:"port" validate:"required"`
+
+	// The listener protocol.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The provisioning status of this listener.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
@@ -18201,27 +18143,15 @@ const (
 // UnmarshalLoadBalancerListener unmarshals an instance of LoadBalancerListener from the specified map of raw messages.
 func UnmarshalLoadBalancerListener(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListener)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "connection_limit", &obj.ConnectionLimit)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "port", &obj.Port)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	err = core.UnmarshalPrimitive(m, "accept_proxy_protocol", &obj.AcceptProxyProtocol)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "certificate_instance", &obj.CertificateInstance, UnmarshalCertificateInstanceReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "connection_limit", &obj.ConnectionLimit)
 	if err != nil {
 		return
 	}
@@ -18233,7 +18163,23 @@ func UnmarshalLoadBalancerListener(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "policies", &obj.Policies, UnmarshalLoadBalancerListenerPolicyReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "port", &obj.Port)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -18264,21 +18210,30 @@ func UnmarshalLoadBalancerListenerCollection(m map[string]json.RawMessage, resul
 
 // LoadBalancerListenerPatch : LoadBalancerListenerPatch struct
 type LoadBalancerListenerPatch struct {
-	// The connection limit of the listener.
-	ConnectionLimit *int64 `json:"connection_limit,omitempty"`
-
-	// The listener port number.
-	Port *int64 `json:"port,omitempty"`
-
-	// The listener protocol.
-	Protocol *string `json:"protocol,omitempty"`
+	// If set to `true`, this listener will accept and forward PROXY protocol information. Supported by load balancers in
+	// the `application` family (otherwise always `false`).
+	AcceptProxyProtocol *bool `json:"accept_proxy_protocol,omitempty"`
 
 	// The certificate instance used for SSL termination. It is applicable only to `https`
 	// protocol.
 	CertificateInstance CertificateInstanceIdentityIntf `json:"certificate_instance,omitempty"`
 
-	// The default pool associated with the listener.
+	// The connection limit of the listener.
+	ConnectionLimit *int64 `json:"connection_limit,omitempty"`
+
+	// The default pool associated with the listener. The specified pool must:
+	//
+	// - Belong to this load balancer
+	// - Have the same `protocol` as this listener
+	// - Not already be the default pool for another listener.
 	DefaultPool LoadBalancerPoolIdentityIntf `json:"default_pool,omitempty"`
+
+	// The listener port number. Each listener in the load balancer must have a unique
+	// `port` and `protocol` combination.
+	Port *int64 `json:"port,omitempty"`
+
+	// The listener protocol.
+	Protocol *string `json:"protocol,omitempty"`
 }
 
 // Constants associated with the LoadBalancerListenerPatch.Protocol property.
@@ -18292,7 +18247,19 @@ const (
 // UnmarshalLoadBalancerListenerPatch unmarshals an instance of LoadBalancerListenerPatch from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPatch)
+	err = core.UnmarshalPrimitive(m, "accept_proxy_protocol", &obj.AcceptProxyProtocol)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "certificate_instance", &obj.CertificateInstance, UnmarshalCertificateInstanceIdentity)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "connection_limit", &obj.ConnectionLimit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "default_pool", &obj.DefaultPool, UnmarshalLoadBalancerPoolIdentity)
 	if err != nil {
 		return
 	}
@@ -18301,14 +18268,6 @@ func UnmarshalLoadBalancerListenerPatch(m map[string]json.RawMessage, result int
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "certificate_instance", &obj.CertificateInstance, UnmarshalCertificateInstanceIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "default_pool", &obj.DefaultPool, UnmarshalLoadBalancerPoolIdentity)
 	if err != nil {
 		return
 	}
@@ -18328,23 +18287,23 @@ func (loadBalancerListenerPatch *LoadBalancerListenerPatch) AsPatch() (patch map
 
 // LoadBalancerListenerPolicy : LoadBalancerListenerPolicy struct
 type LoadBalancerListenerPolicy struct {
-	// The policy's unique identifier.
-	ID *string `json:"id" validate:"required"`
+	// The policy action.
+	Action *string `json:"action" validate:"required"`
+
+	// The date and time that this policy was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The listener policy's canonical URL.
 	Href *string `json:"href" validate:"required"`
+
+	// The policy's unique identifier.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this policy.
 	Name *string `json:"name" validate:"required"`
 
 	// Priority of the policy. Lower value indicates higher priority.
 	Priority *int64 `json:"priority" validate:"required"`
-
-	// The policy action.
-	Action *string `json:"action" validate:"required"`
-
-	// The date and time that this policy was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The provisioning status of this policy.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
@@ -18379,11 +18338,19 @@ const (
 // UnmarshalLoadBalancerListenerPolicy unmarshals an instance of LoadBalancerListenerPolicy from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPolicy(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPolicy)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -18392,14 +18359,6 @@ func UnmarshalLoadBalancerListenerPolicy(m map[string]json.RawMessage, result in
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "priority", &obj.Priority)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -18448,7 +18407,7 @@ type LoadBalancerListenerPolicyPatch struct {
 	// balancer forwards the traffic to. When `action` is `redirect`,
 	// `LoadBalancerListenerPolicyRedirectURLPatch` specifies the url and http
 	// status code used in the redirect response.
-	Target LoadBalancerListenerPolicyPatchTargetIntf `json:"target,omitempty"`
+	Target LoadBalancerListenerPolicyTargetPatchIntf `json:"target,omitempty"`
 }
 
 // UnmarshalLoadBalancerListenerPolicyPatch unmarshals an instance of LoadBalancerListenerPolicyPatch from the specified map of raw messages.
@@ -18462,7 +18421,7 @@ func UnmarshalLoadBalancerListenerPolicyPatch(m map[string]json.RawMessage, resu
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalLoadBalancerListenerPolicyPatchTarget)
+	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalLoadBalancerListenerPolicyTargetPatch)
 	if err != nil {
 		return
 	}
@@ -18480,67 +18439,16 @@ func (loadBalancerListenerPolicyPatch *LoadBalancerListenerPolicyPatch) AsPatch(
 	return
 }
 
-// LoadBalancerListenerPolicyPatchTarget : When `action` is `forward`, `LoadBalancerPoolIdentity` specifies which pool the load balancer forwards the traffic
-// to. When `action` is `redirect`,
-// `LoadBalancerListenerPolicyRedirectURLPatch` specifies the url and http status code used in the redirect response.
-// Models which "extend" this model:
-// - LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity
-// - LoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRedirectURLPatch
-type LoadBalancerListenerPolicyPatchTarget struct {
-	// The unique identifier for this load balancer pool.
-	ID *string `json:"id,omitempty"`
-
-	// The pool's canonical URL.
-	Href *string `json:"href,omitempty"`
-
-	// The http status code in the redirect response.
-	HTTPStatusCode *int64 `json:"http_status_code,omitempty"`
-
-	// The redirect target URL.
-	URL *string `json:"url,omitempty"`
-}
-
-func (*LoadBalancerListenerPolicyPatchTarget) isaLoadBalancerListenerPolicyPatchTarget() bool {
-	return true
-}
-
-type LoadBalancerListenerPolicyPatchTargetIntf interface {
-	isaLoadBalancerListenerPolicyPatchTarget() bool
-}
-
-// UnmarshalLoadBalancerListenerPolicyPatchTarget unmarshals an instance of LoadBalancerListenerPolicyPatchTarget from the specified map of raw messages.
-func UnmarshalLoadBalancerListenerPolicyPatchTarget(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(LoadBalancerListenerPolicyPatchTarget)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "http_status_code", &obj.HTTPStatusCode)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "url", &obj.URL)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // LoadBalancerListenerPolicyPrototype : LoadBalancerListenerPolicyPrototype struct
 type LoadBalancerListenerPolicyPrototype struct {
+	// The policy action.
+	Action *string `json:"action" validate:"required"`
+
 	// The user-defined name for this policy. Names must be unique within the load balancer listener the policy resides in.
 	Name *string `json:"name,omitempty"`
 
 	// Priority of the policy. Lower value indicates higher priority.
 	Priority *int64 `json:"priority" validate:"required"`
-
-	// The policy action.
-	Action *string `json:"action" validate:"required"`
 
 	// The list of rules of this policy.
 	Rules []LoadBalancerListenerPolicyRulePrototype `json:"rules,omitempty"`
@@ -18549,7 +18457,7 @@ type LoadBalancerListenerPolicyPrototype struct {
 	// pool the load balancer forwards the traffic to. When `action` is `redirect`,
 	// `LoadBalancerListenerPolicyRedirectURLPrototype` is required to specify the url and
 	// http status code used in the redirect response.
-	Target LoadBalancerListenerPolicyPrototypeTargetIntf `json:"target,omitempty"`
+	Target LoadBalancerListenerPolicyTargetPrototypeIntf `json:"target,omitempty"`
 }
 
 // Constants associated with the LoadBalancerListenerPolicyPrototype.Action property.
@@ -18561,10 +18469,10 @@ const (
 )
 
 // NewLoadBalancerListenerPolicyPrototype : Instantiate LoadBalancerListenerPolicyPrototype (Generic Model Constructor)
-func (*VpcClassicV1) NewLoadBalancerListenerPolicyPrototype(priority int64, action string) (model *LoadBalancerListenerPolicyPrototype, err error) {
+func (*VpcClassicV1) NewLoadBalancerListenerPolicyPrototype(action string, priority int64) (model *LoadBalancerListenerPolicyPrototype, err error) {
 	model = &LoadBalancerListenerPolicyPrototype{
-		Priority: core.Int64Ptr(priority),
 		Action:   core.StringPtr(action),
+		Priority: core.Int64Ptr(priority),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
@@ -18573,6 +18481,10 @@ func (*VpcClassicV1) NewLoadBalancerListenerPolicyPrototype(priority int64, acti
 // UnmarshalLoadBalancerListenerPolicyPrototype unmarshals an instance of LoadBalancerListenerPolicyPrototype from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPolicyPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPolicyPrototype)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -18581,67 +18493,11 @@ func UnmarshalLoadBalancerListenerPolicyPrototype(m map[string]json.RawMessage, 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalModel(m, "rules", &obj.Rules, UnmarshalLoadBalancerListenerPolicyRulePrototype)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalLoadBalancerListenerPolicyPrototypeTarget)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// LoadBalancerListenerPolicyPrototypeTarget : When `action` is `forward`, `LoadBalancerPoolIdentity` is required to specify which pool the load balancer forwards
-// the traffic to. When `action` is `redirect`,
-// `LoadBalancerListenerPolicyRedirectURLPrototype` is required to specify the url and http status code used in the
-// redirect response.
-// Models which "extend" this model:
-// - LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity
-// - LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype
-type LoadBalancerListenerPolicyPrototypeTarget struct {
-	// The unique identifier for this load balancer pool.
-	ID *string `json:"id,omitempty"`
-
-	// The pool's canonical URL.
-	Href *string `json:"href,omitempty"`
-
-	// The http status code in the redirect response.
-	HTTPStatusCode *int64 `json:"http_status_code,omitempty"`
-
-	// The redirect target URL.
-	URL *string `json:"url,omitempty"`
-}
-
-func (*LoadBalancerListenerPolicyPrototypeTarget) isaLoadBalancerListenerPolicyPrototypeTarget() bool {
-	return true
-}
-
-type LoadBalancerListenerPolicyPrototypeTargetIntf interface {
-	isaLoadBalancerListenerPolicyPrototypeTarget() bool
-}
-
-// UnmarshalLoadBalancerListenerPolicyPrototypeTarget unmarshals an instance of LoadBalancerListenerPolicyPrototypeTarget from the specified map of raw messages.
-func UnmarshalLoadBalancerListenerPolicyPrototypeTarget(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(LoadBalancerListenerPolicyPrototypeTarget)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "http_status_code", &obj.HTTPStatusCode)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "url", &obj.URL)
+	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalLoadBalancerListenerPolicyTargetPrototype)
 	if err != nil {
 		return
 	}
@@ -18651,21 +18507,21 @@ func UnmarshalLoadBalancerListenerPolicyPrototypeTarget(m map[string]json.RawMes
 
 // LoadBalancerListenerPolicyReference : LoadBalancerListenerPolicyReference struct
 type LoadBalancerListenerPolicyReference struct {
-	// The policy's unique identifier.
-	ID *string `json:"id" validate:"required"`
-
 	// The listener policy's canonical URL.
 	Href *string `json:"href" validate:"required"`
+
+	// The policy's unique identifier.
+	ID *string `json:"id" validate:"required"`
 }
 
 // UnmarshalLoadBalancerListenerPolicyReference unmarshals an instance of LoadBalancerListenerPolicyReference from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPolicyReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPolicyReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -18675,29 +18531,29 @@ func UnmarshalLoadBalancerListenerPolicyReference(m map[string]json.RawMessage, 
 
 // LoadBalancerListenerPolicyRule : LoadBalancerListenerPolicyRule struct
 type LoadBalancerListenerPolicyRule struct {
-	// The rule's unique identifier.
-	ID *string `json:"id" validate:"required"`
+	// The condition of the rule.
+	Condition *string `json:"condition" validate:"required"`
+
+	// The date and time that this rule was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// HTTP header field. This is only applicable to "header" rule type.
+	Field *string `json:"field,omitempty"`
 
 	// The rule's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
-	// The condition of the rule.
-	Condition *string `json:"condition" validate:"required"`
+	// The rule's unique identifier.
+	ID *string `json:"id" validate:"required"`
 
-	// HTTP header field. This is only applicable to "header" rule type.
-	Field *string `json:"field,omitempty"`
+	// The provisioning status of this rule.
+	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
 
 	// The type of the rule.
 	Type *string `json:"type" validate:"required"`
 
 	// Value to be matched for rule condition.
 	Value *string `json:"value" validate:"required"`
-
-	// The date and time that this rule was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// The provisioning status of this rule.
-	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
 }
 
 // Constants associated with the LoadBalancerListenerPolicyRule.Condition property.
@@ -18706,14 +18562,6 @@ const (
 	LoadBalancerListenerPolicyRuleConditionContainsConst     = "contains"
 	LoadBalancerListenerPolicyRuleConditionEqualsConst       = "equals"
 	LoadBalancerListenerPolicyRuleConditionMatchesRegexConst = "matches_regex"
-)
-
-// Constants associated with the LoadBalancerListenerPolicyRule.Type property.
-// The type of the rule.
-const (
-	LoadBalancerListenerPolicyRuleTypeHeaderConst   = "header"
-	LoadBalancerListenerPolicyRuleTypeHostnameConst = "hostname"
-	LoadBalancerListenerPolicyRuleTypePathConst     = "path"
 )
 
 // Constants associated with the LoadBalancerListenerPolicyRule.ProvisioningStatus property.
@@ -18727,10 +18575,26 @@ const (
 	LoadBalancerListenerPolicyRuleProvisioningStatusUpdatePendingConst      = "update_pending"
 )
 
+// Constants associated with the LoadBalancerListenerPolicyRule.Type property.
+// The type of the rule.
+const (
+	LoadBalancerListenerPolicyRuleTypeHeaderConst   = "header"
+	LoadBalancerListenerPolicyRuleTypeHostnameConst = "hostname"
+	LoadBalancerListenerPolicyRuleTypePathConst     = "path"
+)
+
 // UnmarshalLoadBalancerListenerPolicyRule unmarshals an instance of LoadBalancerListenerPolicyRule from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPolicyRule(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPolicyRule)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "condition", &obj.Condition)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "field", &obj.Field)
 	if err != nil {
 		return
 	}
@@ -18738,11 +18602,11 @@ func UnmarshalLoadBalancerListenerPolicyRule(m map[string]json.RawMessage, resul
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "condition", &obj.Condition)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "field", &obj.Field)
+	err = core.UnmarshalPrimitive(m, "provisioning_status", &obj.ProvisioningStatus)
 	if err != nil {
 		return
 	}
@@ -18751,14 +18615,6 @@ func UnmarshalLoadBalancerListenerPolicyRule(m map[string]json.RawMessage, resul
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "provisioning_status", &obj.ProvisioningStatus)
 	if err != nil {
 		return
 	}
@@ -18914,21 +18770,21 @@ func UnmarshalLoadBalancerListenerPolicyRulePrototype(m map[string]json.RawMessa
 
 // LoadBalancerListenerPolicyRuleReference : LoadBalancerListenerPolicyRuleReference struct
 type LoadBalancerListenerPolicyRuleReference struct {
-	// The rule's unique identifier.
-	ID *string `json:"id" validate:"required"`
-
 	// The rule's canonical URL.
 	Href *string `json:"href" validate:"required"`
+
+	// The rule's unique identifier.
+	ID *string `json:"id" validate:"required"`
 }
 
 // UnmarshalLoadBalancerListenerPolicyRuleReference unmarshals an instance of LoadBalancerListenerPolicyRuleReference from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPolicyRuleReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPolicyRuleReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -18942,11 +18798,11 @@ func UnmarshalLoadBalancerListenerPolicyRuleReference(m map[string]json.RawMessa
 // - LoadBalancerListenerPolicyTargetLoadBalancerPoolReference
 // - LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyRedirectURL
 type LoadBalancerListenerPolicyTarget struct {
-	// The unique identifier for this load balancer pool.
-	ID *string `json:"id,omitempty"`
-
 	// The pool's canonical URL.
 	Href *string `json:"href,omitempty"`
+
+	// The unique identifier for this load balancer pool.
+	ID *string `json:"id,omitempty"`
 
 	// The user-defined name for this load balancer pool.
 	Name *string `json:"name,omitempty"`
@@ -18969,11 +18825,11 @@ type LoadBalancerListenerPolicyTargetIntf interface {
 // UnmarshalLoadBalancerListenerPolicyTarget unmarshals an instance of LoadBalancerListenerPolicyTarget from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPolicyTarget(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPolicyTarget)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -18993,19 +18849,127 @@ func UnmarshalLoadBalancerListenerPolicyTarget(m map[string]json.RawMessage, res
 	return
 }
 
+// LoadBalancerListenerPolicyTargetPatch : When `action` is `forward`, `LoadBalancerPoolIdentity` specifies which pool the load balancer forwards the traffic
+// to. When `action` is `redirect`,
+// `LoadBalancerListenerPolicyRedirectURLPatch` specifies the url and http status code used in the redirect response.
+// Models which "extend" this model:
+// - LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity
+// - LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerPolicyRedirectURLPatch
+type LoadBalancerListenerPolicyTargetPatch struct {
+	// The unique identifier for this load balancer pool.
+	ID *string `json:"id,omitempty"`
+
+	// The pool's canonical URL.
+	Href *string `json:"href,omitempty"`
+
+	// The http status code in the redirect response.
+	HTTPStatusCode *int64 `json:"http_status_code,omitempty"`
+
+	// The redirect target URL.
+	URL *string `json:"url,omitempty"`
+}
+
+func (*LoadBalancerListenerPolicyTargetPatch) isaLoadBalancerListenerPolicyTargetPatch() bool {
+	return true
+}
+
+type LoadBalancerListenerPolicyTargetPatchIntf interface {
+	isaLoadBalancerListenerPolicyTargetPatch() bool
+}
+
+// UnmarshalLoadBalancerListenerPolicyTargetPatch unmarshals an instance of LoadBalancerListenerPolicyTargetPatch from the specified map of raw messages.
+func UnmarshalLoadBalancerListenerPolicyTargetPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerListenerPolicyTargetPatch)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "http_status_code", &obj.HTTPStatusCode)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "url", &obj.URL)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerListenerPolicyTargetPrototype : When `action` is `forward`, `LoadBalancerPoolIdentity` is required to specify which pool the load balancer forwards
+// the traffic to. When `action` is `redirect`,
+// `LoadBalancerListenerPolicyRedirectURLPrototype` is required to specify the url and http status code used in the
+// redirect response.
+// Models which "extend" this model:
+// - LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity
+// - LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype
+type LoadBalancerListenerPolicyTargetPrototype struct {
+	// The unique identifier for this load balancer pool.
+	ID *string `json:"id,omitempty"`
+
+	// The pool's canonical URL.
+	Href *string `json:"href,omitempty"`
+
+	// The http status code in the redirect response.
+	HTTPStatusCode *int64 `json:"http_status_code,omitempty"`
+
+	// The redirect target URL.
+	URL *string `json:"url,omitempty"`
+}
+
+func (*LoadBalancerListenerPolicyTargetPrototype) isaLoadBalancerListenerPolicyTargetPrototype() bool {
+	return true
+}
+
+type LoadBalancerListenerPolicyTargetPrototypeIntf interface {
+	isaLoadBalancerListenerPolicyTargetPrototype() bool
+}
+
+// UnmarshalLoadBalancerListenerPolicyTargetPrototype unmarshals an instance of LoadBalancerListenerPolicyTargetPrototype from the specified map of raw messages.
+func UnmarshalLoadBalancerListenerPolicyTargetPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerListenerPolicyTargetPrototype)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "http_status_code", &obj.HTTPStatusCode)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "url", &obj.URL)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // LoadBalancerListenerPrototypeLoadBalancerContext : LoadBalancerListenerPrototypeLoadBalancerContext struct
 type LoadBalancerListenerPrototypeLoadBalancerContext struct {
+	// If set to `true`, this listener will accept and forward PROXY protocol information. Supported by load balancers in
+	// the `application` family (otherwise always `false`).
+	AcceptProxyProtocol *bool `json:"accept_proxy_protocol,omitempty"`
+
 	// The connection limit of the listener.
 	ConnectionLimit *int64 `json:"connection_limit,omitempty"`
 
-	// The listener port number.
+	// The default pool associated with the listener.
+	DefaultPool *LoadBalancerPoolIdentityByName `json:"default_pool,omitempty"`
+
+	// The listener port number. Each listener in the load balancer must have a unique
+	// `port` and `protocol` combination.
 	Port *int64 `json:"port" validate:"required"`
 
 	// The listener protocol.
 	Protocol *string `json:"protocol" validate:"required"`
-
-	// The default pool associated with the listener.
-	DefaultPool *LoadBalancerPoolIdentityByName `json:"default_pool,omitempty"`
 }
 
 // Constants associated with the LoadBalancerListenerPrototypeLoadBalancerContext.Protocol property.
@@ -19029,7 +18993,15 @@ func (*VpcClassicV1) NewLoadBalancerListenerPrototypeLoadBalancerContext(port in
 // UnmarshalLoadBalancerListenerPrototypeLoadBalancerContext unmarshals an instance of LoadBalancerListenerPrototypeLoadBalancerContext from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPrototypeLoadBalancerContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPrototypeLoadBalancerContext)
+	err = core.UnmarshalPrimitive(m, "accept_proxy_protocol", &obj.AcceptProxyProtocol)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "connection_limit", &obj.ConnectionLimit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "default_pool", &obj.DefaultPool, UnmarshalLoadBalancerPoolIdentityByName)
 	if err != nil {
 		return
 	}
@@ -19041,31 +19013,27 @@ func UnmarshalLoadBalancerListenerPrototypeLoadBalancerContext(m map[string]json
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "default_pool", &obj.DefaultPool, UnmarshalLoadBalancerPoolIdentityByName)
-	if err != nil {
-		return
-	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
 // LoadBalancerListenerReference : LoadBalancerListenerReference struct
 type LoadBalancerListenerReference struct {
-	// The unique identifier for this load balancer listener.
-	ID *string `json:"id" validate:"required"`
-
 	// The listener's canonical URL.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this load balancer listener.
+	ID *string `json:"id" validate:"required"`
 }
 
 // UnmarshalLoadBalancerListenerReference unmarshals an instance of LoadBalancerListenerReference from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -19102,17 +19070,26 @@ func (loadBalancerPatch *LoadBalancerPatch) AsPatch() (patch map[string]interfac
 
 // LoadBalancerPool : LoadBalancerPool struct
 type LoadBalancerPool struct {
-	// The unique identifier for this load balancer pool.
-	ID *string `json:"id" validate:"required"`
+	// The load balancing algorithm.
+	Algorithm *string `json:"algorithm" validate:"required"`
+
+	// The date and time that this pool was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The health monitor of this pool.
+	HealthMonitor *LoadBalancerPoolHealthMonitor `json:"health_monitor" validate:"required"`
 
 	// The pool's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
+	// The unique identifier for this load balancer pool.
+	ID *string `json:"id" validate:"required"`
+
+	// The backend server members of the pool.
+	Members []LoadBalancerPoolMemberReference `json:"members,omitempty"`
+
 	// The user-defined name for this load balancer pool.
 	Name *string `json:"name" validate:"required"`
-
-	// The load balancing algorithm.
-	Algorithm *string `json:"algorithm" validate:"required"`
 
 	// The protocol used for this load balancer pool.
 	//
@@ -19121,17 +19098,16 @@ type LoadBalancerPool struct {
 	// unexpected property value was encountered.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The date and time that this pool was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// The health monitor of this pool.
-	HealthMonitor *LoadBalancerPoolHealthMonitor `json:"health_monitor" validate:"required"`
-
-	// The backend server members of the pool.
-	Members []LoadBalancerPoolMemberReference `json:"members,omitempty"`
-
 	// The provisioning status of this pool.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
+
+	// The PROXY protocol setting for this pool:
+	// - `v1`: Enabled with version 1 (human-readable header format)
+	// - `v2`: Enabled with version 2 (binary header format)
+	// - `disabled`: Disabled
+	//
+	// Supported by load balancers in the `application` family (otherwise always `disabled`).
+	ProxyProtocol *string `json:"proxy_protocol" validate:"required"`
 
 	// The session persistence of this pool.
 	SessionPersistence *LoadBalancerPoolSessionPersistence `json:"session_persistence,omitempty"`
@@ -19168,26 +19144,23 @@ const (
 	LoadBalancerPoolProvisioningStatusUpdatePendingConst      = "update_pending"
 )
 
+// Constants associated with the LoadBalancerPool.ProxyProtocol property.
+// The PROXY protocol setting for this pool:
+// - `v1`: Enabled with version 1 (human-readable header format)
+// - `v2`: Enabled with version 2 (binary header format)
+// - `disabled`: Disabled
+//
+// Supported by load balancers in the `application` family (otherwise always `disabled`).
+const (
+	LoadBalancerPoolProxyProtocolDisabledConst = "disabled"
+	LoadBalancerPoolProxyProtocolV1Const       = "v1"
+	LoadBalancerPoolProxyProtocolV2Const       = "v2"
+)
+
 // UnmarshalLoadBalancerPool unmarshals an instance of LoadBalancerPool from the specified map of raw messages.
 func UnmarshalLoadBalancerPool(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPool)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "algorithm", &obj.Algorithm)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -19199,11 +19172,31 @@ func UnmarshalLoadBalancerPool(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "members", &obj.Members, UnmarshalLoadBalancerPoolMemberReference)
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "provisioning_status", &obj.ProvisioningStatus)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "proxy_protocol", &obj.ProxyProtocol)
 	if err != nil {
 		return
 	}
@@ -19253,7 +19246,7 @@ type LoadBalancerPoolHealthMonitor struct {
 	// the unexpected property value was encountered.
 	Type *string `json:"type" validate:"required"`
 
-	// The health check URL. This is applicable only to `http` type of health monitor.
+	// The health check URL path. Applicable only if the health monitor `type` is `http` or `https`.
 	URLPath *string `json:"url_path,omitempty"`
 }
 
@@ -19318,7 +19311,7 @@ type LoadBalancerPoolHealthMonitorPatch struct {
 	// The protocol type of this load balancer pool health monitor.
 	Type *string `json:"type" validate:"required"`
 
-	// The health check URL. This is applicable only to `http` type of health monitor.
+	// The health check URL path. Applicable only if the health monitor `type` is `http` or `https`.
 	URLPath *string `json:"url_path,omitempty"`
 }
 
@@ -19390,7 +19383,7 @@ type LoadBalancerPoolHealthMonitorPrototype struct {
 	// The protocol type of this load balancer pool health monitor.
 	Type *string `json:"type" validate:"required"`
 
-	// The health check URL. This is applicable only to `http` type of health monitor.
+	// The health check URL path. Applicable only if the health monitor `type` is `http` or `https`.
 	URLPath *string `json:"url_path,omitempty"`
 }
 
@@ -19508,30 +19501,30 @@ func UnmarshalLoadBalancerPoolIdentityByName(m map[string]json.RawMessage, resul
 
 // LoadBalancerPoolMember : LoadBalancerPoolMember struct
 type LoadBalancerPoolMember struct {
-	// The unique identifier for this load balancer pool member.
-	ID *string `json:"id" validate:"required"`
-
-	// The member's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
-	// The port number of the application running in the server member.
-	Port *int64 `json:"port" validate:"required"`
-
-	// Weight of the server member. This takes effect only when the load balancing algorithm of its belonging pool is
-	// `weighted_round_robin`.
-	Weight *int64 `json:"weight,omitempty"`
+	// The date and time that this member was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// Health of the server member in the pool.
 	Health *string `json:"health" validate:"required"`
 
-	// The date and time that this member was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The member's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this load balancer pool member.
+	ID *string `json:"id" validate:"required"`
+
+	// The port number of the application running in the server member.
+	Port *int64 `json:"port" validate:"required"`
 
 	// The provisioning status of this member.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
 
 	// The pool member target.
 	Target LoadBalancerPoolMemberTargetIntf `json:"target" validate:"required"`
+
+	// Weight of the server member. Applicable only if the pool algorithm is
+	// `weighted_round_robin`.
+	Weight *int64 `json:"weight,omitempty"`
 }
 
 // Constants associated with the LoadBalancerPoolMember.Health property.
@@ -19556,19 +19549,7 @@ const (
 // UnmarshalLoadBalancerPoolMember unmarshals an instance of LoadBalancerPoolMember from the specified map of raw messages.
 func UnmarshalLoadBalancerPoolMember(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPoolMember)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "port", &obj.Port)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "weight", &obj.Weight)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -19576,7 +19557,15 @@ func UnmarshalLoadBalancerPoolMember(m map[string]json.RawMessage, result interf
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "port", &obj.Port)
 	if err != nil {
 		return
 	}
@@ -19585,6 +19574,10 @@ func UnmarshalLoadBalancerPoolMember(m map[string]json.RawMessage, result interf
 		return
 	}
 	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalLoadBalancerPoolMemberTarget)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "weight", &obj.Weight)
 	if err != nil {
 		return
 	}
@@ -19614,12 +19607,12 @@ type LoadBalancerPoolMemberPatch struct {
 	// The port number of the application running in the server member.
 	Port *int64 `json:"port,omitempty"`
 
-	// Weight of the server member. This takes effect only when the load balancing algorithm of its belonging pool is
-	// `weighted_round_robin`.
-	Weight *int64 `json:"weight,omitempty"`
-
 	// The pool member target.
 	Target LoadBalancerPoolMemberTargetPrototypeIntf `json:"target,omitempty"`
+
+	// Weight of the server member. Applicable only if the pool algorithm is
+	// `weighted_round_robin`.
+	Weight *int64 `json:"weight,omitempty"`
 }
 
 // UnmarshalLoadBalancerPoolMemberPatch unmarshals an instance of LoadBalancerPoolMemberPatch from the specified map of raw messages.
@@ -19629,11 +19622,11 @@ func UnmarshalLoadBalancerPoolMemberPatch(m map[string]json.RawMessage, result i
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "weight", &obj.Weight)
+	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalLoadBalancerPoolMemberTargetPrototype)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalLoadBalancerPoolMemberTargetPrototype)
+	err = core.UnmarshalPrimitive(m, "weight", &obj.Weight)
 	if err != nil {
 		return
 	}
@@ -19656,12 +19649,12 @@ type LoadBalancerPoolMemberPrototype struct {
 	// The port number of the application running in the server member.
 	Port *int64 `json:"port" validate:"required"`
 
-	// Weight of the server member. This takes effect only when the load balancing algorithm of its belonging pool is
-	// `weighted_round_robin`.
-	Weight *int64 `json:"weight,omitempty"`
-
 	// The pool member target.
 	Target LoadBalancerPoolMemberTargetPrototypeIntf `json:"target" validate:"required"`
+
+	// Weight of the server member. Applicable only if the pool algorithm is
+	// `weighted_round_robin`.
+	Weight *int64 `json:"weight,omitempty"`
 }
 
 // NewLoadBalancerPoolMemberPrototype : Instantiate LoadBalancerPoolMemberPrototype (Generic Model Constructor)
@@ -19681,11 +19674,11 @@ func UnmarshalLoadBalancerPoolMemberPrototype(m map[string]json.RawMessage, resu
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "weight", &obj.Weight)
+	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalLoadBalancerPoolMemberTargetPrototype)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalLoadBalancerPoolMemberTargetPrototype)
+	err = core.UnmarshalPrimitive(m, "weight", &obj.Weight)
 	if err != nil {
 		return
 	}
@@ -19695,21 +19688,21 @@ func UnmarshalLoadBalancerPoolMemberPrototype(m map[string]json.RawMessage, resu
 
 // LoadBalancerPoolMemberReference : LoadBalancerPoolMemberReference struct
 type LoadBalancerPoolMemberReference struct {
-	// The unique identifier for this load balancer pool member.
-	ID *string `json:"id" validate:"required"`
-
 	// The member's canonical URL.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this load balancer pool member.
+	ID *string `json:"id" validate:"required"`
 }
 
 // UnmarshalLoadBalancerPoolMemberReference unmarshals an instance of LoadBalancerPoolMemberReference from the specified map of raw messages.
 func UnmarshalLoadBalancerPoolMemberReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPoolMemberReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -19777,11 +19770,14 @@ func UnmarshalLoadBalancerPoolMemberTargetPrototype(m map[string]json.RawMessage
 
 // LoadBalancerPoolPatch : LoadBalancerPoolPatch struct
 type LoadBalancerPoolPatch struct {
-	// The user-defined name for this load balancer pool.
-	Name *string `json:"name,omitempty"`
-
 	// The load balancing algorithm.
 	Algorithm *string `json:"algorithm,omitempty"`
+
+	// The health monitor of this pool.
+	HealthMonitor *LoadBalancerPoolHealthMonitorPatch `json:"health_monitor,omitempty"`
+
+	// The user-defined name for this load balancer pool.
+	Name *string `json:"name,omitempty"`
 
 	// The protocol used for this load balancer pool.
 	//
@@ -19790,8 +19786,13 @@ type LoadBalancerPoolPatch struct {
 	// unexpected property value was encountered.
 	Protocol *string `json:"protocol,omitempty"`
 
-	// The health monitor of this pool.
-	HealthMonitor *LoadBalancerPoolHealthMonitorPatch `json:"health_monitor,omitempty"`
+	// The PROXY protocol setting for this pool:
+	// - `v1`: Enabled with version 1 (human-readable header format)
+	// - `v2`: Enabled with version 2 (binary header format)
+	// - `disabled`: Disabled
+	//
+	// Supported by load balancers in the `application` family (otherwise always `disabled`).
+	ProxyProtocol *string `json:"proxy_protocol,omitempty"`
 
 	// The session persistence of this pool.
 	SessionPersistence *LoadBalancerPoolSessionPersistencePatch `json:"session_persistence,omitempty"`
@@ -19817,14 +19818,31 @@ const (
 	LoadBalancerPoolPatchProtocolTCPConst   = "tcp"
 )
 
+// Constants associated with the LoadBalancerPoolPatch.ProxyProtocol property.
+// The PROXY protocol setting for this pool:
+// - `v1`: Enabled with version 1 (human-readable header format)
+// - `v2`: Enabled with version 2 (binary header format)
+// - `disabled`: Disabled
+//
+// Supported by load balancers in the `application` family (otherwise always `disabled`).
+const (
+	LoadBalancerPoolPatchProxyProtocolDisabledConst = "disabled"
+	LoadBalancerPoolPatchProxyProtocolV1Const       = "v1"
+	LoadBalancerPoolPatchProxyProtocolV2Const       = "v2"
+)
+
 // UnmarshalLoadBalancerPoolPatch unmarshals an instance of LoadBalancerPoolPatch from the specified map of raw messages.
 func UnmarshalLoadBalancerPoolPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPoolPatch)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "algorithm", &obj.Algorithm)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "algorithm", &obj.Algorithm)
+	err = core.UnmarshalModel(m, "health_monitor", &obj.HealthMonitor, UnmarshalLoadBalancerPoolHealthMonitorPatch)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -19832,7 +19850,7 @@ func UnmarshalLoadBalancerPoolPatch(m map[string]json.RawMessage, result interfa
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "health_monitor", &obj.HealthMonitor, UnmarshalLoadBalancerPoolHealthMonitorPatch)
+	err = core.UnmarshalPrimitive(m, "proxy_protocol", &obj.ProxyProtocol)
 	if err != nil {
 		return
 	}
@@ -19856,26 +19874,32 @@ func (loadBalancerPoolPatch *LoadBalancerPoolPatch) AsPatch() (patch map[string]
 
 // LoadBalancerPoolPrototype : LoadBalancerPoolPrototype struct
 type LoadBalancerPoolPrototype struct {
-	// The user-defined name for this load balancer pool. If unspecified, the name will be a hyphenated list of
-	// randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
 	// The load balancing algorithm.
 	Algorithm *string `json:"algorithm" validate:"required"`
-
-	// The protocol used for this load balancer pool.
-	//
-	// The enumerated values for this property are expected to expand in the future. When processing this property, check
-	// for and log unknown values. Optionally halt processing and surface the error, or bypass the pool on which the
-	// unexpected property value was encountered.
-	Protocol *string `json:"protocol" validate:"required"`
 
 	// The health monitor of this pool.
 	HealthMonitor *LoadBalancerPoolHealthMonitorPrototype `json:"health_monitor" validate:"required"`
 
 	// The members for this load balancer pool. For load balancers in the `network` family, the same `port` and `target`
-	// tuple cannot be shared by a member of any other load balancer.
+	// tuple cannot be shared by a pool member of any other load balancer in the same VPC.
 	Members []LoadBalancerPoolMemberPrototype `json:"members,omitempty"`
+
+	// The user-defined name for this load balancer pool. If unspecified, the name will be a hyphenated list of
+	// randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The protocol used for this load balancer pool. Load balancers in the `network` family support `tcp`. Load balancers
+	// in the `application` family support `tcp`, `http`, and
+	// `https`.
+	Protocol *string `json:"protocol" validate:"required"`
+
+	// The PROXY protocol setting for this pool:
+	// - `v1`: Enabled with version 1 (human-readable header format)
+	// - `v2`: Enabled with version 2 (binary header format)
+	// - `disabled`: Disabled
+	//
+	// Supported by load balancers in the `application` family (otherwise always `disabled`).
+	ProxyProtocol *string `json:"proxy_protocol,omitempty"`
 
 	// The session persistence of this pool.
 	SessionPersistence *LoadBalancerPoolSessionPersistencePrototype `json:"session_persistence,omitempty"`
@@ -19890,23 +19914,34 @@ const (
 )
 
 // Constants associated with the LoadBalancerPoolPrototype.Protocol property.
-// The protocol used for this load balancer pool.
-//
-// The enumerated values for this property are expected to expand in the future. When processing this property, check
-// for and log unknown values. Optionally halt processing and surface the error, or bypass the pool on which the
-// unexpected property value was encountered.
+// The protocol used for this load balancer pool. Load balancers in the `network` family support `tcp`. Load balancers
+// in the `application` family support `tcp`, `http`, and
+// `https`.
 const (
 	LoadBalancerPoolPrototypeProtocolHTTPConst  = "http"
 	LoadBalancerPoolPrototypeProtocolHTTPSConst = "https"
 	LoadBalancerPoolPrototypeProtocolTCPConst   = "tcp"
 )
 
+// Constants associated with the LoadBalancerPoolPrototype.ProxyProtocol property.
+// The PROXY protocol setting for this pool:
+// - `v1`: Enabled with version 1 (human-readable header format)
+// - `v2`: Enabled with version 2 (binary header format)
+// - `disabled`: Disabled
+//
+// Supported by load balancers in the `application` family (otherwise always `disabled`).
+const (
+	LoadBalancerPoolPrototypeProxyProtocolDisabledConst = "disabled"
+	LoadBalancerPoolPrototypeProxyProtocolV1Const       = "v1"
+	LoadBalancerPoolPrototypeProxyProtocolV2Const       = "v2"
+)
+
 // NewLoadBalancerPoolPrototype : Instantiate LoadBalancerPoolPrototype (Generic Model Constructor)
-func (*VpcClassicV1) NewLoadBalancerPoolPrototype(algorithm string, protocol string, healthMonitor *LoadBalancerPoolHealthMonitorPrototype) (model *LoadBalancerPoolPrototype, err error) {
+func (*VpcClassicV1) NewLoadBalancerPoolPrototype(algorithm string, healthMonitor *LoadBalancerPoolHealthMonitorPrototype, protocol string) (model *LoadBalancerPoolPrototype, err error) {
 	model = &LoadBalancerPoolPrototype{
 		Algorithm:     core.StringPtr(algorithm),
-		Protocol:      core.StringPtr(protocol),
 		HealthMonitor: healthMonitor,
+		Protocol:      core.StringPtr(protocol),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
@@ -19915,15 +19950,7 @@ func (*VpcClassicV1) NewLoadBalancerPoolPrototype(algorithm string, protocol str
 // UnmarshalLoadBalancerPoolPrototype unmarshals an instance of LoadBalancerPoolPrototype from the specified map of raw messages.
 func UnmarshalLoadBalancerPoolPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPoolPrototype)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "algorithm", &obj.Algorithm)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -19932,6 +19959,18 @@ func UnmarshalLoadBalancerPoolPrototype(m map[string]json.RawMessage, result int
 		return
 	}
 	err = core.UnmarshalModel(m, "members", &obj.Members, UnmarshalLoadBalancerPoolMemberPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "proxy_protocol", &obj.ProxyProtocol)
 	if err != nil {
 		return
 	}
@@ -19945,11 +19984,11 @@ func UnmarshalLoadBalancerPoolPrototype(m map[string]json.RawMessage, result int
 
 // LoadBalancerPoolReference : LoadBalancerPoolReference struct
 type LoadBalancerPoolReference struct {
-	// The unique identifier for this load balancer pool.
-	ID *string `json:"id" validate:"required"`
-
 	// The pool's canonical URL.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this load balancer pool.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this load balancer pool.
 	Name *string `json:"name" validate:"required"`
@@ -19958,11 +19997,11 @@ type LoadBalancerPoolReference struct {
 // UnmarshalLoadBalancerPoolReference unmarshals an instance of LoadBalancerPoolReference from the specified map of raw messages.
 func UnmarshalLoadBalancerPoolReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPoolReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -20101,17 +20140,17 @@ func UnmarshalLoadBalancerStatistics(m map[string]json.RawMessage, result interf
 
 // NetworkACL : NetworkACL struct
 type NetworkACL struct {
-	// The unique identifier for this network ACL.
-	ID *string `json:"id" validate:"required"`
+	// The date and time that the network ACL was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The URL for this network ACL.
 	Href *string `json:"href" validate:"required"`
 
+	// The unique identifier for this network ACL.
+	ID *string `json:"id" validate:"required"`
+
 	// The user-defined name for this network ACL.
 	Name *string `json:"name" validate:"required"`
-
-	// The date and time that the network ACL was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The ordered rules for this network ACL. If no rules exist, all traffic will be allowed.
 	Rules []NetworkACLRuleItemIntf `json:"rules" validate:"required"`
@@ -20123,7 +20162,7 @@ type NetworkACL struct {
 // UnmarshalNetworkACL unmarshals an instance of NetworkACL from the specified map of raw messages.
 func UnmarshalNetworkACL(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACL)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -20131,11 +20170,11 @@ func UnmarshalNetworkACL(m map[string]json.RawMessage, result interface{}) (err 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -20153,18 +20192,18 @@ func UnmarshalNetworkACL(m map[string]json.RawMessage, result interface{}) (err 
 
 // NetworkACLCollection : NetworkACLCollection struct
 type NetworkACLCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *NetworkACLCollectionFirst `json:"first" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
-	// except the last page.
-	Next *NetworkACLCollectionNext `json:"next,omitempty"`
-
 	// Collection of network ACLs.
 	NetworkAcls []NetworkACL `json:"network_acls" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *NetworkACLCollectionNext `json:"next,omitempty"`
 }
 
 // UnmarshalNetworkACLCollection unmarshals an instance of NetworkACLCollection from the specified map of raw messages.
@@ -20178,11 +20217,11 @@ func UnmarshalNetworkACLCollection(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalNetworkACLCollectionNext)
+	err = core.UnmarshalModel(m, "network_acls", &obj.NetworkAcls, UnmarshalNetworkACL)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "network_acls", &obj.NetworkAcls, UnmarshalNetworkACL)
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalNetworkACLCollectionNext)
 	if err != nil {
 		return
 	}
@@ -20190,9 +20229,9 @@ func UnmarshalNetworkACLCollection(m map[string]json.RawMessage, result interfac
 	return
 }
 
-// NetworkACLCollectionFirst : A reference to the first page of resources.
+// NetworkACLCollectionFirst : A link to the first page of resources.
 type NetworkACLCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -20207,9 +20246,9 @@ func UnmarshalNetworkACLCollectionFirst(m map[string]json.RawMessage, result int
 	return
 }
 
-// NetworkACLCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// NetworkACLCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type NetworkACLCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -20332,11 +20371,11 @@ func UnmarshalNetworkACLPrototype(m map[string]json.RawMessage, result interface
 
 // NetworkACLReference : NetworkACLReference struct
 type NetworkACLReference struct {
-	// The unique identifier for this network ACL.
-	ID *string `json:"id" validate:"required"`
-
 	// The URL for this network ACL.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this network ACL.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this network ACL.
 	Name *string `json:"name" validate:"required"`
@@ -20345,11 +20384,11 @@ type NetworkACLReference struct {
 // UnmarshalNetworkACLReference unmarshals an instance of NetworkACLReference from the specified map of raw messages.
 func UnmarshalNetworkACLReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -20367,30 +20406,8 @@ func UnmarshalNetworkACLReference(m map[string]json.RawMessage, result interface
 // - NetworkACLRuleNetworkACLRuleProtocolIcmp
 // - NetworkACLRuleNetworkACLRuleProtocolAll
 type NetworkACLRule struct {
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
-
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
 
 	// The rule that this rule is immediately before. If absent, this is the last rule.
 	Before *NetworkACLRuleReference `json:"before,omitempty"`
@@ -20398,8 +20415,30 @@ type NetworkACLRule struct {
 	// The date and time that the rule was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
+	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination" validate:"required"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The URL for this network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
 	// The IP version for this rule.
 	IPVersion *string `json:"ip_version" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
+
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	PortMax *int64 `json:"port_max,omitempty"`
@@ -20433,15 +20472,6 @@ const (
 const (
 	NetworkACLRuleDirectionInboundConst  = "inbound"
 	NetworkACLRuleDirectionOutboundConst = "outbound"
-)
-
-// Constants associated with the NetworkACLRule.Protocol property.
-// The protocol to enforce.
-const (
-	NetworkACLRuleProtocolAllConst  = "all"
-	NetworkACLRuleProtocolIcmpConst = "icmp"
-	NetworkACLRuleProtocolTCPConst  = "tcp"
-	NetworkACLRuleProtocolUDPConst  = "udp"
 )
 
 // Constants associated with the NetworkACLRule.IPVersion property.
@@ -20486,19 +20516,89 @@ func UnmarshalNetworkACLRule(m map[string]json.RawMessage, result interface{}) (
 	return
 }
 
+// NetworkACLRuleBeforePatch : The rule to move this rule immediately before. Specify `null` to move this rule after all existing rules.
+// Models which "extend" this model:
+// - NetworkACLRuleBeforePatchNetworkACLRuleIdentityByID
+// - NetworkACLRuleBeforePatchNetworkACLRuleIdentityByHref
+type NetworkACLRuleBeforePatch struct {
+	// The unique identifier for this network ACL rule.
+	ID *string `json:"id,omitempty"`
+
+	// The URL for this network ACL rule.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*NetworkACLRuleBeforePatch) isaNetworkACLRuleBeforePatch() bool {
+	return true
+}
+
+type NetworkACLRuleBeforePatchIntf interface {
+	isaNetworkACLRuleBeforePatch() bool
+}
+
+// UnmarshalNetworkACLRuleBeforePatch unmarshals an instance of NetworkACLRuleBeforePatch from the specified map of raw messages.
+func UnmarshalNetworkACLRuleBeforePatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkACLRuleBeforePatch)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// NetworkACLRuleBeforePrototype : The rule to insert this rule immediately before. If omitted, this rule will be inserted after all existing rules.
+// Models which "extend" this model:
+// - NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByID
+// - NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByHref
+type NetworkACLRuleBeforePrototype struct {
+	// The unique identifier for this network ACL rule.
+	ID *string `json:"id,omitempty"`
+
+	// The URL for this network ACL rule.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*NetworkACLRuleBeforePrototype) isaNetworkACLRuleBeforePrototype() bool {
+	return true
+}
+
+type NetworkACLRuleBeforePrototypeIntf interface {
+	isaNetworkACLRuleBeforePrototype() bool
+}
+
+// UnmarshalNetworkACLRuleBeforePrototype unmarshals an instance of NetworkACLRuleBeforePrototype from the specified map of raw messages.
+func UnmarshalNetworkACLRuleBeforePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkACLRuleBeforePrototype)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // NetworkACLRuleCollection : NetworkACLRuleCollection struct
 type NetworkACLRuleCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *NetworkACLRuleCollectionFirst `json:"first" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *NetworkACLRuleCollectionNext `json:"next,omitempty"`
 
-	// Ordered collection of Network ACL rules.
+	// Ordered collection of network ACL rules.
 	Rules []NetworkACLRuleItemIntf `json:"rules" validate:"required"`
 }
 
@@ -20525,9 +20625,9 @@ func UnmarshalNetworkACLRuleCollection(m map[string]json.RawMessage, result inte
 	return
 }
 
-// NetworkACLRuleCollectionFirst : A reference to the first page of resources.
+// NetworkACLRuleCollectionFirst : A link to the first page of resources.
 type NetworkACLRuleCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -20542,9 +20642,9 @@ func UnmarshalNetworkACLRuleCollectionFirst(m map[string]json.RawMessage, result
 	return
 }
 
-// NetworkACLRuleCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// NetworkACLRuleCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type NetworkACLRuleCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -20559,71 +20659,14 @@ func UnmarshalNetworkACLRuleCollectionNext(m map[string]json.RawMessage, result 
 	return
 }
 
-// NetworkACLRuleIdentity : Identifies a network ACL rule by a unique property.
-// Models which "extend" this model:
-// - NetworkACLRuleIdentityByID
-// - NetworkACLRuleIdentityByHref
-type NetworkACLRuleIdentity struct {
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id,omitempty"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*NetworkACLRuleIdentity) isaNetworkACLRuleIdentity() bool {
-	return true
-}
-
-type NetworkACLRuleIdentityIntf interface {
-	isaNetworkACLRuleIdentity() bool
-}
-
-// UnmarshalNetworkACLRuleIdentity unmarshals an instance of NetworkACLRuleIdentity from the specified map of raw messages.
-func UnmarshalNetworkACLRuleIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkACLRuleIdentity)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // NetworkACLRuleItem : NetworkACLRuleItem struct
 // Models which "extend" this model:
 // - NetworkACLRuleItemNetworkACLRuleProtocolTcpudp
 // - NetworkACLRuleItemNetworkACLRuleProtocolIcmp
 // - NetworkACLRuleItemNetworkACLRuleProtocolAll
 type NetworkACLRuleItem struct {
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
-
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
 
 	// The rule that this rule is immediately before. In a rule collection, this always
 	// refers to the next item in the collection. If absent, this is the last rule.
@@ -20632,8 +20675,30 @@ type NetworkACLRuleItem struct {
 	// The date and time that the rule was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
+	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination" validate:"required"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The URL for this network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
 	// The IP version for this rule.
 	IPVersion *string `json:"ip_version" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
+
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	PortMax *int64 `json:"port_max,omitempty"`
@@ -20667,15 +20732,6 @@ const (
 const (
 	NetworkACLRuleItemDirectionInboundConst  = "inbound"
 	NetworkACLRuleItemDirectionOutboundConst = "outbound"
-)
-
-// Constants associated with the NetworkACLRuleItem.Protocol property.
-// The protocol to enforce.
-const (
-	NetworkACLRuleItemProtocolAllConst  = "all"
-	NetworkACLRuleItemProtocolIcmpConst = "icmp"
-	NetworkACLRuleItemProtocolTCPConst  = "tcp"
-	NetworkACLRuleItemProtocolUDPConst  = "udp"
 )
 
 // Constants associated with the NetworkACLRuleItem.IPVersion property.
@@ -20726,11 +20782,12 @@ func UnmarshalNetworkACLRuleItem(m map[string]json.RawMessage, result interface{
 // - NetworkACLRulePatchNetworkACLRuleProtocolIcmp
 // - NetworkACLRulePatchNetworkACLRuleProtocolAll
 type NetworkACLRulePatch struct {
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in.
-	Name *string `json:"name,omitempty"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action,omitempty"`
+
+	// The rule to move this rule immediately before. Specify `null` to move this rule after
+	// all existing rules.
+	Before NetworkACLRuleBeforePatchIntf `json:"before,omitempty"`
 
 	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination,omitempty"`
@@ -20738,15 +20795,14 @@ type NetworkACLRulePatch struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction,omitempty"`
 
-	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source,omitempty"`
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in.
+	Name *string `json:"name,omitempty"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol,omitempty"`
 
-	// The rule to move this rule immediately before. Specify `null` to move this rule after
-	// all existing rules.
-	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	PortMax *int64 `json:"port_max,omitempty"`
@@ -20780,15 +20836,6 @@ const (
 const (
 	NetworkACLRulePatchDirectionInboundConst  = "inbound"
 	NetworkACLRulePatchDirectionOutboundConst = "outbound"
-)
-
-// Constants associated with the NetworkACLRulePatch.Protocol property.
-// The protocol to enforce.
-const (
-	NetworkACLRulePatchProtocolAllConst  = "all"
-	NetworkACLRulePatchProtocolIcmpConst = "icmp"
-	NetworkACLRulePatchProtocolTCPConst  = "tcp"
-	NetworkACLRulePatchProtocolUDPConst  = "udp"
 )
 
 func (*NetworkACLRulePatch) isaNetworkACLRulePatch() bool {
@@ -20842,12 +20889,12 @@ func (networkACLRulePatch *NetworkACLRulePatch) AsPatch() (patch map[string]inte
 // - NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp
 // - NetworkACLRulePrototypeNetworkACLRuleProtocolAll
 type NetworkACLRulePrototype struct {
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
+
+	// The rule to insert this rule immediately before. If omitted, this rule will be
+	// inserted after all existing rules.
+	Before NetworkACLRuleBeforePrototypeIntf `json:"before,omitempty"`
 
 	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
@@ -20855,15 +20902,15 @@ type NetworkACLRulePrototype struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The rule to insert this rule immediately before. If omitted, this rule will be
-	// inserted after all existing rules.
-	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	PortMax *int64 `json:"port_max,omitempty"`
@@ -20897,15 +20944,6 @@ const (
 const (
 	NetworkACLRulePrototypeDirectionInboundConst  = "inbound"
 	NetworkACLRulePrototypeDirectionOutboundConst = "outbound"
-)
-
-// Constants associated with the NetworkACLRulePrototype.Protocol property.
-// The protocol to enforce.
-const (
-	NetworkACLRulePrototypeProtocolAllConst  = "all"
-	NetworkACLRulePrototypeProtocolIcmpConst = "icmp"
-	NetworkACLRulePrototypeProtocolTCPConst  = "tcp"
-	NetworkACLRulePrototypeProtocolUDPConst  = "udp"
 )
 
 func (*NetworkACLRulePrototype) isaNetworkACLRulePrototype() bool {
@@ -20949,10 +20987,6 @@ func UnmarshalNetworkACLRulePrototype(m map[string]json.RawMessage, result inter
 // - NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp
 // - NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll
 type NetworkACLRulePrototypeNetworkACLContext struct {
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
@@ -20962,11 +20996,15 @@ type NetworkACLRulePrototypeNetworkACLContext struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
+
+	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	PortMax *int64 `json:"port_max,omitempty"`
@@ -21000,15 +21038,6 @@ const (
 const (
 	NetworkACLRulePrototypeNetworkACLContextDirectionInboundConst  = "inbound"
 	NetworkACLRulePrototypeNetworkACLContextDirectionOutboundConst = "outbound"
-)
-
-// Constants associated with the NetworkACLRulePrototypeNetworkACLContext.Protocol property.
-// The protocol to enforce.
-const (
-	NetworkACLRulePrototypeNetworkACLContextProtocolAllConst  = "all"
-	NetworkACLRulePrototypeNetworkACLContextProtocolIcmpConst = "icmp"
-	NetworkACLRulePrototypeNetworkACLContextProtocolTCPConst  = "tcp"
-	NetworkACLRulePrototypeNetworkACLContextProtocolUDPConst  = "udp"
 )
 
 func (*NetworkACLRulePrototypeNetworkACLContext) isaNetworkACLRulePrototypeNetworkACLContext() bool {
@@ -21048,24 +21077,24 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContext(m map[string]json.RawMess
 
 // NetworkACLRuleReference : NetworkACLRuleReference struct
 type NetworkACLRuleReference struct {
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The URL for this Network ACL rule.
+	// The URL for this network ACL rule.
 	Href *string `json:"href" validate:"required"`
 
-	// The user-defined name for this Network ACL rule.
+	// The unique identifier for this network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
+	// The user-defined name for this network ACL rule.
 	Name *string `json:"name" validate:"required"`
 }
 
 // UnmarshalNetworkACLRuleReference unmarshals an instance of NetworkACLRuleReference from the specified map of raw messages.
 func UnmarshalNetworkACLRuleReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRuleReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -21079,14 +21108,23 @@ func UnmarshalNetworkACLRuleReference(m map[string]json.RawMessage, result inter
 
 // NetworkInterface : NetworkInterface struct
 type NetworkInterface struct {
-	// The user-defined name for this network interface.
-	Name *string `json:"name" validate:"required"`
+	// The date and time that the network interface was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// Array of references to floating IPs associated with this network interface.
+	FloatingIps []FloatingIPReference `json:"floating_ips,omitempty"`
+
+	// The URL for this network interface.
+	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this network interface.
 	ID *string `json:"id" validate:"required"`
 
-	// The URL for this network interface.
-	Href *string `json:"href" validate:"required"`
+	// The user-defined name for this network interface.
+	Name *string `json:"name" validate:"required"`
+
+	// The network interface port speed in Mbps.
+	PortSpeed *int64 `json:"port_speed" validate:"required"`
 
 	// The primary IPv4 address.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address" validate:"required"`
@@ -21096,15 +21134,6 @@ type NetworkInterface struct {
 
 	// Collection of security groups.
 	SecurityGroups []SecurityGroupReference `json:"security_groups" validate:"required"`
-
-	// The date and time that the network interface was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// Array of references to floating IPs associated with this network interface.
-	FloatingIps []FloatingIPReference `json:"floating_ips,omitempty"`
-
-	// The network interface port speed in Mbps.
-	PortSpeed *int64 `json:"port_speed" validate:"required"`
 
 	// The status of the network interface.
 	//
@@ -21147,7 +21176,15 @@ const (
 // UnmarshalNetworkInterface unmarshals an instance of NetworkInterface from the specified map of raw messages.
 func UnmarshalNetworkInterface(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkInterface)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "floating_ips", &obj.FloatingIps, UnmarshalFloatingIPReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -21155,7 +21192,11 @@ func UnmarshalNetworkInterface(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "port_speed", &obj.PortSpeed)
 	if err != nil {
 		return
 	}
@@ -21168,18 +21209,6 @@ func UnmarshalNetworkInterface(m map[string]json.RawMessage, result interface{})
 		return
 	}
 	err = core.UnmarshalModel(m, "security_groups", &obj.SecurityGroups, UnmarshalSecurityGroupReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "floating_ips", &obj.FloatingIps, UnmarshalFloatingIPReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "port_speed", &obj.PortSpeed)
 	if err != nil {
 		return
 	}
@@ -21218,14 +21247,14 @@ func UnmarshalNetworkInterfaceCollection(m map[string]json.RawMessage, result in
 
 // NetworkInterfaceInstanceContextReference : NetworkInterfaceInstanceContextReference struct
 type NetworkInterfaceInstanceContextReference struct {
-	// The user-defined name for this network interface.
-	Name *string `json:"name" validate:"required"`
+	// The URL for this network interface.
+	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this network interface.
 	ID *string `json:"id" validate:"required"`
 
-	// The URL for this network interface.
-	Href *string `json:"href" validate:"required"`
+	// The user-defined name for this network interface.
+	Name *string `json:"name" validate:"required"`
 
 	// The primary IPv4 address.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address" validate:"required"`
@@ -21246,7 +21275,7 @@ const (
 // UnmarshalNetworkInterfaceInstanceContextReference unmarshals an instance of NetworkInterfaceInstanceContextReference from the specified map of raw messages.
 func UnmarshalNetworkInterfaceInstanceContextReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkInterfaceInstanceContextReference)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -21254,7 +21283,7 @@ func UnmarshalNetworkInterfaceInstanceContextReference(m map[string]json.RawMess
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -21325,14 +21354,14 @@ func UnmarshalNetworkInterfacePrototype(m map[string]json.RawMessage, result int
 
 // NetworkInterfaceReference : NetworkInterfaceReference struct
 type NetworkInterfaceReference struct {
-	// The user-defined name for this network interface.
-	Name *string `json:"name" validate:"required"`
+	// The URL for this network interface.
+	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this network interface.
 	ID *string `json:"id" validate:"required"`
 
-	// The URL for this network interface.
-	Href *string `json:"href" validate:"required"`
+	// The user-defined name for this network interface.
+	Name *string `json:"name" validate:"required"`
 
 	// The primary IPv4 address.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address" validate:"required"`
@@ -21350,7 +21379,7 @@ const (
 // UnmarshalNetworkInterfaceReference unmarshals an instance of NetworkInterfaceReference from the specified map of raw messages.
 func UnmarshalNetworkInterfaceReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkInterfaceReference)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -21358,7 +21387,7 @@ func UnmarshalNetworkInterfaceReference(m map[string]json.RawMessage, result int
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -21393,12 +21422,6 @@ func UnmarshalNetworkInterfaceUnpaginatedCollection(m map[string]json.RawMessage
 
 // OperatingSystem : OperatingSystem struct
 type OperatingSystem struct {
-	// The unique name of the operating system.
-	Name *string `json:"name" validate:"required"`
-
-	// The URL for this operating system.
-	Href *string `json:"href" validate:"required"`
-
 	// The operating system architecture.
 	Architecture *string `json:"architecture" validate:"required"`
 
@@ -21407,6 +21430,12 @@ type OperatingSystem struct {
 
 	// The name of the software family this operating system belongs to.
 	Family *string `json:"family" validate:"required"`
+
+	// The URL for this operating system.
+	Href *string `json:"href" validate:"required"`
+
+	// The globally unique name for this operating system.
+	Name *string `json:"name" validate:"required"`
 
 	// The vendor of the operating system.
 	Vendor *string `json:"vendor" validate:"required"`
@@ -21418,14 +21447,6 @@ type OperatingSystem struct {
 // UnmarshalOperatingSystem unmarshals an instance of OperatingSystem from the specified map of raw messages.
 func UnmarshalOperatingSystem(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(OperatingSystem)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "architecture", &obj.Architecture)
 	if err != nil {
 		return
@@ -21435,6 +21456,14 @@ func UnmarshalOperatingSystem(m map[string]json.RawMessage, result interface{}) 
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -21452,13 +21481,13 @@ func UnmarshalOperatingSystem(m map[string]json.RawMessage, result interface{}) 
 
 // OperatingSystemCollection : OperatingSystemCollection struct
 type OperatingSystemCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *OperatingSystemCollectionFirst `json:"first" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *OperatingSystemCollectionNext `json:"next,omitempty"`
 
@@ -21489,9 +21518,9 @@ func UnmarshalOperatingSystemCollection(m map[string]json.RawMessage, result int
 	return
 }
 
-// OperatingSystemCollectionFirst : A reference to the first page of resources.
+// OperatingSystemCollectionFirst : A link to the first page of resources.
 type OperatingSystemCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -21506,9 +21535,9 @@ func UnmarshalOperatingSystemCollectionFirst(m map[string]json.RawMessage, resul
 	return
 }
 
-// OperatingSystemCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// OperatingSystemCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type OperatingSystemCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -21528,7 +21557,7 @@ func UnmarshalOperatingSystemCollectionNext(m map[string]json.RawMessage, result
 // - OperatingSystemIdentityByName
 // - OperatingSystemIdentityByHref
 type OperatingSystemIdentity struct {
-	// The unique name of the operating system.
+	// The globally unique name for this operating system.
 	Name *string `json:"name,omitempty"`
 
 	// The URL for this operating system.
@@ -21560,26 +21589,26 @@ func UnmarshalOperatingSystemIdentity(m map[string]json.RawMessage, result inter
 
 // PublicGateway : PublicGateway struct
 type PublicGateway struct {
-	// The unique identifier for this public gateway.
-	ID *string `json:"id" validate:"required"`
+	// The date and time that the public gateway was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The CRN for this public gateway.
 	CRN *string `json:"crn" validate:"required"`
 
+	// Reference to the floating IP which is bound to this public gateway.
+	FloatingIP *PublicGatewayFloatingIP `json:"floating_ip" validate:"required"`
+
 	// The URL for this public gateway.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this public gateway.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this public gateway.
 	Name *string `json:"name" validate:"required"`
 
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
-
-	// The date and time that the public gateway was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// Reference to the floating IP which is bound to this public gateway.
-	FloatingIP *PublicGatewayFloatingIP `json:"floating_ip" validate:"required"`
 
 	// The status of the volume.
 	Status *string `json:"status" validate:"required"`
@@ -21609,7 +21638,7 @@ const (
 // UnmarshalPublicGateway unmarshals an instance of PublicGateway from the specified map of raw messages.
 func UnmarshalPublicGateway(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(PublicGateway)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -21617,7 +21646,15 @@ func UnmarshalPublicGateway(m map[string]json.RawMessage, result interface{}) (e
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "floating_ip", &obj.FloatingIP, UnmarshalPublicGatewayFloatingIP)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -21626,14 +21663,6 @@ func UnmarshalPublicGateway(m map[string]json.RawMessage, result interface{}) (e
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "floating_ip", &obj.FloatingIP, UnmarshalPublicGatewayFloatingIP)
 	if err != nil {
 		return
 	}
@@ -21655,13 +21684,13 @@ func UnmarshalPublicGateway(m map[string]json.RawMessage, result interface{}) (e
 
 // PublicGatewayCollection : PublicGatewayCollection struct
 type PublicGatewayCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *PublicGatewayCollectionFirst `json:"first" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *PublicGatewayCollectionNext `json:"next,omitempty"`
 
@@ -21692,9 +21721,9 @@ func UnmarshalPublicGatewayCollection(m map[string]json.RawMessage, result inter
 	return
 }
 
-// PublicGatewayCollectionFirst : A reference to the first page of resources.
+// PublicGatewayCollectionFirst : A link to the first page of resources.
 type PublicGatewayCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -21709,9 +21738,9 @@ func UnmarshalPublicGatewayCollectionFirst(m map[string]json.RawMessage, result 
 	return
 }
 
-// PublicGatewayCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// PublicGatewayCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type PublicGatewayCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -21728,8 +21757,8 @@ func UnmarshalPublicGatewayCollectionNext(m map[string]json.RawMessage, result i
 
 // PublicGatewayFloatingIP : Reference to the floating IP which is bound to this public gateway.
 type PublicGatewayFloatingIP struct {
-	// The unique identifier for this floating IP.
-	ID *string `json:"id" validate:"required"`
+	// The globally unique IP address.
+	Address *string `json:"address" validate:"required"`
 
 	// The CRN for this floating IP.
 	CRN *string `json:"crn" validate:"required"`
@@ -21737,8 +21766,8 @@ type PublicGatewayFloatingIP struct {
 	// The URL for this floating IP.
 	Href *string `json:"href" validate:"required"`
 
-	// The globally unique IP address.
-	Address *string `json:"address" validate:"required"`
+	// The unique identifier for this floating IP.
+	ID *string `json:"id" validate:"required"`
 
 	// The unique user-defined name for this floating IP.
 	Name *string `json:"name" validate:"required"`
@@ -21747,6 +21776,63 @@ type PublicGatewayFloatingIP struct {
 // UnmarshalPublicGatewayFloatingIP unmarshals an instance of PublicGatewayFloatingIP from the specified map of raw messages.
 func UnmarshalPublicGatewayFloatingIP(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(PublicGatewayFloatingIP)
+	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// PublicGatewayFloatingIPPrototype : PublicGatewayFloatingIPPrototype struct
+// Models which "extend" this model:
+// - PublicGatewayFloatingIPPrototypeFloatingIPIdentity
+// - PublicGatewayFloatingIPPrototypeFloatingIPPrototypeTargetContext
+type PublicGatewayFloatingIPPrototype struct {
+	// The unique identifier for this floating IP.
+	ID *string `json:"id,omitempty"`
+
+	// The CRN for this floating IP.
+	CRN *string `json:"crn,omitempty"`
+
+	// The URL for this floating IP.
+	Href *string `json:"href,omitempty"`
+
+	// The globally unique IP address.
+	Address *string `json:"address,omitempty"`
+
+	// The unique user-defined name for this floating IP. If unspecified, the name will be a hyphenated list of
+	// randomly-selected words.
+	Name *string `json:"name,omitempty"`
+}
+
+func (*PublicGatewayFloatingIPPrototype) isaPublicGatewayFloatingIPPrototype() bool {
+	return true
+}
+
+type PublicGatewayFloatingIPPrototypeIntf interface {
+	isaPublicGatewayFloatingIPPrototype() bool
+}
+
+// UnmarshalPublicGatewayFloatingIPPrototype unmarshals an instance of PublicGatewayFloatingIPPrototype from the specified map of raw messages.
+func UnmarshalPublicGatewayFloatingIPPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PublicGatewayFloatingIPPrototype)
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
@@ -21841,73 +21927,16 @@ func (publicGatewayPatch *PublicGatewayPatch) AsPatch() (patch map[string]interf
 	return
 }
 
-// PublicGatewayPrototypeFloatingIP : PublicGatewayPrototypeFloatingIP struct
-// Models which "extend" this model:
-// - PublicGatewayPrototypeFloatingIPFloatingIPIdentity
-// - PublicGatewayPrototypeFloatingIPFloatingIPPrototypeTargetContext
-type PublicGatewayPrototypeFloatingIP struct {
-	// The unique identifier for this floating IP.
-	ID *string `json:"id,omitempty"`
-
-	// The CRN for this floating IP.
-	CRN *string `json:"crn,omitempty"`
-
-	// The URL for this floating IP.
-	Href *string `json:"href,omitempty"`
-
-	// The globally unique IP address.
-	Address *string `json:"address,omitempty"`
-
-	// The unique user-defined name for this floating IP. If unspecified, the name will be a hyphenated list of
-	// randomly-selected words.
-	Name *string `json:"name,omitempty"`
-}
-
-func (*PublicGatewayPrototypeFloatingIP) isaPublicGatewayPrototypeFloatingIP() bool {
-	return true
-}
-
-type PublicGatewayPrototypeFloatingIPIntf interface {
-	isaPublicGatewayPrototypeFloatingIP() bool
-}
-
-// UnmarshalPublicGatewayPrototypeFloatingIP unmarshals an instance of PublicGatewayPrototypeFloatingIP from the specified map of raw messages.
-func UnmarshalPublicGatewayPrototypeFloatingIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(PublicGatewayPrototypeFloatingIP)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // PublicGatewayReference : PublicGatewayReference struct
 type PublicGatewayReference struct {
-	// The unique identifier for this public gateway.
-	ID *string `json:"id" validate:"required"`
-
 	// The CRN for this public gateway.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this public gateway.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this public gateway.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this public gateway.
 	Name *string `json:"name" validate:"required"`
@@ -21925,15 +21954,15 @@ const (
 // UnmarshalPublicGatewayReference unmarshals an instance of PublicGatewayReference from the specified map of raw messages.
 func UnmarshalPublicGatewayReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(PublicGatewayReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -21951,14 +21980,14 @@ func UnmarshalPublicGatewayReference(m map[string]json.RawMessage, result interf
 
 // Region : Region struct
 type Region struct {
-	// The name for this region.
-	Name *string `json:"name" validate:"required"`
+	// The API endpoint for this region.
+	Endpoint *string `json:"endpoint" validate:"required"`
 
 	// The URL for this region.
 	Href *string `json:"href" validate:"required"`
 
-	// The API endpoint for this region.
-	Endpoint *string `json:"endpoint" validate:"required"`
+	// The globally unique name for this region.
+	Name *string `json:"name" validate:"required"`
 
 	// The availability status of this region.
 	Status *string `json:"status" validate:"required"`
@@ -21974,7 +22003,7 @@ const (
 // UnmarshalRegion unmarshals an instance of Region from the specified map of raw messages.
 func UnmarshalRegion(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Region)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "endpoint", &obj.Endpoint)
 	if err != nil {
 		return
 	}
@@ -21982,7 +22011,7 @@ func UnmarshalRegion(m map[string]json.RawMessage, result interface{}) (err erro
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "endpoint", &obj.Endpoint)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -21996,7 +22025,7 @@ func UnmarshalRegion(m map[string]json.RawMessage, result interface{}) (err erro
 
 // RegionCollection : RegionCollection struct
 type RegionCollection struct {
-	// Array of Region objects.
+	// Collection of regions.
 	Regions []Region `json:"regions" validate:"required"`
 }
 
@@ -22013,21 +22042,21 @@ func UnmarshalRegionCollection(m map[string]json.RawMessage, result interface{})
 
 // RegionReference : RegionReference struct
 type RegionReference struct {
-	// The name for this region.
-	Name *string `json:"name" validate:"required"`
-
 	// The URL for this region.
 	Href *string `json:"href" validate:"required"`
+
+	// The globally unique name for this region.
+	Name *string `json:"name" validate:"required"`
 }
 
 // UnmarshalRegionReference unmarshals an instance of RegionReference from the specified map of raw messages.
 func UnmarshalRegionReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(RegionReference)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -22353,21 +22382,21 @@ func UnmarshalResourceGroupIdentity(m map[string]json.RawMessage, result interfa
 
 // ResourceGroupReference : ResourceGroupReference struct
 type ResourceGroupReference struct {
-	// The unique identifier for this resource group.
-	ID *string `json:"id" validate:"required"`
-
 	// The URL for this resource group.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this resource group.
+	ID *string `json:"id" validate:"required"`
 }
 
 // UnmarshalResourceGroupReference unmarshals an instance of ResourceGroupReference from the specified map of raw messages.
 func UnmarshalResourceGroupReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ResourceGroupReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -22377,26 +22406,26 @@ func UnmarshalResourceGroupReference(m map[string]json.RawMessage, result interf
 
 // Route : Route struct
 type Route struct {
-	// The next hop that packets will be delivered to.
-	NextHop RouteNextHopIntf `json:"next_hop" validate:"required"`
-
-	// The unique identifier for this route.
-	ID *string `json:"id" validate:"required"`
-
-	// The URL for this route.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this route.
-	Name *string `json:"name" validate:"required"`
-
 	// The date and time that the route was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination of the route.
 	Destination *string `json:"destination" validate:"required"`
 
+	// The URL for this route.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this route.
+	ID *string `json:"id" validate:"required"`
+
 	// The lifecycle state of the route.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The user-defined name for this route.
+	Name *string `json:"name" validate:"required"`
+
+	// The next hop that packets will be delivered to.
+	NextHop RouteNextHopIntf `json:"next_hop" validate:"required"`
 
 	// The zone the route applies to. (Traffic from subnets in this zone will be
 	// subject to this route.).
@@ -22419,22 +22448,6 @@ const (
 // UnmarshalRoute unmarshals an instance of Route from the specified map of raw messages.
 func UnmarshalRoute(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Route)
-	err = core.UnmarshalModel(m, "next_hop", &obj.NextHop, UnmarshalRouteNextHop)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
@@ -22443,7 +22456,23 @@ func UnmarshalRoute(m map[string]json.RawMessage, result interface{}) (err error
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next_hop", &obj.NextHop, UnmarshalRouteNextHop)
 	if err != nil {
 		return
 	}
@@ -22559,8 +22588,8 @@ func (routePatch *RoutePatch) AsPatch() (patch map[string]interface{}, err error
 
 // SecurityGroup : SecurityGroup struct
 type SecurityGroup struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id" validate:"required"`
+	// The date and time that this security group was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The security group's CRN.
 	CRN *string `json:"crn" validate:"required"`
@@ -22568,17 +22597,17 @@ type SecurityGroup struct {
 	// The security group's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
+	// The unique identifier for this security group.
+	ID *string `json:"id" validate:"required"`
+
 	// The user-defined name for this security group. Security group names must be unique, within the scope of an account.
 	Name *string `json:"name" validate:"required"`
 
-	// The resource group for this security group.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
-
-	// The date and time that this security group was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
 	// Array of references to network interfaces.
 	NetworkInterfaces []NetworkInterfaceReference `json:"network_interfaces" validate:"required"`
+
+	// The resource group for this security group.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
 	// Array of rules for this security group. If no rules exist, all traffic will be denied.
 	Rules []SecurityGroupRuleIntf `json:"rules" validate:"required"`
@@ -22590,7 +22619,7 @@ type SecurityGroup struct {
 // UnmarshalSecurityGroup unmarshals an instance of SecurityGroup from the specified map of raw messages.
 func UnmarshalSecurityGroup(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroup)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -22602,19 +22631,19 @@ func UnmarshalSecurityGroup(m map[string]json.RawMessage, result interface{}) (e
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalModel(m, "network_interfaces", &obj.NetworkInterfaces, UnmarshalNetworkInterfaceReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
@@ -22719,14 +22748,14 @@ func (securityGroupPatch *SecurityGroupPatch) AsPatch() (patch map[string]interf
 
 // SecurityGroupReference : SecurityGroupReference struct
 type SecurityGroupReference struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id" validate:"required"`
-
 	// The security group's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The security group's canonical URL.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this security group.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this security group. Security group names must be unique, within the scope of an account.
 	Name *string `json:"name" validate:"required"`
@@ -22735,15 +22764,15 @@ type SecurityGroupReference struct {
 // UnmarshalSecurityGroupReference unmarshals an instance of SecurityGroupReference from the specified map of raw messages.
 func UnmarshalSecurityGroupReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroupReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -22761,11 +22790,11 @@ func UnmarshalSecurityGroupReference(m map[string]json.RawMessage, result interf
 // - SecurityGroupRuleSecurityGroupRuleProtocolIcmp
 // - SecurityGroupRuleSecurityGroupRuleProtocolTcpudp
 type SecurityGroupRule struct {
-	// The unique identifier for this security group rule.
-	ID *string `json:"id" validate:"required"`
-
 	// The direction of traffic to enforce, either `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
+
+	// The unique identifier for this security group rule.
+	ID *string `json:"id" validate:"required"`
 
 	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
 	// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
@@ -22807,15 +22836,6 @@ const (
 // interfaces) in that group matching this IP version.
 const (
 	SecurityGroupRuleIPVersionIpv4Const = "ipv4"
-)
-
-// Constants associated with the SecurityGroupRule.Protocol property.
-// The protocol to enforce.
-const (
-	SecurityGroupRuleProtocolAllConst  = "all"
-	SecurityGroupRuleProtocolIcmpConst = "icmp"
-	SecurityGroupRuleProtocolTCPConst  = "tcp"
-	SecurityGroupRuleProtocolUDPConst  = "udp"
 )
 
 func (*SecurityGroupRule) isaSecurityGroupRule() bool {
@@ -22876,12 +22896,6 @@ func UnmarshalSecurityGroupRuleCollection(m map[string]json.RawMessage, result i
 // - SecurityGroupRulePatchSecurityGroupRuleProtocolIcmp
 // - SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp
 type SecurityGroupRulePatch struct {
-	// The IP addresses or security groups from which this rule will allow traffic (or to
-	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
-	// security group. If omitted, then traffic will be allowed from any source (or to any
-	// source, for outbound rules).
-	Remote SecurityGroupRulePatchRemoteIntf `json:"remote,omitempty"`
-
 	// The direction of traffic to enforce, either `inbound` or `outbound`.
 	Direction *string `json:"direction,omitempty"`
 
@@ -22892,6 +22906,12 @@ type SecurityGroupRulePatch struct {
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol,omitempty"`
+
+	// The IP addresses or security groups from which this rule will allow traffic (or to
+	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
+	// security group. A CIDR block of `0.0.0.0/0` will allow traffic from any source (or to
+	// any source, for outbound rules).
+	Remote SecurityGroupRuleRemotePatchIntf `json:"remote,omitempty"`
 
 	// The ICMP traffic code to allow.
 	Code *int64 `json:"code,omitempty"`
@@ -22919,15 +22939,6 @@ const (
 // interfaces) in that group matching this IP version.
 const (
 	SecurityGroupRulePatchIPVersionIpv4Const = "ipv4"
-)
-
-// Constants associated with the SecurityGroupRulePatch.Protocol property.
-// The protocol to enforce.
-const (
-	SecurityGroupRulePatchProtocolAllConst  = "all"
-	SecurityGroupRulePatchProtocolIcmpConst = "icmp"
-	SecurityGroupRulePatchProtocolTCPConst  = "tcp"
-	SecurityGroupRulePatchProtocolUDPConst  = "udp"
 )
 
 func (*SecurityGroupRulePatch) isaSecurityGroupRulePatch() bool {
@@ -22975,69 +22986,6 @@ func (securityGroupRulePatch *SecurityGroupRulePatch) AsPatch() (patch map[strin
 	return
 }
 
-// SecurityGroupRulePatchRemote : The IP addresses or security groups from which this rule will allow traffic (or to which, for outbound rules). Can be
-// specified as an IP address, a CIDR block, or a security group. If omitted, then traffic will be allowed from any
-// source (or to any source, for outbound rules).
-// Models which "extend" this model:
-// - SecurityGroupRulePatchRemoteIP
-// - SecurityGroupRulePatchRemoteCIDR
-// - SecurityGroupRulePatchRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchRemote struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address,omitempty"`
-
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block,omitempty"`
-
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePatchRemote) isaSecurityGroupRulePatchRemote() bool {
-	return true
-}
-
-type SecurityGroupRulePatchRemoteIntf interface {
-	isaSecurityGroupRulePatchRemote() bool
-}
-
-// UnmarshalSecurityGroupRulePatchRemote unmarshals an instance of SecurityGroupRulePatchRemote from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchRemote(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchRemote)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // SecurityGroupRulePrototype : SecurityGroupRulePrototype struct
 // Models which "extend" this model:
 // - SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll
@@ -23059,7 +23007,7 @@ type SecurityGroupRulePrototype struct {
 	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
 	// security group. If omitted, then traffic will be allowed from any source (or to any
 	// source, for outbound rules).
-	Remote SecurityGroupRulePrototypeRemoteIntf `json:"remote,omitempty"`
+	Remote SecurityGroupRuleRemotePrototypeIntf `json:"remote,omitempty"`
 
 	// The ICMP traffic code to allow.
 	Code *int64 `json:"code,omitempty"`
@@ -23087,15 +23035,6 @@ const (
 // interfaces) in that group matching this IP version.
 const (
 	SecurityGroupRulePrototypeIPVersionIpv4Const = "ipv4"
-)
-
-// Constants associated with the SecurityGroupRulePrototype.Protocol property.
-// The protocol to enforce.
-const (
-	SecurityGroupRulePrototypeProtocolAllConst  = "all"
-	SecurityGroupRulePrototypeProtocolIcmpConst = "icmp"
-	SecurityGroupRulePrototypeProtocolTCPConst  = "tcp"
-	SecurityGroupRulePrototypeProtocolUDPConst  = "udp"
 )
 
 func (*SecurityGroupRulePrototype) isaSecurityGroupRulePrototype() bool {
@@ -23133,69 +23072,6 @@ func UnmarshalSecurityGroupRulePrototype(m map[string]json.RawMessage, result in
 	return
 }
 
-// SecurityGroupRulePrototypeRemote : The IP addresses or security groups from which this rule will allow traffic (or to which, for outbound rules). Can be
-// specified as an IP address, a CIDR block, or a security group. If omitted, then traffic will be allowed from any
-// source (or to any source, for outbound rules).
-// Models which "extend" this model:
-// - SecurityGroupRulePrototypeRemoteIP
-// - SecurityGroupRulePrototypeRemoteCIDR
-// - SecurityGroupRulePrototypeRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeRemote struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address,omitempty"`
-
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block,omitempty"`
-
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePrototypeRemote) isaSecurityGroupRulePrototypeRemote() bool {
-	return true
-}
-
-type SecurityGroupRulePrototypeRemoteIntf interface {
-	isaSecurityGroupRulePrototypeRemote() bool
-}
-
-// UnmarshalSecurityGroupRulePrototypeRemote unmarshals an instance of SecurityGroupRulePrototypeRemote from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeRemote(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeRemote)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // SecurityGroupRuleRemote : The IP addresses or security groups from which this rule allows traffic (or to which, for outbound rules). Can be
 // specified as an IP address, a CIDR block, or a security group. If omitted, then traffic is allowed from any source
 // (or to any source, for outbound rules).
@@ -23214,14 +23090,14 @@ type SecurityGroupRuleRemote struct {
 	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
 	CIDRBlock *string `json:"cidr_block,omitempty"`
 
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
 	// The security group's CRN.
 	CRN *string `json:"crn,omitempty"`
 
 	// The security group's canonical URL.
 	Href *string `json:"href,omitempty"`
+
+	// The unique identifier for this security group.
+	ID *string `json:"id,omitempty"`
 
 	// The user-defined name for this security group. Security group names must be unique, within the scope of an account.
 	Name *string `json:"name,omitempty"`
@@ -23246,6 +23122,73 @@ func UnmarshalSecurityGroupRuleRemote(m map[string]json.RawMessage, result inter
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SecurityGroupRuleRemotePatch : The IP addresses or security groups from which this rule will allow traffic (or to which, for outbound rules). Can be
+// specified as an IP address, a CIDR block, or a security group. A CIDR block of `0.0.0.0/0` will allow traffic from
+// any source (or to any source, for outbound rules).
+// Models which "extend" this model:
+// - SecurityGroupRuleRemotePatchIP
+// - SecurityGroupRuleRemotePatchCIDR
+// - SecurityGroupRuleRemotePatchSecurityGroupIdentity
+type SecurityGroupRuleRemotePatch struct {
+	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
+	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
+	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+	Address *string `json:"address,omitempty"`
+
+	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
+	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
+	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
+	CIDRBlock *string `json:"cidr_block,omitempty"`
+
+	// The unique identifier for this security group.
+	ID *string `json:"id,omitempty"`
+
+	// The security group's CRN.
+	CRN *string `json:"crn,omitempty"`
+
+	// The security group's canonical URL.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*SecurityGroupRuleRemotePatch) isaSecurityGroupRuleRemotePatch() bool {
+	return true
+}
+
+type SecurityGroupRuleRemotePatchIntf interface {
+	isaSecurityGroupRuleRemotePatch() bool
+}
+
+// UnmarshalSecurityGroupRuleRemotePatch unmarshals an instance of SecurityGroupRuleRemotePatch from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePatch)
+	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
@@ -23258,7 +23201,66 @@ func UnmarshalSecurityGroupRuleRemote(m map[string]json.RawMessage, result inter
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SecurityGroupRuleRemotePrototype : The IP addresses or security groups from which this rule will allow traffic (or to which, for outbound rules). Can be
+// specified as an IP address, a CIDR block, or a security group. If omitted, then traffic will be allowed from any
+// source (or to any source, for outbound rules).
+// Models which "extend" this model:
+// - SecurityGroupRuleRemotePrototypeIP
+// - SecurityGroupRuleRemotePrototypeCIDR
+// - SecurityGroupRuleRemotePrototypeSecurityGroupIdentity
+type SecurityGroupRuleRemotePrototype struct {
+	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
+	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
+	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+	Address *string `json:"address,omitempty"`
+
+	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
+	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
+	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
+	CIDRBlock *string `json:"cidr_block,omitempty"`
+
+	// The unique identifier for this security group.
+	ID *string `json:"id,omitempty"`
+
+	// The security group's CRN.
+	CRN *string `json:"crn,omitempty"`
+
+	// The security group's canonical URL.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*SecurityGroupRuleRemotePrototype) isaSecurityGroupRuleRemotePrototype() bool {
+	return true
+}
+
+type SecurityGroupRuleRemotePrototypeIntf interface {
+	isaSecurityGroupRuleRemotePrototype() bool
+}
+
+// UnmarshalSecurityGroupRuleRemotePrototype unmarshals an instance of SecurityGroupRuleRemotePrototype from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePrototype)
+	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -23306,8 +23308,12 @@ func (options *SetSubnetPublicGatewayOptions) SetHeaders(param map[string]string
 
 // Subnet : Subnet struct
 type Subnet struct {
-	// The unique identifier for this subnet.
-	ID *string `json:"id" validate:"required"`
+	// The number of IPv4 addresses in this subnet that are not in-use, and have not been reserved by the user or the
+	// provider.
+	AvailableIpv4AddressCount *int64 `json:"available_ipv4_address_count" validate:"required"`
+
+	// The date and time that the subnet was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The CRN for this subnet.
 	CRN *string `json:"crn" validate:"required"`
@@ -23315,33 +23321,29 @@ type Subnet struct {
 	// The URL for this subnet.
 	Href *string `json:"href" validate:"required"`
 
-	// The user-defined name for this subnet.
-	Name *string `json:"name" validate:"required"`
-
-	// The number of IPv4 addresses in this subnet that are not in-use, and have not been reserved by the user or the
-	// provider.
-	AvailableIpv4AddressCount *int64 `json:"available_ipv4_address_count" validate:"required"`
-
-	// The network ACL for this subnet.
-	NetworkACL *NetworkACLReference `json:"network_acl" validate:"required"`
-
-	// The total number of IPv4 addresses in this subnet.
-	//
-	// Note: This is calculated as 2<sup>(32 − prefix length)</sup>. For example, the prefix length `/24` gives:<br>
-	// 2<sup>(32 − 24)</sup> = 2<sup>8</sup> = 256 addresses.
-	TotalIpv4AddressCount *int64 `json:"total_ipv4_address_count" validate:"required"`
-
-	// The date and time that the subnet was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The unique identifier for this subnet.
+	ID *string `json:"id" validate:"required"`
 
 	// The IPv4 range of the subnet, expressed in CIDR format.
 	Ipv4CIDRBlock *string `json:"ipv4_cidr_block" validate:"required"`
+
+	// The user-defined name for this subnet.
+	Name *string `json:"name" validate:"required"`
+
+	// The network ACL for this subnet.
+	NetworkACL *NetworkACLReference `json:"network_acl" validate:"required"`
 
 	// The public gateway to handle internet bound traffic for this subnet.
 	PublicGateway *PublicGatewayReference `json:"public_gateway,omitempty"`
 
 	// The status of the subnet.
 	Status *string `json:"status" validate:"required"`
+
+	// The total number of IPv4 addresses in this subnet.
+	//
+	// Note: This is calculated as 2<sup>(32 − prefix length)</sup>. For example, the prefix length `/24` gives:<br>
+	// 2<sup>(32 − 24)</sup> = 2<sup>8</sup> = 256 addresses.
+	TotalIpv4AddressCount *int64 `json:"total_ipv4_address_count" validate:"required"`
 
 	// The VPC this subnet is a part of.
 	VPC *VPCReference `json:"vpc" validate:"required"`
@@ -23362,7 +23364,11 @@ const (
 // UnmarshalSubnet unmarshals an instance of Subnet from the specified map of raw messages.
 func UnmarshalSubnet(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Subnet)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "available_ipv4_address_count", &obj.AvailableIpv4AddressCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -23374,27 +23380,19 @@ func UnmarshalSubnet(m map[string]json.RawMessage, result interface{}) (err erro
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "available_ipv4_address_count", &obj.AvailableIpv4AddressCount)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "network_acl", &obj.NetworkACL, UnmarshalNetworkACLReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "total_ipv4_address_count", &obj.TotalIpv4AddressCount)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "ipv4_cidr_block", &obj.Ipv4CIDRBlock)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "network_acl", &obj.NetworkACL, UnmarshalNetworkACLReference)
 	if err != nil {
 		return
 	}
@@ -23403,6 +23401,10 @@ func UnmarshalSubnet(m map[string]json.RawMessage, result interface{}) (err erro
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_ipv4_address_count", &obj.TotalIpv4AddressCount)
 	if err != nil {
 		return
 	}
@@ -23420,13 +23422,13 @@ func UnmarshalSubnet(m map[string]json.RawMessage, result interface{}) (err erro
 
 // SubnetCollection : SubnetCollection struct
 type SubnetCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *SubnetCollectionFirst `json:"first" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *SubnetCollectionNext `json:"next,omitempty"`
 
@@ -23457,9 +23459,9 @@ func UnmarshalSubnetCollection(m map[string]json.RawMessage, result interface{})
 	return
 }
 
-// SubnetCollectionFirst : A reference to the first page of resources.
+// SubnetCollectionFirst : A link to the first page of resources.
 type SubnetCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -23474,9 +23476,9 @@ func UnmarshalSubnetCollectionFirst(m map[string]json.RawMessage, result interfa
 	return
 }
 
-// SubnetCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// SubnetCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type SubnetCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -23652,14 +23654,14 @@ func UnmarshalSubnetPrototype(m map[string]json.RawMessage, result interface{}) 
 
 // SubnetReference : SubnetReference struct
 type SubnetReference struct {
-	// The unique identifier for this subnet.
-	ID *string `json:"id" validate:"required"`
-
 	// The CRN for this subnet.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this subnet.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this subnet.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this subnet.
 	Name *string `json:"name" validate:"required"`
@@ -23668,15 +23670,15 @@ type SubnetReference struct {
 // UnmarshalSubnetReference unmarshals an instance of SubnetReference from the specified map of raw messages.
 func UnmarshalSubnetReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SubnetReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -24818,38 +24820,38 @@ func (options *UpdateVPNGatewayOptions) SetHeaders(param map[string]string) *Upd
 
 // VPC : VPC struct
 type VPC struct {
-	// The unique identifier for this VPC.
-	ID *string `json:"id" validate:"required"`
-
-	// The CRN for this VPC.
-	CRN *string `json:"crn" validate:"required"`
-
-	// The URL for this VPC.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique user-defined name for this VPC.
-	Name *string `json:"name" validate:"required"`
-
-	// The default network ACL to use for subnets created in this VPC.
-	DefaultNetworkACL *NetworkACLReference `json:"default_network_acl" validate:"required"`
-
 	// Indicates whether this VPC is connected to Classic Infrastructure. If true, this VPC's resources have private
 	// network connectivity to the account's Classic Infrastructure resources. Only one VPC, per region, may be connected
 	// in this way. This value is set at creation and subsequently immutable.
 	ClassicAccess *bool `json:"classic_access" validate:"required"`
 
-	// The default security group to use for network interfaces created in this VPC.
-	DefaultSecurityGroup *SecurityGroupReference `json:"default_security_group" validate:"required"`
-
-	// The resource group for this VPC.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
-
 	// The date and time that the VPC was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The CRN for this VPC.
+	CRN *string `json:"crn" validate:"required"`
 
 	// Array of CSE ([Cloud Service Endpoint](https://cloud.ibm.com/docs/resources?topic=resources-service-endpoints))
 	// source IP addresses for the VPC. The VPC will have one CSE source IP address per zone.
 	CseSourceIps []VpccseSourceIP `json:"cse_source_ips,omitempty"`
+
+	// The default network ACL to use for subnets created in this VPC.
+	DefaultNetworkACL *NetworkACLReference `json:"default_network_acl" validate:"required"`
+
+	// The default security group to use for network interfaces created in this VPC.
+	DefaultSecurityGroup *SecurityGroupReference `json:"default_security_group" validate:"required"`
+
+	// The URL for this VPC.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this VPC.
+	ID *string `json:"id" validate:"required"`
+
+	// The unique user-defined name for this VPC.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource group for this VPC.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
 	// The status of this VPC.
 	Status *string `json:"status" validate:"required"`
@@ -24867,35 +24869,7 @@ const (
 // UnmarshalVPC unmarshals an instance of VPC from the specified map of raw messages.
 func UnmarshalVPC(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPC)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "default_network_acl", &obj.DefaultNetworkACL, UnmarshalNetworkACLReference)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "classic_access", &obj.ClassicAccess)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "default_security_group", &obj.DefaultSecurityGroup, UnmarshalSecurityGroupReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
@@ -24903,7 +24877,35 @@ func UnmarshalVPC(m map[string]json.RawMessage, result interface{}) (err error) 
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "cse_source_ips", &obj.CseSourceIps, UnmarshalVpccseSourceIP)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "default_network_acl", &obj.DefaultNetworkACL, UnmarshalNetworkACLReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "default_security_group", &obj.DefaultSecurityGroup, UnmarshalSecurityGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
@@ -24941,13 +24943,13 @@ func UnmarshalVpccseSourceIP(m map[string]json.RawMessage, result interface{}) (
 
 // VPCCollection : VPCCollection struct
 type VPCCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *VPCCollectionFirst `json:"first" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *VPCCollectionNext `json:"next,omitempty"`
 
@@ -24978,9 +24980,9 @@ func UnmarshalVPCCollection(m map[string]json.RawMessage, result interface{}) (e
 	return
 }
 
-// VPCCollectionFirst : A reference to the first page of resources.
+// VPCCollectionFirst : A link to the first page of resources.
 type VPCCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -24995,9 +24997,9 @@ func UnmarshalVPCCollectionFirst(m map[string]json.RawMessage, result interface{
 	return
 }
 
-// VPCCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// VPCCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type VPCCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -25084,14 +25086,14 @@ func (vpcPatch *VPCPatch) AsPatch() (patch map[string]interface{}, err error) {
 
 // VPCReference : VPCReference struct
 type VPCReference struct {
-	// The unique identifier for this VPC.
-	ID *string `json:"id" validate:"required"`
-
 	// The CRN for this VPC.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this VPC.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this VPC.
+	ID *string `json:"id" validate:"required"`
 
 	// The unique user-defined name for this VPC.
 	Name *string `json:"name" validate:"required"`
@@ -25100,15 +25102,15 @@ type VPCReference struct {
 // UnmarshalVPCReference unmarshals an instance of VPCReference from the specified map of raw messages.
 func UnmarshalVPCReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPCReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -25121,9 +25123,14 @@ func UnmarshalVPCReference(m map[string]json.RawMessage, result interface{}) (er
 }
 
 // VPNGateway : VPNGateway struct
+// Models which "extend" this model:
+// - VPNGatewayPolicyMode
 type VPNGateway struct {
-	// The unique identifier for this VPN gateway.
-	ID *string `json:"id" validate:"required"`
+	// Collection of references to VPN gateway connections.
+	Connections []VPNGatewayConnectionReference `json:"connections" validate:"required"`
+
+	// The date and time that this VPN gateway was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The VPN gateway's CRN.
 	CRN *string `json:"crn" validate:"required"`
@@ -25131,28 +25138,28 @@ type VPNGateway struct {
 	// The VPN gateway's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
+	// The unique identifier for this VPN gateway.
+	ID *string `json:"id" validate:"required"`
+
+	// Collection of VPN gateway members.
+	Members []VPNGatewayMember `json:"members" validate:"required"`
+
 	// The user-defined name for this VPN gateway.
 	Name *string `json:"name" validate:"required"`
-
-	// The resource type.
-	ResourceType *string `json:"resource_type" validate:"required"`
 
 	// The resource group for this VPN gateway.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
-	// The public IP address assigned to this VPN gateway.
-	PublicIP *VPNGatewayPublicIP `json:"public_ip" validate:"required"`
-
-	// Collection of references to VPN gateway connections.
-	Connections []VPNGatewayConnectionReference `json:"connections" validate:"required"`
-
-	// The date and time that this VPN gateway was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
 
 	// The status of the VPN gateway.
 	Status *string `json:"status" validate:"required"`
 
 	Subnet *SubnetReference `json:"subnet" validate:"required"`
+
+	// Policy mode VPN gateway.
+	Mode *string `json:"mode,omitempty"`
 }
 
 // Constants associated with the VPNGateway.ResourceType property.
@@ -25170,10 +25177,28 @@ const (
 	VPNGatewayStatusPendingConst   = "pending"
 )
 
+// Constants associated with the VPNGateway.Mode property.
+// Policy mode VPN gateway.
+const (
+	VPNGatewayModePolicyConst = "policy"
+)
+
+func (*VPNGateway) isaVPNGateway() bool {
+	return true
+}
+
+type VPNGatewayIntf interface {
+	isaVPNGateway() bool
+}
+
 // UnmarshalVPNGateway unmarshals an instance of VPNGateway from the specified map of raw messages.
 func UnmarshalVPNGateway(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNGateway)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalModel(m, "connections", &obj.Connections, UnmarshalVPNGatewayConnectionReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -25185,11 +25210,15 @@ func UnmarshalVPNGateway(m map[string]json.RawMessage, result interface{}) (err 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	err = core.UnmarshalModel(m, "members", &obj.Members, UnmarshalVPNGatewayMember)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -25197,15 +25226,7 @@ func UnmarshalVPNGateway(m map[string]json.RawMessage, result interface{}) (err 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "public_ip", &obj.PublicIP, UnmarshalVPNGatewayPublicIP)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "connections", &obj.Connections, UnmarshalVPNGatewayConnectionReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
 	if err != nil {
 		return
 	}
@@ -25217,19 +25238,23 @@ func UnmarshalVPNGateway(m map[string]json.RawMessage, result interface{}) (err 
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "mode", &obj.Mode)
+	if err != nil {
+		return
+	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
 // VPNGatewayCollection : VPNGatewayCollection struct
 type VPNGatewayCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *VPNGatewayCollectionFirst `json:"first" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *VPNGatewayCollectionNext `json:"next,omitempty"`
 
@@ -25237,7 +25262,7 @@ type VPNGatewayCollection struct {
 	TotalCount *int64 `json:"total_count" validate:"required"`
 
 	// Collection of VPN gateways.
-	VPNGateways []VPNGateway `json:"vpn_gateways" validate:"required"`
+	VPNGateways []VPNGatewayIntf `json:"vpn_gateways" validate:"required"`
 }
 
 // UnmarshalVPNGatewayCollection unmarshals an instance of VPNGatewayCollection from the specified map of raw messages.
@@ -25267,9 +25292,9 @@ func UnmarshalVPNGatewayCollection(m map[string]json.RawMessage, result interfac
 	return
 }
 
-// VPNGatewayCollectionFirst : A reference to the first page of resources.
+// VPNGatewayCollectionFirst : A link to the first page of resources.
 type VPNGatewayCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -25284,9 +25309,9 @@ func UnmarshalVPNGatewayCollectionFirst(m map[string]json.RawMessage, result int
 	return
 }
 
-// VPNGatewayCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// VPNGatewayCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type VPNGatewayCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -25302,42 +25327,14 @@ func UnmarshalVPNGatewayCollectionNext(m map[string]json.RawMessage, result inte
 }
 
 // VPNGatewayConnection : VPNGatewayConnection struct
+// Models which "extend" this model:
+// - VPNGatewayConnectionPolicyMode
 type VPNGatewayConnection struct {
-	// The unique identifier for this VPN connection.
-	ID *string `json:"id" validate:"required"`
-
-	// The VPN connection's canonical URL.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this VPN gateway connection.
-	Name *string `json:"name" validate:"required"`
-
-	// The resource type.
-	ResourceType *string `json:"resource_type" validate:"required"`
-
-	// If set to false, the VPN connection is shut down.
+	// If set to false, the VPN gateway connection is shut down.
 	AdminStateUp *bool `json:"admin_state_up" validate:"required"`
-
-	// The IP address of the peer VPN gateway.
-	PeerAddress *string `json:"peer_address" validate:"required"`
-
-	// The preshared key.
-	Psk *string `json:"psk" validate:"required"`
-
-	// A collection of local CIDRs for this resource.
-	LocalCIDRs []string `json:"local_cidrs" validate:"required"`
-
-	// A collection of peer CIDRs for this resource.
-	PeerCIDRs []string `json:"peer_cidrs" validate:"required"`
-
-	// The routing mode. Only `policy` is currently supported.
-	RouteMode *string `json:"route_mode" validate:"required"`
 
 	// The authentication mode. Only `psk` is currently supported.
 	AuthenticationMode *string `json:"authentication_mode" validate:"required"`
-
-	// The status of a VPN connection.
-	Status *string `json:"status" validate:"required"`
 
 	// The date and time that this VPN gateway connection was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
@@ -25345,25 +25342,43 @@ type VPNGatewayConnection struct {
 	// The Dead Peer Detection settings.
 	DeadPeerDetection *VPNGatewayConnectionDpd `json:"dead_peer_detection" validate:"required"`
 
+	// The VPN connection's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this VPN gateway connection.
+	ID *string `json:"id" validate:"required"`
+
 	// Optional IKE policy configuration. The absence of a policy indicates autonegotiation.
 	IkePolicy *IkePolicyReference `json:"ike_policy,omitempty"`
 
 	// Optional IPsec policy configuration. The absence of a policy indicates
 	// autonegotiation.
 	IpsecPolicy *IPsecPolicyReference `json:"ipsec_policy,omitempty"`
+
+	// The mode of the VPN gateway.
+	Mode *string `json:"mode" validate:"required"`
+
+	// The user-defined name for this VPN gateway connection.
+	Name *string `json:"name" validate:"required"`
+
+	// The IP address of the peer VPN gateway.
+	PeerAddress *string `json:"peer_address" validate:"required"`
+
+	// The preshared key.
+	Psk *string `json:"psk" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The status of a VPN gateway connection.
+	Status *string `json:"status" validate:"required"`
+
+	// A collection of local CIDRs for this resource.
+	LocalCIDRs []string `json:"local_cidrs,omitempty"`
+
+	// A collection of peer CIDRs for this resource.
+	PeerCIDRs []string `json:"peer_cidrs,omitempty"`
 }
-
-// Constants associated with the VPNGatewayConnection.ResourceType property.
-// The resource type.
-const (
-	VPNGatewayConnectionResourceTypeVPNGatewayConnectionConst = "vpn_gateway_connection"
-)
-
-// Constants associated with the VPNGatewayConnection.RouteMode property.
-// The routing mode. Only `policy` is currently supported.
-const (
-	VPNGatewayConnectionRouteModePolicyConst = "policy"
-)
 
 // Constants associated with the VPNGatewayConnection.AuthenticationMode property.
 // The authentication mode. Only `psk` is currently supported.
@@ -25371,61 +25386,42 @@ const (
 	VPNGatewayConnectionAuthenticationModePskConst = "psk"
 )
 
+// Constants associated with the VPNGatewayConnection.Mode property.
+// The mode of the VPN gateway.
+const (
+	VPNGatewayConnectionModePolicyConst = "policy"
+	VPNGatewayConnectionModeRouteConst  = "route"
+)
+
+// Constants associated with the VPNGatewayConnection.ResourceType property.
+// The resource type.
+const (
+	VPNGatewayConnectionResourceTypeVPNGatewayConnectionConst = "vpn_gateway_connection"
+)
+
 // Constants associated with the VPNGatewayConnection.Status property.
-// The status of a VPN connection.
+// The status of a VPN gateway connection.
 const (
 	VPNGatewayConnectionStatusDownConst = "down"
 	VPNGatewayConnectionStatusUpConst   = "up"
 )
 
+func (*VPNGatewayConnection) isaVPNGatewayConnection() bool {
+	return true
+}
+
+type VPNGatewayConnectionIntf interface {
+	isaVPNGatewayConnection() bool
+}
+
 // UnmarshalVPNGatewayConnection unmarshals an instance of VPNGatewayConnection from the specified map of raw messages.
 func UnmarshalVPNGatewayConnection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNGatewayConnection)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "admin_state_up", &obj.AdminStateUp)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "peer_address", &obj.PeerAddress)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "psk", &obj.Psk)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCIDRs)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "route_mode", &obj.RouteMode)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "authentication_mode", &obj.AuthenticationMode)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -25437,11 +25433,51 @@ func UnmarshalVPNGatewayConnection(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "ike_policy", &obj.IkePolicy, UnmarshalIkePolicyReference)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "ipsec_policy", &obj.IpsecPolicy, UnmarshalIPsecPolicyReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "mode", &obj.Mode)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "peer_address", &obj.PeerAddress)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "psk", &obj.Psk)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCIDRs)
 	if err != nil {
 		return
 	}
@@ -25452,7 +25488,7 @@ func UnmarshalVPNGatewayConnection(m map[string]json.RawMessage, result interfac
 // VPNGatewayConnectionCollection : Collection of VPN gateway connections in a VPN gateway.
 type VPNGatewayConnectionCollection struct {
 	// Array of VPN gateway connections.
-	Connections []VPNGatewayConnection `json:"connections" validate:"required"`
+	Connections []VPNGatewayConnectionIntf `json:"connections" validate:"required"`
 }
 
 // UnmarshalVPNGatewayConnectionCollection unmarshals an instance of VPNGatewayConnectionCollection from the specified map of raw messages.
@@ -25565,17 +25601,8 @@ func UnmarshalVPNGatewayConnectionLocalCIDRs(m map[string]json.RawMessage, resul
 
 // VPNGatewayConnectionPatch : VPNGatewayConnectionPatch struct
 type VPNGatewayConnectionPatch struct {
-	// If set to false, the VPN connection is shut down.
+	// If set to false, the VPN gateway connection is shut down.
 	AdminStateUp *bool `json:"admin_state_up,omitempty"`
-
-	// The IP address of the peer VPN gateway.
-	PeerAddress *string `json:"peer_address,omitempty"`
-
-	// The user-defined name for this VPN gateway connection.
-	Name *string `json:"name,omitempty"`
-
-	// The preshared key.
-	Psk *string `json:"psk,omitempty"`
 
 	// The Dead Peer Detection settings.
 	DeadPeerDetection *VPNGatewayConnectionDpdPrototype `json:"dead_peer_detection,omitempty"`
@@ -25586,24 +25613,21 @@ type VPNGatewayConnectionPatch struct {
 	// Optional IPsec policy configuration. The absence of a policy indicates
 	// autonegotiation.
 	IpsecPolicy IPsecPolicyIdentityIntf `json:"ipsec_policy,omitempty"`
+
+	// The user-defined name for this VPN gateway connection.
+	Name *string `json:"name,omitempty"`
+
+	// The IP address of the peer VPN gateway.
+	PeerAddress *string `json:"peer_address,omitempty"`
+
+	// The preshared key.
+	Psk *string `json:"psk,omitempty"`
 }
 
 // UnmarshalVPNGatewayConnectionPatch unmarshals an instance of VPNGatewayConnectionPatch from the specified map of raw messages.
 func UnmarshalVPNGatewayConnectionPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNGatewayConnectionPatch)
 	err = core.UnmarshalPrimitive(m, "admin_state_up", &obj.AdminStateUp)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "peer_address", &obj.PeerAddress)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "psk", &obj.Psk)
 	if err != nil {
 		return
 	}
@@ -25616,6 +25640,18 @@ func UnmarshalVPNGatewayConnectionPatch(m map[string]json.RawMessage, result int
 		return
 	}
 	err = core.UnmarshalModel(m, "ipsec_policy", &obj.IpsecPolicy, UnmarshalIPsecPolicyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "peer_address", &obj.PeerAddress)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "psk", &obj.Psk)
 	if err != nil {
 		return
 	}
@@ -25650,13 +25686,97 @@ func UnmarshalVPNGatewayConnectionPeerCIDRs(m map[string]json.RawMessage, result
 	return
 }
 
+// VPNGatewayConnectionPrototype : VPNGatewayConnectionPrototype struct
+// Models which "extend" this model:
+// - VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype
+type VPNGatewayConnectionPrototype struct {
+	// If set to false, the VPN gateway connection is shut down.
+	AdminStateUp *bool `json:"admin_state_up,omitempty"`
+
+	// The Dead Peer Detection settings.
+	DeadPeerDetection *VPNGatewayConnectionDpdPrototype `json:"dead_peer_detection,omitempty"`
+
+	// Optional IKE policy configuration. The absence of a policy indicates autonegotiation.
+	IkePolicy IkePolicyIdentityIntf `json:"ike_policy,omitempty"`
+
+	// Optional IPsec policy configuration. The absence of a policy indicates
+	// autonegotiation.
+	IpsecPolicy IPsecPolicyIdentityIntf `json:"ipsec_policy,omitempty"`
+
+	// The user-defined name for this VPN gateway connection.
+	Name *string `json:"name,omitempty"`
+
+	// The IP address of the peer VPN gateway.
+	PeerAddress *string `json:"peer_address" validate:"required"`
+
+	// The preshared key.
+	Psk *string `json:"psk" validate:"required"`
+
+	// A collection of local CIDRs for this resource.
+	LocalCIDRs []string `json:"local_cidrs,omitempty"`
+
+	// A collection of peer CIDRs for this resource.
+	PeerCIDRs []string `json:"peer_cidrs,omitempty"`
+}
+
+func (*VPNGatewayConnectionPrototype) isaVPNGatewayConnectionPrototype() bool {
+	return true
+}
+
+type VPNGatewayConnectionPrototypeIntf interface {
+	isaVPNGatewayConnectionPrototype() bool
+}
+
+// UnmarshalVPNGatewayConnectionPrototype unmarshals an instance of VPNGatewayConnectionPrototype from the specified map of raw messages.
+func UnmarshalVPNGatewayConnectionPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayConnectionPrototype)
+	err = core.UnmarshalPrimitive(m, "admin_state_up", &obj.AdminStateUp)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "dead_peer_detection", &obj.DeadPeerDetection, UnmarshalVPNGatewayConnectionDpdPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "ike_policy", &obj.IkePolicy, UnmarshalIkePolicyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "ipsec_policy", &obj.IpsecPolicy, UnmarshalIPsecPolicyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "peer_address", &obj.PeerAddress)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "psk", &obj.Psk)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCIDRs)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // VPNGatewayConnectionReference : VPNGatewayConnectionReference struct
 type VPNGatewayConnectionReference struct {
-	// The unique identifier for this VPN connection.
-	ID *string `json:"id" validate:"required"`
-
 	// The VPN connection's canonical URL.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this VPN gateway connection.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this VPN connection.
 	Name *string `json:"name" validate:"required"`
@@ -25674,11 +25794,11 @@ const (
 // UnmarshalVPNGatewayConnectionReference unmarshals an instance of VPNGatewayConnectionReference from the specified map of raw messages.
 func UnmarshalVPNGatewayConnectionReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNGatewayConnectionReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -25687,6 +25807,53 @@ func UnmarshalVPNGatewayConnectionReference(m map[string]json.RawMessage, result
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayMember : VPNGatewayMember struct
+type VPNGatewayMember struct {
+	// The public IP address assigned to the VPN gateway member.
+	PublicIP *IP `json:"public_ip" validate:"required"`
+
+	// The high availability role assigned to the VPN gateway member.
+	Role *string `json:"role" validate:"required"`
+
+	// The status of the VPN gateway member.
+	Status *string `json:"status" validate:"required"`
+}
+
+// Constants associated with the VPNGatewayMember.Role property.
+// The high availability role assigned to the VPN gateway member.
+const (
+	VPNGatewayMemberRoleActiveConst  = "active"
+	VPNGatewayMemberRoleStandbyConst = "standby"
+)
+
+// Constants associated with the VPNGatewayMember.Status property.
+// The status of the VPN gateway member.
+const (
+	VPNGatewayMemberStatusAvailableConst = "available"
+	VPNGatewayMemberStatusDeletingConst  = "deleting"
+	VPNGatewayMemberStatusFailedConst    = "failed"
+	VPNGatewayMemberStatusPendingConst   = "pending"
+)
+
+// UnmarshalVPNGatewayMember unmarshals an instance of VPNGatewayMember from the specified map of raw messages.
+func UnmarshalVPNGatewayMember(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayMember)
+	err = core.UnmarshalModel(m, "public_ip", &obj.PublicIP, UnmarshalIP)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "role", &obj.Role)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -25721,18 +25888,54 @@ func (vpnGatewayPatch *VPNGatewayPatch) AsPatch() (patch map[string]interface{},
 	return
 }
 
-// VPNGatewayPublicIP : The public IP address assigned to this VPN gateway.
-type VPNGatewayPublicIP struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address" validate:"required"`
+// VPNGatewayPrototype : VPNGatewayPrototype struct
+// Models which "extend" this model:
+// - VPNGatewayPrototypeVPNGatewayPolicyModePrototype
+type VPNGatewayPrototype struct {
+	// The user-defined name for this VPN gateway.
+	Name *string `json:"name,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// Identifies a subnet by a unique property.
+	Subnet SubnetIdentityIntf `json:"subnet" validate:"required"`
+
+	// Policy mode VPN gateway.
+	Mode *string `json:"mode,omitempty"`
 }
 
-// UnmarshalVPNGatewayPublicIP unmarshals an instance of VPNGatewayPublicIP from the specified map of raw messages.
-func UnmarshalVPNGatewayPublicIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VPNGatewayPublicIP)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+// Constants associated with the VPNGatewayPrototype.Mode property.
+// Policy mode VPN gateway.
+const (
+	VPNGatewayPrototypeModePolicyConst = "policy"
+)
+
+func (*VPNGatewayPrototype) isaVPNGatewayPrototype() bool {
+	return true
+}
+
+type VPNGatewayPrototypeIntf interface {
+	isaVPNGatewayPrototype() bool
+}
+
+// UnmarshalVPNGatewayPrototype unmarshals an instance of VPNGatewayPrototype from the specified map of raw messages.
+func UnmarshalVPNGatewayPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayPrototype)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "subnet", &obj.Subnet, UnmarshalSubnetIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "mode", &obj.Mode)
 	if err != nil {
 		return
 	}
@@ -25742,30 +25945,15 @@ func UnmarshalVPNGatewayPublicIP(m map[string]json.RawMessage, result interface{
 
 // Volume : Volume struct
 type Volume struct {
-	// The bandwidth for the volume.
-	Iops *int64 `json:"iops" validate:"required"`
-
-	// The capacity of the volume in gigabytes. Note that the specified minimum and maximum capacity values for creating or
-	// updating volumes may expand in the future.
+	// The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating
+	// volumes may expand in the future.
 	Capacity *int64 `json:"capacity" validate:"required"`
-
-	// The unique identifier for this volume.
-	ID *string `json:"id" validate:"required"`
-
-	// The CRN for this volume.
-	CRN *string `json:"crn" validate:"required"`
-
-	// The URL for this volume.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique user-defined name for this volume.
-	Name *string `json:"name" validate:"required"`
-
-	// The resource group for this volume.
-	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
 	// The date and time that the volume was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The CRN for this volume.
+	CRN *string `json:"crn" validate:"required"`
 
 	// The type of encryption used on the volume.
 	Encryption *string `json:"encryption" validate:"required"`
@@ -25776,10 +25964,29 @@ type Volume struct {
 	// `user_managed`.
 	EncryptionKey *EncryptionKeyReference `json:"encryption_key,omitempty"`
 
+	// The URL for this volume.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this volume.
+	ID *string `json:"id" validate:"required"`
+
+	// The bandwidth for the volume.
+	Iops *int64 `json:"iops" validate:"required"`
+
+	// The unique user-defined name for this volume.
+	Name *string `json:"name" validate:"required"`
+
 	// The profile this volume uses.
 	Profile *VolumeProfileReference `json:"profile" validate:"required"`
 
+	// The resource group for this volume.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
 	// The status of the volume.
+	//
+	// The enumerated values for this property will expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the volume on which the unexpected
+	// property value was encountered.
 	Status *string `json:"status" validate:"required"`
 
 	// The collection of volume attachments attaching instances to the volume.
@@ -25798,45 +26005,30 @@ const (
 
 // Constants associated with the Volume.Status property.
 // The status of the volume.
+//
+// The enumerated values for this property will expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the volume on which the unexpected
+// property value was encountered.
 const (
 	VolumeStatusAvailableConst       = "available"
 	VolumeStatusFailedConst          = "failed"
 	VolumeStatusPendingConst         = "pending"
 	VolumeStatusPendingDeletionConst = "pending_deletion"
+	VolumeStatusUnusableConst        = "unusable"
 )
 
 // UnmarshalVolume unmarshals an instance of Volume from the specified map of raw messages.
 func UnmarshalVolume(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Volume)
-	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "capacity", &obj.Capacity)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -25848,7 +26040,27 @@ func UnmarshalVolume(m map[string]json.RawMessage, result interface{}) (err erro
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		return
 	}
@@ -25870,34 +26082,34 @@ func UnmarshalVolume(m map[string]json.RawMessage, result interface{}) (err erro
 
 // VolumeAttachment : VolumeAttachment struct
 type VolumeAttachment struct {
+	// The date and time that the volume was attached.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
 	// If set to true, when deleting the instance the volume will also be deleted.
 	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
-
-	// The user-defined name for this volume attachment.
-	Name *string `json:"name" validate:"required"`
-
-	// The unique identifier for this volume attachment.
-	ID *string `json:"id" validate:"required"`
-
-	// The URL for this volume attachment.
-	Href *string `json:"href" validate:"required"`
 
 	// Information about how the volume is exposed to the instance operating system.
 	//
 	// This property may be absent if the volume attachment's `status` is not `attached`.
 	Device *VolumeAttachmentDevice `json:"device,omitempty"`
 
-	// The attached volume.
-	Volume *VolumeReference `json:"volume" validate:"required"`
+	// The URL for this volume attachment.
+	Href *string `json:"href" validate:"required"`
 
-	// The date and time that the volume was attached.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+	// The unique identifier for this volume attachment.
+	ID *string `json:"id" validate:"required"`
+
+	// The user-defined name for this volume attachment.
+	Name *string `json:"name" validate:"required"`
 
 	// The status of this volume attachment.
 	Status *string `json:"status" validate:"required"`
 
 	// The type of volume attachment.
 	Type *string `json:"type" validate:"required"`
+
+	// The attached volume.
+	Volume *VolumeReference `json:"volume" validate:"required"`
 }
 
 // Constants associated with the VolumeAttachment.Status property.
@@ -25918,19 +26130,11 @@ const (
 // UnmarshalVolumeAttachment unmarshals an instance of VolumeAttachment from the specified map of raw messages.
 func UnmarshalVolumeAttachment(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeAttachment)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "delete_volume_on_instance_delete", &obj.DeleteVolumeOnInstanceDelete)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -25938,11 +26142,15 @@ func UnmarshalVolumeAttachment(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume", &obj.Volume, UnmarshalVolumeReference)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -25951,6 +26159,10 @@ func UnmarshalVolumeAttachment(m map[string]json.RawMessage, result interface{})
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "volume", &obj.Volume, UnmarshalVolumeReference)
 	if err != nil {
 		return
 	}
@@ -26076,11 +26288,11 @@ type VolumeAttachmentPrototypeInstanceContext struct {
 
 	// The identity of the volume to attach to the instance, or a prototype object for a new
 	// volume.
-	Volume VolumeAttachmentPrototypeInstanceContextVolumeIntf `json:"volume" validate:"required"`
+	Volume VolumeAttachmentVolumePrototypeInstanceContextIntf `json:"volume" validate:"required"`
 }
 
 // NewVolumeAttachmentPrototypeInstanceContext : Instantiate VolumeAttachmentPrototypeInstanceContext (Generic Model Constructor)
-func (*VpcClassicV1) NewVolumeAttachmentPrototypeInstanceContext(volume VolumeAttachmentPrototypeInstanceContextVolumeIntf) (model *VolumeAttachmentPrototypeInstanceContext, err error) {
+func (*VpcClassicV1) NewVolumeAttachmentPrototypeInstanceContext(volume VolumeAttachmentVolumePrototypeInstanceContextIntf) (model *VolumeAttachmentPrototypeInstanceContext, err error) {
 	model = &VolumeAttachmentPrototypeInstanceContext{
 		Volume: volume,
 	}
@@ -26099,66 +26311,7 @@ func UnmarshalVolumeAttachmentPrototypeInstanceContext(m map[string]json.RawMess
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume", &obj.Volume, UnmarshalVolumeAttachmentPrototypeInstanceContextVolume)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeAttachmentPrototypeInstanceContextVolume : The identity of the volume to attach to the instance, or a prototype object for a new volume.
-// Models which "extend" this model:
-// - VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext
-type VolumeAttachmentPrototypeInstanceContextVolume struct {
-	// The unique user-defined name for this volume.
-	Name *string `json:"name,omitempty"`
-
-	// The profile to use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile,omitempty"`
-
-	// The identity of the root key to use to wrap the data encryption key for the volume.
-	//
-	// If this property is not provided, the `encryption` type for the volume will be
-	// `provider_managed`.
-	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
-
-	// The bandwidth for the volume.
-	Iops *int64 `json:"iops,omitempty"`
-
-	// The capacity of the volume in gigabytes. Note that the specified minimum and maximum capacity values for creating or
-	// updating volumes may expand in the future.
-	Capacity *int64 `json:"capacity,omitempty"`
-}
-
-func (*VolumeAttachmentPrototypeInstanceContextVolume) isaVolumeAttachmentPrototypeInstanceContextVolume() bool {
-	return true
-}
-
-type VolumeAttachmentPrototypeInstanceContextVolumeIntf interface {
-	isaVolumeAttachmentPrototypeInstanceContextVolume() bool
-}
-
-// UnmarshalVolumeAttachmentPrototypeInstanceContextVolume unmarshals an instance of VolumeAttachmentPrototypeInstanceContextVolume from the specified map of raw messages.
-func UnmarshalVolumeAttachmentPrototypeInstanceContextVolume(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeAttachmentPrototypeInstanceContextVolume)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "capacity", &obj.Capacity)
+	err = core.UnmarshalModel(m, "volume", &obj.Volume, UnmarshalVolumeAttachmentVolumePrototypeInstanceContext)
 	if err != nil {
 		return
 	}
@@ -26168,19 +26321,19 @@ func UnmarshalVolumeAttachmentPrototypeInstanceContextVolume(m map[string]json.R
 
 // VolumeAttachmentReferenceInstanceContext : VolumeAttachmentReferenceInstanceContext struct
 type VolumeAttachmentReferenceInstanceContext struct {
-	// The unique identifier for this volume attachment.
-	ID *string `json:"id" validate:"required"`
-
-	// The URL for this volume attachment.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this volume attachment.
-	Name *string `json:"name" validate:"required"`
-
 	// Information about how the volume is exposed to the instance operating system.
 	//
 	// This property may be absent if the volume attachment's `status` is not `attached`.
 	Device *VolumeAttachmentDevice `json:"device,omitempty"`
+
+	// The URL for this volume attachment.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this volume attachment.
+	ID *string `json:"id" validate:"required"`
+
+	// The user-defined name for this volume attachment.
+	Name *string `json:"name" validate:"required"`
 
 	// The attached volume.
 	Volume *VolumeReference `json:"volume" validate:"required"`
@@ -26189,7 +26342,7 @@ type VolumeAttachmentReferenceInstanceContext struct {
 // UnmarshalVolumeAttachmentReferenceInstanceContext unmarshals an instance of VolumeAttachmentReferenceInstanceContext from the specified map of raw messages.
 func UnmarshalVolumeAttachmentReferenceInstanceContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeAttachmentReferenceInstanceContext)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalModel(m, "device", &obj.Device, UnmarshalVolumeAttachmentDevice)
 	if err != nil {
 		return
 	}
@@ -26197,11 +26350,11 @@ func UnmarshalVolumeAttachmentReferenceInstanceContext(m map[string]json.RawMess
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "device", &obj.Device, UnmarshalVolumeAttachmentDevice)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -26215,22 +26368,22 @@ func UnmarshalVolumeAttachmentReferenceInstanceContext(m map[string]json.RawMess
 
 // VolumeAttachmentReferenceVolumeContext : VolumeAttachmentReferenceVolumeContext struct
 type VolumeAttachmentReferenceVolumeContext struct {
-	// The unique identifier for this volume attachment.
-	ID *string `json:"id" validate:"required"`
-
-	// The URL for this volume attachment.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this volume attachment.
-	Name *string `json:"name" validate:"required"`
-
 	// Information about how the volume is exposed to the instance operating system.
 	//
 	// This property may be absent if the volume attachment's `status` is not `attached`.
 	Device *VolumeAttachmentDevice `json:"device,omitempty"`
 
+	// The URL for this volume attachment.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this volume attachment.
+	ID *string `json:"id" validate:"required"`
+
 	// The attached instance.
 	Instance *InstanceReference `json:"instance" validate:"required"`
+
+	// The user-defined name for this volume attachment.
+	Name *string `json:"name" validate:"required"`
 
 	// The type of volume attachment.
 	Type *string `json:"type" validate:"required"`
@@ -26246,7 +26399,7 @@ const (
 // UnmarshalVolumeAttachmentReferenceVolumeContext unmarshals an instance of VolumeAttachmentReferenceVolumeContext from the specified map of raw messages.
 func UnmarshalVolumeAttachmentReferenceVolumeContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeAttachmentReferenceVolumeContext)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalModel(m, "device", &obj.Device, UnmarshalVolumeAttachmentDevice)
 	if err != nil {
 		return
 	}
@@ -26254,15 +26407,15 @@ func UnmarshalVolumeAttachmentReferenceVolumeContext(m map[string]json.RawMessag
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "device", &obj.Device, UnmarshalVolumeAttachmentDevice)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "instance", &obj.Instance, UnmarshalInstanceReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -26274,15 +26427,74 @@ func UnmarshalVolumeAttachmentReferenceVolumeContext(m map[string]json.RawMessag
 	return
 }
 
+// VolumeAttachmentVolumePrototypeInstanceContext : The identity of the volume to attach to the instance, or a prototype object for a new volume.
+// Models which "extend" this model:
+// - VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext
+type VolumeAttachmentVolumePrototypeInstanceContext struct {
+	// The identity of the root key to use to wrap the data encryption key for the volume.
+	//
+	// If this property is not provided, the `encryption` type for the volume will be
+	// `provider_managed`.
+	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
+
+	// The bandwidth for the volume.
+	Iops *int64 `json:"iops,omitempty"`
+
+	// The unique user-defined name for this volume.
+	Name *string `json:"name,omitempty"`
+
+	// The profile to use for this volume.
+	Profile VolumeProfileIdentityIntf `json:"profile,omitempty"`
+
+	// The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating
+	// volumes may expand in the future.
+	Capacity *int64 `json:"capacity,omitempty"`
+}
+
+func (*VolumeAttachmentVolumePrototypeInstanceContext) isaVolumeAttachmentVolumePrototypeInstanceContext() bool {
+	return true
+}
+
+type VolumeAttachmentVolumePrototypeInstanceContextIntf interface {
+	isaVolumeAttachmentVolumePrototypeInstanceContext() bool
+}
+
+// UnmarshalVolumeAttachmentVolumePrototypeInstanceContext unmarshals an instance of VolumeAttachmentVolumePrototypeInstanceContext from the specified map of raw messages.
+func UnmarshalVolumeAttachmentVolumePrototypeInstanceContext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeAttachmentVolumePrototypeInstanceContext)
+	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "capacity", &obj.Capacity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // VolumeCollection : VolumeCollection struct
 type VolumeCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *VolumeCollectionFirst `json:"first" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *VolumeCollectionNext `json:"next,omitempty"`
 
@@ -26313,9 +26525,9 @@ func UnmarshalVolumeCollection(m map[string]json.RawMessage, result interface{})
 	return
 }
 
-// VolumeCollectionFirst : A reference to the first page of resources.
+// VolumeCollectionFirst : A link to the first page of resources.
 type VolumeCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -26330,9 +26542,9 @@ func UnmarshalVolumeCollectionFirst(m map[string]json.RawMessage, result interfa
 	return
 }
 
-// VolumeCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// VolumeCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type VolumeCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -26419,20 +26631,20 @@ func (volumePatch *VolumePatch) AsPatch() (patch map[string]interface{}, err err
 
 // VolumeProfile : VolumeProfile struct
 type VolumeProfile struct {
-	// The name for this volume profile.
-	Name *string `json:"name" validate:"required"`
+	// The product family this volume profile belongs to.
+	Family *string `json:"family,omitempty"`
 
 	// The URL for this volume profile.
 	Href *string `json:"href" validate:"required"`
 
-	// The product family this volume profile belongs to.
-	Family *string `json:"family,omitempty"`
+	// The globally unique name for this volume profile.
+	Name *string `json:"name" validate:"required"`
 }
 
 // UnmarshalVolumeProfile unmarshals an instance of VolumeProfile from the specified map of raw messages.
 func UnmarshalVolumeProfile(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeProfile)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
 	if err != nil {
 		return
 	}
@@ -26440,7 +26652,7 @@ func UnmarshalVolumeProfile(m map[string]json.RawMessage, result interface{}) (e
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -26450,21 +26662,21 @@ func UnmarshalVolumeProfile(m map[string]json.RawMessage, result interface{}) (e
 
 // VolumeProfileCollection : VolumeProfileCollection struct
 type VolumeProfileCollection struct {
-	// A reference to the first page of resources.
+	// A link to the first page of resources.
 	First *VolumeProfileCollectionFirst `json:"first" validate:"required"`
 
 	// The maximum number of resources that can be returned by the request.
 	Limit *int64 `json:"limit" validate:"required"`
 
-	// A reference to the next page of resources; this reference is included for all pages
+	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *VolumeProfileCollectionNext `json:"next,omitempty"`
 
-	// The total number of resources across all pages.
-	TotalCount *int64 `json:"total_count" validate:"required"`
-
 	// Collection of volume profiles.
 	Profiles []VolumeProfile `json:"profiles" validate:"required"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
 }
 
 // UnmarshalVolumeProfileCollection unmarshals an instance of VolumeProfileCollection from the specified map of raw messages.
@@ -26482,11 +26694,11 @@ func UnmarshalVolumeProfileCollection(m map[string]json.RawMessage, result inter
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	err = core.UnmarshalModel(m, "profiles", &obj.Profiles, UnmarshalVolumeProfile)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "profiles", &obj.Profiles, UnmarshalVolumeProfile)
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
 	if err != nil {
 		return
 	}
@@ -26494,9 +26706,9 @@ func UnmarshalVolumeProfileCollection(m map[string]json.RawMessage, result inter
 	return
 }
 
-// VolumeProfileCollectionFirst : A reference to the first page of resources.
+// VolumeProfileCollectionFirst : A link to the first page of resources.
 type VolumeProfileCollectionFirst struct {
-	// The URL for the first page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -26511,9 +26723,9 @@ func UnmarshalVolumeProfileCollectionFirst(m map[string]json.RawMessage, result 
 	return
 }
 
-// VolumeProfileCollectionNext : A reference to the next page of resources; this reference is included for all pages except the last page.
+// VolumeProfileCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
 type VolumeProfileCollectionNext struct {
-	// The URL for the next page of resources.
+	// The URL for a page of resources.
 	Href *string `json:"href" validate:"required"`
 }
 
@@ -26533,7 +26745,7 @@ func UnmarshalVolumeProfileCollectionNext(m map[string]json.RawMessage, result i
 // - VolumeProfileIdentityByName
 // - VolumeProfileIdentityByHref
 type VolumeProfileIdentity struct {
-	// The name for this volume profile.
+	// The globally unique name for this volume profile.
 	Name *string `json:"name,omitempty"`
 
 	// The URL for this volume profile.
@@ -26565,21 +26777,21 @@ func UnmarshalVolumeProfileIdentity(m map[string]json.RawMessage, result interfa
 
 // VolumeProfileReference : VolumeProfileReference struct
 type VolumeProfileReference struct {
-	// The name for this volume profile.
-	Name *string `json:"name" validate:"required"`
-
 	// The URL for this volume profile.
 	Href *string `json:"href" validate:"required"`
+
+	// The globally unique name for this volume profile.
+	Name *string `json:"name" validate:"required"`
 }
 
 // UnmarshalVolumeProfileReference unmarshals an instance of VolumeProfileReference from the specified map of raw messages.
 func UnmarshalVolumeProfileReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeProfileReference)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -26591,12 +26803,6 @@ func UnmarshalVolumeProfileReference(m map[string]json.RawMessage, result interf
 // Models which "extend" this model:
 // - VolumePrototypeVolumeByCapacity
 type VolumePrototype struct {
-	// The unique user-defined name for this volume.
-	Name *string `json:"name,omitempty"`
-
-	// The profile to use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
-
 	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
 	// If this property is not provided, the `encryption` type for the volume will be
@@ -26606,6 +26812,12 @@ type VolumePrototype struct {
 	// The bandwidth for the volume.
 	Iops *int64 `json:"iops,omitempty"`
 
+	// The unique user-defined name for this volume.
+	Name *string `json:"name,omitempty"`
+
+	// The profile to use for this volume.
+	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
+
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
@@ -26613,8 +26825,8 @@ type VolumePrototype struct {
 	// The location of the volume.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
-	// The capacity of the volume in gigabytes. Note that the specified minimum and maximum capacity values for creating or
-	// updating volumes may expand in the future.
+	// The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating
+	// volumes may expand in the future.
 	Capacity *int64 `json:"capacity,omitempty"`
 }
 
@@ -26629,19 +26841,19 @@ type VolumePrototypeIntf interface {
 // UnmarshalVolumePrototype unmarshals an instance of VolumePrototype from the specified map of raw messages.
 func UnmarshalVolumePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumePrototype)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
 	if err != nil {
 		return
 	}
@@ -26663,11 +26875,9 @@ func UnmarshalVolumePrototype(m map[string]json.RawMessage, result interface{}) 
 
 // VolumePrototypeInstanceByImageContext : VolumePrototypeInstanceByImageContext struct
 type VolumePrototypeInstanceByImageContext struct {
-	// The unique user-defined name for this volume.
-	Name *string `json:"name,omitempty"`
-
-	// The profile to use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
+	// The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating
+	// volumes may expand in the future.
+	Capacity *int64 `json:"capacity,omitempty"`
 
 	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
@@ -26675,12 +26885,14 @@ type VolumePrototypeInstanceByImageContext struct {
 	// `provider_managed`.
 	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
 
-	// The capacity of the volume in gigabytes. Note that the specified minimum and maximum capacity values for creating or
-	// updating volumes may expand in the future.
-	Capacity *int64 `json:"capacity,omitempty"`
-
 	// The bandwidth for the volume.
 	Iops *int64 `json:"iops,omitempty"`
+
+	// The unique user-defined name for this volume.
+	Name *string `json:"name,omitempty"`
+
+	// The profile to use for this volume.
+	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
 }
 
 // NewVolumePrototypeInstanceByImageContext : Instantiate VolumePrototypeInstanceByImageContext (Generic Model Constructor)
@@ -26695,11 +26907,7 @@ func (*VpcClassicV1) NewVolumePrototypeInstanceByImageContext(profile VolumeProf
 // UnmarshalVolumePrototypeInstanceByImageContext unmarshals an instance of VolumePrototypeInstanceByImageContext from the specified map of raw messages.
 func UnmarshalVolumePrototypeInstanceByImageContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumePrototypeInstanceByImageContext)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
+	err = core.UnmarshalPrimitive(m, "capacity", &obj.Capacity)
 	if err != nil {
 		return
 	}
@@ -26707,11 +26915,15 @@ func UnmarshalVolumePrototypeInstanceByImageContext(m map[string]json.RawMessage
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "capacity", &obj.Capacity)
+	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
 	if err != nil {
 		return
 	}
@@ -26721,14 +26933,14 @@ func UnmarshalVolumePrototypeInstanceByImageContext(m map[string]json.RawMessage
 
 // VolumeReference : VolumeReference struct
 type VolumeReference struct {
-	// The unique identifier for this volume.
-	ID *string `json:"id" validate:"required"`
-
 	// The CRN for this volume.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this volume.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this volume.
+	ID *string `json:"id" validate:"required"`
 
 	// The unique user-defined name for this volume.
 	Name *string `json:"name" validate:"required"`
@@ -26737,15 +26949,15 @@ type VolumeReference struct {
 // UnmarshalVolumeReference unmarshals an instance of VolumeReference from the specified map of raw messages.
 func UnmarshalVolumeReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -26759,11 +26971,11 @@ func UnmarshalVolumeReference(m map[string]json.RawMessage, result interface{}) 
 
 // Zone : Zone struct
 type Zone struct {
-	// The name for this zone.
-	Name *string `json:"name" validate:"required"`
-
 	// The URL for this zone.
 	Href *string `json:"href" validate:"required"`
+
+	// The globally unique name for this zone.
+	Name *string `json:"name" validate:"required"`
 
 	// The region this zone belongs to.
 	Region *RegionReference `json:"region" validate:"required"`
@@ -26783,11 +26995,11 @@ const (
 // UnmarshalZone unmarshals an instance of Zone from the specified map of raw messages.
 func UnmarshalZone(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Zone)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -26825,7 +27037,7 @@ func UnmarshalZoneCollection(m map[string]json.RawMessage, result interface{}) (
 // - ZoneIdentityByName
 // - ZoneIdentityByHref
 type ZoneIdentity struct {
-	// The name for this zone.
+	// The globally unique name for this zone.
 	Name *string `json:"name,omitempty"`
 
 	// The URL for this zone.
@@ -26857,21 +27069,21 @@ func UnmarshalZoneIdentity(m map[string]json.RawMessage, result interface{}) (er
 
 // ZoneReference : ZoneReference struct
 type ZoneReference struct {
-	// The name for this zone.
-	Name *string `json:"name" validate:"required"`
-
 	// The URL for this zone.
 	Href *string `json:"href" validate:"required"`
+
+	// The globally unique name for this zone.
+	Name *string `json:"name" validate:"required"`
 }
 
 // UnmarshalZoneReference unmarshals an instance of ZoneReference from the specified map of raw messages.
 func UnmarshalZoneReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ZoneReference)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -26943,29 +27155,29 @@ func UnmarshalEncryptionKeyIdentityByCRN(m map[string]json.RawMessage, result in
 	return
 }
 
-// FloatingIPByTargetTargetNetworkInterfaceIdentityByHref : FloatingIPByTargetTargetNetworkInterfaceIdentityByHref struct
-// This model "extends" FloatingIPByTargetTarget
-type FloatingIPByTargetTargetNetworkInterfaceIdentityByHref struct {
+// FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref : FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref struct
+// This model "extends" FloatingIPByTargetNetworkInterfaceIdentity
+type FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref struct {
 	// The URL for this network interface.
 	Href *string `json:"href" validate:"required"`
 }
 
-// NewFloatingIPByTargetTargetNetworkInterfaceIdentityByHref : Instantiate FloatingIPByTargetTargetNetworkInterfaceIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewFloatingIPByTargetTargetNetworkInterfaceIdentityByHref(href string) (model *FloatingIPByTargetTargetNetworkInterfaceIdentityByHref, err error) {
-	model = &FloatingIPByTargetTargetNetworkInterfaceIdentityByHref{
+// NewFloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref : Instantiate FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref (Generic Model Constructor)
+func (*VpcClassicV1) NewFloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref(href string) (model *FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref, err error) {
+	model = &FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref{
 		Href: core.StringPtr(href),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*FloatingIPByTargetTargetNetworkInterfaceIdentityByHref) isaFloatingIPByTargetTarget() bool {
+func (*FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref) isaFloatingIPByTargetNetworkInterfaceIdentity() bool {
 	return true
 }
 
-// UnmarshalFloatingIPByTargetTargetNetworkInterfaceIdentityByHref unmarshals an instance of FloatingIPByTargetTargetNetworkInterfaceIdentityByHref from the specified map of raw messages.
-func UnmarshalFloatingIPByTargetTargetNetworkInterfaceIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(FloatingIPByTargetTargetNetworkInterfaceIdentityByHref)
+// UnmarshalFloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref unmarshals an instance of FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref from the specified map of raw messages.
+func UnmarshalFloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByHref)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
@@ -26974,29 +27186,29 @@ func UnmarshalFloatingIPByTargetTargetNetworkInterfaceIdentityByHref(m map[strin
 	return
 }
 
-// FloatingIPByTargetTargetNetworkInterfaceIdentityByID : FloatingIPByTargetTargetNetworkInterfaceIdentityByID struct
-// This model "extends" FloatingIPByTargetTarget
-type FloatingIPByTargetTargetNetworkInterfaceIdentityByID struct {
+// FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID : FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID struct
+// This model "extends" FloatingIPByTargetNetworkInterfaceIdentity
+type FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID struct {
 	// The unique identifier for this network interface.
 	ID *string `json:"id" validate:"required"`
 }
 
-// NewFloatingIPByTargetTargetNetworkInterfaceIdentityByID : Instantiate FloatingIPByTargetTargetNetworkInterfaceIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewFloatingIPByTargetTargetNetworkInterfaceIdentityByID(id string) (model *FloatingIPByTargetTargetNetworkInterfaceIdentityByID, err error) {
-	model = &FloatingIPByTargetTargetNetworkInterfaceIdentityByID{
+// NewFloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID : Instantiate FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID (Generic Model Constructor)
+func (*VpcClassicV1) NewFloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID(id string) (model *FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID, err error) {
+	model = &FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID{
 		ID: core.StringPtr(id),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*FloatingIPByTargetTargetNetworkInterfaceIdentityByID) isaFloatingIPByTargetTarget() bool {
+func (*FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID) isaFloatingIPByTargetNetworkInterfaceIdentity() bool {
 	return true
 }
 
-// UnmarshalFloatingIPByTargetTargetNetworkInterfaceIdentityByID unmarshals an instance of FloatingIPByTargetTargetNetworkInterfaceIdentityByID from the specified map of raw messages.
-func UnmarshalFloatingIPByTargetTargetNetworkInterfaceIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(FloatingIPByTargetTargetNetworkInterfaceIdentityByID)
+// UnmarshalFloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID unmarshals an instance of FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID from the specified map of raw messages.
+func UnmarshalFloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID)
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
@@ -27075,11 +27287,11 @@ type FloatingIPPrototypeFloatingIPByTarget struct {
 	Name *string `json:"name,omitempty"`
 
 	// The network interface this floating IP is to be bound to.
-	Target FloatingIPByTargetTargetIntf `json:"target" validate:"required"`
+	Target FloatingIPByTargetNetworkInterfaceIdentityIntf `json:"target" validate:"required"`
 }
 
 // NewFloatingIPPrototypeFloatingIPByTarget : Instantiate FloatingIPPrototypeFloatingIPByTarget (Generic Model Constructor)
-func (*VpcClassicV1) NewFloatingIPPrototypeFloatingIPByTarget(target FloatingIPByTargetTargetIntf) (model *FloatingIPPrototypeFloatingIPByTarget, err error) {
+func (*VpcClassicV1) NewFloatingIPPrototypeFloatingIPByTarget(target FloatingIPByTargetNetworkInterfaceIdentityIntf) (model *FloatingIPPrototypeFloatingIPByTarget, err error) {
 	model = &FloatingIPPrototypeFloatingIPByTarget{
 		Target: target,
 	}
@@ -27098,7 +27310,7 @@ func UnmarshalFloatingIPPrototypeFloatingIPByTarget(m map[string]json.RawMessage
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalFloatingIPByTargetTarget)
+	err = core.UnmarshalModel(m, "target", &obj.Target, UnmarshalFloatingIPByTargetNetworkInterfaceIdentity)
 	if err != nil {
 		return
 	}
@@ -27148,14 +27360,14 @@ func UnmarshalFloatingIPPrototypeFloatingIPByZone(m map[string]json.RawMessage, 
 // FloatingIPTargetNetworkInterfaceReference : FloatingIPTargetNetworkInterfaceReference struct
 // This model "extends" FloatingIPTarget
 type FloatingIPTargetNetworkInterfaceReference struct {
-	// The user-defined name for this network interface.
-	Name *string `json:"name" validate:"required"`
+	// The URL for this network interface.
+	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this network interface.
 	ID *string `json:"id" validate:"required"`
 
-	// The URL for this network interface.
-	Href *string `json:"href" validate:"required"`
+	// The user-defined name for this network interface.
+	Name *string `json:"name" validate:"required"`
 
 	// The primary IPv4 address.
 	PrimaryIpv4Address *string `json:"primary_ipv4_address" validate:"required"`
@@ -27177,7 +27389,7 @@ func (*FloatingIPTargetNetworkInterfaceReference) isaFloatingIPTarget() bool {
 // UnmarshalFloatingIPTargetNetworkInterfaceReference unmarshals an instance of FloatingIPTargetNetworkInterfaceReference from the specified map of raw messages.
 func UnmarshalFloatingIPTargetNetworkInterfaceReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FloatingIPTargetNetworkInterfaceReference)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -27185,7 +27397,7 @@ func UnmarshalFloatingIPTargetNetworkInterfaceReference(m map[string]json.RawMes
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -27204,14 +27416,14 @@ func UnmarshalFloatingIPTargetNetworkInterfaceReference(m map[string]json.RawMes
 // FloatingIPTargetPublicGatewayReference : FloatingIPTargetPublicGatewayReference struct
 // This model "extends" FloatingIPTarget
 type FloatingIPTargetPublicGatewayReference struct {
-	// The unique identifier for this public gateway.
-	ID *string `json:"id" validate:"required"`
-
 	// The CRN for this public gateway.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The URL for this public gateway.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this public gateway.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this public gateway.
 	Name *string `json:"name" validate:"required"`
@@ -27233,15 +27445,15 @@ func (*FloatingIPTargetPublicGatewayReference) isaFloatingIPTarget() bool {
 // UnmarshalFloatingIPTargetPublicGatewayReference unmarshals an instance of FloatingIPTargetPublicGatewayReference from the specified map of raw messages.
 func UnmarshalFloatingIPTargetPublicGatewayReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(FloatingIPTargetPublicGatewayReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -27487,7 +27699,7 @@ type ImagePrototypeImageByFile struct {
 	File *ImageFilePrototype `json:"file" validate:"required"`
 
 	// The identity of the [supported operating
-	// system](https://cloud.ibm.com/apidocs/vpc#retrieves-all-operating-systems) included in
+	// system](https://cloud.ibm.com/apidocs/vpc#list-operating-systems) included in
 	// this image.
 	OperatingSystem OperatingSystemIdentityIntf `json:"operating_system" validate:"required"`
 }
@@ -27562,11 +27774,11 @@ func UnmarshalInstanceProfileBandwidthDependent(m map[string]json.RawMessage, re
 // with this profile.
 // This model "extends" InstanceProfileBandwidth
 type InstanceProfileBandwidthEnum struct {
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-
 	// The default value for this profile field.
 	Default *int64 `json:"default" validate:"required"`
+
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
 
 	// The permitted values for this profile field.
 	Values []int64 `json:"values" validate:"required"`
@@ -27585,11 +27797,11 @@ func (*InstanceProfileBandwidthEnum) isaInstanceProfileBandwidth() bool {
 // UnmarshalInstanceProfileBandwidthEnum unmarshals an instance of InstanceProfileBandwidthEnum from the specified map of raw messages.
 func UnmarshalInstanceProfileBandwidthEnum(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfileBandwidthEnum)
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		return
 	}
@@ -27640,9 +27852,6 @@ func UnmarshalInstanceProfileBandwidthFixed(m map[string]json.RawMessage, result
 // this profile.
 // This model "extends" InstanceProfileBandwidth
 type InstanceProfileBandwidthRange struct {
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-
 	// The default value for this profile field.
 	Default *int64 `json:"default" validate:"required"`
 
@@ -27654,6 +27863,9 @@ type InstanceProfileBandwidthRange struct {
 
 	// The increment step value for this profile field.
 	Step *int64 `json:"step" validate:"required"`
+
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
 }
 
 // Constants associated with the InstanceProfileBandwidthRange.Type property.
@@ -27669,10 +27881,6 @@ func (*InstanceProfileBandwidthRange) isaInstanceProfileBandwidth() bool {
 // UnmarshalInstanceProfileBandwidthRange unmarshals an instance of InstanceProfileBandwidthRange from the specified map of raw messages.
 func UnmarshalInstanceProfileBandwidthRange(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfileBandwidthRange)
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
 	if err != nil {
 		return
@@ -27686,6 +27894,10 @@ func UnmarshalInstanceProfileBandwidthRange(m map[string]json.RawMessage, result
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		return
 	}
@@ -27758,7 +27970,7 @@ func UnmarshalInstanceProfileIdentityByHref(m map[string]json.RawMessage, result
 // InstanceProfileIdentityByName : InstanceProfileIdentityByName struct
 // This model "extends" InstanceProfileIdentity
 type InstanceProfileIdentityByName struct {
-	// The name for this virtual server instance profile.
+	// The globally unique name for this virtual server instance profile.
 	Name *string `json:"name" validate:"required"`
 }
 
@@ -27852,10 +28064,6 @@ func UnmarshalInstanceProfilePortSpeedFixed(m map[string]json.RawMessage, result
 // InstancePrototypeInstanceByImage : InstancePrototypeInstanceByImage struct
 // This model "extends" InstancePrototype
 type InstancePrototypeInstanceByImage struct {
-	// The user-defined name for this virtual server instance (and default system hostname). If unspecified, the name will
-	// be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
 	// The public SSH keys for the administrative user of the virtual server instance. Up to 10 keys may be provided; if no
 	// keys are provided the instance will be inaccessible unless the image used provides another means of access. For
 	// Windows instances, one of the keys will be used to encrypt the administrator password.
@@ -27864,11 +28072,17 @@ type InstancePrototypeInstanceByImage struct {
 	// these keys will also be added as SSH authorized keys for the administrative user.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
+	// The user-defined name for this virtual server instance (and default system hostname). If unspecified, the name will
+	// be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// Collection of additional network interfaces to create for the virtual server instance.
 	NetworkInterfaces []NetworkInterfacePrototype `json:"network_interfaces,omitempty"`
 
 	// The profile to use for this virtual server instance.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
+
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// User data to be made available when setting up the virtual server instance.
 	UserData *string `json:"user_data,omitempty"`
@@ -27880,27 +28094,25 @@ type InstancePrototypeInstanceByImage struct {
 	// instance's network interfaces.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
-	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+	// The boot volume attachment for the virtual server instance.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
+
+	// The identity of the image to use when provisioning the virtual server instance.
+	Image ImageIdentityIntf `json:"image" validate:"required"`
 
 	// Primary network interface.
 	PrimaryNetworkInterface *NetworkInterfacePrototype `json:"primary_network_interface" validate:"required"`
 
 	// The identity of the zone to provision the virtual server instance in.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
-
-	// The boot volume attachment for the virtual server instance.
-	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
-
-	// The identity of the image to be used when provisioning the virtual server instance.
-	Image ImageIdentityIntf `json:"image" validate:"required"`
 }
 
 // NewInstancePrototypeInstanceByImage : Instantiate InstancePrototypeInstanceByImage (Generic Model Constructor)
-func (*VpcClassicV1) NewInstancePrototypeInstanceByImage(primaryNetworkInterface *NetworkInterfacePrototype, zone ZoneIdentityIntf, image ImageIdentityIntf) (model *InstancePrototypeInstanceByImage, err error) {
+func (*VpcClassicV1) NewInstancePrototypeInstanceByImage(image ImageIdentityIntf, primaryNetworkInterface *NetworkInterfacePrototype, zone ZoneIdentityIntf) (model *InstancePrototypeInstanceByImage, err error) {
 	model = &InstancePrototypeInstanceByImage{
+		Image:                   image,
 		PrimaryNetworkInterface: primaryNetworkInterface,
 		Zone:                    zone,
-		Image:                   image,
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
@@ -27913,11 +28125,11 @@ func (*InstancePrototypeInstanceByImage) isaInstancePrototype() bool {
 // UnmarshalInstancePrototypeInstanceByImage unmarshals an instance of InstancePrototypeInstanceByImage from the specified map of raw messages.
 func UnmarshalInstancePrototypeInstanceByImage(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstancePrototypeInstanceByImage)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -27926,6 +28138,10 @@ func UnmarshalInstancePrototypeInstanceByImage(m map[string]json.RawMessage, res
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
 	if err != nil {
 		return
 	}
@@ -27941,7 +28157,11 @@ func UnmarshalInstancePrototypeInstanceByImage(m map[string]json.RawMessage, res
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
 	if err != nil {
 		return
 	}
@@ -27950,14 +28170,6 @@ func UnmarshalInstancePrototypeInstanceByImage(m map[string]json.RawMessage, res
 		return
 	}
 	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
 	if err != nil {
 		return
 	}
@@ -28116,18 +28328,18 @@ func UnmarshalKeyReferenceInstanceInitializationContextKeyIdentityByFingerprint(
 // KeyReferenceInstanceInitializationContextKeyReference : KeyReferenceInstanceInitializationContextKeyReference struct
 // This model "extends" KeyReferenceInstanceInitializationContext
 type KeyReferenceInstanceInitializationContextKeyReference struct {
-	// The unique identifier for this key.
-	ID *string `json:"id" validate:"required"`
-
 	// The CRN for this key.
 	CRN *string `json:"crn" validate:"required"`
-
-	// The URL for this key.
-	Href *string `json:"href" validate:"required"`
 
 	// The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm (always
 	// `SHA256`).
 	Fingerprint *string `json:"fingerprint" validate:"required"`
+
+	// The URL for this key.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this key.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this key.
 	Name *string `json:"name" validate:"required"`
@@ -28140,11 +28352,11 @@ func (*KeyReferenceInstanceInitializationContextKeyReference) isaKeyReferenceIns
 // UnmarshalKeyReferenceInstanceInitializationContextKeyReference unmarshals an instance of KeyReferenceInstanceInitializationContextKeyReference from the specified map of raw messages.
 func UnmarshalKeyReferenceInstanceInitializationContextKeyReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(KeyReferenceInstanceInitializationContextKeyReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	err = core.UnmarshalPrimitive(m, "fingerprint", &obj.Fingerprint)
 	if err != nil {
 		return
 	}
@@ -28152,7 +28364,7 @@ func UnmarshalKeyReferenceInstanceInitializationContextKeyReference(m map[string
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "fingerprint", &obj.Fingerprint)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -28164,9 +28376,9 @@ func UnmarshalKeyReferenceInstanceInitializationContextKeyReference(m map[string
 	return
 }
 
-// LoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRedirectURLPatch : LoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRedirectURLPatch struct
-// This model "extends" LoadBalancerListenerPolicyPatchTarget
-type LoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRedirectURLPatch struct {
+// LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerPolicyRedirectURLPatch : LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerPolicyRedirectURLPatch struct
+// This model "extends" LoadBalancerListenerPolicyTargetPatch
+type LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerPolicyRedirectURLPatch struct {
 	// The http status code in the redirect response.
 	HTTPStatusCode *int64 `json:"http_status_code,omitempty"`
 
@@ -28174,13 +28386,13 @@ type LoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRedirectURLP
 	URL *string `json:"url,omitempty"`
 }
 
-func (*LoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRedirectURLPatch) isaLoadBalancerListenerPolicyPatchTarget() bool {
+func (*LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerPolicyRedirectURLPatch) isaLoadBalancerListenerPolicyTargetPatch() bool {
 	return true
 }
 
-// UnmarshalLoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRedirectURLPatch unmarshals an instance of LoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRedirectURLPatch from the specified map of raw messages.
-func UnmarshalLoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRedirectURLPatch(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(LoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRedirectURLPatch)
+// UnmarshalLoadBalancerListenerPolicyTargetPatchLoadBalancerListenerPolicyRedirectURLPatch unmarshals an instance of LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerPolicyRedirectURLPatch from the specified map of raw messages.
+func UnmarshalLoadBalancerListenerPolicyTargetPatchLoadBalancerListenerPolicyRedirectURLPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerPolicyRedirectURLPatch)
 	err = core.UnmarshalPrimitive(m, "http_status_code", &obj.HTTPStatusCode)
 	if err != nil {
 		return
@@ -28193,12 +28405,12 @@ func UnmarshalLoadBalancerListenerPolicyPatchTargetLoadBalancerListenerPolicyRed
 	return
 }
 
-// LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity : Identifies a load balancer pool by a unique property.
+// LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity : Identifies a load balancer pool by a unique property.
 // Models which "extend" this model:
-// - LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID
-// - LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref
-// This model "extends" LoadBalancerListenerPolicyPatchTarget
-type LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity struct {
+// - LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID
+// - LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref
+// This model "extends" LoadBalancerListenerPolicyTargetPatch
+type LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity struct {
 	// The unique identifier for this load balancer pool.
 	ID *string `json:"id,omitempty"`
 
@@ -28206,22 +28418,22 @@ type LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity struct {
 	Href *string `json:"href,omitempty"`
 }
 
-func (*LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity) isaLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity() bool {
+func (*LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity) isaLoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity() bool {
 	return true
 }
 
-type LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityIntf interface {
-	LoadBalancerListenerPolicyPatchTargetIntf
-	isaLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity() bool
+type LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityIntf interface {
+	LoadBalancerListenerPolicyTargetPatchIntf
+	isaLoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity() bool
 }
 
-func (*LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity) isaLoadBalancerListenerPolicyPatchTarget() bool {
+func (*LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity) isaLoadBalancerListenerPolicyTargetPatch() bool {
 	return true
 }
 
-// UnmarshalLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity unmarshals an instance of LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity from the specified map of raw messages.
-func UnmarshalLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity)
+// UnmarshalLoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity unmarshals an instance of LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity from the specified map of raw messages.
+func UnmarshalLoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity)
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
@@ -28234,9 +28446,9 @@ func UnmarshalLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity(m ma
 	return
 }
 
-// LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype : LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype struct
-// This model "extends" LoadBalancerListenerPolicyPrototypeTarget
-type LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype struct {
+// LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype : LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype struct
+// This model "extends" LoadBalancerListenerPolicyTargetPrototype
+type LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype struct {
 	// The http status code in the redirect response.
 	HTTPStatusCode *int64 `json:"http_status_code" validate:"required"`
 
@@ -28244,9 +28456,9 @@ type LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirect
 	URL *string `json:"url" validate:"required"`
 }
 
-// NewLoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype : Instantiate LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype (Generic Model Constructor)
-func (*VpcClassicV1) NewLoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype(httpStatusCode int64, url string) (model *LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype, err error) {
-	model = &LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype{
+// NewLoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype : Instantiate LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype (Generic Model Constructor)
+func (*VpcClassicV1) NewLoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype(httpStatusCode int64, url string) (model *LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype, err error) {
+	model = &LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype{
 		HTTPStatusCode: core.Int64Ptr(httpStatusCode),
 		URL:            core.StringPtr(url),
 	}
@@ -28254,13 +28466,13 @@ func (*VpcClassicV1) NewLoadBalancerListenerPolicyPrototypeTargetLoadBalancerLis
 	return
 }
 
-func (*LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype) isaLoadBalancerListenerPolicyPrototypeTarget() bool {
+func (*LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype) isaLoadBalancerListenerPolicyTargetPrototype() bool {
 	return true
 }
 
-// UnmarshalLoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype unmarshals an instance of LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype from the specified map of raw messages.
-func UnmarshalLoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(LoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolicyRedirectURLPrototype)
+// UnmarshalLoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype unmarshals an instance of LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype from the specified map of raw messages.
+func UnmarshalLoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype)
 	err = core.UnmarshalPrimitive(m, "http_status_code", &obj.HTTPStatusCode)
 	if err != nil {
 		return
@@ -28273,12 +28485,12 @@ func UnmarshalLoadBalancerListenerPolicyPrototypeTargetLoadBalancerListenerPolic
 	return
 }
 
-// LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity : Identifies a load balancer pool by a unique property.
+// LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity : Identifies a load balancer pool by a unique property.
 // Models which "extend" this model:
-// - LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID
-// - LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref
-// This model "extends" LoadBalancerListenerPolicyPrototypeTarget
-type LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity struct {
+// - LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID
+// - LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref
+// This model "extends" LoadBalancerListenerPolicyTargetPrototype
+type LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity struct {
 	// The unique identifier for this load balancer pool.
 	ID *string `json:"id,omitempty"`
 
@@ -28286,22 +28498,22 @@ type LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity struct {
 	Href *string `json:"href,omitempty"`
 }
 
-func (*LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity) isaLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity() bool {
+func (*LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity) isaLoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity() bool {
 	return true
 }
 
-type LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityIntf interface {
-	LoadBalancerListenerPolicyPrototypeTargetIntf
-	isaLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity() bool
+type LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityIntf interface {
+	LoadBalancerListenerPolicyTargetPrototypeIntf
+	isaLoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity() bool
 }
 
-func (*LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity) isaLoadBalancerListenerPolicyPrototypeTarget() bool {
+func (*LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity) isaLoadBalancerListenerPolicyTargetPrototype() bool {
 	return true
 }
 
-// UnmarshalLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity unmarshals an instance of LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity from the specified map of raw messages.
-func UnmarshalLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity)
+// UnmarshalLoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity unmarshals an instance of LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity from the specified map of raw messages.
+func UnmarshalLoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity)
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
@@ -28346,11 +28558,11 @@ func UnmarshalLoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyRedirect
 // LoadBalancerListenerPolicyTargetLoadBalancerPoolReference : LoadBalancerListenerPolicyTargetLoadBalancerPoolReference struct
 // This model "extends" LoadBalancerListenerPolicyTarget
 type LoadBalancerListenerPolicyTargetLoadBalancerPoolReference struct {
-	// The unique identifier for this load balancer pool.
-	ID *string `json:"id" validate:"required"`
-
 	// The pool's canonical URL.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this load balancer pool.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this load balancer pool.
 	Name *string `json:"name" validate:"required"`
@@ -28363,11 +28575,11 @@ func (*LoadBalancerListenerPolicyTargetLoadBalancerPoolReference) isaLoadBalance
 // UnmarshalLoadBalancerListenerPolicyTargetLoadBalancerPoolReference unmarshals an instance of LoadBalancerListenerPolicyTargetLoadBalancerPoolReference from the specified map of raw messages.
 func UnmarshalLoadBalancerListenerPolicyTargetLoadBalancerPoolReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerListenerPolicyTargetLoadBalancerPoolReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -28630,29 +28842,29 @@ func UnmarshalNetworkACLPrototypeNetworkACLBySourceNetworkACL(m map[string]json.
 	return
 }
 
-// NetworkACLRuleIdentityByHref : NetworkACLRuleIdentityByHref struct
-// This model "extends" NetworkACLRuleIdentity
-type NetworkACLRuleIdentityByHref struct {
-	// The URL for this Network ACL rule.
+// NetworkACLRuleBeforePatchNetworkACLRuleIdentityByHref : NetworkACLRuleBeforePatchNetworkACLRuleIdentityByHref struct
+// This model "extends" NetworkACLRuleBeforePatch
+type NetworkACLRuleBeforePatchNetworkACLRuleIdentityByHref struct {
+	// The URL for this network ACL rule.
 	Href *string `json:"href" validate:"required"`
 }
 
-// NewNetworkACLRuleIdentityByHref : Instantiate NetworkACLRuleIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRuleIdentityByHref(href string) (model *NetworkACLRuleIdentityByHref, err error) {
-	model = &NetworkACLRuleIdentityByHref{
+// NewNetworkACLRuleBeforePatchNetworkACLRuleIdentityByHref : Instantiate NetworkACLRuleBeforePatchNetworkACLRuleIdentityByHref (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRuleBeforePatchNetworkACLRuleIdentityByHref(href string) (model *NetworkACLRuleBeforePatchNetworkACLRuleIdentityByHref, err error) {
+	model = &NetworkACLRuleBeforePatchNetworkACLRuleIdentityByHref{
 		Href: core.StringPtr(href),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*NetworkACLRuleIdentityByHref) isaNetworkACLRuleIdentity() bool {
+func (*NetworkACLRuleBeforePatchNetworkACLRuleIdentityByHref) isaNetworkACLRuleBeforePatch() bool {
 	return true
 }
 
-// UnmarshalNetworkACLRuleIdentityByHref unmarshals an instance of NetworkACLRuleIdentityByHref from the specified map of raw messages.
-func UnmarshalNetworkACLRuleIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkACLRuleIdentityByHref)
+// UnmarshalNetworkACLRuleBeforePatchNetworkACLRuleIdentityByHref unmarshals an instance of NetworkACLRuleBeforePatchNetworkACLRuleIdentityByHref from the specified map of raw messages.
+func UnmarshalNetworkACLRuleBeforePatchNetworkACLRuleIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkACLRuleBeforePatchNetworkACLRuleIdentityByHref)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
@@ -28661,29 +28873,91 @@ func UnmarshalNetworkACLRuleIdentityByHref(m map[string]json.RawMessage, result 
 	return
 }
 
-// NetworkACLRuleIdentityByID : NetworkACLRuleIdentityByID struct
-// This model "extends" NetworkACLRuleIdentity
-type NetworkACLRuleIdentityByID struct {
-	// The unique identifier for this Network ACL rule.
+// NetworkACLRuleBeforePatchNetworkACLRuleIdentityByID : NetworkACLRuleBeforePatchNetworkACLRuleIdentityByID struct
+// This model "extends" NetworkACLRuleBeforePatch
+type NetworkACLRuleBeforePatchNetworkACLRuleIdentityByID struct {
+	// The unique identifier for this network ACL rule.
 	ID *string `json:"id" validate:"required"`
 }
 
-// NewNetworkACLRuleIdentityByID : Instantiate NetworkACLRuleIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewNetworkACLRuleIdentityByID(id string) (model *NetworkACLRuleIdentityByID, err error) {
-	model = &NetworkACLRuleIdentityByID{
+// NewNetworkACLRuleBeforePatchNetworkACLRuleIdentityByID : Instantiate NetworkACLRuleBeforePatchNetworkACLRuleIdentityByID (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRuleBeforePatchNetworkACLRuleIdentityByID(id string) (model *NetworkACLRuleBeforePatchNetworkACLRuleIdentityByID, err error) {
+	model = &NetworkACLRuleBeforePatchNetworkACLRuleIdentityByID{
 		ID: core.StringPtr(id),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*NetworkACLRuleIdentityByID) isaNetworkACLRuleIdentity() bool {
+func (*NetworkACLRuleBeforePatchNetworkACLRuleIdentityByID) isaNetworkACLRuleBeforePatch() bool {
 	return true
 }
 
-// UnmarshalNetworkACLRuleIdentityByID unmarshals an instance of NetworkACLRuleIdentityByID from the specified map of raw messages.
-func UnmarshalNetworkACLRuleIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(NetworkACLRuleIdentityByID)
+// UnmarshalNetworkACLRuleBeforePatchNetworkACLRuleIdentityByID unmarshals an instance of NetworkACLRuleBeforePatchNetworkACLRuleIdentityByID from the specified map of raw messages.
+func UnmarshalNetworkACLRuleBeforePatchNetworkACLRuleIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkACLRuleBeforePatchNetworkACLRuleIdentityByID)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByHref : NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByHref struct
+// This model "extends" NetworkACLRuleBeforePrototype
+type NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByHref struct {
+	// The URL for this network ACL rule.
+	Href *string `json:"href" validate:"required"`
+}
+
+// NewNetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByHref : Instantiate NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByHref (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByHref(href string) (model *NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByHref, err error) {
+	model = &NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByHref{
+		Href: core.StringPtr(href),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByHref) isaNetworkACLRuleBeforePrototype() bool {
+	return true
+}
+
+// UnmarshalNetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByHref unmarshals an instance of NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByHref from the specified map of raw messages.
+func UnmarshalNetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByHref)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByID : NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByID struct
+// This model "extends" NetworkACLRuleBeforePrototype
+type NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByID struct {
+	// The unique identifier for this network ACL rule.
+	ID *string `json:"id" validate:"required"`
+}
+
+// NewNetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByID : Instantiate NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByID (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByID(id string) (model *NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByID, err error) {
+	model = &NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByID{
+		ID: core.StringPtr(id),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByID) isaNetworkACLRuleBeforePrototype() bool {
+	return true
+}
+
+// UnmarshalNetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByID unmarshals an instance of NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByID from the specified map of raw messages.
+func UnmarshalNetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(NetworkACLRuleBeforePrototypeNetworkACLRuleIdentityByID)
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
@@ -28695,30 +28969,8 @@ func UnmarshalNetworkACLRuleIdentityByID(m map[string]json.RawMessage, result in
 // NetworkACLRuleItemNetworkACLRuleProtocolAll : NetworkACLRuleItemNetworkACLRuleProtocolAll struct
 // This model "extends" NetworkACLRuleItem
 type NetworkACLRuleItemNetworkACLRuleProtocolAll struct {
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
-
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
 
 	// The rule that this rule is immediately before. In a rule collection, this always refers to the next item in the
 	// collection. If absent, this is the last rule.
@@ -28727,8 +28979,30 @@ type NetworkACLRuleItemNetworkACLRuleProtocolAll struct {
 	// The date and time that the rule was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
+	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination" validate:"required"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The URL for this network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
 	// The IP version for this rule.
 	IPVersion *string `json:"ip_version" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 }
 
 // Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolAll.Action property.
@@ -28745,20 +29019,17 @@ const (
 	NetworkACLRuleItemNetworkACLRuleProtocolAllDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolAll.Protocol property.
-// The protocol to enforce.
-const (
-	NetworkACLRuleItemNetworkACLRuleProtocolAllProtocolAllConst  = "all"
-	NetworkACLRuleItemNetworkACLRuleProtocolAllProtocolIcmpConst = "icmp"
-	NetworkACLRuleItemNetworkACLRuleProtocolAllProtocolTCPConst  = "tcp"
-	NetworkACLRuleItemNetworkACLRuleProtocolAllProtocolUDPConst  = "udp"
-)
-
 // Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolAll.IPVersion property.
 // The IP version for this rule.
 const (
 	NetworkACLRuleItemNetworkACLRuleProtocolAllIPVersionIpv4Const = "ipv4"
 	NetworkACLRuleItemNetworkACLRuleProtocolAllIPVersionIpv6Const = "ipv6"
+)
+
+// Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolAll.Protocol property.
+// The protocol to enforce.
+const (
+	NetworkACLRuleItemNetworkACLRuleProtocolAllProtocolAllConst = "all"
 )
 
 func (*NetworkACLRuleItemNetworkACLRuleProtocolAll) isaNetworkACLRuleItem() bool {
@@ -28768,35 +29039,7 @@ func (*NetworkACLRuleItemNetworkACLRuleProtocolAll) isaNetworkACLRuleItem() bool
 // UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolAll unmarshals an instance of NetworkACLRuleItemNetworkACLRuleProtocolAll from the specified map of raw messages.
 func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRuleItemNetworkACLRuleProtocolAll)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -28808,7 +29051,35 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolAll(m map[string]json.RawM
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -28819,30 +29090,8 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolAll(m map[string]json.RawM
 // NetworkACLRuleItemNetworkACLRuleProtocolIcmp : NetworkACLRuleItemNetworkACLRuleProtocolIcmp struct
 // This model "extends" NetworkACLRuleItem
 type NetworkACLRuleItemNetworkACLRuleProtocolIcmp struct {
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
-
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
 
 	// The rule that this rule is immediately before. In a rule collection, this always refers to the next item in the
 	// collection. If absent, this is the last rule.
@@ -28851,12 +29100,34 @@ type NetworkACLRuleItemNetworkACLRuleProtocolIcmp struct {
 	// The date and time that the rule was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
+	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination" validate:"required"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The URL for this network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
 	// The IP version for this rule.
 	IPVersion *string `json:"ip_version" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also
 	// specified.
 	Code *int64 `json:"code,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The ICMP traffic type to allow. If unspecified, all types are allowed by this rule.
 	Type *int64 `json:"type,omitempty"`
@@ -28876,20 +29147,17 @@ const (
 	NetworkACLRuleItemNetworkACLRuleProtocolIcmpDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolIcmp.Protocol property.
-// The protocol to enforce.
-const (
-	NetworkACLRuleItemNetworkACLRuleProtocolIcmpProtocolAllConst  = "all"
-	NetworkACLRuleItemNetworkACLRuleProtocolIcmpProtocolIcmpConst = "icmp"
-	NetworkACLRuleItemNetworkACLRuleProtocolIcmpProtocolTCPConst  = "tcp"
-	NetworkACLRuleItemNetworkACLRuleProtocolIcmpProtocolUDPConst  = "udp"
-)
-
 // Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolIcmp.IPVersion property.
 // The IP version for this rule.
 const (
 	NetworkACLRuleItemNetworkACLRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
 	NetworkACLRuleItemNetworkACLRuleProtocolIcmpIPVersionIpv6Const = "ipv6"
+)
+
+// Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolIcmp.Protocol property.
+// The protocol to enforce.
+const (
+	NetworkACLRuleItemNetworkACLRuleProtocolIcmpProtocolIcmpConst = "icmp"
 )
 
 func (*NetworkACLRuleItemNetworkACLRuleProtocolIcmp) isaNetworkACLRuleItem() bool {
@@ -28899,35 +29167,7 @@ func (*NetworkACLRuleItemNetworkACLRuleProtocolIcmp) isaNetworkACLRuleItem() boo
 // UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIcmp unmarshals an instance of NetworkACLRuleItemNetworkACLRuleProtocolIcmp from the specified map of raw messages.
 func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRuleItemNetworkACLRuleProtocolIcmp)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -28939,11 +29179,39 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIcmp(m map[string]json.Raw
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -28958,30 +29226,8 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIcmp(m map[string]json.Raw
 // NetworkACLRuleItemNetworkACLRuleProtocolTcpudp : NetworkACLRuleItemNetworkACLRuleProtocolTcpudp struct
 // This model "extends" NetworkACLRuleItem
 type NetworkACLRuleItemNetworkACLRuleProtocolTcpudp struct {
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
-
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
 
 	// The rule that this rule is immediately before. In a rule collection, this always refers to the next item in the
 	// collection. If absent, this is the last rule.
@@ -28990,14 +29236,36 @@ type NetworkACLRuleItemNetworkACLRuleProtocolTcpudp struct {
 	// The date and time that the rule was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
+	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination" validate:"required"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The URL for this network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
 	// The IP version for this rule.
 	IPVersion *string `json:"ip_version" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	PortMax *int64 `json:"port_max,omitempty"`
 
 	// The inclusive lower bound of TCP/UDP destination port range.
 	PortMin *int64 `json:"port_min,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP source port range.
 	SourcePortMax *int64 `json:"source_port_max,omitempty"`
@@ -29020,20 +29288,18 @@ const (
 	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolTcpudp.Protocol property.
-// The protocol to enforce.
-const (
-	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpProtocolAllConst  = "all"
-	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpProtocolIcmpConst = "icmp"
-	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpProtocolTCPConst  = "tcp"
-	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpProtocolUDPConst  = "udp"
-)
-
 // Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolTcpudp.IPVersion property.
 // The IP version for this rule.
 const (
 	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
 	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpIPVersionIpv6Const = "ipv6"
+)
+
+// Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolTcpudp.Protocol property.
+// The protocol to enforce.
+const (
+	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpProtocolTCPConst = "tcp"
+	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpProtocolUDPConst = "udp"
 )
 
 func (*NetworkACLRuleItemNetworkACLRuleProtocolTcpudp) isaNetworkACLRuleItem() bool {
@@ -29043,35 +29309,7 @@ func (*NetworkACLRuleItemNetworkACLRuleProtocolTcpudp) isaNetworkACLRuleItem() b
 // UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolTcpudp unmarshals an instance of NetworkACLRuleItemNetworkACLRuleProtocolTcpudp from the specified map of raw messages.
 func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRuleItemNetworkACLRuleProtocolTcpudp)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -29083,7 +29321,31 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolTcpudp(m map[string]json.R
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
@@ -29092,6 +29354,10 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolTcpudp(m map[string]json.R
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "port_min", &obj.PortMin)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -29110,11 +29376,10 @@ func UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolTcpudp(m map[string]json.R
 // NetworkACLRulePatchNetworkACLRuleProtocolAll : NetworkACLRulePatchNetworkACLRuleProtocolAll struct
 // This model "extends" NetworkACLRulePatch
 type NetworkACLRulePatchNetworkACLRuleProtocolAll struct {
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in.
-	Name *string `json:"name,omitempty"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action,omitempty"`
+
+	Before NetworkACLRuleBeforePatchIntf `json:"before,omitempty"`
 
 	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination,omitempty"`
@@ -29122,14 +29387,14 @@ type NetworkACLRulePatchNetworkACLRuleProtocolAll struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction,omitempty"`
 
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in.
+	Name *string `json:"name,omitempty"`
+
 	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source,omitempty"`
 
 	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
-
-	// The rule to move this rule immediately before. Specify `null` to move this rule after all existing rules.
-	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
+	Protocol *string `json:"protocol" validate:"required"`
 }
 
 // Constants associated with the NetworkACLRulePatchNetworkACLRuleProtocolAll.Action property.
@@ -29149,11 +29414,17 @@ const (
 // Constants associated with the NetworkACLRulePatchNetworkACLRuleProtocolAll.Protocol property.
 // The protocol to enforce.
 const (
-	NetworkACLRulePatchNetworkACLRuleProtocolAllProtocolAllConst  = "all"
-	NetworkACLRulePatchNetworkACLRuleProtocolAllProtocolIcmpConst = "icmp"
-	NetworkACLRulePatchNetworkACLRuleProtocolAllProtocolTCPConst  = "tcp"
-	NetworkACLRulePatchNetworkACLRuleProtocolAllProtocolUDPConst  = "udp"
+	NetworkACLRulePatchNetworkACLRuleProtocolAllProtocolAllConst = "all"
 )
+
+// NewNetworkACLRulePatchNetworkACLRuleProtocolAll : Instantiate NetworkACLRulePatchNetworkACLRuleProtocolAll (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRulePatchNetworkACLRuleProtocolAll(protocol string) (model *NetworkACLRulePatchNetworkACLRuleProtocolAll, err error) {
+	model = &NetworkACLRulePatchNetworkACLRuleProtocolAll{
+		Protocol: core.StringPtr(protocol),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
 
 func (*NetworkACLRulePatchNetworkACLRuleProtocolAll) isaNetworkACLRulePatch() bool {
 	return true
@@ -29162,11 +29433,11 @@ func (*NetworkACLRulePatchNetworkACLRuleProtocolAll) isaNetworkACLRulePatch() bo
 // UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolAll unmarshals an instance of NetworkACLRulePatchNetworkACLRuleProtocolAll from the specified map of raw messages.
 func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRulePatchNetworkACLRuleProtocolAll)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleBeforePatch)
 	if err != nil {
 		return
 	}
@@ -29178,15 +29449,15 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolAll(m map[string]json.Raw
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
 	if err != nil {
 		return
 	}
@@ -29197,11 +29468,10 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolAll(m map[string]json.Raw
 // NetworkACLRulePatchNetworkACLRuleProtocolIcmp : NetworkACLRulePatchNetworkACLRuleProtocolIcmp struct
 // This model "extends" NetworkACLRulePatch
 type NetworkACLRulePatchNetworkACLRuleProtocolIcmp struct {
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in.
-	Name *string `json:"name,omitempty"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action,omitempty"`
+
+	Before NetworkACLRuleBeforePatchIntf `json:"before,omitempty"`
 
 	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination,omitempty"`
@@ -29209,18 +29479,18 @@ type NetworkACLRulePatchNetworkACLRuleProtocolIcmp struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction,omitempty"`
 
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in.
+	Name *string `json:"name,omitempty"`
+
 	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source,omitempty"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
-
-	// The rule to move this rule immediately before. Specify `null` to move this rule after all existing rules.
-	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
 	// The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also
 	// specified.
 	Code *int64 `json:"code,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The ICMP traffic type to allow. If unspecified, all types are allowed by this rule.
 	Type *int64 `json:"type,omitempty"`
@@ -29243,11 +29513,17 @@ const (
 // Constants associated with the NetworkACLRulePatchNetworkACLRuleProtocolIcmp.Protocol property.
 // The protocol to enforce.
 const (
-	NetworkACLRulePatchNetworkACLRuleProtocolIcmpProtocolAllConst  = "all"
 	NetworkACLRulePatchNetworkACLRuleProtocolIcmpProtocolIcmpConst = "icmp"
-	NetworkACLRulePatchNetworkACLRuleProtocolIcmpProtocolTCPConst  = "tcp"
-	NetworkACLRulePatchNetworkACLRuleProtocolIcmpProtocolUDPConst  = "udp"
 )
+
+// NewNetworkACLRulePatchNetworkACLRuleProtocolIcmp : Instantiate NetworkACLRulePatchNetworkACLRuleProtocolIcmp (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRulePatchNetworkACLRuleProtocolIcmp(protocol string) (model *NetworkACLRulePatchNetworkACLRuleProtocolIcmp, err error) {
+	model = &NetworkACLRulePatchNetworkACLRuleProtocolIcmp{
+		Protocol: core.StringPtr(protocol),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
 
 func (*NetworkACLRulePatchNetworkACLRuleProtocolIcmp) isaNetworkACLRulePatch() bool {
 	return true
@@ -29256,11 +29532,11 @@ func (*NetworkACLRulePatchNetworkACLRuleProtocolIcmp) isaNetworkACLRulePatch() b
 // UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolIcmp unmarshals an instance of NetworkACLRulePatchNetworkACLRuleProtocolIcmp from the specified map of raw messages.
 func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRulePatchNetworkACLRuleProtocolIcmp)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleBeforePatch)
 	if err != nil {
 		return
 	}
@@ -29272,19 +29548,19 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolIcmp(m map[string]json.Ra
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -29299,11 +29575,10 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolIcmp(m map[string]json.Ra
 // NetworkACLRulePatchNetworkACLRuleProtocolTcpudp : NetworkACLRulePatchNetworkACLRuleProtocolTcpudp struct
 // This model "extends" NetworkACLRulePatch
 type NetworkACLRulePatchNetworkACLRuleProtocolTcpudp struct {
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in.
-	Name *string `json:"name,omitempty"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action,omitempty"`
+
+	Before NetworkACLRuleBeforePatchIntf `json:"before,omitempty"`
 
 	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination,omitempty"`
@@ -29311,20 +29586,20 @@ type NetworkACLRulePatchNetworkACLRuleProtocolTcpudp struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction,omitempty"`
 
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in.
+	Name *string `json:"name,omitempty"`
+
 	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source,omitempty"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
-
-	// The rule to move this rule immediately before. Specify `null` to move this rule after all existing rules.
-	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	PortMax *int64 `json:"port_max,omitempty"`
 
 	// The inclusive lower bound of TCP/UDP destination port range.
 	PortMin *int64 `json:"port_min,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP source port range.
 	SourcePortMax *int64 `json:"source_port_max,omitempty"`
@@ -29350,11 +29625,18 @@ const (
 // Constants associated with the NetworkACLRulePatchNetworkACLRuleProtocolTcpudp.Protocol property.
 // The protocol to enforce.
 const (
-	NetworkACLRulePatchNetworkACLRuleProtocolTcpudpProtocolAllConst  = "all"
-	NetworkACLRulePatchNetworkACLRuleProtocolTcpudpProtocolIcmpConst = "icmp"
-	NetworkACLRulePatchNetworkACLRuleProtocolTcpudpProtocolTCPConst  = "tcp"
-	NetworkACLRulePatchNetworkACLRuleProtocolTcpudpProtocolUDPConst  = "udp"
+	NetworkACLRulePatchNetworkACLRuleProtocolTcpudpProtocolTCPConst = "tcp"
+	NetworkACLRulePatchNetworkACLRuleProtocolTcpudpProtocolUDPConst = "udp"
 )
+
+// NewNetworkACLRulePatchNetworkACLRuleProtocolTcpudp : Instantiate NetworkACLRulePatchNetworkACLRuleProtocolTcpudp (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRulePatchNetworkACLRuleProtocolTcpudp(protocol string) (model *NetworkACLRulePatchNetworkACLRuleProtocolTcpudp, err error) {
+	model = &NetworkACLRulePatchNetworkACLRuleProtocolTcpudp{
+		Protocol: core.StringPtr(protocol),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
 
 func (*NetworkACLRulePatchNetworkACLRuleProtocolTcpudp) isaNetworkACLRulePatch() bool {
 	return true
@@ -29363,11 +29645,11 @@ func (*NetworkACLRulePatchNetworkACLRuleProtocolTcpudp) isaNetworkACLRulePatch()
 // UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolTcpudp unmarshals an instance of NetworkACLRulePatchNetworkACLRuleProtocolTcpudp from the specified map of raw messages.
 func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRulePatchNetworkACLRuleProtocolTcpudp)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleBeforePatch)
 	if err != nil {
 		return
 	}
@@ -29379,15 +29661,11 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolTcpudp(m map[string]json.
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
 	if err != nil {
 		return
 	}
@@ -29396,6 +29674,10 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolTcpudp(m map[string]json.
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "port_min", &obj.PortMin)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -29414,10 +29696,6 @@ func UnmarshalNetworkACLRulePatchNetworkACLRuleProtocolTcpudp(m map[string]json.
 // NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll : NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll struct
 // This model "extends" NetworkACLRulePrototypeNetworkACLContext
 type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll struct {
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
@@ -29426,6 +29704,10 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll struct {
 
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
 
 	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
@@ -29451,11 +29733,21 @@ const (
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll.Protocol property.
 // The protocol to enforce.
 const (
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAllProtocolAllConst  = "all"
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAllProtocolIcmpConst = "icmp"
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAllProtocolTCPConst  = "tcp"
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAllProtocolUDPConst  = "udp"
+	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAllProtocolAllConst = "all"
 )
+
+// NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll : Instantiate NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll(action string, destination string, direction string, source string, protocol string) (model *NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll, err error) {
+	model = &NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll{
+		Action:      core.StringPtr(action),
+		Destination: core.StringPtr(destination),
+		Direction:   core.StringPtr(direction),
+		Source:      core.StringPtr(source),
+		Protocol:    core.StringPtr(protocol),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
 
 func (*NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll) isaNetworkACLRulePrototypeNetworkACLContext() bool {
 	return true
@@ -29464,10 +29756,6 @@ func (*NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll) isaNet
 // UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll unmarshals an instance of NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll from the specified map of raw messages.
 func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
@@ -29477,6 +29765,10 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll(
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -29495,10 +29787,6 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAll(
 // NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp : NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp struct
 // This model "extends" NetworkACLRulePrototypeNetworkACLContext
 type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp struct {
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
@@ -29508,15 +29796,19 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
 
 	// The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also
 	// specified.
 	Code *int64 `json:"code,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The ICMP traffic type to allow. If unspecified, all types are allowed by this rule.
 	Type *int64 `json:"type,omitempty"`
@@ -29539,11 +29831,21 @@ const (
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp.Protocol property.
 // The protocol to enforce.
 const (
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpProtocolAllConst  = "all"
 	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpProtocolIcmpConst = "icmp"
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpProtocolTCPConst  = "tcp"
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpProtocolUDPConst  = "udp"
 )
+
+// NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp : Instantiate NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp(action string, destination string, direction string, source string, protocol string) (model *NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp, err error) {
+	model = &NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp{
+		Action:      core.StringPtr(action),
+		Destination: core.StringPtr(destination),
+		Direction:   core.StringPtr(direction),
+		Source:      core.StringPtr(source),
+		Protocol:    core.StringPtr(protocol),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
 
 func (*NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp) isaNetworkACLRulePrototypeNetworkACLContext() bool {
 	return true
@@ -29552,10 +29854,6 @@ func (*NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp) isaNe
 // UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp unmarshals an instance of NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp from the specified map of raw messages.
 func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
@@ -29568,15 +29866,19 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -29591,10 +29893,6 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp
 // NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp : NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp struct
 // This model "extends" NetworkACLRulePrototypeNetworkACLContext
 type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp struct {
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
 
@@ -29604,17 +29902,21 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp struct
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	PortMax *int64 `json:"port_max,omitempty"`
 
 	// The inclusive lower bound of TCP/UDP destination port range.
 	PortMin *int64 `json:"port_min,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP source port range.
 	SourcePortMax *int64 `json:"source_port_max,omitempty"`
@@ -29640,11 +29942,22 @@ const (
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp.Protocol property.
 // The protocol to enforce.
 const (
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpProtocolAllConst  = "all"
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpProtocolIcmpConst = "icmp"
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpProtocolTCPConst  = "tcp"
-	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpProtocolUDPConst  = "udp"
+	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpProtocolTCPConst = "tcp"
+	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpProtocolUDPConst = "udp"
 )
+
+// NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp : Instantiate NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp(action string, destination string, direction string, source string, protocol string) (model *NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp, err error) {
+	model = &NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp{
+		Action:      core.StringPtr(action),
+		Destination: core.StringPtr(destination),
+		Direction:   core.StringPtr(direction),
+		Source:      core.StringPtr(source),
+		Protocol:    core.StringPtr(protocol),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
 
 func (*NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp) isaNetworkACLRulePrototypeNetworkACLContext() bool {
 	return true
@@ -29653,10 +29966,6 @@ func (*NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp) isa
 // UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp unmarshals an instance of NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp from the specified map of raw messages.
 func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudp)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
@@ -29669,11 +29978,11 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpu
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
@@ -29682,6 +29991,10 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpu
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "port_min", &obj.PortMin)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -29700,12 +30013,10 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpu
 // NetworkACLRulePrototypeNetworkACLRuleProtocolAll : NetworkACLRulePrototypeNetworkACLRuleProtocolAll struct
 // This model "extends" NetworkACLRulePrototype
 type NetworkACLRulePrototypeNetworkACLRuleProtocolAll struct {
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
+
+	Before NetworkACLRuleBeforePrototypeIntf `json:"before,omitempty"`
 
 	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
@@ -29713,14 +30024,15 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolAll struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
-
-	// The rule to insert this rule immediately before. If omitted, this rule will be inserted after all existing rules.
-	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 }
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolAll.Action property.
@@ -29740,11 +30052,21 @@ const (
 // Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolAll.Protocol property.
 // The protocol to enforce.
 const (
-	NetworkACLRulePrototypeNetworkACLRuleProtocolAllProtocolAllConst  = "all"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolAllProtocolIcmpConst = "icmp"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolAllProtocolTCPConst  = "tcp"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolAllProtocolUDPConst  = "udp"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolAllProtocolAllConst = "all"
 )
+
+// NewNetworkACLRulePrototypeNetworkACLRuleProtocolAll : Instantiate NetworkACLRulePrototypeNetworkACLRuleProtocolAll (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLRuleProtocolAll(action string, destination string, direction string, source string, protocol string) (model *NetworkACLRulePrototypeNetworkACLRuleProtocolAll, err error) {
+	model = &NetworkACLRulePrototypeNetworkACLRuleProtocolAll{
+		Action:      core.StringPtr(action),
+		Destination: core.StringPtr(destination),
+		Direction:   core.StringPtr(direction),
+		Source:      core.StringPtr(source),
+		Protocol:    core.StringPtr(protocol),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
 
 func (*NetworkACLRulePrototypeNetworkACLRuleProtocolAll) isaNetworkACLRulePrototype() bool {
 	return true
@@ -29753,11 +30075,11 @@ func (*NetworkACLRulePrototypeNetworkACLRuleProtocolAll) isaNetworkACLRuleProtot
 // UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolAll unmarshals an instance of NetworkACLRulePrototypeNetworkACLRuleProtocolAll from the specified map of raw messages.
 func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRulePrototypeNetworkACLRuleProtocolAll)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleBeforePrototype)
 	if err != nil {
 		return
 	}
@@ -29769,15 +30091,15 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolAll(m map[string]json
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
 	if err != nil {
 		return
 	}
@@ -29788,12 +30110,10 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolAll(m map[string]json
 // NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp : NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp struct
 // This model "extends" NetworkACLRulePrototype
 type NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp struct {
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
+
+	Before NetworkACLRuleBeforePrototypeIntf `json:"before,omitempty"`
 
 	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
@@ -29801,18 +30121,19 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
-
-	// The rule to insert this rule immediately before. If omitted, this rule will be inserted after all existing rules.
-	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
 	// The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also
 	// specified.
 	Code *int64 `json:"code,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The ICMP traffic type to allow. If unspecified, all types are allowed by this rule.
 	Type *int64 `json:"type,omitempty"`
@@ -29835,11 +30156,21 @@ const (
 // Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp.Protocol property.
 // The protocol to enforce.
 const (
-	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpProtocolAllConst  = "all"
 	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpProtocolIcmpConst = "icmp"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpProtocolTCPConst  = "tcp"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpProtocolUDPConst  = "udp"
 )
+
+// NewNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp : Instantiate NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp(action string, destination string, direction string, source string, protocol string) (model *NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp, err error) {
+	model = &NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp{
+		Action:      core.StringPtr(action),
+		Destination: core.StringPtr(destination),
+		Direction:   core.StringPtr(direction),
+		Source:      core.StringPtr(source),
+		Protocol:    core.StringPtr(protocol),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
 
 func (*NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp) isaNetworkACLRulePrototype() bool {
 	return true
@@ -29848,11 +30179,11 @@ func (*NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp) isaNetworkACLRuleProto
 // UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp unmarshals an instance of NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp from the specified map of raw messages.
 func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRulePrototypeNetworkACLRuleProtocolIcmp)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleBeforePrototype)
 	if err != nil {
 		return
 	}
@@ -29864,19 +30195,19 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp(m map[string]jso
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -29891,12 +30222,10 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolIcmp(m map[string]jso
 // NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp : NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp struct
 // This model "extends" NetworkACLRulePrototype
 type NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp struct {
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
+
+	Before NetworkACLRuleBeforePrototypeIntf `json:"before,omitempty"`
 
 	// The destination IP address or CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
 	Destination *string `json:"destination" validate:"required"`
@@ -29904,20 +30233,21 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp struct {
 	// Whether the traffic to be matched is `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
 
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
 	// The source IP address or CIDR block.  The CIDR block `0.0.0.0/0` applies to all addresses.
 	Source *string `json:"source" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
-
-	// The rule to insert this rule immediately before. If omitted, this rule will be inserted after all existing rules.
-	Before NetworkACLRuleIdentityIntf `json:"before,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	PortMax *int64 `json:"port_max,omitempty"`
 
 	// The inclusive lower bound of TCP/UDP destination port range.
 	PortMin *int64 `json:"port_min,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP source port range.
 	SourcePortMax *int64 `json:"source_port_max,omitempty"`
@@ -29943,11 +30273,22 @@ const (
 // Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp.Protocol property.
 // The protocol to enforce.
 const (
-	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpProtocolAllConst  = "all"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpProtocolIcmpConst = "icmp"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpProtocolTCPConst  = "tcp"
-	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpProtocolUDPConst  = "udp"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpProtocolTCPConst = "tcp"
+	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpProtocolUDPConst = "udp"
 )
+
+// NewNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp : Instantiate NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp (Generic Model Constructor)
+func (*VpcClassicV1) NewNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(action string, destination string, direction string, source string, protocol string) (model *NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp, err error) {
+	model = &NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp{
+		Action:      core.StringPtr(action),
+		Destination: core.StringPtr(destination),
+		Direction:   core.StringPtr(direction),
+		Source:      core.StringPtr(source),
+		Protocol:    core.StringPtr(protocol),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
 
 func (*NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp) isaNetworkACLRulePrototype() bool {
 	return true
@@ -29956,11 +30297,11 @@ func (*NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp) isaNetworkACLRulePro
 // UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp unmarshals an instance of NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp from the specified map of raw messages.
 func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleBeforePrototype)
 	if err != nil {
 		return
 	}
@@ -29972,15 +30313,11 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(m map[string]j
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "before", &obj.Before, UnmarshalNetworkACLRuleIdentity)
 	if err != nil {
 		return
 	}
@@ -29989,6 +30326,10 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(m map[string]j
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "port_min", &obj.PortMin)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -30007,30 +30348,8 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudp(m map[string]j
 // NetworkACLRuleNetworkACLRuleProtocolAll : NetworkACLRuleNetworkACLRuleProtocolAll struct
 // This model "extends" NetworkACLRule
 type NetworkACLRuleNetworkACLRuleProtocolAll struct {
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
-
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
 
 	// The rule that this rule is immediately before. If absent, this is the last rule.
 	Before *NetworkACLRuleReference `json:"before,omitempty"`
@@ -30038,8 +30357,30 @@ type NetworkACLRuleNetworkACLRuleProtocolAll struct {
 	// The date and time that the rule was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
+	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination" validate:"required"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The URL for this network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
 	// The IP version for this rule.
 	IPVersion *string `json:"ip_version" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 }
 
 // Constants associated with the NetworkACLRuleNetworkACLRuleProtocolAll.Action property.
@@ -30056,20 +30397,17 @@ const (
 	NetworkACLRuleNetworkACLRuleProtocolAllDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolAll.Protocol property.
-// The protocol to enforce.
-const (
-	NetworkACLRuleNetworkACLRuleProtocolAllProtocolAllConst  = "all"
-	NetworkACLRuleNetworkACLRuleProtocolAllProtocolIcmpConst = "icmp"
-	NetworkACLRuleNetworkACLRuleProtocolAllProtocolTCPConst  = "tcp"
-	NetworkACLRuleNetworkACLRuleProtocolAllProtocolUDPConst  = "udp"
-)
-
 // Constants associated with the NetworkACLRuleNetworkACLRuleProtocolAll.IPVersion property.
 // The IP version for this rule.
 const (
 	NetworkACLRuleNetworkACLRuleProtocolAllIPVersionIpv4Const = "ipv4"
 	NetworkACLRuleNetworkACLRuleProtocolAllIPVersionIpv6Const = "ipv6"
+)
+
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolAll.Protocol property.
+// The protocol to enforce.
+const (
+	NetworkACLRuleNetworkACLRuleProtocolAllProtocolAllConst = "all"
 )
 
 func (*NetworkACLRuleNetworkACLRuleProtocolAll) isaNetworkACLRule() bool {
@@ -30079,35 +30417,7 @@ func (*NetworkACLRuleNetworkACLRuleProtocolAll) isaNetworkACLRule() bool {
 // UnmarshalNetworkACLRuleNetworkACLRuleProtocolAll unmarshals an instance of NetworkACLRuleNetworkACLRuleProtocolAll from the specified map of raw messages.
 func UnmarshalNetworkACLRuleNetworkACLRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRuleNetworkACLRuleProtocolAll)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -30119,7 +30429,35 @@ func UnmarshalNetworkACLRuleNetworkACLRuleProtocolAll(m map[string]json.RawMessa
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -30130,30 +30468,8 @@ func UnmarshalNetworkACLRuleNetworkACLRuleProtocolAll(m map[string]json.RawMessa
 // NetworkACLRuleNetworkACLRuleProtocolIcmp : NetworkACLRuleNetworkACLRuleProtocolIcmp struct
 // This model "extends" NetworkACLRule
 type NetworkACLRuleNetworkACLRuleProtocolIcmp struct {
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
-
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
 
 	// The rule that this rule is immediately before. If absent, this is the last rule.
 	Before *NetworkACLRuleReference `json:"before,omitempty"`
@@ -30161,12 +30477,34 @@ type NetworkACLRuleNetworkACLRuleProtocolIcmp struct {
 	// The date and time that the rule was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
+	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination" validate:"required"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The URL for this network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
 	// The IP version for this rule.
 	IPVersion *string `json:"ip_version" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also
 	// specified.
 	Code *int64 `json:"code,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The ICMP traffic type to allow. If unspecified, all types are allowed by this rule.
 	Type *int64 `json:"type,omitempty"`
@@ -30186,20 +30524,17 @@ const (
 	NetworkACLRuleNetworkACLRuleProtocolIcmpDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolIcmp.Protocol property.
-// The protocol to enforce.
-const (
-	NetworkACLRuleNetworkACLRuleProtocolIcmpProtocolAllConst  = "all"
-	NetworkACLRuleNetworkACLRuleProtocolIcmpProtocolIcmpConst = "icmp"
-	NetworkACLRuleNetworkACLRuleProtocolIcmpProtocolTCPConst  = "tcp"
-	NetworkACLRuleNetworkACLRuleProtocolIcmpProtocolUDPConst  = "udp"
-)
-
 // Constants associated with the NetworkACLRuleNetworkACLRuleProtocolIcmp.IPVersion property.
 // The IP version for this rule.
 const (
 	NetworkACLRuleNetworkACLRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
 	NetworkACLRuleNetworkACLRuleProtocolIcmpIPVersionIpv6Const = "ipv6"
+)
+
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolIcmp.Protocol property.
+// The protocol to enforce.
+const (
+	NetworkACLRuleNetworkACLRuleProtocolIcmpProtocolIcmpConst = "icmp"
 )
 
 func (*NetworkACLRuleNetworkACLRuleProtocolIcmp) isaNetworkACLRule() bool {
@@ -30209,35 +30544,7 @@ func (*NetworkACLRuleNetworkACLRuleProtocolIcmp) isaNetworkACLRule() bool {
 // UnmarshalNetworkACLRuleNetworkACLRuleProtocolIcmp unmarshals an instance of NetworkACLRuleNetworkACLRuleProtocolIcmp from the specified map of raw messages.
 func UnmarshalNetworkACLRuleNetworkACLRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRuleNetworkACLRuleProtocolIcmp)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -30249,11 +30556,39 @@ func UnmarshalNetworkACLRuleNetworkACLRuleProtocolIcmp(m map[string]json.RawMess
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -30268,30 +30603,8 @@ func UnmarshalNetworkACLRuleNetworkACLRuleProtocolIcmp(m map[string]json.RawMess
 // NetworkACLRuleNetworkACLRuleProtocolTcpudp : NetworkACLRuleNetworkACLRuleProtocolTcpudp struct
 // This model "extends" NetworkACLRule
 type NetworkACLRuleNetworkACLRuleProtocolTcpudp struct {
-	// The unique identifier for this Network ACL rule.
-	ID *string `json:"id" validate:"required"`
-
-	// The URL for this Network ACL rule.
-	Href *string `json:"href" validate:"required"`
-
-	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name" validate:"required"`
-
 	// Whether to allow or deny matching traffic.
 	Action *string `json:"action" validate:"required"`
-
-	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Destination *string `json:"destination" validate:"required"`
-
-	// Whether the traffic to be matched is `inbound` or `outbound`.
-	Direction *string `json:"direction" validate:"required"`
-
-	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
-	Source *string `json:"source" validate:"required"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol" validate:"required"`
 
 	// The rule that this rule is immediately before. If absent, this is the last rule.
 	Before *NetworkACLRuleReference `json:"before,omitempty"`
@@ -30299,14 +30612,36 @@ type NetworkACLRuleNetworkACLRuleProtocolTcpudp struct {
 	// The date and time that the rule was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
+	// The destination CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Destination *string `json:"destination" validate:"required"`
+
+	// Whether the traffic to be matched is `inbound` or `outbound`.
+	Direction *string `json:"direction" validate:"required"`
+
+	// The URL for this network ACL rule.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this network ACL rule.
+	ID *string `json:"id" validate:"required"`
+
 	// The IP version for this rule.
 	IPVersion *string `json:"ip_version" validate:"required"`
+
+	// The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
+	// The source CIDR block. The CIDR block `0.0.0.0/0` applies to all addresses.
+	Source *string `json:"source" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP destination port range.
 	PortMax *int64 `json:"port_max,omitempty"`
 
 	// The inclusive lower bound of TCP/UDP destination port range.
 	PortMin *int64 `json:"port_min,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The inclusive upper bound of TCP/UDP source port range.
 	SourcePortMax *int64 `json:"source_port_max,omitempty"`
@@ -30329,20 +30664,18 @@ const (
 	NetworkACLRuleNetworkACLRuleProtocolTcpudpDirectionOutboundConst = "outbound"
 )
 
-// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolTcpudp.Protocol property.
-// The protocol to enforce.
-const (
-	NetworkACLRuleNetworkACLRuleProtocolTcpudpProtocolAllConst  = "all"
-	NetworkACLRuleNetworkACLRuleProtocolTcpudpProtocolIcmpConst = "icmp"
-	NetworkACLRuleNetworkACLRuleProtocolTcpudpProtocolTCPConst  = "tcp"
-	NetworkACLRuleNetworkACLRuleProtocolTcpudpProtocolUDPConst  = "udp"
-)
-
 // Constants associated with the NetworkACLRuleNetworkACLRuleProtocolTcpudp.IPVersion property.
 // The IP version for this rule.
 const (
 	NetworkACLRuleNetworkACLRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
 	NetworkACLRuleNetworkACLRuleProtocolTcpudpIPVersionIpv6Const = "ipv6"
+)
+
+// Constants associated with the NetworkACLRuleNetworkACLRuleProtocolTcpudp.Protocol property.
+// The protocol to enforce.
+const (
+	NetworkACLRuleNetworkACLRuleProtocolTcpudpProtocolTCPConst = "tcp"
+	NetworkACLRuleNetworkACLRuleProtocolTcpudpProtocolUDPConst = "udp"
 )
 
 func (*NetworkACLRuleNetworkACLRuleProtocolTcpudp) isaNetworkACLRule() bool {
@@ -30352,35 +30685,7 @@ func (*NetworkACLRuleNetworkACLRuleProtocolTcpudp) isaNetworkACLRule() bool {
 // UnmarshalNetworkACLRuleNetworkACLRuleProtocolTcpudp unmarshals an instance of NetworkACLRuleNetworkACLRuleProtocolTcpudp from the specified map of raw messages.
 func UnmarshalNetworkACLRuleNetworkACLRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(NetworkACLRuleNetworkACLRuleProtocolTcpudp)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -30392,7 +30697,31 @@ func UnmarshalNetworkACLRuleNetworkACLRuleProtocolTcpudp(m map[string]json.RawMe
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "source", &obj.Source)
 	if err != nil {
 		return
 	}
@@ -30401,6 +30730,10 @@ func UnmarshalNetworkACLRuleNetworkACLRuleProtocolTcpudp(m map[string]json.RawMe
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "port_min", &obj.PortMin)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -30450,7 +30783,7 @@ func UnmarshalOperatingSystemIdentityByHref(m map[string]json.RawMessage, result
 // OperatingSystemIdentityByName : OperatingSystemIdentityByName struct
 // This model "extends" OperatingSystemIdentity
 type OperatingSystemIdentityByName struct {
-	// The unique name of the operating system.
+	// The globally unique name for this operating system.
 	Name *string `json:"name" validate:"required"`
 }
 
@@ -30470,6 +30803,86 @@ func (*OperatingSystemIdentityByName) isaOperatingSystemIdentity() bool {
 // UnmarshalOperatingSystemIdentityByName unmarshals an instance of OperatingSystemIdentityByName from the specified map of raw messages.
 func UnmarshalOperatingSystemIdentityByName(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(OperatingSystemIdentityByName)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// PublicGatewayFloatingIPPrototypeFloatingIPIdentity : Identifies a floating IP by a unique property.
+// Models which "extend" this model:
+// - PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByID
+// - PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByCRN
+// - PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByHref
+// - PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByAddress
+// This model "extends" PublicGatewayFloatingIPPrototype
+type PublicGatewayFloatingIPPrototypeFloatingIPIdentity struct {
+	// The unique identifier for this floating IP.
+	ID *string `json:"id,omitempty"`
+
+	// The CRN for this floating IP.
+	CRN *string `json:"crn,omitempty"`
+
+	// The URL for this floating IP.
+	Href *string `json:"href,omitempty"`
+
+	// The globally unique IP address.
+	Address *string `json:"address,omitempty"`
+}
+
+func (*PublicGatewayFloatingIPPrototypeFloatingIPIdentity) isaPublicGatewayFloatingIPPrototypeFloatingIPIdentity() bool {
+	return true
+}
+
+type PublicGatewayFloatingIPPrototypeFloatingIPIdentityIntf interface {
+	PublicGatewayFloatingIPPrototypeIntf
+	isaPublicGatewayFloatingIPPrototypeFloatingIPIdentity() bool
+}
+
+func (*PublicGatewayFloatingIPPrototypeFloatingIPIdentity) isaPublicGatewayFloatingIPPrototype() bool {
+	return true
+}
+
+// UnmarshalPublicGatewayFloatingIPPrototypeFloatingIPIdentity unmarshals an instance of PublicGatewayFloatingIPPrototypeFloatingIPIdentity from the specified map of raw messages.
+func UnmarshalPublicGatewayFloatingIPPrototypeFloatingIPIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PublicGatewayFloatingIPPrototypeFloatingIPIdentity)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// PublicGatewayFloatingIPPrototypeFloatingIPPrototypeTargetContext : PublicGatewayFloatingIPPrototypeFloatingIPPrototypeTargetContext struct
+// This model "extends" PublicGatewayFloatingIPPrototype
+type PublicGatewayFloatingIPPrototypeFloatingIPPrototypeTargetContext struct {
+	// The unique user-defined name for this floating IP. If unspecified, the name will be a hyphenated list of
+	// randomly-selected words.
+	Name *string `json:"name,omitempty"`
+}
+
+func (*PublicGatewayFloatingIPPrototypeFloatingIPPrototypeTargetContext) isaPublicGatewayFloatingIPPrototype() bool {
+	return true
+}
+
+// UnmarshalPublicGatewayFloatingIPPrototypeFloatingIPPrototypeTargetContext unmarshals an instance of PublicGatewayFloatingIPPrototypeFloatingIPPrototypeTargetContext from the specified map of raw messages.
+func UnmarshalPublicGatewayFloatingIPPrototypeFloatingIPPrototypeTargetContext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PublicGatewayFloatingIPPrototypeFloatingIPPrototypeTargetContext)
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -30564,86 +30977,6 @@ func (*PublicGatewayIdentityByID) isaPublicGatewayIdentity() bool {
 func UnmarshalPublicGatewayIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(PublicGatewayIdentityByID)
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// PublicGatewayPrototypeFloatingIPFloatingIPIdentity : Identifies a floating IP by a unique property.
-// Models which "extend" this model:
-// - PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByID
-// - PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByCRN
-// - PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByHref
-// - PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByAddress
-// This model "extends" PublicGatewayPrototypeFloatingIP
-type PublicGatewayPrototypeFloatingIPFloatingIPIdentity struct {
-	// The unique identifier for this floating IP.
-	ID *string `json:"id,omitempty"`
-
-	// The CRN for this floating IP.
-	CRN *string `json:"crn,omitempty"`
-
-	// The URL for this floating IP.
-	Href *string `json:"href,omitempty"`
-
-	// The globally unique IP address.
-	Address *string `json:"address,omitempty"`
-}
-
-func (*PublicGatewayPrototypeFloatingIPFloatingIPIdentity) isaPublicGatewayPrototypeFloatingIPFloatingIPIdentity() bool {
-	return true
-}
-
-type PublicGatewayPrototypeFloatingIPFloatingIPIdentityIntf interface {
-	PublicGatewayPrototypeFloatingIPIntf
-	isaPublicGatewayPrototypeFloatingIPFloatingIPIdentity() bool
-}
-
-func (*PublicGatewayPrototypeFloatingIPFloatingIPIdentity) isaPublicGatewayPrototypeFloatingIP() bool {
-	return true
-}
-
-// UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPIdentity unmarshals an instance of PublicGatewayPrototypeFloatingIPFloatingIPIdentity from the specified map of raw messages.
-func UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(PublicGatewayPrototypeFloatingIPFloatingIPIdentity)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// PublicGatewayPrototypeFloatingIPFloatingIPPrototypeTargetContext : PublicGatewayPrototypeFloatingIPFloatingIPPrototypeTargetContext struct
-// This model "extends" PublicGatewayPrototypeFloatingIP
-type PublicGatewayPrototypeFloatingIPFloatingIPPrototypeTargetContext struct {
-	// The unique user-defined name for this floating IP. If unspecified, the name will be a hyphenated list of
-	// randomly-selected words.
-	Name *string `json:"name,omitempty"`
-}
-
-func (*PublicGatewayPrototypeFloatingIPFloatingIPPrototypeTargetContext) isaPublicGatewayPrototypeFloatingIP() bool {
-	return true
-}
-
-// UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPPrototypeTargetContext unmarshals an instance of PublicGatewayPrototypeFloatingIPFloatingIPPrototypeTargetContext from the specified map of raw messages.
-func UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPPrototypeTargetContext(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(PublicGatewayPrototypeFloatingIPFloatingIPPrototypeTargetContext)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -30832,127 +31165,10 @@ func UnmarshalSecurityGroupIdentityByID(m map[string]json.RawMessage, result int
 	return
 }
 
-// SecurityGroupRulePatchRemoteCIDR : SecurityGroupRulePatchRemoteCIDR struct
-// This model "extends" SecurityGroupRulePatchRemote
-type SecurityGroupRulePatchRemoteCIDR struct {
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchRemoteCIDR : Instantiate SecurityGroupRulePatchRemoteCIDR (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchRemoteCIDR(cidrBlock string) (model *SecurityGroupRulePatchRemoteCIDR, err error) {
-	model = &SecurityGroupRulePatchRemoteCIDR{
-		CIDRBlock: core.StringPtr(cidrBlock),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchRemoteCIDR) isaSecurityGroupRulePatchRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchRemoteCIDR unmarshals an instance of SecurityGroupRulePatchRemoteCIDR from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchRemoteCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchRemoteCIDR)
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchRemoteIP : SecurityGroupRulePatchRemoteIP struct
-// This model "extends" SecurityGroupRulePatchRemote
-type SecurityGroupRulePatchRemoteIP struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address" validate:"required"`
-}
-
-// NewSecurityGroupRulePatchRemoteIP : Instantiate SecurityGroupRulePatchRemoteIP (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchRemoteIP(address string) (model *SecurityGroupRulePatchRemoteIP, err error) {
-	model = &SecurityGroupRulePatchRemoteIP{
-		Address: core.StringPtr(address),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePatchRemoteIP) isaSecurityGroupRulePatchRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchRemoteIP unmarshals an instance of SecurityGroupRulePatchRemoteIP from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchRemoteIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchRemoteIP)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePatchRemoteSecurityGroupIdentity : Identifies a security group by a unique property.
-// Models which "extend" this model:
-// - SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByID
-// - SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN
-// - SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByHref
-// This model "extends" SecurityGroupRulePatchRemote
-type SecurityGroupRulePatchRemoteSecurityGroupIdentity struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePatchRemoteSecurityGroupIdentity) isaSecurityGroupRulePatchRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-type SecurityGroupRulePatchRemoteSecurityGroupIdentityIntf interface {
-	SecurityGroupRulePatchRemoteIntf
-	isaSecurityGroupRulePatchRemoteSecurityGroupIdentity() bool
-}
-
-func (*SecurityGroupRulePatchRemoteSecurityGroupIdentity) isaSecurityGroupRulePatchRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePatchRemoteSecurityGroupIdentity unmarshals an instance of SecurityGroupRulePatchRemoteSecurityGroupIdentity from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchRemoteSecurityGroupIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchRemoteSecurityGroupIdentity)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // SecurityGroupRulePatchSecurityGroupRuleProtocolAll : When `protocol` is `all`, then it's invalid to specify `port_min`, `port_max`, `type` or
 // `code`.
 // This model "extends" SecurityGroupRulePatch
 type SecurityGroupRulePatchSecurityGroupRuleProtocolAll struct {
-	Remote SecurityGroupRulePatchRemoteIntf `json:"remote,omitempty"`
-
 	// The direction of traffic to enforce, either `inbound` or `outbound`.
 	Direction *string `json:"direction,omitempty"`
 
@@ -30961,8 +31177,10 @@ type SecurityGroupRulePatchSecurityGroupRuleProtocolAll struct {
 	// interfaces) in that group matching this IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
+	Remote SecurityGroupRuleRemotePatchIntf `json:"remote,omitempty"`
+
 	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol" validate:"required"`
 }
 
 // Constants associated with the SecurityGroupRulePatchSecurityGroupRuleProtocolAll.Direction property.
@@ -30983,11 +31201,17 @@ const (
 // Constants associated with the SecurityGroupRulePatchSecurityGroupRuleProtocolAll.Protocol property.
 // The protocol to enforce.
 const (
-	SecurityGroupRulePatchSecurityGroupRuleProtocolAllProtocolAllConst  = "all"
-	SecurityGroupRulePatchSecurityGroupRuleProtocolAllProtocolIcmpConst = "icmp"
-	SecurityGroupRulePatchSecurityGroupRuleProtocolAllProtocolTCPConst  = "tcp"
-	SecurityGroupRulePatchSecurityGroupRuleProtocolAllProtocolUDPConst  = "udp"
+	SecurityGroupRulePatchSecurityGroupRuleProtocolAllProtocolAllConst = "all"
 )
+
+// NewSecurityGroupRulePatchSecurityGroupRuleProtocolAll : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolAll (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolAll(protocol string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolAll, err error) {
+	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolAll{
+		Protocol: core.StringPtr(protocol),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
 
 func (*SecurityGroupRulePatchSecurityGroupRuleProtocolAll) isaSecurityGroupRulePatch() bool {
 	return true
@@ -30996,15 +31220,15 @@ func (*SecurityGroupRulePatchSecurityGroupRuleProtocolAll) isaSecurityGroupRuleP
 // UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAll unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolAll from the specified map of raw messages.
 func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolAll)
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePatchRemote)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemotePatch)
 	if err != nil {
 		return
 	}
@@ -31022,8 +31246,6 @@ func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolAll(m map[string]js
 // codes.
 // This model "extends" SecurityGroupRulePatch
 type SecurityGroupRulePatchSecurityGroupRuleProtocolIcmp struct {
-	Remote SecurityGroupRulePatchRemoteIntf `json:"remote,omitempty"`
-
 	// The direction of traffic to enforce, either `inbound` or `outbound`.
 	Direction *string `json:"direction,omitempty"`
 
@@ -31032,11 +31254,13 @@ type SecurityGroupRulePatchSecurityGroupRuleProtocolIcmp struct {
 	// interfaces) in that group matching this IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Remote SecurityGroupRuleRemotePatchIntf `json:"remote,omitempty"`
 
 	// The ICMP traffic code to allow.
 	Code *int64 `json:"code,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The ICMP traffic type to allow.
 	Type *int64 `json:"type,omitempty"`
@@ -31060,11 +31284,17 @@ const (
 // Constants associated with the SecurityGroupRulePatchSecurityGroupRuleProtocolIcmp.Protocol property.
 // The protocol to enforce.
 const (
-	SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpProtocolAllConst  = "all"
 	SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpProtocolIcmpConst = "icmp"
-	SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpProtocolTCPConst  = "tcp"
-	SecurityGroupRulePatchSecurityGroupRuleProtocolIcmpProtocolUDPConst  = "udp"
 )
+
+// NewSecurityGroupRulePatchSecurityGroupRuleProtocolIcmp : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolIcmp (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolIcmp(protocol string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolIcmp, err error) {
+	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolIcmp{
+		Protocol: core.StringPtr(protocol),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
 
 func (*SecurityGroupRulePatchSecurityGroupRuleProtocolIcmp) isaSecurityGroupRulePatch() bool {
 	return true
@@ -31073,10 +31303,6 @@ func (*SecurityGroupRulePatchSecurityGroupRuleProtocolIcmp) isaSecurityGroupRule
 // UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmp unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolIcmp from the specified map of raw messages.
 func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolIcmp)
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePatchRemote)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
 	if err != nil {
 		return
@@ -31085,11 +31311,15 @@ func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmp(m map[string]j
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemotePatch)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -31106,8 +31336,6 @@ func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolIcmp(m map[string]j
 // single port, set both to the same value.
 // This model "extends" SecurityGroupRulePatch
 type SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp struct {
-	Remote SecurityGroupRulePatchRemoteIntf `json:"remote,omitempty"`
-
 	// The direction of traffic to enforce, either `inbound` or `outbound`.
 	Direction *string `json:"direction,omitempty"`
 
@@ -31116,14 +31344,16 @@ type SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp struct {
 	// interfaces) in that group matching this IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Remote SecurityGroupRuleRemotePatchIntf `json:"remote,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP port range.
 	PortMax *int64 `json:"port_max,omitempty"`
 
 	// The inclusive lower bound of TCP/UDP port range.
 	PortMin *int64 `json:"port_min,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 }
 
 // Constants associated with the SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp.Direction property.
@@ -31144,11 +31374,18 @@ const (
 // Constants associated with the SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp.Protocol property.
 // The protocol to enforce.
 const (
-	SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpProtocolAllConst  = "all"
-	SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpProtocolIcmpConst = "icmp"
-	SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpProtocolTCPConst  = "tcp"
-	SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpProtocolUDPConst  = "udp"
+	SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpProtocolTCPConst = "tcp"
+	SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudpProtocolUDPConst = "udp"
 )
+
+// NewSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp : Instantiate SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp(protocol string) (model *SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp, err error) {
+	model = &SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp{
+		Protocol: core.StringPtr(protocol),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
 
 func (*SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp) isaSecurityGroupRulePatch() bool {
 	return true
@@ -31157,10 +31394,6 @@ func (*SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp) isaSecurityGroupRu
 // UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp unmarshals an instance of SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp from the specified map of raw messages.
 func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp)
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePatchRemote)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
 	if err != nil {
 		return
@@ -31169,7 +31402,7 @@ func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp(m map[string
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemotePatch)
 	if err != nil {
 		return
 	}
@@ -31181,118 +31414,7 @@ func UnmarshalSecurityGroupRulePatchSecurityGroupRuleProtocolTcpudp(m map[string
 	if err != nil {
 		return
 	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeRemoteCIDR : SecurityGroupRulePrototypeRemoteCIDR struct
-// This model "extends" SecurityGroupRulePrototypeRemote
-type SecurityGroupRulePrototypeRemoteCIDR struct {
-	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
-	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
-	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
-	CIDRBlock *string `json:"cidr_block" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeRemoteCIDR : Instantiate SecurityGroupRulePrototypeRemoteCIDR (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeRemoteCIDR(cidrBlock string) (model *SecurityGroupRulePrototypeRemoteCIDR, err error) {
-	model = &SecurityGroupRulePrototypeRemoteCIDR{
-		CIDRBlock: core.StringPtr(cidrBlock),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeRemoteCIDR) isaSecurityGroupRulePrototypeRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeRemoteCIDR unmarshals an instance of SecurityGroupRulePrototypeRemoteCIDR from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeRemoteCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeRemoteCIDR)
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeRemoteIP : SecurityGroupRulePrototypeRemoteIP struct
-// This model "extends" SecurityGroupRulePrototypeRemote
-type SecurityGroupRulePrototypeRemoteIP struct {
-	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
-	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
-	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	Address *string `json:"address" validate:"required"`
-}
-
-// NewSecurityGroupRulePrototypeRemoteIP : Instantiate SecurityGroupRulePrototypeRemoteIP (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeRemoteIP(address string) (model *SecurityGroupRulePrototypeRemoteIP, err error) {
-	model = &SecurityGroupRulePrototypeRemoteIP{
-		Address: core.StringPtr(address),
-	}
-	err = core.ValidateStruct(model, "required parameters")
-	return
-}
-
-func (*SecurityGroupRulePrototypeRemoteIP) isaSecurityGroupRulePrototypeRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeRemoteIP unmarshals an instance of SecurityGroupRulePrototypeRemoteIP from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeRemoteIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeRemoteIP)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// SecurityGroupRulePrototypeRemoteSecurityGroupIdentity : Identifies a security group by a unique property.
-// Models which "extend" this model:
-// - SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByID
-// - SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN
-// - SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByHref
-// This model "extends" SecurityGroupRulePrototypeRemote
-type SecurityGroupRulePrototypeRemoteSecurityGroupIdentity struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id,omitempty"`
-
-	// The security group's CRN.
-	CRN *string `json:"crn,omitempty"`
-
-	// The security group's canonical URL.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*SecurityGroupRulePrototypeRemoteSecurityGroupIdentity) isaSecurityGroupRulePrototypeRemoteSecurityGroupIdentity() bool {
-	return true
-}
-
-type SecurityGroupRulePrototypeRemoteSecurityGroupIdentityIntf interface {
-	SecurityGroupRulePrototypeRemoteIntf
-	isaSecurityGroupRulePrototypeRemoteSecurityGroupIdentity() bool
-}
-
-func (*SecurityGroupRulePrototypeRemoteSecurityGroupIdentity) isaSecurityGroupRulePrototypeRemote() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRulePrototypeRemoteSecurityGroupIdentity unmarshals an instance of SecurityGroupRulePrototypeRemoteSecurityGroupIdentity from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeRemoteSecurityGroupIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeRemoteSecurityGroupIdentity)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -31312,10 +31434,10 @@ type SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll struct {
 	// interfaces) in that group matching this IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
+	Remote SecurityGroupRuleRemotePrototypeIntf `json:"remote,omitempty"`
 
-	Remote SecurityGroupRulePrototypeRemoteIntf `json:"remote,omitempty"`
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 }
 
 // Constants associated with the SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll.Direction property.
@@ -31336,11 +31458,18 @@ const (
 // Constants associated with the SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll.Protocol property.
 // The protocol to enforce.
 const (
-	SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllProtocolAllConst  = "all"
-	SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllProtocolIcmpConst = "icmp"
-	SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllProtocolTCPConst  = "tcp"
-	SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllProtocolUDPConst  = "udp"
+	SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllProtocolAllConst = "all"
 )
+
+// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolAll : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolAll(direction string, protocol string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll, err error) {
+	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll{
+		Direction: core.StringPtr(direction),
+		Protocol:  core.StringPtr(protocol),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
 
 func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll) isaSecurityGroupRulePrototype() bool {
 	return true
@@ -31357,11 +31486,11 @@ func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAll(m map[strin
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemotePrototype)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePrototypeRemote)
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -31383,13 +31512,13 @@ type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp struct {
 	// interfaces) in that group matching this IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
-
-	Remote SecurityGroupRulePrototypeRemoteIntf `json:"remote,omitempty"`
+	Remote SecurityGroupRuleRemotePrototypeIntf `json:"remote,omitempty"`
 
 	// The ICMP traffic code to allow.
 	Code *int64 `json:"code,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The ICMP traffic type to allow.
 	Type *int64 `json:"type,omitempty"`
@@ -31413,11 +31542,18 @@ const (
 // Constants associated with the SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp.Protocol property.
 // The protocol to enforce.
 const (
-	SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpProtocolAllConst  = "all"
 	SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpProtocolIcmpConst = "icmp"
-	SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpProtocolTCPConst  = "tcp"
-	SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpProtocolUDPConst  = "udp"
 )
+
+// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp(direction string, protocol string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp, err error) {
+	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp{
+		Direction: core.StringPtr(direction),
+		Protocol:  core.StringPtr(protocol),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
 
 func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp) isaSecurityGroupRulePrototype() bool {
 	return true
@@ -31434,15 +31570,15 @@ func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp(m map[stri
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePrototypeRemote)
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemotePrototype)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -31467,16 +31603,16 @@ type SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp struct {
 	// interfaces) in that group matching this IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
-
-	Remote SecurityGroupRulePrototypeRemoteIntf `json:"remote,omitempty"`
+	Remote SecurityGroupRuleRemotePrototypeIntf `json:"remote,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP port range.
 	PortMax *int64 `json:"port_max,omitempty"`
 
 	// The inclusive lower bound of TCP/UDP port range.
 	PortMin *int64 `json:"port_min,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 }
 
 // Constants associated with the SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp.Direction property.
@@ -31497,11 +31633,19 @@ const (
 // Constants associated with the SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp.Protocol property.
 // The protocol to enforce.
 const (
-	SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpProtocolAllConst  = "all"
-	SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpProtocolIcmpConst = "icmp"
-	SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpProtocolTCPConst  = "tcp"
-	SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpProtocolUDPConst  = "udp"
+	SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpProtocolTCPConst = "tcp"
+	SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpProtocolUDPConst = "udp"
 )
+
+// NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp : Instantiate SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp(direction string, protocol string) (model *SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp, err error) {
+	model = &SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp{
+		Direction: core.StringPtr(direction),
+		Protocol:  core.StringPtr(protocol),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
 
 func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp) isaSecurityGroupRulePrototype() bool {
 	return true
@@ -31518,11 +31662,7 @@ func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp(m map[st
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRulePrototypeRemote)
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemotePrototype)
 	if err != nil {
 		return
 	}
@@ -31531,6 +31671,240 @@ func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp(m map[st
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "port_min", &obj.PortMin)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SecurityGroupRuleRemotePatchCIDR : SecurityGroupRuleRemotePatchCIDR struct
+// This model "extends" SecurityGroupRuleRemotePatch
+type SecurityGroupRuleRemotePatchCIDR struct {
+	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
+	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
+	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
+	CIDRBlock *string `json:"cidr_block" validate:"required"`
+}
+
+// NewSecurityGroupRuleRemotePatchCIDR : Instantiate SecurityGroupRuleRemotePatchCIDR (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRuleRemotePatchCIDR(cidrBlock string) (model *SecurityGroupRuleRemotePatchCIDR, err error) {
+	model = &SecurityGroupRuleRemotePatchCIDR{
+		CIDRBlock: core.StringPtr(cidrBlock),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*SecurityGroupRuleRemotePatchCIDR) isaSecurityGroupRuleRemotePatch() bool {
+	return true
+}
+
+// UnmarshalSecurityGroupRuleRemotePatchCIDR unmarshals an instance of SecurityGroupRuleRemotePatchCIDR from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePatchCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePatchCIDR)
+	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SecurityGroupRuleRemotePatchIP : SecurityGroupRuleRemotePatchIP struct
+// This model "extends" SecurityGroupRuleRemotePatch
+type SecurityGroupRuleRemotePatchIP struct {
+	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
+	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
+	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+	Address *string `json:"address" validate:"required"`
+}
+
+// NewSecurityGroupRuleRemotePatchIP : Instantiate SecurityGroupRuleRemotePatchIP (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRuleRemotePatchIP(address string) (model *SecurityGroupRuleRemotePatchIP, err error) {
+	model = &SecurityGroupRuleRemotePatchIP{
+		Address: core.StringPtr(address),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*SecurityGroupRuleRemotePatchIP) isaSecurityGroupRuleRemotePatch() bool {
+	return true
+}
+
+// UnmarshalSecurityGroupRuleRemotePatchIP unmarshals an instance of SecurityGroupRuleRemotePatchIP from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePatchIP(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePatchIP)
+	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SecurityGroupRuleRemotePatchSecurityGroupIdentity : Identifies a security group by a unique property.
+// Models which "extend" this model:
+// - SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID
+// - SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByCRN
+// - SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByHref
+// This model "extends" SecurityGroupRuleRemotePatch
+type SecurityGroupRuleRemotePatchSecurityGroupIdentity struct {
+	// The unique identifier for this security group.
+	ID *string `json:"id,omitempty"`
+
+	// The security group's CRN.
+	CRN *string `json:"crn,omitempty"`
+
+	// The security group's canonical URL.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*SecurityGroupRuleRemotePatchSecurityGroupIdentity) isaSecurityGroupRuleRemotePatchSecurityGroupIdentity() bool {
+	return true
+}
+
+type SecurityGroupRuleRemotePatchSecurityGroupIdentityIntf interface {
+	SecurityGroupRuleRemotePatchIntf
+	isaSecurityGroupRuleRemotePatchSecurityGroupIdentity() bool
+}
+
+func (*SecurityGroupRuleRemotePatchSecurityGroupIdentity) isaSecurityGroupRuleRemotePatch() bool {
+	return true
+}
+
+// UnmarshalSecurityGroupRuleRemotePatchSecurityGroupIdentity unmarshals an instance of SecurityGroupRuleRemotePatchSecurityGroupIdentity from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePatchSecurityGroupIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePatchSecurityGroupIdentity)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SecurityGroupRuleRemotePrototypeCIDR : SecurityGroupRuleRemotePrototypeCIDR struct
+// This model "extends" SecurityGroupRuleRemotePrototype
+type SecurityGroupRuleRemotePrototypeCIDR struct {
+	// The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this
+	// property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt
+	// processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
+	CIDRBlock *string `json:"cidr_block" validate:"required"`
+}
+
+// NewSecurityGroupRuleRemotePrototypeCIDR : Instantiate SecurityGroupRuleRemotePrototypeCIDR (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRuleRemotePrototypeCIDR(cidrBlock string) (model *SecurityGroupRuleRemotePrototypeCIDR, err error) {
+	model = &SecurityGroupRuleRemotePrototypeCIDR{
+		CIDRBlock: core.StringPtr(cidrBlock),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*SecurityGroupRuleRemotePrototypeCIDR) isaSecurityGroupRuleRemotePrototype() bool {
+	return true
+}
+
+// UnmarshalSecurityGroupRuleRemotePrototypeCIDR unmarshals an instance of SecurityGroupRuleRemotePrototypeCIDR from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePrototypeCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePrototypeCIDR)
+	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SecurityGroupRuleRemotePrototypeIP : SecurityGroupRuleRemotePrototypeIP struct
+// This model "extends" SecurityGroupRuleRemotePrototype
+type SecurityGroupRuleRemotePrototypeIP struct {
+	// The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this
+	// property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing
+	// and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+	Address *string `json:"address" validate:"required"`
+}
+
+// NewSecurityGroupRuleRemotePrototypeIP : Instantiate SecurityGroupRuleRemotePrototypeIP (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRuleRemotePrototypeIP(address string) (model *SecurityGroupRuleRemotePrototypeIP, err error) {
+	model = &SecurityGroupRuleRemotePrototypeIP{
+		Address: core.StringPtr(address),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*SecurityGroupRuleRemotePrototypeIP) isaSecurityGroupRuleRemotePrototype() bool {
+	return true
+}
+
+// UnmarshalSecurityGroupRuleRemotePrototypeIP unmarshals an instance of SecurityGroupRuleRemotePrototypeIP from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePrototypeIP(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePrototypeIP)
+	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SecurityGroupRuleRemotePrototypeSecurityGroupIdentity : Identifies a security group by a unique property.
+// Models which "extend" this model:
+// - SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByID
+// - SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByCRN
+// - SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByHref
+// This model "extends" SecurityGroupRuleRemotePrototype
+type SecurityGroupRuleRemotePrototypeSecurityGroupIdentity struct {
+	// The unique identifier for this security group.
+	ID *string `json:"id,omitempty"`
+
+	// The security group's CRN.
+	CRN *string `json:"crn,omitempty"`
+
+	// The security group's canonical URL.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*SecurityGroupRuleRemotePrototypeSecurityGroupIdentity) isaSecurityGroupRuleRemotePrototypeSecurityGroupIdentity() bool {
+	return true
+}
+
+type SecurityGroupRuleRemotePrototypeSecurityGroupIdentityIntf interface {
+	SecurityGroupRuleRemotePrototypeIntf
+	isaSecurityGroupRuleRemotePrototypeSecurityGroupIdentity() bool
+}
+
+func (*SecurityGroupRuleRemotePrototypeSecurityGroupIdentity) isaSecurityGroupRuleRemotePrototype() bool {
+	return true
+}
+
+// UnmarshalSecurityGroupRuleRemotePrototypeSecurityGroupIdentity unmarshals an instance of SecurityGroupRuleRemotePrototypeSecurityGroupIdentity from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePrototypeSecurityGroupIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePrototypeSecurityGroupIdentity)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -31589,14 +31963,14 @@ func UnmarshalSecurityGroupRuleRemoteIP(m map[string]json.RawMessage, result int
 // SecurityGroupRuleRemoteSecurityGroupReference : SecurityGroupRuleRemoteSecurityGroupReference struct
 // This model "extends" SecurityGroupRuleRemote
 type SecurityGroupRuleRemoteSecurityGroupReference struct {
-	// The unique identifier for this security group.
-	ID *string `json:"id" validate:"required"`
-
 	// The security group's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
 	// The security group's canonical URL.
 	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this security group.
+	ID *string `json:"id" validate:"required"`
 
 	// The user-defined name for this security group. Security group names must be unique, within the scope of an account.
 	Name *string `json:"name" validate:"required"`
@@ -31609,15 +31983,15 @@ func (*SecurityGroupRuleRemoteSecurityGroupReference) isaSecurityGroupRuleRemote
 // UnmarshalSecurityGroupRuleRemoteSecurityGroupReference unmarshals an instance of SecurityGroupRuleRemoteSecurityGroupReference from the specified map of raw messages.
 func UnmarshalSecurityGroupRuleRemoteSecurityGroupReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroupRuleRemoteSecurityGroupReference)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -31633,21 +32007,21 @@ func UnmarshalSecurityGroupRuleRemoteSecurityGroupReference(m map[string]json.Ra
 // `code`.
 // This model "extends" SecurityGroupRule
 type SecurityGroupRuleSecurityGroupRuleProtocolAll struct {
-	// The unique identifier for this security group rule.
-	ID *string `json:"id" validate:"required"`
-
 	// The direction of traffic to enforce, either `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
+
+	// The unique identifier for this security group rule.
+	ID *string `json:"id" validate:"required"`
 
 	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
 	// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
 	// interfaces) in that group matching this IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
-
 	Remote SecurityGroupRuleRemoteIntf `json:"remote,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 }
 
 // Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolAll.Direction property.
@@ -31668,10 +32042,7 @@ const (
 // Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolAll.Protocol property.
 // The protocol to enforce.
 const (
-	SecurityGroupRuleSecurityGroupRuleProtocolAllProtocolAllConst  = "all"
-	SecurityGroupRuleSecurityGroupRuleProtocolAllProtocolIcmpConst = "icmp"
-	SecurityGroupRuleSecurityGroupRuleProtocolAllProtocolTCPConst  = "tcp"
-	SecurityGroupRuleSecurityGroupRuleProtocolAllProtocolUDPConst  = "udp"
+	SecurityGroupRuleSecurityGroupRuleProtocolAllProtocolAllConst = "all"
 )
 
 func (*SecurityGroupRuleSecurityGroupRuleProtocolAll) isaSecurityGroupRule() bool {
@@ -31681,11 +32052,11 @@ func (*SecurityGroupRuleSecurityGroupRuleProtocolAll) isaSecurityGroupRule() boo
 // UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolAll unmarshals an instance of SecurityGroupRuleSecurityGroupRuleProtocolAll from the specified map of raw messages.
 func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolAll(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroupRuleSecurityGroupRuleProtocolAll)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -31693,11 +32064,11 @@ func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolAll(m map[string]json.Ra
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemote)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemote)
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -31711,24 +32082,24 @@ func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolAll(m map[string]json.Ra
 // codes.
 // This model "extends" SecurityGroupRule
 type SecurityGroupRuleSecurityGroupRuleProtocolIcmp struct {
-	// The unique identifier for this security group rule.
-	ID *string `json:"id" validate:"required"`
-
 	// The direction of traffic to enforce, either `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
+
+	// The unique identifier for this security group rule.
+	ID *string `json:"id" validate:"required"`
 
 	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
 	// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
 	// interfaces) in that group matching this IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
-
 	Remote SecurityGroupRuleRemoteIntf `json:"remote,omitempty"`
 
 	// The ICMP traffic code to allow.
 	Code *int64 `json:"code,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 
 	// The ICMP traffic type to allow.
 	Type *int64 `json:"type,omitempty"`
@@ -31752,10 +32123,7 @@ const (
 // Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolIcmp.Protocol property.
 // The protocol to enforce.
 const (
-	SecurityGroupRuleSecurityGroupRuleProtocolIcmpProtocolAllConst  = "all"
 	SecurityGroupRuleSecurityGroupRuleProtocolIcmpProtocolIcmpConst = "icmp"
-	SecurityGroupRuleSecurityGroupRuleProtocolIcmpProtocolTCPConst  = "tcp"
-	SecurityGroupRuleSecurityGroupRuleProtocolIcmpProtocolUDPConst  = "udp"
 )
 
 func (*SecurityGroupRuleSecurityGroupRuleProtocolIcmp) isaSecurityGroupRule() bool {
@@ -31765,19 +32133,15 @@ func (*SecurityGroupRuleSecurityGroupRuleProtocolIcmp) isaSecurityGroupRule() bo
 // UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolIcmp unmarshals an instance of SecurityGroupRuleSecurityGroupRuleProtocolIcmp from the specified map of raw messages.
 func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -31786,6 +32150,10 @@ func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolIcmp(m map[string]json.R
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -31802,19 +32170,16 @@ func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolIcmp(m map[string]json.R
 // single port, set both to the same value.
 // This model "extends" SecurityGroupRule
 type SecurityGroupRuleSecurityGroupRuleProtocolTcpudp struct {
-	// The unique identifier for this security group rule.
-	ID *string `json:"id" validate:"required"`
-
 	// The direction of traffic to enforce, either `inbound` or `outbound`.
 	Direction *string `json:"direction" validate:"required"`
+
+	// The unique identifier for this security group rule.
+	ID *string `json:"id" validate:"required"`
 
 	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this field, if they are
 	// used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network
 	// interfaces) in that group matching this IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
-
-	// The protocol to enforce.
-	Protocol *string `json:"protocol,omitempty"`
 
 	Remote SecurityGroupRuleRemoteIntf `json:"remote,omitempty"`
 
@@ -31823,6 +32188,9 @@ type SecurityGroupRuleSecurityGroupRuleProtocolTcpudp struct {
 
 	// The inclusive lower bound of TCP/UDP port range.
 	PortMin *int64 `json:"port_min,omitempty"`
+
+	// The protocol to enforce.
+	Protocol *string `json:"protocol" validate:"required"`
 }
 
 // Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolTcpudp.Direction property.
@@ -31843,10 +32211,8 @@ const (
 // Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolTcpudp.Protocol property.
 // The protocol to enforce.
 const (
-	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpProtocolAllConst  = "all"
-	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpProtocolIcmpConst = "icmp"
-	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpProtocolTCPConst  = "tcp"
-	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpProtocolUDPConst  = "udp"
+	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpProtocolTCPConst = "tcp"
+	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpProtocolUDPConst = "udp"
 )
 
 func (*SecurityGroupRuleSecurityGroupRuleProtocolTcpudp) isaSecurityGroupRule() bool {
@@ -31856,19 +32222,15 @@ func (*SecurityGroupRuleSecurityGroupRuleProtocolTcpudp) isaSecurityGroupRule() 
 // UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolTcpudp unmarshals an instance of SecurityGroupRuleSecurityGroupRuleProtocolTcpudp from the specified map of raw messages.
 func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolTcpudp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -31881,6 +32243,10 @@ func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolTcpudp(m map[string]json
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "port_min", &obj.PortMin)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -32215,17 +32581,418 @@ func UnmarshalVPCIdentityByID(m map[string]json.RawMessage, result interface{}) 
 	return
 }
 
-// VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext : VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext struct
-// Models which "extend" this model:
-// - VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity
-// This model "extends" VolumeAttachmentPrototypeInstanceContextVolume
-type VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext struct {
-	// The unique user-defined name for this volume.
+// VPNGatewayConnectionPolicyMode : VPNGatewayConnectionPolicyMode struct
+// This model "extends" VPNGatewayConnection
+type VPNGatewayConnectionPolicyMode struct {
+	// If set to false, the VPN gateway connection is shut down.
+	AdminStateUp *bool `json:"admin_state_up" validate:"required"`
+
+	// The authentication mode. Only `psk` is currently supported.
+	AuthenticationMode *string `json:"authentication_mode" validate:"required"`
+
+	// The date and time that this VPN gateway connection was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	DeadPeerDetection *VPNGatewayConnectionDpd `json:"dead_peer_detection" validate:"required"`
+
+	// The VPN connection's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this VPN gateway connection.
+	ID *string `json:"id" validate:"required"`
+
+	// Optional IKE policy configuration. The absence of a policy indicates autonegotiation.
+	IkePolicy *IkePolicyReference `json:"ike_policy,omitempty"`
+
+	// Optional IPsec policy configuration. The absence of a policy indicates autonegotiation.
+	IpsecPolicy *IPsecPolicyReference `json:"ipsec_policy,omitempty"`
+
+	// The mode of the VPN gateway.
+	Mode *string `json:"mode" validate:"required"`
+
+	// The user-defined name for this VPN gateway connection.
+	Name *string `json:"name" validate:"required"`
+
+	// The IP address of the peer VPN gateway.
+	PeerAddress *string `json:"peer_address" validate:"required"`
+
+	// The preshared key.
+	Psk *string `json:"psk" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The status of a VPN gateway connection.
+	Status *string `json:"status" validate:"required"`
+
+	// A collection of local CIDRs for this resource.
+	LocalCIDRs []string `json:"local_cidrs" validate:"required"`
+
+	// A collection of peer CIDRs for this resource.
+	PeerCIDRs []string `json:"peer_cidrs" validate:"required"`
+}
+
+// Constants associated with the VPNGatewayConnectionPolicyMode.AuthenticationMode property.
+// The authentication mode. Only `psk` is currently supported.
+const (
+	VPNGatewayConnectionPolicyModeAuthenticationModePskConst = "psk"
+)
+
+// Constants associated with the VPNGatewayConnectionPolicyMode.Mode property.
+// The mode of the VPN gateway.
+const (
+	VPNGatewayConnectionPolicyModeModePolicyConst = "policy"
+	VPNGatewayConnectionPolicyModeModeRouteConst  = "route"
+)
+
+// Constants associated with the VPNGatewayConnectionPolicyMode.ResourceType property.
+// The resource type.
+const (
+	VPNGatewayConnectionPolicyModeResourceTypeVPNGatewayConnectionConst = "vpn_gateway_connection"
+)
+
+// Constants associated with the VPNGatewayConnectionPolicyMode.Status property.
+// The status of a VPN gateway connection.
+const (
+	VPNGatewayConnectionPolicyModeStatusDownConst = "down"
+	VPNGatewayConnectionPolicyModeStatusUpConst   = "up"
+)
+
+func (*VPNGatewayConnectionPolicyMode) isaVPNGatewayConnection() bool {
+	return true
+}
+
+// UnmarshalVPNGatewayConnectionPolicyMode unmarshals an instance of VPNGatewayConnectionPolicyMode from the specified map of raw messages.
+func UnmarshalVPNGatewayConnectionPolicyMode(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayConnectionPolicyMode)
+	err = core.UnmarshalPrimitive(m, "admin_state_up", &obj.AdminStateUp)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "authentication_mode", &obj.AuthenticationMode)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "dead_peer_detection", &obj.DeadPeerDetection, UnmarshalVPNGatewayConnectionDpd)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "ike_policy", &obj.IkePolicy, UnmarshalIkePolicyReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "ipsec_policy", &obj.IpsecPolicy, UnmarshalIPsecPolicyReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "mode", &obj.Mode)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "peer_address", &obj.PeerAddress)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "psk", &obj.Psk)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCIDRs)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype : VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype struct
+// This model "extends" VPNGatewayConnectionPrototype
+type VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype struct {
+	// If set to false, the VPN gateway connection is shut down.
+	AdminStateUp *bool `json:"admin_state_up,omitempty"`
+
+	DeadPeerDetection *VPNGatewayConnectionDpdPrototype `json:"dead_peer_detection,omitempty"`
+
+	// Optional IKE policy configuration. The absence of a policy indicates autonegotiation.
+	IkePolicy IkePolicyIdentityIntf `json:"ike_policy,omitempty"`
+
+	// Optional IPsec policy configuration. The absence of a policy indicates autonegotiation.
+	IpsecPolicy IPsecPolicyIdentityIntf `json:"ipsec_policy,omitempty"`
+
+	// The user-defined name for this VPN gateway connection.
 	Name *string `json:"name,omitempty"`
 
-	// The profile to use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
+	// The IP address of the peer VPN gateway.
+	PeerAddress *string `json:"peer_address" validate:"required"`
 
+	// The preshared key.
+	Psk *string `json:"psk" validate:"required"`
+
+	// A collection of local CIDRs for this resource.
+	LocalCIDRs []string `json:"local_cidrs" validate:"required"`
+
+	// A collection of peer CIDRs for this resource.
+	PeerCIDRs []string `json:"peer_cidrs" validate:"required"`
+}
+
+// NewVPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype : Instantiate VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype (Generic Model Constructor)
+func (*VpcClassicV1) NewVPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype(peerAddress string, psk string, localCIDRs []string, peerCIDRs []string) (model *VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype, err error) {
+	model = &VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype{
+		PeerAddress: core.StringPtr(peerAddress),
+		Psk:         core.StringPtr(psk),
+		LocalCIDRs:  localCIDRs,
+		PeerCIDRs:   peerCIDRs,
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype) isaVPNGatewayConnectionPrototype() bool {
+	return true
+}
+
+// UnmarshalVPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype unmarshals an instance of VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype from the specified map of raw messages.
+func UnmarshalVPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype)
+	err = core.UnmarshalPrimitive(m, "admin_state_up", &obj.AdminStateUp)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "dead_peer_detection", &obj.DeadPeerDetection, UnmarshalVPNGatewayConnectionDpdPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "ike_policy", &obj.IkePolicy, UnmarshalIkePolicyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "ipsec_policy", &obj.IpsecPolicy, UnmarshalIPsecPolicyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "peer_address", &obj.PeerAddress)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "psk", &obj.Psk)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCIDRs)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayPolicyMode : VPNGatewayPolicyMode struct
+// This model "extends" VPNGateway
+type VPNGatewayPolicyMode struct {
+	// Collection of references to VPN gateway connections.
+	Connections []VPNGatewayConnectionReference `json:"connections" validate:"required"`
+
+	// The date and time that this VPN gateway was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The VPN gateway's CRN.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The VPN gateway's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this VPN gateway.
+	ID *string `json:"id" validate:"required"`
+
+	// Collection of VPN gateway members.
+	Members []VPNGatewayMember `json:"members" validate:"required"`
+
+	// The user-defined name for this VPN gateway.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource group for this VPN gateway.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The status of the VPN gateway.
+	Status *string `json:"status" validate:"required"`
+
+	Subnet *SubnetReference `json:"subnet" validate:"required"`
+
+	// Policy mode VPN gateway.
+	Mode *string `json:"mode" validate:"required"`
+}
+
+// Constants associated with the VPNGatewayPolicyMode.ResourceType property.
+// The resource type.
+const (
+	VPNGatewayPolicyModeResourceTypeVPNGatewayConst = "vpn_gateway"
+)
+
+// Constants associated with the VPNGatewayPolicyMode.Status property.
+// The status of the VPN gateway.
+const (
+	VPNGatewayPolicyModeStatusAvailableConst = "available"
+	VPNGatewayPolicyModeStatusDeletingConst  = "deleting"
+	VPNGatewayPolicyModeStatusFailedConst    = "failed"
+	VPNGatewayPolicyModeStatusPendingConst   = "pending"
+)
+
+// Constants associated with the VPNGatewayPolicyMode.Mode property.
+// Policy mode VPN gateway.
+const (
+	VPNGatewayPolicyModeModePolicyConst = "policy"
+)
+
+func (*VPNGatewayPolicyMode) isaVPNGateway() bool {
+	return true
+}
+
+// UnmarshalVPNGatewayPolicyMode unmarshals an instance of VPNGatewayPolicyMode from the specified map of raw messages.
+func UnmarshalVPNGatewayPolicyMode(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayPolicyMode)
+	err = core.UnmarshalModel(m, "connections", &obj.Connections, UnmarshalVPNGatewayConnectionReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "members", &obj.Members, UnmarshalVPNGatewayMember)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "subnet", &obj.Subnet, UnmarshalSubnetReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "mode", &obj.Mode)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayPrototypeVPNGatewayPolicyModePrototype : VPNGatewayPrototypeVPNGatewayPolicyModePrototype struct
+// This model "extends" VPNGatewayPrototype
+type VPNGatewayPrototypeVPNGatewayPolicyModePrototype struct {
+	// The user-defined name for this VPN gateway.
+	Name *string `json:"name,omitempty"`
+
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	Subnet SubnetIdentityIntf `json:"subnet" validate:"required"`
+
+	// Policy mode VPN gateway.
+	Mode *string `json:"mode,omitempty"`
+}
+
+// Constants associated with the VPNGatewayPrototypeVPNGatewayPolicyModePrototype.Mode property.
+// Policy mode VPN gateway.
+const (
+	VPNGatewayPrototypeVPNGatewayPolicyModePrototypeModePolicyConst = "policy"
+)
+
+func (*VPNGatewayPrototypeVPNGatewayPolicyModePrototype) isaVPNGatewayPrototype() bool {
+	return true
+}
+
+// UnmarshalVPNGatewayPrototypeVPNGatewayPolicyModePrototype unmarshals an instance of VPNGatewayPrototypeVPNGatewayPolicyModePrototype from the specified map of raw messages.
+func UnmarshalVPNGatewayPrototypeVPNGatewayPolicyModePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayPrototypeVPNGatewayPolicyModePrototype)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "subnet", &obj.Subnet, UnmarshalSubnetIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "mode", &obj.Mode)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext : VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext struct
+// Models which "extend" this model:
+// - VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity
+// This model "extends" VolumeAttachmentVolumePrototypeInstanceContext
+type VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext struct {
 	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
 	// If this property is not provided, the `encryption` type for the volume will be
@@ -32235,40 +33002,46 @@ type VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContex
 	// The bandwidth for the volume.
 	Iops *int64 `json:"iops,omitempty"`
 
-	// The capacity of the volume in gigabytes. Note that the specified minimum and maximum capacity values for creating or
-	// updating volumes may expand in the future.
+	// The unique user-defined name for this volume.
+	Name *string `json:"name,omitempty"`
+
+	// The profile to use for this volume.
+	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
+
+	// The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating
+	// volumes may expand in the future.
 	Capacity *int64 `json:"capacity,omitempty"`
 }
 
-func (*VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext) isaVolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext() bool {
+func (*VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext) isaVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext() bool {
 	return true
 }
 
-type VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextIntf interface {
-	VolumeAttachmentPrototypeInstanceContextVolumeIntf
-	isaVolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext() bool
+type VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextIntf interface {
+	VolumeAttachmentVolumePrototypeInstanceContextIntf
+	isaVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext() bool
 }
 
-func (*VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext) isaVolumeAttachmentPrototypeInstanceContextVolume() bool {
+func (*VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext) isaVolumeAttachmentVolumePrototypeInstanceContext() bool {
 	return true
 }
 
-// UnmarshalVolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext unmarshals an instance of VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext from the specified map of raw messages.
-func UnmarshalVolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
-	if err != nil {
-		return
-	}
+// UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext unmarshals an instance of VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext from the specified map of raw messages.
+func UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext)
 	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
 	if err != nil {
 		return
 	}
@@ -32407,7 +33180,7 @@ func UnmarshalVolumeProfileIdentityByHref(m map[string]json.RawMessage, result i
 // VolumeProfileIdentityByName : VolumeProfileIdentityByName struct
 // This model "extends" VolumeProfileIdentity
 type VolumeProfileIdentityByName struct {
-	// The name for this volume profile.
+	// The globally unique name for this volume profile.
 	Name *string `json:"name" validate:"required"`
 }
 
@@ -32438,12 +33211,6 @@ func UnmarshalVolumeProfileIdentityByName(m map[string]json.RawMessage, result i
 // VolumePrototypeVolumeByCapacity : VolumePrototypeVolumeByCapacity struct
 // This model "extends" VolumePrototype
 type VolumePrototypeVolumeByCapacity struct {
-	// The unique user-defined name for this volume.
-	Name *string `json:"name,omitempty"`
-
-	// The profile to use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
-
 	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
 	// If this property is not provided, the `encryption` type for the volume will be
@@ -32453,13 +33220,19 @@ type VolumePrototypeVolumeByCapacity struct {
 	// The bandwidth for the volume.
 	Iops *int64 `json:"iops,omitempty"`
 
+	// The unique user-defined name for this volume.
+	Name *string `json:"name,omitempty"`
+
+	// The profile to use for this volume.
+	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
+
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The location of the volume.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
-	// The capacity of the volume in gigabytes. Note that the specified minimum and maximum capacity values for creating or
-	// updating volumes may expand in the future.
+	// The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating
+	// volumes may expand in the future.
 	Capacity *int64 `json:"capacity" validate:"required"`
 }
 
@@ -32481,19 +33254,19 @@ func (*VolumePrototypeVolumeByCapacity) isaVolumePrototype() bool {
 // UnmarshalVolumePrototypeVolumeByCapacity unmarshals an instance of VolumePrototypeVolumeByCapacity from the specified map of raw messages.
 func UnmarshalVolumePrototypeVolumeByCapacity(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumePrototypeVolumeByCapacity)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
 	if err != nil {
 		return
 	}
@@ -32547,7 +33320,7 @@ func UnmarshalZoneIdentityByHref(m map[string]json.RawMessage, result interface{
 // ZoneIdentityByName : ZoneIdentityByName struct
 // This model "extends" ZoneIdentity
 type ZoneIdentityByName struct {
-	// The name for this zone.
+	// The globally unique name for this zone.
 	Name *string `json:"name" validate:"required"`
 }
 
@@ -32575,33 +33348,33 @@ func UnmarshalZoneIdentityByName(m map[string]json.RawMessage, result interface{
 	return
 }
 
-// LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref : LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref struct
-// This model "extends" LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity
-type LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref struct {
+// LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref : LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref struct
+// This model "extends" LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity
+type LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref struct {
 	// The pool's canonical URL.
 	Href *string `json:"href" validate:"required"`
 }
 
-// NewLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref : Instantiate LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref(href string) (model *LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref, err error) {
-	model = &LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref{
+// NewLoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref : Instantiate LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref (Generic Model Constructor)
+func (*VpcClassicV1) NewLoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref(href string) (model *LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref, err error) {
+	model = &LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref{
 		Href: core.StringPtr(href),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref) isaLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity() bool {
+func (*LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref) isaLoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity() bool {
 	return true
 }
 
-func (*LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref) isaLoadBalancerListenerPolicyPatchTarget() bool {
+func (*LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref) isaLoadBalancerListenerPolicyTargetPatch() bool {
 	return true
 }
 
-// UnmarshalLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref unmarshals an instance of LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref from the specified map of raw messages.
-func UnmarshalLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref)
+// UnmarshalLoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref unmarshals an instance of LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref from the specified map of raw messages.
+func UnmarshalLoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
@@ -32610,33 +33383,33 @@ func UnmarshalLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadB
 	return
 }
 
-// LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID : LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID struct
-// This model "extends" LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity
-type LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID struct {
+// LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID : LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID struct
+// This model "extends" LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity
+type LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID struct {
 	// The unique identifier for this load balancer pool.
 	ID *string `json:"id" validate:"required"`
 }
 
-// NewLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID : Instantiate LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID(id string) (model *LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID, err error) {
-	model = &LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID{
+// NewLoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID : Instantiate LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID (Generic Model Constructor)
+func (*VpcClassicV1) NewLoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID(id string) (model *LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID, err error) {
+	model = &LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID{
 		ID: core.StringPtr(id),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID) isaLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentity() bool {
+func (*LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID) isaLoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity() bool {
 	return true
 }
 
-func (*LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID) isaLoadBalancerListenerPolicyPatchTarget() bool {
+func (*LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID) isaLoadBalancerListenerPolicyTargetPatch() bool {
 	return true
 }
 
-// UnmarshalLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID unmarshals an instance of LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID from the specified map of raw messages.
-func UnmarshalLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(LoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID)
+// UnmarshalLoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID unmarshals an instance of LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID from the specified map of raw messages.
+func UnmarshalLoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID)
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
@@ -32645,33 +33418,33 @@ func UnmarshalLoadBalancerListenerPolicyPatchTargetLoadBalancerPoolIdentityLoadB
 	return
 }
 
-// LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref : LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref struct
-// This model "extends" LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity
-type LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref struct {
+// LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref : LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref struct
+// This model "extends" LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity
+type LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref struct {
 	// The pool's canonical URL.
 	Href *string `json:"href" validate:"required"`
 }
 
-// NewLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref : Instantiate LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref(href string) (model *LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref, err error) {
-	model = &LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref{
+// NewLoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref : Instantiate LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref (Generic Model Constructor)
+func (*VpcClassicV1) NewLoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref(href string) (model *LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref, err error) {
+	model = &LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref{
 		Href: core.StringPtr(href),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref) isaLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity() bool {
+func (*LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref) isaLoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity() bool {
 	return true
 }
 
-func (*LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref) isaLoadBalancerListenerPolicyPrototypeTarget() bool {
+func (*LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref) isaLoadBalancerListenerPolicyTargetPrototype() bool {
 	return true
 }
 
-// UnmarshalLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref unmarshals an instance of LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref from the specified map of raw messages.
-func UnmarshalLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref)
+// UnmarshalLoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref unmarshals an instance of LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref from the specified map of raw messages.
+func UnmarshalLoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByHref)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
@@ -32680,33 +33453,33 @@ func UnmarshalLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityL
 	return
 }
 
-// LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID : LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID struct
-// This model "extends" LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity
-type LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID struct {
+// LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID : LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID struct
+// This model "extends" LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity
+type LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID struct {
 	// The unique identifier for this load balancer pool.
 	ID *string `json:"id" validate:"required"`
 }
 
-// NewLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID : Instantiate LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID(id string) (model *LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID, err error) {
-	model = &LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID{
+// NewLoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID : Instantiate LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID (Generic Model Constructor)
+func (*VpcClassicV1) NewLoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID(id string) (model *LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID, err error) {
+	model = &LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID{
 		ID: core.StringPtr(id),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID) isaLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentity() bool {
+func (*LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID) isaLoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity() bool {
 	return true
 }
 
-func (*LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID) isaLoadBalancerListenerPolicyPrototypeTarget() bool {
+func (*LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID) isaLoadBalancerListenerPolicyTargetPrototype() bool {
 	return true
 }
 
-// UnmarshalLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID unmarshals an instance of LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID from the specified map of raw messages.
-func UnmarshalLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(LoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID)
+// UnmarshalLoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID unmarshals an instance of LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID from the specified map of raw messages.
+func UnmarshalLoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentityLoadBalancerPoolIdentityByID)
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
@@ -32715,33 +33488,33 @@ func UnmarshalLoadBalancerListenerPolicyPrototypeTargetLoadBalancerPoolIdentityL
 	return
 }
 
-// PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByAddress : PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByAddress struct
-// This model "extends" PublicGatewayPrototypeFloatingIPFloatingIPIdentity
-type PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByAddress struct {
+// PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByAddress : PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByAddress struct
+// This model "extends" PublicGatewayFloatingIPPrototypeFloatingIPIdentity
+type PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByAddress struct {
 	// The globally unique IP address.
 	Address *string `json:"address" validate:"required"`
 }
 
-// NewPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByAddress : Instantiate PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByAddress (Generic Model Constructor)
-func (*VpcClassicV1) NewPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByAddress(address string) (model *PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByAddress, err error) {
-	model = &PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByAddress{
+// NewPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByAddress : Instantiate PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByAddress (Generic Model Constructor)
+func (*VpcClassicV1) NewPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByAddress(address string) (model *PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByAddress, err error) {
+	model = &PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByAddress{
 		Address: core.StringPtr(address),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByAddress) isaPublicGatewayPrototypeFloatingIPFloatingIPIdentity() bool {
+func (*PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByAddress) isaPublicGatewayFloatingIPPrototypeFloatingIPIdentity() bool {
 	return true
 }
 
-func (*PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByAddress) isaPublicGatewayPrototypeFloatingIP() bool {
+func (*PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByAddress) isaPublicGatewayFloatingIPPrototype() bool {
 	return true
 }
 
-// UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByAddress unmarshals an instance of PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByAddress from the specified map of raw messages.
-func UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByAddress(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByAddress)
+// UnmarshalPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByAddress unmarshals an instance of PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByAddress from the specified map of raw messages.
+func UnmarshalPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByAddress(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByAddress)
 	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
 	if err != nil {
 		return
@@ -32750,33 +33523,33 @@ func UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdenti
 	return
 }
 
-// PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByCRN : PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByCRN struct
-// This model "extends" PublicGatewayPrototypeFloatingIPFloatingIPIdentity
-type PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByCRN struct {
+// PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByCRN : PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByCRN struct
+// This model "extends" PublicGatewayFloatingIPPrototypeFloatingIPIdentity
+type PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByCRN struct {
 	// The CRN for this floating IP.
 	CRN *string `json:"crn" validate:"required"`
 }
 
-// NewPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByCRN : Instantiate PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByCRN (Generic Model Constructor)
-func (*VpcClassicV1) NewPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByCRN(crn string) (model *PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByCRN, err error) {
-	model = &PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByCRN{
+// NewPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByCRN : Instantiate PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByCRN (Generic Model Constructor)
+func (*VpcClassicV1) NewPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByCRN(crn string) (model *PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByCRN, err error) {
+	model = &PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByCRN{
 		CRN: core.StringPtr(crn),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByCRN) isaPublicGatewayPrototypeFloatingIPFloatingIPIdentity() bool {
+func (*PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByCRN) isaPublicGatewayFloatingIPPrototypeFloatingIPIdentity() bool {
 	return true
 }
 
-func (*PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByCRN) isaPublicGatewayPrototypeFloatingIP() bool {
+func (*PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByCRN) isaPublicGatewayFloatingIPPrototype() bool {
 	return true
 }
 
-// UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByCRN unmarshals an instance of PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByCRN from the specified map of raw messages.
-func UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByCRN)
+// UnmarshalPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByCRN unmarshals an instance of PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByCRN from the specified map of raw messages.
+func UnmarshalPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByCRN)
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
@@ -32785,33 +33558,33 @@ func UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdenti
 	return
 }
 
-// PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByHref : PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByHref struct
-// This model "extends" PublicGatewayPrototypeFloatingIPFloatingIPIdentity
-type PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByHref struct {
+// PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByHref : PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByHref struct
+// This model "extends" PublicGatewayFloatingIPPrototypeFloatingIPIdentity
+type PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByHref struct {
 	// The URL for this floating IP.
 	Href *string `json:"href" validate:"required"`
 }
 
-// NewPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByHref : Instantiate PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByHref(href string) (model *PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByHref, err error) {
-	model = &PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByHref{
+// NewPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByHref : Instantiate PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByHref (Generic Model Constructor)
+func (*VpcClassicV1) NewPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByHref(href string) (model *PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByHref, err error) {
+	model = &PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByHref{
 		Href: core.StringPtr(href),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByHref) isaPublicGatewayPrototypeFloatingIPFloatingIPIdentity() bool {
+func (*PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByHref) isaPublicGatewayFloatingIPPrototypeFloatingIPIdentity() bool {
 	return true
 }
 
-func (*PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByHref) isaPublicGatewayPrototypeFloatingIP() bool {
+func (*PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByHref) isaPublicGatewayFloatingIPPrototype() bool {
 	return true
 }
 
-// UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByHref unmarshals an instance of PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByHref from the specified map of raw messages.
-func UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByHref)
+// UnmarshalPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByHref unmarshals an instance of PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByHref from the specified map of raw messages.
+func UnmarshalPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByHref)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
@@ -32820,33 +33593,33 @@ func UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdenti
 	return
 }
 
-// PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByID : PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByID struct
-// This model "extends" PublicGatewayPrototypeFloatingIPFloatingIPIdentity
-type PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByID struct {
+// PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByID : PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByID struct
+// This model "extends" PublicGatewayFloatingIPPrototypeFloatingIPIdentity
+type PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByID struct {
 	// The unique identifier for this floating IP.
 	ID *string `json:"id" validate:"required"`
 }
 
-// NewPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByID : Instantiate PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByID(id string) (model *PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByID, err error) {
-	model = &PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByID{
+// NewPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByID : Instantiate PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByID (Generic Model Constructor)
+func (*VpcClassicV1) NewPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByID(id string) (model *PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByID, err error) {
+	model = &PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByID{
 		ID: core.StringPtr(id),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByID) isaPublicGatewayPrototypeFloatingIPFloatingIPIdentity() bool {
+func (*PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByID) isaPublicGatewayFloatingIPPrototypeFloatingIPIdentity() bool {
 	return true
 }
 
-func (*PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByID) isaPublicGatewayPrototypeFloatingIP() bool {
+func (*PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByID) isaPublicGatewayFloatingIPPrototype() bool {
 	return true
 }
 
-// UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByID unmarshals an instance of PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByID from the specified map of raw messages.
-func UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(PublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdentityByID)
+// UnmarshalPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByID unmarshals an instance of PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByID from the specified map of raw messages.
+func UnmarshalPublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PublicGatewayFloatingIPPrototypeFloatingIPIdentityFloatingIPIdentityByID)
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
@@ -32855,33 +33628,33 @@ func UnmarshalPublicGatewayPrototypeFloatingIPFloatingIPIdentityFloatingIPIdenti
 	return
 }
 
-// SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct
-// This model "extends" SecurityGroupRulePatchRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct {
+// SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByCRN : SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByCRN struct
+// This model "extends" SecurityGroupRuleRemotePatchSecurityGroupIdentity
+type SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByCRN struct {
 	// The security group's CRN.
 	CRN *string `json:"crn" validate:"required"`
 }
 
-// NewSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : Instantiate SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(crn string) (model *SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN, err error) {
-	model = &SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN{
+// NewSecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByCRN : Instantiate SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByCRN (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByCRN(crn string) (model *SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByCRN, err error) {
+	model = &SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByCRN{
 		CRN: core.StringPtr(crn),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePatchRemoteSecurityGroupIdentity() bool {
+func (*SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRuleRemotePatchSecurityGroupIdentity() bool {
 	return true
 }
 
-func (*SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePatchRemote() bool {
+func (*SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRuleRemotePatch() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN unmarshals an instance of SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN)
+// UnmarshalSecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByCRN unmarshals an instance of SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByCRN from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByCRN)
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
@@ -32890,33 +33663,33 @@ func UnmarshalSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIden
 	return
 }
 
-// SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct
-// This model "extends" SecurityGroupRulePatchRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct {
+// SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByHref : SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByHref struct
+// This model "extends" SecurityGroupRuleRemotePatchSecurityGroupIdentity
+type SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByHref struct {
 	// The security group's canonical URL.
 	Href *string `json:"href" validate:"required"`
 }
 
-// NewSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : Instantiate SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(href string) (model *SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByHref, err error) {
-	model = &SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByHref{
+// NewSecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByHref : Instantiate SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByHref (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByHref(href string) (model *SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByHref, err error) {
+	model = &SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByHref{
 		Href: core.StringPtr(href),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePatchRemoteSecurityGroupIdentity() bool {
+func (*SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRuleRemotePatchSecurityGroupIdentity() bool {
 	return true
 }
 
-func (*SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePatchRemote() bool {
+func (*SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRuleRemotePatch() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByHref unmarshals an instance of SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByHref from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByHref)
+// UnmarshalSecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByHref unmarshals an instance of SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByHref from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByHref)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
@@ -32925,33 +33698,33 @@ func UnmarshalSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIden
 	return
 }
 
-// SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByID : SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct
-// This model "extends" SecurityGroupRulePatchRemoteSecurityGroupIdentity
-type SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct {
+// SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID : SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID struct
+// This model "extends" SecurityGroupRuleRemotePatchSecurityGroupIdentity
+type SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID struct {
 	// The unique identifier for this security group.
 	ID *string `json:"id" validate:"required"`
 }
 
-// NewSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByID : Instantiate SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByID(id string) (model *SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByID, err error) {
-	model = &SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByID{
+// NewSecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID : Instantiate SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID(id string) (model *SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID, err error) {
+	model = &SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID{
 		ID: core.StringPtr(id),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePatchRemoteSecurityGroupIdentity() bool {
+func (*SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRuleRemotePatchSecurityGroupIdentity() bool {
 	return true
 }
 
-func (*SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePatchRemote() bool {
+func (*SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRuleRemotePatch() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByID unmarshals an instance of SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByID from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIdentityByID)
+// UnmarshalSecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID unmarshals an instance of SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID)
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
@@ -32960,33 +33733,33 @@ func UnmarshalSecurityGroupRulePatchRemoteSecurityGroupIdentitySecurityGroupIden
 	return
 }
 
-// SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct
-// This model "extends" SecurityGroupRulePrototypeRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN struct {
+// SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByCRN : SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByCRN struct
+// This model "extends" SecurityGroupRuleRemotePrototypeSecurityGroupIdentity
+type SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByCRN struct {
 	// The security group's CRN.
 	CRN *string `json:"crn" validate:"required"`
 }
 
-// NewSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN : Instantiate SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(crn string) (model *SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN, err error) {
-	model = &SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN{
+// NewSecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByCRN : Instantiate SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByCRN (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByCRN(crn string) (model *SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByCRN, err error) {
+	model = &SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByCRN{
 		CRN: core.StringPtr(crn),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePrototypeRemoteSecurityGroupIdentity() bool {
+func (*SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRuleRemotePrototypeSecurityGroupIdentity() bool {
 	return true
 }
 
-func (*SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRulePrototypeRemote() bool {
+func (*SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByCRN) isaSecurityGroupRuleRemotePrototype() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN unmarshals an instance of SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByCRN)
+// UnmarshalSecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByCRN unmarshals an instance of SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByCRN from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByCRN)
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
@@ -32995,33 +33768,33 @@ func UnmarshalSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroup
 	return
 }
 
-// SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct
-// This model "extends" SecurityGroupRulePrototypeRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByHref struct {
+// SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByHref : SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByHref struct
+// This model "extends" SecurityGroupRuleRemotePrototypeSecurityGroupIdentity
+type SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByHref struct {
 	// The security group's canonical URL.
 	Href *string `json:"href" validate:"required"`
 }
 
-// NewSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByHref : Instantiate SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByHref (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(href string) (model *SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByHref, err error) {
-	model = &SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByHref{
+// NewSecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByHref : Instantiate SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByHref (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByHref(href string) (model *SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByHref, err error) {
+	model = &SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByHref{
 		Href: core.StringPtr(href),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePrototypeRemoteSecurityGroupIdentity() bool {
+func (*SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRuleRemotePrototypeSecurityGroupIdentity() bool {
 	return true
 }
 
-func (*SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRulePrototypeRemote() bool {
+func (*SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByHref) isaSecurityGroupRuleRemotePrototype() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByHref unmarshals an instance of SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByHref from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByHref)
+// UnmarshalSecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByHref unmarshals an instance of SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByHref from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByHref)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
@@ -33030,33 +33803,33 @@ func UnmarshalSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroup
 	return
 }
 
-// SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByID : SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct
-// This model "extends" SecurityGroupRulePrototypeRemoteSecurityGroupIdentity
-type SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByID struct {
+// SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByID : SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByID struct
+// This model "extends" SecurityGroupRuleRemotePrototypeSecurityGroupIdentity
+type SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByID struct {
 	// The unique identifier for this security group.
 	ID *string `json:"id" validate:"required"`
 }
 
-// NewSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByID : Instantiate SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByID (Generic Model Constructor)
-func (*VpcClassicV1) NewSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByID(id string) (model *SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByID, err error) {
-	model = &SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByID{
+// NewSecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByID : Instantiate SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByID (Generic Model Constructor)
+func (*VpcClassicV1) NewSecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByID(id string) (model *SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByID, err error) {
+	model = &SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByID{
 		ID: core.StringPtr(id),
 	}
 	err = core.ValidateStruct(model, "required parameters")
 	return
 }
 
-func (*SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePrototypeRemoteSecurityGroupIdentity() bool {
+func (*SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRuleRemotePrototypeSecurityGroupIdentity() bool {
 	return true
 }
 
-func (*SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRulePrototypeRemote() bool {
+func (*SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByID) isaSecurityGroupRuleRemotePrototype() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByID unmarshals an instance of SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByID from the specified map of raw messages.
-func UnmarshalSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroupIdentityByID)
+// UnmarshalSecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByID unmarshals an instance of SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByID from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePrototypeSecurityGroupIdentitySecurityGroupIdentityByID)
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
@@ -33065,15 +33838,9 @@ func UnmarshalSecurityGroupRulePrototypeRemoteSecurityGroupIdentitySecurityGroup
 	return
 }
 
-// VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity : VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity struct
-// This model "extends" VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext
-type VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity struct {
-	// The unique user-defined name for this volume.
-	Name *string `json:"name,omitempty"`
-
-	// The profile to use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
-
+// VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity : VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity struct
+// This model "extends" VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext
+type VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity struct {
 	// The identity of the root key to use to wrap the data encryption key for the volume.
 	//
 	// If this property is not provided, the `encryption` type for the volume will be
@@ -33083,14 +33850,20 @@ type VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContex
 	// The bandwidth for the volume.
 	Iops *int64 `json:"iops,omitempty"`
 
-	// The capacity of the volume in gigabytes. Note that the specified minimum and maximum capacity values for creating or
-	// updating volumes may expand in the future.
+	// The unique user-defined name for this volume.
+	Name *string `json:"name,omitempty"`
+
+	// The profile to use for this volume.
+	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
+
+	// The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating
+	// volumes may expand in the future.
 	Capacity *int64 `json:"capacity" validate:"required"`
 }
 
-// NewVolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity : Instantiate VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity (Generic Model Constructor)
-func (*VpcClassicV1) NewVolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity(profile VolumeProfileIdentityIntf, capacity int64) (model *VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity, err error) {
-	model = &VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity{
+// NewVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity : Instantiate VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity (Generic Model Constructor)
+func (*VpcClassicV1) NewVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity(profile VolumeProfileIdentityIntf, capacity int64) (model *VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity, err error) {
+	model = &VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity{
 		Profile:  profile,
 		Capacity: core.Int64Ptr(capacity),
 	}
@@ -33098,30 +33871,30 @@ func (*VpcClassicV1) NewVolumeAttachmentPrototypeInstanceContextVolumeVolumeProt
 	return
 }
 
-func (*VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity) isaVolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContext() bool {
+func (*VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity) isaVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext() bool {
 	return true
 }
 
-func (*VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity) isaVolumeAttachmentPrototypeInstanceContextVolume() bool {
+func (*VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity) isaVolumeAttachmentVolumePrototypeInstanceContext() bool {
 	return true
 }
 
-// UnmarshalVolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity unmarshals an instance of VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity from the specified map of raw messages.
-func UnmarshalVolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeAttachmentPrototypeInstanceContextVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity)
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
-	if err != nil {
-		return
-	}
+// UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity unmarshals an instance of VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity from the specified map of raw messages.
+func UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity)
 	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
 	if err != nil {
 		return
 	}
