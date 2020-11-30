@@ -1,3 +1,30 @@
+## 1.16.0 (Nov30, 2020)
+
+FEATURES:
+
+* Support VPC Routing Table `ibm_is_vpc_routing_table` and VPC Routing Table Route  `ibm_is_vpc_routing_table_route` resources ([#1395](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1395))
+
+* Support `ibm_is_vpc_default_routing_table`, `ibm_is_vpc_routing_tables` and `ibm_is_vpc_routing_table_routes` datasources ([#1395](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1395))
+
+
+ENHANCEMENTS:
+
+* resource: Extend CIS firewall resource to support `access_rules` and `ua_rules` ([#2025](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2025)) 
+
+* resource: Support anti-spoofing `allow_ip_spoofing` for ibm_is_instance ([#1396](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1396)) 
+
+* resource: Support `routing_table` and `ip_version` agruments for ibm_is_subnet ([#1395](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1395))
+
+* data: Support `policies` attribute for ibm_kms_keys and ibm_kms_key ([#1928](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1928))
+
+* resource: Support `number_of_invited_users` and `invited_users` attribute for ibm_iam_user_invite ([#2053](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2053))
+
+BUGFIXES:
+
+* Fix the upgrade of kube_version for master and worker nodes of cluster ([#1952](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1952))
+
+* Fix issue when trying to provision a new ibm_container_alb_cert ([#2067](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2067))
+
 ## 1.15.0 (Nov24, 2020)
 
 FEATURES:
