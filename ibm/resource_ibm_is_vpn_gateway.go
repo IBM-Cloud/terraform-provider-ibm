@@ -376,8 +376,10 @@ func classicVpngwGet(d *schema.ResourceData, meta interface{}, id string) error 
 	for _, member := range vpnGateway.Members {
 		members = append(members, member)
 	}
-	if len(members) > 1 {
+	if len(members) > 0 {
 		d.Set(isVPNGatewayPublicIPAddress, *members[0].PublicIP.Address)
+	}
+	if len(members) > 1 {
 		d.Set(isVPNGatewayPublicIPAddress2, *members[1].PublicIP.Address)
 	}
 	tags, err := GetTagsUsingCRN(meta, *vpnGateway.CRN)
