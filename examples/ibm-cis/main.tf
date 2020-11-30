@@ -291,3 +291,23 @@ data "ibm_cis_waf_groups" "waf_groups" {
   domain_id  = data.ibm_cis_domain.cis_domain.id
   package_id = "c504870194831cd12c3fc0284f294abb"
 }
+
+# CIS Rnage application service
+resource "ibm_cis_range_app" "app" {
+  cis_id         = data.ibm_cis.cis.id
+  domain_id      = data.ibm_cis_domain.cis_domain.id
+  protocol       = "tcp/22"
+  dns_type       = "CNAME"
+  dns            = "ssh.example.com"
+  origin_direct  = ["tcp://12.1.1.1:22"]
+  ip_firewall    = true
+  proxy_protocol = "v1"
+  traffic_type   = "direct"
+  tls            = "off"
+}
+
+# CIS Range application data source
+data "ibm_cis_range_apps" "test" {
+  cis_id    = ibm_cis_range_app.app.cis_id
+  domain_id = ibm_cis_range_app.app.domain_id
+}

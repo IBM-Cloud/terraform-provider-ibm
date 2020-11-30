@@ -56,3 +56,7 @@ output "ibm_cis_waf_package_output" {
 output "ibm_cis_waf_group_output" {
   value = ibm_cis_waf_group.test
 }
+
+output "ibm_cis_range_app_output" {
+  value = ibm_cis_range_app.app
+}

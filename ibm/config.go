@@ -27,6 +27,7 @@ import (
 	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
 	cisglbv1 "github.com/IBM/networking-go-sdk/globalloadbalancerv1"
 	cispagerulev1 "github.com/IBM/networking-go-sdk/pageruleapiv1"
+	cisrangeappv1 "github.com/IBM/networking-go-sdk/rangeapplicationsv1"
 	cisroutingv1 "github.com/IBM/networking-go-sdk/routingv1"
 	cissslv1 "github.com/IBM/networking-go-sdk/sslcertificateapiv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
@@ -219,6 +220,7 @@ type ClientSession interface {
 	CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error)
 	CisUARuleClientSession() (*cisuarulev1.UserAgentBlockingRulesV1, error)
 	CisLockdownClientSession() (*cislockdownv1.ZoneLockdownV1, error)
+	CisRangeAppClientSession() (*cisrangeappv1.RangeApplicationsV1, error)
 }
 
 type clientSession struct {
@@ -410,6 +412,10 @@ type clientSession struct {
 	// CIS Firewall Lockdwon Rule service option
 	cisLockdownErr    error
 	cisLockdownClient *cislockdownv1.ZoneLockdownV1
+
+	// CIS Range app service option
+	cisRangeAppErr    error
+	cisRangeAppClient *cisrangeappv1.RangeApplicationsV1
 }
 
 // BluemixAcccountAPI ...
@@ -751,6 +757,14 @@ func (sess clientSession) CisLockdownClientSession() (*cislockdownv1.ZoneLockdow
 	return sess.cisLockdownClient.Clone(), nil
 }
 
+// CIS Range app rule
+func (sess clientSession) CisRangeAppClientSession() (*cisrangeappv1.RangeApplicationsV1, error) {
+	if sess.cisRangeAppErr != nil {
+		return sess.cisRangeAppClient, sess.cisRangeAppErr
+	}
+	return sess.cisRangeAppClient.Clone(), nil
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -822,6 +836,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisAccessRuleErr = errEmptyBluemixCredentials
 		session.cisUARuleErr = errEmptyBluemixCredentials
 		session.cisLockdownErr = errEmptyBluemixCredentials
+		session.cisRangeAppErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1421,6 +1436,22 @@ func (c *Config) ClientSession() (interface{}, error) {
 			fmt.Errorf("Error occured while configuring CIS Firewall Lockdown Rule service: %s",
 				session.cisLockdownErr)
 	}
+
+	// IBM Network CIS Range Application rule
+	cisRangeAppOpt := &cisrangeappv1.RangeApplicationsV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisRangeAppClient, session.cisRangeAppErr =
+		cisrangeappv1.NewRangeApplicationsV1(cisRangeAppOpt)
+	if session.cisRangeAppErr != nil {
+		session.cisRangeAppErr =
+			fmt.Errorf("Error occured while configuring CIS Range Application rule service: %s",
+				session.cisRangeAppErr)
+	}
+
 	return session, nil
 }
 
