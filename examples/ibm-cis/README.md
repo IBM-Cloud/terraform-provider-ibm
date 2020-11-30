@@ -22,6 +22,7 @@ These types of resources are supported:
 * [ CIS Page Rule](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-page-rule)
 * [ CIS WAF Package ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-waf-package)
 * [ CIS WAF Rule Group](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-waf-group)
+* [ CIS Range Application](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-range-application)
 
 ## Terraform versions
 
@@ -293,6 +294,22 @@ resource "ibm_cis_waf_group" "test" {
 }
 ```
 
+`CIS Rnage application service`
+```hcl
+resource "ibm_cis_range_app" "app" {
+  cis_id         = data.ibm_cis.cis.id
+  domain_id      = data.ibm_cis_domain.cis_domain.id
+  protocol       = "tcp/22"
+  dns_type       = "CNAME"
+  dns            = "ssh.example.com"
+  origin_direct  = ["tcp://12.1.1.1:22"]
+  ip_firewall    = true
+  proxy_protocol = "v1"
+  traffic_type   = "direct"
+  tls            = "off"
+}
+```
+
 ## CIS Data Sources
 `CIS Instance`
 ```hcl
@@ -371,6 +388,14 @@ data "ibm_cis_waf_packages" "packages" {
 }
 ```
 
+`CIS Range application data source`
+```hcl
+data "ibm_cis_range_apps" "test" {
+  cis_id    = ibm_cis_range_app.app.cis_id
+  domain_id = ibm_cis_range_app.app.domain_id
+}
+```
+
 ## Dependencies
 
 - User has IAM security rights to create and configure an Internet Services instance
@@ -390,6 +415,7 @@ data "ibm_cis_waf_packages" "packages" {
 - [Page Rule CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#page-rule-cli-ref)
 - [WAF Packages CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#list-waf-packages)
 - [WAF Rule Group CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#list-waf-groups)
+- [Range App CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#range-app)
 
 ## Notes
 
@@ -497,6 +523,18 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | package_id | The WAF Rule Package id | `string` | yes |
 | group_id | The WAF Rule Group id | `string` | yes |
 | mode | The WAF Rule Group mode `on`/`off` setting | `string` | yes |
+| protocol | The Edge application protocol. Defines the protocol and port for this application. ex. `tcp/22` | `string` | yes |
+| dns | Name of the DNS record for an application | `string` | yes |
+| dns_type | Type of the DNS record for this application | `string` | yes |
+| origin_direct | IP address and port of the origin for this Range application. | `list(string)` | no |
+| origin_dns | DNS record pointing to the origin for this Range application. | `string` | no |
+| origin_port | Port at the origin that listens to traffic. | `integer` | no |
+| ip_firewall | Enables the IP Firewall for this application. | `boolean` | no |
+| proxy_protocol | Allows for the true client IP to be passed to the service. | `string` | no |
+| edge_ips_type | The type of edge IP configuration. | `string` | no |
+| edge_ips_connectivity | Specifies the IP version. | `string` | no |
+| traffic_type | Configure how traffic is handled at the edge. | `string` | no |
+| tls | Configure if and how TLS connections are terminated at the edge. | `string` | no |
 
 ## Outputs
 
@@ -520,6 +558,7 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | rules_count | The WAF rules count in WAF Group |
 | modified_rules_count | The modified waf rules count in WAF Group |
 | name | The WAF Rule Group name |
+| app_id | Range application id |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 

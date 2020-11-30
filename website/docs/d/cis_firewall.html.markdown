@@ -20,8 +20,6 @@ data "ibm_cis_firewall" "lockdown" {
 }
 ```
 
-**NOTE:** IBM terraform provider supports only lockdowns rules
-
 ## Argument Reference
 
 The following arguments are supported:
