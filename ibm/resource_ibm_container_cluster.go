@@ -162,7 +162,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Type:             schema.TypeMap,
 				Optional:         true,
 				Computed:         true,
-				ForceNew:         true,
+				ForceNew:         false,
 				DiffSuppressFunc: applyOnce,
 				Elem:             &schema.Schema{Type: schema.TypeString},
 				Description:      "list of labels to the default worker pool",
@@ -997,7 +997,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 			err = workerPoolsAPI.UpdateLabelsWorkerPool(clusterID, poolName, labels, targetEnv)
 			if err != nil {
 				return fmt.Errorf(
-					"Error updating the labels%s", err)
+					"Error updating the labels %s", err)
 			}
 
 			_, err = WaitForWorkerAvailable(d, meta, targetEnv)
