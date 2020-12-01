@@ -103,15 +103,15 @@ Create the Openshift Cluster with default worker Pool entitlement:
 
 ```hcl
 resource "ibm_container_cluster" "cluster" {
-  name              = "test-openshift-cluster"
-  datacenter        = "dal10"
-  default_pool_size = 3
-  machine_type      = "b3c.4x16"
-  hardware          = "shared"
-  kube_version      = "4.3_openshift"
-  public_vlan_id    = "2863614"
-  private_vlan_id   = "2863616"
-  entitlement = "cloud_pak"
+  name              = "test-openshift-cluster"
+  datacenter        = "dal10"
+  default_pool_size = 3
+  machine_type      = "b3c.4x16"
+  hardware          = "shared"
+  kube_version      = "4.3_openshift"
+  public_vlan_id    = "2863614"
+  private_vlan_id   = "2863616"
+  entitlement       = "cloud_pak"
 }
 ```
 
@@ -132,7 +132,7 @@ The following arguments are supported:
 * `kube_version` - (Optional, string) The desired Kubernetes version of the created cluster. If present, at least major.minor must be specified.
 * `update_all_workers` - (Optional, bool)  Set to `true` if you want to update workers kube version.
 * `wait_for_worker_update` - (Optional, bool) Set to `true` to wait for kube version of woker nodes to update during the wokrer node kube version update.
-  **NOTE**: setting `wait_for_worker_update` to `false` is not recommended. This results in upgradign all the worker nodes in the cluster at the same time causing the cluster downtime. 
+  **NOTE**: setting `wait_for_worker_update` to `false` is not recommended. This results in upgrading all the worker nodes in the cluster at the same time causing the cluster downtime. 
 * `org_guid` - (Deprecated, Forces new resource, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `ibmcloud iam orgs --guid` command in the IBM Cloud CLI.
 * `space_guid` - (Deprecated, Forces new resource, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
 * `account_guid` - (Deprecated, Forces new resource, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
