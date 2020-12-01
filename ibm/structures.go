@@ -754,6 +754,20 @@ func ptrToString(s string) *string {
 	return &s
 }
 
+func intValue(i64 *int64) (i int) {
+	if i64 != nil {
+		i = int(*i64)
+	}
+	return
+}
+
+func float64Value(f32 *float32) (f float64) {
+	if f32 != nil {
+		f = float64(*f32)
+	}
+	return
+}
+
 func filterActionAnnotations(in whisk.KeyValueArr) (string, error) {
 	noExec := make(whisk.KeyValueArr, 0, len(in))
 	for _, v := range in {
