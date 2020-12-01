@@ -101,7 +101,6 @@ resource "ibm_cis_dns_record" "example" {
   type      = var.record_type
   content   = var.record_content
   proxied   = true
-
 }
 
 # CIS Firewall
@@ -326,4 +325,17 @@ data "ibm_cis_waf_rules" "rules" {
   cis_id     = data.ibm_cis.cis.id
   domain_id  = data.ibm_cis_domain.cis_domain.id
   package_id = "1e334934fd7ae32ad705667f8c1057aa"
+}
+
+# CIS Certificate order service
+resource "ibm_cis_certificate_order" "test" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+  hosts     = ["example.com"]
+}
+
+# CIS Certificates data source
+data "ibm_cis_certificates" "test" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
 }

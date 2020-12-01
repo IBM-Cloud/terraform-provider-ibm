@@ -24,6 +24,7 @@ These types of resources are supported:
 * [ CIS WAF Rule Group](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-waf-group)
 * [ CIS Range Application](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-range-application)
 * [ CIS WAF Rule](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-waf-rule)
+* [ CIS Certificate Order](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-certificate-order)
 
 ## Terraform versions
 
@@ -322,6 +323,15 @@ resource "ibm_cis_waf_rule" "test" {
 }
 ```
 
+`CIS Certificate order service`
+```hcl
+resource "ibm_cis_certificate_order" "test" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+  hosts     = ["example.com"]
+}
+```
+
 ## CIS Data Sources
 `CIS Instance`
 ```hcl
@@ -398,6 +408,13 @@ data "ibm_cis_waf_packages" "packages" {
   cis_id    = data.ibm_cis.cis.id
   domain_id = data.ibm_cis_domain.cis_domain.domain_id
 }
+
+`CIS Certificates data source`
+```hcl
+data "ibm_cis_certificates" "test" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+}
 ```
 
 `CIS Range application data source`
@@ -438,6 +455,7 @@ data "ibm_cis_waf_rules" "rules" {
 - [WAF Rule Group CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#list-waf-groups)
 - [Range App CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#range-app)
 - [WAF Rule CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#list-waf-rules)
+- [Certificate Order CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#order-dedicated-cert)
 
 ## Notes
 
@@ -560,7 +578,7 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | package_id | The WAF Rule package ID  | `string` | yes |
 | rule_id | The WAF Rule ID | `string`| yes |
 | mode | The WAF Rule mode | `string` | yes |
-
+| hosts | The hosts for which the certificates to be ordered. | `string` | yes |
 
 ## Outputs
 
@@ -588,6 +606,8 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | group\_id | WAF Rule group id |
 | group\_name | WAF Rule group name |
 | allowed_modes | WAF rule allowed modes |
+| certificate_id | Certificate ID |
+| status | Certificate status |
 
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
