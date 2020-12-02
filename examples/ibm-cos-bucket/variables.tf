@@ -1,40 +1,31 @@
 variable "bucket_name" {
-  default     = "a-standard-bucket-at-ams-firewall"
+  default = "a-standard-bucket-at-ams-firewall"
 }
 
 variable "resource_group_name" {
-  default     = "Default"
+  default = "Default"
 }
 
 variable "storage" {
-  default     = "standard"
+  default = "standard"
 }
 
 variable "region" {
-  default     = "us"
+  default = "us"
 }
 
-
 variable "archive_ruleid" {
-  default     = ""
+  default = ""
 }
 
 variable "regional_loc" {
-  default     = "us-south"
+  default = "us-south"
 }
 
 variable "archive_days" {
-  default     = 0
+  default = 0
 }
 
 variable "archive_types" {
-  default     = "ACCELERATED"
+  default = "ACCELERATED"
 }
-
-
-
-
-
-
-
-
