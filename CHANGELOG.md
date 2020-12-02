@@ -1,3 +1,10 @@
+## 1.16.1 (Dec02, 2020)
+
+BUGFIXES:
+
+* Fix issue when trying to delete a ibm_container_alb_cert ([#2067](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2067))
+
+
 ## 1.16.0 (Nov30, 2020)
 
 FEATURES:
