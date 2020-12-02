@@ -21,9 +21,9 @@ func resourceIBMContainerALBCert() *schema.Resource {
 		Exists:   resourceIBMContainerALBCertExists,
 		Importer: &schema.ResourceImporter{},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(5 * time.Minute),
-			Update: schema.DefaultTimeout(5 * time.Minute),
-			Delete: schema.DefaultTimeout(5 * time.Minute),
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -197,7 +197,7 @@ func waitForALBCertDelete(d *schema.ResourceData, meta interface{}, timeout stri
 	secretName := parts[1]
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{"exists"},
+		Pending: []string{"deleting"},
 		Target:  []string{"deleted"},
 		Refresh: func() (interface{}, string, error) {
 			targetEnv, err := getAlbTargetHeader(d, meta)
