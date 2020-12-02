@@ -14,7 +14,6 @@ variable "region" {
   default     = "us"
 }
 
-
 variable "archive_ruleid" {
   default     = ""
 }
@@ -30,11 +29,3 @@ variable "archive_days" {
 variable "archive_types" {
   default     = "ACCELERATED"
 }
-
-
-
-
-
-
-
-

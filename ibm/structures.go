@@ -664,28 +664,30 @@ func flattenMetricsMonitor(in *resourceconfigurationv1.MetricsMonitoring) []inte
 func archiveRuleGet(in []*s3.LifecycleRule) []interface{} {
 	rule := make(map[string]interface{})
 	for _, r := range in {
+		if r.Expiration == nil {
+			if r.Status != nil {
+				if *r.Status == "Enabled" {
+					rule["enable"] = true
 
-		if r.Status != nil {
-			if *r.Status == "Enabled" {
-				rule["enable"] = true
+				} else {
+					rule["enable"] = false
+				}
 
-			} else {
-				rule["enable"] = false
+			}
+			if r.ID != nil {
+				rule["rule_id"] = *r.ID
 			}
 
-		}
-		if r.ID != nil {
-			rule["rule_id"] = *r.ID
+			for _, transition := range r.Transitions {
+				if transition.Days != nil {
+					rule["days"] = int(*transition.Days)
+				}
+				if transition.StorageClass != nil {
+					rule["type"] = *transition.StorageClass
+				}
+			}
 		}
 
-		for _, transition := range r.Transitions {
-			if transition.Days != nil {
-				rule["days"] = int(*transition.Days)
-			}
-			if transition.StorageClass != nil {
-				rule["type"] = *transition.StorageClass
-			}
-		}
 	}
 	return []interface{}{rule}
 }

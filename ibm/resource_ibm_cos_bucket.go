@@ -215,6 +215,12 @@ func resourceIBMCOS() *schema.Resource {
 					},
 				},
 			},
+			"force_delete": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "COS buckets need to be empty before they can be deleted. force_delete option empty the bucket and delete it.",
+			},
 		},
 	}
 }
@@ -708,6 +714,33 @@ func resourceIBMCOSDelete(d *schema.ResourceData, meta interface{}) error {
 
 	s3Sess := session.Must(session.NewSession())
 	s3Client := s3.New(s3Sess, s3Conf)
+
+	if delbucket, ok := d.GetOk("force_delete"); ok {
+		if delbucket.(bool) {
+
+			// List objects within a bucket
+			resp, err := s3Client.ListObjects(&s3.ListObjectsInput{Bucket: aws.String(bucketName)})
+			if err != nil {
+				return fmt.Errorf("Unable to list items in bucket %s, %v", bucketName, err)
+			}
+			for _, item := range resp.Contents {
+				// Delete object within the bucket
+				_, err = s3Client.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(bucketName), Key: aws.String(*item.Key)})
+
+				if err != nil {
+					return fmt.Errorf("Unable to delete object %s from bucket %s, %v", *item.Key, bucketName, err)
+				}
+
+				err = s3Client.WaitUntilObjectNotExists(&s3.HeadObjectInput{
+					Bucket: aws.String(bucketName),
+					Key:    aws.String(*item.Key),
+				})
+				if err != nil {
+					return fmt.Errorf("Error occurred while waiting for object %s to be deleted %v", *item.Key, err)
+				}
+			}
+		}
+	}
 
 	delete := &s3.DeleteBucketInput{
 		Bucket: aws.String(bucketName),

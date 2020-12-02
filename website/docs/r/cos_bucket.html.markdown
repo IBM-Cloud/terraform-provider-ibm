@@ -68,7 +68,7 @@ resource "ibm_cos_bucket" "standard-ams03-firewall" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   cross_region_location      = "us"
   storage_class        = "standard"
- activity_tracking {
+  activity_tracking {
     read_data_events     = true
     write_data_events    = true
     activity_tracker_crn = ibm_resource_instance.activity_tracker.id
@@ -85,7 +85,7 @@ resource "ibm_cos_bucket" "flex-us-south-firewall" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   cross_region_location      = "us"
   storage_class        = "flex"
- activity_tracking {
+  activity_tracking {
     read_data_events     = true
     write_data_events    = true
     activity_tracker_crn = ibm_resource_instance.activity_tracker.id
@@ -102,7 +102,7 @@ resource "ibm_cos_bucket" "cold-ap-firewall" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   cross_region_location      = "us"
   storage_class        = "cold"
- activity_tracking {
+  activity_tracking {
     read_data_events     = true
     write_data_events    = true
     activity_tracker_crn = ibm_resource_instance.activity_tracker.id
@@ -121,6 +121,7 @@ resource "ibm_cos_bucket" "archive_rule_cos"{
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location      = "us-south"
   storage_class        = "standard"
+  force_delete         = true
   archive_rule{ 
       rule_id = "a-bucket-arch-rule"
       enable = true
@@ -155,6 +156,8 @@ The following arguments are supported:
 * `storage_class` - (Required, string) Storage class of the bucket. Accepted values: 'standard', 'vault', 'cold', 'flex', 'smart'.
 
 * `endpoint_type` - (Optional, string) The type of the endpoint (public or private) to be used for buckets. Default value is `public`.
+
+* `force_delete` - (Optional, bool) Since Default value set to True, it will delete all the objects in the COS Bucket and then delete the bucket.  Default value is `true`.
 
 * Nested `archive_rule` block have the following structure:
 	*	`archive_rule.rule_id` : (Optional, Computed, string) Unique identifier for the rule. Archive rules allow you to set a specific time frame after which objects transition to the archive. 
