@@ -619,6 +619,19 @@ func (sess clientSession) CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1
 
 // CIS Zone Rate Limits
 func (sess clientSession) CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1, error) {
+	if sess.cisRLErr == nil {
+		cisRLOpt := &cisratelimitv1.ZoneRateLimitsV1Options{
+			URL:            sess.cisRLClient.Service.Options.URL,
+			Crn:            core.StringPtr(""),
+			ZoneIdentifier: core.StringPtr(""),
+			Authenticator:  sess.cisRLClient.Service.Options.Authenticator,
+		}
+		cisRLClient, cisRLErr := cisratelimitv1.NewZoneRateLimitsV1(cisRLOpt)
+		if cisRLErr != nil {
+			return nil, fmt.Errorf("Error occured while cofiguring CIS Zone Rate Limit service: %s", cisRLErr)
+		}
+		return cisRLClient, nil
+	}
 	return sess.cisRLClient, sess.cisRLErr
 }
 
