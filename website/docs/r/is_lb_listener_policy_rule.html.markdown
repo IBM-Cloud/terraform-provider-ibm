@@ -73,6 +73,10 @@ The following arguments are supported:
 * `field` - (Optional, string) HTTP header field. This is only applicable to "header" rule type. 
 
 
+`Note :`
+
+Network load balancer does not support ibm_is_lb_listener_policy_rule.
+
 ## Attribute Reference
 
 The following attributes are exported:

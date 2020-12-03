@@ -61,10 +61,10 @@ The following arguments are supported:
 
 * `lb` - (Required, Forces new resource, string) The load balancer unique identifier.
 * `port` - (Required, int) The listener port number. Valid range 1 to 65535.
-* `protocol` - (Required, string) The listener protocol. Enumeration type: http, tcp, https.
+* `protocol` - (Required, string) The listener protocol. Enumeration type: http, tcp, https. Network load balancer supports only `tcp` protocol.
 * `default_pool` - (Optional, string) The load balancer pool unique identifier.
 * `certificate_instance` - (Optional, string) CRN of the certificate instance.
-* `connection_limit` - (Optional, int) The connection limit of the listener. Valid range  1 to 15000.
+* `connection_limit` - (Optional, int) The connection limit of the listener. Valid range  1 to 15000. Network load balancer does not support `connection_limit` argument.
 
 ## Attribute Reference
 

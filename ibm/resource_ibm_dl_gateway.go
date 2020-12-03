@@ -8,6 +8,7 @@ import (
 
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -51,6 +52,9 @@ const (
 	dlKeyServerPriority            = "key_server_priority"
 	dlMacSecConfigStatus           = "status"
 	dlChangeRequest                = "change_request"
+	dlGatewayProvisioning          = "configuring"
+	dlGatewayProvisioningDone      = "provisioned"
+	dlGatewayProvisioningRejected  = "create_rejected"
 )
 
 func resourceIBMDLGateway() *schema.Resource {
@@ -82,10 +86,11 @@ func resourceIBMDLGateway() *schema.Resource {
 				Description: "BGP ASN",
 			},
 			dlBgpBaseCidr: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "BGP base CIDR",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         false,
+				DiffSuppressFunc: applyOnce,
+				Description:      "BGP base CIDR",
 			},
 			dlPort: {
 				Type:          schema.TypeString,
@@ -403,8 +408,6 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 	global := d.Get(dlGlobal).(bool)
 	bgpAsn := int64(d.Get(dlBgpAsn).(int))
 	metered := d.Get(dlMetered).(bool)
-	var bgpBaseCidr string
-	bgpBaseCidr = d.Get(dlBgpBaseCidr).(string)
 
 	if dtype == "dedicated" {
 		var crossConnectRouter, carrierName, locationName, customerName string
@@ -441,7 +444,6 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 			return err
 		}
 		gatewayDedicatedTemplateModel, _ := directLink.NewGatewayTemplateGatewayTypeDedicatedTemplate(bgpAsn, global, metered, name, speed, dtype, carrierName, crossConnectRouter, customerName, locationName)
-		gatewayDedicatedTemplateModel.BgpBaseCidr = &bgpBaseCidr
 
 		if _, ok := d.GetOk(dlBgpIbmCidr); ok {
 			bgpIbmCidr := d.Get(dlBgpIbmCidr).(string)
@@ -457,6 +459,10 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 			resourceGroup := d.Get(dlResourceGroup).(string)
 			gatewayDedicatedTemplateModel.ResourceGroup = &directlinkv1.ResourceGroupIdentity{ID: &resourceGroup}
 
+		}
+		if _, ok := d.GetOk(dlBgpBaseCidr); ok {
+			bgpBaseCidr := d.Get(dlBgpBaseCidr).(string)
+			gatewayDedicatedTemplateModel.BgpBaseCidr = &bgpBaseCidr
 		}
 		if _, ok := d.GetOk(dlMacSecConfig); ok {
 			// Construct an instance of the GatewayMacsecConfigTemplate model
@@ -493,12 +499,15 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		if portID != "" {
 			portIdentity, _ := directLink.NewGatewayPortIdentity(portID)
 			gatewayConnectTemplateModel, _ := directLink.NewGatewayTemplateGatewayTypeConnectTemplate(bgpAsn, global, metered, name, speed, dtype, portIdentity)
-			gatewayConnectTemplateModel.BgpBaseCidr = &bgpBaseCidr
 
 			if _, ok := d.GetOk(dlBgpIbmCidr); ok {
 				bgpIbmCidr := d.Get(dlBgpIbmCidr).(string)
 				gatewayConnectTemplateModel.BgpIbmCidr = &bgpIbmCidr
 
+			}
+			if _, ok := d.GetOk(dlBgpBaseCidr); ok {
+				bgpBaseCidr := d.Get(dlBgpBaseCidr).(string)
+				gatewayConnectTemplateModel.BgpBaseCidr = &bgpBaseCidr
 			}
 			if _, ok := d.GetOk(dlBgpCerCidr); ok {
 				bgpCerCidr := d.Get(dlBgpCerCidr).(string)
@@ -527,6 +536,12 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 	d.SetId(*gateway.ID)
 
 	log.Printf("[INFO] Created Direct Link Gateway (%s Template) : %s", dtype, *gateway.ID)
+	if dtype == "connect" {
+		_, err = isWaitForDirectLinkAvailable(directLink, d.Id(), d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return err
+		}
+	}
 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(dlTags); ok || v != "" {
@@ -710,6 +725,33 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	return nil
+}
+func isWaitForDirectLinkAvailable(client *directlinkv1.DirectLinkV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for direct link (%s) to be provisioned.", id)
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", dlGatewayProvisioning},
+		Target:     []string{dlGatewayProvisioningDone, ""},
+		Refresh:    isDirectLinkRefreshFunc(client, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForState()
+}
+func isDirectLinkRefreshFunc(client *directlinkv1.DirectLinkV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		getOptions := &directlinkv1.GetGatewayOptions{
+			ID: &id,
+		}
+		instance, response, err := client.GetGateway(getOptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("Error Getting Direct Link: %s\n%s", err, response)
+		}
+		if *instance.OperationalStatus == "provisioned" || *instance.OperationalStatus == "failed" || *instance.OperationalStatus == "create_rejected" {
+			return instance, dlGatewayProvisioningDone, nil
+		}
+		return instance, dlGatewayProvisioning, nil
+	}
 }
 
 func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error {

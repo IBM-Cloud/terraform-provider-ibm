@@ -3,7 +3,7 @@ data "ibm_resource_group" "rg" {
 }
 
 provider "ibm" {
- }
+}
 data "ibm_dl_routers" "test_dl_routers" {
   offering_type = var.type
   location_name = var.location_name
@@ -11,17 +11,14 @@ data "ibm_dl_routers" "test_dl_routers" {
 
 resource ibm_dl_gateway test_dl_gateway {
   bgp_asn              = var.bgp_asn
-  bgp_base_cidr        = var.bgp_base_cidr
-  bgp_ibm_cidr         = var.bgp_ibm_cidr 
-  bgp_cer_cidr         = var.bgp_cer_cidr 
   global               = true
   metered              = false
   name                 = var.name
   resource_group       = data.ibm_resource_group.rg.id
   speed_mbps           = var.speed_mbps
   type                 = var.type
-	cross_connect_router = data.ibm_dl_routers.test_dl_routers.cross_connect_routers[0].router_name
-  location_name = data.ibm_dl_routers.test_dl_routers.location_name     
+  cross_connect_router = data.ibm_dl_routers.test_dl_routers.cross_connect_routers[0].router_name
+  location_name        = data.ibm_dl_routers.test_dl_routers.location_name
   customer_name        = var.customer_name
   carrier_name         = var.carrier_name
 
@@ -38,21 +35,20 @@ resource "ibm_dl_virtual_connection" "test_dl_gateway_vc" {
   name       = var.vc_name
   type       = var.vc_type
   network_id = ibm_is_vpc.test_dl_vc_vpc.resource_crn
-} 
+}
 
 resource "ibm_dl_gateway" "test_dl_connect" {
-  bgp_asn =  var.bgp_asn
-  bgp_base_cidr =  var.bgp_base_cidr
-  global = true
-  metered = false
-  name = var.dl_connect_gw_name
+  bgp_asn    = var.bgp_asn
+  global     = true
+  metered    = false
+  name       = var.dl_connect_gw_name
   speed_mbps = 1000
-  type =  "connect"
-  port =  data.ibm_dl_ports.test_ds_dl_ports.ports[0].port_id
+  type       = "connect"
+  port       = data.ibm_dl_ports.test_ds_dl_ports.ports[0].port_id
 }
 data "ibm_dl_ports" "test_ds_dl_ports" {
- 
- }
+
+}
 
 # # datasource to list all dl gateways
 # data "ibm_dl_gateways" "test_dl_gateways" {

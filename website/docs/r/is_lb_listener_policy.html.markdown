@@ -104,6 +104,7 @@ The following arguments are supported:
 
 When action is forward, target-id should specify which pool the load balancer forwards the traffic to.
 When action is redirect,target-url should specify the url and target-http-status-code to specify the code used in the redirect response.
+Network load balancer does not support ibm_is_lb_listener_policy.
 
 ## Attribute Reference
 

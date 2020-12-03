@@ -75,7 +75,6 @@ func testAccCheckIBMDLGatewayConfig(gatewayname, custname, carriername string) s
 	}
 	  resource "ibm_dl_gateway" "test_dl_gateway" {
 		bgp_asn =  64999
-        bgp_base_cidr =  "169.254.0.0/16"
         global = true
         metered = false
         name = "%s"
@@ -96,7 +95,6 @@ func testAccCheckIBMDLConnectGatewayConfig(gatewayname string) string {
 	}
 	  resource "ibm_dl_gateway" "test_dl_connect" {
 		bgp_asn =  64999
-        bgp_base_cidr =  "169.254.0.0/16"
         global = true
         metered = false
         name = "%s"
