@@ -84,7 +84,7 @@ resource "ibm_dns_resource_record" "test-pdns-resource-record-txt" {
 
 The following arguments are supported:
 
-* `instance_id` - (Required, string) The ID of the private DNS instance.
+* `instance_id` - (Required, string) The guid of the private DNS instance.
 * `zone_id` - (Required, string)  The ID of the DNS zone.
 * `type` - (Required, string) The type of the DNS resource record to be created. Supported Resource Record types are: A, AAAA, CNAME, PTR, TXT, MX, SRV. Update is not allowed for this attribute.
 * `name` -  (Required, string) The name of a DNS resource record.
