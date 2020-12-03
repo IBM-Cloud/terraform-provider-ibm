@@ -24,6 +24,7 @@ const (
 	isVPNGatewayProvisioning     = "provisioning"
 	isVPNGatewayProvisioningDone = "done"
 	isVPNGatewayPublicIPAddress  = "public_ip_address"
+	isVPNGatewayPublicIPAddress2 = "public_ip_address2"
 )
 
 func resourceIBMISVPNGateway() *schema.Resource {
@@ -52,7 +53,7 @@ func resourceIBMISVPNGateway() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_route", isVPNGatewayName),
 				Description:  "VPN Gateway instance name",
 			},
 
@@ -76,6 +77,11 @@ func resourceIBMISVPNGateway() *schema.Resource {
 			},
 
 			isVPNGatewayPublicIPAddress: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			isVPNGatewayPublicIPAddress2: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -122,6 +128,23 @@ func resourceIBMISVPNGateway() *schema.Resource {
 	}
 }
 
+func resourceIBMISVPNGatewayValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPNGatewayName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISVPNGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_is_vpn_gateway", Schema: validateSchema}
+	return &ibmISVPNGatewayResourceValidator
+}
+
 func resourceIBMISVPNGatewayCreate(d *schema.ResourceData, meta interface{}) error {
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
@@ -150,36 +173,40 @@ func classicVpngwCreate(d *schema.ResourceData, meta interface{}, name, subnetID
 	if err != nil {
 		return err
 	}
-	options := &vpcclassicv1.CreateVPNGatewayOptions{
+	vpnGatewayPrototype := &vpcclassicv1.VPNGatewayPrototype{
 		Subnet: &vpcclassicv1.SubnetIdentity{
 			ID: &subnetID,
 		},
 		Name: &name,
 	}
+	options := &vpcclassicv1.CreateVPNGatewayOptions{
+		VPNGatewayPrototype: vpnGatewayPrototype,
+	}
 
 	if rgrp, ok := d.GetOk(isVPNGatewayResourceGroup); ok {
 		rg := rgrp.(string)
-		options.ResourceGroup = &vpcclassicv1.ResourceGroupIdentity{
+		vpnGatewayPrototype.ResourceGroup = &vpcclassicv1.ResourceGroupIdentity{
 			ID: &rg,
 		}
 	}
 
-	VPNGateway, response, err := sess.CreateVPNGateway(options)
+	vpnGatewayIntf, response, err := sess.CreateVPNGateway(options)
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Create vpc VPN Gateway %s\n%s", err, response)
 	}
-	_, err = isWaitForClassicVpnGatewayAvailable(sess, *VPNGateway.ID, d.Timeout(schema.TimeoutCreate))
+	vpnGateway := vpnGatewayIntf.(*vpcclassicv1.VPNGateway)
+	_, err = isWaitForClassicVpnGatewayAvailable(sess, *vpnGateway.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
 
-	d.SetId(*VPNGateway.ID)
-	log.Printf("[INFO] VPNGateway : %s", *VPNGateway.ID)
+	d.SetId(*vpnGateway.ID)
+	log.Printf("[INFO] VPNGateway : %s", *vpnGateway.ID)
 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isVPNGatewayTags); ok || v != "" {
 		oldList, newList := d.GetChange(isVPNGatewayTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *VPNGateway.CRN)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpnGateway.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
@@ -193,36 +220,41 @@ func vpngwCreate(d *schema.ResourceData, meta interface{}, name, subnetID string
 	if err != nil {
 		return err
 	}
-	options := &vpcv1.CreateVPNGatewayOptions{
+	vpnGatewayPrototype := &vpcv1.VPNGatewayPrototype{
 		Subnet: &vpcv1.SubnetIdentity{
 			ID: &subnetID,
 		},
 		Name: &name,
 	}
+	options := &vpcv1.CreateVPNGatewayOptions{
+		VPNGatewayPrototype: vpnGatewayPrototype,
+	}
 
 	if rgrp, ok := d.GetOk(isVPNGatewayResourceGroup); ok {
 		rg := rgrp.(string)
-		options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+		vpnGatewayPrototype.ResourceGroup = &vpcv1.ResourceGroupIdentity{
 			ID: &rg,
 		}
 	}
 
-	VPNGateway, response, err := sess.CreateVPNGateway(options)
+	vpnGatewayIntf, response, err := sess.CreateVPNGateway(options)
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Create vpc VPN Gateway %s\n%s", err, response)
 	}
-	_, err = isWaitForVpnGatewayAvailable(sess, *VPNGateway.ID, d.Timeout(schema.TimeoutCreate))
+	vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
+
+	_, err = isWaitForVpnGatewayAvailable(sess, *vpnGateway.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
 
-	d.SetId(*VPNGateway.ID)
-	log.Printf("[INFO] VPNGateway : %s", *VPNGateway.ID)
+	d.SetId(*vpnGateway.ID)
+	log.Printf("[INFO] VPNGateway : %s", *vpnGateway.ID)
 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isVPNGatewayTags); ok || v != "" {
 		oldList, newList := d.GetChange(isVPNGatewayTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *VPNGateway.CRN)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpnGateway.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
@@ -251,16 +283,17 @@ func isClassicVpnGatewayRefreshFunc(vpnGateway *vpcclassicv1.VpcClassicV1, id st
 		getVpnGatewayOptions := &vpcclassicv1.GetVPNGatewayOptions{
 			ID: &id,
 		}
-		vpngw, response, err := vpnGateway.GetVPNGateway(getVpnGatewayOptions)
+		vpnGatewayIntf, response, err := vpnGateway.GetVPNGateway(getVpnGatewayOptions)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
 		}
+		vpnGateway := vpnGatewayIntf.(*vpcclassicv1.VPNGateway)
 
-		if *vpngw.Status == "available" || *vpngw.Status == "failed" || *vpngw.Status == "running" {
-			return vpngw, isVPNGatewayProvisioningDone, nil
+		if *vpnGateway.Status == "available" || *vpnGateway.Status == "failed" || *vpnGateway.Status == "running" {
+			return vpnGateway, isVPNGatewayProvisioningDone, nil
 		}
 
-		return vpngw, isVPNGatewayProvisioning, nil
+		return vpnGateway, isVPNGatewayProvisioning, nil
 	}
 }
 
@@ -284,16 +317,17 @@ func isVpnGatewayRefreshFunc(vpnGateway *vpcv1.VpcV1, id string) resource.StateR
 		getVpnGatewayOptions := &vpcv1.GetVPNGatewayOptions{
 			ID: &id,
 		}
-		vpngw, response, err := vpnGateway.GetVPNGateway(getVpnGatewayOptions)
+		vpnGatewayIntf, response, err := vpnGateway.GetVPNGateway(getVpnGatewayOptions)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
 		}
+		vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
 
-		if *vpngw.Status == "available" || *vpngw.Status == "failed" || *vpngw.Status == "running" {
-			return vpngw, isVPNGatewayProvisioningDone, nil
+		if *vpnGateway.Status == "available" || *vpnGateway.Status == "failed" || *vpnGateway.Status == "running" {
+			return vpnGateway, isVPNGatewayProvisioningDone, nil
 		}
 
-		return vpngw, isVPNGatewayProvisioning, nil
+		return vpnGateway, isVPNGatewayProvisioning, nil
 	}
 }
 
@@ -326,7 +360,7 @@ func classicVpngwGet(d *schema.ResourceData, meta interface{}, id string) error 
 	getVpnGatewayOptions := &vpcclassicv1.GetVPNGatewayOptions{
 		ID: &id,
 	}
-	VPNGateway, response, err := sess.GetVPNGateway(getVpnGatewayOptions)
+	vpnGatewayIntf, response, err := sess.GetVPNGateway(getVpnGatewayOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -334,11 +368,21 @@ func classicVpngwGet(d *schema.ResourceData, meta interface{}, id string) error 
 		}
 		return fmt.Errorf("Error Getting Vpn Gateway (%s): %s\n%s", id, err, response)
 	}
-	d.Set(isVPNGatewayName, *VPNGateway.Name)
-	d.Set(isVPNGatewaySubnet, *VPNGateway.Subnet.ID)
-	d.Set(isVPNGatewayStatus, *VPNGateway.Status)
-	d.Set(isVPNGatewayPublicIPAddress, *VPNGateway.PublicIP.Address)
-	tags, err := GetTagsUsingCRN(meta, *VPNGateway.CRN)
+	vpnGateway := vpnGatewayIntf.(*vpcclassicv1.VPNGateway)
+	d.Set(isVPNGatewayName, *vpnGateway.Name)
+	d.Set(isVPNGatewaySubnet, *vpnGateway.Subnet.ID)
+	d.Set(isVPNGatewayStatus, *vpnGateway.Status)
+	members := []vpcclassicv1.VPNGatewayMember{}
+	for _, member := range vpnGateway.Members {
+		members = append(members, member)
+	}
+	if len(members) > 0 {
+		d.Set(isVPNGatewayPublicIPAddress, *members[0].PublicIP.Address)
+	}
+	if len(members) > 1 {
+		d.Set(isVPNGatewayPublicIPAddress2, *members[1].PublicIP.Address)
+	}
+	tags, err := GetTagsUsingCRN(meta, *vpnGateway.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
@@ -349,12 +393,12 @@ func classicVpngwGet(d *schema.ResourceData, meta interface{}, id string) error 
 		return err
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc/network/vpngateways")
-	d.Set(ResourceName, *VPNGateway.Name)
-	d.Set(ResourceCRN, *VPNGateway.CRN)
-	d.Set(ResourceStatus, *VPNGateway.Status)
-	if VPNGateway.ResourceGroup != nil {
-		d.Set(ResourceGroupName, *VPNGateway.ResourceGroup.ID)
-		d.Set(isVPNGatewayResourceGroup, *VPNGateway.ResourceGroup.ID)
+	d.Set(ResourceName, *vpnGateway.Name)
+	d.Set(ResourceCRN, *vpnGateway.CRN)
+	d.Set(ResourceStatus, *vpnGateway.Status)
+	if vpnGateway.ResourceGroup != nil {
+		d.Set(ResourceGroupName, *vpnGateway.ResourceGroup.ID)
+		d.Set(isVPNGatewayResourceGroup, *vpnGateway.ResourceGroup.ID)
 	}
 	return nil
 }
@@ -367,7 +411,7 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	getVpnGatewayOptions := &vpcv1.GetVPNGatewayOptions{
 		ID: &id,
 	}
-	VPNGateway, response, err := sess.GetVPNGateway(getVpnGatewayOptions)
+	vpnGatewayIntf, response, err := sess.GetVPNGateway(getVpnGatewayOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -375,11 +419,20 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("Error Getting Vpn Gateway (%s): %s\n%s", id, err, response)
 	}
-	d.Set(isVPNGatewayName, *VPNGateway.Name)
-	d.Set(isVPNGatewaySubnet, *VPNGateway.Subnet.ID)
-	d.Set(isVPNGatewayStatus, *VPNGateway.Status)
-	d.Set(isVPNGatewayPublicIPAddress, *VPNGateway.PublicIP.Address)
-	tags, err := GetTagsUsingCRN(meta, *VPNGateway.CRN)
+	vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
+
+	d.Set(isVPNGatewayName, *vpnGateway.Name)
+	d.Set(isVPNGatewaySubnet, *vpnGateway.Subnet.ID)
+	d.Set(isVPNGatewayStatus, *vpnGateway.Status)
+	members := []vpcv1.VPNGatewayMember{}
+	for _, member := range vpnGateway.Members {
+		members = append(members, member)
+	}
+	if len(members) > 1 {
+		d.Set(isVPNGatewayPublicIPAddress, *members[0].PublicIP.Address)
+		d.Set(isVPNGatewayPublicIPAddress2, *members[1].PublicIP.Address)
+	}
+	tags, err := GetTagsUsingCRN(meta, *vpnGateway.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
@@ -390,12 +443,12 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 		return err
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc/network/vpngateways")
-	d.Set(ResourceName, *VPNGateway.Name)
-	d.Set(ResourceCRN, *VPNGateway.CRN)
-	d.Set(ResourceStatus, *VPNGateway.Status)
-	if VPNGateway.ResourceGroup != nil {
-		d.Set(ResourceGroupName, *VPNGateway.ResourceGroup.Name)
-		d.Set(isVPNGatewayResourceGroup, *VPNGateway.ResourceGroup.ID)
+	d.Set(ResourceName, *vpnGateway.Name)
+	d.Set(ResourceCRN, *vpnGateway.CRN)
+	d.Set(ResourceStatus, *vpnGateway.Status)
+	if vpnGateway.ResourceGroup != nil {
+		d.Set(ResourceGroupName, *vpnGateway.ResourceGroup.Name)
+		d.Set(isVPNGatewayResourceGroup, *vpnGateway.ResourceGroup.ID)
 	}
 	return nil
 }
@@ -438,12 +491,14 @@ func classicVpngwUpdate(d *schema.ResourceData, meta interface{}, id, name strin
 		getVpnGatewayOptions := &vpcclassicv1.GetVPNGatewayOptions{
 			ID: &id,
 		}
-		VPNGateway, response, err := sess.GetVPNGateway(getVpnGatewayOptions)
+		vpnGatewayIntf, response, err := sess.GetVPNGateway(getVpnGatewayOptions)
 		if err != nil {
 			return fmt.Errorf("Error getting Volume : %s\n%s", err, response)
 		}
+		vpnGateway := vpnGatewayIntf.(*vpcclassicv1.VPNGateway)
+
 		oldList, newList := d.GetChange(isVPNGatewayTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *VPNGateway.CRN)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpnGateway.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc Vpn Gateway (%s) tags: %s", id, err)
@@ -451,9 +506,16 @@ func classicVpngwUpdate(d *schema.ResourceData, meta interface{}, id, name strin
 	}
 	if hasChanged {
 		options := &vpcclassicv1.UpdateVPNGatewayOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		vpnGatewayPatchModel := &vpcclassicv1.VPNGatewayPatch{
 			Name: &name,
 		}
+		vpnGatewayPatch, err := vpnGatewayPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for VPNGatewayPatch: %s", err)
+		}
+		options.VPNGatewayPatch = vpnGatewayPatch
 		_, response, err := sess.UpdateVPNGateway(options)
 		if err != nil {
 			return fmt.Errorf("Error updating vpc Vpn Gateway: %s\n%s", err, response)
@@ -471,12 +533,14 @@ func vpngwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 		getVpnGatewayOptions := &vpcv1.GetVPNGatewayOptions{
 			ID: &id,
 		}
-		VPNGateway, response, err := sess.GetVPNGateway(getVpnGatewayOptions)
+		vpnGatewayIntf, response, err := sess.GetVPNGateway(getVpnGatewayOptions)
 		if err != nil {
 			return fmt.Errorf("Error getting Volume : %s\n%s", err, response)
 		}
+		vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
+
 		oldList, newList := d.GetChange(isVPNGatewayTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *VPNGateway.CRN)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpnGateway.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc Vpn Gateway (%s) tags: %s", id, err)
@@ -484,9 +548,16 @@ func vpngwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 	}
 	if hasChanged {
 		options := &vpcv1.UpdateVPNGatewayOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		vpnGatewayPatchModel := &vpcv1.VPNGatewayPatch{
 			Name: &name,
 		}
+		vpnGatewayPatch, err := vpnGatewayPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for VPNGatewayPatch: %s", err)
+		}
+		options.VPNGatewayPatch = vpnGatewayPatch
 		_, response, err := sess.UpdateVPNGateway(options)
 		if err != nil {
 			return fmt.Errorf("Error updating vpc Vpn Gateway: %s\n%s", err, response)
@@ -602,9 +673,9 @@ func isClassicVpnGatewayDeleteRefreshFunc(vpnGateway *vpcclassicv1.VpcClassicV1,
 		vpngw, response, err := vpnGateway.GetVPNGateway(getVpnGatewayOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return vpngw, isVPNGatewayDeleted, nil
+				return "", isVPNGatewayDeleted, nil
 			}
-			return nil, "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
+			return "", "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
 		}
 		return vpngw, isVPNGatewayDeleting, err
 	}
@@ -633,9 +704,9 @@ func isVpnGatewayDeleteRefreshFunc(vpnGateway *vpcv1.VpcV1, id string) resource.
 		vpngw, response, err := vpnGateway.GetVPNGateway(getVpnGatewayOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return vpngw, isVPNGatewayDeleted, nil
+				return "", isVPNGatewayDeleted, nil
 			}
-			return nil, "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
+			return "", "", fmt.Errorf("Error Getting Vpn Gateway: %s\n%s", err, response)
 		}
 		return vpngw, isVPNGatewayDeleting, err
 	}

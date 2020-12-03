@@ -46,6 +46,7 @@ The following attributes are exported:
 * `id` - The unique identifier of the VPN gateway.
 * `status` - The status of VPN gateway.
 * `public_ip_address` -  The IP address assigned to this VPN gateway.
+* `public_ip_address2` -  The Second IP address assigned to this VPN gateway.
 
 
 ## Import

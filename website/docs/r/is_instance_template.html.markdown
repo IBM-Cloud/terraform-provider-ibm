@@ -41,6 +41,7 @@ resource "ibm_is_instance_template" "instancetemplate1" {
 
   primary_network_interface {
     subnet = ibm_is_subnet.subnet2.id
+    allow_ip_spoofing = true
   }
 
   vpc  = ibm_is_vpc.vpc2.id
@@ -73,11 +74,13 @@ The following arguments are supported:
   * `name` - (Optional, string) Name of the interface.
   * `primary_ipv4_address` - (Optional, string) IPv4 address assigned to the primary network interface.
   * `security_groups` - (Optional, list) List of security groups under the subnet.
+  * `allow_ip_spoofing` - (Optional, bool) Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If true, IP spoofing is allowed on this interface.
 * `network_interfaces` - (Optional, list) A nested block describing the network interfaces for the template. Nested  network_interfaces blocks have the following structure:
   * `subnet` - (Required, Forces new resource, string) The VPC subnet to assign to the interface. 
   * `name` - (Optional, string) Name of the interface.
   * `primary_ipv4_address` - (Optional, string) IPv4 address assigned to the network interface.
   * `security_groups` - (Optional, list) List of security groups under the subnet.
+  * `allow_ip_spoofing` - (Optional, bool) Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If true, IP spoofing is allowed on this interface.
 * `boot_volume` - (Optional, block) A nested block describing the boot volume configuration for the template. Nested  boot_volume blocks have the following structure:
   * `encryption` - (Optional, string) encryption key CRN to encrypt the boot volume attached. 
   * `name` - (Optional, string) Name of the boot volume.

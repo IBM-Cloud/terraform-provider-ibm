@@ -64,6 +64,10 @@ func resourceIBMPINetworkPort() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"public_ip": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -136,6 +140,7 @@ func resourceIBMPINetworkPortRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("macaddress", networkdata.MacAddress)
 	d.Set("status", networkdata.Status)
 	d.Set("portid", networkdata.PortID)
+	d.Set("public_ip", networkdata.ExternalIP)
 
 	return nil
 

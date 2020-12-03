@@ -135,10 +135,11 @@ func testAccCheckIBMISVPNGatewayConnectionExists(n, vpngcID string) resource.Tes
 				VPNGatewayID: &gID,
 				ID:           &gConnID,
 			}
-			foundvpngc, _, err := sess.GetVPNGatewayConnection(getvpngcoptions)
+			foundvpngcIntf, res, err := sess.GetVPNGatewayConnection(getvpngcoptions)
 			if err != nil {
-				return err
+				return fmt.Errorf("Error Getting VPN Gateway connection: %s\n%s", err, res)
 			}
+			foundvpngc := foundvpngcIntf.(*vpcclassicv1.VPNGatewayConnection)
 			vpngcID = *foundvpngc.ID
 		} else {
 			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
@@ -146,10 +147,11 @@ func testAccCheckIBMISVPNGatewayConnectionExists(n, vpngcID string) resource.Tes
 				VPNGatewayID: &gID,
 				ID:           &gConnID,
 			}
-			foundvpngc, _, err := sess.GetVPNGatewayConnection(getvpngcoptions)
+			foundvpngcIntf, res, err := sess.GetVPNGatewayConnection(getvpngcoptions)
 			if err != nil {
-				return err
+				return fmt.Errorf("Error Getting VPN Gateway connection: %s\n%s", err, res)
 			}
+			foundvpngc := foundvpngcIntf.(*vpcv1.VPNGatewayConnection)
 			vpngcID = *foundvpngc.ID
 		}
 		return nil
@@ -161,7 +163,7 @@ func testAccCheckIBMISVPNGatewayConnectionConfig(vpc1, subnet1, vpnname1, name1,
 	resource "ibm_is_vpc" "testacc_vpc1" {
 		name = "%s"
 	}
-	
+
 	resource "ibm_is_subnet" "testacc_subnet1" {
 		name = "%s"
 		vpc = "${ibm_is_vpc.testacc_vpc1.id}"
@@ -185,7 +187,7 @@ func testAccCheckIBMISVPNGatewayConnectionConfig(vpc1, subnet1, vpnname1, name1,
 	resource "ibm_is_vpc" "testacc_vpc2" {
 		name = "%s"
 	}
-	
+
 	resource "ibm_is_subnet" "testacc_subnet2" {
 		name = "%s"
 		vpc = "${ibm_is_vpc.testacc_vpc2.id}"
@@ -216,7 +218,7 @@ func testAccCheckIBMISVPNGatewayConnectionUpdate(vpc1, subnet1, vpnname1, name1,
 	resource "ibm_is_vpc" "testacc_vpc1" {
 		name = "%s"
 	}
-	
+
 	resource "ibm_is_subnet" "testacc_subnet1" {
 		name = "%s"
 		vpc = "${ibm_is_vpc.testacc_vpc1.id}"
@@ -240,7 +242,7 @@ func testAccCheckIBMISVPNGatewayConnectionUpdate(vpc1, subnet1, vpnname1, name1,
 	resource "ibm_is_vpc" "testacc_vpc2" {
 		name = "%s"
 	}
-	
+
 	resource "ibm_is_subnet" "testacc_subnet2" {
 		name = "%s"
 		vpc = "${ibm_is_vpc.testacc_vpc2.id}"

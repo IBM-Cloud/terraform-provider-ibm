@@ -22,6 +22,7 @@ const (
 	isInstanceNicName                 = "name"
 	isInstanceProfile                 = "profile"
 	isInstanceNicPortSpeed            = "port_speed"
+	isInstanceNicAllowIPSpoofing      = "allow_ip_spoofing"
 	isInstanceNicPrimaryIpv4Address   = "primary_ipv4_address"
 	isInstanceNicPrimaryIpv6Address   = "primary_ipv6_address"
 	isInstanceNicSecondaryAddress     = "secondary_addresses"
@@ -110,7 +111,7 @@ func resourceIBMISInstance() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_instance", isInstanceName),
 				Description:  "Instance name",
 			},
 
@@ -194,6 +195,12 @@ func resourceIBMISInstance() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						isInstanceNicAllowIPSpoofing: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Indicates whether IP spoofing is allowed on this interface.",
+						},
 						isInstanceNicName: {
 							Type:     schema.TypeString,
 							Optional: true,
@@ -235,6 +242,12 @@ func resourceIBMISInstance() *schema.Resource {
 						"id": {
 							Type:     schema.TypeString,
 							Computed: true,
+						},
+						isInstanceNicAllowIPSpoofing: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Indicates whether IP spoofing is allowed on this interface.",
 						},
 						isInstanceNicName: {
 							Type:     schema.TypeString,
@@ -423,8 +436,31 @@ func resourceIBMISInstance() *schema.Resource {
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
 			},
+
+			"force_recovery_time": {
+				Description: "Define timeout to force the instances to start/stop in minutes.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+			},
 		},
 	}
+}
+
+func resourceIBMISInstanceValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isInstanceName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISInstanceValidator := ResourceValidator{ResourceName: "ibm_is_instance", Schema: validateSchema}
+	return &ibmISInstanceValidator
 }
 
 func classicInstanceCreate(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image string) error {
@@ -676,6 +712,11 @@ func instanceCreate(d *schema.ResourceData, meta interface{}, profile, name, vpc
 		if ipv4str != "" {
 			primnicobj.PrimaryIpv4Address = &ipv4str
 		}
+		allowIPSpoofing, ok := primnic[isInstanceNicAllowIPSpoofing]
+		allowIPSpoofingbool := allowIPSpoofing.(bool)
+		if ok {
+			primnicobj.AllowIPSpoofing = &allowIPSpoofingbool
+		}
 		secgrpintf, ok := primnic[isInstanceNicSecurityGroups]
 		if ok {
 			secgrpSet := secgrpintf.(*schema.Set)
@@ -713,6 +754,11 @@ func instanceCreate(d *schema.ResourceData, meta interface{}, profile, name, vpc
 			ipv4str := ipv4.(string)
 			if ipv4str != "" {
 				nwInterface.PrimaryIpv4Address = &ipv4str
+			}
+			allowIPSpoofing, ok := nic[isInstanceNicAllowIPSpoofing]
+			allowIPSpoofingbool := allowIPSpoofing.(bool)
+			if ok {
+				nwInterface.AllowIPSpoofing = &allowIPSpoofingbool
 			}
 			secgrpintf, ok := nic[isInstanceNicSecurityGroups]
 			if ok {
@@ -834,15 +880,21 @@ func isWaitForClassicInstanceAvailable(instanceC *vpcclassicv1.VpcClassicV1, id 
 func isWaitForInstanceAvailable(instanceC *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for instance (%s) to be available.", id)
 
+	communicator := make(chan interface{})
+
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isInstanceProvisioning},
 		Target:     []string{isInstanceStatusRunning, "available", "failed", ""},
-		Refresh:    isInstanceRefreshFunc(instanceC, id, d),
+		Refresh:    isInstanceRefreshFunc(instanceC, id, d, communicator),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
 
+	if v, ok := d.GetOk("force_recovery_time"); ok {
+		forceTimeout := v.(int)
+		go isRestartStartAction(instanceC, id, d, forceTimeout, communicator)
+	}
 	return stateConf.WaitForState()
 }
 
@@ -866,7 +918,7 @@ func isClassicInstanceRefreshFunc(instanceC *vpcclassicv1.VpcClassicV1, id strin
 	}
 }
 
-func isInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceData, communicator chan interface{}) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getinsOptions := &vpcv1.GetInstanceOptions{
 			ID: &id,
@@ -877,14 +929,61 @@ func isInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.Resource
 		}
 		d.Set(isInstanceStatus, *instance.Status)
 
-		if *instance.Status == "available" || *instance.Status == "failed" || *instance.Status == "running" {
-			return instance, *instance.Status, nil
+		select {
+		case data := <-communicator:
+			return nil, "", data.(error)
+		default:
+			fmt.Println("no message sent")
 		}
 
+		if *instance.Status == "available" || *instance.Status == "failed" || *instance.Status == "running" {
+			// let know the isRestartStartAction() to stop
+			close(communicator)
+			return instance, *instance.Status, nil
+
+		}
 		return instance, isInstanceProvisioning, nil
 	}
 }
 
+func isRestartStartAction(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceData, forceTimeout int, communicator chan interface{}) {
+	subticker := time.NewTicker(time.Duration(forceTimeout) * time.Minute)
+	//subticker := time.NewTicker(time.Duration(forceTimeout) * time.Second)
+	for {
+		select {
+
+		case <-subticker.C:
+			log.Println("Instance is still in starting state, force retry by restarting the instance.")
+			actiontype := "stop"
+			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+				InstanceID: &id,
+				Type:       &actiontype,
+			}
+			_, response, err := instanceC.CreateInstanceAction(createinsactoptions)
+			if err != nil {
+				communicator <- fmt.Errorf("Error retrying instance action start: %s\n%s", err, response)
+				return
+			}
+			waitTimeout := time.Duration(1) * time.Minute
+			_, _ = isWaitForInstanceActionStop(instanceC, waitTimeout, id, d)
+			actiontype = "start"
+			createinsactoptions = &vpcv1.CreateInstanceActionOptions{
+				InstanceID: &id,
+				Type:       &actiontype,
+			}
+			_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+			if err != nil {
+				communicator <- fmt.Errorf("Error retrying instance action start: %s\n%s", err, response)
+				return
+			}
+		case <-communicator:
+			// indicates refresh func is reached target and not proceed with the thread
+			subticker.Stop()
+			return
+
+		}
+	}
+}
 func resourceIBMisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
@@ -1141,6 +1240,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		if err != nil {
 			return fmt.Errorf("Error getting network interfaces attached to the instance %s\n%s", err, response)
 		}
+		currentPrimNic[isInstanceNicAllowIPSpoofing] = *insnic.AllowIPSpoofing
 		currentPrimNic[isInstanceNicSubnet] = *insnic.Subnet.ID
 		if len(insnic.SecurityGroups) != 0 {
 			secgrpList := []string{}
@@ -1170,6 +1270,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				if err != nil {
 					return fmt.Errorf("Error getting network interfaces attached to the instance %s\n%s", err, response)
 				}
+				currentNic[isInstanceNicAllowIPSpoofing] = *insnic.AllowIPSpoofing
 				currentNic[isInstanceNicSubnet] = *insnic.Subnet.ID
 				if len(insnic.SecurityGroups) != 0 {
 					secgrpList := []string{}
@@ -1453,9 +1554,18 @@ func classicInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange(isInstanceName) {
 		name := d.Get(isInstanceName).(string)
 		updnetoptions := &vpcclassicv1.UpdateInstanceOptions{
-			ID:   &id,
+			ID: &id,
+		}
+
+		instancePatchModel := &vpcclassicv1.InstancePatch{
 			Name: &name,
 		}
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for ImagePatch: %s", err)
+		}
+		updnetoptions.InstancePatch = instancePatch
+
 		_, _, err = instanceC.UpdateInstance(updnetoptions)
 		if err != nil {
 			return err
@@ -1586,14 +1696,25 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if d.HasChange("primary_network_interface.0.name") && !d.IsNewResource() {
+	if (d.HasChange("primary_network_interface.0.allow_ip_spoofing") || d.HasChange("primary_network_interface.0.name")) && !d.IsNewResource() {
 		newName := d.Get("primary_network_interface.0.name").(string)
 		networkID := d.Get("primary_network_interface.0.id").(string)
+		allowIPSpoofing := d.Get("primary_network_interface.0.allow_ip_spoofing").(bool)
 		updatepnicfoptions := &vpcv1.UpdateInstanceNetworkInterfaceOptions{
 			InstanceID: &id,
 			ID:         &networkID,
-			Name:       &newName,
 		}
+
+		networkInterfacePatchModel := &vpcv1.NetworkInterfacePatch{
+			Name:            &newName,
+			AllowIPSpoofing: &allowIPSpoofing,
+		}
+		networkInterfacePatch, err := networkInterfacePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for NetworkInterfacePatch: %s", err)
+		}
+		updatepnicfoptions.NetworkInterfacePatch = networkInterfacePatch
+
 		_, response, err := instanceC.UpdateInstanceNetworkInterface(updatepnicfoptions)
 		if err != nil {
 			return fmt.Errorf("Error while updating name %s for primary network interface of instance %s\n%s: %q", newName, d.Id(), err, response)
@@ -1609,6 +1730,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		for i := range nics {
 			securitygrpKey := fmt.Sprintf("network_interfaces.%d.security_groups", i)
 			networkNameKey := fmt.Sprintf("network_interfaces.%d.name", i)
+			ipSpoofingKey := fmt.Sprintf("network_interfaces.%d.allow_ip_spoofing", i)
 			if d.HasChange(securitygrpKey) {
 				ovs, nvs := d.GetChange(securitygrpKey)
 				ov := ovs.(*schema.Set)
@@ -1655,15 +1777,26 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 			}
 
-			if d.HasChange(networkNameKey) {
+			if d.HasChange(networkNameKey) || d.HasChange(ipSpoofingKey) {
 				newName := d.Get(networkNameKey).(string)
 				networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
 				networkID := d.Get(networkIDKey).(string)
+				ipSpoofing := d.Get(ipSpoofingKey).(bool)
 				updatepnicfoptions := &vpcv1.UpdateInstanceNetworkInterfaceOptions{
 					InstanceID: &id,
 					ID:         &networkID,
-					Name:       &newName,
 				}
+
+				instancePatchModel := &vpcv1.NetworkInterfacePatch{
+					Name:            &newName,
+					AllowIPSpoofing: &ipSpoofing,
+				}
+				networkInterfacePatch, err := instancePatchModel.AsPatch()
+				if err != nil {
+					return fmt.Errorf("Error calling asPatch for NetworkInterfacePatch: %s", err)
+				}
+				updatepnicfoptions.NetworkInterfacePatch = networkInterfacePatch
+
 				_, response, err := instanceC.UpdateInstanceNetworkInterface(updatepnicfoptions)
 				if err != nil {
 					return fmt.Errorf("Error while updating name %s for network interface of instance %s\n%s: %q", newName, d.Id(), err, response)
@@ -1679,9 +1812,18 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange(isInstanceName) {
 		name := d.Get(isInstanceName).(string)
 		updnetoptions := &vpcv1.UpdateInstanceOptions{
-			ID:   &id,
+			ID: &id,
+		}
+
+		instancePatchModel := &vpcv1.InstancePatch{
 			Name: &name,
 		}
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstancePatch: %s", err)
+		}
+		updnetoptions.InstancePatch = instancePatch
+
 		_, _, err = instanceC.UpdateInstance(updnetoptions)
 		if err != nil {
 			return err
@@ -1836,7 +1978,7 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("Error Creating Instance Action: %s\n%s", err, response)
 	}
-	_, err = isWaitForInstanceActionStop(instanceC, d, meta, id)
+	_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutDelete), id, d)
 	if err != nil {
 		return err
 	}
@@ -2043,8 +2185,8 @@ func isWaitForClassicInstanceActionStop(instanceC *vpcclassicv1.VpcClassicV1, d 
 
 	return stateConf.WaitForState()
 }
-func isWaitForInstanceActionStop(instanceC *vpcv1.VpcV1, d *schema.ResourceData, meta interface{}, id string) (interface{}, error) {
-
+func isWaitForInstanceActionStop(instanceC *vpcv1.VpcV1, timeout time.Duration, id string, d *schema.ResourceData) (interface{}, error) {
+	communicator := make(chan interface{})
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{isInstanceStatusRunning, isInstanceStatusPending, isInstanceActionStatusStopping},
 		Target:  []string{isInstanceActionStatusStopped, isInstanceStatusFailed, ""},
@@ -2056,17 +2198,57 @@ func isWaitForInstanceActionStop(instanceC *vpcv1.VpcV1, d *schema.ResourceData,
 			if err != nil {
 				return nil, "", fmt.Errorf("Error Getting Instance: %s\n%s", err, response)
 			}
+			select {
+			case data := <-communicator:
+				return nil, "", data.(error)
+			default:
+				fmt.Println("no message sent")
+			}
 			if *instance.Status == isInstanceStatusFailed {
-				return instance, *instance.Status, fmt.Errorf("The  instance %s failed to stop: %v", d.Id(), err)
+				// let know the isRestartStopAction() to stop
+				close(communicator)
+				return instance, *instance.Status, fmt.Errorf("The  instance %s failed to stop: %v", id, err)
 			}
 			return instance, *instance.Status, nil
 		},
-		Timeout:    d.Timeout(schema.TimeoutDelete),
+		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
 
+	if v, ok := d.GetOk("force_recovery_time"); ok {
+		forceTimeout := v.(int)
+		go isRestartStopAction(instanceC, id, d, forceTimeout, communicator)
+	}
+
 	return stateConf.WaitForState()
+}
+
+func isRestartStopAction(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceData, forceTimeout int, communicator chan interface{}) {
+	subticker := time.NewTicker(time.Duration(forceTimeout) * time.Minute)
+	//subticker := time.NewTicker(time.Duration(forceTimeout) * time.Second)
+	for {
+		select {
+
+		case <-subticker.C:
+			log.Println("Instance is still in stopping state, retrying to stop with -force")
+			actiontype := "stop"
+			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+				InstanceID: &id,
+				Type:       &actiontype,
+			}
+			_, response, err := instanceC.CreateInstanceAction(createinsactoptions)
+			if err != nil {
+				communicator <- fmt.Errorf("Error retrying instance action stop: %s\n%s", err, response)
+				return
+			}
+		case <-communicator:
+			// indicates refresh func is reached target and not proceed with the thread)
+			subticker.Stop()
+			return
+
+		}
+	}
 }
 
 func isWaitForClassicInstanceVolumeAttached(instanceC *vpcclassicv1.VpcClassicV1, d *schema.ResourceData, id, volID string) (interface{}, error) {

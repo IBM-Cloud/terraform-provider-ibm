@@ -5,10 +5,11 @@ import (
 	"strings"
 	"time"
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
+	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
 func resourceIBMContainerALBCert() *schema.Resource {
@@ -20,9 +21,9 @@ func resourceIBMContainerALBCert() *schema.Resource {
 		Exists:   resourceIBMContainerALBCertExists,
 		Importer: &schema.ResourceImporter{},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(5 * time.Minute),
-			Update: schema.DefaultTimeout(5 * time.Minute),
-			Delete: schema.DefaultTimeout(5 * time.Minute),
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -175,7 +176,7 @@ func resourceIBMContainerALBCertDelete(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-	_, albCertDeletionError := waitForALBCertDelete(d, meta)
+	_, albCertDeletionError := waitForALBCertDelete(d, meta, schema.TimeoutDelete)
 	if albCertDeletionError != nil {
 		return albCertDeletionError
 	}
@@ -183,18 +184,39 @@ func resourceIBMContainerALBCertDelete(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func waitForALBCertDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func waitForALBCertDelete(d *schema.ResourceData, meta interface{}, timeout string) (interface{}, error) {
+	albClient, err := meta.(ClientSession).ContainerAPI()
+	if err != nil {
+		return false, err
+	}
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return false, err
+	}
+	clusterID := parts[0]
+	secretName := parts[1]
+
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{"exists"},
+		Pending: []string{"deleting"},
 		Target:  []string{"deleted"},
 		Refresh: func() (interface{}, string, error) {
-			resp, err := resourceIBMContainerALBCertExists(d, meta)
-			if resp {
-				return resp, "exists", nil
+			targetEnv, err := getAlbTargetHeader(d, meta)
+			if err != nil {
+				return nil, "", err
 			}
-			return resp, "deleted", err
+			alb, err := albClient.Albs().GetClusterALBCertBySecretName(clusterID, secretName, targetEnv)
+			if err != nil {
+				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+					return alb, "deleted", nil
+				}
+				return nil, "", err
+			}
+			if alb.State != "deleted" {
+				return alb, "deleting", nil
+			}
+			return alb, "deleted", nil
 		},
-		Timeout:    d.Timeout(schema.TimeoutDelete),
+		Timeout:    d.Timeout(timeout),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -318,7 +340,7 @@ func waitForContainerALBCert(d *schema.ResourceData, meta interface{}, timeout s
 			alb, err := albClient.Albs().GetClusterALBCertBySecretName(clusterID, secretName, targetEnv)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return nil, "", fmt.Errorf("The resource alb cert %s does not exist anymore: %v", d.Id(), err)
+					return alb, "creating", nil
 				}
 				return nil, "", err
 			}

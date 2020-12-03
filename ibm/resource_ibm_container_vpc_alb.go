@@ -164,7 +164,7 @@ func resourceIBMContainerVpcALBRead(d *schema.ResourceData, meta interface{}) er
 	d.Set("name", albConfig.Name)
 	d.Set("enable", albConfig.Enable)
 	d.Set("disable_deployment", albConfig.DisableDeployment)
-	d.Set("enable", albConfig.Enable)
+	d.Set("alb_id", albID)
 	d.Set("resize", albConfig.Resize)
 	d.Set("zone", albConfig.ZoneAlb)
 	d.Set("status", albConfig.Status)

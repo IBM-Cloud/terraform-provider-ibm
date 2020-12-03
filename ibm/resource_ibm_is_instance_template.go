@@ -123,6 +123,11 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 				Description: "Primary Network interface info",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						isInstanceTemplateNicAllowIPSpoofing: {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
 						isInstanceTemplateNicName: {
 							Type:     schema.TypeString,
 							Optional: true,
@@ -154,6 +159,11 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						isInstanceTemplateNicAllowIPSpoofing: {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
 						isInstanceTemplateNicName: {
 							Type:     schema.TypeString,
 							Optional: true,
@@ -386,7 +396,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			volInterface.Name = &namestr
 			volintf, _ := vol["volume"]
 			volintfstr := volintf.(string)
-			volInterface.Volume = &vpcv1.VolumeAttachmentPrototypeInstanceContextVolume{
+			volInterface.Volume = &vpcv1.VolumeAttachmentVolumePrototypeInstanceContext{
 				ID: &volintfstr,
 			}
 			intfs = append(intfs, *volInterface)
@@ -409,6 +419,11 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			if namestr != "" {
 				primnicobj.Name = &namestr
 			}
+		}
+		allowIPSpoofing, ok := primnic[isInstanceTemplateNicAllowIPSpoofing]
+		allowIPSpoofingbool := allowIPSpoofing.(bool)
+		if ok {
+			primnicobj.AllowIPSpoofing = &allowIPSpoofingbool
 		}
 
 		secgrpintf, ok := primnic[isInstanceTemplateNicSecurityGroups]
@@ -452,7 +467,11 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			if ok && namestr != "" {
 				nwInterface.Name = &namestr
 			}
-
+			allowIPSpoofing, ok := nic[isInstanceTemplateNicAllowIPSpoofing]
+			allowIPSpoofingbool := allowIPSpoofing.(bool)
+			if ok {
+				nwInterface.AllowIPSpoofing = &allowIPSpoofingbool
+			}
 			secgrpintf, ok := nic[isInstanceTemplateNicSecurityGroups]
 			if ok {
 				secgrpSet := secgrpintf.(*schema.Set)
@@ -548,7 +567,9 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 		subInf := instance.PrimaryNetworkInterface.Subnet
 		subnetIdentity := subInf.(*vpcv1.SubnetIdentity)
 		currentPrimNic[isInstanceTemplateNicSubnet] = *subnetIdentity.ID
-
+		if instance.PrimaryNetworkInterface.AllowIPSpoofing != nil {
+			currentPrimNic[isInstanceTemplateNicAllowIPSpoofing] = *instance.PrimaryNetworkInterface.AllowIPSpoofing
+		}
 		if len(instance.PrimaryNetworkInterface.SecurityGroups) != 0 {
 			secgrpList := []string{}
 			for i := 0; i < len(instance.PrimaryNetworkInterface.SecurityGroups); i++ {
@@ -570,7 +591,9 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			if intfc.PrimaryIpv4Address != nil {
 				currentNic[isInstanceTemplateNicPrimaryIpv4Address] = *intfc.PrimaryIpv4Address
 			}
-
+			if intfc.AllowIPSpoofing != nil {
+				currentNic[isInstanceTemplateNicAllowIPSpoofing] = *intfc.AllowIPSpoofing
+			}
 			subInf := intfc.Subnet
 			subnetIdentity := subInf.(*vpcv1.SubnetIdentity)
 			currentNic[isInstanceTemplateNicSubnet] = *subnetIdentity.ID
@@ -608,7 +631,7 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			volumeAttach[isInstanceTemplateDeleteVolume] = *volume.DeleteVolumeOnInstanceDelete
 			volumeID := map[string]interface{}{}
 			volumeIntf := volume.Volume
-			volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentPrototypeInstanceContextVolume)
+			volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentVolumePrototypeInstanceContext)
 			if volumeInst.Name != nil {
 				volumeID["name"] = *volumeInst.Name
 			}
@@ -646,9 +669,17 @@ func instanceTemplateUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange(isInstanceName) {
 		name := d.Get(isInstanceTemplateName).(string)
 		updnetoptions := &vpcv1.UpdateInstanceTemplateOptions{
-			ID:   &ID,
+			ID: &ID,
+		}
+
+		instanceTemplatePatchModel := &vpcv1.InstanceTemplatePatch{
 			Name: &name,
 		}
+		instanceTemplatePatch, err := instanceTemplatePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstanceTemplatePatch: %s", err)
+		}
+		updnetoptions.InstanceTemplatePatch = instanceTemplatePatch
 
 		_, _, err = instanceC.UpdateInstanceTemplate(updnetoptions)
 		if err != nil {

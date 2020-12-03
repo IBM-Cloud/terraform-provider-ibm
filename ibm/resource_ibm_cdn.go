@@ -580,6 +580,7 @@ func resourceIBMCDNDelete(d *schema.ResourceData, meta interface{}) error {
 	delete, err := service.DeleteDomainMapping(cdnId)
 	if err != nil {
 		log.Println(err)
+		return err
 	}
 	///print the delete response
 	log.Print("Delete response is : ", delete)
@@ -597,7 +598,7 @@ func resourceIBMCDNExists(d *schema.ResourceData, meta interface{}) (bool, error
 	log.Print("Exists response is : ", exists)
 	if err != nil {
 		if apiErr, ok := err.(sl.Error); ok {
-			if apiErr.StatusCode == 404 {
+			if apiErr.StatusCode == 404 || len(exists) == 0 {
 				return false, nil
 			}
 		}

@@ -38,6 +38,6 @@ The following attributes are exported:
 * `os` - The name of the operating system.
 * `status` - The status of this image.
 * `architecture` - The architecture for this image.
-
-
+* `encryption` - The type of encryption used on the image.
+* `encryption_key` - The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource.
 

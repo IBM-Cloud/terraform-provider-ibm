@@ -4,17 +4,17 @@ go 1.12
 
 require (
 	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20200914061145-5c7a783e2da7
-	github.com/IBM-Cloud/power-go-client v1.0.48
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20201119073718-c3ed816a263b
+	github.com/IBM-Cloud/power-go-client v1.0.53
 	github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
-	github.com/IBM/dns-svcs-go-sdk v0.0.3
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.3.1
+	github.com/IBM/go-sdk-core/v4 v4.5.1
 	github.com/IBM/ibm-cos-sdk-go v1.3.1
-	github.com/IBM/ibm-cos-sdk-go-config v1.0.0
-	github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
-	github.com/IBM/networking-go-sdk v0.7.0
-	github.com/IBM/vpc-go-sdk v0.1.1
+	github.com/IBM/ibm-cos-sdk-go-config v1.0.1
+	github.com/IBM/keyprotect-go-client v0.5.2
+	github.com/IBM/networking-go-sdk v0.12.0
+	github.com/IBM/vpc-go-sdk v0.3.1
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.26.4
 	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32 // indirect
@@ -45,7 +45,7 @@ require (
 	github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22
 	github.ibm.com/ibmcloud/namespace-go-sdk v0.0.0-00010101000000-000000000000
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/tools v0.0.0-20200823205832-c024452afbcd // indirect
+	golang.org/x/tools v0.0.0-20201005185003-576e169c3de7 // indirect
 	gotest.tools v2.2.0+incompatible
 )
 

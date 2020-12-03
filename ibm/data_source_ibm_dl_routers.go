@@ -23,7 +23,7 @@ func dataSourceIBMDLRouters() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "The Direct Link offering type",
-				ValidateFunc: InvokeValidator("ibm_dl_routers", dlOfferingType),
+				ValidateFunc: InvokeDataSourceValidator("ibm_dl_routers", dlOfferingType),
 			},
 			dlLocation: {
 				Type:        schema.TypeString,

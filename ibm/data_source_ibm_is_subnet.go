@@ -18,6 +18,7 @@ func dataSourceIBMISSubnet() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ExactlyOneOf: []string{isSubnetName, "identifier"},
+				ValidateFunc: InvokeDataSourceValidator("ibm_is_subnet", "identifier"),
 			},
 
 			isSubnetIpv4CidrBlock: {
@@ -45,6 +46,7 @@ func dataSourceIBMISSubnet() *schema.Resource {
 				Computed:     true,
 				Optional:     true,
 				ExactlyOneOf: []string{isSubnetName, "identifier"},
+				ValidateFunc: InvokeDataSourceValidator("ibm_is_subnet", isSubnetName),
 			},
 
 			isSubnetNetworkACL: {
@@ -108,6 +110,23 @@ func dataSourceIBMISSubnet() *schema.Resource {
 			},
 		},
 	}
+}
+
+func dataSourceIBMISSubnetValidator() *ResourceValidator {
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "identifier",
+			ValidateFunctionIdentifier: ValidateNoZeroValues,
+			Type:                       TypeString})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSubnetName,
+			ValidateFunctionIdentifier: ValidateNoZeroValues,
+			Type:                       TypeString})
+
+	ibmISSubnetDataSourceValidator := ResourceValidator{ResourceName: "ibm_is_subnet", Schema: validateSchema}
+	return &ibmISSubnetDataSourceValidator
 }
 
 func dataSourceIBMISSubnetRead(d *schema.ResourceData, meta interface{}) error {

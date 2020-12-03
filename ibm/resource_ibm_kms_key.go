@@ -94,6 +94,117 @@ func resourceIBMKmskey() *schema.Resource {
 				Computed:    true,
 				Description: "Crn of the key",
 			},
+			"expiration_date": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The date the key material expires. The date format follows RFC 3339. You can set an expiration date on any key on its creation. A key moves into the Deactivated state within one hour past its expiration date, if one is assigned. If you create a key without specifying an expiration date, the key does not expire",
+				ForceNew:    true,
+			},
+			"policies": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "Creates or updates one or more policies for the specified key",
+				MinItems:    1,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rotation": {
+							Type:         schema.TypeList,
+							Optional:     true,
+							Computed:     true,
+							AtLeastOneOf: []string{"policies.0.rotation", "policies.0.dual_auth_delete"},
+							Description:  "Specifies the key rotation time interval in months, with a minimum of 1, and a maximum of 12",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The v4 UUID used to uniquely identify the policy resource, as specified by RFC 4122.",
+									},
+									"crn": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Cloud Resource Name (CRN) that uniquely identifies your cloud resources.",
+									},
+									"created_by": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for the resource that created the policy.",
+									},
+									"creation_date": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The date the policy was created. The date format follows RFC 3339.",
+									},
+									"updated_by": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for the resource that updated the policy.",
+									},
+									"last_update_date": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Updates when the policy is replaced or modified. The date format follows RFC 3339.",
+									},
+									"interval_month": {
+										Type:         schema.TypeInt,
+										Required:     true,
+										ValidateFunc: validateAllowedRangeInt(1, 12),
+										Description:  "Specifies the key rotation time interval in months",
+									},
+								},
+							},
+						},
+						"dual_auth_delete": {
+							Type:         schema.TypeList,
+							Optional:     true,
+							Computed:     true,
+							AtLeastOneOf: []string{"policies.0.rotation", "policies.0.dual_auth_delete"},
+							Description:  "Data associated with the dual authorization delete policy.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The v4 UUID used to uniquely identify the policy resource, as specified by RFC 4122.",
+									},
+									"crn": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Cloud Resource Name (CRN) that uniquely identifies your cloud resources.",
+									},
+									"created_by": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for the resource that created the policy.",
+									},
+									"creation_date": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The date the policy was created. The date format follows RFC 3339.",
+									},
+									"updated_by": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for the resource that updated the policy.",
+									},
+									"last_update_date": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Updates when the policy is replaced or modified. The date format follows RFC 3339.",
+									},
+									"enabled": {
+										Type:        schema.TypeBool,
+										Required:    true,
+										Description: "If set to true, Key Protect enables a dual authorization policy on a single key.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -186,56 +297,73 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	name := d.Get("key_name").(string)
 	standardKey := d.Get("standard_key").(bool)
 
+	var expiration *time.Time
+	if es, ok := d.GetOk("expiration_date"); ok {
+		expiration_string := es.(string)
+		// parse string to required time format
+		expiration_time, err := time.Parse(time.RFC3339, expiration_string)
+		if err != nil {
+			return fmt.Errorf("Invalid time format (the date format follows RFC 3339): %s", err)
+		}
+		expiration = &expiration_time
+	} else {
+		expiration = nil
+	}
+
 	var keyCRN string
 	if standardKey {
 		if v, ok := d.GetOk("payload"); ok {
 			//import standard key
 			payload := v.(string)
-			stkey, err := kpAPI.CreateImportedStandardKey(context.Background(), name, nil, payload)
+			stkey, err := kpAPI.CreateImportedStandardKey(context.Background(), name, expiration, payload)
 			if err != nil {
 				return fmt.Errorf(
 					"Error while creating standard key with payload: %s", err)
 			}
 			log.Printf("New key created: %v", *stkey)
 			keyCRN = stkey.CRN
+			d.SetId(keyCRN)
+
 		} else {
 			//create standard key
-			stkey, err := kpAPI.CreateStandardKey(context.Background(), name, nil)
+			stkey, err := kpAPI.CreateStandardKey(context.Background(), name, expiration)
 			if err != nil {
 				return fmt.Errorf(
 					"Error while creating standard key: %s", err)
 			}
 			log.Printf("New key created: %v", *stkey)
 			keyCRN = stkey.CRN
+			d.SetId(keyCRN)
+
 		}
-		d.SetId(keyCRN)
 	} else {
 		if v, ok := d.GetOk("payload"); ok {
 			payload := v.(string)
 			encryptedNonce := d.Get("encrypted_nonce").(string)
 			iv := d.Get("iv_value").(string)
-			stkey, err := kpAPI.CreateImportedRootKey(context.Background(), name, nil, payload, encryptedNonce, iv)
+			stkey, err := kpAPI.CreateImportedRootKey(context.Background(), name, expiration, payload, encryptedNonce, iv)
 			if err != nil {
 				return fmt.Errorf(
 					"Error while creating Root key with payload: %s", err)
 			}
 			log.Printf("New key created: %v", *stkey)
+
 			keyCRN = stkey.CRN
+			d.SetId(keyCRN)
+
 		} else {
-			stkey, err := kpAPI.CreateRootKey(context.Background(), name, nil)
+			stkey, err := kpAPI.CreateRootKey(context.Background(), name, expiration)
 			if err != nil {
 				return fmt.Errorf(
 					"Error while creating Root key: %s", err)
 			}
 			log.Printf("New key created: %v", *stkey)
 			keyCRN = stkey.CRN
+			d.SetId(keyCRN)
+
 		}
-
-		d.SetId(keyCRN)
-
 	}
-
-	return resourceIBMKmsKeyRead(d, meta)
+	return resourceIBMKmsKeyUpdate(d, meta)
 }
 
 func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
@@ -291,8 +419,18 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	// keyid := d.Id()
 	key, err := kpAPI.GetKey(context.Background(), keyid)
 	if err != nil {
-		return fmt.Errorf(
-			"Get Key failed with error: %s", err)
+		return fmt.Errorf("Get Key failed with error: %s", err)
+	}
+
+	policies, err := kpAPI.GetPolicies(context.Background(), keyid)
+
+	if err != nil {
+		return fmt.Errorf("Failed to read policies: %s", err)
+	}
+	if len(policies) == 0 {
+		log.Printf("No Policy Configurations read\n")
+	} else {
+		d.Set("policies", flattenKeyPolicies(policies))
 	}
 	d.Set("key_id", keyid)
 	d.Set("standard_key", key.Extractable)
@@ -304,6 +442,7 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("endpoint_type", endpointType)
 	d.Set("type", instanceType)
 	d.Set("force_delete", d.Get("force_delete").(bool))
+	d.Set("expiration_date", key.Expiration)
 	d.Set(ResourceName, key.Name)
 	d.Set(ResourceCRN, key.CRN)
 	d.Set(ResourceStatus, key.State)
@@ -324,6 +463,76 @@ func resourceIBMKmsKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if d.HasChange("force_delete") {
 		d.Set("force_delete", d.Get("force_delete").(bool))
+	}
+	if d.HasChange("policies") {
+
+		kpAPI, err := meta.(ClientSession).keyManagementAPI()
+		if err != nil {
+			return err
+		}
+
+		rContollerClient, err := meta.(ClientSession).ResourceControllerAPIV2()
+		if err != nil {
+			return err
+		}
+
+		instanceID := d.Get("instance_id").(string)
+		endpointType := d.Get("endpoint_type").(string)
+
+		rContollerApi := rContollerClient.ResourceServiceInstanceV2()
+
+		instanceData, err := rContollerApi.GetInstance(instanceID)
+		if err != nil {
+			return err
+		}
+		instanceCRN := instanceData.Crn.String()
+		crnData := strings.Split(instanceCRN, ":")
+
+		var hpcsEndpointURL string
+
+		if crnData[4] == "hs-crypto" {
+			hpcsEndpointAPI, err := meta.(ClientSession).HpcsEndpointAPI()
+			if err != nil {
+				return err
+			}
+
+			resp, err := hpcsEndpointAPI.Endpoint().GetAPIEndpoint(instanceID)
+			if err != nil {
+				return err
+			}
+
+			if endpointType == "public" {
+				hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
+			} else {
+				hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
+			}
+
+			u, err := url.Parse(hpcsEndpointURL)
+			if err != nil {
+				return fmt.Errorf("Error Parsing hpcs EndpointURL")
+			}
+			kpAPI.URL = u
+		} else if crnData[4] == "kms" {
+			if endpointType == "private" {
+				if !strings.HasPrefix(kpAPI.Config.BaseURL, "private") {
+					kpAPI.Config.BaseURL = "private." + kpAPI.Config.BaseURL
+				}
+			}
+		} else {
+			return fmt.Errorf("Invalid or unsupported service Instance")
+		}
+
+		kpAPI.Config.InstanceID = instanceID
+
+		crn := d.Id()
+		crnData = strings.Split(crn, ":")
+		key_id := crnData[len(crnData)-1]
+
+		err = handlePolicies(d, kpAPI, meta, key_id)
+		if err != nil {
+			resourceIBMKmsKeyRead(d, meta)
+			return fmt.Errorf("Could not create policies: %s", err)
+		}
 	}
 	return resourceIBMKmsKeyRead(d, meta)
 
@@ -447,4 +656,36 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 	}
 	return true, nil
 
+}
+
+func handlePolicies(d *schema.ResourceData, kpAPI *kp.Client, meta interface{}, key_id string) error {
+	var setRotation, setDualAuthDelete, dualAuthEnable bool
+	var rotationInterval int
+
+	if policyInfo, ok := d.GetOk("policies"); ok {
+
+		policyDataList := policyInfo.([]interface{})
+		policyData := policyDataList[0].(map[string]interface{})
+
+		if rpd, ok := policyData["rotation"]; ok {
+			rpdList := rpd.([]interface{})
+			if len(rpdList) != 0 {
+				rotationInterval = rpdList[0].(map[string]interface{})["interval_month"].(int)
+				setRotation = true
+			}
+		}
+		if dadp, ok := policyData["dual_auth_delete"]; ok {
+			dadpList := dadp.([]interface{})
+			if len(dadpList) != 0 {
+				dualAuthEnable = dadpList[0].(map[string]interface{})["enabled"].(bool)
+				setDualAuthDelete = true
+			}
+		}
+
+		_, err := kpAPI.SetPolicies(context.Background(), key_id, setRotation, rotationInterval, setDualAuthDelete, dualAuthEnable)
+		if err != nil {
+			return fmt.Errorf("Error while creating policies: %s", err)
+		}
+	}
+	return nil
 }

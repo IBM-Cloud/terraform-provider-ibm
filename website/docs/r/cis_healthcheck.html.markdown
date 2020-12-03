@@ -23,6 +23,14 @@ resource "ibm_cis_healthcheck" "test" {
   interval       = 60
   retries        = 3
   description    = "example load balancer"
+  headers {
+		header = "Host"
+		values = ["example.com", "example1.com"]
+	  }
+	headers {
+		header = "Host1"
+		values = ["example3.com", "example11.com"]
+	  }
 }
 ```
 
@@ -43,6 +51,9 @@ The following arguments are supported:
 - `allow_insecure`-(Optional,bool) Do not validate the certificate when healthcheck use HTTPS.
 - `description` - (Optional,string) Free text description.The Default value is false.
 - `port` - (Optional,int) The TCP port to use for the health check.
+- `headers` - (Optional,string) The health check headers.
+  - `header` - (Optional,string) The value of header.
+  - `values` - (Optional,string). The List of values for header field.
 
 [`expected_body`],[`expected_codes`] are required aruguments when the type is HTTP or HTTPS.
 

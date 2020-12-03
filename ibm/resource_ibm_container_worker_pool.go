@@ -6,7 +6,6 @@ import (
 	"time"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -446,46 +445,25 @@ func workerPoolDeleteStateRefreshFunc(client v1.Workers, instanceID, workerPoolN
 
 func getWorkerPoolTargetHeader(d *schema.ResourceData, meta interface{}) (v1.ClusterTargetHeader, error) {
 
-	region, resourceGroup := "", ""
-	if r, ok := d.GetOk("region"); ok {
-		region = r.(string)
-	}
-	if rg, ok := d.GetOk("resource_group_id"); ok {
-		resourceGroup = rg.(string)
-	}
-	sess, err := meta.(ClientSession).BluemixSession()
+	_, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
 		return v1.ClusterTargetHeader{}, err
 	}
 
-	if region == "" {
-		region = sess.Config.Region
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return v1.ClusterTargetHeader{}, err
 	}
-	if resourceGroup == "" {
-		resourceGroup = sess.Config.ResourceGroup
-
-		if resourceGroup == "" {
-			rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
-			if err != nil {
-				return v1.ClusterTargetHeader{}, err
-			}
-			resourceGroupQuery := managementv2.ResourceGroupQuery{
-				Default: true,
-			}
-			grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
-			if err != nil {
-				return v1.ClusterTargetHeader{}, err
-			}
-			if len(grpList) <= 0 {
-				return v1.ClusterTargetHeader{}, fmt.Errorf("The targeted resource group could not be found. Make sure you have required permissions to access the resource group.")
-			}
-			resourceGroup = grpList[0].ID
-		}
-	}
+	accountID := userDetails.userAccount
 
 	targetEnv := v1.ClusterTargetHeader{
-		Region:        region,
-		ResourceGroup: resourceGroup,
+		AccountID: accountID,
+	}
+
+	resourceGroup := ""
+	if v, ok := d.GetOk("resource_group_id"); ok {
+		resourceGroup = v.(string)
+		targetEnv.ResourceGroup = resourceGroup
 	}
 	return targetEnv, nil
 }

@@ -3,10 +3,12 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -14,7 +16,7 @@ import (
 )
 
 func TestAccIBMEventStreamsTopicResourceBasic(t *testing.T) {
-	instanceName := fmt.Sprintf("es_instance_%d", acctest.RandInt())
+	instanceName := fmt.Sprintf("terraform_support_%d", acctest.RandInt())
 	planID := "standard"
 	serviceName := "messagehub"
 	location := "us-south"
@@ -73,9 +75,8 @@ func TestAccIBMEventStreamsTopicResourceWithExistingInstance(t *testing.T) {
 	retentionMs := 3600000
 	segmentBytes := 10485760
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMEventStreamsInstanceDestroy,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMEventStreamsTopicWithExistingInstanceWithoutConfig(existingInstanceName, topicName, partitions),
@@ -113,7 +114,7 @@ func TestAccIBMEventStreamsTopicResourceWithExistingInstance(t *testing.T) {
 }
 
 func TestAccIBMEventStreamsTopicImport(t *testing.T) {
-	instanceName := fmt.Sprintf("es_instance_%d", acctest.RandInt())
+	instanceName := fmt.Sprintf("terraform_support_%d", acctest.RandInt())
 	planID := "standard"
 	serviceName := "messagehub"
 	location := "us-south"
@@ -141,16 +142,57 @@ func TestAccIBMEventStreamsTopicImport(t *testing.T) {
 	})
 }
 
+func TestAccIBMEventStreamsEnterprise(t *testing.T) {
+	instanceName := fmt.Sprintf("terraform_support_%d", acctest.RandInt())
+	planID := "enterprise-3nodes-2tb"
+	serviceName := "messagehub"
+	location := "eu-gb"
+	topicName := fmt.Sprintf("es_topic_%d", acctest.RandInt())
+	partitions := 1
+	parameters := map[string]string{
+		"service-endpoints":    "public-and-private",
+		"private_ip_allowlist": "[9.0.0.0/8]", // allowing jenkins access
+		"throughput":           "150",
+		"storage_size":         "2048",
+		"kms_key_crn":          "crn:v1:staging:public:kms:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:0aa69b09-941b-41b2-bbf9-9f9f0f6a6f79:key:dd37a0b6-eff4-4708-8459-e29ae0a8f256", //preprod-byok-customer-key from KMS instance keyprotect-preprod-customer-keys
+	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMEventStreamsInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMEventStreamsEnterpriseWithParameters(instanceName, serviceName, planID, location, topicName, partitions, parameters),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMEventStreamsTopicExists("ibm_event_streams_topic.es_topic", topicName),
+					resource.TestCheckResourceAttr("ibm_resource_instance.es_instance", "name", instanceName),
+					resource.TestCheckResourceAttr("ibm_resource_instance.es_instance", "service", serviceName),
+					resource.TestCheckResourceAttr("ibm_resource_instance.es_instance", "plan", planID),
+					resource.TestCheckResourceAttr("ibm_resource_instance.es_instance", "location", location),
+					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "id"),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "name", topicName),
+					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "partitions", strconv.Itoa(partitions)),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMEventStreamsTopicWithoutConfig(instanceName, serviceName, planID, location,
 	topicName string, partitions int) string {
-	return createPlatformResources(instanceName, serviceName, planID, location) + "\n" +
+	return createPlatformResources(instanceName, serviceName, planID, location, nil) + "\n" +
 		createEventStreamsTopicResourceWithoutConfig(true, topicName, partitions)
 }
 
 func testAccCheckIBMEventStreamsTopicWithConfig(instanceName, serviceName, planID, location,
 	topicName string, partitions int, cleanupPolicy string, retentionBytes int, retentionMs int, segmentBytes int) string {
-	return createPlatformResources(instanceName, serviceName, planID, location) + "\n" +
+	return createPlatformResources(instanceName, serviceName, planID, location, nil) + "\n" +
 		createEventStreamsTopicResourceWithConfig(true, topicName, partitions, cleanupPolicy, retentionBytes, retentionMs, segmentBytes)
+}
+
+func testAccCheckIBMEventStreamsEnterpriseWithParameters(instanceName, serviceName, planID, location, topicName string, partitions int, params map[string]string) string {
+	return createPlatformResources(instanceName, serviceName, planID, location, params) + "\n" +
+		createEventStreamsTopicResourceWithoutConfig(true, topicName, partitions)
 }
 
 func testAccCheckIBMEventStreamsTopicWithExistingInstanceWithoutConfig(instanceName,
@@ -176,18 +218,45 @@ func getPlatformResource(instanceName string) string {
 	  }`, instanceName)
 }
 
-func createPlatformResources(instanceName, serviceName, planID, location string) string {
+func createPlatformResources(instanceName, serviceName, planID, location string, parameters map[string]string) string {
+	if planID == "standard" || planID == "lite" {
+		return fmt.Sprintf(`
+		data "ibm_resource_group" "group" {
+		  name = "Default"
+		}
+		resource "ibm_resource_instance" "es_instance" {
+		  name              = "%s"
+		  service           = "%s"
+		  plan              = "%s"
+		  location          = "%s"
+		  resource_group_id = data.ibm_resource_group.group.id
+		}`, instanceName, serviceName, planID, location)
+	}
+	// create enterprise instance
 	return fmt.Sprintf(`
-	  data "ibm_resource_group" "group" {
+	data "ibm_resource_group" "group" {
 		name = "Default"
 	  }
-	  resource "ibm_resource_instance" "es_instance" {
+	resource "ibm_resource_instance" "es_instance" {
 		name              = "%s"
 		service           = "%s"
 		plan              = "%s"
 		location          = "%s"
 		resource_group_id = data.ibm_resource_group.group.id
-	  }`, instanceName, serviceName, planID, location)
+		parameters = {
+		  service-endpoints    = "%s"
+		  private_ip_allowlist = "%s"
+		  throughput           = "%s"
+		  storage_size         = "%s"
+		  kms_key_crn          = "%s"
+		}
+		timeouts {
+		  create = "3h"
+		  update = "1h"
+		  delete = "15m"
+		}
+	  }`, instanceName, serviceName, planID, location,
+		parameters["service-endpoints"], parameters["private_ip_allowlist"], parameters["throughput"], parameters["storage_size"], parameters["kms_key_crn"])
 }
 
 func createEventStreamsTopicResourceWithoutConfig(createInstance bool, topicName string, partitions int) string {
@@ -237,10 +306,16 @@ func testAccCheckIBMEventStreamsInstanceDestroy(s *terraform.State) error {
 			continue
 		}
 		instanceID := rs.Primary.ID
-		_, err := rsContClient.ResourceServiceInstance().GetInstance(instanceID)
+		instance, err := rsContClient.ResourceServiceInstance().GetInstance(instanceID)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
-			return fmt.Errorf("Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+		if err == nil {
+			if !reflect.DeepEqual(instance, models.ServiceInstance{}) && instance.State == "active" {
+				return fmt.Errorf("Instance still exists: %s", rs.Primary.ID)
+			}
+		} else {
+			if !strings.Contains(err.Error(), "404") {
+				return fmt.Errorf("Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+			}
 		}
 	}
 	return nil

@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
@@ -20,10 +19,13 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
+	"github.com/IBM/ibm-cos-sdk-go/service/s3"
+	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -659,6 +661,35 @@ func flattenMetricsMonitor(in *resourceconfigurationv1.MetricsMonitoring) []inte
 	return []interface{}{att}
 }
 
+func archiveRuleGet(in []*s3.LifecycleRule) []interface{} {
+	rule := make(map[string]interface{})
+	for _, r := range in {
+
+		if r.Status != nil {
+			if *r.Status == "Enabled" {
+				rule["enable"] = true
+
+			} else {
+				rule["enable"] = false
+			}
+
+		}
+		if r.ID != nil {
+			rule["rule_id"] = *r.ID
+		}
+
+		for _, transition := range r.Transitions {
+			if transition.Days != nil {
+				rule["days"] = int(*transition.Days)
+			}
+			if transition.StorageClass != nil {
+				rule["type"] = *transition.StorageClass
+			}
+		}
+	}
+	return []interface{}{rule}
+}
+
 func flattenLimits(in *whisk.Limits) []interface{} {
 	att := make(map[string]interface{})
 	if in.Timeout != nil {
@@ -1136,21 +1167,6 @@ func flattenServiceIds(services []string, meta interface{}) ([]string, error) {
 	return serviceids, nil
 }
 
-// Cloud Internet Services
-func expandOrigins(originsList *schema.Set) (origins []cisv1.Origin) {
-	for _, iface := range originsList.List() {
-		orig := iface.(map[string]interface{})
-		origin := cisv1.Origin{
-			Name:    orig["name"].(string),
-			Address: orig["address"].(string),
-			Enabled: orig["enabled"].(bool),
-			Weight:  orig["weight"].(int),
-		}
-		origins = append(origins, origin)
-	}
-	return
-}
-
 func expandUsers(userList *schema.Set) (users []icdv4.User) {
 	for _, iface := range userList.List() {
 		userEl := iface.(map[string]interface{})
@@ -1281,21 +1297,6 @@ func flattenWhitelist(whitelist icdv4.Whitelist) []map[string]interface{} {
 		entries[i] = l
 	}
 	return entries
-}
-
-// Cloud Internet Services
-func flattenOrigins(list []cisv1.Origin) []map[string]interface{} {
-	origins := make([]map[string]interface{}, len(list), len(list))
-	for i, origin := range list {
-		l := map[string]interface{}{
-			"name":    origin.Name,
-			"address": origin.Address,
-			"enabled": origin.Enabled,
-			"weight":  origin.Weight,
-		}
-		origins[i] = l
-	}
-	return origins
 }
 
 func expandStringMap(inVal interface{}) map[string]string {
@@ -1534,7 +1535,6 @@ func UpdateTags(d *schema.ResourceData, meta interface{}) error {
 	for i, v := range addInt {
 		add[i] = fmt.Sprint(v)
 	}
-	add = append(add, "mytag")
 	remove := make([]string, len(removeInt))
 	for i, v := range removeInt {
 		remove[i] = fmt.Sprint(v)
@@ -1727,4 +1727,54 @@ func GetNext(next interface{}) string {
 
 	q := u.Query()
 	return q.Get("start")
+}
+
+/* Return the default resource group */
+func defaultResourceGroup(meta interface{}) (string, error) {
+	rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
+	if err != nil {
+		return "", err
+	}
+	resourceGroupQuery := managementv2.ResourceGroupQuery{
+		Default: true,
+	}
+	grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
+	if err != nil {
+		return "", err
+	}
+	if len(grpList) <= 0 {
+		return "", fmt.Errorf("The targeted resource group could not be found. Make sure you have required permissions to access the resource group.")
+	}
+	return grpList[0].ID, nil
+}
+
+func flattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
+	policyMap := make([]map[string]interface{}, 0, 1)
+	rotationMap := make([]map[string]interface{}, 0, 1)
+	dualAuthMap := make([]map[string]interface{}, 0, 1)
+	for _, policy := range policies {
+		policyCRNData := strings.Split(policy.CRN, ":")
+		policyInstance := map[string]interface{}{
+			"id":               policyCRNData[9],
+			"crn":              policy.CRN,
+			"created_by":       policy.CreatedBy,
+			"creation_date":    (*(policy.CreatedAt)).String(),
+			"updated_by":       policy.UpdatedBy,
+			"last_update_date": (*(policy.UpdatedAt)).String(),
+		}
+
+		if policy.Rotation != nil {
+			policyInstance["interval_month"] = policy.Rotation.Interval
+			rotationMap = append(rotationMap, policyInstance)
+		} else if policy.DualAuth != nil {
+			policyInstance["enabled"] = *(policy.DualAuth.Enabled)
+			dualAuthMap = append(dualAuthMap, policyInstance)
+		}
+	}
+	tempMap := map[string]interface{}{
+		"rotation":         rotationMap,
+		"dual_auth_delete": dualAuthMap,
+	}
+	policyMap = append(policyMap, tempMap)
+	return policyMap
 }

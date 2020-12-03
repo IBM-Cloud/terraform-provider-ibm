@@ -37,28 +37,28 @@ func resourceIBMISIPSecPolicy() *schema.Resource {
 			isIpSecName: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_ipsec_policy", isIpSecName),
 				Description:  "IPSEC name",
 			},
 
 			isIpSecAuthenticationAlg: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"md5", "sha1", "sha256"}),
+				ValidateFunc: InvokeValidator("ibm_is_ipsec_policy", isIpSecAuthenticationAlg),
 				Description:  "Authentication alorothm",
 			},
 
 			isIpSecEncryptionAlg: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"triple_des", "aes128", "aes256"}),
+				ValidateFunc: InvokeValidator("ibm_is_ipsec_policy", isIpSecEncryptionAlg),
 				Description:  "Encryption algorithm",
 			},
 
 			isIpSecPFS: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"disabled", "group_2", "group_5", "group_14"}),
+				ValidateFunc: InvokeValidator("ibm_is_ipsec_policy", isIpSecPFS),
 				Description:  "PFS info",
 			},
 
@@ -135,6 +135,47 @@ func resourceIBMISIPSecPolicy() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISIPSECValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	authentication_algorithm := "md5, sha1, sha256"
+	encryption_algorithm := "triple_des, aes128, aes256"
+	pfs := "disabled, group_2, group_5, group_14"
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isIpSecName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isIpSecAuthenticationAlg,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              authentication_algorithm})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isIpSecEncryptionAlg,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              encryption_algorithm})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isIpSecPFS,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              pfs})
+
+	ibmISIPSECResourceValidator := ResourceValidator{ResourceName: "ibm_is_ipsec_policy", Schema: validateSchema}
+	return &ibmISIPSECResourceValidator
 }
 
 func resourceIBMISIPSecPolicyCreate(d *schema.ResourceData, meta interface{}) error {
@@ -406,11 +447,18 @@ func classicIpsecpUpdate(d *schema.ResourceData, meta interface{}, id string) er
 		pfs := d.Get(isIpSecPFS).(string)
 		keyLifetime := int64(d.Get(isIpSecKeyLifeTime).(int))
 
-		options.Name = &name
-		options.AuthenticationAlgorithm = &authenticationAlg
-		options.EncryptionAlgorithm = &encryptionAlg
-		options.Pfs = &pfs
-		options.KeyLifetime = &keyLifetime
+		ipsecPolicyPatchModel := &vpcclassicv1.IPsecPolicyPatch{
+			Name:                    &name,
+			AuthenticationAlgorithm: &authenticationAlg,
+			EncryptionAlgorithm:     &encryptionAlg,
+			Pfs:                     &pfs,
+			KeyLifetime:             &keyLifetime,
+		}
+		ipsecPolicyPatch, err := ipsecPolicyPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for IPsecPolicyPatch: %s", err)
+		}
+		options.IPsecPolicyPatch = ipsecPolicyPatch
 
 		_, response, err := sess.UpdateIpsecPolicy(options)
 		if err != nil {
@@ -436,11 +484,18 @@ func ipsecpUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 		pfs := d.Get(isIpSecPFS).(string)
 		keyLifetime := int64(d.Get(isIpSecKeyLifeTime).(int))
 
-		options.Name = &name
-		options.AuthenticationAlgorithm = &authenticationAlg
-		options.EncryptionAlgorithm = &encryptionAlg
-		options.Pfs = &pfs
-		options.KeyLifetime = &keyLifetime
+		ipsecPolicyPatchModel := &vpcv1.IPsecPolicyPatch{
+			Name:                    &name,
+			AuthenticationAlgorithm: &authenticationAlg,
+			EncryptionAlgorithm:     &encryptionAlg,
+			Pfs:                     &pfs,
+			KeyLifetime:             &keyLifetime,
+		}
+		ipsecPolicyPatch, err := ipsecPolicyPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for IPsecPolicyPatch: %s", err)
+		}
+		options.IPsecPolicyPatch = ipsecPolicyPatch
 
 		_, response, err := sess.UpdateIpsecPolicy(options)
 		if err != nil {

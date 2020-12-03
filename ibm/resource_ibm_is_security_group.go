@@ -33,7 +33,7 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				Description:  "Security group name",
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_security_group", isSecurityGroupName),
 			},
 			isSecurityGroupVPC: {
 				Type:        schema.TypeString,
@@ -84,6 +84,23 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISSecurityGroupValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSecurityGroupName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISSecurityGroupResourceValidator := ResourceValidator{ResourceName: "ibm_is_security_group", Schema: validateSchema}
+	return &ibmISSecurityGroupResourceValidator
 }
 
 func resourceIBMISSecurityGroupCreate(d *schema.ResourceData, meta interface{}) error {
@@ -473,9 +490,16 @@ func classicSgUpdate(d *schema.ResourceData, meta interface{}, id, name string, 
 	}
 	if hasChanged {
 		updateSecurityGroupOptions := &vpcclassicv1.UpdateSecurityGroupOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		securityGroupPatchModel := &vpcclassicv1.SecurityGroupPatch{
 			Name: &name,
 		}
+		securityGroupPatch, err := securityGroupPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for SecurityGroupPatch: %s", err)
+		}
+		updateSecurityGroupOptions.SecurityGroupPatch = securityGroupPatch
 		_, response, err := sess.UpdateSecurityGroup(updateSecurityGroupOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Security Group : %s\n%s", err, response)
@@ -491,9 +515,16 @@ func sgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 	}
 	if hasChanged {
 		updateSecurityGroupOptions := &vpcv1.UpdateSecurityGroupOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		securityGroupPatchModel := &vpcv1.SecurityGroupPatch{
 			Name: &name,
 		}
+		securityGroupPatch, err := securityGroupPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for SecurityGroupPatch: %s", err)
+		}
+		updateSecurityGroupOptions.SecurityGroupPatch = securityGroupPatch
 		_, response, err := sess.UpdateSecurityGroup(updateSecurityGroupOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Security Group : %s\n%s", err, response)

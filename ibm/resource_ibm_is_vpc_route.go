@@ -47,7 +47,7 @@ func resourceIBMISVpcRoute() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_route", isVPCRouteName),
 				Description:  "VPC route name",
 			},
 			isVPCRouteLocation: {
@@ -58,10 +58,11 @@ func resourceIBMISVpcRoute() *schema.Resource {
 			},
 
 			isVPCRouteDestinationCIDR: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "VPC route destination CIDR value",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: InvokeValidator("ibm_is_route", isVPCRouteDestinationCIDR),
+				Description:  "VPC route destination CIDR value",
 			},
 
 			isVPCRouteState: {
@@ -90,6 +91,30 @@ func resourceIBMISVpcRoute() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISRouteValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCRouteName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCRouteDestinationCIDR,
+			ValidateFunctionIdentifier: ValidateCIDRAddress,
+			Type:                       TypeString,
+			ForceNew:                   true,
+			Required:                   true})
+
+	ibmISRouteResourceValidator := ResourceValidator{ResourceName: "ibm_is_route", Schema: validateSchema}
+	return &ibmISRouteResourceValidator
 }
 
 func resourceIBMISVpcRouteCreate(d *schema.ResourceData, meta interface{}) error {
@@ -278,7 +303,7 @@ func classicVpcRouteGet(d *schema.ResourceData, meta interface{}, vpcID, routeID
 		}
 		return fmt.Errorf("Error Getting VPC Route (%s): %s\n%s", routeID, err, response)
 	}
-	d.Set("id", *route.ID)
+	d.Set(isVPCRouteVPCID, vpcID)
 	d.Set(isVPCRouteName, route.Name)
 	if route.Zone != nil {
 		d.Set(isVPCRouteLocation, *route.Zone.Name)
@@ -315,7 +340,7 @@ func vpcRouteGet(d *schema.ResourceData, meta interface{}, vpcID, routeID string
 		}
 		return fmt.Errorf("Error Getting VPC Route (%s): %s\n%s", routeID, err, response)
 	}
-	d.Set("id", *route.ID)
+	d.Set(isVPCRouteVPCID, vpcID)
 	d.Set(isVPCRouteName, route.Name)
 	if route.Zone != nil {
 		d.Set(isVPCRouteLocation, *route.Zone.Name)
@@ -381,8 +406,15 @@ func classicVpcRouteUpdate(d *schema.ResourceData, meta interface{}, vpcID, rout
 		updateVpcRouteOptions := &vpcclassicv1.UpdateVPCRouteOptions{
 			VPCID: &vpcID,
 			ID:    &routeID,
-			Name:  &name,
 		}
+		routePatchModel := &vpcclassicv1.RoutePatch{
+			Name: &name,
+		}
+		routePatch, err := routePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for RoutePatch: %s", err)
+		}
+		updateVpcRouteOptions.RoutePatch = routePatch
 		_, response, err := sess.UpdateVPCRoute(updateVpcRouteOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC Route: %s\n%s", err, response)
@@ -400,8 +432,15 @@ func vpcRouteUpdate(d *schema.ResourceData, meta interface{}, vpcID, routeID, na
 		updateVpcRouteOptions := &vpcv1.UpdateVPCRouteOptions{
 			VPCID: &vpcID,
 			ID:    &routeID,
-			Name:  &name,
 		}
+		routePatchModel := &vpcv1.RoutePatch{
+			Name: &name,
+		}
+		routePatch, err := routePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for RoutePatch: %s", err)
+		}
+		updateVpcRouteOptions.RoutePatch = routePatch
 		_, response, err := sess.UpdateVPCRoute(updateVpcRouteOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC Route: %s\n%s", err, response)

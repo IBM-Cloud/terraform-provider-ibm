@@ -22,6 +22,17 @@ resource "ibm_iam_authorization_policy" "policy" {
 }
 
 ```
+
+### Authorization policy between two services with Authorize dependent services enabled
+
+```hcl
+resource "ibm_iam_authorization_policy" "policy" {
+  source_service_name         = "databases-for-postgresql"
+  target_service_name         = "kms"
+  roles                       = ["Reader", "AuthorizationDelegator"]
+}
+```
+
 ### Authorization policy between two services with specific resource type
 
 ```hcl

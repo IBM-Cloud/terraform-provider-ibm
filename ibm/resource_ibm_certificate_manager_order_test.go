@@ -34,7 +34,7 @@ func TestAccIBMCertificateManagerOrder_Import(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"dns_provider_instance_crn"},
+					"dns_provider_instance_crn", "renew_certificate"},
 			},
 		},
 	})
@@ -63,6 +63,7 @@ func TestAccIBMCertificateManagerOrder_Basic(t *testing.T) {
 					testAccCheckIBMCMOrderExists("ibm_certificate_manager_order.cert", conf),
 					resource.TestCheckResourceAttr("ibm_certificate_manager_order.cert", "name", updatedName),
 					resource.TestCheckResourceAttr("ibm_certificate_manager_order.cert", "auto_renew_enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_certificate_manager_order.cert", "renew_certificate", "true"),
 				),
 			},
 		},
@@ -83,7 +84,7 @@ func testAccCheckIBMCertificateManagerOrderDestroy(s *terraform.State) error {
 		certAPI := cmClient.Certificate()
 		_, err = certAPI.GetCertData(certID)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err != nil && !strings.Contains(err.Error(), "404") && !strings.Contains(err.Error(), "412") {
 			return fmt.Errorf("Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
@@ -151,6 +152,7 @@ func testAccCheckIBMCertificateManagerOrder_Update(cmsName, updatedName string) 
 		domain_validation_method        = "dns-01"
 		dns_provider_instance_crn       = data.ibm_cis.instance.id
 		auto_renew_enabled 				= true
+		renew_certificate = true
 	  }
 	  
 	  `, cmsName, updatedName)

@@ -27,8 +27,8 @@ func TestAccIBMCisGLBHealthCheckDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMCisGLBHealthCheckDataSourceConfig() string {
 	// status filter defaults to empty
-	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
+	return testAccCheckCisHealthcheckConfigFullySpecified("test", cisDomainStatic) + fmt.Sprintf(`
 	data "ibm_cis_healthchecks" "test" {
-		cis_id     = data.ibm_cis.cis.id
+		cis_id     = ibm_cis_healthcheck.health_check.cis_id
 	  }`)
 }

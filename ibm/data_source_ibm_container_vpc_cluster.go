@@ -279,7 +279,7 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 
 	cls, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
 	if err != nil {
-		return fmt.Errorf("Error retrieving conatiner vpc cluster: %s", err)
+		return fmt.Errorf("Error retrieving container vpc cluster: %s", err)
 	}
 
 	d.SetId(cls.ID)
@@ -319,7 +319,7 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 	//Get worker pools
 	pools, err := csClient.WorkerPools().ListWorkerPools(clusterID, targetEnv)
 	if err != nil {
-		return fmt.Errorf("Error retrieving worker pools for conatiner vpc cluster: %s", err)
+		return fmt.Errorf("Error retrieving worker pools for container vpc cluster: %s", err)
 	}
 
 	d.Set("worker_pools", flattenVpcWorkerPools(pools))
@@ -349,15 +349,7 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 	d.Set(ResourceName, cls.Name)
 	d.Set(ResourceCRN, cls.CRN)
 	d.Set(ResourceStatus, cls.State)
-	rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
-	if err != nil {
-		return err
-	}
-	grp, err := rsMangClient.ResourceGroup().Get(cls.ResourceGroupID)
-	if err != nil {
-		return err
-	}
-	d.Set(ResourceGroupName, grp.Name)
+	d.Set(ResourceGroupName, cls.ResourceGroupName)
 
 	return nil
 }

@@ -3,6 +3,7 @@ package ibm
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/url"
 	"strings"
 
@@ -53,6 +54,80 @@ func dataSourceIBMKMSkey() *schema.Resource {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
+						"policies": {
+							Type:     schema.TypeList,
+							Computed: true,
+							MinItems: 1,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"rotation": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"created_by": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"creation_date": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"updated_by": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"last_update_date": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"interval_month": {
+													Type:     schema.TypeInt,
+													Computed: true,
+												},
+											},
+										},
+									},
+									"dual_auth_delete": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"created_by": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"creation_date": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"updated_by": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"last_update_date": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"enabled": {
+													Type:     schema.TypeBool,
+													Computed: true,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -63,11 +138,6 @@ func dataSourceIBMKMSkey() *schema.Resource {
 
 func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 	api, err := meta.(ClientSession).keyManagementAPI()
-	if err != nil {
-		return err
-	}
-
-	hpcsEndpointApi, err := meta.(ClientSession).HpcsEndpointAPI()
 	if err != nil {
 		return err
 	}
@@ -92,6 +162,11 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 	crnData := strings.Split(instanceCRN, ":")
 
 	if crnData[4] == "hs-crypto" {
+
+		hpcsEndpointApi, err := meta.(ClientSession).HpcsEndpointAPI()
+		if err != nil {
+			return err
+		}
 		resp, err := hpcsEndpointApi.Endpoint().GetAPIEndpoint(instanceID)
 		if err != nil {
 			return err
@@ -153,6 +228,15 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 		keyInstance["name"] = key.Name
 		keyInstance["crn"] = key.CRN
 		keyInstance["standard_key"] = key.Extractable
+		policies, err := api.GetPolicies(context.Background(), key.ID)
+		if err != nil {
+			return fmt.Errorf("Failed to read policies: %s", err)
+		}
+		if len(policies) == 0 {
+			log.Printf("No Policy Configurations read\n")
+		} else {
+			keyInstance["policies"] = flattenKeyPolicies(policies)
+		}
 		keyMap = append(keyMap, keyInstance)
 
 	}

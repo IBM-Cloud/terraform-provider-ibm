@@ -145,22 +145,22 @@ func resourceIBMISInstanceGroupManagerPolicyUpdate(d *schema.ResourceData, meta 
 
 	var changed bool
 	updateInstanceGroupManagerPolicyOptions := vpcv1.UpdateInstanceGroupManagerPolicyOptions{}
-
+	instanceGroupManagerPolicyPatchModel := &vpcv1.InstanceGroupManagerPolicyPatch{}
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
-		updateInstanceGroupManagerPolicyOptions.Name = &name
+		instanceGroupManagerPolicyPatchModel.Name = &name
 		changed = true
 	}
 
 	if d.HasChange("metric_type") {
 		metricType := d.Get("metric_type").(string)
-		updateInstanceGroupManagerPolicyOptions.MetricType = &metricType
+		instanceGroupManagerPolicyPatchModel.MetricType = &metricType
 		changed = true
 	}
 
 	if d.HasChange("metric_value") {
 		metricValue := int64(d.Get("metric_value").(int))
-		updateInstanceGroupManagerPolicyOptions.MetricValue = &metricValue
+		instanceGroupManagerPolicyPatchModel.MetricValue = &metricValue
 		changed = true
 	}
 

@@ -230,7 +230,9 @@ Notice that the only information used from the Terraform state is the ID of the 
 
 		// Wait
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("Virtual guest still exists: %s", rs.Primary.ID)
+		else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf(
 				"Error waiting for virtual guest (%s) to be destroyed: %s",
 				rs.Primary.ID, err)

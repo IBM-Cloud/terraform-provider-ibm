@@ -32,6 +32,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The AddOns ID.
+* `resource_group_id` - The ID of the cluster resource group in which the addons have to be installed.
 * `addons` - Details of Enabled AddOns
   * `name` - The addon name such as 'istio'.
   * `version` - The addon version, omit the version if you wish to use the default version.

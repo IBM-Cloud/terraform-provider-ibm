@@ -43,7 +43,7 @@ The following attributes are exported:
 * `resource_group` - Resource group identifier.
 * `speed_mbps` - Gateway speed in megabits per second.
 * `type` - Gateway type.
-* `bgp_base_cidr` - BGP base CIDR.
+* `bgp_base_cidr` - (DEPRECATED) BGP base CIDR is deprecated and no longer recognized the Direct Link APIs. See bgp_cer_cidr and bgp_ibm_cidr fields instead for IP related information. Deprecated field bgp_base_cidr will be removed from the API specificiation after 15-MAR-2021.
 * `bgp_cer_cidr` - BGP customer edge router CIDR.
 * `bgp_ibm_asn` - IBM BGP ASN.
 * `bgp_ibm_cidr` - BGP IBM CIDR.

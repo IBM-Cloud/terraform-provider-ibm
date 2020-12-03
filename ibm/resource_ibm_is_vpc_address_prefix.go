@@ -30,7 +30,7 @@ func resourceIBMISVpcAddressPrefix() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_address_prefix", isVPCAddressPrefixPrefixName),
 				Description:  "Name",
 			},
 			isVPCAddressPrefixZoneName: {
@@ -41,10 +41,11 @@ func resourceIBMISVpcAddressPrefix() *schema.Resource {
 			},
 
 			isVPCAddressPrefixCIDR: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "CIDIR address prefix",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: InvokeValidator("ibm_is_address_prefix", isVPCAddressPrefixCIDR),
+				Description:  "CIDIR address prefix",
 			},
 
 			isVPCAddressPrefixVPCID: {
@@ -67,6 +68,30 @@ func resourceIBMISVpcAddressPrefix() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISAddressPrefixValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCAddressPrefixPrefixName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCRouteDestinationCIDR,
+			ValidateFunctionIdentifier: ValidateCIDRAddress,
+			Type:                       TypeString,
+			ForceNew:                   true,
+			Required:                   true})
+
+	ibmISAddressPrefixResourceValidator := ResourceValidator{ResourceName: "ibm_is_address_prefix", Schema: validateSchema}
+	return &ibmISAddressPrefixResourceValidator
 }
 
 func resourceIBMISVpcAddressPrefixCreate(d *schema.ResourceData, meta interface{}) error {
@@ -189,6 +214,7 @@ func classicVpcAddressPrefixGet(d *schema.ResourceData, meta interface{}, vpcID,
 		}
 		return fmt.Errorf("Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
 	}
+	d.Set(isVPCAddressPrefixVPCID, vpcID)
 	d.Set(isVPCAddressPrefixPrefixName, *addrPrefix.Name)
 	if addrPrefix.Zone != nil {
 		d.Set(isVPCAddressPrefixZoneName, *addrPrefix.Zone.Name)
@@ -224,6 +250,7 @@ func vpcAddressPrefixGet(d *schema.ResourceData, meta interface{}, vpcID, addrPr
 		}
 		return fmt.Errorf("Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
 	}
+	d.Set(isVPCAddressPrefixVPCID, vpcID)
 	d.Set(isVPCAddressPrefixPrefixName, *addrPrefix.Name)
 	if addrPrefix.Zone != nil {
 		d.Set(isVPCAddressPrefixZoneName, *addrPrefix.Zone.Name)
@@ -291,8 +318,15 @@ func classicVpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{}, vpc
 		updatevpcAddressPrefixoptions := &vpcclassicv1.UpdateVPCAddressPrefixOptions{
 			VPCID: &vpcID,
 			ID:    &addrPrefixID,
-			Name:  &name,
 		}
+		addressPrefixPatchModel := &vpcclassicv1.AddressPrefixPatch{
+			Name: &name,
+		}
+		addressPrefixPatch, err := addressPrefixPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for AddressPrefixPatch: %s", err)
+		}
+		updatevpcAddressPrefixoptions.AddressPrefixPatch = addressPrefixPatch
 		_, response, err := sess.UpdateVPCAddressPrefix(updatevpcAddressPrefixoptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC Address Prefix: %s\n%s", err, response)
@@ -310,8 +344,15 @@ func vpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{}, vpcID, add
 		updatevpcAddressPrefixoptions := &vpcv1.UpdateVPCAddressPrefixOptions{
 			VPCID: &vpcID,
 			ID:    &addrPrefixID,
-			Name:  &name,
 		}
+		addressPrefixPatchModel := &vpcv1.AddressPrefixPatch{
+			Name: &name,
+		}
+		addressPrefixPatch, err := addressPrefixPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for AddressPrefixPatch: %s", err)
+		}
+		updatevpcAddressPrefixoptions.AddressPrefixPatch = addressPrefixPatch
 		_, response, err := sess.UpdateVPCAddressPrefix(updatevpcAddressPrefixoptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC Address Prefix: %s\n%s", err, response)

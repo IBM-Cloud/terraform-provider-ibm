@@ -30,6 +30,7 @@ const (
 	isLBProvisioning     = "provisioning"
 	isLBProvisioningDone = "done"
 	isLBResourceGroup    = "resource_group"
+	isLBProfile          = "profile"
 )
 
 func resourceIBMISLB() *schema.Resource {
@@ -58,7 +59,7 @@ func resourceIBMISLB() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_lb", isLBName),
 				Description:  "Load Balancer name",
 			},
 
@@ -67,7 +68,7 @@ func resourceIBMISLB() *schema.Resource {
 				ForceNew:     true,
 				Optional:     true,
 				Default:      "public",
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
+				ValidateFunc: InvokeValidator("ibm_is_lb", isLBType),
 				Description:  "Load Balancer type",
 			},
 
@@ -99,6 +100,15 @@ func resourceIBMISLB() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
 				Description: "Load Balancer subnets list",
+			},
+
+			isLBProfile: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ForceNew:     true,
+				Description:  "The profile to use for this load balancer.",
+				ValidateFunc: InvokeValidator("ibm_is_lb", isLBProfile),
 			},
 
 			isLBTags: {
@@ -140,6 +150,40 @@ func resourceIBMISLB() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISLBValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	lbtype := "public, private"
+	isLBProfileAllowedValues := "network-fixed"
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBType,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              lbtype})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBProfile,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   false,
+			AllowedValues:              isLBProfileAllowedValues})
+
+	ibmISLBResourceValidator := ResourceValidator{ResourceName: "ibm_is_lb", Schema: validateSchema}
+	return &ibmISLBResourceValidator
 }
 
 func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
@@ -231,6 +275,7 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 	if err != nil {
 		return err
 	}
+
 	options := &vpcv1.CreateLoadBalancerOptions{
 		IsPublic: &isPublic,
 		Name:     &name,
@@ -249,6 +294,14 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
 			ID: &rg,
 		}
+	}
+
+	if _, ok := d.GetOk(isLBProfile); ok {
+		profile := d.Get(isLBProfile).(string)
+		// Construct an instance of the LoadBalancerPoolIdentityByName model
+		loadBalancerProfileIdentityModel := new(vpcv1.LoadBalancerProfileIdentityByName)
+		loadBalancerProfileIdentityModel.Name = &profile
+		options.Profile = loadBalancerProfileIdentityModel
 	}
 
 	lb, response, err := sess.CreateLoadBalancer(options)
@@ -423,6 +476,12 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		d.Set(isLBSubnets, subnetList)
 	}
+	if lb.Profile != nil {
+		profile := lb.Profile
+		if profile.Name != nil {
+			d.Set(isLBProfile, *lb.Profile.Name)
+		}
+	}
 	d.Set(isLBResourceGroup, *lb.ResourceGroup.ID)
 	d.Set(isLBHostName, *lb.Hostname)
 	tags, err := GetTagsUsingCRN(meta, *lb.CRN)
@@ -493,9 +552,18 @@ func classicLBUpdate(d *schema.ResourceData, meta interface{}, id, name string, 
 	}
 	if hasChanged {
 		updateLoadBalancerOptions := &vpcclassicv1.UpdateLoadBalancerOptions{
-			ID:   &id,
+			ID: &id,
+		}
+
+		loadBalancerPatchModel := &vpcclassicv1.LoadBalancerPatch{
 			Name: &name,
 		}
+		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerPatch: %s", err)
+		}
+		updateLoadBalancerOptions.LoadBalancerPatch = loadBalancerPatch
+
 		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating vpc Load Balancer : %s\n%s", err, response)
@@ -526,9 +594,18 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 	}
 	if hasChanged {
 		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
-			ID:   &id,
+			ID: &id,
+		}
+
+		loadBalancerPatchModel := &vpcv1.LoadBalancerPatch{
 			Name: &name,
 		}
+		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerPatch: %s", err)
+		}
+		updateLoadBalancerOptions.LoadBalancerPatch = loadBalancerPatch
+
 		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating vpc Load Balancer : %s\n%s", err, response)

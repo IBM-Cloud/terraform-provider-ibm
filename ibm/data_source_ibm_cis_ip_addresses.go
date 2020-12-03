@@ -1,10 +1,15 @@
 package ibm
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"log"
-	"math/rand"
-	"strconv"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+)
+
+const (
+	cisIPv4CIDRs = "ipv4_cidrs"
+	cisIPv6CIDRs = "ipv6_cidrs"
 )
 
 func dataSourceIBMCISIP() *schema.Resource {
@@ -12,12 +17,12 @@ func dataSourceIBMCISIP() *schema.Resource {
 		Read: dataSourceIBMCISIPRead,
 
 		Schema: map[string]*schema.Schema{
-			"ipv4_cidrs": &schema.Schema{
+			cisIPv4CIDRs: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"ipv6_cidrs": &schema.Schema{
+			cisIPv6CIDRs: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -27,23 +32,23 @@ func dataSourceIBMCISIP() *schema.Resource {
 }
 
 func dataSourceIBMCISIPRead(d *schema.ResourceData, meta interface{}) error {
-	cisClient, err := meta.(ClientSession).CisAPI()
+	cisClient, err := meta.(ClientSession).CisIPClientSession()
 	if err != nil {
 		return err
 	}
-	rnd := rand.Intn(8999999) + 1000000
-
-	ipsResults, err := cisClient.Ips().ListIps()
+	opt := cisClient.NewListIpsOptions()
+	result, response, err := cisClient.ListIps(opt)
 	if err != nil {
-		log.Printf("resourceCISIPRead - ListIps Failed\n")
+		log.Printf("Failed to list IP addresses: %v", response)
 		return err
-	} else {
-
-		ipsObj := *ipsResults
-		d.Set("ipv4_cidrs", ipsObj.Ipv4)
-		d.Set("ipv6_cidrs", ipsObj.Ipv6)
-
-		d.SetId(strconv.Itoa(rnd))
 	}
+
+	d.Set(cisIPv4CIDRs, flattenStringList(result.Result.Ipv4Cidrs))
+	d.Set(cisIPv6CIDRs, flattenStringList(result.Result.Ipv4Cidrs))
+	d.SetId(dataSourceIBMCISIPID(d))
 	return nil
+}
+
+func dataSourceIBMCISIPID(d *schema.ResourceData) string {
+	return time.Now().UTC().String()
 }

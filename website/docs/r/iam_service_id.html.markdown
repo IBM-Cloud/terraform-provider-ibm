@@ -35,3 +35,4 @@ The following attributes are exported:
 * `id` - The unique identifier of the serviceID.
 * `version` - Version of the serviceID.
 * `crn` - crn of the serviceID.
+* `iam_id` - The IAM ID of the serviceID.

@@ -176,7 +176,65 @@ func (a *Client) PcloudCloudinstancesImagesPost(params *PcloudCloudinstancesImag
 }
 
 /*
-PcloudImagesGet detaileds info of an available stock image
+PcloudCloudinstancesStockimagesGet detaileds info of an available stock image
+*/
+func (a *Client) PcloudCloudinstancesStockimagesGet(params *PcloudCloudinstancesStockimagesGetParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudCloudinstancesStockimagesGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudCloudinstancesStockimagesGetParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.cloudinstances.stockimages.get",
+		Method:             "GET",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/stock-images/{image_id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudCloudinstancesStockimagesGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudCloudinstancesStockimagesGetOK), nil
+
+}
+
+/*
+PcloudCloudinstancesStockimagesGetall lists all available stock images
+*/
+func (a *Client) PcloudCloudinstancesStockimagesGetall(params *PcloudCloudinstancesStockimagesGetallParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudCloudinstancesStockimagesGetallOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPcloudCloudinstancesStockimagesGetallParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "pcloud.cloudinstances.stockimages.getall",
+		Method:             "GET",
+		PathPattern:        "/pcloud/v1/cloud-instances/{cloud_instance_id}/stock-images",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PcloudCloudinstancesStockimagesGetallReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PcloudCloudinstancesStockimagesGetallOK), nil
+
+}
+
+/*
+PcloudImagesGet deprecateds for pcloud v1 cloud instances cloud instance id stock images image id detailed info of an available stock image
 */
 func (a *Client) PcloudImagesGet(params *PcloudImagesGetParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudImagesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -205,7 +263,7 @@ func (a *Client) PcloudImagesGet(params *PcloudImagesGetParams, authInfo runtime
 }
 
 /*
-PcloudImagesGetall lists all available stock images
+PcloudImagesGetall deprecateds for pcloud v1 cloud instances cloud instance id stock images list all available stock images
 */
 func (a *Client) PcloudImagesGetall(params *PcloudImagesGetallParams, authInfo runtime.ClientAuthInfoWriter) (*PcloudImagesGetallOK, error) {
 	// TODO: Validate the params before sending

@@ -18,6 +18,10 @@ resource "ibm_is_vpc_address_prefix" "addprefix1" {
   cidr = "10.120.0.0/24"
 }
 
+data "ibm_is_instance" "ds_instance" {
+  name = "vsi_instance"
+}
+
 resource "ibm_is_subnet" "subnet1" {
   name            = "subnet1"
   vpc             = ibm_is_vpc.vpc1.id
@@ -78,6 +82,33 @@ resource "ibm_is_lb_listener_policy_rule" "lb_listener_policy_rule" {
   type      = "header"
   field     = "MY-APP-HEADER"
   value     = "updateVal"
+}
+
+
+resource "ibm_is_lb" "nlb1" {
+  name    = "nlb1"
+  subnets = [ibm_is_subnet.subnet1.id]
+  type    = "public"
+  profile = "network-fixed"
+}
+
+resource "ibm_is_lb_pool" "nlbpool1" {
+  name           = "nlbpool1"
+  lb             = ibm_is_lb.nlb1.id
+  algorithm      = "weighted_round_robin"
+  protocol       = "tcp"
+  health_delay   = 60
+  health_retries = 5
+  health_timeout = 30
+  health_type    = "tcp"
+}
+
+resource "ibm_is_lb_pool_member" "my_nlb_pool_mem" {
+  lb        = ibm_is_lb.nlb1.id
+  pool      = ibm_is_lb_pool.nlbpool1.id
+  port      = 8080
+  weight    = 20
+  target_id = data.ibm_is_instance.ds_instance.id
 }
 
 resource "ibm_is_vpn_gateway" "VPNGateway1" {
@@ -309,6 +340,11 @@ resource "ibm_is_network_acl" "isExampleACL" {
   }
 }
 
+resource "ibm_is_subnet_network_acl_attachment" attach {
+  subnet      = ibm_is_subnet.subnet1.id
+  network_acl = ibm_is_network_acl.isExampleACL.id
+}
+
 resource "ibm_is_public_gateway" "publicgateway1" {
   name = "gateway1"
   vpc  = ibm_is_vpc.vpc1.id
@@ -319,5 +355,54 @@ data "ibm_is_vpc" "vpc1" {
   name = ibm_is_vpc.vpc1.name
 }
 data "ibm_is_lb" "test_lb" {
-name = ibm_is_lb.lb1.name
+  name = ibm_is_lb.lb1.name
 }
+data ibm_is_lb_profiles "test_lb_profiles" {
+}
+data "ibm_is_lbs" "test_lbs" {
+}
+
+//custom route table for subnet 1
+resource "ibm_is_vpc_routing_table" "test_cr_route_table1" {
+  name = "test-cr-route-table1"
+  vpc  = ibm_is_vpc.vpc1.id
+}
+
+// subnet 
+resource "ibm_is_subnet" "test_cr_subnet1" {
+  depends_on      = [ibm_is_vpc_routing_table.test_cr_route_table1]
+  name            = "test-cr-subnet1"
+  vpc             = data.ibm_is_vpc.vpc1.id
+  zone            = "us-south-1"
+  ipv4_cidr_block = "10.240.10.0/24"
+  routing_table   = ibm_is_vpc_routing_table.test_cr_route_table1.routing_table
+}
+
+//custom route 
+resource "ibm_is_vpc_routing_table_route" "test_custom_route1" {
+  depends_on    = [ibm_is_subnet.test_cr_subnet1]
+  vpc           = ibm_is_vpc.vpc1.id
+  routing_table = ibm_is_vpc_routing_table.test_cr_route_table1.routing_table
+  zone          = "us-south-1"
+  name          = "custom-route-1"
+  next_hop      = ibm_is_instance.instance2.primary_network_interface[0].primary_ipv4_address
+  action        = "deliver"
+  destination   = ibm_is_subnet.test_cr_subnet1.ipv4_cidr_block
+}
+
+// data source for vpc default routing table
+data "ibm_is_vpc_default_routing_table" "default_table_test" {
+  vpc = ibm_is_vpc.vpc1.id
+}
+
+// data source for vpc routing tables
+data "ibm_is_vpc_routing_tables" "tables_test" {
+  vpc = ibm_is_vpc.vpc1.id
+}
+
+// data source for vpc routing table routes
+data "ibm_is_vpc_routing_table_routes" "routes_test" {
+  vpc = ibm_is_vpc.vpc1.id
+  routing_table = ibm_is_vpc_routing_table.test_cr_route_table1.routing_table
+}
+

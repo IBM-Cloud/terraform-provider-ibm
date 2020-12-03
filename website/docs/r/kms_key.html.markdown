@@ -68,6 +68,49 @@ resource "ibm_kms_key" "key" {
   force_delete = true
 }
 ```
+## Example usage to provision Key Management Service Key with Key Policies
+
+Set policies for a key, such as an automatic rotation policy or a dual authorization policy to protect against the accidental deletion of keys.
+
+```hcl
+resource "ibm_resource_instance" "kp_instance" {
+  name     = "test_kp"
+  service  = "kms"
+  plan     = "tiered-pricing"
+  location = "us-south"
+}
+resource "ibm_kms_key" "key" {
+  instance_id = ibm_resource_instance.kp_instance.guid
+  key_name       = "key"
+  standard_key   = false
+  expiration_date = "2020-12-05T15:43:46Z"
+  policies {
+    rotation {
+      interval_month = 3
+    }
+    dual_auth_delete {
+      enabled = false
+    }
+  }
+}
+```
+
+## Example usage to provision Key Management Service and Import a Key
+
+```hcl
+resource "ibm_resource_instance" "kp_instance" {
+  name     = "test_kp"
+  service  = "kms"
+  plan     = "tiered-pricing"
+  location = "us-south"
+}
+resource "ibm_kms_key" "key" {
+  instance_id = ibm_resource_instance.kp_instance.guid
+  key_name       = "key"
+  standard_key   = false
+  payload = "aW1wb3J0ZWQucGF5bG9hZA=="
+}
+```
 
 ## Argument Reference
 
@@ -82,6 +125,16 @@ The following arguments are supported:
 * `iv_value` - (Optional, Forces new resource, string) Used with import tokens. The initialization vector (IV) that is generated when you encrypt a nonce. The IV value is required to decrypt the encrypted nonce value that you provide when you make a key import request to the service. To generate an IV, encrypt the nonce by running `ibmcloud kp import-token encrypt-nonce`. Only for imported root key.
 * `force_delete` - (Optional, bool) If set to true, Key Protect forces deletion on a key that is protecting a cloud resource, such as a Cloud Object Storage bucket. The action removes any registrations that are associated with the key. Note: If a key is protecting a cloud resource that has a retention policy, Key Protect cannot delete the key. Default: false.
     **NOTE**: Before doing terraform destroy if force_delete flag is introduced after provisioning keys, a terraform apply must be done before terraform destroy for force_delete flag to take effect.
+* `expiration_date` - (Optional, Forces new resource, string) The date the key material expires. The date format follows RFC 3339. You can set an expiration date on any key on its creation. A key moves into the Deactivated state within one hour past its expiration date, if one is assigned. If you create a key without specifying an expiration date, the key does not expire
+`Example: 2018-12-01T23:20:50.52Z`.
+* `policies` - (Optional, list) Set policies for a key, such as an automatic rotation policy or a dual authorization policy to protect against the accidental deletion of keys. Policies folow the following structure.
+  * `rotation` - (Optional, list) Specifies the key rotation time interval in months, with a minimum of 1, and a maximum of 12.
+    * `interval_month` - (Required, int) Specifies the key rotation time interval in months.
+      **CONSTRAINTS**: 1 ≤ value ≤ 12
+      **NOTE**: Rotation policy is cannot be set for standard key and imported key. Once Rotation Policy is set, it is not possible to unset/remove it using Terraform.
+  * `dual_auth_delete` - (Required, list) Data associated with the dual authorization delete policy.
+    * `enabled` - (Optional, bool) If set to true, Key Protect enables a dual authorization policy on a single key.
+      **NOTE**: Once the dual authorization policy is set on the key, it cannot be reverted. A key with dual authorization policy enabled cannot be destroyed using Terraform.
 
 
 ## Attribute Reference
@@ -93,6 +146,23 @@ The following attributes are exported:
 * `status` - The status of the key.
 * `key_id` - The id of the key. 
 * `type` - The type of the key kms or hs-crypto. 
+* `policy` - The policies associated with the key.
+  * `rotation` - The key rotation time interval in months, with a minimum of 1, and a maximum of 12.
+    * `created_by` - The unique identifier for the resource that created the policy.
+    * `creation_date` - The date the policy was created. The date format follows RFC 3339.
+    * `crn` - The Cloud Resource Name (CRN) that uniquely identifies your cloud resources.
+    * `id` - The v4 UUID used to uniquely identify the policy resource, as specified by RFC 4122.
+    * `interval_month` - The key rotation time interval in months.
+    * `last_update_date` - The date when the policy was last replaced or modified. The date format follows RFC 3339.
+    * `updated_by` - The unique identifier for the resource that updated the policy.
+  * `dual_auth_delete` - The data associated with the dual authorization delete policy.
+    * `created_by` - The unique identifier for the resource that created the policy.
+    * `creation_date` - The date the policy was created. The date format follows RFC 3339.
+    * `crn` - The Cloud Resource Name (CRN) that uniquely identifies your cloud resources.
+    * `id` - The v4 UUID used to uniquely identify the policy resource, as specified by RFC 4122.
+    * `enabled` - If set to true, Key Protect enables a dual authorization policy on the key.
+    * `last_update_date` - The date when the policy was last replaced or modified. The date format follows RFC 3339.
+    * `updated_by` - The unique identifier for the resource that updated the policy.
 
 
 ## Import

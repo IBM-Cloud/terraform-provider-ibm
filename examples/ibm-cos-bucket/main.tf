@@ -23,11 +23,11 @@ resource "ibm_resource_instance" "metrics_monitor" {
   location          = "us-south"
 }
 resource "ibm_cos_bucket" "standard-ams03" {
-  bucket_name          = var.bucket_name
-  resource_instance_id = ibm_resource_instance.cos_instance.id
-  cross_region_location      = var.region
-  storage_class        = var.storage
- activity_tracking {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  cross_region_location = var.region
+  storage_class         = var.storage
+  activity_tracking {
     read_data_events     = true
     write_data_events    = true
     activity_tracker_crn = ibm_resource_instance.activity_tracker.id
@@ -36,5 +36,18 @@ resource "ibm_cos_bucket" "standard-ams03" {
     usage_metrics_enabled  = true
     metrics_monitoring_crn = ibm_resource_instance.metrics_monitor.id
   }
-  allowed_ip =  ["223.196.168.27","223.196.161.38","192.168.0.1"]
+  allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
+}
+
+resource "ibm_cos_bucket" "archive_rule_cos" {
+  bucket_name          = var.bucket_name
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = var.regional_loc
+  storage_class        = var.storage
+  archive_rule {
+    rule_id = var.archive_ruleid
+    enable  = true
+    days    = var.archive_days
+    type    = var.archive_types
+  }
 }

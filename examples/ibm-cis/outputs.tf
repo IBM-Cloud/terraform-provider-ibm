@@ -13,3 +13,42 @@ output "monitor" {
 output "rate_limit_id" {
   value = ibm_cis_rate_limit.ratelimit.id
 }
+output "ibm_cis_edge_functions_action_output" {
+  value = ibm_cis_edge_functions_action.test_action
+}
+
+output "ibm_cis_edge_function_trigger_output" {
+  value = ibm_cis_edge_functions_trigger.test_trigger
+}
+
+output "domain_setting" {
+  value = ibm_cis_domain_settings.test_domain_settings
+}
+
+output "ibm_cis_tls_settings_output" {
+  value = ibm_cis_tls_settings.tls_settings
+}
+
+output "ibm_cis_routing_output" {
+  value = ibm_cis_routing.routing
+}
+
+output "cache_settings" {
+  value = ibm_cis_cache_settings.test
+}
+
+output "ibm_cis_custom_page_output" {
+  value = ibm_cis_custom_page.custom_page
+}
+
+output "ibm_cis_firewall_ouput" {
+  value = ibm_cis_firewall.lockdown
+}
+
+output "ibm_cis_page_rule_output" {
+  value = ibm_cis_page_rule.page_rule
+}
+
+output "ibm_cis_waf_package_output" {
+  value = ibm_cis_waf_package.test
+}

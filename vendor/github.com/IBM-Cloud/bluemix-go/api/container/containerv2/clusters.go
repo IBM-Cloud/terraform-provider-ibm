@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/IBM-Cloud/bluemix-go/client"
+	"github.com/IBM-Cloud/bluemix-go/trace"
 )
 
 //ClusterCreateRequest ...
@@ -170,9 +171,10 @@ func (r *clusters) List(target ClusterTargetHeader) ([]ClusterInfo, error) {
 		// get satellite clusters
 		satelliteClusters := []ClusterInfo{}
 		_, err = r.client.Get("/v2/satellite/getClusters", &satelliteClusters, target.ToMap())
-		if err != nil {
-			//return vpc clusters only
-			return clusters, err
+		if err != nil && target.Provider == "satellite" {
+			// return error only when provider is satellite. Else ignore error and return VPC clusters
+			trace.Logger.Println("Unable to get the satellite clusters ", err)
+			return nil, err
 		}
 		clusters = append(clusters, satelliteClusters...)
 	}

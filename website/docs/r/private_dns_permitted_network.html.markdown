@@ -27,7 +27,7 @@ resource "ibm_dns_permitted_network" "test-pdns-permitted-network-nw" {
 
 The following arguments are supported:
 
-* `instance_id` - (Required, string) The id of the private DNS on which zone has to be created.
+* `instance_id` - (Required, string) The guid of the private DNS instance on which permitted network has to be created.
 * `zone_id` - (Required, string) The id of the private DNS zone in which the network needs to be associated.
 * `vpc_crn` -  (Required, string) The CRN of VPC instance.
 * `type` - (Required, string) The permitted network type. Valid values: "vpc".
@@ -36,7 +36,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the private DNS zone. The id is composed of <instance_id>/<zone_id>/<permitted_network_id>.
+* `id` - The unique identifier of the permitted network.. The id is composed of <instance_id>/<zone_id>/<permitted_network_id>.
 * `created_on` - The time (Created On) of the DNS permitted network. 
 * `modified_on` - The time (Modified On) of the DNS permitted network.
 

@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
@@ -15,6 +16,7 @@ const (
 	isSubnetIpv4CidrBlock             = "ipv4_cidr_block"
 	isSubnetIpv6CidrBlock             = "ipv6_cidr_block"
 	isSubnetTotalIpv4AddressCount     = "total_ipv4_address_count"
+	isSubnetIPVersion                 = "ip_version"
 	isSubnetName                      = "name"
 	isSubnetNetworkACL                = "network_acl"
 	isSubnetPublicGateway             = "public_gateway"
@@ -28,6 +30,7 @@ const (
 	isSubnetProvisioningDone = "done"
 	isSubnetDeleting         = "deleting"
 	isSubnetDeleted          = "done"
+	isSubnetRoutingTableID   = "routing_table"
 )
 
 func resourceIBMISSubnet() *schema.Resource {
@@ -51,18 +54,20 @@ func resourceIBMISSubnet() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{isSubnetTotalIpv4AddressCount},
-				ValidateFunc:  validateCIDR,
+				ValidateFunc:  InvokeValidator("ibm_is_subnet", isSubnetIpv4CidrBlock),
 				Description:   "IPV4 subnet - CIDR block",
 			},
 
 			isSubnetIpv6CidrBlock: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "IPV6 subnet - CIDR block",
 			},
 
 			isSubnetAvailableIpv4AddressCount: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The number of IPv4 addresses in this subnet that are not in-use, and have not been reserved by the user or the provider.",
 			},
 
 			isSubnetTotalIpv4AddressCount: {
@@ -71,21 +76,31 @@ func resourceIBMISSubnet() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{isSubnetIpv4CidrBlock},
+				Description:   "The total number of IPv4 addresses in this subnet.",
+			},
+			isSubnetIPVersion: {
+				Type:         schema.TypeString,
+				ForceNew:     true,
+				Default:      "ipv4",
+				Optional:     true,
+				ValidateFunc: validateIPVersion,
+				Description:  "The IP version(s) to support for this subnet.",
 			},
 
 			isSubnetName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_subnet", isSubnetName),
 				Description:  "Subnet name",
 			},
 
 			isSubnetNetworkACL: {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    false,
+				Description: "The network ACL for this subnet",
 			},
 
 			isSubnetPublicGateway: {
@@ -96,8 +111,9 @@ func resourceIBMISSubnet() *schema.Resource {
 			},
 
 			isSubnetStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the subnet",
 			},
 
 			isSubnetVPC: {
@@ -115,10 +131,18 @@ func resourceIBMISSubnet() *schema.Resource {
 			},
 
 			isSubnetResourceGroup: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Computed:    true,
+				Description: "The resource group for this subnet",
+			},
+			isSubnetRoutingTableID: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    false,
+				Computed:    true,
+				Description: "routing table id that is associated with the subnet",
 			},
 
 			ResourceControllerURL: {
@@ -151,6 +175,30 @@ func resourceIBMISSubnet() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISSubnetValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSubnetName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSubnetIpv4CidrBlock,
+			ValidateFunctionIdentifier: ValidateCIDRAddress,
+			Type:                       TypeString,
+			ForceNew:                   true,
+			Optional:                   true})
+
+	ibmISSubnetResourceValidator := ResourceValidator{ResourceName: "ibm_is_subnet", Schema: validateSchema}
+	return &ibmISSubnetResourceValidator
 }
 
 func resourceIBMISSubnetCreate(d *schema.ResourceData, meta interface{}) error {
@@ -194,13 +242,18 @@ func resourceIBMISSubnetCreate(d *schema.ResourceData, meta interface{}) error {
 		gw = pgw.(string)
 	}
 
+	// route table association related
+	rtID := ""
+	if rt, ok := d.GetOk(isSubnetRoutingTableID); ok {
+		rtID = rt.(string)
+	}
 	if userDetails.generation == 1 {
 		err := classicSubnetCreate(d, meta, name, vpc, zone, ipv4cidr, acl, gw, ipv4addrcount64)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := subnetCreate(d, meta, name, vpc, zone, ipv4cidr, acl, gw, ipv4addrcount64)
+		err := subnetCreate(d, meta, name, vpc, zone, ipv4cidr, acl, gw, rtID, ipv4addrcount64)
 		if err != nil {
 			return err
 		}
@@ -258,7 +311,7 @@ func classicSubnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zo
 	return nil
 }
 
-func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv4cidr, acl, gw string, ipv4addrcount64 int64) error {
+func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv4cidr, acl, gw, rtID string, ipv4addrcount64 int64) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -287,6 +340,12 @@ func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv
 	if acl != "" {
 		subnetTemplate.NetworkACL = &vpcv1.NetworkACLIdentity{
 			ID: &acl,
+		}
+	}
+	if rtID != "" {
+		rt := rtID
+		subnetTemplate.RoutingTable = &vpcv1.RoutingTableIdentity{
+			ID: &rt,
 		}
 	}
 	rg := ""
@@ -462,6 +521,7 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set("id", *subnet.ID)
 	d.Set(isSubnetName, *subnet.Name)
+	d.Set(isSubnetIPVersion, *subnet.IPVersion)
 	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CIDRBlock)
 	// d.Set(isSubnetIpv6CidrBlock, *subnet.IPV6CidrBlock)
 	d.Set(isSubnetAvailableIpv4AddressCount, *subnet.AvailableIpv4AddressCount)
@@ -473,6 +533,11 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isSubnetPublicGateway, *subnet.PublicGateway.ID)
 	} else {
 		d.Set(isSubnetPublicGateway, nil)
+	}
+	if subnet.RoutingTable != nil {
+		d.Set(isSubnetRoutingTableID, *subnet.RoutingTable.ID)
+	} else {
+		d.Set(isSubnetRoutingTableID, nil)
 	}
 	d.Set(isSubnetStatus, *subnet.Status)
 	d.Set(isSubnetZone, *subnet.Zone.Name)
@@ -524,14 +589,17 @@ func classicSubnetUpdate(d *schema.ResourceData, meta interface{}, id string) er
 	name := ""
 	acl := ""
 	updateSubnetOptions := &vpcclassicv1.UpdateSubnetOptions{}
+	subnetPatchModel := &vpcclassicv1.SubnetPatch{
+		Name: &name,
+	}
 	if d.HasChange(isSubnetName) {
 		name = d.Get(isSubnetName).(string)
-		updateSubnetOptions.Name = &name
+		subnetPatchModel.Name = &name
 		hasChanged = true
 	}
 	if d.HasChange(isSubnetNetworkACL) {
 		acl = d.Get(isSubnetNetworkACL).(string)
-		updateSubnetOptions.NetworkACL = &vpcclassicv1.NetworkACLIdentity{
+		subnetPatchModel.NetworkACL = &vpcclassicv1.NetworkACLIdentity{
 			ID: &acl,
 		}
 		hasChanged = true
@@ -568,6 +636,11 @@ func classicSubnetUpdate(d *schema.ResourceData, meta interface{}, id string) er
 		}
 	}
 	if hasChanged {
+		subnetPatch, err := subnetPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for SubnetPatch: %s", err)
+		}
+		updateSubnetOptions.SubnetPatch = subnetPatch
 		updateSubnetOptions.ID = &id
 		_, response, err := sess.UpdateSubnet(updateSubnetOptions)
 		if err != nil {
@@ -586,14 +659,15 @@ func subnetUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 	name := ""
 	acl := ""
 	updateSubnetOptions := &vpcv1.UpdateSubnetOptions{}
+	subnetPatchModel := &vpcv1.SubnetPatch{}
 	if d.HasChange(isSubnetName) {
 		name = d.Get(isSubnetName).(string)
-		updateSubnetOptions.Name = &name
+		subnetPatchModel.Name = &name
 		hasChanged = true
 	}
 	if d.HasChange(isSubnetNetworkACL) {
 		acl = d.Get(isSubnetNetworkACL).(string)
-		updateSubnetOptions.NetworkACL = &vpcv1.NetworkACLIdentity{
+		subnetPatchModel.NetworkACL = &vpcv1.NetworkACLIdentity{
 			ID: &acl,
 		}
 		hasChanged = true
@@ -629,7 +703,31 @@ func subnetUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 			}
 		}
 	}
+	if d.HasChange(isSubnetRoutingTableID) {
+		hasChanged = true
+		rtID := d.Get(isSubnetRoutingTableID).(string)
+		// Construct an instance of the RoutingTableIdentityByID model
+		routingTableIdentityModel := new(vpcv1.RoutingTableIdentityByID)
+		routingTableIdentityModel.ID = &rtID
+		subnetPatchModel.RoutingTable = routingTableIdentityModel
+		/*rt := &vpcv1.RoutingTableIdentity{
+			ID: corev3.StringPtr(rtID),
+		}
+		setSubnetRoutingTableBindingOptions := sess.NewReplaceSubnetRoutingTableOptions(id, rt)
+		setSubnetRoutingTableBindingOptions.SetRoutingTableIdentity(rt)
+		setSubnetRoutingTableBindingOptions.SetID(id)
+		_, _, err = sess.ReplaceSubnetRoutingTable(setSubnetRoutingTableBindingOptions)
+		if err != nil {
+			log.Printf("SetSubnetRoutingTableBinding eroor: %s", err)
+			return err
+		}*/
+	}
 	if hasChanged {
+		subnetPatch, err := subnetPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for SubnetPatch: %s", err)
+		}
+		updateSubnetOptions.SubnetPatch = subnetPatch
 		updateSubnetOptions.ID = &id
 		_, response, err := sess.UpdateSubnet(updateSubnetOptions)
 		if err != nil {
@@ -804,6 +902,9 @@ func isSubnetDeleteRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.StateRe
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				return subnet, isSubnetDeleted, nil
+			}
+			if response != nil && strings.Contains(err.Error(), "please detach all network interfaces from subnet before deleting it") {
+				return subnet, isSubnetDeleting, nil
 			}
 			return subnet, "", fmt.Errorf("The Subnet %s failed to delete: %s\n%s", id, err, response)
 		}

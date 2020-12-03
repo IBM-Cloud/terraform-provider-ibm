@@ -13,7 +13,7 @@ Provides a load balancer pool member resource. This allows load balancer pool me
 
 ## Example Usage
 
-In the following example, you can create a load balancer pool member:
+In the following example, you can create a load balancer pool member for application load balancer:
 
 ```hcl
 resource "ibm_is_lb_pool_member" "testacc_lb_mem" {
@@ -21,6 +21,19 @@ resource "ibm_is_lb_pool_member" "testacc_lb_mem" {
   pool           = "f087d3bd-3da8-452d-9ce4-c1010c9fec04"
   port           = 8080
   target_address = "127.0.0.1"
+  weight         = 60
+}
+
+```
+
+In the following example, you can create a load balancer pool member for network load balancer:
+
+```hcl
+resource "ibm_is_lb_pool_member" "testacc_lb_mem" {
+  lb             = "daac2b08-fe8a-443b-9b06-1cef79922dce"
+  pool           = "f087d3bd-3da8-452d-9ce4-c1010c9fec04"
+  port           = 8080
+  target_id      = "54ad563a-0261-11e9-8317-bec54e704988"
   weight         = 60
 }
 
@@ -41,7 +54,8 @@ The following arguments are supported:
 * `pool` - (Required, Forces new resource, string) The load balancer pool unique identifier.
 * `lb` - (Required, Forces new resource, string)  The load balancer unique identifier.
 * `port` - (Required, int) The port number of the application running in the server member.
-* `target_address` - (Required, string) The IP address of the pool member.
+* `target_address` - (Required for application load balancer, string) The IP address of the pool member.
+* `target_id` - (Required for network load balancer, string) The unique identifier for the virtual server instance pool member.
 * `weight` - (Optional, int) Weight of the server member. This option takes effect only when the load balancing algorithm of its belonging pool is weighted_round_robin
 
 ## Attribute Reference

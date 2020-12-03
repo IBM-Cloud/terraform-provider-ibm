@@ -21,11 +21,11 @@ const (
 
 func resourceIBMPrivateDNSZone() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMPrivateDnsZoneCreate,
-		Read:     resourceIBMPrivateDnsZoneRead,
-		Update:   resourceIBMPrivateDnsZoneUpdate,
-		Delete:   resourceIBMPrivateDnsZoneDelete,
-		Exists:   resourceIBMPrivateDnsZoneExists,
+		Create:   resourceIBMPrivateDNSZoneCreate,
+		Read:     resourceIBMPrivateDNSZoneRead,
+		Update:   resourceIBMPrivateDNSZoneUpdate,
+		Delete:   resourceIBMPrivateDNSZoneDelete,
+		Exists:   resourceIBMPrivateDNSZoneExists,
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -90,8 +90,8 @@ func resourceIBMPrivateDNSZone() *schema.Resource {
 	}
 }
 
-func resourceIBMPrivateDnsZoneCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).PrivateDnsClientSession()
+func resourceIBMPrivateDNSZoneCreate(d *schema.ResourceData, meta interface{}) error {
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}
@@ -111,7 +111,8 @@ func resourceIBMPrivateDnsZoneCreate(d *schema.ResourceData, meta interface{}) e
 	if v, ok := d.GetOk(pdnsZoneLabel); ok {
 		zoneLabel = v.(string)
 	}
-	createZoneOptions := sess.NewCreateDnszoneOptions(instanceID, zoneName)
+	createZoneOptions := sess.NewCreateDnszoneOptions(instanceID)
+	createZoneOptions.SetName(zoneName)
 	createZoneOptions.SetDescription(zoneDescription)
 	createZoneOptions.SetLabel(zoneLabel)
 	response, detail, err := sess.CreateDnszone(createZoneOptions)
@@ -122,17 +123,17 @@ func resourceIBMPrivateDnsZoneCreate(d *schema.ResourceData, meta interface{}) e
 	d.SetId(fmt.Sprintf("%s/%s", *response.InstanceID, *response.ID))
 	d.Set(pdnsZoneID, *response.ID)
 
-	return resourceIBMPrivateDnsZoneRead(d, meta)
+	return resourceIBMPrivateDNSZoneRead(d, meta)
 }
 
-func resourceIBMPrivateDnsZoneRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).PrivateDnsClientSession()
+func resourceIBMPrivateDNSZoneRead(d *schema.ResourceData, meta interface{}) error {
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}
 
-	id_set := strings.Split(d.Id(), "/")
-	getZoneOptions := sess.NewGetDnszoneOptions(id_set[0], id_set[1])
+	idSet := strings.Split(d.Id(), "/")
+	getZoneOptions := sess.NewGetDnszoneOptions(idSet[0], idSet[1])
 	response, detail, err := sess.GetDnszone(getZoneOptions)
 	if err != nil {
 		return fmt.Errorf("Error fetching pdns zone:%s\n%s", err, detail)
@@ -151,16 +152,16 @@ func resourceIBMPrivateDnsZoneRead(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func resourceIBMPrivateDnsZoneUpdate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).PrivateDnsClientSession()
+func resourceIBMPrivateDNSZoneUpdate(d *schema.ResourceData, meta interface{}) error {
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}
 
-	id_set := strings.Split(d.Id(), "/")
+	idSet := strings.Split(d.Id(), "/")
 
 	// Check DNS zone is present?
-	getZoneOptions := sess.NewGetDnszoneOptions(id_set[0], id_set[1])
+	getZoneOptions := sess.NewGetDnszoneOptions(idSet[0], idSet[1])
 	_, response, err := sess.GetDnszone(getZoneOptions)
 	if err != nil {
 		return fmt.Errorf("Error fetching pdns zone:%s\n%s", err, response)
@@ -169,7 +170,7 @@ func resourceIBMPrivateDnsZoneUpdate(d *schema.ResourceData, meta interface{}) e
 	// Update DNS zone if attributes has any change
 
 	if d.HasChange(pdnsZoneLabel) || d.HasChange(pdnsZoneDescription) {
-		updateZoneOptions := sess.NewUpdateDnszoneOptions(id_set[0], id_set[1])
+		updateZoneOptions := sess.NewUpdateDnszoneOptions(idSet[0], idSet[1])
 		description := d.Get(pdnsZoneDescription).(string)
 		label := d.Get(pdnsZoneLabel).(string)
 		updateZoneOptions.SetDescription(description)
@@ -182,18 +183,18 @@ func resourceIBMPrivateDnsZoneUpdate(d *schema.ResourceData, meta interface{}) e
 		}
 	}
 
-	return resourceIBMPrivateDnsZoneRead(d, meta)
+	return resourceIBMPrivateDNSZoneRead(d, meta)
 }
 
-func resourceIBMPrivateDnsZoneDelete(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).PrivateDnsClientSession()
+func resourceIBMPrivateDNSZoneDelete(d *schema.ResourceData, meta interface{}) error {
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}
 
-	id_set := strings.Split(d.Id(), "/")
+	idSet := strings.Split(d.Id(), "/")
 
-	deleteZoneOptions := sess.NewDeleteDnszoneOptions(id_set[0], id_set[1])
+	deleteZoneOptions := sess.NewDeleteDnszoneOptions(idSet[0], idSet[1])
 	response, err := sess.DeleteDnszone(deleteZoneOptions)
 	if err != nil {
 		return fmt.Errorf("Error deleting pdns zone:%s\n%s", err, response)
@@ -203,15 +204,15 @@ func resourceIBMPrivateDnsZoneDelete(d *schema.ResourceData, meta interface{}) e
 	return nil
 }
 
-func resourceIBMPrivateDnsZoneExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func resourceIBMPrivateDNSZoneExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 
-	sess, err := meta.(ClientSession).PrivateDnsClientSession()
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return false, err
 	}
 
-	id_set := strings.Split(d.Id(), "/")
-	getZoneOptions := sess.NewGetDnszoneOptions(id_set[0], id_set[1])
+	idSet := strings.Split(d.Id(), "/")
+	getZoneOptions := sess.NewGetDnszoneOptions(idSet[0], idSet[1])
 	_, response, err := sess.GetDnszone(getZoneOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {

@@ -145,7 +145,9 @@ func testAccCheckIBMComputePlacementGroupDestroy(s *terraform.State) error {
 		// Try to find the provisioning pgrp
 		_, err := service.Id(pgrpId).GetObject()
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("Placement group still exists: %s", rs.Primary.ID)
+		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for placement group (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}

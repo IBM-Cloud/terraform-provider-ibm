@@ -46,10 +46,6 @@ func getBaseURL(region string) string {
  *
  */
 func setupOpenWhiskClientConfig(namespace string, c *bluemix.Config, wskClient *whisk.Client) (*whisk.Client, error) {
-	if c.UAAAccessToken == "" && c.UAARefreshToken == "" {
-		return nil, fmt.Errorf("Couldn't retrieve auth key for IBM Cloud Function")
-	}
-
 	baseEndpoint := getBaseURL(c.Region)
 	apiOptions := &namespaceapi.IbmCloudFunctionsNamespaceOptions{
 		URL:           fmt.Sprintf("%s", baseEndpoint),
@@ -97,6 +93,9 @@ func setupOpenWhiskClientConfig(namespace string, c *bluemix.Config, wskClient *
 
 	// Configure whisk properties to handle cf-based namespaces.
 	if isCFNamespace {
+		if c.UAAAccessToken == "" && c.UAARefreshToken == "" {
+			return nil, fmt.Errorf("Couldn't retrieve auth key for IBM Cloud Function")
+		}
 		err := validateNamespace(namespace)
 		if err != nil {
 			return nil, err

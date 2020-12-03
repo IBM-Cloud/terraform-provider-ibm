@@ -28,9 +28,16 @@ type Authenticator interface {
 // AuthenticationError describes the error returned when authentication fails
 type AuthenticationError struct {
 	Response *DetailedResponse
-	err      error
+	Err      error
 }
 
 func (e *AuthenticationError) Error() string {
-	return e.err.Error()
+	return e.Err.Error()
+}
+
+func NewAuthenticationError(response *DetailedResponse, err error) *AuthenticationError {
+	return &AuthenticationError{
+		Response: response,
+		Err:      err,
+	}
 }

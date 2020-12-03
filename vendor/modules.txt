@@ -6,7 +6,7 @@ cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/trace
 cloud.google.com/go/internal/version
 cloud.google.com/go/storage
-# github.com/IBM-Cloud/bluemix-go v0.0.0-20200914061145-5c7a783e2da7
+# github.com/IBM-Cloud/bluemix-go v0.0.0-20201119073718-c3ed816a263b
 github.com/IBM-Cloud/bluemix-go
 github.com/IBM-Cloud/bluemix-go/api/account/accountv1
 github.com/IBM-Cloud/bluemix-go/api/account/accountv2
@@ -43,7 +43,7 @@ github.com/IBM-Cloud/bluemix-go/rest
 github.com/IBM-Cloud/bluemix-go/session
 github.com/IBM-Cloud/bluemix-go/trace
 github.com/IBM-Cloud/bluemix-go/utils
-# github.com/IBM-Cloud/power-go-client v1.0.48
+# github.com/IBM-Cloud/power-go-client v1.0.53
 github.com/IBM-Cloud/power-go-client/clients/instance
 github.com/IBM-Cloud/power-go-client/errors
 github.com/IBM-Cloud/power-go-client/helpers
@@ -55,6 +55,7 @@ github.com/IBM-Cloud/power-go-client/power/client/catalog
 github.com/IBM-Cloud/power-go-client/power/client/hardware_platforms
 github.com/IBM-Cloud/power-go-client/power/client/iaas_service_broker
 github.com/IBM-Cloud/power-go-client/power/client/open_stacks
+github.com/IBM-Cloud/power-go-client/power/client/p_cloud_cloud_connections
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_events
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_images
 github.com/IBM-Cloud/power-go-client/power/client/p_cloud_instances
@@ -76,14 +77,11 @@ github.com/IBM-Cloud/power-go-client/utils
 # github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
 github.com/IBM/apigateway-go-sdk
 github.com/IBM/apigateway-go-sdk/common
-# github.com/IBM/dns-svcs-go-sdk v0.0.3
-github.com/IBM/dns-svcs-go-sdk/common
-github.com/IBM/dns-svcs-go-sdk/dnssvcsv1
 # github.com/IBM/go-sdk-core v1.1.0
 github.com/IBM/go-sdk-core/core
 # github.com/IBM/go-sdk-core/v3 v3.3.1
 github.com/IBM/go-sdk-core/v3/core
-# github.com/IBM/go-sdk-core/v4 v4.3.0
+# github.com/IBM/go-sdk-core/v4 v4.5.1
 github.com/IBM/go-sdk-core/v4/core
 # github.com/IBM/ibm-cos-sdk-go v1.3.1
 github.com/IBM/ibm-cos-sdk-go/aws
@@ -121,21 +119,36 @@ github.com/IBM/ibm-cos-sdk-go/private/protocol/restxml
 github.com/IBM/ibm-cos-sdk-go/private/protocol/xml/xmlutil
 github.com/IBM/ibm-cos-sdk-go/service/s3
 github.com/IBM/ibm-cos-sdk-go/service/s3/internal/arn
-# github.com/IBM/ibm-cos-sdk-go-config v1.0.0
+# github.com/IBM/ibm-cos-sdk-go-config v1.0.1
 github.com/IBM/ibm-cos-sdk-go-config/common
 github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1
-# github.com/IBM/keyprotect-go-client v0.3.5-0.20200325142150-b63163832e26
+# github.com/IBM/keyprotect-go-client v0.5.2
 github.com/IBM/keyprotect-go-client
 github.com/IBM/keyprotect-go-client/iam
-# github.com/IBM/networking-go-sdk v0.7.0
+# github.com/IBM/networking-go-sdk v0.12.0
+github.com/IBM/networking-go-sdk/cachingapiv1
+github.com/IBM/networking-go-sdk/cisipapiv1
 github.com/IBM/networking-go-sdk/common
+github.com/IBM/networking-go-sdk/custompagesv1
 github.com/IBM/networking-go-sdk/directlinkv1
 github.com/IBM/networking-go-sdk/dnsrecordsv1
+github.com/IBM/networking-go-sdk/dnssvcsv1
+github.com/IBM/networking-go-sdk/edgefunctionsapiv1
 github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1
+github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0
+github.com/IBM/networking-go-sdk/globalloadbalancerv1
+github.com/IBM/networking-go-sdk/pageruleapiv1
+github.com/IBM/networking-go-sdk/routingv1
+github.com/IBM/networking-go-sdk/sslcertificateapiv1
 github.com/IBM/networking-go-sdk/transitgatewayapisv1
+github.com/IBM/networking-go-sdk/useragentblockingrulesv1
+github.com/IBM/networking-go-sdk/wafrulepackagesapiv1
+github.com/IBM/networking-go-sdk/zonefirewallaccessrulesv1
+github.com/IBM/networking-go-sdk/zonelockdownv1
 github.com/IBM/networking-go-sdk/zoneratelimitsv1
+github.com/IBM/networking-go-sdk/zonessettingsv1
 github.com/IBM/networking-go-sdk/zonesv1
-# github.com/IBM/vpc-go-sdk v0.1.1
+# github.com/IBM/vpc-go-sdk v0.3.1
 github.com/IBM/vpc-go-sdk/common
 github.com/IBM/vpc-go-sdk/vpcclassicv1
 github.com/IBM/vpc-go-sdk/vpcv1
@@ -535,7 +548,7 @@ golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/net v0.0.0-20200625001655-4c5254603344
+# golang.org/x/net v0.0.0-20200822124328-c89045814202
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/http/httpguts

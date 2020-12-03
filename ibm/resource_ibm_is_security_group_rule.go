@@ -56,7 +56,7 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Direction of traffic to enforce, either inbound or outbound",
-				ValidateFunc: validateIsSecurityRuleDirection,
+				ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleDirection),
 			},
 
 			isSecurityGroupRuleIPVersion: {
@@ -64,7 +64,7 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 				Optional:     true,
 				Description:  "IP version: ipv4 or ipv6",
 				Default:      isSecurityGroupRuleIPVersionDefault,
-				ValidateFunc: validateIPVersion,
+				ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleIPVersion),
 			},
 
 			isSecurityGroupRuleRemote: {
@@ -87,13 +87,13 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							ForceNew:     false,
-							ValidateFunc: validateICMPType,
+							ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleType),
 						},
 						isSecurityGroupRuleCode: {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							ForceNew:     false,
-							ValidateFunc: validateICMPCode,
+							ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleCode),
 						},
 					},
 				},
@@ -114,14 +114,14 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 							Optional:     true,
 							ForceNew:     false,
 							Default:      1,
-							ValidateFunc: validateISSecurityRulePort,
+							ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMin),
 						},
 						isSecurityGroupRulePortMax: {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							ForceNew:     false,
 							Default:      65535,
-							ValidateFunc: validateISSecurityRulePort,
+							ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMax),
 						},
 					},
 				},
@@ -142,14 +142,14 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 							Optional:     true,
 							ForceNew:     false,
 							Default:      1,
-							ValidateFunc: validateISSecurityRulePort,
+							ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMin),
 						},
 						isSecurityGroupRulePortMax: {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							ForceNew:     false,
 							Default:      65535,
-							ValidateFunc: validateISSecurityRulePort,
+							ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMax),
 						},
 					},
 				},
@@ -162,6 +162,58 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISSecurityGroupRuleValidator() *ResourceValidator {
+	validateSchema := make([]ValidateSchema, 1)
+	direction := "inbound, outbound"
+	ip_version := "ipv4, ipv6"
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSecurityGroupRuleDirection,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              direction})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSecurityGroupRuleIPVersion,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              ip_version})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSecurityGroupRuleType,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "0",
+			MaxValue:                   "254"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSecurityGroupRuleCode,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "0",
+			MaxValue:                   "255"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSecurityGroupRulePortMin,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "1",
+			MaxValue:                   "65535"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSecurityGroupRulePortMax,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "1",
+			MaxValue:                   "65535"})
+
+	ibmISSecurityGroupRuleResourceValidator := ResourceValidator{ResourceName: "ibm_is_security_group_rule", Schema: validateSchema}
+	return &ibmISSecurityGroupRuleResourceValidator
 }
 
 func resourceIBMISSecurityGroupRuleCreate(d *schema.ResourceData, meta interface{}) error {
@@ -575,11 +627,11 @@ func classicSgRuleUpdate(d *schema.ResourceData, meta interface{}) error {
 	isSecurityGroupRuleKey := "security_group_rule_key_" + parsed.secgrpID
 	ibmMutexKV.Lock(isSecurityGroupRuleKey)
 	defer ibmMutexKV.Unlock(isSecurityGroupRuleKey)
-
+	securityGroupRulePatchBody, _ := sgTemplate.AsPatch()
 	updateSecurityGroupRuleOptions := &vpcclassicv1.UpdateSecurityGroupRuleOptions{
 		SecurityGroupID:        &parsed.secgrpID,
 		ID:                     &parsed.ruleID,
-		SecurityGroupRulePatch: sgTemplate,
+		SecurityGroupRulePatch: securityGroupRulePatchBody,
 	}
 	_, response, err := sess.UpdateSecurityGroupRule(updateSecurityGroupRuleOptions)
 	if err != nil {
@@ -841,8 +893,8 @@ func parseIBMISClassicSecurityGroupRuleDictionary(d *schema.ResourceData, tag st
 	err = nil
 	if parsed.remote != "" {
 		parsed.remoteAddress, parsed.remoteCIDR, parsed.remoteSecGrpID, err = inferRemoteSecurityGroup(parsed.remote)
-		remoteTemplate := &vpcclassicv1.SecurityGroupRulePrototypeRemote{}
-		remoteTemplateUpdate := &vpcclassicv1.SecurityGroupRulePatchRemote{}
+		remoteTemplate := &vpcclassicv1.SecurityGroupRuleRemotePrototype{}
+		remoteTemplateUpdate := &vpcclassicv1.SecurityGroupRuleRemotePatch{}
 		if parsed.remoteAddress != "" {
 			remoteTemplate.Address = &parsed.remoteAddress
 			remoteTemplateUpdate.Address = &parsed.remoteAddress
@@ -952,18 +1004,20 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 		sgTemplateUpdate.ID = &parsed.ruleID
 	}
 
+	securityGroupRulePatchModel := &vpcv1.SecurityGroupRulePatch{}
+
 	parsed.direction = d.Get(isSecurityGroupRuleDirection).(string)
 	sgTemplate.Direction = &parsed.direction
-	sgTemplateUpdate.Direction = &parsed.direction
+	securityGroupRulePatchModel.Direction = &parsed.direction
 
 	if version, ok := d.GetOk(isSecurityGroupRuleIPVersion); ok {
 		parsed.ipversion = version.(string)
 		sgTemplate.IPVersion = &parsed.ipversion
-		sgTemplateUpdate.IPVersion = &parsed.ipversion
+		securityGroupRulePatchModel.IPVersion = &parsed.ipversion
 	} else {
 		parsed.ipversion = "IPv4"
 		sgTemplate.IPVersion = &parsed.ipversion
-		sgTemplateUpdate.IPVersion = &parsed.ipversion
+		securityGroupRulePatchModel.IPVersion = &parsed.ipversion
 	}
 
 	parsed.remote = ""
@@ -976,8 +1030,8 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 	err = nil
 	if parsed.remote != "" {
 		parsed.remoteAddress, parsed.remoteCIDR, parsed.remoteSecGrpID, err = inferRemoteSecurityGroup(parsed.remote)
-		remoteTemplate := &vpcv1.SecurityGroupRulePrototypeRemote{}
-		remoteTemplateUpdate := &vpcv1.SecurityGroupRulePatchRemote{}
+		remoteTemplate := &vpcv1.SecurityGroupRuleRemotePrototype{}
+		remoteTemplateUpdate := &vpcv1.SecurityGroupRuleRemotePatch{}
 		if parsed.remoteAddress != "" {
 			remoteTemplate.Address = &parsed.remoteAddress
 			remoteTemplateUpdate.Address = &parsed.remoteAddress
@@ -989,7 +1043,7 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 			remoteTemplateUpdate.ID = &parsed.remoteSecGrpID
 		}
 		sgTemplate.Remote = remoteTemplate
-		sgTemplateUpdate.Remote = remoteTemplateUpdate
+		securityGroupRulePatchModel.Remote = remoteTemplateUpdate
 	}
 	if err != nil {
 		return nil, nil, nil, err
@@ -1020,8 +1074,8 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 			sgTemplate.Code = &parsed.icmpCode
 		}
 		sgTemplate.Protocol = &parsed.protocol
-		sgTemplateUpdate.Type = &parsed.icmpType
-		sgTemplateUpdate.Code = &parsed.icmpCode
+		securityGroupRulePatchModel.Type = &parsed.icmpType
+		securityGroupRulePatchModel.Code = &parsed.icmpCode
 	}
 	for _, prot := range []string{"tcp", "udp"} {
 		if tcpInterface, ok := d.GetOk(prot); ok {
@@ -1054,13 +1108,18 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 			}
 			sgTemplate.PortMax = &parsed.portMax
 			sgTemplate.PortMin = &parsed.portMin
-			sgTemplateUpdate.PortMax = &parsed.portMax
-			sgTemplateUpdate.PortMin = &parsed.portMin
+			securityGroupRulePatchModel.PortMax = &parsed.portMax
+			securityGroupRulePatchModel.PortMin = &parsed.portMin
 		}
 	}
 	if parsed.protocol == "all" {
 		sgTemplate.Protocol = &parsed.protocol
 	}
+	securityGroupRulePatch, err := securityGroupRulePatchModel.AsPatch()
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("Error calling asPatch for SecurityGroupRulePatch: %s", err)
+	}
+	sgTemplateUpdate.SecurityGroupRulePatch = securityGroupRulePatch
 	//	log.Printf("[DEBUG] parse tag=%s\n\t%v  \n\t%v  \n\t%v  \n\t%v  \n\t%v \n\t%v \n\t%v \n\t%v  \n\t%v  \n\t%v  \n\t%v  \n\t%v ",
 	//		tag, parsed.secgrpID, parsed.ruleID, parsed.direction, parsed.ipversion, parsed.protocol, parsed.remoteAddress,
 	//		parsed.remoteCIDR, parsed.remoteSecGrpID, parsed.icmpType, parsed.icmpCode, parsed.portMin, parsed.portMax)

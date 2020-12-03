@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	dlSpeeds       = "offering_speeds"
-	dlLinkSpeed    = "link_speed"
-	dlOfferingType = "offering_type"
+	dlSpeeds        = "offering_speeds"
+	dlLinkSpeed     = "link_speed"
+	dlOfferingType  = "offering_type"
+	dlMacSecEnabled = "macsec_enabled"
 )
 
 func dataSourceIBMDLOfferingSpeeds() *schema.Resource {
@@ -22,7 +23,7 @@ func dataSourceIBMDLOfferingSpeeds() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "The Direct Link offering type",
-				ValidateFunc: InvokeValidator("ibm_dl_offering_speeds", dlOfferingType),
+				ValidateFunc: InvokeDataSourceValidator("ibm_dl_offering_speeds", dlOfferingType),
 			},
 			dlSpeeds: {
 				Type:        schema.TypeList,
@@ -34,6 +35,11 @@ func dataSourceIBMDLOfferingSpeeds() *schema.Resource {
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "Direct Link offering speed for the specified offering type",
+						},
+						dlMacSecEnabled: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Indicate whether speed supports MACsec",
 						},
 					},
 				},
@@ -61,6 +67,9 @@ func dataSourceIBMDLOfferingSpeedsRead(d *schema.ResourceData, meta interface{})
 		speed := map[string]interface{}{}
 		if instance.LinkSpeed != nil {
 			speed[dlLinkSpeed] = *instance.LinkSpeed
+		}
+		if instance.MacsecEnabled != nil {
+			speed[dlMacSecEnabled] = *instance.MacsecEnabled
 		}
 		speeds = append(speeds, speed)
 	}

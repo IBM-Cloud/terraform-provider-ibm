@@ -27,9 +27,9 @@ resource "ibm_container_alb_cert" "cert" {
 
 ibm_container_alb_cert provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
-* `create` - (Default 5 minutes) Used for creating Instance.
-* `update` - (Default 5 minutes) Used for updating Instance.
-* `delete` - (Default 5 minutes) Used for deleting Instance.
+* `create` - (Default 10 minutes) Used for creating Instance.
+* `update` - (Default 10 minutes) Used for updating Instance.
+* `delete` - (Default 10 minutes) Used for deleting Instance.
 
 ## Argument Reference
 

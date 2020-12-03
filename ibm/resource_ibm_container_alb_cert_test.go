@@ -65,7 +65,9 @@ func testAccCheckIBMContainerALBCertDestroy(s *terraform.State) error {
 		albAPI := csClient.Albs()
 		_, err = albAPI.GetClusterALBCertBySecretName(clusterID, secretName, targetEnv)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("Instance still exists: %s", rs.Primary.ID)
+		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -119,32 +118,7 @@ func resourceIBMContainerBindService() *schema.Resource {
 }
 
 func getClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v1.ClusterTargetHeader, error) {
-	orgGUID := ""
-	if v, ok := d.GetOk("org_guid"); ok {
-		orgGUID = v.(string)
-	}
-
-	spaceGUID := ""
-	if v, ok := d.GetOk("space_guid"); ok {
-		spaceGUID = v.(string)
-	}
-
-	accountGUID := ""
-	if v, ok := d.GetOk("account_guid"); ok {
-		accountGUID = v.(string)
-	}
-
-	region := ""
-	if v, ok := d.GetOk("region"); ok {
-		region = v.(string)
-	}
-
-	resourceGroup := ""
-	if v, ok := d.GetOk("resource_group_id"); ok {
-		resourceGroup = v.(string)
-	}
-
-	sess, err := meta.(ClientSession).BluemixSession()
+	_, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
 		return v1.ClusterTargetHeader{}, err
 	}
@@ -155,38 +129,14 @@ func getClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v1.Cluste
 	}
 	accountID := userDetails.userAccount
 
-	if region == "" {
-		region = sess.Config.Region
-	}
-	if resourceGroup == "" {
-		resourceGroup = sess.Config.ResourceGroup
-
-		if resourceGroup == "" {
-			rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
-			if err != nil {
-				return v1.ClusterTargetHeader{}, err
-			}
-			resourceGroupQuery := managementv2.ResourceGroupQuery{
-				Default:   true,
-				AccountID: accountID,
-			}
-			grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
-			if err != nil {
-				return v1.ClusterTargetHeader{}, err
-			}
-			if len(grpList) <= 0 {
-				return v1.ClusterTargetHeader{}, fmt.Errorf("The targeted resource group could not be found. Make sure you have required permissions to access the resource group.")
-			}
-			resourceGroup = grpList[0].ID
-		}
-	}
-
 	targetEnv := v1.ClusterTargetHeader{
-		OrgID:         orgGUID,
-		SpaceID:       spaceGUID,
-		AccountID:     accountGUID,
-		Region:        region,
-		ResourceGroup: resourceGroup,
+		AccountID: accountID,
+	}
+
+	resourceGroup := ""
+	if v, ok := d.GetOk("resource_group_id"); ok {
+		resourceGroup = v.(string)
+		targetEnv.ResourceGroup = resourceGroup
 	}
 	return targetEnv, nil
 }

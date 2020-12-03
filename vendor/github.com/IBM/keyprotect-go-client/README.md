@@ -5,10 +5,25 @@
 
 keyprotect-go-client is a Go client library for interacting with the IBM KeyProtect service.
 
-This client expects that you have an existing IBM Cloud Key Protect Service Instance, for more information see:
-https://console.bluemix.net/catalog/services/key-protect/.
+* [Questions / Support](#questions--support)
+* [Usage](#usage)
+  * [Migrating](#migrating)
+  * [Authentication](#authentication)
+  * [Finding Instance UUIDs](#finding-a-keyprotect-service-instances-uuid)
+  * [Examples](#examples)
+* [Contributing](/CONTRIBUTING.md)
+
+## Questions / Support
+
+There are many channels for asking questions about KeyProtect and this client.
+
+- Ask a question on Stackoverflow and tag it with `key-protect` and `ibm-cloud`
+- Open a [Github Issue](https://github.com/IBM/keyprotect-go-client/issues)
+- If you work at IBM and have access to the internal Slack, you can join the `#key-protect` channel and ask there.
 
 ## Usage
+
+This client expects that you have an existing IBM Cloud Key Protect Service Instance. To get started, visit the [IBM KeyProtect Catalog Page](https://cloud.ibm.com/catalog/services/key-protect).
 
 Build a client with `ClientConfig` and `New`, then use the client to do some operations.
 ```go
@@ -108,7 +123,7 @@ wrappedDEK, err := client.Wrap(ctx, crkID, myDEK, nil)
 
 
 // Unwrap the DEK
-dek, err := client.UnWrap(ctx, crkID, wrappedDEK, nil)
+dek, err := client.Unwrap(ctx, crkID, wrappedDEK, nil)
 // Do some encryption/decryption using the DEK
 // Discard the DEK
 dek = nil
@@ -127,7 +142,7 @@ wrappedDEK, err := client.Wrap(ctx, crkID, myDEK, &myAAD)
 
 
 // Unwrap the DEK
-dek, err := client.UnWrap(ctx, crkID, wrappedDEK, &myAAD)
+dek, err := client.Unwrap(ctx, crkID, wrappedDEK, &myAAD)
 // Do some encryption/decryption using the DEK
 // Discard the DEK
 dek = nil
@@ -155,28 +170,4 @@ dek = nil
 
 // Save the wrapped DEK for later.  Call Unwrap to use it, make
 // sure to specify the same AAD.
-```
-
-## Compiling the package
-
-```sh
-go build ./...
-```
-
-https://github.com/golang/go/wiki/Modules#how-to-use-modules
-
-## Running the test cases
-
-Using `go test`
-
-```sh
-go test -v -race ./...
-```
-
-The test cases are also runnable through `make`
-
-```sh
-make test
-# or
-make test-integration
 ```

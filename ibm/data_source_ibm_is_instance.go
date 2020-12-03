@@ -48,6 +48,7 @@ func dataSourceIBMISInstance() *schema.Resource {
 			isInstancePassphrase: {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Sensitive:   true,
 				Description: "Passphrase for Instance Private Key file",
 			},
 

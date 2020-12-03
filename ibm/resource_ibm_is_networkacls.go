@@ -745,9 +745,17 @@ func classicNwaclUpdate(d *schema.ResourceData, meta interface{}, id, name strin
 	rules := d.Get(isNetworkACLRules).([]interface{})
 	if hasChanged {
 		updateNetworkAclOptions := &vpcclassicv1.UpdateNetworkACLOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		networkACLPatchModel := &vpcclassicv1.NetworkACLPatch{
 			Name: &name,
 		}
+		networkACLPatch, err := networkACLPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for NetworkACLPatch: %s", err)
+		}
+		updateNetworkAclOptions.NetworkACLPatch = networkACLPatch
+
 		_, response, err := sess.UpdateNetworkACL(updateNetworkAclOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Network ACL(%s) : %s\n%s", id, err, response)
@@ -779,11 +787,18 @@ func nwaclUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 	}
 	rules := d.Get(isNetworkACLRules).([]interface{})
 	if hasChanged {
-		updateNetworkAclOptions := &vpcv1.UpdateNetworkACLOptions{
-			ID:   &id,
+		updateNetworkACLOptions := &vpcv1.UpdateNetworkACLOptions{
+			ID: &id,
+		}
+		networkACLPatchModel := &vpcv1.NetworkACLPatch{
 			Name: &name,
 		}
-		_, response, err := sess.UpdateNetworkACL(updateNetworkAclOptions)
+		networkACLPatch, err := networkACLPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for NetworkACLPatch: %s", err)
+		}
+		updateNetworkACLOptions.NetworkACLPatch = networkACLPatch
+		_, response, err := sess.UpdateNetworkACL(updateNetworkACLOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Network ACL(%s) : %s\n%s", id, err, response)
 		}
@@ -1114,7 +1129,7 @@ func classicCreateInlineRules(nwaclC *vpcclassicv1.VpcClassicV1, nwaclid string,
 		}
 
 		if before != "" {
-			ruleTemplate.Before = &vpcclassicv1.NetworkACLRuleIdentity{
+			ruleTemplate.Before = &vpcclassicv1.NetworkACLRuleBeforePrototype{
 				ID: &before,
 			}
 		}
@@ -1221,7 +1236,7 @@ func createInlineRules(nwaclC *vpcv1.VpcV1, nwaclid string, rules []interface{})
 		}
 
 		if before != "" {
-			ruleTemplate.Before = &vpcv1.NetworkACLRuleIdentity{
+			ruleTemplate.Before = &vpcv1.NetworkACLRuleBeforePrototype{
 				ID: &before,
 			}
 		}

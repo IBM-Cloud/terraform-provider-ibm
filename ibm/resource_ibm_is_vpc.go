@@ -110,7 +110,7 @@ func resourceIBMISVPC() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCName),
 				Description:  "VPC name",
 			},
 
@@ -337,6 +337,15 @@ func resourceIBMISVPCValidator() *ResourceValidator {
 			Optional:                   true,
 			Default:                    "auto",
 			AllowedValues:              address_prefix_management})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
 
 	ibmISVPCResourceValidator := ResourceValidator{ResourceName: "ibm_is_vpc", Schema: validateSchema}
 	return &ibmISVPCResourceValidator
@@ -1034,9 +1043,16 @@ func classicVpcUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 	}
 	if hasChanged {
 		updateVpcOptions := &vpcclassicv1.UpdateVPCOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		vpcPatchModel := &vpcclassicv1.VPCPatch{
 			Name: &name,
 		}
+		vpcPatch, err := vpcPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for VPCPatch: %s", err)
+		}
+		updateVpcOptions.VPCPatch = vpcPatch
 		_, response, err := sess.UpdateVPC(updateVpcOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC : %s\n%s", err, response)
@@ -1067,9 +1083,16 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 	}
 	if hasChanged {
 		updateVpcOptions := &vpcv1.UpdateVPCOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		vpcPatchModel := &vpcv1.VPCPatch{
 			Name: &name,
 		}
+		vpcPatch, err := vpcPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for VPCPatch: %s", err)
+		}
+		updateVpcOptions.VPCPatch = vpcPatch
 		_, response, err := sess.UpdateVPC(updateVpcOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating VPC : %s\n%s", err, response)

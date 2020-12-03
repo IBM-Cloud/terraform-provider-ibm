@@ -25,6 +25,9 @@ const (
 	isImageFormat                 = "format"
 	isImageArchitecure            = "architecture"
 	isImageResourceGroup          = "resource_group"
+	isImageEncryptedDataKey       = "encrypted_data_key"
+	isImageEncryptionKey          = "encryption_key"
+	isImageEncryption             = "encryption"
 
 	isImageProvisioning     = "provisioning"
 	isImageProvisioningDone = "done"
@@ -65,10 +68,22 @@ func resourceIBMISImage() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_image", isImageName),
 				Description:  "Image name",
 			},
 
+			isImageEncryptedDataKey: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "A base64-encoded, encrypted representation of the key that was used to encrypt the data for this image",
+			},
+			isImageEncryptionKey: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource",
+			},
 			isImageTags: {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -85,30 +100,40 @@ func resourceIBMISImage() *schema.Resource {
 				Description: "Image Operating system",
 			},
 
+			isImageEncryption: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of encryption used on the image",
+			},
 			isImageStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of this image",
 			},
 
 			isImageArchitecure: {
-				Type:     schema.TypeString,
-				Computed: true,
-				Removed:  "This field is removed",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Removed:     "This field is removed",
+				Description: "The operating system architecture",
 			},
 
 			isImageMinimumProvisionedSize: {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The minimum size (in gigabytes) of a volume onto which this image may be provisioned",
 			},
 
 			isImageVisibility: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Whether the image is publicly visible or private to the account",
 			},
 
 			isImageFile: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Details for the stored image file",
 			},
 
 			isImageFormat: {
@@ -118,10 +143,11 @@ func resourceIBMISImage() *schema.Resource {
 			},
 
 			isImageResourceGroup: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Computed:    true,
+				Description: "The resource group for this image",
 			},
 
 			ResourceControllerURL: {
@@ -155,6 +181,23 @@ func resourceIBMISImage() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISImageValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isImageName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISImageResourceValidator := ResourceValidator{ResourceName: "ibm_is_image", Schema: validateSchema}
+	return &ibmISImageResourceValidator
 }
 
 func resourceIBMISImageCreate(d *schema.ResourceData, meta interface{}) error {
@@ -242,6 +285,17 @@ func imgCreate(d *schema.ResourceData, meta interface{}, href, name, operatingSy
 			Name: &operatingSystem,
 		},
 	}
+	if encryptionKey, ok := d.GetOk(isImageEncryptionKey); ok {
+		encryptionKeyStr := encryptionKey.(string)
+		// Construct an instance of the EncryptionKeyReference model
+		encryptionKeyReferenceModel := new(vpcv1.EncryptionKeyIdentity)
+		encryptionKeyReferenceModel.CRN = &encryptionKeyStr
+		imagePrototype.EncryptionKey = encryptionKeyReferenceModel
+	}
+	if encDataKey, ok := d.GetOk(isImageEncryptedDataKey); ok {
+		encDataKeyStr := encDataKey.(string)
+		imagePrototype.EncryptedDataKey = &encDataKeyStr
+	}
 	if rgrp, ok := d.GetOk(isImageResourceGroup); ok {
 		rg := rgrp.(string)
 		imagePrototype.ResourceGroup = &vpcv1.ResourceGroupIdentity{
@@ -257,7 +311,7 @@ func imgCreate(d *schema.ResourceData, meta interface{}, href, name, operatingSy
 		return fmt.Errorf("[DEBUG] Image creation err %s\n%s", err, response)
 	}
 	d.SetId(*image.ID)
-	log.Printf("[INFO] Floating IP : %s", *image.ID)
+	log.Printf("[INFO] Image ID : %s", *image.ID)
 	_, err = isWaitForImageAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
@@ -389,9 +443,17 @@ func classicImgUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 	}
 	if hasChanged {
 		options := &vpcclassicv1.UpdateImageOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		imagePatchModel := &vpcclassicv1.ImagePatch{
 			Name: &name,
 		}
+		imagePatch, err := imagePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for ImagePatch: %s", err)
+		}
+		options.ImagePatch = imagePatch
+
 		_, response, err := sess.UpdateImage(options)
 		if err != nil {
 			return fmt.Errorf("Error on update of resource vpc Image: %s\n%s", err, response)
@@ -422,9 +484,16 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 	}
 	if hasChanged {
 		options := &vpcv1.UpdateImageOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		imagePatchModel := &vpcv1.ImagePatch{
 			Name: &name,
 		}
+		imagePatch, err := imagePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for ImagePatch: %s", err)
+		}
+		options.ImagePatch = imagePatch
 		_, response, err := sess.UpdateImage(options)
 		if err != nil {
 			return fmt.Errorf("Error on update of resource vpc Image: %s\n%s", err, response)
@@ -535,6 +604,12 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isImageHref, *image.Href)
 	d.Set(isImageStatus, *image.Status)
 	d.Set(isImageVisibility, *image.Visibility)
+	if image.Encryption != nil {
+		d.Set(isImageEncryption, *image.Encryption)
+	}
+	if image.EncryptionKey != nil {
+		d.Set(isImageEncryptionKey, *image.EncryptionKey.CRN)
+	}
 	tags, err := GetTagsUsingCRN(meta, *image.CRN)
 	if err != nil {
 		log.Printf(

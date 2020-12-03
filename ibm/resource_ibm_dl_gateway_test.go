@@ -45,6 +45,27 @@ func TestAccIBMDLGateway_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMDLGatewayConnect_basic(t *testing.T) {
+	var instance string
+	connectgatewayname := fmt.Sprintf("gateway-connect-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMDLGatewayDestroy, // Delete test case
+		Steps: []resource.TestStep{
+
+			{
+				//dl connect  test case
+				Config: testAccCheckIBMDLConnectGatewayConfig(connectgatewayname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMDLGatewayExists("ibm_dl_gateway.test_dl_connect", instance),
+					resource.TestCheckResourceAttr("ibm_dl_gateway.test_dl_connect", "name", connectgatewayname),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckIBMDLGatewayConfig(gatewayname, custname, carriername string) string {
 	return fmt.Sprintf(`
@@ -54,7 +75,6 @@ func testAccCheckIBMDLGatewayConfig(gatewayname, custname, carriername string) s
 	}
 	  resource "ibm_dl_gateway" "test_dl_gateway" {
 		bgp_asn =  64999
-        bgp_base_cidr =  "169.254.0.0/16"
         global = true
         metered = false
         name = "%s"
@@ -67,6 +87,22 @@ func testAccCheckIBMDLGatewayConfig(gatewayname, custname, carriername string) s
 	  }
 	  
 	  `, gatewayname, custname, carriername)
+}
+
+func testAccCheckIBMDLConnectGatewayConfig(gatewayname string) string {
+	return fmt.Sprintf(`
+	data "ibm_dl_ports" "test_ds_dl_ports" {
+	}
+	  resource "ibm_dl_gateway" "test_dl_connect" {
+		bgp_asn =  64999
+        global = true
+        metered = false
+        name = "%s"
+        speed_mbps = 1000
+		type =  "connect"
+		port =  data.ibm_dl_ports.test_ds_dl_ports.ports[0].port_id
+	}
+	  `, gatewayname)
 }
 
 func testAccCheckIBMDLGatewayExists(n string, instance string) resource.TestCheckFunc {

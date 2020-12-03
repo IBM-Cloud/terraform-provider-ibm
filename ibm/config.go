@@ -13,15 +13,29 @@ import (
 	// Added code for the Power Colo Offering
 
 	apigateway "github.com/IBM/apigateway-go-sdk"
-	dns "github.com/IBM/dns-svcs-go-sdk/dnssvcsv1"
 	"github.com/IBM/go-sdk-core/v3/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
+	ciscachev1 "github.com/IBM/networking-go-sdk/cachingapiv1"
+	cisipv1 "github.com/IBM/networking-go-sdk/cisipapiv1"
+	ciscustompagev1 "github.com/IBM/networking-go-sdk/custompagesv1"
 	dl "github.com/IBM/networking-go-sdk/directlinkv1"
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
+	dns "github.com/IBM/networking-go-sdk/dnssvcsv1"
+	cisedgefunctionv1 "github.com/IBM/networking-go-sdk/edgefunctionsapiv1"
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
+	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
+	cisglbv1 "github.com/IBM/networking-go-sdk/globalloadbalancerv1"
+	cispagerulev1 "github.com/IBM/networking-go-sdk/pageruleapiv1"
+	cisroutingv1 "github.com/IBM/networking-go-sdk/routingv1"
+	cissslv1 "github.com/IBM/networking-go-sdk/sslcertificateapiv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
+	cisuarulev1 "github.com/IBM/networking-go-sdk/useragentblockingrulesv1"
+	ciswafpackagev1 "github.com/IBM/networking-go-sdk/wafrulepackagesapiv1"
+	cisaccessrulev1 "github.com/IBM/networking-go-sdk/zonefirewallaccessrulesv1"
+	cislockdownv1 "github.com/IBM/networking-go-sdk/zonelockdownv1"
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
+	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
@@ -62,7 +76,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 )
 
-//RetryDelay
+// RetryAPIDelay - retry api delay
 const RetryAPIDelay = 5 * time.Second
 
 //BluemixRegion ...
@@ -179,7 +193,7 @@ type ClientSession interface {
 	VpcClassicV1API() (*vpcclassic.VpcClassicV1, error)
 	VpcV1API() (*vpc.VpcV1, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
-	PrivateDnsClientSession() (*dns.DnsSvcsV1, error)
+	PrivateDNSClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
 	DirectlinkV1API() (*dl.DirectLinkV1, error)
 	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
@@ -187,8 +201,22 @@ type ClientSession interface {
 	IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
+	CisGLBClientSession() (*cisglbv1.GlobalLoadBalancerV1, error)
+	CisGLBPoolClientSession() (*cisglbpoolv0.GlobalLoadBalancerPoolsV0, error)
 	CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error)
+	CisIPClientSession() (*cisipv1.CisIpApiV1, error)
+	CisPageRuleClientSession() (*cispagerulev1.PageRuleApiV1, error)
 	CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1, error)
+	CisEdgeFunctionClientSession() (*cisedgefunctionv1.EdgeFunctionsApiV1, error)
+	CisSSLClientSession() (*cissslv1.SslCertificateApiV1, error)
+	CisWAFPackageClientSession() (*ciswafpackagev1.WafRulePackagesApiV1, error)
+	CisDomainSettingsClientSession() (*cisdomainsettingsv1.ZonesSettingsV1, error)
+	CisRoutingClientSession() (*cisroutingv1.RoutingV1, error)
+	CisCacheClientSession() (*ciscachev1.CachingApiV1, error)
+	CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error)
+	CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error)
+	CisUARuleClientSession() (*cisuarulev1.UserAgentBlockingRulesV1, error)
+	CisLockdownClientSession() (*cislockdownv1.ZoneLockdownV1, error)
 }
 
 type clientSession struct {
@@ -282,8 +310,8 @@ type clientSession struct {
 	hpcsEndpointErr error
 	hpcsEndpointAPI hpcs.HPCSV2
 
-	pDnsClient *dns.DnsSvcsV1
-	pDnsErr    error
+	pDNSClient *dns.DnsSvcsV1
+	pDNSErr    error
 
 	bluemixSessionErr error
 
@@ -313,13 +341,69 @@ type clientSession struct {
 	cisDNSErr           error
 	cisDNSRecordsClient *cisdnsrecordsv1.DnsRecordsV1
 
+	// CIS Global Load Balancer Pool service options
+	cisGLBPoolErr    error
+	cisGLBPoolClient *cisglbpoolv0.GlobalLoadBalancerPoolsV0
+
+	// CIS GLB service options
+	cisGLBErr    error
+	cisGLBClient *cisglbv1.GlobalLoadBalancerV1
+
 	// CIS GLB health check service options
 	cisGLBHealthCheckErr    error
 	cisGLBHealthCheckClient *cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1
 
+	// CIS IP service options
+	cisIPErr    error
+	cisIPClient *cisipv1.CisIpApiV1
+
 	// CIS Zone Rate Limits service options
 	cisRLErr    error
 	cisRLClient *cisratelimitv1.ZoneRateLimitsV1
+
+	// CIS Page Rules service options
+	cisPageRuleErr    error
+	cisPageRuleClient *cispagerulev1.PageRuleApiV1
+
+	// CIS Edge Functions service options
+	cisEdgeFunctionErr    error
+	cisEdgeFunctionClient *cisedgefunctionv1.EdgeFunctionsApiV1
+
+	// CIS SSL certificate service options
+	cisSSLErr    error
+	cisSSLClient *cissslv1.SslCertificateApiV1
+
+	// CIS WAF Package service options
+	cisWAFPackageErr    error
+	cisWAFPackageClient *ciswafpackagev1.WafRulePackagesApiV1
+
+	// CIS Zone Setting service options
+	cisDomainSettingsErr    error
+	cisDomainSettingsClient *cisdomainsettingsv1.ZonesSettingsV1
+
+	// CIS Routing service options
+	cisRoutingErr    error
+	cisRoutingClient *cisroutingv1.RoutingV1
+
+	// CIS Caching service options
+	cisCacheErr    error
+	cisCacheClient *ciscachev1.CachingApiV1
+
+	// CIS Custom Pages service options
+	cisCustomPageErr    error
+	cisCustomPageClient *ciscustompagev1.CustomPagesV1
+
+	// CIS Firewall Access rule service option
+	cisAccessRuleErr    error
+	cisAccessRuleClient *cisaccessrulev1.ZoneFirewallAccessRulesV1
+
+	// CIS User Agent Blocking Rule service option
+	cisUARuleErr    error
+	cisUARuleClient *cisuarulev1.UserAgentBlockingRulesV1
+
+	// CIS Firewall Lockdwon Rule service option
+	cisLockdownErr    error
+	cisLockdownClient *cislockdownv1.ZoneLockdownV1
 }
 
 // BluemixAcccountAPI ...
@@ -498,8 +582,8 @@ func (sess clientSession) IBMPISession() (*ibmpisession.IBMPISession, error) {
 
 // Private DNS Service
 
-func (sess clientSession) PrivateDnsClientSession() (*dns.DnsSvcsV1, error) {
-	return sess.pDnsClient, sess.pDnsErr
+func (sess clientSession) PrivateDNSClientSession() (*dns.DnsSvcsV1, error) {
+	return sess.pDNSClient, sess.pDNSErr
 }
 
 // Session to the Namespace cloud function
@@ -518,6 +602,16 @@ func (sess clientSession) CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecor
 	return sess.cisDNSRecordsClient, sess.cisDNSErr
 }
 
+// CIS GLB Pool
+func (sess clientSession) CisGLBPoolClientSession() (*cisglbpoolv0.GlobalLoadBalancerPoolsV0, error) {
+	return sess.cisGLBPoolClient, sess.cisGLBPoolErr
+}
+
+// CIS GLB
+func (sess clientSession) CisGLBClientSession() (*cisglbv1.GlobalLoadBalancerV1, error) {
+	return sess.cisGLBClient, sess.cisGLBErr
+}
+
 // CIS GLB Health Check/Monitor
 func (sess clientSession) CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error) {
 	return sess.cisGLBHealthCheckClient, sess.cisGLBHealthCheckErr
@@ -526,6 +620,66 @@ func (sess clientSession) CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1
 // CIS Zone Rate Limits
 func (sess clientSession) CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1, error) {
 	return sess.cisRLClient, sess.cisRLErr
+}
+
+// CIS IP
+func (sess clientSession) CisIPClientSession() (*cisipv1.CisIpApiV1, error) {
+	return sess.cisIPClient, sess.cisIPErr
+}
+
+// CIS Page Rules
+func (sess clientSession) CisPageRuleClientSession() (*cispagerulev1.PageRuleApiV1, error) {
+	return sess.cisPageRuleClient, sess.cisPageRuleErr
+}
+
+// cCIS Edge Function
+func (sess clientSession) CisEdgeFunctionClientSession() (*cisedgefunctionv1.EdgeFunctionsApiV1, error) {
+	return sess.cisEdgeFunctionClient, sess.cisEdgeFunctionErr
+}
+
+// CIS SSL certificate
+func (sess clientSession) CisSSLClientSession() (*cissslv1.SslCertificateApiV1, error) {
+	return sess.cisSSLClient, sess.cisSSLErr
+}
+
+// CIS WAF Packages
+func (sess clientSession) CisWAFPackageClientSession() (*ciswafpackagev1.WafRulePackagesApiV1, error) {
+	return sess.cisWAFPackageClient, sess.cisWAFPackageErr
+}
+
+// CIS Zone Settings
+func (sess clientSession) CisDomainSettingsClientSession() (*cisdomainsettingsv1.ZonesSettingsV1, error) {
+	return sess.cisDomainSettingsClient, sess.cisDomainSettingsErr
+}
+
+// CIS Routing
+func (sess clientSession) CisRoutingClientSession() (*cisroutingv1.RoutingV1, error) {
+	return sess.cisRoutingClient, sess.cisRoutingErr
+}
+
+// CIS Cache service
+func (sess clientSession) CisCacheClientSession() (*ciscachev1.CachingApiV1, error) {
+	return sess.cisCacheClient, sess.cisCacheErr
+}
+
+// CIS Zone Settings
+func (sess clientSession) CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error) {
+	return sess.cisCustomPageClient, sess.cisCustomPageErr
+}
+
+// CIS Firewall access rule
+func (sess clientSession) CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error) {
+	return sess.cisAccessRuleClient, sess.cisAccessRuleErr
+}
+
+// CIS User Agent Blocking rule
+func (sess clientSession) CisUARuleClientSession() (*cisuarulev1.UserAgentBlockingRulesV1, error) {
+	return sess.cisUARuleClient, sess.cisUARuleErr
+}
+
+// CIS Firewall Lockdown rule
+func (sess clientSession) CisLockdownClientSession() (*cislockdownv1.ZoneLockdownV1, error) {
+	return sess.cisLockdownClient, sess.cisLockdownErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -574,16 +728,30 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.vpcClassicErr = errEmptyBluemixCredentials
 		session.vpcErr = errEmptyBluemixCredentials
 		session.apigatewayErr = errEmptyBluemixCredentials
-		session.pDnsErr = errEmptyBluemixCredentials
+		session.pDNSErr = errEmptyBluemixCredentials
 		session.bmxUserFetchErr = errEmptyBluemixCredentials
 		session.directlinkErr = errEmptyBluemixCredentials
 		session.cosConfigErr = errEmptyBluemixCredentials
 		session.transitgatewayErr = errEmptyBluemixCredentials
 		session.iamNamespaceErr = errEmptyBluemixCredentials
 		session.cisDNSErr = errEmptyBluemixCredentials
+		session.cisGLBPoolErr = errEmptyBluemixCredentials
+		session.cisGLBErr = errEmptyBluemixCredentials
 		session.cisGLBHealthCheckErr = errEmptyBluemixCredentials
+		session.cisIPErr = errEmptyBluemixCredentials
 		session.cisZonesErr = errEmptyBluemixCredentials
 		session.cisRLErr = errEmptyBluemixCredentials
+		session.cisPageRuleErr = errEmptyBluemixCredentials
+		session.cisEdgeFunctionErr = errEmptyBluemixCredentials
+		session.cisSSLErr = errEmptyBluemixCredentials
+		session.cisWAFPackageErr = errEmptyBluemixCredentials
+		session.cisDomainSettingsErr = errEmptyBluemixCredentials
+		session.cisRoutingErr = errEmptyBluemixCredentials
+		session.cisCacheErr = errEmptyBluemixCredentials
+		session.cisCustomPageErr = errEmptyBluemixCredentials
+		session.cisAccessRuleErr = errEmptyBluemixCredentials
+		session.cisUARuleErr = errEmptyBluemixCredentials
+		session.cisLockdownErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -722,6 +890,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	//cosconfigurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
 	cosconfigoptions := &cosconfig.ResourceConfigurationV1Options{
 		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, "https://config.cloud-object-storage.cloud.ibm.com/v1"),
 	}
 	cosconfigclient, err := cosconfig.NewResourceConfigurationV1(cosconfigoptions)
 	if err != nil {
@@ -863,9 +1032,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		},
 	}
 
-	session.pDnsClient, session.pDnsErr = dns.NewDnsSvcsV1(dnsOptions)
-	if session.pDnsErr != nil {
-		session.pDnsErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", session.pDnsErr)
+	session.pDNSClient, session.pDNSErr = dns.NewDnsSvcsV1(dnsOptions)
+	if session.pDNSErr != nil {
+		session.pDNSErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", session.pDNSErr)
 	}
 	version := time.Now().Format("2006-01-02")
 
@@ -936,6 +1105,34 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisDNSErr = fmt.Errorf("Error occured while configuring CIS DNS Service: %s", session.cisDNSErr)
 	}
 
+	// IBM Network CIS Global load balancer pool
+	cisGLBPoolOpt := &cisglbpoolv0.GlobalLoadBalancerPoolsV0Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisGLBPoolClient, session.cisGLBPoolErr =
+		cisglbpoolv0.NewGlobalLoadBalancerPoolsV0(cisGLBPoolOpt)
+	if session.cisGLBPoolErr != nil {
+		session.cisGLBPoolErr =
+			fmt.Errorf("Error occured while configuring CIS GLB Pool service: %s",
+				session.cisGLBPoolErr)
+	}
+
+	// IBM Network CIS Global load balancer
+	cisGLBOpt := &cisglbv1.GlobalLoadBalancerV1Options{
+		URL:            cisEndPoint,
+		Authenticator:  authenticator,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+	}
+	session.cisGLBClient, session.cisGLBErr = cisglbv1.NewGlobalLoadBalancerV1(cisGLBOpt)
+	if session.cisGLBErr != nil {
+		session.cisGLBErr =
+			fmt.Errorf("Error occured while configuring CIS GLB service: %s",
+				session.cisGLBErr)
+	}
+
 	// IBM Network CIS Global load balancer health check/monitor
 	cisGLBHealthCheckOpt := &cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1Options{
 		URL:           cisEndPoint,
@@ -950,6 +1147,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 				session.cisGLBHealthCheckErr)
 	}
 
+	// IBM Network CIS IP
+	cisIPOpt := &cisipv1.CisIpApiV1Options{
+		URL:           cisEndPoint,
+		Authenticator: authenticator,
+	}
+	session.cisIPClient, session.cisIPErr = cisipv1.NewCisIpApiV1(cisIPOpt)
+	if session.cisIPErr != nil {
+		session.cisIPErr = fmt.Errorf("Error occured while configuring CIS IP service: %s",
+			session.cisIPErr)
+	}
+
 	// IBM Network CIS Zone Rate Limit
 	cisRLOpt := &cisratelimitv1.ZoneRateLimitsV1Options{
 		URL:            cisEndPoint,
@@ -962,6 +1170,171 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisRLErr = fmt.Errorf(
 			"Error occured while cofiguring CIS Zone Rate Limit service: %s",
 			session.cisRLErr)
+	}
+
+	// IBM Network CIS Page Rules
+	cisPageRuleOpt := &cispagerulev1.PageRuleApiV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		ZoneID:        core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisPageRuleClient, session.cisPageRuleErr = cispagerulev1.NewPageRuleApiV1(cisPageRuleOpt)
+	if session.cisPageRuleErr != nil {
+		session.cisPageRuleErr = fmt.Errorf(
+			"Error occured while cofiguring CIS Page Rule service: %s",
+			session.cisPageRuleErr)
+	}
+
+	// IBM Network CIS Edge Function
+	cisEdgeFunctionOpt := &cisedgefunctionv1.EdgeFunctionsApiV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisEdgeFunctionClient, session.cisEdgeFunctionErr =
+		cisedgefunctionv1.NewEdgeFunctionsApiV1(cisEdgeFunctionOpt)
+	if session.cisEdgeFunctionErr != nil {
+		session.cisEdgeFunctionErr =
+			fmt.Errorf("Error occured while configuring CIS Edge Function service: %s",
+				session.cisEdgeFunctionErr)
+	}
+
+	// IBM Network CIS SSL certificate
+	cisSSLOpt := &cissslv1.SslCertificateApiV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+
+	session.cisSSLClient, session.cisSSLErr = cissslv1.NewSslCertificateApiV1(cisSSLOpt)
+	if session.cisSSLErr != nil {
+		session.cisSSLErr =
+			fmt.Errorf("Error occured while configuring CIS SSL certificate service: %s",
+				session.cisSSLErr)
+	}
+
+	// IBM Network CIS WAF Package
+	cisWAFPackageOpt := &ciswafpackagev1.WafRulePackagesApiV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		ZoneID:        core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisWAFPackageClient, session.cisWAFPackageErr =
+		ciswafpackagev1.NewWafRulePackagesApiV1(cisWAFPackageOpt)
+	if session.cisWAFPackageErr != nil {
+		session.cisWAFPackageErr =
+			fmt.Errorf("Error occured while configuration CIS WAF Package service: %s",
+				session.cisWAFPackageErr)
+	}
+
+	// IBM Network CIS Domain settings
+	cisDomainSettingsOpt := &cisdomainsettingsv1.ZonesSettingsV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisDomainSettingsClient, session.cisDomainSettingsErr =
+		cisdomainsettingsv1.NewZonesSettingsV1(cisDomainSettingsOpt)
+	if session.cisDomainSettingsErr != nil {
+		session.cisDomainSettingsErr =
+			fmt.Errorf("Error occured while configuring CIS Domain Settings service: %s",
+				session.cisDomainSettingsErr)
+	}
+
+	// IBM Network CIS Routing
+	cisRoutingOpt := &cisroutingv1.RoutingV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisRoutingClient, session.cisRoutingErr =
+		cisroutingv1.NewRoutingV1(cisRoutingOpt)
+	if session.cisRoutingErr != nil {
+		session.cisRoutingErr =
+			fmt.Errorf("Error occured while configuring CIS Routing service: %s",
+				session.cisRoutingErr)
+	}
+
+	// IBM Network CIS Cache service
+	cisCacheOpt := &ciscachev1.CachingApiV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		ZoneID:        core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisCacheClient, session.cisCacheErr =
+		ciscachev1.NewCachingApiV1(cisCacheOpt)
+	if session.cisCacheErr != nil {
+		session.cisCacheErr =
+			fmt.Errorf("Error occured while configuring CIS Caching service: %s",
+				session.cisCacheErr)
+	}
+
+	// IBM Network CIS Custom pages service
+	cisCustomPageOpt := &ciscustompagev1.CustomPagesV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+
+	session.cisCustomPageClient, session.cisCustomPageErr =
+		ciscustompagev1.NewCustomPagesV1(cisCustomPageOpt)
+	if session.cisCustomPageErr != nil {
+		session.cisCustomPageErr =
+			fmt.Errorf("Error occured while configuring CIS Custom Pages service: %s",
+				session.cisCustomPageErr)
+	}
+
+	// IBM Network CIS Firewall Access rule
+	cisAccessRuleOpt := &cisaccessrulev1.ZoneFirewallAccessRulesV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisAccessRuleClient, session.cisAccessRuleErr =
+		cisaccessrulev1.NewZoneFirewallAccessRulesV1(cisAccessRuleOpt)
+	if session.cisAccessRuleErr != nil {
+		session.cisAccessRuleErr =
+			fmt.Errorf("Error occured while configuring CIS Firewall Access Rule service: %s",
+				session.cisAccessRuleErr)
+	}
+
+	// IBM Network CIS Firewall User Agent Blocking rule
+	cisUARuleOpt := &cisuarulev1.UserAgentBlockingRulesV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisUARuleClient, session.cisUARuleErr =
+		cisuarulev1.NewUserAgentBlockingRulesV1(cisUARuleOpt)
+	if session.cisUARuleErr != nil {
+		session.cisUARuleErr =
+			fmt.Errorf("Error occured while configuring CIS Firewall User Agent Blocking Rule service: %s",
+				session.cisUARuleErr)
+	}
+
+	// IBM Network CIS Firewall Lockdown rule
+	cisLockdownOpt := &cislockdownv1.ZoneLockdownV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisLockdownClient, session.cisLockdownErr =
+		cislockdownv1.NewZoneLockdownV1(cisLockdownOpt)
+	if session.cisLockdownErr != nil {
+		session.cisLockdownErr =
+			fmt.Errorf("Error occured while configuring CIS Firewall Lockdown Rule service: %s",
+				session.cisLockdownErr)
 	}
 	return session, nil
 }

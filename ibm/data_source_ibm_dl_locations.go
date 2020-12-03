@@ -18,6 +18,8 @@ const (
 	dlBuildingColocationOwner = "building_colocation_owner"
 	dlVpcRegion               = "vpc_region"
 	dlLocations               = "locations"
+	dlMacsec                  = "macsec_enabled"
+	dlProvisionEnabled        = "provision_enabled"
 )
 
 func dataSourceIBMDLLocations() *schema.Resource {
@@ -85,6 +87,16 @@ func dataSourceIBMDLLocations() *schema.Resource {
 							Computed:    true,
 							Description: "Location's VPC region. Only present for locations where provisioning is enabled.",
 						},
+						dlMacsec: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether location supports MACsec.",
+						},
+						dlProvisionEnabled: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates for the specific offering_type whether this location supports gateway provisioning.",
+						},
 					},
 				},
 			},
@@ -138,6 +150,12 @@ func dataSourceIBMDLOfferingLocationsRead(d *schema.ResourceData, meta interface
 		}
 		if instance.BillingLocation != nil {
 			location[dlBillingLocation] = *instance.BillingLocation
+		}
+		if instance.MacsecEnabled != nil {
+			location[dlMacsec] = *instance.MacsecEnabled
+		}
+		if instance.ProvisionEnabled != nil {
+			location[dlProvisionEnabled] = *instance.ProvisionEnabled
 		}
 		locations = append(locations, location)
 	}

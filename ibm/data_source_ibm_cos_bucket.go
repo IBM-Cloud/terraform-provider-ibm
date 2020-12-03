@@ -22,22 +22,29 @@ func dataSourceIBMCosBucket() *schema.Resource {
 		Read: dataSourceIBMCosBucketRead,
 
 		Schema: map[string]*schema.Schema{
-			"bucket_name": &schema.Schema{
+			"bucket_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"bucket_type": &schema.Schema{
+			"bucket_type": {
 				Type:         schema.TypeString,
 				ValidateFunc: validateAllowedStringValue(bucketTypes),
 				Required:     true,
 			},
-			"bucket_region": &schema.Schema{
+			"bucket_region": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"resource_instance_id": &schema.Schema{
+			"resource_instance_id": {
 				Type:     schema.TypeString,
 				Required: true,
+			},
+			"endpoint_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
+				Description:  "public or private",
+				Default:      "public",
 			},
 			"crn": {
 				Type:        schema.TypeString,
@@ -49,19 +56,19 @@ func dataSourceIBMCosBucket() *schema.Resource {
 				Computed:    true,
 				Description: "CRN of the key you want to use data at rest encryption",
 			},
-			"single_site_location": &schema.Schema{
+			"single_site_location": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"region_location": &schema.Schema{
+			"region_location": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"cross_region_location": &schema.Schema{
+			"cross_region_location": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"storage_class": &schema.Schema{
+			"storage_class": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -122,6 +129,32 @@ func dataSourceIBMCosBucket() *schema.Resource {
 					},
 				},
 			},
+			"archive_rule": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Enable configuration archive_rule (glacier/accelerated) to COS Bucket after a defined period of time",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rule_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"enable": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Enable or disable an archive rule for a bucket",
+						},
+						"days": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -136,8 +169,15 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	serviceID := d.Get("resource_instance_id").(string)
 	bucketType := d.Get("bucket_type").(string)
 	bucketRegion := d.Get("bucket_region").(string)
-
+	var endpointType = d.Get("endpoint_type").(string)
 	apiEndpoint, apiEndpointPrivate := selectCosApi(bucketLocationConvert(bucketType), bucketRegion)
+	if endpointType == "private" {
+		apiEndpoint = apiEndpointPrivate
+	}
+	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
+	if apiEndpoint == "" {
+		return fmt.Errorf("The endpoint doesn't exists for given location %s and endpoint type %s", bucketRegion, endpointType)
+	}
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
 		return err
@@ -210,7 +250,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
-	bucketID := fmt.Sprintf("%s:%s:%s:meta:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName, bucketLocationConvert(bucketType), bucketRegion)
+	bucketID := fmt.Sprintf("%s:%s:%s:meta:%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName, bucketLocationConvert(bucketType), bucketRegion, endpointType)
 	d.SetId(bucketID)
 	d.Set("key_protect", head.IBMSSEKPCrkId)
 	bucketCRN := fmt.Sprintf("%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName)
@@ -228,6 +268,9 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
+	if endpointType == "private" {
+		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
+	}
 	bucketPtr, response, err := sess.GetBucketConfig(getBucketConfigOptions)
 
 	if err != nil {
@@ -246,6 +289,24 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 			d.Set("metrics_monitoring", flattenMetricsMonitor(bucketPtr.MetricsMonitoring))
 		}
 
+	}
+
+	// Read the lifecycle configuration (archive)
+
+	gInput := &s3.GetBucketLifecycleConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+
+	archiveptr, err := s3Client.GetBucketLifecycleConfiguration(gInput)
+
+	if (err != nil && !strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist")) && (err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied")) {
+		return err
+	}
+
+	if archiveptr != nil {
+		if len(archiveptr.Rules) > 0 {
+			d.Set("archive_rule", archiveRuleGet(archiveptr.Rules))
+		}
 	}
 
 	return nil

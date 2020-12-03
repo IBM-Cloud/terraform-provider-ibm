@@ -345,26 +345,6 @@ func validateSecurityRuleDirection(v interface{}, k string) (ws []string, errors
 	return
 }
 
-func validateIsSecurityRuleDirection(v interface{}, k string) (ws []string, errors []error) {
-	validDirections := map[string]bool{
-		"inbound":  true,
-		"outbound": true,
-	}
-
-	value := v.(string)
-	_, found := validDirections[value]
-	if !found {
-		strarray := make([]string, 0, len(validDirections))
-		for key := range validDirections {
-			strarray = append(strarray, key)
-		}
-		errors = append(errors, fmt.Errorf(
-			"%q contains an invalid security group rule direction %q. Valid types are %q.",
-			k, value, strings.Join(strarray, ",")))
-	}
-	return
-}
-
 func validateSecurityRuleEtherType(v interface{}, k string) (ws []string, errors []error) {
 	validEtherTypes := map[string]bool{
 		"IPv4": true,
@@ -406,6 +386,20 @@ func validateCIDR(v interface{}, k string) (ws []string, errors []error) {
 			k))
 	}
 	return
+}
+
+//validateCIDRAddress...
+func validateCIDRAddress() schema.SchemaValidateFunc {
+	return func(v interface{}, k string) (ws []string, errors []error) {
+		address := v.(string)
+		_, _, err := net.ParseCIDR(address)
+		if err != nil {
+			errors = append(errors, fmt.Errorf(
+				"%q must be a valid cidr address",
+				k))
+		}
+		return
+	}
 }
 
 //validateRemoteIP...
@@ -881,25 +875,6 @@ func validateSecurityGroupId(v interface{}, k string) (ws []string, errors []err
 	}
 	return
 }
-func validateICMPType(v interface{}, k string) (ws []string, errors []error) {
-	value := v.(int)
-	if value < 0 || value > 254 {
-		errors = append(errors, fmt.Errorf("%q (%d) invalid ICMP type", k, value))
-	}
-	return
-}
-
-func validateICMPCode(v interface{}, k string) (ws []string, errors []error) {
-	value := v.(int)
-	if value < 0 || value > 255 {
-		errors = append(errors, fmt.Errorf("%q (%d) invalid ICMP code", k, value))
-	}
-	return
-}
-
-func validateISSecurityRulePort(v interface{}, k string) (ws []string, errors []error) {
-	return validatePortRange(1, 65535)(v, k)
-}
 
 func isSecurityGroupAddress(s string) bool {
 	return net.ParseIP(s) != nil
@@ -992,6 +967,18 @@ func validateDiffieHellmanGroup(v interface{}, k string) (ws []string, errors []
 	return
 }
 
+func validateAllowedRangeInt(start, end int) schema.SchemaValidateFunc {
+	return func(v interface{}, k string) (ws []string, errors []error) {
+		value := v.(int)
+		if value < start || value > end {
+			errors = append(errors, fmt.Errorf(
+				"%q must contain a valid int value should be in range(%d, %d), got %d",
+				k, start, end, value))
+		}
+		return
+	}
+}
+
 func validateDeadPeerDetectionTimeout(v interface{}, k string) (ws []string, errors []error) {
 	secs := v.(int)
 	if secs < 15 || secs > 86399 {
@@ -1070,6 +1057,7 @@ const (
 	ValidateAllowedStringValue
 	StringLenBetween
 	ValidateIPorCIDR
+	ValidateCIDRAddress
 	ValidateAllowedIntValue
 	ValidateRegexpLen
 	ValidateRegexp
@@ -1144,7 +1132,8 @@ type ResourceValidator struct {
 }
 
 type ValidatorDict struct {
-	ResourceValidatorDictionary map[string]*ResourceValidator
+	ResourceValidatorDictionary   map[string]*ResourceValidator
+	DataSourceValidatorDictionary map[string]*ResourceValidator
 }
 
 // Resource Validator Dictionary -- For all terraform IBM Resource Providers.
@@ -1162,6 +1151,31 @@ func InvokeValidator(resourceName, identifier string) schema.SchemaValidateFunc 
 	resourceItem := validatorDict.ResourceValidatorDictionary[resourceName]
 	if resourceItem.ResourceName == resourceName {
 		parameterValidateSchema := resourceItem.Schema
+		for _, validateSchema := range parameterValidateSchema {
+			if validateSchema.Identifier == identifier {
+				schemaToInvoke = validateSchema
+				found = true
+				break
+			}
+		}
+	}
+
+	if found {
+		return invokeValidatorInternal(schemaToInvoke)
+	} else {
+		// Add error code later. TODO
+		return nil
+	}
+}
+
+func InvokeDataSourceValidator(resourceName, identifier string) schema.SchemaValidateFunc {
+	// Loop through dictionary and identify the resource and then the parameter configuration.
+	var schemaToInvoke ValidateSchema
+	found := false
+
+	dataSourceItem := validatorDict.DataSourceValidatorDictionary[resourceName]
+	if dataSourceItem.ResourceName == resourceName {
+		parameterValidateSchema := dataSourceItem.Schema
 		for _, validateSchema := range parameterValidateSchema {
 			if validateSchema.Identifier == identifier {
 				schemaToInvoke = validateSchema
@@ -1202,6 +1216,8 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 		return validation.StringLenBetween(schema.MinValueLength, schema.MaxValueLength)
 	case ValidateIPorCIDR:
 		return validateIPorCIDR()
+	case ValidateCIDRAddress:
+		return validateCIDRAddress()
 	case ValidateAllowedIntValue:
 		allowedValues := schema.GetValue(AllowedValues)
 		return validateAllowedIntValue(allowedValues.([]int))

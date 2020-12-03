@@ -49,6 +49,7 @@ The following attributes are exported:
 * `id` - The unique identifier of the VPC.
 * `crn` - The CRN of VPC.
 * `default_security_group` - The unique identifier of the VPC default security group.
+* `default_network_acl` - The unique identifier of the VPC default Network ACL.
 * `status` - The status of VPC.
 * `cse_source_addresses` - A list describing the cloud service endpoint source ip adresses and zones. The nested cse_source_addresses block have the following structure:
   * `address` - Ip Address of the cloud service endpoint.

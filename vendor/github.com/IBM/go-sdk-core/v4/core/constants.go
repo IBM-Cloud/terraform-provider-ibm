@@ -39,6 +39,7 @@ const (
 	PROPNAME_APIKEY           = "APIKEY"
 	PROPNAME_CLIENT_ID        = "CLIENT_ID"
 	PROPNAME_CLIENT_SECRET    = "CLIENT_SECRET"
+	PROPNAME_SCOPE            = "SCOPE"
 
 	// SSL error
 	SSL_CERTIFICATION_ERROR = "x509: certificate"

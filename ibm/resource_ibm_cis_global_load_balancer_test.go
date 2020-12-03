@@ -1,14 +1,11 @@
 package ibm
 
 import (
-	//"errors"
 	"fmt"
 	"log"
 	"testing"
 
-	//"regexp"
-
-	//"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
@@ -26,8 +23,7 @@ func TestAccIBMCisGlb_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckCisGlbDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:             testAccCheckCisGlbConfigCisDS_Basic("test", cisDomainStatic),
-				ExpectNonEmptyPlan: true,
+				Config: testAccCheckCisGlbConfigCisDSBasic("test", cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisGlbExists(name, &glb),
 					// dont check that specified values are set, this will be evident by lack of plan diff
@@ -38,8 +34,7 @@ func TestAccIBMCisGlb_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config:             testAccCheckCisGlbConfigCisDS_Update("test", cisDomainStatic),
-				ExpectNonEmptyPlan: true,
+				Config: testAccCheckCisGlbConfigCisDSUpdate("test", cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisGlbExists(name, &glb),
 					// dont check that specified values are set, this will be evident by lack of plan diff
@@ -65,7 +60,7 @@ func TestAccIBMCisGlb_CreateAfterManualDestroy(t *testing.T) {
 		CheckDestroy: testAccCheckCisGlbDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCisGlbConfigCisDS_Basic("test", cisDomainStatic),
+				Config: testAccCheckCisGlbConfigCisDSBasic("test", cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisGlbExists(name, &glbOne),
 					testAccCisGlbManuallyDelete(&glbOne),
@@ -73,7 +68,7 @@ func TestAccIBMCisGlb_CreateAfterManualDestroy(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccCheckCisGlbConfigCisDS_Basic("test", cisDomainStatic),
+				Config: testAccCheckCisGlbConfigCisDSBasic("test", cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisGlbExists(name, &glbTwo),
 					func(state *terraform.State) error {
@@ -101,7 +96,7 @@ func TestAccIBMCisGlb_CreateAfterManualCisRIDestroy(t *testing.T) {
 		CheckDestroy: testAccCheckCisGlbDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCisGlbConfigCisRI_Basic("test", cisDomainTest),
+				Config: testAccCheckCisGlbConfigCisRIBasic("test", cisDomainTest),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisGlbExists(name, &glbOne),
 					testAccCisGlbManuallyDelete(&glbOne),
@@ -113,8 +108,8 @@ func TestAccIBMCisGlb_CreateAfterManualCisRIDestroy(t *testing.T) {
 						for _, r := range state.RootModule().Resources {
 							if r.Type == "ibm_cis_pool" {
 								log.Printf("[WARN]  Manually removing pool")
-								poolId, cisId, _ := convertTftoCisTwoVar(r.Primary.ID)
-								_ = cisClient.Pools().DeletePool(cisId, poolId)
+								poolID, cisID, _ := convertTftoCisTwoVar(r.Primary.ID)
+								_ = cisClient.Pools().DeletePool(cisID, poolID)
 
 							}
 
@@ -122,9 +117,9 @@ func TestAccIBMCisGlb_CreateAfterManualCisRIDestroy(t *testing.T) {
 						for _, r := range state.RootModule().Resources {
 							if r.Type == "ibm_cis_domain" {
 								log.Printf("[WARN] Manually removing domain")
-								zoneId, cisId, _ := convertTftoCisTwoVar(r.Primary.ID)
-								_ = cisClient.Zones().DeleteZone(cisId, zoneId)
-								cisPtr := &cisId
+								zoneID, cisID, _ := convertTftoCisTwoVar(r.Primary.ID)
+								_ = cisClient.Zones().DeleteZone(cisID, zoneID)
+								cisPtr := &cisID
 								log.Printf("[WARN]  Manually removing Cis Instance")
 								_ = testAccCisInstanceManuallyDeleteUnwrapped(state, cisPtr)
 							}
@@ -136,7 +131,7 @@ func TestAccIBMCisGlb_CreateAfterManualCisRIDestroy(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccCheckCisGlbConfigCisRI_Basic("test", cisDomainTest),
+				Config: testAccCheckCisGlbConfigCisRIBasic("test", cisDomainTest),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisGlbExists(name, &glbTwo),
 					func(state *terraform.State) error {
@@ -159,18 +154,16 @@ func TestAccIBMCisGlb_import(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckCisGlbConfigCisDS_Basic("test", cisDomainStatic),
+			{
+				Config: testAccCheckCisGlbConfigCisDSBasic("test", cisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "proxied", "false"), // default value
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      name,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes"},
 			},
 		},
 	})
@@ -191,8 +184,6 @@ func TestAccIBMCisGlb_SessionAffinity(t *testing.T) {
 					testAccCheckCisGlbExists(name, &glb),
 					// explicitly verify that our session_affinity has been set
 					resource.TestCheckResourceAttr(name, "session_affinity", "cookie"),
-					//resource.TestCheckResourceAttr(name, "pop_pools.#", "0"),
-					//resource.TestCheckResourceAttr(name, "region_pools.#", "0"),
 				),
 			},
 		},
@@ -200,7 +191,7 @@ func TestAccIBMCisGlb_SessionAffinity(t *testing.T) {
 }
 
 func testAccCheckCisGlbDestroy(s *terraform.State) error {
-	cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
+	cisClient, err := testAccProvider.Meta().(ClientSession).CisGLBClientSession()
 	if err != nil {
 		return err
 	}
@@ -208,8 +199,16 @@ func testAccCheckCisGlbDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_cis_global_load_balancer" {
 			continue
 		}
-		glbId, zoneId, cisId, _ := convertTfToCisThreeVar(rs.Primary.ID)
-		_, err = cisClient.Glbs().GetGlb(cisId, zoneId, glbId)
+		glbID, zoneID, crn, err := convertTfToCisThreeVar(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		cisClient.Crn = core.StringPtr(crn)
+		cisClient.ZoneIdentifier = core.StringPtr(zoneID)
+
+		opt := cisClient.NewGetLoadBalancerSettingsOptions(glbID)
+
+		_, _, err = cisClient.GetLoadBalancerSettings(opt)
 		if err == nil {
 			return fmt.Errorf("Global Load balancer still exists")
 		}
@@ -218,16 +217,22 @@ func testAccCheckCisGlbDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCisGlbManuallyDelete(tfGlbId *string) resource.TestCheckFunc {
+func testAccCisGlbManuallyDelete(tfGlbID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
+		cisClient, err := testAccProvider.Meta().(ClientSession).CisGLBClientSession()
 		if err != nil {
 			return err
 		}
-		tfGlb := *tfGlbId
+		tfGlb := *tfGlbID
 		log.Printf("[WARN] Manually removing glb")
-		glbId, zoneId, cisId, _ := convertTfToCisThreeVar(tfGlb)
-		err = cisClient.Glbs().DeleteGlb(cisId, zoneId, glbId)
+		glbID, zoneID, crn, err := convertTfToCisThreeVar(tfGlb)
+		if err != nil {
+			return err
+		}
+		cisClient.Crn = core.StringPtr(crn)
+		cisClient.ZoneIdentifier = core.StringPtr(zoneID)
+		opt := cisClient.NewDeleteLoadBalancerOptions(glbID)
+		_, _, err = cisClient.DeleteLoadBalancer(opt)
 		if err != nil {
 			return fmt.Errorf("Error deleting IBMCISGlb Record: %s", err)
 		}
@@ -235,7 +240,7 @@ func testAccCisGlbManuallyDelete(tfGlbId *string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckCisGlbExists(n string, tfGlbId *string) resource.TestCheckFunc {
+func testAccCheckCisGlbExists(n string, tfGlbID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -245,18 +250,29 @@ func testAccCheckCisGlbExists(n string, tfGlbId *string) resource.TestCheckFunc 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No Load Balancer ID is set")
 		}
-		glbId, zoneId, cisId, _ := convertTfToCisThreeVar(rs.Primary.ID)
-		cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
-		foundGlb, err := cisClient.Glbs().GetGlb(rs.Primary.Attributes["cis_id"], zoneId, glbId)
+		cisClient, err := testAccProvider.Meta().(ClientSession).CisGLBClientSession()
 		if err != nil {
 			return err
 		}
-		*tfGlbId = convertCisToTfThreeVar(foundGlb.Id, zoneId, cisId)
+		glbID, zoneID, crn, err := convertTfToCisThreeVar(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		cisClient.Crn = core.StringPtr(crn)
+		cisClient.ZoneIdentifier = core.StringPtr(zoneID)
+
+		opt := cisClient.NewGetLoadBalancerSettingsOptions(glbID)
+
+		result, _, err := cisClient.GetLoadBalancerSettings(opt)
+		if err != nil {
+			return fmt.Errorf("Global Load balancer exists")
+		}
+		*tfGlbID = convertCisToTfThreeVar(*result.Result.ID, zoneID, crn)
 		return nil
 	}
 }
 
-func testAccCheckCisGlbConfigCisDS_Basic(id string, cisDomain string) string {
+func testAccCheckCisGlbConfigCisDSBasic(id string, cisDomain string) string {
 	return testAccCheckCisPoolConfigFullySpecified(id, cisDomain) + fmt.Sprintf(`
 	resource "ibm_cis_global_load_balancer" "%[1]s" {
 		cis_id           = data.ibm_cis.cis.id
@@ -265,10 +281,10 @@ func testAccCheckCisGlbConfigCisDS_Basic(id string, cisDomain string) string {
 		fallback_pool_id = ibm_cis_origin_pool.origin_pool.id
 		default_pool_ids = [ibm_cis_origin_pool.origin_pool.id]
 	  }
-	`, id, cisDomainStatic, cisInstance)
+	`, id, cisDomainStatic)
 }
 
-func testAccCheckCisGlbConfigCisDS_Update(id string, cisDomain string) string {
+func testAccCheckCisGlbConfigCisDSUpdate(id string, cisDomain string) string {
 	return testAccCheckCisPoolConfigFullySpecified(id, cisDomain) + fmt.Sprintf(`
 	resource "ibm_cis_global_load_balancer" "%[1]s" {
 		cis_id           = data.ibm_cis.cis.id
@@ -285,18 +301,18 @@ func testAccCheckCisGlbConfigCisDS_Update(id string, cisDomain string) string {
 			pool_ids = [ibm_cis_origin_pool.origin_pool.id]
 		}
 	  }
-	`, id, cisDomainStatic, cisInstance)
+	`, id, cisDomainStatic)
 }
 
-func testAccCheckCisGlbConfigCisRI_Basic(id string, cisDomain string) string {
-	return testAccCheckCisPoolConfigCisRI_Basic(id, cisDomain) + fmt.Sprintf(`
+func testAccCheckCisGlbConfigCisRIBasic(id string, cisDomain string) string {
+	return testAccCheckCisPoolConfigCisRIBasic(id, cisDomain) + fmt.Sprintf(`
 	resource "ibm_cis_global_load_balancer" "%[1]s" {
 		cis_id           = ibm_cis.cis.id
 		domain_id        = ibm_cis_domain.cis_domain.id
 		name             = "%[2]s"
 		fallback_pool_id = ibm_cis_origin_pool.origin_pool.id
 		default_pool_ids = [ibm_cis_origin_pool.origin_pool.id]
-	  }	  
+	  }
 	`, id, cisDomain, "testacc_ds_cis")
 }
 
@@ -310,5 +326,5 @@ func testAccCheckCisGlbConfigSessionAffinity(id string, cisDomainStatic string) 
 		default_pool_ids = [ibm_cis_origin_pool.origin_pool.id]
 		session_affinity = "cookie"
 	  }
-	`, id, cisDomainStatic, cisInstance)
+	`, id, cisDomainStatic)
 }

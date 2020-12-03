@@ -39,7 +39,6 @@ func resourceIBMISInstanceGroup() *schema.Resource {
 			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: InvokeValidator("ibm_is_instance_group", "name"),
 				Description:  "The user-defined name for this instance group",
 			},
@@ -52,7 +51,8 @@ func resourceIBMISInstanceGroup() *schema.Resource {
 
 			"instance_count": {
 				Type:         schema.TypeInt,
-				Required:     true,
+				Optional:     true,
+				Default:      0,
 				ValidateFunc: InvokeValidator("ibm_is_instance_group", "instance_count"),
 				Description:  "The number of instances in the instance group",
 			},
@@ -97,6 +97,12 @@ func resourceIBMISInstanceGroup() *schema.Resource {
 				Description: "list of Managers associated with instancegroup",
 			},
 
+			"instances": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "number of instances in the intances group",
+			},
+
 			"vpc": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -130,7 +136,7 @@ func resourceIBMISInstanceGroupValidator() *ResourceValidator {
 			ValidateFunctionIdentifier: IntBetween,
 			Type:                       TypeInt,
 			MinValue:                   "0",
-			MaxValue:                   "100"})
+			MaxValue:                   "1000"})
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "application_port",
@@ -147,7 +153,7 @@ func resourceIBMISInstanceGroupCreate(d *schema.ResourceData, meta interface{}) 
 
 	name := d.Get("name").(string)
 	instanceTemplate := d.Get("instance_template").(string)
-	membershipCount := d.Get("instance_count").(int)
+
 	subnets := d.Get("subnets")
 
 	sess, err := vpcClient(meta)
@@ -160,14 +166,20 @@ func resourceIBMISInstanceGroupCreate(d *schema.ResourceData, meta interface{}) 
 		subnet := s.(string)
 		subnetIDs = append(subnetIDs, &vpcv1.SubnetIdentity{ID: &subnet})
 	}
-	mc := int64(membershipCount)
+
 	instanceGroupOptions := vpcv1.CreateInstanceGroupOptions{
 		InstanceTemplate: &vpcv1.InstanceTemplateIdentity{
 			ID: &instanceTemplate,
 		},
-		Subnets:         subnetIDs,
-		Name:            &name,
-		MembershipCount: &mc,
+		Subnets: subnetIDs,
+		Name:    &name,
+	}
+
+	var membershipCount int
+	if v, ok := d.GetOk("instance_count"); ok {
+		membershipCount = v.(int)
+		mc := int64(membershipCount)
+		instanceGroupOptions.MembershipCount = &mc
 	}
 
 	if v, ok := d.GetOk("load_balancer"); ok {
@@ -213,16 +225,17 @@ func resourceIBMISInstanceGroupUpdate(d *schema.ResourceData, meta interface{}) 
 
 	var changed bool
 	instanceGroupUpdateOptions := vpcv1.UpdateInstanceGroupOptions{}
+	instanceGroupPatchModel := vpcv1.InstanceGroupPatch{}
 
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
-		instanceGroupUpdateOptions.Name = &name
+		instanceGroupPatchModel.Name = &name
 		changed = true
 	}
 
 	if d.HasChange("instance_template") {
 		instanceTemplate := d.Get("instance_template").(string)
-		instanceGroupUpdateOptions.InstanceTemplate = &vpcv1.InstanceTemplateIdentity{
+		instanceGroupPatchModel.InstanceTemplate = &vpcv1.InstanceTemplateIdentity{
 			ID: &instanceTemplate,
 		}
 		changed = true
@@ -231,7 +244,7 @@ func resourceIBMISInstanceGroupUpdate(d *schema.ResourceData, meta interface{}) 
 	if d.HasChange("instance_count") {
 		membershipCount := d.Get("instance_count").(int)
 		mc := int64(membershipCount)
-		instanceGroupUpdateOptions.MembershipCount = &mc
+		instanceGroupPatchModel.MembershipCount = &mc
 		changed = true
 	}
 
@@ -242,7 +255,7 @@ func resourceIBMISInstanceGroupUpdate(d *schema.ResourceData, meta interface{}) 
 			subnet := s.(string)
 			subnetIDs = append(subnetIDs, &vpcv1.SubnetIdentity{ID: &subnet})
 		}
-		instanceGroupUpdateOptions.Subnets = subnetIDs
+		instanceGroupPatchModel.Subnets = subnetIDs
 		changed = true
 	}
 
@@ -250,15 +263,20 @@ func resourceIBMISInstanceGroupUpdate(d *schema.ResourceData, meta interface{}) 
 		applicationPort := int64(d.Get("application_port").(int))
 		lbID := d.Get("load_balancer").(string)
 		lbPoolID := d.Get("load_balancer_pool").(string)
-		instanceGroupUpdateOptions.ApplicationPort = &applicationPort
-		instanceGroupUpdateOptions.LoadBalancer = &vpcv1.LoadBalancerIdentity{ID: &lbID}
-		instanceGroupUpdateOptions.LoadBalancerPool = &vpcv1.LoadBalancerPoolIdentity{ID: &lbPoolID}
+		instanceGroupPatchModel.ApplicationPort = &applicationPort
+		instanceGroupPatchModel.LoadBalancer = &vpcv1.LoadBalancerIdentity{ID: &lbID}
+		instanceGroupPatchModel.LoadBalancerPool = &vpcv1.LoadBalancerPoolIdentity{ID: &lbPoolID}
 		changed = true
 	}
 
 	if changed {
 		instanceGroupID := d.Id()
 		instanceGroupUpdateOptions.ID = &instanceGroupID
+		instanceGroupPatch, err := instanceGroupPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstanceGroupPatch: %s", err)
+		}
+		instanceGroupUpdateOptions.InstanceGroupPatch = instanceGroupPatch
 		_, response, err := sess.UpdateInstanceGroup(&instanceGroupUpdateOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating InstanceGroup: %s\n%s", err, response)
@@ -291,7 +309,7 @@ func resourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) er
 	}
 	d.Set("name", *instanceGroup.Name)
 	d.Set("instance_template", *instanceGroup.InstanceTemplate)
-	d.Set("instance_count", *instanceGroup.MembershipCount)
+	d.Set("instances", *instanceGroup.MembershipCount)
 	d.Set("resource_group", *instanceGroup.ResourceGroup)
 	if instanceGroup.ApplicationPort != nil {
 		d.Set("application_port", *instanceGroup.ApplicationPort)
@@ -329,9 +347,16 @@ func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) 
 	// Inorder to delete instance group, need to update membership count to 0
 	zeroMembers := int64(0)
 	instanceGroupUpdateOptions := vpcv1.UpdateInstanceGroupOptions{}
-	instanceGroupUpdateOptions.MembershipCount = &zeroMembers
+	instanceGroupPatchModel := vpcv1.InstanceGroupPatch{}
+
+	instanceGroupPatchModel.MembershipCount = &zeroMembers
+	instanceGroupPatch, _ := instanceGroupPatchModel.AsPatch()
+	if err != nil {
+		return fmt.Errorf("Error calling asPatch for ImagePatch: %s", err)
+	}
 
 	instanceGroupUpdateOptions.ID = &instanceGroupID
+	instanceGroupUpdateOptions.InstanceGroupPatch = instanceGroupPatch
 	_, response, err := sess.UpdateInstanceGroup(&instanceGroupUpdateOptions)
 	if err != nil {
 		return fmt.Errorf("Error updating instanceGroup's instance count to 0 : %s\n%s", err, response)

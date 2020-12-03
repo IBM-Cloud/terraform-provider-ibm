@@ -284,6 +284,13 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 				Computed: true,
 			},
 
+			"list_bounded_services": {
+				Type:        schema.TypeBool,
+				Default:     true,
+				Optional:    true,
+				Description: "If set to false bounded services won't be listed.",
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -352,19 +359,24 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	for i, worker := range workerFields {
 		workers[i] = worker.ID
 	}
-	servicesBoundToCluster, err := csAPI.ListServicesBoundToCluster(name, "", targetEnv)
-	if err != nil {
-		return fmt.Errorf("Error retrieving services bound to cluster: %s", err)
-	}
+
+	listBoundedServices := d.Get("list_bounded_services").(bool)
 	boundedServices := make([]map[string]interface{}, 0)
-	for _, service := range servicesBoundToCluster {
-		boundedService := make(map[string]interface{})
-		boundedService["service_name"] = service.ServiceName
-		boundedService["service_id"] = service.ServiceID
-		boundedService["service_key_name"] = service.ServiceKeyName
-		boundedService["namespace"] = service.Namespace
-		boundedServices = append(boundedServices, boundedService)
+	if listBoundedServices {
+		servicesBoundToCluster, err := csAPI.ListServicesBoundToCluster(name, "", targetEnv)
+		if err != nil {
+			return fmt.Errorf("Error retrieving services bound to cluster: %s", err)
+		}
+		for _, service := range servicesBoundToCluster {
+			boundedService := make(map[string]interface{})
+			boundedService["service_name"] = service.ServiceName
+			boundedService["service_id"] = service.ServiceID
+			boundedService["service_key_name"] = service.ServiceKeyName
+			boundedService["namespace"] = service.Namespace
+			boundedServices = append(boundedServices, boundedService)
+		}
 	}
+
 	workerPools, err := workerPoolsAPI.ListWorkerPools(name, targetEnv)
 	if err != nil {
 		return fmt.Errorf("Error retrieving worker pools of the cluster %s: %s", name, err)
@@ -405,15 +417,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set(ResourceName, clusterFields.Name)
 	d.Set(ResourceCRN, clusterFields.CRN)
 	d.Set(ResourceStatus, clusterFields.State)
-	rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
-	if err != nil {
-		return err
-	}
-	grp, err := rsMangClient.ResourceGroup().Get(clusterFields.ResourceGroupID)
-	if err != nil {
-		return err
-	}
-	d.Set(ResourceGroupName, grp.Name)
+	d.Set(ResourceGroupName, clusterFields.ResourceGroupName)
 
 	return nil
 }

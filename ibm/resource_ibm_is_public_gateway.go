@@ -55,7 +55,7 @@ func resourceIBMISPublicGateway() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validateISName,
+				ValidateFunc: InvokeValidator("ibm_is_public_gateway", isPublicGatewayName),
 				Description:  "Name of the Public gateway instance",
 			},
 
@@ -152,6 +152,23 @@ func resourceIBMISPublicGateway() *schema.Resource {
 	}
 }
 
+func resourceIBMISPublicGatewayValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isPublicGatewayName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISPublicGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_is_public_gateway", Schema: validateSchema}
+	return &ibmISPublicGatewayResourceValidator
+}
+
 func resourceIBMISPublicGatewayCreate(d *schema.ResourceData, meta interface{}) error {
 
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
@@ -195,7 +212,7 @@ func classicPgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone 
 	floatingipID := ""
 	floatingipadd := ""
 	if floatingipdataIntf, ok := d.GetOk(isPublicGatewayFloatingIP); ok && floatingipdataIntf != nil {
-		fip := &vpcclassicv1.PublicGatewayPrototypeFloatingIP{}
+		fip := &vpcclassicv1.PublicGatewayFloatingIPPrototype{}
 		floatingipdata := floatingipdataIntf.(map[string]interface{})
 		if floatingipidintf, ok := floatingipdata["id"]; ok && floatingipidintf != nil {
 			floatingipID = floatingipidintf.(string)
@@ -250,7 +267,7 @@ func pgwCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone string)
 	floatingipID := ""
 	floatingipadd := ""
 	if floatingipdataIntf, ok := d.GetOk(isPublicGatewayFloatingIP); ok && floatingipdataIntf != nil {
-		fip := &vpcv1.PublicGatewayPrototypeFloatingIP{}
+		fip := &vpcv1.PublicGatewayFloatingIPPrototype{}
 		floatingipdata := floatingipdataIntf.(map[string]interface{})
 		if floatingipidintf, ok := floatingipdata["id"]; ok && floatingipidintf != nil {
 			floatingipID = floatingipidintf.(string)
@@ -525,9 +542,18 @@ func classicPgwUpdate(d *schema.ResourceData, meta interface{}, id, name string,
 	}
 	if hasChanged {
 		updatePublicGatewayOptions := &vpcclassicv1.UpdatePublicGatewayOptions{
-			ID:   &id,
+			ID: &id,
+		}
+
+		PublicGatewayPatchModel := &vpcclassicv1.PublicGatewayPatch{
 			Name: &name,
 		}
+		PublicGatewayPatch, err := PublicGatewayPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for PublicGatewayPatch: %s", err)
+		}
+		updatePublicGatewayOptions.PublicGatewayPatch = PublicGatewayPatch
+
 		_, response, err := sess.UpdatePublicGateway(updatePublicGatewayOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Public Gateway  : %s\n%s", err, response)
@@ -558,9 +584,16 @@ func pgwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 	}
 	if hasChanged {
 		updatePublicGatewayOptions := &vpcv1.UpdatePublicGatewayOptions{
-			ID:   &id,
+			ID: &id,
+		}
+		PublicGatewayPatchModel := &vpcv1.PublicGatewayPatch{
 			Name: &name,
 		}
+		PublicGatewayPatch, err := PublicGatewayPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for PublicGatewayPatch: %s", err)
+		}
+		updatePublicGatewayOptions.PublicGatewayPatch = PublicGatewayPatch
 		_, response, err := sess.UpdatePublicGateway(updatePublicGatewayOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Public Gateway  : %s\n%s", err, response)

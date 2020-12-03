@@ -23,6 +23,7 @@ const (
 	subnetNormal         = "normal"
 	workerReadyState     = "Ready"
 	workerDeleteState    = "deleted"
+	workerDeletePending  = "deleting"
 
 	versionUpdating     = "updating"
 	clusterProvisioning = "provisioning"
@@ -292,6 +293,14 @@ func resourceIBMContainerCluster() *schema.Resource {
 				DiffSuppressFunc: applyOnce,
 				Description:      "Entitlement option reduces additional OCP Licence cost in Openshift Clusters",
 			},
+
+			"wait_for_worker_update": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Wait for worker node to update during kube version update.",
+			},
+
 			"ingress_hostname": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -764,7 +773,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	albs, err := albsAPI.ListClusterALBs(clusterID, targetEnv)
-	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") {
+	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") && !strings.Contains(err.Error(), "The specified cluster is a free cluster.") {
 		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", clusterID, err)
 	}
 
@@ -802,15 +811,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set(ResourceName, cls.Name)
 	d.Set(ResourceCRN, cls.CRN)
 	d.Set(ResourceStatus, cls.State)
-	rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
-	if err != nil {
-		return err
-	}
-	grp, err := rsMangClient.ResourceGroup().Get(cls.ResourceGroupID)
-	if err != nil {
-		return err
-	}
-	d.Set(ResourceGroupName, grp.Name)
+	d.Set(ResourceGroupName, cls.ResourceGroupName)
 	return nil
 }
 
@@ -834,26 +835,29 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 
 	clusterID := d.Id()
 
-	if d.HasChange("kube_version") && !d.IsNewResource() {
-		var masterVersion string
-		if v, ok := d.GetOk("kube_version"); ok {
-			masterVersion = v.(string)
+	if (d.HasChange("kube_version") || d.HasChange("update_all_workers")) && !d.IsNewResource() {
+		if d.HasChange("kube_version") {
+			var masterVersion string
+			if v, ok := d.GetOk("kube_version"); ok {
+				masterVersion = v.(string)
+			}
+			params := v1.ClusterUpdateParam{
+				Action:  "update",
+				Force:   true,
+				Version: masterVersion,
+			}
+			err := clusterAPI.Update(clusterID, params, targetEnv)
+			if err != nil {
+				return err
+			}
+			_, err = WaitForClusterVersionUpdate(d, meta, targetEnv)
+			if err != nil {
+				return fmt.Errorf(
+					"Error waiting for cluster (%s) version to be updated: %s", d.Id(), err)
+			}
 		}
-		params := v1.ClusterUpdateParam{
-			Action:  "update",
-			Force:   true,
-			Version: masterVersion,
-		}
-		err := clusterAPI.Update(clusterID, params, targetEnv)
-		if err != nil {
-			return err
-		}
-		_, err = WaitForClusterVersionUpdate(d, meta, targetEnv)
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for cluster (%s) version to be updated: %s", d.Id(), err)
-		}
-
+		// "update_all_workers" deafult is false, enable to true when all eorker nodes to be updated
+		// with major and minor updates.
 		updateAllWorkers := d.Get("update_all_workers").(bool)
 		if updateAllWorkers {
 			workerFields, err := wrkAPI.List(clusterID, targetEnv)
@@ -865,6 +869,8 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 				return fmt.Errorf("Error retrieving cluster %s: %s", clusterID, err)
 			}
 
+			waitForWorkerUpdate := d.Get("wait_for_worker_update").(bool)
+
 			for _, w := range workerFields {
 				if strings.Split(w.KubeVersion, "_")[0] != strings.Split(cluster.MasterKubeVersion, "_")[0] {
 					params := v1.WorkerUpdateParam{
@@ -874,10 +880,12 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 					if err != nil {
 						return fmt.Errorf("Error updating worker %s: %s", w.ID, err)
 					}
-					_, err = WaitForWorkerAvailable(d, meta, targetEnv)
-					if err != nil {
-						return fmt.Errorf(
-							"Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
+					if waitForWorkerUpdate {
+						_, err = WaitForWorkerAvailable(d, meta, targetEnv)
+						if err != nil {
+							return fmt.Errorf(
+								"Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
+						}
 					}
 				}
 			}
@@ -1550,12 +1558,13 @@ func WaitForClusterVersionUpdate(d *schema.ResourceData, meta interface{}, targe
 	id := d.Id()
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", versionUpdating},
-		Target:     []string{clusterNormal},
-		Refresh:    clusterVersionRefreshFunc(csClient.Clusters(), id, d, target),
-		Timeout:    d.Timeout(schema.TimeoutUpdate),
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
+		Pending:                   []string{"retry", versionUpdating},
+		Target:                    []string{clusterNormal},
+		Refresh:                   clusterVersionRefreshFunc(csClient.Clusters(), id, d, target),
+		Timeout:                   d.Timeout(schema.TimeoutUpdate),
+		Delay:                     20 * time.Second,
+		MinTimeout:                10 * time.Second,
+		ContinuousTargetOccurence: 5,
 	}
 
 	return stateConf.WaitForState()
@@ -1568,8 +1577,11 @@ func clusterVersionRefreshFunc(client v1.Clusters, instanceID string, d *schema.
 			return nil, "", fmt.Errorf("Error retrieving cluster: %s", err)
 		}
 		// Check active transactions
+		kubeversion := d.Get("kube_version").(string)
 		log.Println("Checking cluster version", clusterFields.MasterKubeVersion, d.Get("kube_version").(string))
 		if strings.Contains(clusterFields.MasterKubeVersion, "pending") {
+			return clusterFields, versionUpdating, nil
+		} else if !strings.Contains(clusterFields.MasterKubeVersion, kubeversion) {
 			return clusterFields, versionUpdating, nil
 		}
 		return clusterFields, clusterNormal, nil

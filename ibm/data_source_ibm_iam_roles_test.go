@@ -40,7 +40,7 @@ data "ibm_iam_roles" "test" {
 
 resource "ibm_iam_access_group_policy" "policy" {
 	access_group_id = ibm_iam_access_group.accgrp.id
-	roles           = [data.ibm_iam_roles.test.roles.10.name,"Viewer"]
+	roles           = [data.ibm_iam_roles.test.roles.4.name,"Viewer"]
 	tags            = ["tag1"]
 	resources {
 	  service = "kms"

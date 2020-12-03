@@ -3,14 +3,14 @@ package ibm
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
-	"strings"
-
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 )
 
 func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {
@@ -184,7 +184,7 @@ func TestAccIBMIAMUserPolicy_Invalid_User(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMIAMUserPolicyInvalidUser(),
-				ExpectError: regexp.MustCompile(`User test@in.ibm.com is not found under current account`),
+				ExpectError: regexp.MustCompile(`User test@in.ibm.com is not found`),
 			},
 		},
 	})
@@ -232,7 +232,9 @@ func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
 		// Try to find the key
 		_, err = rsContClient.V1Policy().Get(userPolicyID)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err == nil {
+			return fmt.Errorf("User policy still exists: %s", rs.Primary.ID)
+		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for user policy (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}

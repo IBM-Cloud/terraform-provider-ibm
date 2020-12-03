@@ -61,7 +61,7 @@ func resourceIBMISLBListener() *schema.Resource {
 			isLBListenerProtocol: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"https", "http", "tcp"}),
+				ValidateFunc: InvokeValidator("ibm_is_lb_listener", isLBListenerProtocol),
 				Description:  "Loadbalancer protocol",
 			},
 
@@ -121,6 +121,22 @@ func resourceIBMISLBListener() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMISLBListenerValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+	protocol := "https, http, tcp"
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBListenerProtocol,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              protocol})
+
+	ibmISLBListenerResourceValidator := ResourceValidator{ResourceName: "ibm_is_lb_listener", Schema: validateSchema}
+	return &ibmISLBListenerResourceValidator
 }
 
 func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) error {
@@ -488,9 +504,11 @@ func classicLBListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbL
 		LoadBalancerID: &lbID,
 		ID:             &lbListenerID,
 	}
+	loadBalancerListenerPatchModel := &vpcclassicv1.LoadBalancerListenerPatch{}
+
 	if d.HasChange(isLBListenerCertificateInstance) {
 		certificateInstance = d.Get(isLBListenerCertificateInstance).(string)
-		updateLoadBalancerListenerOptions.CertificateInstance = &vpcclassicv1.CertificateInstanceIdentity{
+		loadBalancerListenerPatchModel.CertificateInstance = &vpcclassicv1.CertificateInstanceIdentity{
 			CRN: &certificateInstance,
 		}
 		hasChanged = true
@@ -502,32 +520,37 @@ func classicLBListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbL
 			return err
 		}
 		defPool = lbpool
-		updateLoadBalancerListenerOptions.DefaultPool = &vpcclassicv1.LoadBalancerPoolIdentity{
+		loadBalancerListenerPatchModel.DefaultPool = &vpcclassicv1.LoadBalancerPoolIdentity{
 			ID: &defPool,
 		}
 		hasChanged = true
 	}
 	if d.HasChange(isLBListenerPort) {
 		port = int64(d.Get(isLBListenerPort).(int))
-		updateLoadBalancerListenerOptions.Port = &port
+		loadBalancerListenerPatchModel.Port = &port
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerProtocol) {
 		protocol = d.Get(isLBListenerProtocol).(string)
-		updateLoadBalancerListenerOptions.Protocol = &protocol
+		loadBalancerListenerPatchModel.Protocol = &protocol
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerConnectionLimit) {
 		connLimit = int64(d.Get(isLBListenerConnectionLimit).(int))
-		updateLoadBalancerListenerOptions.ConnectionLimit = &connLimit
+		loadBalancerListenerPatchModel.ConnectionLimit = &connLimit
 		hasChanged = true
 	}
 
 	if hasChanged {
+		loadBalancerListenerPatch, err := loadBalancerListenerPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerListenerPatch: %s", err)
+		}
+		updateLoadBalancerListenerOptions.LoadBalancerListenerPatch = loadBalancerListenerPatch
 
-		_, err := isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
+		_, err = isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
 				"Error checking for load balancer (%s) is active: %s", lbID, err)
@@ -564,9 +587,12 @@ func lbListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListener
 		LoadBalancerID: &lbID,
 		ID:             &lbListenerID,
 	}
+
+	loadBalancerListenerPatchModel := &vpcv1.LoadBalancerListenerPatch{}
+
 	if d.HasChange(isLBListenerCertificateInstance) {
 		certificateInstance = d.Get(isLBListenerCertificateInstance).(string)
-		updateLoadBalancerListenerOptions.CertificateInstance = &vpcv1.CertificateInstanceIdentity{
+		loadBalancerListenerPatchModel.CertificateInstance = &vpcv1.CertificateInstanceIdentity{
 			CRN: &certificateInstance,
 		}
 		hasChanged = true
@@ -578,32 +604,37 @@ func lbListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListener
 			return err
 		}
 		defPool = lbpool
-		updateLoadBalancerListenerOptions.DefaultPool = &vpcv1.LoadBalancerPoolIdentity{
+		loadBalancerListenerPatchModel.DefaultPool = &vpcv1.LoadBalancerPoolIdentity{
 			ID: &defPool,
 		}
 		hasChanged = true
 	}
 	if d.HasChange(isLBListenerPort) {
 		port = int64(d.Get(isLBListenerPort).(int))
-		updateLoadBalancerListenerOptions.Port = &port
+		loadBalancerListenerPatchModel.Port = &port
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerProtocol) {
 		protocol = d.Get(isLBListenerProtocol).(string)
-		updateLoadBalancerListenerOptions.Protocol = &protocol
+		loadBalancerListenerPatchModel.Protocol = &protocol
 		hasChanged = true
 	}
 
 	if d.HasChange(isLBListenerConnectionLimit) {
 		connLimit = int64(d.Get(isLBListenerConnectionLimit).(int))
-		updateLoadBalancerListenerOptions.ConnectionLimit = &connLimit
+		loadBalancerListenerPatchModel.ConnectionLimit = &connLimit
 		hasChanged = true
 	}
 
 	if hasChanged {
+		loadBalancerListenerPatch, err := loadBalancerListenerPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerListenerPatch: %s", err)
+		}
+		updateLoadBalancerListenerOptions.LoadBalancerListenerPatch = loadBalancerListenerPatch
 
-		_, err := isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
+		_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
 				"Error checking for load balancer (%s) is active: %s", lbID, err)
