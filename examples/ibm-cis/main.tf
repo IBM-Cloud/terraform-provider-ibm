@@ -339,3 +339,19 @@ data "ibm_cis_certificates" "test" {
   cis_id    = data.ibm_cis.cis.id
   domain_id = data.ibm_cis_domain.cis_domain.domain_id
 }
+
+# CIS Certificate Upload
+resource "ibm_cis_certificate_upload" "test" {
+  cis_id        = data.ibm_cis.cis.id
+  domain_id     = data.ibm_cis_domain.cis_domain.id
+  certificate   = "xxxxx"
+  private_key   = "xxxxx"
+  bundle_method = "ubiquitous"
+  priority      = 20
+}
+
+# CIS Certificate Upload data source
+data "ibm_cis_custom_certificates" "test" {
+  cis_id    = ibm_cis_certificate_upload.test.cis_id
+  domain_id = ibm_cis_certificate_upload.test.domain_id
+}

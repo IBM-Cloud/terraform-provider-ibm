@@ -25,6 +25,7 @@ These types of resources are supported:
 * [ CIS Range Application](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-range-application)
 * [ CIS WAF Rule](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-waf-rule)
 * [ CIS Certificate Order](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-certificate-order)
+* [ CIS Certificate Upload ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-certificate-upload)
 
 ## Terraform versions
 
@@ -332,6 +333,18 @@ resource "ibm_cis_certificate_order" "test" {
 }
 ```
 
+`CIS Certificate Upload`
+```hcl
+resource "ibm_cis_certificate_upload" "test" {
+  cis_id        = data.ibm_cis.cis.id
+  domain_id     = data.ibm_cis_domain.cis_domain.id
+  certificate   = "xxxxx"
+  private_key   = "xxxxx"
+  bundle_method = "ubiquitous"
+  priority      = 20
+}
+```
+
 ## CIS Data Sources
 `CIS Instance`
 ```hcl
@@ -434,6 +447,14 @@ data "ibm_cis_waf_rules" "rules" {
 }
 ```
 
+`CIS Certificate Upload data source`
+```hcl
+data "ibm_cis_custom_certificates" "test" {
+  cis_id    = ibm_cis_certificate_upload.test.cis_id
+  domain_id = ibm_cis_certificate_upload.test.domain_id
+}
+```
+
 ## Dependencies
 
 - User has IAM security rights to create and configure an Internet Services instance
@@ -456,6 +477,7 @@ data "ibm_cis_waf_rules" "rules" {
 - [Range App CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#range-app)
 - [WAF Rule CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#list-waf-rules)
 - [Certificate Order CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#order-dedicated-cert)
+- [Certificate Upload CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#upload-cert)
 
 ## Notes
 
@@ -579,6 +601,10 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | rule_id | The WAF Rule ID | `string`| yes |
 | mode | The WAF Rule mode | `string` | yes |
 | hosts | The hosts for which the certificates to be ordered. | `string` | yes |
+| certificate | The Certificate key | `string` | yes |
+| private_key | The Certificate Private key | `string` | yes |
+| bundle_method | The certificate bundle method. Valid values are: `ubiquitous`, `optimal`, `force` | `string` | no |
+| priority | The Certificate priority | `number` | no |
 
 ## Outputs
 
@@ -608,7 +634,10 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | allowed_modes | WAF rule allowed modes |
 | certificate_id | Certificate ID |
 | status | Certificate status |
-
+| custom_cert_id | The custom certificate id |
+| status | The certificate upload status |
+| issuer | The certificate issuer |
+| signature | The certificate signature |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
