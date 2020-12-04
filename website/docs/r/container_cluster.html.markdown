@@ -34,6 +34,10 @@ resource "ibm_container_cluster" "testacc_cluster" {
 
   default_pool_size = 1
 
+  labels = {
+    "test" = "test-pool"
+  }
+
   webhook {
     level = "Normal"
     type  = "slack"
@@ -53,6 +57,10 @@ resource "ibm_container_cluster" "testacc_cluster" {
   public_vlan_id  = "vlan"
   private_vlan_id = "vlan"
   subnet_id       = ["1154643"]
+
+  labels = {
+    "test" = "test-pool"
+  }
 
   default_pool_size = 2
   worker_num        = 1
@@ -136,6 +144,7 @@ The following arguments are supported:
 * `org_guid` - (Deprecated, Forces new resource, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from data source `ibm_org` or by running the `ibmcloud iam orgs --guid` command in the IBM Cloud CLI.
 * `space_guid` - (Deprecated, Forces new resource, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from data source `ibm_space` or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
 * `account_guid` - (Deprecated, Forces new resource, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from data source `ibm_account` or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
+* `labels` - (Optional, map) Labels on all the workers in the default worker pool.
 * `region` - (Deprecated, Forces new resource, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 * `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
 * `workers` - (Removed) The worker nodes that you want to add to the cluster. Nested `workers` blocks have the following structure:
