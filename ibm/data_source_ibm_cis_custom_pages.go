@@ -25,8 +25,9 @@ func dataSourceIBMCISCustomPages() *schema.Resource {
 				Required: true,
 			},
 			cisDomainID: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:             schema.TypeString,
+				Required:         true,
+				DiffSuppressFunc: suppressDomainIDDiff,
 			},
 			cisCustomPages: {
 				Type:     schema.TypeList,

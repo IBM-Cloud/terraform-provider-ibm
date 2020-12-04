@@ -412,6 +412,8 @@ func resourceIBMCISRateLimitRead(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return err
 	}
+	cisClient.Crn = core.StringPtr(cisID)
+	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 	opt := cisClient.NewGetRateLimitOptions(recordID)
 	result, resp, err := cisClient.GetRateLimit(opt)
 	if err != nil {

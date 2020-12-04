@@ -28,9 +28,10 @@ func dataSourceIBMCISDNSRecords() *schema.Resource {
 				Description: "DNS Zone CRN",
 			},
 			cisDomainID: {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Zone Id",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "Zone Id",
+				DiffSuppressFunc: suppressDomainIDDiff,
 			},
 
 			cisDNSRecords: {
@@ -124,7 +125,7 @@ func dataSourceIBMCISDNSRecordsRead(d *schema.ResourceData, meta interface{}) er
 
 	// session options
 	crn = d.Get(cisID).(string)
-	zoneID = d.Get(cisDomainID).(string)
+	zoneID, _, _ = convertTftoCisTwoVar(d.Get(cisDomainID).(string))
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneIdentifier = core.StringPtr(zoneID)
 

@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"log"
+	"time"
 
 	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -274,10 +275,14 @@ func dataIBMCISFirewallRecordRead(d *schema.ResourceData, meta interface{}) erro
 		d.Set(cisFirewallUARule, uaRuleList)
 	}
 
-	d.SetId(firewallType + ":" + cisID)
+	d.SetId(dataIBMCISFirewallRecordsID(d))
 	d.Set(cisID, crn)
 	d.Set(cisDomainID, zoneID)
 	d.Set(cisFirewallType, firewallType)
 
 	return nil
+}
+
+func dataIBMCISFirewallRecordsID(d *schema.ResourceData) string {
+	return time.Now().UTC().String()
 }

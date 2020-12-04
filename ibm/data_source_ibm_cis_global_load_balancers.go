@@ -152,7 +152,7 @@ func dataSourceCISGlbsRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	crn := d.Get(cisID).(string)
-	zoneID := d.Get(cisDomainID).(string)
+	zoneID, _, err := convertTftoCisTwoVar(d.Get(cisDomainID).(string))
 	cisClient.Crn = core.StringPtr(crn)
 	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 
@@ -189,6 +189,8 @@ func dataSourceCISGlbsRead(d *schema.ResourceData, meta interface{}) error {
 		glbList = append(glbList, glbOutput)
 	}
 	d.SetId(dataSourceCISGlbsCheckID(d))
+	d.Set(cisID, crn)
+	d.Set(cisDomainID, zoneID)
 	d.Set(cisGLB, glbList)
 	return nil
 }

@@ -91,6 +91,8 @@ func dataSourceIBMCISEdgeFunctionsTriggerRead(d *schema.ResourceData, meta inter
 		triggerInfo = append(triggerInfo, l)
 	}
 	d.SetId(dataSourceIBMCISEdgeFunctionsTriggersID(d))
+	d.Set(cisID, crn)
+	d.Set(cisDomainID, zoneID)
 	d.Set(cisEdgeFunctionsTriggers, triggerInfo)
 	return nil
 }

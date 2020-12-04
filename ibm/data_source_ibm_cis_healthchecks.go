@@ -185,6 +185,7 @@ func dataSourceIBMCISGLBHealthCheckRead(d *schema.ResourceData, meta interface{}
 		monitors = append(monitors, monitor)
 	}
 	d.SetId(dataSourceIBMCISGLBHealthCheckID(d))
+	d.Set(cisID, crn)
 	d.Set(cisGLBHealthCheck, monitors)
 	return nil
 }

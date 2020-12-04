@@ -178,6 +178,7 @@ func dataSourceIBMCISGLBPoolsRead(d *schema.ResourceData, meta interface{}) erro
 		pools = append(pools, pool)
 	}
 	d.SetId(dataSourceIBMCISGLBPoolsID(d))
+	d.Set(cisID, crn)
 	d.Set(cisOriginPools, pools)
 	return nil
 }
