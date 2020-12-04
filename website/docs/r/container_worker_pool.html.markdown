@@ -70,7 +70,7 @@ The following arguments are supported:
 * `size_per_zone` - (Required, int) Number of workers per zone in this pool.
 * `hardware` - (Optional, Forces new resource, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, the default value is shared. For IBM Cloud Dedicated accounts, dedicated is the only available option.
 * `disk_encryption` - (Optional, Forces new resource, boolean) Set to `false` to disable encryption on a worker. Default is true.
-* `labels` - (Optional, Forces new resource, map) Labels on all the workers in the worker pool.
+* `labels` - (Optional, map) Labels on all the workers in the worker pool.
 * `region` - (Deprecated, Forces new resource, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 * `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
 * `entitlement` - (Optional, string) The openshift cluster entitlement avoids the OCP licence charges incurred. Use cloud paks with OCP Licence entitlement to add the Openshift cluster worker pool.

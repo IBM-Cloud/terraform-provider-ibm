@@ -159,13 +159,12 @@ func resourceIBMContainerCluster() *schema.Resource {
 			},
 
 			"labels": {
-				Type:             schema.TypeMap,
-				Optional:         true,
-				Computed:         true,
-				ForceNew:         false,
-				DiffSuppressFunc: applyOnce,
-				Elem:             &schema.Schema{Type: schema.TypeString},
-				Description:      "list of labels to the default worker pool",
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    false,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "list of labels to the default worker pool",
 			},
 
 			"workers_info": {
@@ -774,6 +773,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 
 	albs, err := albsAPI.ListClusterALBs(clusterID, targetEnv)
 	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") && !strings.Contains(err.Error(), "The specified cluster is a free cluster.") {
+
 		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", clusterID, err)
 	}
 
@@ -1009,7 +1009,6 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf(
 				"The default worker pool does not exist. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes..")
 		}
-
 	}
 
 	if d.HasChange("worker_num") {
