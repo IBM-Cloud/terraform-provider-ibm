@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -210,9 +211,13 @@ func dataSourceIBMCISRateLimitRead(d *schema.ResourceData, meta interface{}) err
 		rules = append(rules, rule)
 
 	}
-	d.SetId(convertCisToTfTwoVar(zoneID, cisID))
+	d.SetId(dataSourceIBMCISRateLimitID(d))
 	d.Set("rate_limit", rules)
 	d.Set("cis_id", cisID)
-	d.Set("domain_id", convertCisToTfTwoVar(zoneID, cisID))
+	d.Set("domain_id", zoneID)
 	return nil
+}
+
+func dataSourceIBMCISRateLimitID(d *schema.ResourceData) string {
+	return time.Now().UTC().String()
 }
