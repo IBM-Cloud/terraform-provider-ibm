@@ -68,3 +68,7 @@ output "ibm_cis_waf_rules_output" {
 output "ibm_cis_certificate_order_output" {
   value = ibm_cis_certificate_order.test
 }
+
+output "ibm_cis_certificate_upload_output" {
+  value = ibm_cis_certificate_upload.test
+}
