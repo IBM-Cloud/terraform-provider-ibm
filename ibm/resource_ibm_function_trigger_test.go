@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -13,10 +14,10 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
-func TestAccFunctionTrigger_Basic(t *testing.T) {
+func TestAccIAMFunctionTrigger_Basic(t *testing.T) {
 	var conf whisk.Trigger
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
+	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -24,7 +25,7 @@ func TestAccFunctionTrigger_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckFunctionTriggerCreate(name, namespace),
+				Config: testAccCheckIAMFunctionTriggerCreate(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionTriggerExists("ibm_function_trigger.trigger", &conf),
 					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "name", name),
@@ -35,7 +36,7 @@ func TestAccFunctionTrigger_Basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckFunctionTriggerUpdate(name, namespace),
+				Config: testAccCheckIAMFunctionTriggerUpdate(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionTriggerExists("ibm_function_trigger.trigger", &conf),
 					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "name", name),
@@ -47,10 +48,10 @@ func TestAccFunctionTrigger_Basic(t *testing.T) {
 	})
 }
 
-func TestAccFunctionTrigger_Feed_Basic(t *testing.T) {
+func TestAccIAMFunctionTrigger_Feed_Basic(t *testing.T) {
 	var conf whisk.Trigger
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
+	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -58,7 +59,7 @@ func TestAccFunctionTrigger_Feed_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckFunctionTriggerFeedCreate(name, namespace),
+				Config: testAccCheckIAMFunctionTriggerFeedCreate(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionTriggerExists("ibm_function_trigger.feedtrigger", &conf),
 					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "name", name),
@@ -70,7 +71,7 @@ func TestAccFunctionTrigger_Feed_Basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckFunctionTriggerFeedUpdate(name, namespace),
+				Config: testAccCheckIAMFunctionTriggerFeedUpdate(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionTriggerExists("ibm_function_trigger.feedtrigger", &conf),
 					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "name", name),
@@ -83,7 +84,72 @@ func TestAccFunctionTrigger_Feed_Basic(t *testing.T) {
 	})
 }
 
-func TestAccFunctionTrigger_Import(t *testing.T) {
+func TestAccIAMFunctionTrigger_Import(t *testing.T) {
+	var conf whisk.Trigger
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckFunctionTriggerDestroy,
+		Steps: []resource.TestStep{
+
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionTriggerImport(name, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionTriggerExists("ibm_function_trigger.import", &conf),
+					resource.TestCheckResourceAttr("ibm_function_trigger.import", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.import", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_trigger.import", "version", "0.0.1"),
+					resource.TestCheckResourceAttr("ibm_function_trigger.import", "publish", "false"),
+				),
+			},
+
+			resource.TestStep{
+				ResourceName:      "ibm_function_trigger.import",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccCFFunctionTrigger_Basic(t *testing.T) {
+	var conf whisk.Trigger
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckFunctionTriggerDestroy,
+		Steps: []resource.TestStep{
+
+			resource.TestStep{
+				Config: testAccCheckCFFunctionTriggerCreate(name, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionTriggerExists("ibm_function_trigger.trigger", &conf),
+					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "version", "0.0.1"),
+					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "publish", "false"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckCFFunctionTriggerUpdate(name, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionTriggerExists("ibm_function_trigger.trigger", &conf),
+					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_trigger.trigger", "version", "0.0.2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccCFFunctionTrigger_Feed_Basic(t *testing.T) {
 	var conf whisk.Trigger
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
@@ -94,7 +160,43 @@ func TestAccFunctionTrigger_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckFunctionTriggerImport(name, namespace),
+				Config: testAccCheckCFFunctionTriggerFeedCreate(name, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionTriggerExists("ibm_function_trigger.feedtrigger", &conf),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "version", "0.0.1"),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "publish", "false"),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "feed.0.name", "/whisk.system/alarms/alarm"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckCFFunctionTriggerFeedUpdate(name, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionTriggerExists("ibm_function_trigger.feedtrigger", &conf),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "version", "0.0.2"),
+					resource.TestCheckResourceAttr("ibm_function_trigger.feedtrigger", "feed.0.name", "/whisk.system/alarms/alarm"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccCFFunctionTrigger_Import(t *testing.T) {
+	var conf whisk.Trigger
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckFunctionTriggerDestroy,
+		Steps: []resource.TestStep{
+
+			resource.TestStep{
+				Config: testAccCheckCFFunctionTriggerImport(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionTriggerExists("ibm_function_trigger.import", &conf),
 					resource.TestCheckResourceAttr("ibm_function_trigger.import", "name", name),
@@ -178,9 +280,10 @@ func testAccCheckFunctionTriggerDestroy(s *terraform.State) error {
 		name := parts[1]
 
 		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
-		if err != nil {
+		if err != nil && strings.Contains(err.Error(), "is not in the list of entitled namespaces") {
+			return nil
+		} else {
 			return err
-
 		}
 		_, _, err = client.Triggers.Get(name)
 
@@ -193,7 +296,213 @@ func testAccCheckFunctionTriggerDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckFunctionTriggerCreate(name, namespace string) string {
+func testAccCheckIAMFunctionTriggerCreate(name, namespace string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
+
+
+	resource "ibm_function_trigger" "trigger" {
+		depends_on = [ibm_function_namespace.namespace]
+		name = "%s"
+		namespace = ibm_function_namespace.namespace.name
+	}
+`, namespace, name)
+
+}
+
+func testAccCheckIAMFunctionTriggerUpdate(name, namespace string) string {
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
+
+	resource "ibm_function_trigger" "trigger" {
+		depends_on = [ibm_function_namespace.namespace]
+		name = "%s"
+		namespace = ibm_function_namespace.namespace.name
+		user_defined_parameters = <<EOF
+							  [
+									  {
+										 "key":"place",
+											  "value":"India"
+								 }
+						 ]
+	  
+	  EOF
+	  
+	  
+		user_defined_annotations = <<EOF
+				 [
+						 {
+								"key":"Description",
+								 "value":"Sample code to display hello"
+						}
+				]
+	  
+	  EOF
+	  
+	  }
+`, namespace, name)
+
+}
+
+func testAccCheckIAMFunctionTriggerFeedCreate(name, namespace string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
+
+	resource "ibm_function_trigger" "feedtrigger" {
+		depends_on = [ibm_function_namespace.namespace]
+		name = "%s"
+		namespace = ibm_function_namespace.namespace.name
+		feed {
+		  name       = "/whisk.system/alarms/alarm"
+		  parameters = <<EOF
+											  [
+													  {
+															  "key":"cron",
+															  "value":"0 */2 * * *"
+													  }
+											  ]
+	  
+	  EOF
+	  
+		}
+	  
+		user_defined_annotations = <<EOF
+					   [
+			   {
+					   "key":"sample trigger",
+					   "value":"Trigger for hello action"
+			   }
+					   ]
+	  
+	  EOF
+	  
+	  }
+`, namespace, name)
+
+}
+
+func testAccCheckIAMFunctionTriggerFeedUpdate(name, namespace string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
+
+	resource "ibm_function_trigger" "feedtrigger" {
+		depends_on = [ibm_function_namespace.namespace]
+		name = "%s"
+		namespace = ibm_function_namespace.namespace.name
+		feed {
+		  name = "/whisk.system/alarms/alarm"
+	  
+		  parameters = <<EOF
+											  [
+													  {
+															  "key":"cron",
+															  "value":"0 */2 * * *"
+													  }
+											  ]
+	  
+	  EOF
+	  
+		}
+	  
+		user_defined_annotations = <<EOF
+			  [
+		  {
+			  "key":"sample trigger",
+			  "value":"Trigger for hello action"
+		  }
+			  ]
+	  
+	  EOF
+	  
+	  
+		user_defined_parameters = <<EOF
+			  [
+		  {
+			  "key":"place",
+			  "value":"India"
+		  }
+			  ]
+	  
+	  EOF
+	  
+	  }
+	  
+`, namespace, name)
+
+}
+
+func testAccCheckIAMFunctionTriggerImport(name, namespace string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
+
+
+	resource "ibm_function_trigger" "import" {
+		depends_on = [ibm_function_namespace.namespace]
+		name = "%s"
+		namespace = ibm_function_namespace.namespace.name
+		user_defined_parameters = <<EOF
+							  [
+									  {
+										 "key":"place",
+											  "value":"India"
+								 }
+						 ]
+	  
+	  EOF
+	  
+	  
+		user_defined_annotations = <<EOF
+				 [
+						 {
+								"key":"Description",
+								 "value":"Sample code to display hello"
+						}
+				]
+	  
+	  EOF
+	  
+	  }
+`, namespace, name)
+
+}
+
+func testAccCheckCFFunctionTriggerCreate(name, namespace string) string {
 	return fmt.Sprintf(`
 		resource "ibm_function_trigger" "trigger" {
 			name = "%s"		  
@@ -203,7 +512,7 @@ func testAccCheckFunctionTriggerCreate(name, namespace string) string {
 
 }
 
-func testAccCheckFunctionTriggerUpdate(name, namespace string) string {
+func testAccCheckCFFunctionTriggerUpdate(name, namespace string) string {
 	return fmt.Sprintf(`
 	resource "ibm_function_trigger" "trigger" {
 		name                    = "%s"
@@ -234,7 +543,7 @@ func testAccCheckFunctionTriggerUpdate(name, namespace string) string {
 
 }
 
-func testAccCheckFunctionTriggerFeedCreate(name, namespace string) string {
+func testAccCheckCFFunctionTriggerFeedCreate(name, namespace string) string {
 	return fmt.Sprintf(`
 	resource "ibm_function_trigger" "feedtrigger" {
 		name = "%s"
@@ -268,7 +577,7 @@ func testAccCheckFunctionTriggerFeedCreate(name, namespace string) string {
 
 }
 
-func testAccCheckFunctionTriggerFeedUpdate(name, namespace string) string {
+func testAccCheckCFFunctionTriggerFeedUpdate(name, namespace string) string {
 	return fmt.Sprintf(`
 	resource "ibm_function_trigger" "feedtrigger" {
 		name = "%s"
@@ -315,7 +624,7 @@ func testAccCheckFunctionTriggerFeedUpdate(name, namespace string) string {
 
 }
 
-func testAccCheckFunctionTriggerImport(name, namespace string) string {
+func testAccCheckCFFunctionTriggerImport(name, namespace string) string {
 	return fmt.Sprintf(`
 	resource "ibm_function_trigger" "import" {
 		name                    = "%s"
