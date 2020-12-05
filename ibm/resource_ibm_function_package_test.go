@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -13,7 +14,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
-func TestAccFunctionPackage_Basic(t *testing.T) {
+func TestAccCFFunctionPackage_Basic(t *testing.T) {
 	var conf whisk.Package
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
@@ -25,7 +26,7 @@ func TestAccFunctionPackage_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckFunctionPackageCreate(name, namespace),
+				Config: testAccCheckCFFunctionPackageCreate(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionPackageExists("ibm_function_package.package", &conf),
 					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
@@ -38,7 +39,7 @@ func TestAccFunctionPackage_Basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckFunctionPackageNameUpdate(updatedName, namespace),
+				Config: testAccCheckCFFunctionPackageNameUpdate(updatedName, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
 					resource.TestCheckResourceAttr("ibm_function_package.package", "name", updatedName),
@@ -50,7 +51,7 @@ func TestAccFunctionPackage_Basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckFunctionPackageWithAnnotations(name, namespace),
+				Config: testAccCheckCFFunctionPackageWithAnnotations(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionPackageExists("ibm_function_package.package", &conf),
 					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
@@ -61,7 +62,7 @@ func TestAccFunctionPackage_Basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckFunctionPackageWithAnnotationsUpdate(name, namespace),
+				Config: testAccCheckCFFunctionPackageWithAnnotationsUpdate(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionPackageExists("ibm_function_package.package", &conf),
 					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
@@ -72,7 +73,7 @@ func TestAccFunctionPackage_Basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckFunctionPackageWithParameters(name, namespace),
+				Config: testAccCheckCFFunctionPackageWithParameters(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionPackageExists("ibm_function_package.package", &conf),
 					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
@@ -83,7 +84,7 @@ func TestAccFunctionPackage_Basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckFunctionPackageWithParametersUpdate(name, namespace),
+				Config: testAccCheckCFFunctionPackageWithParametersUpdate(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionPackageExists("ibm_function_package.package", &conf),
 					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
@@ -93,7 +94,7 @@ func TestAccFunctionPackage_Basic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckFunctionPackageUpdatePublish(name, namespace),
+				Config: testAccCheckCFFunctionPackageUpdatePublish(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
 					resource.TestCheckResourceAttr("ibm_function_package.package", "name", name),
@@ -105,7 +106,99 @@ func TestAccFunctionPackage_Basic(t *testing.T) {
 	})
 }
 
-func TestAccFunctionPackage_Bind_Basic(t *testing.T) {
+func TestAccIAMFunctionPackage_Basic(t *testing.T) {
+	var conf whisk.Package
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckFunctionPackageDestroy,
+		Steps: []resource.TestStep{
+
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionPackageCreate(name, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionPackageExists("ibm_function_package.package", &conf),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "version", "0.0.1"),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "publish", "false"),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "annotations", "[]"),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "parameters", "[]"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionPackageNameUpdate(updatedName, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "name", updatedName),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "version", "0.0.1"),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "publish", "false"),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "annotations", "[]"),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "parameters", "[]"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionPackageWithAnnotations(name, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionPackageExists("ibm_function_package.package", &conf),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "version", "0.0.1"),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "publish", "false"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionPackageWithAnnotationsUpdate(name, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionPackageExists("ibm_function_package.package", &conf),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "version", "0.0.2"),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "publish", "false"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionPackageWithParameters(name, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionPackageExists("ibm_function_package.package", &conf),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "version", "0.0.3"),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "publish", "false"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionPackageWithParametersUpdate(name, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionPackageExists("ibm_function_package.package", &conf),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "version", "0.0.4"),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "publish", "false"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionPackageUpdatePublish(name, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "version", "0.0.5"),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "publish", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccCFFunctionPackage_Bind_Basic(t *testing.T) {
 	var conf whisk.Package
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandIntRange(10, 100))
@@ -119,7 +212,7 @@ func TestAccFunctionPackage_Bind_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckFunctionPackageBindCreate(name, namespace, bindName),
+				Config: testAccCheckCFFunctionPackageBindCreate(name, namespace, bindName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionPackageExists("ibm_function_package.bindpackage", &conf),
 					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "namespace", namespace),
@@ -130,7 +223,7 @@ func TestAccFunctionPackage_Bind_Basic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckFunctionPackageNameBindUpdate(updatedName, namespace, bindName),
+				Config: testAccCheckCFFunctionPackageNameBindUpdate(updatedName, namespace, bindName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "namespace", namespace),
 					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "name", updatedName),
@@ -140,7 +233,7 @@ func TestAccFunctionPackage_Bind_Basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckFunctionPackageBindWithAnnotations(name, namespace, bindName),
+				Config: testAccCheckCFFunctionPackageBindWithAnnotations(name, namespace, bindName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionPackageExists("ibm_function_package.bindpackage", &conf),
 					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "namespace", namespace),
@@ -151,7 +244,7 @@ func TestAccFunctionPackage_Bind_Basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckFunctionPackageBindWithAnnotationsUpdate(name, namespace, bindName),
+				Config: testAccCheckCFFunctionPackageBindWithAnnotationsUpdate(name, namespace, bindName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionPackageExists("ibm_function_package.bindpackage", &conf),
 					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "namespace", namespace),
@@ -162,7 +255,7 @@ func TestAccFunctionPackage_Bind_Basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckFunctionPackageBindWithParameters(name, namespace, bindName),
+				Config: testAccCheckCFFunctionPackageBindWithParameters(name, namespace, bindName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionPackageExists("ibm_function_package.bindpackage", &conf),
 					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "namespace", namespace),
@@ -173,7 +266,7 @@ func TestAccFunctionPackage_Bind_Basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccCheckFunctionPackageBindWithParametersUpdate(name, namespace, bindName),
+				Config: testAccCheckCFFunctionPackageBindWithParametersUpdate(name, namespace, bindName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionPackageExists("ibm_function_package.bindpackage", &conf),
 					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "namespace", namespace),
@@ -183,7 +276,7 @@ func TestAccFunctionPackage_Bind_Basic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckFunctionPackageBindUpdatePublish(name, namespace, bindName),
+				Config: testAccCheckCFFunctionPackageBindUpdatePublish(name, namespace, bindName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "namespace", namespace),
 					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "name", name),
@@ -195,7 +288,97 @@ func TestAccFunctionPackage_Bind_Basic(t *testing.T) {
 	})
 }
 
-func TestAccFunctionPackage_Import(t *testing.T) {
+func TestAccIAMFunctionPackage_Bind_Basic(t *testing.T) {
+	var conf whisk.Package
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandIntRange(10, 100))
+	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
+	bindName := "/whisk.system/alarms"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckFunctionPackageDestroy,
+		Steps: []resource.TestStep{
+
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionPackageBindCreate(name, namespace, bindName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionPackageExists("ibm_function_package.bindpackage", &conf),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "version", "0.0.1"),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "publish", "false"),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "bind_package_name", bindName),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionPackageNameBindUpdate(updatedName, namespace, bindName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "name", updatedName),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "version", "0.0.1"),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "publish", "false"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionPackageBindWithAnnotations(name, namespace, bindName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionPackageExists("ibm_function_package.bindpackage", &conf),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "version", "0.0.1"),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "publish", "false"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionPackageBindWithAnnotationsUpdate(name, namespace, bindName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionPackageExists("ibm_function_package.bindpackage", &conf),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "version", "0.0.2"),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "publish", "false"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionPackageBindWithParameters(name, namespace, bindName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionPackageExists("ibm_function_package.bindpackage", &conf),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "version", "0.0.3"),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "publish", "false"),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionPackageBindWithParametersUpdate(name, namespace, bindName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionPackageExists("ibm_function_package.bindpackage", &conf),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "version", "0.0.4"),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "publish", "false"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionPackageBindUpdatePublish(name, namespace, bindName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "version", "0.0.5"),
+					resource.TestCheckResourceAttr("ibm_function_package.bindpackage", "publish", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccCFFunctionPackage_Import(t *testing.T) {
 	var conf whisk.Package
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
@@ -206,7 +389,39 @@ func TestAccFunctionPackage_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckFunctionPackageImport(name, namespace),
+				Config: testAccCheckCFFunctionPackageImport(name, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionPackageExists("ibm_function_package.package", &conf),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "version", "0.0.1"),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "publish", "false"),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "annotations", "[]"),
+					resource.TestCheckResourceAttr("ibm_function_package.package", "parameters", "[]"),
+				),
+			},
+
+			resource.TestStep{
+				ResourceName:      "ibm_function_package.package",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccIAMFunctionPackage_Import(t *testing.T) {
+	var conf whisk.Package
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckFunctionPackageDestroy,
+		Steps: []resource.TestStep{
+
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionPackageImport(name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionPackageExists("ibm_function_package.package", &conf),
 					resource.TestCheckResourceAttr("ibm_function_package.package", "namespace", namespace),
@@ -290,9 +505,10 @@ func testAccCheckFunctionPackageDestroy(s *terraform.State) error {
 		name := parts[1]
 
 		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
-		if err != nil {
+		if err != nil && strings.Contains(err.Error(), "is not in the list of entitled namespaces") {
+			return nil
+		} else {
 			return err
-
 		}
 
 		_, _, err = client.Packages.Get(name)
@@ -306,26 +522,111 @@ func testAccCheckFunctionPackageDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckFunctionPackageCreate(name string, namespace string) string {
+func testAccCheckIAMFunctionPackageCreate(name string, namespace string) string {
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}	
+	
+	resource "ibm_function_package" "package" {
+		depends_on = [ibm_function_namespace.namespace]
+		name = "%s"
+		namespace = ibm_function_namespace.namespace.name
+}`, namespace, name)
+
+}
+
+func testAccCheckCFFunctionPackageCreate(name string, namespace string) string {
 	return fmt.Sprintf(`
 	
-resource "ibm_function_package" "package" {
-	   name = "%s"
-	   namespace = "%s"
+	resource "ibm_function_package" "package" {
+		name = "%s"
+		namespace = "%s"
 }`, name, namespace)
 
 }
 
-func testAccCheckFunctionPackageNameUpdate(updatedName string, namespace string) string {
+func testAccCheckIAMFunctionPackageNameUpdate(updatedName string, namespace string) string {
 	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}		
 	
-resource "ibm_function_package" "package" {
-	   name = "%s"
-	   namespace = "%s"
+	resource "ibm_function_package" "package" {
+		depends_on = [ibm_function_namespace.namespace]
+		name = "%s"
+		namespace = ibm_function_namespace.namespace.name
+}`, namespace, updatedName)
+}
+
+func testAccCheckCFFunctionPackageNameUpdate(updatedName string, namespace string) string {
+	return fmt.Sprintf(`
+
+	resource "ibm_function_package" "package" {
+		name = "%s"
+		namespace = "%s"
 }`, updatedName, namespace)
 }
 
-func testAccCheckFunctionPackageWithAnnotations(name string, namespace string) string {
+func testAccCheckIAMFunctionPackageWithAnnotations(name string, namespace string) string {
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}		
+	
+	resource "ibm_function_package" "package" {
+		depends_on = [ibm_function_namespace.namespace]
+		name                     = "%s"
+		namespace                = ibm_function_namespace.namespace.name
+		user_defined_annotations = <<EOF
+			  [
+		  {
+			  "key":"description",
+			  "value":"Count words in a string"
+		  },
+		  {
+			  "key":"sampleOutput",
+			  "value": {
+							  "count": 3
+					  }
+		  },
+		  {
+			  "key":"final",
+			  "value": [
+							  {
+									  "description": "A string",
+									  "name": "payload",
+									  "required": true
+							  }
+					  ]
+		  }
+	  ]
+	  EOF
+	  
+	  }
+`, namespace, name)
+
+}
+
+func testAccCheckCFFunctionPackageWithAnnotations(name string, namespace string) string {
 	return fmt.Sprintf(`
 	
 	resource "ibm_function_package" "package" {
@@ -361,8 +662,37 @@ func testAccCheckFunctionPackageWithAnnotations(name string, namespace string) s
 
 }
 
-func testAccCheckFunctionPackageWithAnnotationsUpdate(name string, namespace string) string {
+func testAccCheckIAMFunctionPackageWithAnnotationsUpdate(name string, namespace string) string {
 	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
+	
+	resource "ibm_function_package" "package" {
+		name                     = "%s"
+		namespace                = ibm_function_namespace.namespace.name
+		user_defined_annotations = <<EOF
+			  [
+		  {
+			  "key":"description",
+			  "value":"Count words in a string"
+		  }
+	  ]
+	  EOF 
+	  }
+`, namespace, name)
+
+}
+
+func testAccCheckCFFunctionPackageWithAnnotationsUpdate(name string, namespace string) string {
+	return fmt.Sprintf(`
+
 	
 	resource "ibm_function_package" "package" {
 		name                     = "%s"
@@ -380,7 +710,64 @@ func testAccCheckFunctionPackageWithAnnotationsUpdate(name string, namespace str
 
 }
 
-func testAccCheckFunctionPackageWithParameters(name string, namespace string) string {
+func testAccCheckIAMFunctionPackageWithParameters(name string, namespace string) string {
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
+	
+	resource "ibm_function_package" "package" {
+		depends_on = [ibm_function_namespace.namespace]
+		name                    = "%s"
+		namespace               = ibm_function_namespace.namespace.name
+		user_defined_parameters = <<EOF
+			  [
+		  {
+			  "key":"place",
+			  "value":"city"
+		  },
+		  {
+			  "key":"parameter",
+			  "value": {
+							  "count": 3
+					  }
+		  },
+		  {
+			  "key":"final",
+			  "value": [
+							  {
+									  "description": "Set of Values",
+									  "name": "payload",
+									  "required": true
+							  }
+					  ]
+		  }
+	  ]
+	  EOF
+	  
+	  
+		user_defined_annotations = <<EOF
+			  [
+		  {
+			  "key":"description",
+			  "value":"Count words in a string"
+		  }
+	  ]
+	  EOF
+	  
+	  }
+	  
+`, namespace, name)
+
+}
+
+func testAccCheckCFFunctionPackageWithParameters(name string, namespace string) string {
 	return fmt.Sprintf(`
 	
 	resource "ibm_function_package" "package" {
@@ -427,9 +814,51 @@ func testAccCheckFunctionPackageWithParameters(name string, namespace string) st
 
 }
 
-func testAccCheckFunctionPackageWithParametersUpdate(name string, namespace string) string {
+func testAccCheckIAMFunctionPackageWithParametersUpdate(name string, namespace string) string {
 	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
 	
+	
+	resource "ibm_function_package" "package" {
+		depends_on = [ibm_function_namespace.namespace]
+		name                    = "%s"
+		namespace               = ibm_function_namespace.namespace.name
+		user_defined_parameters = <<EOF
+			  [
+		  {
+			  "key":"name",
+			  "value":"utils"
+		  }
+	  ]
+	  EOF
+	  
+	  
+		user_defined_annotations = <<EOF
+			  [
+		  {
+			  "key":"description",
+			  "value":"Count words in a string"
+		  }
+	  ]
+	  EOF
+	  
+	  }
+`, namespace, name)
+
+}
+
+func testAccCheckCFFunctionPackageWithParametersUpdate(name string, namespace string) string {
+	return fmt.Sprintf(`
+
+
 	resource "ibm_function_package" "package" {
 		name                    = "%s"
 		namespace               = "%s"
@@ -457,18 +886,79 @@ func testAccCheckFunctionPackageWithParametersUpdate(name string, namespace stri
 
 }
 
-func testAccCheckFunctionPackageImport(name string, namespace string) string {
+func testAccCheckIAMFunctionPackageImport(name string, namespace string) string {
 	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
 	
 	resource "ibm_function_package" "package" {
+		depends_on = [ibm_function_namespace.namespace]
    		name = "%s"
-		namespace = "%s"	
+		namespace = ibm_function_namespace.namespace.name
+	}
+`, namespace, name)
+
+}
+
+func testAccCheckCFFunctionPackageImport(name string, namespace string) string {
+	return fmt.Sprintf(`
+
+	resource "ibm_function_package" "package" {
+   		name = "%s"
+		namespace = "%s"
 	}
 `, name, namespace)
 
 }
 
-func testAccCheckFunctionPackageUpdatePublish(name string, namespace string) string {
+func testAccCheckIAMFunctionPackageUpdatePublish(name string, namespace string) string {
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
+	
+	resource "ibm_function_package" "package" {
+		depends_on = [ibm_function_namespace.namespace]
+		name                    = "%s"
+		namespace               = ibm_function_namespace.namespace.name
+		publish                 = true
+		user_defined_parameters = <<EOF
+			  [
+		  {
+			  "key":"name",
+			  "value":"utils"
+		  }
+	  ]
+	  EOF
+	  
+	  
+		user_defined_annotations = <<EOF
+			  [
+		  {
+			  "key":"description",
+			  "value":"Count words in a string"
+		  }
+	  ]
+	  EOF
+	  
+	  }
+`, namespace, name)
+}
+
+func testAccCheckCFFunctionPackageUpdatePublish(name string, namespace string) string {
 	return fmt.Sprintf(`
 	
 	resource "ibm_function_package" "package" {
@@ -498,30 +988,118 @@ func testAccCheckFunctionPackageUpdatePublish(name string, namespace string) str
 `, name, namespace)
 }
 
-func testAccCheckFunctionPackageBindCreate(name, namespace, bind string) string {
+func testAccCheckIAMFunctionPackageBindCreate(name, namespace, bind string) string {
+	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
+	
+	
+	resource "ibm_function_package" "bindpackage" {
+		depends_on = [ibm_function_namespace.namespace]
+		name = "%s"
+		namespace = ibm_function_namespace.namespace.name
+		bind_package_name = "%s"
+}`, namespace, name, bind)
+
+}
+
+func testAccCheckCFFunctionPackageBindCreate(name, namespace, bind string) string {
 	return fmt.Sprintf(`
 	
-resource "ibm_function_package" "bindpackage" {
-	   name = "%s"
-	   namespace = "%s"
-	   bind_package_name = "%s"
+	resource "ibm_function_package" "bindpackage" {
+		name = "%s"
+		namespace = "%s"
+		bind_package_name = "%s"
 }`, name, namespace, bind)
 
 }
 
-func testAccCheckFunctionPackageNameBindUpdate(updatedName, namespace, bind string) string {
+func testAccCheckIAMFunctionPackageNameBindUpdate(updatedName, namespace, bind string) string {
 	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
 	
-resource "ibm_function_package" "bindpackage" {
+	resource "ibm_function_package" "bindpackage" {
+	   name = "%s"
+	   namespace = ibm_function_namespace.namespace.name
+	   bind_package_name = "%s"
+}`, namespace, updatedName, bind)
+}
+
+func testAccCheckCFFunctionPackageNameBindUpdate(updatedName, namespace, bind string) string {
+	return fmt.Sprintf(`
+
+	resource "ibm_function_package" "bindpackage" {
 	   name = "%s"
 	   namespace = "%s"
 	   bind_package_name = "%s"
 }`, updatedName, namespace, bind)
 }
 
-func testAccCheckFunctionPackageBindWithAnnotations(name, namespace, bind string) string {
+func testAccCheckIAMFunctionPackageBindWithAnnotations(name, namespace, bind string) string {
 	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
 	
+	resource "ibm_function_package" "bindpackage" {
+		depends_on = [ibm_function_namespace.namespace]
+		name                     = "%s"
+		namespace                = ibm_function_namespace.namespace.name
+		bind_package_name        = "%s"
+		user_defined_annotations = <<EOF
+			  [
+		  {
+			  "key":"description",
+			  "value":"binded alaram package"
+		  },
+		  {
+			  "key":"sampleOutput",
+			  "value": {
+							  "count": 3
+					  }
+		  },
+		  {
+			  "key":"final",
+			  "value": [
+							  {
+									  "description": "A string",
+									  "name": "payload",
+									  "required": true
+							  }
+					  ]
+		  }
+	  ]
+	  EOF
+	  
+	  }
+`, namespace, name, bind)
+
+}
+
+func testAccCheckCFFunctionPackageBindWithAnnotations(name, namespace, bind string) string {
+	return fmt.Sprintf(`
+
 	resource "ibm_function_package" "bindpackage" {
 		name                     = "%s"
 		namespace                = "%s"
@@ -555,9 +1133,41 @@ func testAccCheckFunctionPackageBindWithAnnotations(name, namespace, bind string
 `, name, namespace, bind)
 
 }
-func testAccCheckFunctionPackageBindWithAnnotationsUpdate(name, namespace, bind string) string {
+
+func testAccCheckIAMFunctionPackageBindWithAnnotationsUpdate(name, namespace, bind string) string {
 	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
 	
+	resource "ibm_function_package" "bindpackage" {
+		depends_on = [ibm_function_namespace.namespace]
+		name                     = "%s"
+		namespace                = ibm_function_namespace.namespace.name
+		bind_package_name        = "%s"
+		user_defined_annotations = <<EOF
+			  [
+		  {
+			  "key":"description",
+			  "value":"binded alaram package"
+		  }
+	  ]
+	  EOF
+	  
+	  }
+`, namespace, name, bind)
+
+}
+
+func testAccCheckCFFunctionPackageBindWithAnnotationsUpdate(name, namespace, bind string) string {
+	return fmt.Sprintf(`
+
 	resource "ibm_function_package" "bindpackage" {
 		name                     = "%s"
 		namespace                = "%s"
@@ -576,9 +1186,62 @@ func testAccCheckFunctionPackageBindWithAnnotationsUpdate(name, namespace, bind 
 
 }
 
-func testAccCheckFunctionPackageBindWithParameters(name, namespace, bind string) string {
+func testAccCheckIAMFunctionPackageBindWithParameters(name, namespace, bind string) string {
 	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
 	
+	resource "ibm_function_package" "bindpackage" {
+		depends_on = [ibm_function_namespace.namespace]
+		name                    = "%s"
+		namespace               = ibm_function_namespace.namespace.name
+		bind_package_name       = "%s"
+		user_defined_parameters = <<EOF
+			  [
+		  {
+			  "key":"cron",
+			  "value":"0 0 1 0 *"
+		  },
+		  {
+			  "key":"trigger_payload ",
+			  "value":"{'message':'bye old Year!'}"
+		  },
+		  {
+			  "key":"maxTriggers",
+			  "value":1
+		  },
+		  {
+			  "key":"userdefined",
+			  "value":"test"
+		  }
+	  ]
+	  EOF
+	  
+	  
+		user_defined_annotations = <<EOF
+			  [
+		  {
+			  "key":"description",
+			  "value":"Count words in a string"
+		  }
+	  ]
+	  EOF
+	  
+	  }
+`, namespace, name, bind)
+
+}
+
+func testAccCheckCFFunctionPackageBindWithParameters(name, namespace, bind string) string {
+	return fmt.Sprintf(`
+
 	resource "ibm_function_package" "bindpackage" {
 		name                    = "%s"
 		namespace               = "%s"
@@ -619,12 +1282,53 @@ func testAccCheckFunctionPackageBindWithParameters(name, namespace, bind string)
 
 }
 
-func testAccCheckFunctionPackageBindWithParametersUpdate(name, namespace, bind string) string {
+func testAccCheckIAMFunctionPackageBindWithParametersUpdate(name, namespace, bind string) string {
 	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
 	
 	resource "ibm_function_package" "bindpackage" {
+		depends_on = [ibm_function_namespace.namespace]
 		name                    = "%s"
-		namespace		= "%s"
+		namespace				= ibm_function_namespace.namespace.name
+		bind_package_name       = "%s"
+		user_defined_parameters = <<EOF
+				 [
+		 {
+				 "key":"cron",
+				 "value":"0 0 1 0 *"
+		 }
+	  ]
+	  EOF
+	  
+	  
+		user_defined_annotations = <<EOF
+			  [
+		  {
+			  "key":"description",
+			  "value":"Count words in a string"
+		  }
+	  ]
+	  EOF
+	  
+	  }
+`, namespace, name, bind)
+
+}
+
+func testAccCheckCFFunctionPackageBindWithParametersUpdate(name, namespace, bind string) string {
+	return fmt.Sprintf(`
+
+	resource "ibm_function_package" "bindpackage" {
+		name                    = "%s"
+		namespace				= "%s"
 		bind_package_name       = "%s"
 		user_defined_parameters = <<EOF
 				 [
@@ -650,12 +1354,53 @@ func testAccCheckFunctionPackageBindWithParametersUpdate(name, namespace, bind s
 
 }
 
-func testAccCheckFunctionPackageBindUpdatePublish(name, namespace, bind string) string {
+func testAccCheckIAMFunctionPackageBindUpdatePublish(name, namespace, bind string) string {
 	return fmt.Sprintf(`
+
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
 	
 	resource "ibm_function_package" "bindpackage" {
 		name                    = "%s"
-		namespace		= "%s"
+		namespace				= ibm_function_namespace.namespace.name 
+		bind_package_name       = "%s"
+		publish                 = true
+		user_defined_parameters = <<EOF
+				 [
+		 {
+				 "key":"cron",
+				 "value":"0 0 1 0 *"
+		 }
+	  ]
+	  EOF
+	  
+	  
+		user_defined_annotations = <<EOF
+			  [
+		  {
+			  "key":"description",
+			  "value":"Count words in a string"
+		  }
+	  ]
+	  EOF
+	  
+	  }
+	  
+`, namespace, name, bind)
+}
+
+func testAccCheckCFFunctionPackageBindUpdatePublish(name, namespace, bind string) string {
+	return fmt.Sprintf(`
+
+	resource "ibm_function_package" "bindpackage" {
+		name                    = "%s"
+		namespace				= "%s"
 		bind_package_name       = "%s"
 		publish                 = true
 		user_defined_parameters = <<EOF
