@@ -1787,37 +1787,9 @@ func IgnoreSystemLabels(labels map[string]string) map[string]string {
 	result := make(map[string]string)
 
 	for k, v := range labels {
-		if strings.HasPrefix(k, SystemIBMLabelPrefix) {
-			continue
-		}
-
-		if strings.HasPrefix(k, KubernetesLabelPrefix) {
-			continue
-		}
-
-		if strings.HasPrefix(k, K8sLabelPrefix) {
-			continue
-		}
-
-		result[k] = v
-	}
-
-	return result
-}
-
-func (labels map[string]string) xIgnoreSystemLabels() map[string]string {
-	result := make(map[string]string)
-
-	for k, v := range labels {
-		if strings.HasPrefix(k, SystemIBMLabelPrefix) {
-			continue
-		}
-
-		if strings.HasPrefix(k, KubernetesLabelPrefix) {
-			continue
-		}
-
-		if strings.HasPrefix(k, K8sLabelPrefix) {
+		if strings.HasPrefix(k, SystemIBMLabelPrefix) ||
+			strings.HasPrefix(k, KubernetesLabelPrefix) ||
+			strings.HasPrefix(k, K8sLabelPrefix) {
 			continue
 		}
 
