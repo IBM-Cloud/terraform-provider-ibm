@@ -17,7 +17,7 @@ Configuration of an ibm_container_vpc_cluster resource requires that the `genera
 
 In the following example, you can create a Gen-1 VPC cluster with a default worker pool with one worker:
 
-```
+```hcl
 provider "ibm" {
   generation = 1
 }
@@ -32,33 +32,31 @@ resource "ibm_container_vpc_cluster" "cluster" {
     name      = "us-south-1"
   }
 }
-
 ```
 
 In the following example, you can create a Gen-2 VPC cluster with a default worker pool with one worker:
-```
+```hcl
 provider "ibm" {
   generation = 2
 }
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = "my_vpc_cluster"
   vpc_id            = "r006-abb7c7ea-aadf-41bd-94c5-b8521736fadf"
-  kube_version 	    = "1.17.5"
-	flavor            = "bx2.2x8"
+  kube_version      = "1.17.5"
+  flavor            = "bx2.2x8"
   worker_count      = "1"
   resource_group_id = "${data.ibm_resource_group.resource_group.id}"
   zones = [
-      {
-         subnet_id = "0717-0c0899ce-48ac-4eb6-892d-4e2e1ff8c9478"
-         name = "us-south-1"
-      }
+    {
+      subnet_id = "0717-0c0899ce-48ac-4eb6-892d-4e2e1ff8c9478"
+      name      = "us-south-1"
+    }
   ]
 }
-
 ```
 
 Create the Openshift Cluster with default worker Pool entitlement with one worker node:
-```
+```hcl
 provider "ibm" {
   generation = 2
 }
@@ -73,20 +71,19 @@ resource "ibm_resource_instance" "cos_instance" {
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = "my_vpc_cluster"
   vpc_id            = "r006-abb7c7ea-aadf-41bd-94c5-b8521736fadf"
-  kube_version 	    = "4.3_openshift"
-	flavor            = "bx2.16x64"
+  kube_version      = "4.3_openshift"
+  flavor            = "bx2.16x64"
   worker_count      = "2"
   entitlement       = "cloud_pak"
   cos_instance_crn  = ibm_resource_instance.cos_instance.id
   resource_group_id = "${data.ibm_resource_group.resource_group.id}"
   zones = [
-      {
-         subnet_id = "0717-0c0899ce-48ac-4eb6-892d-4e2e1ff8c9478"
-         name = "us-south-1"
-      }
+    {
+      subnet_id = "0717-0c0899ce-48ac-4eb6-892d-4e2e1ff8c9478"
+      name      = "us-south-1"
+    }
   ]
 }
-
 ```
 
 Create a Kms Enabled Kubernetes cluster:
