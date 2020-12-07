@@ -76,12 +76,11 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 			},
 
 			"labels": {
-				Type:             schema.TypeMap,
-				Optional:         true,
-				Computed:         true,
-				DiffSuppressFunc: applyOnce,
-				Elem:             &schema.Schema{Type: schema.TypeString},
-				Description:      "Labels",
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Labels",
 			},
 
 			"resource_group_id": {
@@ -324,7 +323,7 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 	d.Set("flavor", workerPool.Flavor)
 	d.Set("worker_count", workerPool.WorkerCount)
 	d.Set("provider", workerPool.Provider)
-	d.Set("labels", workerPool.Labels)
+	d.Set("labels", IgnoreSystemLabels(workerPool.Labels))
 	d.Set("zones", zones)
 	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("cluster", cluster)
