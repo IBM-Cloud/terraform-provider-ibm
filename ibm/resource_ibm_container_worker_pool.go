@@ -112,13 +112,11 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 			},
 
 			"labels": {
-				Type:             schema.TypeMap,
-				Optional:         true,
-				Computed:         true,
-				ForceNew:         true,
-				DiffSuppressFunc: applyOnce,
-				Elem:             &schema.Schema{Type: schema.TypeString},
-				Description:      "list of labels to worker pool",
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "list of labels to worker pool",
 			},
 
 			"region": {
@@ -242,7 +240,7 @@ func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}
 	}
 	d.Set("hardware", hardware)
 	d.Set("state", workerPool.State)
-	d.Set("labels", workerPool.Labels)
+	d.Set("labels", IgnoreSystemLabels(workerPool.Labels))
 	d.Set("zones", flattenZones(workerPool.Zones))
 	d.Set("cluster", cluster)
 	d.Set("region", workerPool.Region)

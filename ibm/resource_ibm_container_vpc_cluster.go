@@ -174,12 +174,11 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"worker_labels": {
-				Type:             schema.TypeMap,
-				Optional:         true,
-				Computed:         true,
-				DiffSuppressFunc: applyOnce,
-				Elem:             &schema.Schema{Type: schema.TypeString},
-				Description:      "Labels for default worker pool",
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Labels for default worker pool",
 			},
 
 			"disable_public_service_endpoint": {
@@ -812,7 +811,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 
 	}
 	d.Set("worker_count", workerPool.WorkerCount)
-	d.Set("worker_labels", workerPool.Labels)
+	d.Set("worker_labels", IgnoreSystemLabels(workerPool.Labels))
 	if cls.Vpcs != nil {
 		d.Set("vpc_id", cls.Vpcs[0])
 	}

@@ -759,7 +759,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 		if err != nil {
 			return err
 		}
-		d.Set("labels", IgnoreIbmLabels(defaultWorkerPool.Labels))
+		d.Set("labels", IgnoreSystemLabels(defaultWorkerPool.Labels))
 		zones := defaultWorkerPool.Zones
 		for _, zone := range zones {
 			if zone.ID == cls.DataCenter {
