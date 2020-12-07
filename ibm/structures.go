@@ -46,7 +46,10 @@ const (
 	//ResourceGroupName ...
 	ResourceGroupName = "resource_group_name"
 	//RelatedCRN ...
-	RelatedCRN = "related_crn"
+	RelatedCRN            = "related_crn"
+	IBMLabelPrefix        = "ibm-cloud.kubernetes.io/"
+	KubernetesLabelPrefix = "kubernetes.io/"
+	K8sLabelPrefix        = "k8s.io"
 )
 
 //HashInt ...
@@ -727,7 +730,7 @@ func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
 	return rules
 }
 
-func flattenLimits(in *whisk.Limits) []interface{} {
+func flattenLimitsgit(in *whisk.Limits) []interface{} {
 	att := make(map[string]interface{})
 	if in.Timeout != nil {
 		att["timeout"] = *in.Timeout
@@ -1828,4 +1831,27 @@ func flattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
 	}
 	policyMap = append(policyMap, tempMap)
 	return policyMap
+}
+
+// IgnoreIbmLabels returns non-IBM tag keys.
+func IgnoreIbmLabels(labels map[string]string) map[string]string {
+	result := make(map[string]string)
+
+	for k, v := range labels {
+		if strings.HasPrefix(k, IBMLabelPrefix) {
+			continue
+		}
+
+		if strings.HasPrefix(k, KubernetesLabelPrefix) {
+			continue
+		}
+
+		if strings.HasPrefix(k, K8sLabelPrefix) {
+			continue
+		}
+
+		result[k] = v
+	}
+
+	return result
 }
