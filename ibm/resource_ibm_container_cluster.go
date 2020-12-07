@@ -162,7 +162,6 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Type:        schema.TypeMap,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    false,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "list of labels to the default worker pool",
 			},
@@ -760,7 +759,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 		if err != nil {
 			return err
 		}
-		d.Set("labels", defaultWorkerPool.Labels)
+		d.Set("labels", IgnoreIbmLabels(defaultWorkerPool.Labels))
 		zones := defaultWorkerPool.Zones
 		for _, zone := range zones {
 			if zone.ID == cls.DataCenter {
