@@ -14,14 +14,23 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.20.0-debb9f29-20201203-202043
+ */
+ 
+
 // Package globalloadbalancerv1 : Operations and models for the GlobalLoadBalancerV1 service
 package globalloadbalancerv1
 
 import (
+	"context"
 	"encoding/json"
-	common "github.com/IBM/networking-go-sdk/common"
+	"fmt"
 	"github.com/IBM/go-sdk-core/v4/core"
+	common "github.com/IBM/networking-go-sdk/common"
+	"net/http"
 	"reflect"
+	"time"
 )
 
 // GlobalLoadBalancerV1 : Global Load Balancer
@@ -118,24 +127,79 @@ func NewGlobalLoadBalancerV1(options *GlobalLoadBalancerV1Options) (service *Glo
 	return
 }
 
+// GetServiceURLForRegion returns the service URL to be used for the specified region
+func GetServiceURLForRegion(region string) (string, error) {
+	return "", fmt.Errorf("service does not support regional URLs")
+}
+
+// Clone makes a copy of "globalLoadBalancer" suitable for processing requests.
+func (globalLoadBalancer *GlobalLoadBalancerV1) Clone() *GlobalLoadBalancerV1 {
+	if core.IsNil(globalLoadBalancer) {
+		return nil
+	}
+	clone := *globalLoadBalancer
+	clone.Service = globalLoadBalancer.Service.Clone()
+	return &clone
+}
+
 // SetServiceURL sets the service URL
 func (globalLoadBalancer *GlobalLoadBalancerV1) SetServiceURL(url string) error {
 	return globalLoadBalancer.Service.SetServiceURL(url)
 }
 
+// GetServiceURL returns the service URL
+func (globalLoadBalancer *GlobalLoadBalancerV1) GetServiceURL() string {
+	return globalLoadBalancer.Service.GetServiceURL()
+}
+
+// SetDefaultHeaders sets HTTP headers to be sent in every request
+func (globalLoadBalancer *GlobalLoadBalancerV1) SetDefaultHeaders(headers http.Header) {
+	globalLoadBalancer.Service.SetDefaultHeaders(headers)
+}
+
+// SetEnableGzipCompression sets the service's EnableGzipCompression field
+func (globalLoadBalancer *GlobalLoadBalancerV1) SetEnableGzipCompression(enableGzip bool) {
+	globalLoadBalancer.Service.SetEnableGzipCompression(enableGzip)
+}
+
+// GetEnableGzipCompression returns the service's EnableGzipCompression field
+func (globalLoadBalancer *GlobalLoadBalancerV1) GetEnableGzipCompression() bool {
+	return globalLoadBalancer.Service.GetEnableGzipCompression()
+}
+
+// EnableRetries enables automatic retries for requests invoked for this service instance.
+// If either parameter is specified as 0, then a default value is used instead.
+func (globalLoadBalancer *GlobalLoadBalancerV1) EnableRetries(maxRetries int, maxRetryInterval time.Duration) {
+	globalLoadBalancer.Service.EnableRetries(maxRetries, maxRetryInterval)
+}
+
+// DisableRetries disables automatic retries for requests invoked for this service instance.
+func (globalLoadBalancer *GlobalLoadBalancerV1) DisableRetries() {
+	globalLoadBalancer.Service.DisableRetries()
+}
+
 // ListAllLoadBalancers : List all load balancers
 // List configured load balancers.
 func (globalLoadBalancer *GlobalLoadBalancerV1) ListAllLoadBalancers(listAllLoadBalancersOptions *ListAllLoadBalancersOptions) (result *ListLoadBalancersResp, response *core.DetailedResponse, err error) {
+	return globalLoadBalancer.ListAllLoadBalancersWithContext(context.Background(), listAllLoadBalancersOptions)
+}
+
+// ListAllLoadBalancersWithContext is an alternate form of the ListAllLoadBalancers method which supports a Context parameter
+func (globalLoadBalancer *GlobalLoadBalancerV1) ListAllLoadBalancersWithContext(ctx context.Context, listAllLoadBalancersOptions *ListAllLoadBalancersOptions) (result *ListLoadBalancersResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listAllLoadBalancersOptions, "listAllLoadBalancersOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "load_balancers"}
-	pathParameters := []string{*globalLoadBalancer.Crn, *globalLoadBalancer.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *globalLoadBalancer.Crn,
+		"zone_identifier": *globalLoadBalancer.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(globalLoadBalancer.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = globalLoadBalancer.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(globalLoadBalancer.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/load_balancers`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -169,19 +233,28 @@ func (globalLoadBalancer *GlobalLoadBalancerV1) ListAllLoadBalancers(listAllLoad
 	return
 }
 
-// CreateLoadBalancer : Create a load balancer
+// CreateLoadBalancer : Create load balancer
 // Create a load balancer for a given zone. The zone should be active before placing an order of a load balancer.
 func (globalLoadBalancer *GlobalLoadBalancerV1) CreateLoadBalancer(createLoadBalancerOptions *CreateLoadBalancerOptions) (result *LoadBalancersResp, response *core.DetailedResponse, err error) {
+	return globalLoadBalancer.CreateLoadBalancerWithContext(context.Background(), createLoadBalancerOptions)
+}
+
+// CreateLoadBalancerWithContext is an alternate form of the CreateLoadBalancer method which supports a Context parameter
+func (globalLoadBalancer *GlobalLoadBalancerV1) CreateLoadBalancerWithContext(ctx context.Context, createLoadBalancerOptions *CreateLoadBalancerOptions) (result *LoadBalancersResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(createLoadBalancerOptions, "createLoadBalancerOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "load_balancers"}
-	pathParameters := []string{*globalLoadBalancer.Crn, *globalLoadBalancer.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *globalLoadBalancer.Crn,
+		"zone_identifier": *globalLoadBalancer.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.POST)
-	_, err = builder.ConstructHTTPURL(globalLoadBalancer.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = globalLoadBalancer.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(globalLoadBalancer.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/load_balancers`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -255,9 +328,14 @@ func (globalLoadBalancer *GlobalLoadBalancerV1) CreateLoadBalancer(createLoadBal
 	return
 }
 
-// EditLoadBalancer : Edit a load balancer
+// EditLoadBalancer : Edit load balancer
 // Edit porperties of an existing load balancer.
 func (globalLoadBalancer *GlobalLoadBalancerV1) EditLoadBalancer(editLoadBalancerOptions *EditLoadBalancerOptions) (result *LoadBalancersResp, response *core.DetailedResponse, err error) {
+	return globalLoadBalancer.EditLoadBalancerWithContext(context.Background(), editLoadBalancerOptions)
+}
+
+// EditLoadBalancerWithContext is an alternate form of the EditLoadBalancer method which supports a Context parameter
+func (globalLoadBalancer *GlobalLoadBalancerV1) EditLoadBalancerWithContext(ctx context.Context, editLoadBalancerOptions *EditLoadBalancerOptions) (result *LoadBalancersResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(editLoadBalancerOptions, "editLoadBalancerOptions cannot be nil")
 	if err != nil {
 		return
@@ -267,11 +345,16 @@ func (globalLoadBalancer *GlobalLoadBalancerV1) EditLoadBalancer(editLoadBalance
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "load_balancers"}
-	pathParameters := []string{*globalLoadBalancer.Crn, *globalLoadBalancer.ZoneIdentifier, *editLoadBalancerOptions.LoadBalancerIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *globalLoadBalancer.Crn,
+		"zone_identifier": *globalLoadBalancer.ZoneIdentifier,
+		"load_balancer_identifier": *editLoadBalancerOptions.LoadBalancerIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PUT)
-	_, err = builder.ConstructHTTPURL(globalLoadBalancer.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = globalLoadBalancer.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(globalLoadBalancer.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/load_balancers/{load_balancer_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -345,9 +428,14 @@ func (globalLoadBalancer *GlobalLoadBalancerV1) EditLoadBalancer(editLoadBalance
 	return
 }
 
-// DeleteLoadBalancer : Delete a load balancer
+// DeleteLoadBalancer : Delete load balancer
 // Delete a load balancer.
 func (globalLoadBalancer *GlobalLoadBalancerV1) DeleteLoadBalancer(deleteLoadBalancerOptions *DeleteLoadBalancerOptions) (result *DeleteLoadBalancersResp, response *core.DetailedResponse, err error) {
+	return globalLoadBalancer.DeleteLoadBalancerWithContext(context.Background(), deleteLoadBalancerOptions)
+}
+
+// DeleteLoadBalancerWithContext is an alternate form of the DeleteLoadBalancer method which supports a Context parameter
+func (globalLoadBalancer *GlobalLoadBalancerV1) DeleteLoadBalancerWithContext(ctx context.Context, deleteLoadBalancerOptions *DeleteLoadBalancerOptions) (result *DeleteLoadBalancersResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteLoadBalancerOptions, "deleteLoadBalancerOptions cannot be nil")
 	if err != nil {
 		return
@@ -357,11 +445,16 @@ func (globalLoadBalancer *GlobalLoadBalancerV1) DeleteLoadBalancer(deleteLoadBal
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "load_balancers"}
-	pathParameters := []string{*globalLoadBalancer.Crn, *globalLoadBalancer.ZoneIdentifier, *deleteLoadBalancerOptions.LoadBalancerIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *globalLoadBalancer.Crn,
+		"zone_identifier": *globalLoadBalancer.ZoneIdentifier,
+		"load_balancer_identifier": *deleteLoadBalancerOptions.LoadBalancerIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(globalLoadBalancer.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = globalLoadBalancer.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(globalLoadBalancer.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/load_balancers/{load_balancer_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -395,9 +488,14 @@ func (globalLoadBalancer *GlobalLoadBalancerV1) DeleteLoadBalancer(deleteLoadBal
 	return
 }
 
-// GetLoadBalancerSettings : Get a load balancer
+// GetLoadBalancerSettings : Get load balancer
 // For a given zone identifier and load balancer id, get the load balancer settings.
 func (globalLoadBalancer *GlobalLoadBalancerV1) GetLoadBalancerSettings(getLoadBalancerSettingsOptions *GetLoadBalancerSettingsOptions) (result *LoadBalancersResp, response *core.DetailedResponse, err error) {
+	return globalLoadBalancer.GetLoadBalancerSettingsWithContext(context.Background(), getLoadBalancerSettingsOptions)
+}
+
+// GetLoadBalancerSettingsWithContext is an alternate form of the GetLoadBalancerSettings method which supports a Context parameter
+func (globalLoadBalancer *GlobalLoadBalancerV1) GetLoadBalancerSettingsWithContext(ctx context.Context, getLoadBalancerSettingsOptions *GetLoadBalancerSettingsOptions) (result *LoadBalancersResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getLoadBalancerSettingsOptions, "getLoadBalancerSettingsOptions cannot be nil")
 	if err != nil {
 		return
@@ -407,11 +505,16 @@ func (globalLoadBalancer *GlobalLoadBalancerV1) GetLoadBalancerSettings(getLoadB
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "load_balancers"}
-	pathParameters := []string{*globalLoadBalancer.Crn, *globalLoadBalancer.ZoneIdentifier, *getLoadBalancerSettingsOptions.LoadBalancerIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *globalLoadBalancer.Crn,
+		"zone_identifier": *globalLoadBalancer.ZoneIdentifier,
+		"load_balancer_identifier": *getLoadBalancerSettingsOptions.LoadBalancerIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(globalLoadBalancer.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = globalLoadBalancer.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(globalLoadBalancer.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/load_balancers/{load_balancer_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -581,7 +684,7 @@ func (options *CreateLoadBalancerOptions) SetHeaders(param map[string]string) *C
 // DeleteLoadBalancerOptions : The DeleteLoadBalancer options.
 type DeleteLoadBalancerOptions struct {
 	// load balancer identifier.
-	LoadBalancerIdentifier *string `json:"load_balancer_identifier" validate:"required"`
+	LoadBalancerIdentifier *string `json:"load_balancer_identifier" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -627,7 +730,7 @@ func UnmarshalDeleteLoadBalancersRespResult(m map[string]json.RawMessage, result
 // EditLoadBalancerOptions : The EditLoadBalancer options.
 type EditLoadBalancerOptions struct {
 	// load balancer identifier.
-	LoadBalancerIdentifier *string `json:"load_balancer_identifier" validate:"required"`
+	LoadBalancerIdentifier *string `json:"load_balancer_identifier" validate:"required,ne="`
 
 	// name.
 	Name *string `json:"name,omitempty"`
@@ -771,7 +874,7 @@ func (options *EditLoadBalancerOptions) SetHeaders(param map[string]string) *Edi
 // GetLoadBalancerSettingsOptions : The GetLoadBalancerSettings options.
 type GetLoadBalancerSettingsOptions struct {
 	// load balancer identifier.
-	LoadBalancerIdentifier *string `json:"load_balancer_identifier" validate:"required"`
+	LoadBalancerIdentifier *string `json:"load_balancer_identifier" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string

@@ -113,6 +113,7 @@ func getServicePropertiesFromCredentialFile(credentialKey string) map[string]str
 
 	// If we found a file to load, then load it.
 	if credentialFilePath != "" {
+		/* #nosec G304 */
 		file, err := os.Open(credentialFilePath)
 		if err != nil {
 			return nil

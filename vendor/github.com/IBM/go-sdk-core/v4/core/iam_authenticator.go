@@ -29,6 +29,7 @@ import (
 const (
 	DEFAULT_IAM_URL             = "https://iam.cloud.ibm.com/identity/token"
 	DEFAULT_CONTENT_TYPE        = "application/x-www-form-urlencoded"
+	/* #nosec G101 */
 	REQUEST_TOKEN_GRANT_TYPE    = "urn:ibm:params:oauth:grant-type:apikey"
 	REQUEST_TOKEN_RESPONSE_TYPE = "cloud_iam"
 )
@@ -230,7 +231,7 @@ func (authenticator *IamAuthenticator) synchronizedRequestToken() error {
 // unmarshals the token information to the tokenData cache. Returns
 // an error if the token was unable to be fetched, otherwise returns nil
 func (authenticator *IamAuthenticator) getTokenData() error {
-	tokenResponse, err := authenticator.requestToken()
+	tokenResponse, err := authenticator.RequestToken()
 	if err != nil {
 		return err
 	}
@@ -243,8 +244,8 @@ func (authenticator *IamAuthenticator) getTokenData() error {
 	return nil
 }
 
-// requestToken: fetches a new access token from the token server.
-func (authenticator *IamAuthenticator) requestToken() (*iamTokenServerResponse, error) {
+// RequestToken: fetches a new access token from the token server.
+func (authenticator *IamAuthenticator) RequestToken() (*IamTokenServerResponse, error) {
 	// Use the default IAM URL if one was not specified by the user.
 	url := authenticator.URL
 	if url == "" {
@@ -262,7 +263,7 @@ func (authenticator *IamAuthenticator) requestToken() (*iamTokenServerResponse, 
 		AddFormData("grant_type", "", "", REQUEST_TOKEN_GRANT_TYPE).
 		AddFormData("apikey", "", "", authenticator.ApiKey).
 		AddFormData("response_type", "", "", REQUEST_TOKEN_RESPONSE_TYPE)
-	
+
 	// Add any optional parameters to the request.
 	if authenticator.Scope != "" {
 		builder.AddFormData("scope", "", "", authenticator.Scope)
@@ -293,6 +294,7 @@ func (authenticator *IamAuthenticator) requestToken() (*iamTokenServerResponse, 
 		// If the user told us to disable SSL verification, then do it now.
 		if authenticator.DisableSSLVerification {
 			transport := &http.Transport{
+				/* #nosec G402 */
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			}
 			authenticator.Client.Transport = transport
@@ -317,14 +319,14 @@ func (authenticator *IamAuthenticator) requestToken() (*iamTokenServerResponse, 
 		return nil, NewAuthenticationError(detailedResponse, fmt.Errorf(buff.String()))
 	}
 
-	tokenResponse := &iamTokenServerResponse{}
+	tokenResponse := &IamTokenServerResponse{}
 	_ = json.NewDecoder(resp.Body).Decode(tokenResponse)
 	defer resp.Body.Close()
 	return tokenResponse, nil
 }
 
-// iamTokenServerResponse : This struct models a response received from the token server.
-type iamTokenServerResponse struct {
+// IamTokenServerResponse : This struct models a response received from the token server.
+type IamTokenServerResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 	TokenType    string `json:"token_type"`
@@ -340,7 +342,7 @@ type iamTokenData struct {
 }
 
 // newIamTokenData: constructs a new IamTokenData instance from the specified IamTokenServerResponse instance.
-func newIamTokenData(tokenResponse *iamTokenServerResponse) (*iamTokenData, error) {
+func newIamTokenData(tokenResponse *IamTokenServerResponse) (*iamTokenData, error) {
 
 	if tokenResponse == nil {
 		return nil, fmt.Errorf("Error while trying to parse access token!")

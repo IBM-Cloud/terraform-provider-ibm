@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.20.0-debb9f29-20201203-202043
+ */
+ 
+
 // Package zoneratelimitsv1 : Operations and models for the ZoneRateLimitsV1 service
 package zoneratelimitsv1
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/go-sdk-core/v4/core"
 	common "github.com/IBM/networking-go-sdk/common"
+	"net/http"
 	"reflect"
+	"time"
 )
 
 // ZoneRateLimitsV1 : Zone Rate Limits
@@ -119,24 +127,79 @@ func NewZoneRateLimitsV1(options *ZoneRateLimitsV1Options) (service *ZoneRateLim
 	return
 }
 
+// GetServiceURLForRegion returns the service URL to be used for the specified region
+func GetServiceURLForRegion(region string) (string, error) {
+	return "", fmt.Errorf("service does not support regional URLs")
+}
+
+// Clone makes a copy of "zoneRateLimits" suitable for processing requests.
+func (zoneRateLimits *ZoneRateLimitsV1) Clone() *ZoneRateLimitsV1 {
+	if core.IsNil(zoneRateLimits) {
+		return nil
+	}
+	clone := *zoneRateLimits
+	clone.Service = zoneRateLimits.Service.Clone()
+	return &clone
+}
+
 // SetServiceURL sets the service URL
 func (zoneRateLimits *ZoneRateLimitsV1) SetServiceURL(url string) error {
 	return zoneRateLimits.Service.SetServiceURL(url)
 }
 
+// GetServiceURL returns the service URL
+func (zoneRateLimits *ZoneRateLimitsV1) GetServiceURL() string {
+	return zoneRateLimits.Service.GetServiceURL()
+}
+
+// SetDefaultHeaders sets HTTP headers to be sent in every request
+func (zoneRateLimits *ZoneRateLimitsV1) SetDefaultHeaders(headers http.Header) {
+	zoneRateLimits.Service.SetDefaultHeaders(headers)
+}
+
+// SetEnableGzipCompression sets the service's EnableGzipCompression field
+func (zoneRateLimits *ZoneRateLimitsV1) SetEnableGzipCompression(enableGzip bool) {
+	zoneRateLimits.Service.SetEnableGzipCompression(enableGzip)
+}
+
+// GetEnableGzipCompression returns the service's EnableGzipCompression field
+func (zoneRateLimits *ZoneRateLimitsV1) GetEnableGzipCompression() bool {
+	return zoneRateLimits.Service.GetEnableGzipCompression()
+}
+
+// EnableRetries enables automatic retries for requests invoked for this service instance.
+// If either parameter is specified as 0, then a default value is used instead.
+func (zoneRateLimits *ZoneRateLimitsV1) EnableRetries(maxRetries int, maxRetryInterval time.Duration) {
+	zoneRateLimits.Service.EnableRetries(maxRetries, maxRetryInterval)
+}
+
+// DisableRetries disables automatic retries for requests invoked for this service instance.
+func (zoneRateLimits *ZoneRateLimitsV1) DisableRetries() {
+	zoneRateLimits.Service.DisableRetries()
+}
+
 // ListAllZoneRateLimits : List all rate limits
 // The details of Rate Limit for a given zone under a given service instance.
 func (zoneRateLimits *ZoneRateLimitsV1) ListAllZoneRateLimits(listAllZoneRateLimitsOptions *ListAllZoneRateLimitsOptions) (result *ListRatelimitResp, response *core.DetailedResponse, err error) {
+	return zoneRateLimits.ListAllZoneRateLimitsWithContext(context.Background(), listAllZoneRateLimitsOptions)
+}
+
+// ListAllZoneRateLimitsWithContext is an alternate form of the ListAllZoneRateLimits method which supports a Context parameter
+func (zoneRateLimits *ZoneRateLimitsV1) ListAllZoneRateLimitsWithContext(ctx context.Context, listAllZoneRateLimitsOptions *ListAllZoneRateLimitsOptions) (result *ListRatelimitResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listAllZoneRateLimitsOptions, "listAllZoneRateLimitsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "rate_limits"}
-	pathParameters := []string{*zoneRateLimits.Crn, *zoneRateLimits.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zoneRateLimits.Crn,
+		"zone_identifier": *zoneRateLimits.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zoneRateLimits.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zoneRateLimits.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zoneRateLimits.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/rate_limits`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -180,16 +243,25 @@ func (zoneRateLimits *ZoneRateLimitsV1) ListAllZoneRateLimits(listAllZoneRateLim
 // CreateZoneRateLimits : Create rate limit
 // Create a new rate limit for a given zone under a service instance.
 func (zoneRateLimits *ZoneRateLimitsV1) CreateZoneRateLimits(createZoneRateLimitsOptions *CreateZoneRateLimitsOptions) (result *RatelimitResp, response *core.DetailedResponse, err error) {
+	return zoneRateLimits.CreateZoneRateLimitsWithContext(context.Background(), createZoneRateLimitsOptions)
+}
+
+// CreateZoneRateLimitsWithContext is an alternate form of the CreateZoneRateLimits method which supports a Context parameter
+func (zoneRateLimits *ZoneRateLimitsV1) CreateZoneRateLimitsWithContext(ctx context.Context, createZoneRateLimitsOptions *CreateZoneRateLimitsOptions) (result *RatelimitResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(createZoneRateLimitsOptions, "createZoneRateLimitsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "rate_limits"}
-	pathParameters := []string{*zoneRateLimits.Crn, *zoneRateLimits.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zoneRateLimits.Crn,
+		"zone_identifier": *zoneRateLimits.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.POST)
-	_, err = builder.ConstructHTTPURL(zoneRateLimits.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zoneRateLimits.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zoneRateLimits.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/rate_limits`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -257,6 +329,11 @@ func (zoneRateLimits *ZoneRateLimitsV1) CreateZoneRateLimits(createZoneRateLimit
 // DeleteZoneRateLimit : Delete rate limit
 // Delete a rate limit given its id.
 func (zoneRateLimits *ZoneRateLimitsV1) DeleteZoneRateLimit(deleteZoneRateLimitOptions *DeleteZoneRateLimitOptions) (result *DeleteRateLimitResp, response *core.DetailedResponse, err error) {
+	return zoneRateLimits.DeleteZoneRateLimitWithContext(context.Background(), deleteZoneRateLimitOptions)
+}
+
+// DeleteZoneRateLimitWithContext is an alternate form of the DeleteZoneRateLimit method which supports a Context parameter
+func (zoneRateLimits *ZoneRateLimitsV1) DeleteZoneRateLimitWithContext(ctx context.Context, deleteZoneRateLimitOptions *DeleteZoneRateLimitOptions) (result *DeleteRateLimitResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteZoneRateLimitOptions, "deleteZoneRateLimitOptions cannot be nil")
 	if err != nil {
 		return
@@ -266,11 +343,16 @@ func (zoneRateLimits *ZoneRateLimitsV1) DeleteZoneRateLimit(deleteZoneRateLimitO
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "rate_limits"}
-	pathParameters := []string{*zoneRateLimits.Crn, *zoneRateLimits.ZoneIdentifier, *deleteZoneRateLimitOptions.RateLimitIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zoneRateLimits.Crn,
+		"zone_identifier": *zoneRateLimits.ZoneIdentifier,
+		"rate_limit_identifier": *deleteZoneRateLimitOptions.RateLimitIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(zoneRateLimits.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zoneRateLimits.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zoneRateLimits.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/rate_limits/{rate_limit_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -307,6 +389,11 @@ func (zoneRateLimits *ZoneRateLimitsV1) DeleteZoneRateLimit(deleteZoneRateLimitO
 // GetRateLimit : Get a rate limit
 // Get the details of a rate limit for a given zone under a given service instance.
 func (zoneRateLimits *ZoneRateLimitsV1) GetRateLimit(getRateLimitOptions *GetRateLimitOptions) (result *RatelimitResp, response *core.DetailedResponse, err error) {
+	return zoneRateLimits.GetRateLimitWithContext(context.Background(), getRateLimitOptions)
+}
+
+// GetRateLimitWithContext is an alternate form of the GetRateLimit method which supports a Context parameter
+func (zoneRateLimits *ZoneRateLimitsV1) GetRateLimitWithContext(ctx context.Context, getRateLimitOptions *GetRateLimitOptions) (result *RatelimitResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getRateLimitOptions, "getRateLimitOptions cannot be nil")
 	if err != nil {
 		return
@@ -316,11 +403,16 @@ func (zoneRateLimits *ZoneRateLimitsV1) GetRateLimit(getRateLimitOptions *GetRat
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "rate_limits"}
-	pathParameters := []string{*zoneRateLimits.Crn, *zoneRateLimits.ZoneIdentifier, *getRateLimitOptions.RateLimitIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zoneRateLimits.Crn,
+		"zone_identifier": *zoneRateLimits.ZoneIdentifier,
+		"rate_limit_identifier": *getRateLimitOptions.RateLimitIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zoneRateLimits.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zoneRateLimits.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zoneRateLimits.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/rate_limits/{rate_limit_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -357,6 +449,11 @@ func (zoneRateLimits *ZoneRateLimitsV1) GetRateLimit(getRateLimitOptions *GetRat
 // UpdateRateLimit : Update rate limit
 // Update an existing rate limit for a given zone under a service instance.
 func (zoneRateLimits *ZoneRateLimitsV1) UpdateRateLimit(updateRateLimitOptions *UpdateRateLimitOptions) (result *RatelimitResp, response *core.DetailedResponse, err error) {
+	return zoneRateLimits.UpdateRateLimitWithContext(context.Background(), updateRateLimitOptions)
+}
+
+// UpdateRateLimitWithContext is an alternate form of the UpdateRateLimit method which supports a Context parameter
+func (zoneRateLimits *ZoneRateLimitsV1) UpdateRateLimitWithContext(ctx context.Context, updateRateLimitOptions *UpdateRateLimitOptions) (result *RatelimitResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateRateLimitOptions, "updateRateLimitOptions cannot be nil")
 	if err != nil {
 		return
@@ -366,11 +463,16 @@ func (zoneRateLimits *ZoneRateLimitsV1) UpdateRateLimit(updateRateLimitOptions *
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "rate_limits"}
-	pathParameters := []string{*zoneRateLimits.Crn, *zoneRateLimits.ZoneIdentifier, *updateRateLimitOptions.RateLimitIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zoneRateLimits.Crn,
+		"zone_identifier": *zoneRateLimits.ZoneIdentifier,
+		"rate_limit_identifier": *updateRateLimitOptions.RateLimitIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PUT)
-	_, err = builder.ConstructHTTPURL(zoneRateLimits.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zoneRateLimits.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zoneRateLimits.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/rate_limits/{rate_limit_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -548,7 +650,7 @@ func UnmarshalDeleteRateLimitRespResult(m map[string]json.RawMessage, result int
 // DeleteZoneRateLimitOptions : The DeleteZoneRateLimit options.
 type DeleteZoneRateLimitOptions struct {
 	// Identifier of the rate limit to be deleted.
-	RateLimitIdentifier *string `json:"rate_limit_identifier" validate:"required"`
+	RateLimitIdentifier *string `json:"rate_limit_identifier" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -576,7 +678,7 @@ func (options *DeleteZoneRateLimitOptions) SetHeaders(param map[string]string) *
 // GetRateLimitOptions : The GetRateLimit options.
 type GetRateLimitOptions struct {
 	// Identifier of rate limit for the given zone.
-	RateLimitIdentifier *string `json:"rate_limit_identifier" validate:"required"`
+	RateLimitIdentifier *string `json:"rate_limit_identifier" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -1304,7 +1406,7 @@ func UnmarshalRatelimitObjectMatchResponseHeadersItem(m map[string]json.RawMessa
 // UpdateRateLimitOptions : The UpdateRateLimit options.
 type UpdateRateLimitOptions struct {
 	// Identifier of rate limit.
-	RateLimitIdentifier *string `json:"rate_limit_identifier" validate:"required"`
+	RateLimitIdentifier *string `json:"rate_limit_identifier" validate:"required,ne="`
 
 	// Whether this ratelimit is currently disabled.
 	Disabled *bool `json:"disabled,omitempty"`

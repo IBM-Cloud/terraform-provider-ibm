@@ -14,16 +14,23 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.20.0-debb9f29-20201203-202043
+ */
+ 
+
 // Package wafrulepackagesapiv1 : Operations and models for the WafRulePackagesApiV1 service
 package wafrulepackagesapiv1
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"reflect"
-
 	"github.com/IBM/go-sdk-core/v4/core"
 	common "github.com/IBM/networking-go-sdk/common"
+	"net/http"
+	"reflect"
+	"time"
 )
 
 // WafRulePackagesApiV1 : This document describes CIS WAF Rule Packages API.
@@ -113,11 +120,26 @@ func NewWafRulePackagesApiV1(options *WafRulePackagesApiV1Options) (service *Waf
 
 	service = &WafRulePackagesApiV1{
 		Service: baseService,
-		Crn:     options.Crn,
-		ZoneID:  options.ZoneID,
+		Crn: options.Crn,
+		ZoneID: options.ZoneID,
 	}
 
 	return
+}
+
+// GetServiceURLForRegion returns the service URL to be used for the specified region
+func GetServiceURLForRegion(region string) (string, error) {
+	return "", fmt.Errorf("service does not support regional URLs")
+}
+
+// Clone makes a copy of "wafRulePackagesApi" suitable for processing requests.
+func (wafRulePackagesApi *WafRulePackagesApiV1) Clone() *WafRulePackagesApiV1 {
+	if core.IsNil(wafRulePackagesApi) {
+		return nil
+	}
+	clone := *wafRulePackagesApi
+	clone.Service = wafRulePackagesApi.Service.Clone()
+	return &clone
 }
 
 // SetServiceURL sets the service URL
@@ -125,19 +147,59 @@ func (wafRulePackagesApi *WafRulePackagesApiV1) SetServiceURL(url string) error 
 	return wafRulePackagesApi.Service.SetServiceURL(url)
 }
 
-// ListWafPackages : Get firewall packages for a zone
+// GetServiceURL returns the service URL
+func (wafRulePackagesApi *WafRulePackagesApiV1) GetServiceURL() string {
+	return wafRulePackagesApi.Service.GetServiceURL()
+}
+
+// SetDefaultHeaders sets HTTP headers to be sent in every request
+func (wafRulePackagesApi *WafRulePackagesApiV1) SetDefaultHeaders(headers http.Header) {
+	wafRulePackagesApi.Service.SetDefaultHeaders(headers)
+}
+
+// SetEnableGzipCompression sets the service's EnableGzipCompression field
+func (wafRulePackagesApi *WafRulePackagesApiV1) SetEnableGzipCompression(enableGzip bool) {
+	wafRulePackagesApi.Service.SetEnableGzipCompression(enableGzip)
+}
+
+// GetEnableGzipCompression returns the service's EnableGzipCompression field
+func (wafRulePackagesApi *WafRulePackagesApiV1) GetEnableGzipCompression() bool {
+	return wafRulePackagesApi.Service.GetEnableGzipCompression()
+}
+
+// EnableRetries enables automatic retries for requests invoked for this service instance.
+// If either parameter is specified as 0, then a default value is used instead.
+func (wafRulePackagesApi *WafRulePackagesApiV1) EnableRetries(maxRetries int, maxRetryInterval time.Duration) {
+	wafRulePackagesApi.Service.EnableRetries(maxRetries, maxRetryInterval)
+}
+
+// DisableRetries disables automatic retries for requests invoked for this service instance.
+func (wafRulePackagesApi *WafRulePackagesApiV1) DisableRetries() {
+	wafRulePackagesApi.Service.DisableRetries()
+}
+
+// ListWafPackages : List all WAF rule packages
 // Get firewall packages for a zone.
 func (wafRulePackagesApi *WafRulePackagesApiV1) ListWafPackages(listWafPackagesOptions *ListWafPackagesOptions) (result *WafPackagesResponse, response *core.DetailedResponse, err error) {
+	return wafRulePackagesApi.ListWafPackagesWithContext(context.Background(), listWafPackagesOptions)
+}
+
+// ListWafPackagesWithContext is an alternate form of the ListWafPackages method which supports a Context parameter
+func (wafRulePackagesApi *WafRulePackagesApiV1) ListWafPackagesWithContext(ctx context.Context, listWafPackagesOptions *ListWafPackagesOptions) (result *WafPackagesResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listWafPackagesOptions, "listWafPackagesOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/waf/packages"}
-	pathParameters := []string{*wafRulePackagesApi.Crn, *wafRulePackagesApi.ZoneID}
+	pathParamsMap := map[string]string{
+		"crn": *wafRulePackagesApi.Crn,
+		"zone_id": *wafRulePackagesApi.ZoneID,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(wafRulePackagesApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = wafRulePackagesApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(wafRulePackagesApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/firewall/waf/packages`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -190,9 +252,14 @@ func (wafRulePackagesApi *WafRulePackagesApiV1) ListWafPackages(listWafPackagesO
 	return
 }
 
-// GetWafPackage : Get information about a single firewall package
+// GetWafPackage : Get WAF rule package
 // Get information about a single firewall package.
 func (wafRulePackagesApi *WafRulePackagesApiV1) GetWafPackage(getWafPackageOptions *GetWafPackageOptions) (result *WafPackageResponse, response *core.DetailedResponse, err error) {
+	return wafRulePackagesApi.GetWafPackageWithContext(context.Background(), getWafPackageOptions)
+}
+
+// GetWafPackageWithContext is an alternate form of the GetWafPackage method which supports a Context parameter
+func (wafRulePackagesApi *WafRulePackagesApiV1) GetWafPackageWithContext(ctx context.Context, getWafPackageOptions *GetWafPackageOptions) (result *WafPackageResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getWafPackageOptions, "getWafPackageOptions cannot be nil")
 	if err != nil {
 		return
@@ -202,11 +269,16 @@ func (wafRulePackagesApi *WafRulePackagesApiV1) GetWafPackage(getWafPackageOptio
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/waf/packages"}
-	pathParameters := []string{*wafRulePackagesApi.Crn, *wafRulePackagesApi.ZoneID, *getWafPackageOptions.PackageID}
+	pathParamsMap := map[string]string{
+		"crn": *wafRulePackagesApi.Crn,
+		"zone_id": *wafRulePackagesApi.ZoneID,
+		"package_id": *getWafPackageOptions.PackageID,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(wafRulePackagesApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = wafRulePackagesApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(wafRulePackagesApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/firewall/waf/packages/{package_id}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -240,9 +312,14 @@ func (wafRulePackagesApi *WafRulePackagesApiV1) GetWafPackage(getWafPackageOptio
 	return
 }
 
-// UpdateWafPackage : Change the sensitivity and action for an anomaly detection type WAF rule package
+// UpdateWafPackage : Change WAF rule package package
 // Change the sensitivity and action for an anomaly detection type WAF rule package.
 func (wafRulePackagesApi *WafRulePackagesApiV1) UpdateWafPackage(updateWafPackageOptions *UpdateWafPackageOptions) (result *WafPackageResponse, response *core.DetailedResponse, err error) {
+	return wafRulePackagesApi.UpdateWafPackageWithContext(context.Background(), updateWafPackageOptions)
+}
+
+// UpdateWafPackageWithContext is an alternate form of the UpdateWafPackage method which supports a Context parameter
+func (wafRulePackagesApi *WafRulePackagesApiV1) UpdateWafPackageWithContext(ctx context.Context, updateWafPackageOptions *UpdateWafPackageOptions) (result *WafPackageResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateWafPackageOptions, "updateWafPackageOptions cannot be nil")
 	if err != nil {
 		return
@@ -252,11 +329,16 @@ func (wafRulePackagesApi *WafRulePackagesApiV1) UpdateWafPackage(updateWafPackag
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/waf/packages"}
-	pathParameters := []string{*wafRulePackagesApi.Crn, *wafRulePackagesApi.ZoneID, *updateWafPackageOptions.PackageID}
+	pathParamsMap := map[string]string{
+		"crn": *wafRulePackagesApi.Crn,
+		"zone_id": *wafRulePackagesApi.ZoneID,
+		"package_id": *updateWafPackageOptions.PackageID,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(wafRulePackagesApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = wafRulePackagesApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(wafRulePackagesApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/firewall/waf/packages/{package_id}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -306,7 +388,7 @@ func (wafRulePackagesApi *WafRulePackagesApiV1) UpdateWafPackage(updateWafPackag
 // GetWafPackageOptions : The GetWafPackage options.
 type GetWafPackageOptions struct {
 	// Package ID.
-	PackageID *string `json:"package_id" validate:"required"`
+	PackageID *string `json:"package_id" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -358,7 +440,7 @@ type ListWafPackagesOptions struct {
 // Constants associated with the ListWafPackagesOptions.Direction property.
 // Direction to order packages.
 const (
-	ListWafPackagesOptions_Direction_Asc  = "asc"
+	ListWafPackagesOptions_Direction_Asc = "asc"
 	ListWafPackagesOptions_Direction_Desc = "desc"
 )
 
@@ -419,7 +501,7 @@ func (options *ListWafPackagesOptions) SetHeaders(param map[string]string) *List
 // UpdateWafPackageOptions : The UpdateWafPackage options.
 type UpdateWafPackageOptions struct {
 	// Package ID.
-	PackageID *string `json:"package_id" validate:"required"`
+	PackageID *string `json:"package_id" validate:"required,ne="`
 
 	// The sensitivity of the firewall package.
 	Sensitivity *string `json:"sensitivity,omitempty"`
@@ -434,18 +516,18 @@ type UpdateWafPackageOptions struct {
 // Constants associated with the UpdateWafPackageOptions.Sensitivity property.
 // The sensitivity of the firewall package.
 const (
-	UpdateWafPackageOptions_Sensitivity_High   = "high"
-	UpdateWafPackageOptions_Sensitivity_Low    = "low"
+	UpdateWafPackageOptions_Sensitivity_High = "high"
+	UpdateWafPackageOptions_Sensitivity_Low = "low"
 	UpdateWafPackageOptions_Sensitivity_Medium = "medium"
-	UpdateWafPackageOptions_Sensitivity_Off    = "off"
+	UpdateWafPackageOptions_Sensitivity_Off = "off"
 )
 
 // Constants associated with the UpdateWafPackageOptions.ActionMode property.
 // The default action that will be taken for rules under the firewall package.
 const (
-	UpdateWafPackageOptions_ActionMode_Block     = "block"
+	UpdateWafPackageOptions_ActionMode_Block = "block"
 	UpdateWafPackageOptions_ActionMode_Challenge = "challenge"
-	UpdateWafPackageOptions_ActionMode_Simulate  = "simulate"
+	UpdateWafPackageOptions_ActionMode_Simulate = "simulate"
 )
 
 // NewUpdateWafPackageOptions : Instantiate UpdateWafPackageOptions
@@ -506,6 +588,7 @@ type WafPackageResponseResult struct {
 	ActionMode *string `json:"action_mode,omitempty"`
 }
 
+
 // UnmarshalWafPackageResponseResult unmarshals an instance of WafPackageResponseResult from the specified map of raw messages.
 func UnmarshalWafPackageResponseResult(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(WafPackageResponseResult)
@@ -560,6 +643,7 @@ type WafPackagesResponseResultInfo struct {
 	TotalCount *int64 `json:"total_count" validate:"required"`
 }
 
+
 // UnmarshalWafPackagesResponseResultInfo unmarshals an instance of WafPackagesResponseResultInfo from the specified map of raw messages.
 func UnmarshalWafPackagesResponseResultInfo(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(WafPackagesResponseResultInfo)
@@ -603,6 +687,7 @@ type WafPackagesResponseResultItem struct {
 	// Value.
 	Status *string `json:"status,omitempty"`
 }
+
 
 // UnmarshalWafPackagesResponseResultItem unmarshals an instance of WafPackagesResponseResultItem from the specified map of raw messages.
 func UnmarshalWafPackagesResponseResultItem(m map[string]json.RawMessage, result interface{}) (err error) {
@@ -650,6 +735,7 @@ type WafPackageResponse struct {
 	Result *WafPackageResponseResult `json:"result" validate:"required"`
 }
 
+
 // UnmarshalWafPackageResponse unmarshals an instance of WafPackageResponse from the specified map of raw messages.
 func UnmarshalWafPackageResponse(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(WafPackageResponse)
@@ -690,6 +776,7 @@ type WafPackagesResponse struct {
 	// Statistics of results.
 	ResultInfo *WafPackagesResponseResultInfo `json:"result_info" validate:"required"`
 }
+
 
 // UnmarshalWafPackagesResponse unmarshals an instance of WafPackagesResponse from the specified map of raw messages.
 func UnmarshalWafPackagesResponse(m map[string]json.RawMessage, result interface{}) (err error) {
