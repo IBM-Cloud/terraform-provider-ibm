@@ -14,17 +14,25 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.20.0-debb9f29-20201203-202043
+ */
+ 
+
 // Package edgefunctionsapiv1 : Operations and models for the EdgeFunctionsApiV1 service
 package edgefunctionsapiv1
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/go-sdk-core/v4/core"
 	common "github.com/IBM/networking-go-sdk/common"
 	"github.com/go-openapi/strfmt"
 	"io"
+	"net/http"
 	"reflect"
+	"time"
 )
 
 // EdgeFunctionsApiV1 : Edge Functions
@@ -121,24 +129,78 @@ func NewEdgeFunctionsApiV1(options *EdgeFunctionsApiV1Options) (service *EdgeFun
 	return
 }
 
+// GetServiceURLForRegion returns the service URL to be used for the specified region
+func GetServiceURLForRegion(region string) (string, error) {
+	return "", fmt.Errorf("service does not support regional URLs")
+}
+
+// Clone makes a copy of "edgeFunctionsApi" suitable for processing requests.
+func (edgeFunctionsApi *EdgeFunctionsApiV1) Clone() *EdgeFunctionsApiV1 {
+	if core.IsNil(edgeFunctionsApi) {
+		return nil
+	}
+	clone := *edgeFunctionsApi
+	clone.Service = edgeFunctionsApi.Service.Clone()
+	return &clone
+}
+
 // SetServiceURL sets the service URL
 func (edgeFunctionsApi *EdgeFunctionsApiV1) SetServiceURL(url string) error {
 	return edgeFunctionsApi.Service.SetServiceURL(url)
 }
 
+// GetServiceURL returns the service URL
+func (edgeFunctionsApi *EdgeFunctionsApiV1) GetServiceURL() string {
+	return edgeFunctionsApi.Service.GetServiceURL()
+}
+
+// SetDefaultHeaders sets HTTP headers to be sent in every request
+func (edgeFunctionsApi *EdgeFunctionsApiV1) SetDefaultHeaders(headers http.Header) {
+	edgeFunctionsApi.Service.SetDefaultHeaders(headers)
+}
+
+// SetEnableGzipCompression sets the service's EnableGzipCompression field
+func (edgeFunctionsApi *EdgeFunctionsApiV1) SetEnableGzipCompression(enableGzip bool) {
+	edgeFunctionsApi.Service.SetEnableGzipCompression(enableGzip)
+}
+
+// GetEnableGzipCompression returns the service's EnableGzipCompression field
+func (edgeFunctionsApi *EdgeFunctionsApiV1) GetEnableGzipCompression() bool {
+	return edgeFunctionsApi.Service.GetEnableGzipCompression()
+}
+
+// EnableRetries enables automatic retries for requests invoked for this service instance.
+// If either parameter is specified as 0, then a default value is used instead.
+func (edgeFunctionsApi *EdgeFunctionsApiV1) EnableRetries(maxRetries int, maxRetryInterval time.Duration) {
+	edgeFunctionsApi.Service.EnableRetries(maxRetries, maxRetryInterval)
+}
+
+// DisableRetries disables automatic retries for requests invoked for this service instance.
+func (edgeFunctionsApi *EdgeFunctionsApiV1) DisableRetries() {
+	edgeFunctionsApi.Service.DisableRetries()
+}
+
 // ListEdgeFunctionsActions : Get all edge functions scripts for a given instance
 // Get all edge functions scripts for a given instance.
 func (edgeFunctionsApi *EdgeFunctionsApiV1) ListEdgeFunctionsActions(listEdgeFunctionsActionsOptions *ListEdgeFunctionsActionsOptions) (result *ListEdgeFunctionsActionsResp, response *core.DetailedResponse, err error) {
+	return edgeFunctionsApi.ListEdgeFunctionsActionsWithContext(context.Background(), listEdgeFunctionsActionsOptions)
+}
+
+// ListEdgeFunctionsActionsWithContext is an alternate form of the ListEdgeFunctionsActions method which supports a Context parameter
+func (edgeFunctionsApi *EdgeFunctionsApiV1) ListEdgeFunctionsActionsWithContext(ctx context.Context, listEdgeFunctionsActionsOptions *ListEdgeFunctionsActionsOptions) (result *ListEdgeFunctionsActionsResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listEdgeFunctionsActionsOptions, "listEdgeFunctionsActionsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "workers/scripts"}
-	pathParameters := []string{*edgeFunctionsApi.Crn}
+	pathParamsMap := map[string]string{
+		"crn": *edgeFunctionsApi.Crn,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(edgeFunctionsApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = edgeFunctionsApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(edgeFunctionsApi.Service.Options.URL, `/v1/{crn}/workers/scripts`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -178,6 +240,11 @@ func (edgeFunctionsApi *EdgeFunctionsApiV1) ListEdgeFunctionsActions(listEdgeFun
 // UpdateEdgeFunctionsAction : Upload or replace an edge functions action for a given instance
 // Upload or replace an exitsing edge functions action for a given instance.
 func (edgeFunctionsApi *EdgeFunctionsApiV1) UpdateEdgeFunctionsAction(updateEdgeFunctionsActionOptions *UpdateEdgeFunctionsActionOptions) (result *GetEdgeFunctionsActionResp, response *core.DetailedResponse, err error) {
+	return edgeFunctionsApi.UpdateEdgeFunctionsActionWithContext(context.Background(), updateEdgeFunctionsActionOptions)
+}
+
+// UpdateEdgeFunctionsActionWithContext is an alternate form of the UpdateEdgeFunctionsAction method which supports a Context parameter
+func (edgeFunctionsApi *EdgeFunctionsApiV1) UpdateEdgeFunctionsActionWithContext(ctx context.Context, updateEdgeFunctionsActionOptions *UpdateEdgeFunctionsActionOptions) (result *GetEdgeFunctionsActionResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateEdgeFunctionsActionOptions, "updateEdgeFunctionsActionOptions cannot be nil")
 	if err != nil {
 		return
@@ -187,11 +254,15 @@ func (edgeFunctionsApi *EdgeFunctionsApiV1) UpdateEdgeFunctionsAction(updateEdge
 		return
 	}
 
-	pathSegments := []string{"v1", "workers/scripts"}
-	pathParameters := []string{*edgeFunctionsApi.Crn, *updateEdgeFunctionsActionOptions.ScriptName}
+	pathParamsMap := map[string]string{
+		"crn": *edgeFunctionsApi.Crn,
+		"script_name": *updateEdgeFunctionsActionOptions.ScriptName,
+	}
 
 	builder := core.NewRequestBuilder(core.PUT)
-	_, err = builder.ConstructHTTPURL(edgeFunctionsApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = edgeFunctionsApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(edgeFunctionsApi.Service.Options.URL, `/v1/{crn}/workers/scripts/{script_name}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -237,6 +308,11 @@ func (edgeFunctionsApi *EdgeFunctionsApiV1) UpdateEdgeFunctionsAction(updateEdge
 // GetEdgeFunctionsAction : Download a edge functions action for a given instance
 // Fetch raw script content for your worker. Note this is the original script content, not JSON encoded.
 func (edgeFunctionsApi *EdgeFunctionsApiV1) GetEdgeFunctionsAction(getEdgeFunctionsActionOptions *GetEdgeFunctionsActionOptions) (result io.ReadCloser, response *core.DetailedResponse, err error) {
+	return edgeFunctionsApi.GetEdgeFunctionsActionWithContext(context.Background(), getEdgeFunctionsActionOptions)
+}
+
+// GetEdgeFunctionsActionWithContext is an alternate form of the GetEdgeFunctionsAction method which supports a Context parameter
+func (edgeFunctionsApi *EdgeFunctionsApiV1) GetEdgeFunctionsActionWithContext(ctx context.Context, getEdgeFunctionsActionOptions *GetEdgeFunctionsActionOptions) (result io.ReadCloser, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getEdgeFunctionsActionOptions, "getEdgeFunctionsActionOptions cannot be nil")
 	if err != nil {
 		return
@@ -246,11 +322,15 @@ func (edgeFunctionsApi *EdgeFunctionsApiV1) GetEdgeFunctionsAction(getEdgeFuncti
 		return
 	}
 
-	pathSegments := []string{"v1", "workers/scripts"}
-	pathParameters := []string{*edgeFunctionsApi.Crn, *getEdgeFunctionsActionOptions.ScriptName}
+	pathParamsMap := map[string]string{
+		"crn": *edgeFunctionsApi.Crn,
+		"script_name": *getEdgeFunctionsActionOptions.ScriptName,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(edgeFunctionsApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = edgeFunctionsApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(edgeFunctionsApi.Service.Options.URL, `/v1/{crn}/workers/scripts/{script_name}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -281,6 +361,11 @@ func (edgeFunctionsApi *EdgeFunctionsApiV1) GetEdgeFunctionsAction(getEdgeFuncti
 // DeleteEdgeFunctionsAction : Delete a edge functions action for a given instance
 // Delete an edge functions action for a given instance.
 func (edgeFunctionsApi *EdgeFunctionsApiV1) DeleteEdgeFunctionsAction(deleteEdgeFunctionsActionOptions *DeleteEdgeFunctionsActionOptions) (result *DeleteEdgeFunctionsActionResp, response *core.DetailedResponse, err error) {
+	return edgeFunctionsApi.DeleteEdgeFunctionsActionWithContext(context.Background(), deleteEdgeFunctionsActionOptions)
+}
+
+// DeleteEdgeFunctionsActionWithContext is an alternate form of the DeleteEdgeFunctionsAction method which supports a Context parameter
+func (edgeFunctionsApi *EdgeFunctionsApiV1) DeleteEdgeFunctionsActionWithContext(ctx context.Context, deleteEdgeFunctionsActionOptions *DeleteEdgeFunctionsActionOptions) (result *DeleteEdgeFunctionsActionResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteEdgeFunctionsActionOptions, "deleteEdgeFunctionsActionOptions cannot be nil")
 	if err != nil {
 		return
@@ -290,11 +375,15 @@ func (edgeFunctionsApi *EdgeFunctionsApiV1) DeleteEdgeFunctionsAction(deleteEdge
 		return
 	}
 
-	pathSegments := []string{"v1", "workers/scripts"}
-	pathParameters := []string{*edgeFunctionsApi.Crn, *deleteEdgeFunctionsActionOptions.ScriptName}
+	pathParamsMap := map[string]string{
+		"crn": *edgeFunctionsApi.Crn,
+		"script_name": *deleteEdgeFunctionsActionOptions.ScriptName,
+	}
 
 	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(edgeFunctionsApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = edgeFunctionsApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(edgeFunctionsApi.Service.Options.URL, `/v1/{crn}/workers/scripts/{script_name}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -334,16 +423,25 @@ func (edgeFunctionsApi *EdgeFunctionsApiV1) DeleteEdgeFunctionsAction(deleteEdge
 // CreateEdgeFunctionsTrigger : Create an edge functions trigger on a given zone
 // Create an edge functions trigger on a given zone.
 func (edgeFunctionsApi *EdgeFunctionsApiV1) CreateEdgeFunctionsTrigger(createEdgeFunctionsTriggerOptions *CreateEdgeFunctionsTriggerOptions) (result *CreateEdgeFunctionsTriggerResp, response *core.DetailedResponse, err error) {
+	return edgeFunctionsApi.CreateEdgeFunctionsTriggerWithContext(context.Background(), createEdgeFunctionsTriggerOptions)
+}
+
+// CreateEdgeFunctionsTriggerWithContext is an alternate form of the CreateEdgeFunctionsTrigger method which supports a Context parameter
+func (edgeFunctionsApi *EdgeFunctionsApiV1) CreateEdgeFunctionsTriggerWithContext(ctx context.Context, createEdgeFunctionsTriggerOptions *CreateEdgeFunctionsTriggerOptions) (result *CreateEdgeFunctionsTriggerResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(createEdgeFunctionsTriggerOptions, "createEdgeFunctionsTriggerOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "workers/routes"}
-	pathParameters := []string{*edgeFunctionsApi.Crn, *edgeFunctionsApi.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *edgeFunctionsApi.Crn,
+		"zone_identifier": *edgeFunctionsApi.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.POST)
-	_, err = builder.ConstructHTTPURL(edgeFunctionsApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = edgeFunctionsApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(edgeFunctionsApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/workers/routes`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -396,16 +494,25 @@ func (edgeFunctionsApi *EdgeFunctionsApiV1) CreateEdgeFunctionsTrigger(createEdg
 // ListEdgeFunctionsTriggers : List all edge functions triggers on a given zone
 // List all edge functions triggers on a given zone.
 func (edgeFunctionsApi *EdgeFunctionsApiV1) ListEdgeFunctionsTriggers(listEdgeFunctionsTriggersOptions *ListEdgeFunctionsTriggersOptions) (result *ListEdgeFunctionsTriggersResp, response *core.DetailedResponse, err error) {
+	return edgeFunctionsApi.ListEdgeFunctionsTriggersWithContext(context.Background(), listEdgeFunctionsTriggersOptions)
+}
+
+// ListEdgeFunctionsTriggersWithContext is an alternate form of the ListEdgeFunctionsTriggers method which supports a Context parameter
+func (edgeFunctionsApi *EdgeFunctionsApiV1) ListEdgeFunctionsTriggersWithContext(ctx context.Context, listEdgeFunctionsTriggersOptions *ListEdgeFunctionsTriggersOptions) (result *ListEdgeFunctionsTriggersResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listEdgeFunctionsTriggersOptions, "listEdgeFunctionsTriggersOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "workers/routes"}
-	pathParameters := []string{*edgeFunctionsApi.Crn, *edgeFunctionsApi.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *edgeFunctionsApi.Crn,
+		"zone_identifier": *edgeFunctionsApi.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(edgeFunctionsApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = edgeFunctionsApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(edgeFunctionsApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/workers/routes`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -445,6 +552,11 @@ func (edgeFunctionsApi *EdgeFunctionsApiV1) ListEdgeFunctionsTriggers(listEdgeFu
 // GetEdgeFunctionsTrigger : Get an edge functions trigger on a given zone
 // Get an edge functions trigger on a given zone.
 func (edgeFunctionsApi *EdgeFunctionsApiV1) GetEdgeFunctionsTrigger(getEdgeFunctionsTriggerOptions *GetEdgeFunctionsTriggerOptions) (result *GetEdgeFunctionsTriggerResp, response *core.DetailedResponse, err error) {
+	return edgeFunctionsApi.GetEdgeFunctionsTriggerWithContext(context.Background(), getEdgeFunctionsTriggerOptions)
+}
+
+// GetEdgeFunctionsTriggerWithContext is an alternate form of the GetEdgeFunctionsTrigger method which supports a Context parameter
+func (edgeFunctionsApi *EdgeFunctionsApiV1) GetEdgeFunctionsTriggerWithContext(ctx context.Context, getEdgeFunctionsTriggerOptions *GetEdgeFunctionsTriggerOptions) (result *GetEdgeFunctionsTriggerResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getEdgeFunctionsTriggerOptions, "getEdgeFunctionsTriggerOptions cannot be nil")
 	if err != nil {
 		return
@@ -454,11 +566,16 @@ func (edgeFunctionsApi *EdgeFunctionsApiV1) GetEdgeFunctionsTrigger(getEdgeFunct
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "workers/routes"}
-	pathParameters := []string{*edgeFunctionsApi.Crn, *edgeFunctionsApi.ZoneIdentifier, *getEdgeFunctionsTriggerOptions.RouteID}
+	pathParamsMap := map[string]string{
+		"crn": *edgeFunctionsApi.Crn,
+		"zone_identifier": *edgeFunctionsApi.ZoneIdentifier,
+		"route_id": *getEdgeFunctionsTriggerOptions.RouteID,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(edgeFunctionsApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = edgeFunctionsApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(edgeFunctionsApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/workers/routes/{route_id}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -498,6 +615,11 @@ func (edgeFunctionsApi *EdgeFunctionsApiV1) GetEdgeFunctionsTrigger(getEdgeFunct
 // UpdateEdgeFunctionsTrigger : Update an edge functions trigger on a given zone
 // Update an edge functions trigger on a given zone.
 func (edgeFunctionsApi *EdgeFunctionsApiV1) UpdateEdgeFunctionsTrigger(updateEdgeFunctionsTriggerOptions *UpdateEdgeFunctionsTriggerOptions) (result *GetEdgeFunctionsTriggerResp, response *core.DetailedResponse, err error) {
+	return edgeFunctionsApi.UpdateEdgeFunctionsTriggerWithContext(context.Background(), updateEdgeFunctionsTriggerOptions)
+}
+
+// UpdateEdgeFunctionsTriggerWithContext is an alternate form of the UpdateEdgeFunctionsTrigger method which supports a Context parameter
+func (edgeFunctionsApi *EdgeFunctionsApiV1) UpdateEdgeFunctionsTriggerWithContext(ctx context.Context, updateEdgeFunctionsTriggerOptions *UpdateEdgeFunctionsTriggerOptions) (result *GetEdgeFunctionsTriggerResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateEdgeFunctionsTriggerOptions, "updateEdgeFunctionsTriggerOptions cannot be nil")
 	if err != nil {
 		return
@@ -507,11 +629,16 @@ func (edgeFunctionsApi *EdgeFunctionsApiV1) UpdateEdgeFunctionsTrigger(updateEdg
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "workers/routes"}
-	pathParameters := []string{*edgeFunctionsApi.Crn, *edgeFunctionsApi.ZoneIdentifier, *updateEdgeFunctionsTriggerOptions.RouteID}
+	pathParamsMap := map[string]string{
+		"crn": *edgeFunctionsApi.Crn,
+		"zone_identifier": *edgeFunctionsApi.ZoneIdentifier,
+		"route_id": *updateEdgeFunctionsTriggerOptions.RouteID,
+	}
 
 	builder := core.NewRequestBuilder(core.PUT)
-	_, err = builder.ConstructHTTPURL(edgeFunctionsApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = edgeFunctionsApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(edgeFunctionsApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/workers/routes/{route_id}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -564,6 +691,11 @@ func (edgeFunctionsApi *EdgeFunctionsApiV1) UpdateEdgeFunctionsTrigger(updateEdg
 // DeleteEdgeFunctionsTrigger : Delete an edge functions trigger on a given zone
 // Delete an edge functions trigger on a given zone.
 func (edgeFunctionsApi *EdgeFunctionsApiV1) DeleteEdgeFunctionsTrigger(deleteEdgeFunctionsTriggerOptions *DeleteEdgeFunctionsTriggerOptions) (result *CreateEdgeFunctionsTriggerResp, response *core.DetailedResponse, err error) {
+	return edgeFunctionsApi.DeleteEdgeFunctionsTriggerWithContext(context.Background(), deleteEdgeFunctionsTriggerOptions)
+}
+
+// DeleteEdgeFunctionsTriggerWithContext is an alternate form of the DeleteEdgeFunctionsTrigger method which supports a Context parameter
+func (edgeFunctionsApi *EdgeFunctionsApiV1) DeleteEdgeFunctionsTriggerWithContext(ctx context.Context, deleteEdgeFunctionsTriggerOptions *DeleteEdgeFunctionsTriggerOptions) (result *CreateEdgeFunctionsTriggerResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteEdgeFunctionsTriggerOptions, "deleteEdgeFunctionsTriggerOptions cannot be nil")
 	if err != nil {
 		return
@@ -573,11 +705,16 @@ func (edgeFunctionsApi *EdgeFunctionsApiV1) DeleteEdgeFunctionsTrigger(deleteEdg
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "workers/routes"}
-	pathParameters := []string{*edgeFunctionsApi.Crn, *edgeFunctionsApi.ZoneIdentifier, *deleteEdgeFunctionsTriggerOptions.RouteID}
+	pathParamsMap := map[string]string{
+		"crn": *edgeFunctionsApi.Crn,
+		"zone_identifier": *edgeFunctionsApi.ZoneIdentifier,
+		"route_id": *deleteEdgeFunctionsTriggerOptions.RouteID,
+	}
 
 	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(edgeFunctionsApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = edgeFunctionsApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(edgeFunctionsApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/workers/routes/{route_id}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -661,7 +798,7 @@ func (options *CreateEdgeFunctionsTriggerOptions) SetHeaders(param map[string]st
 // DeleteEdgeFunctionsActionOptions : The DeleteEdgeFunctionsAction options.
 type DeleteEdgeFunctionsActionOptions struct {
 	// the edge function action name.
-	ScriptName *string `json:"script_name" validate:"required"`
+	ScriptName *string `json:"script_name" validate:"required,ne="`
 
 	// Uniquely identifying a request.
 	XCorrelationID *string `json:"X-Correlation-ID,omitempty"`
@@ -698,7 +835,7 @@ func (options *DeleteEdgeFunctionsActionOptions) SetHeaders(param map[string]str
 // DeleteEdgeFunctionsTriggerOptions : The DeleteEdgeFunctionsTrigger options.
 type DeleteEdgeFunctionsTriggerOptions struct {
 	// trigger identifier.
-	RouteID *string `json:"route_id" validate:"required"`
+	RouteID *string `json:"route_id" validate:"required,ne="`
 
 	// Uniquely identifying a request.
 	XCorrelationID *string `json:"X-Correlation-ID,omitempty"`
@@ -735,7 +872,7 @@ func (options *DeleteEdgeFunctionsTriggerOptions) SetHeaders(param map[string]st
 // GetEdgeFunctionsActionOptions : The GetEdgeFunctionsAction options.
 type GetEdgeFunctionsActionOptions struct {
 	// the edge function action name.
-	ScriptName *string `json:"script_name" validate:"required"`
+	ScriptName *string `json:"script_name" validate:"required,ne="`
 
 	// Uniquely identifying a request.
 	XCorrelationID *string `json:"X-Correlation-ID,omitempty"`
@@ -772,7 +909,7 @@ func (options *GetEdgeFunctionsActionOptions) SetHeaders(param map[string]string
 // GetEdgeFunctionsTriggerOptions : The GetEdgeFunctionsTrigger options.
 type GetEdgeFunctionsTriggerOptions struct {
 	// trigger identifier.
-	RouteID *string `json:"route_id" validate:"required"`
+	RouteID *string `json:"route_id" validate:"required,ne="`
 
 	// Uniquely identifying a request.
 	XCorrelationID *string `json:"X-Correlation-ID,omitempty"`
@@ -861,7 +998,7 @@ func (options *ListEdgeFunctionsTriggersOptions) SetHeaders(param map[string]str
 // UpdateEdgeFunctionsActionOptions : The UpdateEdgeFunctionsAction options.
 type UpdateEdgeFunctionsActionOptions struct {
 	// the edge function action name.
-	ScriptName *string `json:"script_name" validate:"required"`
+	ScriptName *string `json:"script_name" validate:"required,ne="`
 
 	// upload or replace an edge functions action.
 	EdgeFunctionsAction io.ReadCloser `json:"edge_functions_action,omitempty"`
@@ -907,7 +1044,7 @@ func (options *UpdateEdgeFunctionsActionOptions) SetHeaders(param map[string]str
 // UpdateEdgeFunctionsTriggerOptions : The UpdateEdgeFunctionsTrigger options.
 type UpdateEdgeFunctionsTriggerOptions struct {
 	// trigger identifier.
-	RouteID *string `json:"route_id" validate:"required"`
+	RouteID *string `json:"route_id" validate:"required,ne="`
 
 	// a string pattern.
 	Pattern *string `json:"pattern,omitempty"`

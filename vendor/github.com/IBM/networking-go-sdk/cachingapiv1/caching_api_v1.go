@@ -14,14 +14,23 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.20.0-debb9f29-20201203-202043
+ */
+ 
+
 // Package cachingapiv1 : Operations and models for the CachingApiV1 service
 package cachingapiv1
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/IBM/go-sdk-core/v4/core"
 	common "github.com/IBM/networking-go-sdk/common"
+	"net/http"
 	"reflect"
+	"time"
 )
 
 // CachingApiV1 : This document describes CIS caching  API.
@@ -118,25 +127,80 @@ func NewCachingApiV1(options *CachingApiV1Options) (service *CachingApiV1, err e
 	return
 }
 
+// GetServiceURLForRegion returns the service URL to be used for the specified region
+func GetServiceURLForRegion(region string) (string, error) {
+	return "", fmt.Errorf("service does not support regional URLs")
+}
+
+// Clone makes a copy of "cachingApi" suitable for processing requests.
+func (cachingApi *CachingApiV1) Clone() *CachingApiV1 {
+	if core.IsNil(cachingApi) {
+		return nil
+	}
+	clone := *cachingApi
+	clone.Service = cachingApi.Service.Clone()
+	return &clone
+}
+
 // SetServiceURL sets the service URL
 func (cachingApi *CachingApiV1) SetServiceURL(url string) error {
 	return cachingApi.Service.SetServiceURL(url)
 }
 
-// PurgeAll : Purge all files under a specific domain
+// GetServiceURL returns the service URL
+func (cachingApi *CachingApiV1) GetServiceURL() string {
+	return cachingApi.Service.GetServiceURL()
+}
+
+// SetDefaultHeaders sets HTTP headers to be sent in every request
+func (cachingApi *CachingApiV1) SetDefaultHeaders(headers http.Header) {
+	cachingApi.Service.SetDefaultHeaders(headers)
+}
+
+// SetEnableGzipCompression sets the service's EnableGzipCompression field
+func (cachingApi *CachingApiV1) SetEnableGzipCompression(enableGzip bool) {
+	cachingApi.Service.SetEnableGzipCompression(enableGzip)
+}
+
+// GetEnableGzipCompression returns the service's EnableGzipCompression field
+func (cachingApi *CachingApiV1) GetEnableGzipCompression() bool {
+	return cachingApi.Service.GetEnableGzipCompression()
+}
+
+// EnableRetries enables automatic retries for requests invoked for this service instance.
+// If either parameter is specified as 0, then a default value is used instead.
+func (cachingApi *CachingApiV1) EnableRetries(maxRetries int, maxRetryInterval time.Duration) {
+	cachingApi.Service.EnableRetries(maxRetries, maxRetryInterval)
+}
+
+// DisableRetries disables automatic retries for requests invoked for this service instance.
+func (cachingApi *CachingApiV1) DisableRetries() {
+	cachingApi.Service.DisableRetries()
+}
+
+// PurgeAll : Purge all
 // All resources in CDN edge servers' cache should be removed. This may have dramatic affects on your origin server load
 // after performing this action.
 func (cachingApi *CachingApiV1) PurgeAll(purgeAllOptions *PurgeAllOptions) (result *PurgeAllResponse, response *core.DetailedResponse, err error) {
+	return cachingApi.PurgeAllWithContext(context.Background(), purgeAllOptions)
+}
+
+// PurgeAllWithContext is an alternate form of the PurgeAll method which supports a Context parameter
+func (cachingApi *CachingApiV1) PurgeAllWithContext(ctx context.Context, purgeAllOptions *PurgeAllOptions) (result *PurgeAllResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(purgeAllOptions, "purgeAllOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "purge_cache/purge_all"}
-	pathParameters := []string{*cachingApi.Crn, *cachingApi.ZoneID}
+	pathParamsMap := map[string]string{
+		"crn": *cachingApi.Crn,
+		"zone_id": *cachingApi.ZoneID,
+	}
 
 	builder := core.NewRequestBuilder(core.PUT)
-	_, err = builder.ConstructHTTPURL(cachingApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = cachingApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(cachingApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/purge_cache/purge_all`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -170,19 +234,28 @@ func (cachingApi *CachingApiV1) PurgeAll(purgeAllOptions *PurgeAllOptions) (resu
 	return
 }
 
-// PurgeByUrls : Purge individual files by URLs
+// PurgeByUrls : Purge URLs
 // Granularly remove one or more files from CDN edge servers' cache either by specifying URLs.
 func (cachingApi *CachingApiV1) PurgeByUrls(purgeByUrlsOptions *PurgeByUrlsOptions) (result *PurgeAllResponse, response *core.DetailedResponse, err error) {
+	return cachingApi.PurgeByUrlsWithContext(context.Background(), purgeByUrlsOptions)
+}
+
+// PurgeByUrlsWithContext is an alternate form of the PurgeByUrls method which supports a Context parameter
+func (cachingApi *CachingApiV1) PurgeByUrlsWithContext(ctx context.Context, purgeByUrlsOptions *PurgeByUrlsOptions) (result *PurgeAllResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(purgeByUrlsOptions, "purgeByUrlsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "purge_cache/purge_by_urls"}
-	pathParameters := []string{*cachingApi.Crn, *cachingApi.ZoneID}
+	pathParamsMap := map[string]string{
+		"crn": *cachingApi.Crn,
+		"zone_id": *cachingApi.ZoneID,
+	}
 
 	builder := core.NewRequestBuilder(core.PUT)
-	_, err = builder.ConstructHTTPURL(cachingApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = cachingApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(cachingApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/purge_cache/purge_by_urls`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -226,19 +299,28 @@ func (cachingApi *CachingApiV1) PurgeByUrls(purgeByUrlsOptions *PurgeByUrlsOptio
 	return
 }
 
-// PurgeByCacheTags : Purge files by Cache-Tags
+// PurgeByCacheTags : Purge Cache-Tags
 // Granularly remove one or more files from CDN edge servers' cache either by specifying the associated Cache-Tags.
 func (cachingApi *CachingApiV1) PurgeByCacheTags(purgeByCacheTagsOptions *PurgeByCacheTagsOptions) (result *PurgeAllResponse, response *core.DetailedResponse, err error) {
+	return cachingApi.PurgeByCacheTagsWithContext(context.Background(), purgeByCacheTagsOptions)
+}
+
+// PurgeByCacheTagsWithContext is an alternate form of the PurgeByCacheTags method which supports a Context parameter
+func (cachingApi *CachingApiV1) PurgeByCacheTagsWithContext(ctx context.Context, purgeByCacheTagsOptions *PurgeByCacheTagsOptions) (result *PurgeAllResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(purgeByCacheTagsOptions, "purgeByCacheTagsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "purge_cache/purge_by_cache_tags"}
-	pathParameters := []string{*cachingApi.Crn, *cachingApi.ZoneID}
+	pathParamsMap := map[string]string{
+		"crn": *cachingApi.Crn,
+		"zone_id": *cachingApi.ZoneID,
+	}
 
 	builder := core.NewRequestBuilder(core.PUT)
-	_, err = builder.ConstructHTTPURL(cachingApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = cachingApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(cachingApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/purge_cache/purge_by_cache_tags`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -282,19 +364,28 @@ func (cachingApi *CachingApiV1) PurgeByCacheTags(purgeByCacheTagsOptions *PurgeB
 	return
 }
 
-// PurgeByHosts : Purge individual files by hostnames
+// PurgeByHosts : Purge host names
 // Granularly remove one or more files from CDN edge servers' cache either by specifying the hostnames.
 func (cachingApi *CachingApiV1) PurgeByHosts(purgeByHostsOptions *PurgeByHostsOptions) (result *PurgeAllResponse, response *core.DetailedResponse, err error) {
+	return cachingApi.PurgeByHostsWithContext(context.Background(), purgeByHostsOptions)
+}
+
+// PurgeByHostsWithContext is an alternate form of the PurgeByHosts method which supports a Context parameter
+func (cachingApi *CachingApiV1) PurgeByHostsWithContext(ctx context.Context, purgeByHostsOptions *PurgeByHostsOptions) (result *PurgeAllResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(purgeByHostsOptions, "purgeByHostsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "purge_cache/purge_by_hosts"}
-	pathParameters := []string{*cachingApi.Crn, *cachingApi.ZoneID}
+	pathParamsMap := map[string]string{
+		"crn": *cachingApi.Crn,
+		"zone_id": *cachingApi.ZoneID,
+	}
 
 	builder := core.NewRequestBuilder(core.PUT)
-	_, err = builder.ConstructHTTPURL(cachingApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = cachingApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(cachingApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/purge_cache/purge_by_hosts`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -342,16 +433,25 @@ func (cachingApi *CachingApiV1) PurgeByHosts(purgeByHostsOptions *PurgeByHostsOp
 // Browser Cache TTL (in seconds) specifies how long CDN edge servers cached resources will remain on your visitors'
 // computers.
 func (cachingApi *CachingApiV1) GetBrowserCacheTTL(getBrowserCacheTtlOptions *GetBrowserCacheTtlOptions) (result *BrowserTTLResponse, response *core.DetailedResponse, err error) {
+	return cachingApi.GetBrowserCacheTTLWithContext(context.Background(), getBrowserCacheTtlOptions)
+}
+
+// GetBrowserCacheTTLWithContext is an alternate form of the GetBrowserCacheTTL method which supports a Context parameter
+func (cachingApi *CachingApiV1) GetBrowserCacheTTLWithContext(ctx context.Context, getBrowserCacheTtlOptions *GetBrowserCacheTtlOptions) (result *BrowserTTLResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getBrowserCacheTtlOptions, "getBrowserCacheTtlOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/browser_cache_ttl"}
-	pathParameters := []string{*cachingApi.Crn, *cachingApi.ZoneID}
+	pathParamsMap := map[string]string{
+		"crn": *cachingApi.Crn,
+		"zone_id": *cachingApi.ZoneID,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(cachingApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = cachingApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(cachingApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/settings/browser_cache_ttl`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -389,16 +489,25 @@ func (cachingApi *CachingApiV1) GetBrowserCacheTTL(getBrowserCacheTtlOptions *Ge
 // Browser Cache TTL (in seconds) specifies how long CDN edge servers cached resources will remain on your visitors'
 // computers.
 func (cachingApi *CachingApiV1) UpdateBrowserCacheTTL(updateBrowserCacheTtlOptions *UpdateBrowserCacheTtlOptions) (result *BrowserTTLResponse, response *core.DetailedResponse, err error) {
+	return cachingApi.UpdateBrowserCacheTTLWithContext(context.Background(), updateBrowserCacheTtlOptions)
+}
+
+// UpdateBrowserCacheTTLWithContext is an alternate form of the UpdateBrowserCacheTTL method which supports a Context parameter
+func (cachingApi *CachingApiV1) UpdateBrowserCacheTTLWithContext(ctx context.Context, updateBrowserCacheTtlOptions *UpdateBrowserCacheTtlOptions) (result *BrowserTTLResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateBrowserCacheTtlOptions, "updateBrowserCacheTtlOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/browser_cache_ttl"}
-	pathParameters := []string{*cachingApi.Crn, *cachingApi.ZoneID}
+	pathParamsMap := map[string]string{
+		"crn": *cachingApi.Crn,
+		"zone_id": *cachingApi.ZoneID,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(cachingApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = cachingApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(cachingApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/settings/browser_cache_ttl`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -445,16 +554,25 @@ func (cachingApi *CachingApiV1) UpdateBrowserCacheTTL(updateBrowserCacheTtlOptio
 // GetDevelopmentMode : Get development mode setting
 // Get development mode setting.
 func (cachingApi *CachingApiV1) GetDevelopmentMode(getDevelopmentModeOptions *GetDevelopmentModeOptions) (result *DeveopmentModeResponse, response *core.DetailedResponse, err error) {
+	return cachingApi.GetDevelopmentModeWithContext(context.Background(), getDevelopmentModeOptions)
+}
+
+// GetDevelopmentModeWithContext is an alternate form of the GetDevelopmentMode method which supports a Context parameter
+func (cachingApi *CachingApiV1) GetDevelopmentModeWithContext(ctx context.Context, getDevelopmentModeOptions *GetDevelopmentModeOptions) (result *DeveopmentModeResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getDevelopmentModeOptions, "getDevelopmentModeOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/development_mode"}
-	pathParameters := []string{*cachingApi.Crn, *cachingApi.ZoneID}
+	pathParamsMap := map[string]string{
+		"crn": *cachingApi.Crn,
+		"zone_id": *cachingApi.ZoneID,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(cachingApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = cachingApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(cachingApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/settings/development_mode`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -491,16 +609,25 @@ func (cachingApi *CachingApiV1) GetDevelopmentMode(getDevelopmentModeOptions *Ge
 // UpdateDevelopmentMode : Change development mode setting
 // Change development mode setting.
 func (cachingApi *CachingApiV1) UpdateDevelopmentMode(updateDevelopmentModeOptions *UpdateDevelopmentModeOptions) (result *DeveopmentModeResponse, response *core.DetailedResponse, err error) {
+	return cachingApi.UpdateDevelopmentModeWithContext(context.Background(), updateDevelopmentModeOptions)
+}
+
+// UpdateDevelopmentModeWithContext is an alternate form of the UpdateDevelopmentMode method which supports a Context parameter
+func (cachingApi *CachingApiV1) UpdateDevelopmentModeWithContext(ctx context.Context, updateDevelopmentModeOptions *UpdateDevelopmentModeOptions) (result *DeveopmentModeResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateDevelopmentModeOptions, "updateDevelopmentModeOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/development_mode"}
-	pathParameters := []string{*cachingApi.Crn, *cachingApi.ZoneID}
+	pathParamsMap := map[string]string{
+		"crn": *cachingApi.Crn,
+		"zone_id": *cachingApi.ZoneID,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(cachingApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = cachingApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(cachingApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/settings/development_mode`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -547,16 +674,25 @@ func (cachingApi *CachingApiV1) UpdateDevelopmentMode(updateDevelopmentModeOptio
 // GetQueryStringSort : Get Enable Query String Sort setting
 // Get Enable Query String Sort setting.
 func (cachingApi *CachingApiV1) GetQueryStringSort(getQueryStringSortOptions *GetQueryStringSortOptions) (result *EnableQueryStringSortResponse, response *core.DetailedResponse, err error) {
+	return cachingApi.GetQueryStringSortWithContext(context.Background(), getQueryStringSortOptions)
+}
+
+// GetQueryStringSortWithContext is an alternate form of the GetQueryStringSort method which supports a Context parameter
+func (cachingApi *CachingApiV1) GetQueryStringSortWithContext(ctx context.Context, getQueryStringSortOptions *GetQueryStringSortOptions) (result *EnableQueryStringSortResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getQueryStringSortOptions, "getQueryStringSortOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/sort_query_string_for_cache"}
-	pathParameters := []string{*cachingApi.Crn, *cachingApi.ZoneID}
+	pathParamsMap := map[string]string{
+		"crn": *cachingApi.Crn,
+		"zone_id": *cachingApi.ZoneID,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(cachingApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = cachingApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(cachingApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/settings/sort_query_string_for_cache`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -593,16 +729,25 @@ func (cachingApi *CachingApiV1) GetQueryStringSort(getQueryStringSortOptions *Ge
 // UpdateQueryStringSort : Change Enable Query String Sort setting
 // Change Enable Query String Sort setting.
 func (cachingApi *CachingApiV1) UpdateQueryStringSort(updateQueryStringSortOptions *UpdateQueryStringSortOptions) (result *EnableQueryStringSortResponse, response *core.DetailedResponse, err error) {
+	return cachingApi.UpdateQueryStringSortWithContext(context.Background(), updateQueryStringSortOptions)
+}
+
+// UpdateQueryStringSortWithContext is an alternate form of the UpdateQueryStringSort method which supports a Context parameter
+func (cachingApi *CachingApiV1) UpdateQueryStringSortWithContext(ctx context.Context, updateQueryStringSortOptions *UpdateQueryStringSortOptions) (result *EnableQueryStringSortResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateQueryStringSortOptions, "updateQueryStringSortOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/sort_query_string_for_cache"}
-	pathParameters := []string{*cachingApi.Crn, *cachingApi.ZoneID}
+	pathParamsMap := map[string]string{
+		"crn": *cachingApi.Crn,
+		"zone_id": *cachingApi.ZoneID,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(cachingApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = cachingApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(cachingApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/settings/sort_query_string_for_cache`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -646,19 +791,28 @@ func (cachingApi *CachingApiV1) UpdateQueryStringSort(updateQueryStringSortOptio
 	return
 }
 
-// GetCacheLevel : Get cache level setting of a specific zone
+// GetCacheLevel : Get cache level setting
 // Get cache level setting of a specific zone.
 func (cachingApi *CachingApiV1) GetCacheLevel(getCacheLevelOptions *GetCacheLevelOptions) (result *CacheLevelResponse, response *core.DetailedResponse, err error) {
+	return cachingApi.GetCacheLevelWithContext(context.Background(), getCacheLevelOptions)
+}
+
+// GetCacheLevelWithContext is an alternate form of the GetCacheLevel method which supports a Context parameter
+func (cachingApi *CachingApiV1) GetCacheLevelWithContext(ctx context.Context, getCacheLevelOptions *GetCacheLevelOptions) (result *CacheLevelResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getCacheLevelOptions, "getCacheLevelOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/cache_level"}
-	pathParameters := []string{*cachingApi.Crn, *cachingApi.ZoneID}
+	pathParamsMap := map[string]string{
+		"crn": *cachingApi.Crn,
+		"zone_id": *cachingApi.ZoneID,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(cachingApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = cachingApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(cachingApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/settings/cache_level`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -692,21 +846,30 @@ func (cachingApi *CachingApiV1) GetCacheLevel(getCacheLevelOptions *GetCacheLeve
 	return
 }
 
-// UpdateCacheLevel : Set cache level setting for a specific zone
+// UpdateCacheLevel : Set cache level setting
 // The `basic` setting will cache most static resources (i.e., css, images, and JavaScript). The `simplified` setting
 // will ignore the query string when delivering a cached resource. The `aggressive` setting will cache all static
 // resources, including ones with a query string.
 func (cachingApi *CachingApiV1) UpdateCacheLevel(updateCacheLevelOptions *UpdateCacheLevelOptions) (result *CacheLevelResponse, response *core.DetailedResponse, err error) {
+	return cachingApi.UpdateCacheLevelWithContext(context.Background(), updateCacheLevelOptions)
+}
+
+// UpdateCacheLevelWithContext is an alternate form of the UpdateCacheLevel method which supports a Context parameter
+func (cachingApi *CachingApiV1) UpdateCacheLevelWithContext(ctx context.Context, updateCacheLevelOptions *UpdateCacheLevelOptions) (result *CacheLevelResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateCacheLevelOptions, "updateCacheLevelOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/cache_level"}
-	pathParameters := []string{*cachingApi.Crn, *cachingApi.ZoneID}
+	pathParamsMap := map[string]string{
+		"crn": *cachingApi.Crn,
+		"zone_id": *cachingApi.ZoneID,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(cachingApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = cachingApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(cachingApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/settings/cache_level`, pathParamsMap)
 	if err != nil {
 		return
 	}

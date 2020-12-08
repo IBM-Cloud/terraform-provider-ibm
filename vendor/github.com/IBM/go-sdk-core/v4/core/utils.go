@@ -245,3 +245,13 @@ func ConvertSlice(slice interface{}) (s []string, err error) {
 
 	return nil, fmt.Errorf(ERRORMSG_CONVERT_SLICE)
 }
+
+// SliceContains returns true iff "contains" is an element of "slice"
+func SliceContains(slice []string, contains string) bool {
+	for _, elem := range slice {
+		if elem == contains {
+			return true
+		}
+	}
+	return false
+}

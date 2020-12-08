@@ -14,15 +14,24 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.20.0-debb9f29-20201203-202043
+ */
+ 
+
 // Package zonessettingsv1 : Operations and models for the ZonesSettingsV1 service
 package zonessettingsv1
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/IBM/go-sdk-core/v4/core"
-	"github.com/go-openapi/strfmt"
 	common "github.com/IBM/networking-go-sdk/common"
+	"github.com/go-openapi/strfmt"
+	"net/http"
 	"reflect"
+	"time"
 )
 
 // ZonesSettingsV1 : CIS Zones Settings
@@ -119,24 +128,79 @@ func NewZonesSettingsV1(options *ZonesSettingsV1Options) (service *ZonesSettings
 	return
 }
 
+// GetServiceURLForRegion returns the service URL to be used for the specified region
+func GetServiceURLForRegion(region string) (string, error) {
+	return "", fmt.Errorf("service does not support regional URLs")
+}
+
+// Clone makes a copy of "zonesSettings" suitable for processing requests.
+func (zonesSettings *ZonesSettingsV1) Clone() *ZonesSettingsV1 {
+	if core.IsNil(zonesSettings) {
+		return nil
+	}
+	clone := *zonesSettings
+	clone.Service = zonesSettings.Service.Clone()
+	return &clone
+}
+
 // SetServiceURL sets the service URL
 func (zonesSettings *ZonesSettingsV1) SetServiceURL(url string) error {
 	return zonesSettings.Service.SetServiceURL(url)
 }
 
+// GetServiceURL returns the service URL
+func (zonesSettings *ZonesSettingsV1) GetServiceURL() string {
+	return zonesSettings.Service.GetServiceURL()
+}
+
+// SetDefaultHeaders sets HTTP headers to be sent in every request
+func (zonesSettings *ZonesSettingsV1) SetDefaultHeaders(headers http.Header) {
+	zonesSettings.Service.SetDefaultHeaders(headers)
+}
+
+// SetEnableGzipCompression sets the service's EnableGzipCompression field
+func (zonesSettings *ZonesSettingsV1) SetEnableGzipCompression(enableGzip bool) {
+	zonesSettings.Service.SetEnableGzipCompression(enableGzip)
+}
+
+// GetEnableGzipCompression returns the service's EnableGzipCompression field
+func (zonesSettings *ZonesSettingsV1) GetEnableGzipCompression() bool {
+	return zonesSettings.Service.GetEnableGzipCompression()
+}
+
+// EnableRetries enables automatic retries for requests invoked for this service instance.
+// If either parameter is specified as 0, then a default value is used instead.
+func (zonesSettings *ZonesSettingsV1) EnableRetries(maxRetries int, maxRetryInterval time.Duration) {
+	zonesSettings.Service.EnableRetries(maxRetries, maxRetryInterval)
+}
+
+// DisableRetries disables automatic retries for requests invoked for this service instance.
+func (zonesSettings *ZonesSettingsV1) DisableRetries() {
+	zonesSettings.Service.DisableRetries()
+}
+
 // GetZoneDnssec : Get zone DNSSEC
 // Get DNSSEC setting for a given zone.
 func (zonesSettings *ZonesSettingsV1) GetZoneDnssec(getZoneDnssecOptions *GetZoneDnssecOptions) (result *ZonesDnssecResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetZoneDnssecWithContext(context.Background(), getZoneDnssecOptions)
+}
+
+// GetZoneDnssecWithContext is an alternate form of the GetZoneDnssec method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetZoneDnssecWithContext(ctx context.Context, getZoneDnssecOptions *GetZoneDnssecOptions) (result *ZonesDnssecResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getZoneDnssecOptions, "getZoneDnssecOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "dnssec"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/dnssec`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -173,16 +237,25 @@ func (zonesSettings *ZonesSettingsV1) GetZoneDnssec(getZoneDnssecOptions *GetZon
 // UpdateZoneDnssec : Update zone DNSSEC
 // Update DNSSEC setting for given zone.
 func (zonesSettings *ZonesSettingsV1) UpdateZoneDnssec(updateZoneDnssecOptions *UpdateZoneDnssecOptions) (result *ZonesDnssecResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateZoneDnssecWithContext(context.Background(), updateZoneDnssecOptions)
+}
+
+// UpdateZoneDnssecWithContext is an alternate form of the UpdateZoneDnssec method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateZoneDnssecWithContext(ctx context.Context, updateZoneDnssecOptions *UpdateZoneDnssecOptions) (result *ZonesDnssecResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateZoneDnssecOptions, "updateZoneDnssecOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "dnssec"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/dnssec`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -229,16 +302,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateZoneDnssec(updateZoneDnssecOptions *
 // GetZoneCnameFlattening : Get zone CNAME flattening
 // Get CNAME flattening setting for a given zone.
 func (zonesSettings *ZonesSettingsV1) GetZoneCnameFlattening(getZoneCnameFlatteningOptions *GetZoneCnameFlatteningOptions) (result *ZonesCnameFlatteningResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetZoneCnameFlatteningWithContext(context.Background(), getZoneCnameFlatteningOptions)
+}
+
+// GetZoneCnameFlatteningWithContext is an alternate form of the GetZoneCnameFlattening method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetZoneCnameFlatteningWithContext(ctx context.Context, getZoneCnameFlatteningOptions *GetZoneCnameFlatteningOptions) (result *ZonesCnameFlatteningResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getZoneCnameFlatteningOptions, "getZoneCnameFlatteningOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/cname_flattening"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/cname_flattening`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -275,16 +357,25 @@ func (zonesSettings *ZonesSettingsV1) GetZoneCnameFlattening(getZoneCnameFlatten
 // UpdateZoneCnameFlattening : Update zone CNAME flattening
 // Update CNAME flattening setting for given zone.
 func (zonesSettings *ZonesSettingsV1) UpdateZoneCnameFlattening(updateZoneCnameFlatteningOptions *UpdateZoneCnameFlatteningOptions) (result *ZonesCnameFlatteningResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateZoneCnameFlatteningWithContext(context.Background(), updateZoneCnameFlatteningOptions)
+}
+
+// UpdateZoneCnameFlatteningWithContext is an alternate form of the UpdateZoneCnameFlattening method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateZoneCnameFlatteningWithContext(ctx context.Context, updateZoneCnameFlatteningOptions *UpdateZoneCnameFlatteningOptions) (result *ZonesCnameFlatteningResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateZoneCnameFlatteningOptions, "updateZoneCnameFlatteningOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/cname_flattening"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/cname_flattening`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -331,16 +422,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateZoneCnameFlattening(updateZoneCnameF
 // GetOpportunisticEncryption : Get opportunistic encryption setting
 // Get opportunistic encryption setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetOpportunisticEncryption(getOpportunisticEncryptionOptions *GetOpportunisticEncryptionOptions) (result *OpportunisticEncryptionResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetOpportunisticEncryptionWithContext(context.Background(), getOpportunisticEncryptionOptions)
+}
+
+// GetOpportunisticEncryptionWithContext is an alternate form of the GetOpportunisticEncryption method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetOpportunisticEncryptionWithContext(ctx context.Context, getOpportunisticEncryptionOptions *GetOpportunisticEncryptionOptions) (result *OpportunisticEncryptionResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getOpportunisticEncryptionOptions, "getOpportunisticEncryptionOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/opportunistic_encryption"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/opportunistic_encryption`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -377,16 +477,25 @@ func (zonesSettings *ZonesSettingsV1) GetOpportunisticEncryption(getOpportunisti
 // UpdateOpportunisticEncryption : Update opportunistic encryption setting
 // Update opportunistic encryption setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateOpportunisticEncryption(updateOpportunisticEncryptionOptions *UpdateOpportunisticEncryptionOptions) (result *OpportunisticEncryptionResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateOpportunisticEncryptionWithContext(context.Background(), updateOpportunisticEncryptionOptions)
+}
+
+// UpdateOpportunisticEncryptionWithContext is an alternate form of the UpdateOpportunisticEncryption method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateOpportunisticEncryptionWithContext(ctx context.Context, updateOpportunisticEncryptionOptions *UpdateOpportunisticEncryptionOptions) (result *OpportunisticEncryptionResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateOpportunisticEncryptionOptions, "updateOpportunisticEncryptionOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/opportunistic_encryption"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/opportunistic_encryption`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -433,16 +542,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateOpportunisticEncryption(updateOpport
 // GetChallengeTTL : Get challenge TTL setting
 // Get challenge TTL setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetChallengeTTL(getChallengeTtlOptions *GetChallengeTtlOptions) (result *ChallengeTtlResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetChallengeTTLWithContext(context.Background(), getChallengeTtlOptions)
+}
+
+// GetChallengeTTLWithContext is an alternate form of the GetChallengeTTL method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetChallengeTTLWithContext(ctx context.Context, getChallengeTtlOptions *GetChallengeTtlOptions) (result *ChallengeTtlResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getChallengeTtlOptions, "getChallengeTtlOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/challenge_ttl"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/challenge_ttl`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -479,16 +597,25 @@ func (zonesSettings *ZonesSettingsV1) GetChallengeTTL(getChallengeTtlOptions *Ge
 // UpdateChallengeTTL : Update challenge TTL setting
 // Update challenge TTL setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateChallengeTTL(updateChallengeTtlOptions *UpdateChallengeTtlOptions) (result *ChallengeTtlResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateChallengeTTLWithContext(context.Background(), updateChallengeTtlOptions)
+}
+
+// UpdateChallengeTTLWithContext is an alternate form of the UpdateChallengeTTL method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateChallengeTTLWithContext(ctx context.Context, updateChallengeTtlOptions *UpdateChallengeTtlOptions) (result *ChallengeTtlResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateChallengeTtlOptions, "updateChallengeTtlOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/challenge_ttl"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/challenge_ttl`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -535,16 +662,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateChallengeTTL(updateChallengeTtlOptio
 // GetAutomaticHttpsRewrites : Get automatic https rewrites setting
 // Get automatic https rewrites setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetAutomaticHttpsRewrites(getAutomaticHttpsRewritesOptions *GetAutomaticHttpsRewritesOptions) (result *AutomaticHttpsRewritesResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetAutomaticHttpsRewritesWithContext(context.Background(), getAutomaticHttpsRewritesOptions)
+}
+
+// GetAutomaticHttpsRewritesWithContext is an alternate form of the GetAutomaticHttpsRewrites method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetAutomaticHttpsRewritesWithContext(ctx context.Context, getAutomaticHttpsRewritesOptions *GetAutomaticHttpsRewritesOptions) (result *AutomaticHttpsRewritesResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getAutomaticHttpsRewritesOptions, "getAutomaticHttpsRewritesOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/automatic_https_rewrites"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/automatic_https_rewrites`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -581,16 +717,25 @@ func (zonesSettings *ZonesSettingsV1) GetAutomaticHttpsRewrites(getAutomaticHttp
 // UpdateAutomaticHttpsRewrites : Update automatic https rewrites setting
 // Update automatic https rewrites setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateAutomaticHttpsRewrites(updateAutomaticHttpsRewritesOptions *UpdateAutomaticHttpsRewritesOptions) (result *AutomaticHttpsRewritesResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateAutomaticHttpsRewritesWithContext(context.Background(), updateAutomaticHttpsRewritesOptions)
+}
+
+// UpdateAutomaticHttpsRewritesWithContext is an alternate form of the UpdateAutomaticHttpsRewrites method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateAutomaticHttpsRewritesWithContext(ctx context.Context, updateAutomaticHttpsRewritesOptions *UpdateAutomaticHttpsRewritesOptions) (result *AutomaticHttpsRewritesResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateAutomaticHttpsRewritesOptions, "updateAutomaticHttpsRewritesOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/automatic_https_rewrites"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/automatic_https_rewrites`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -637,16 +782,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateAutomaticHttpsRewrites(updateAutomat
 // GetTrueClientIp : Get true client IP setting
 // Get true client IP setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetTrueClientIp(getTrueClientIpOptions *GetTrueClientIpOptions) (result *TrueClientIpResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetTrueClientIpWithContext(context.Background(), getTrueClientIpOptions)
+}
+
+// GetTrueClientIpWithContext is an alternate form of the GetTrueClientIp method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetTrueClientIpWithContext(ctx context.Context, getTrueClientIpOptions *GetTrueClientIpOptions) (result *TrueClientIpResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getTrueClientIpOptions, "getTrueClientIpOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/true_client_ip_header"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/true_client_ip_header`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -683,16 +837,25 @@ func (zonesSettings *ZonesSettingsV1) GetTrueClientIp(getTrueClientIpOptions *Ge
 // UpdateTrueClientIp : Update true client IP setting
 // Update true client IP setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateTrueClientIp(updateTrueClientIpOptions *UpdateTrueClientIpOptions) (result *TrueClientIpResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateTrueClientIpWithContext(context.Background(), updateTrueClientIpOptions)
+}
+
+// UpdateTrueClientIpWithContext is an alternate form of the UpdateTrueClientIp method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateTrueClientIpWithContext(ctx context.Context, updateTrueClientIpOptions *UpdateTrueClientIpOptions) (result *TrueClientIpResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateTrueClientIpOptions, "updateTrueClientIpOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/true_client_ip_header"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/true_client_ip_header`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -739,16 +902,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateTrueClientIp(updateTrueClientIpOptio
 // GetAlwaysUseHttps : Get always use https setting
 // Get always use https setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetAlwaysUseHttps(getAlwaysUseHttpsOptions *GetAlwaysUseHttpsOptions) (result *AlwaysUseHttpsResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetAlwaysUseHttpsWithContext(context.Background(), getAlwaysUseHttpsOptions)
+}
+
+// GetAlwaysUseHttpsWithContext is an alternate form of the GetAlwaysUseHttps method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetAlwaysUseHttpsWithContext(ctx context.Context, getAlwaysUseHttpsOptions *GetAlwaysUseHttpsOptions) (result *AlwaysUseHttpsResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getAlwaysUseHttpsOptions, "getAlwaysUseHttpsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/always_use_https"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/always_use_https`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -785,16 +957,25 @@ func (zonesSettings *ZonesSettingsV1) GetAlwaysUseHttps(getAlwaysUseHttpsOptions
 // UpdateAlwaysUseHttps : Update always use https setting
 // Update always use https setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateAlwaysUseHttps(updateAlwaysUseHttpsOptions *UpdateAlwaysUseHttpsOptions) (result *AlwaysUseHttpsResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateAlwaysUseHttpsWithContext(context.Background(), updateAlwaysUseHttpsOptions)
+}
+
+// UpdateAlwaysUseHttpsWithContext is an alternate form of the UpdateAlwaysUseHttps method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateAlwaysUseHttpsWithContext(ctx context.Context, updateAlwaysUseHttpsOptions *UpdateAlwaysUseHttpsOptions) (result *AlwaysUseHttpsResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateAlwaysUseHttpsOptions, "updateAlwaysUseHttpsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/always_use_https"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/always_use_https`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -841,16 +1022,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateAlwaysUseHttps(updateAlwaysUseHttpsO
 // GetImageSizeOptimization : Get image size optimization setting
 // Get image size optimization setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetImageSizeOptimization(getImageSizeOptimizationOptions *GetImageSizeOptimizationOptions) (result *ImageSizeOptimizationResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetImageSizeOptimizationWithContext(context.Background(), getImageSizeOptimizationOptions)
+}
+
+// GetImageSizeOptimizationWithContext is an alternate form of the GetImageSizeOptimization method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetImageSizeOptimizationWithContext(ctx context.Context, getImageSizeOptimizationOptions *GetImageSizeOptimizationOptions) (result *ImageSizeOptimizationResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getImageSizeOptimizationOptions, "getImageSizeOptimizationOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/image_size_optimization"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/image_size_optimization`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -887,16 +1077,25 @@ func (zonesSettings *ZonesSettingsV1) GetImageSizeOptimization(getImageSizeOptim
 // UpdateImageSizeOptimization : Update image size optimization setting
 // Update image size optimization setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateImageSizeOptimization(updateImageSizeOptimizationOptions *UpdateImageSizeOptimizationOptions) (result *ImageSizeOptimizationResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateImageSizeOptimizationWithContext(context.Background(), updateImageSizeOptimizationOptions)
+}
+
+// UpdateImageSizeOptimizationWithContext is an alternate form of the UpdateImageSizeOptimization method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateImageSizeOptimizationWithContext(ctx context.Context, updateImageSizeOptimizationOptions *UpdateImageSizeOptimizationOptions) (result *ImageSizeOptimizationResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateImageSizeOptimizationOptions, "updateImageSizeOptimizationOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/image_size_optimization"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/image_size_optimization`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -943,16 +1142,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateImageSizeOptimization(updateImageSiz
 // GetScriptLoadOptimization : Get script load optimization setting
 // Get script load optimization setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetScriptLoadOptimization(getScriptLoadOptimizationOptions *GetScriptLoadOptimizationOptions) (result *ScriptLoadOptimizationResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetScriptLoadOptimizationWithContext(context.Background(), getScriptLoadOptimizationOptions)
+}
+
+// GetScriptLoadOptimizationWithContext is an alternate form of the GetScriptLoadOptimization method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetScriptLoadOptimizationWithContext(ctx context.Context, getScriptLoadOptimizationOptions *GetScriptLoadOptimizationOptions) (result *ScriptLoadOptimizationResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getScriptLoadOptimizationOptions, "getScriptLoadOptimizationOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/script_load_optimization"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/script_load_optimization`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -989,16 +1197,25 @@ func (zonesSettings *ZonesSettingsV1) GetScriptLoadOptimization(getScriptLoadOpt
 // UpdateScriptLoadOptimization : Update script load optimization setting
 // Update script load optimization setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateScriptLoadOptimization(updateScriptLoadOptimizationOptions *UpdateScriptLoadOptimizationOptions) (result *ScriptLoadOptimizationResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateScriptLoadOptimizationWithContext(context.Background(), updateScriptLoadOptimizationOptions)
+}
+
+// UpdateScriptLoadOptimizationWithContext is an alternate form of the UpdateScriptLoadOptimization method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateScriptLoadOptimizationWithContext(ctx context.Context, updateScriptLoadOptimizationOptions *UpdateScriptLoadOptimizationOptions) (result *ScriptLoadOptimizationResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateScriptLoadOptimizationOptions, "updateScriptLoadOptimizationOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/script_load_optimization"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/script_load_optimization`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1045,16 +1262,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateScriptLoadOptimization(updateScriptL
 // GetImageLoadOptimization : Get image load optimizationn setting
 // Get image load optimizationn setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetImageLoadOptimization(getImageLoadOptimizationOptions *GetImageLoadOptimizationOptions) (result *ImageLoadOptimizationResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetImageLoadOptimizationWithContext(context.Background(), getImageLoadOptimizationOptions)
+}
+
+// GetImageLoadOptimizationWithContext is an alternate form of the GetImageLoadOptimization method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetImageLoadOptimizationWithContext(ctx context.Context, getImageLoadOptimizationOptions *GetImageLoadOptimizationOptions) (result *ImageLoadOptimizationResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getImageLoadOptimizationOptions, "getImageLoadOptimizationOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/image_load_optimization"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/image_load_optimization`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1091,16 +1317,25 @@ func (zonesSettings *ZonesSettingsV1) GetImageLoadOptimization(getImageLoadOptim
 // UpdateImageLoadOptimization : Update image load optimizationn setting
 // Update image load optimizationn setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateImageLoadOptimization(updateImageLoadOptimizationOptions *UpdateImageLoadOptimizationOptions) (result *ImageLoadOptimizationResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateImageLoadOptimizationWithContext(context.Background(), updateImageLoadOptimizationOptions)
+}
+
+// UpdateImageLoadOptimizationWithContext is an alternate form of the UpdateImageLoadOptimization method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateImageLoadOptimizationWithContext(ctx context.Context, updateImageLoadOptimizationOptions *UpdateImageLoadOptimizationOptions) (result *ImageLoadOptimizationResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateImageLoadOptimizationOptions, "updateImageLoadOptimizationOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/image_load_optimization"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/image_load_optimization`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1147,16 +1382,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateImageLoadOptimization(updateImageLoa
 // GetMinify : Get minify setting
 // Get minify setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetMinify(getMinifyOptions *GetMinifyOptions) (result *MinifyResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetMinifyWithContext(context.Background(), getMinifyOptions)
+}
+
+// GetMinifyWithContext is an alternate form of the GetMinify method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetMinifyWithContext(ctx context.Context, getMinifyOptions *GetMinifyOptions) (result *MinifyResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getMinifyOptions, "getMinifyOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/minify"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/minify`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1193,16 +1437,25 @@ func (zonesSettings *ZonesSettingsV1) GetMinify(getMinifyOptions *GetMinifyOptio
 // UpdateMinify : Update minify setting
 // Update minify setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateMinify(updateMinifyOptions *UpdateMinifyOptions) (result *MinifyResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateMinifyWithContext(context.Background(), updateMinifyOptions)
+}
+
+// UpdateMinifyWithContext is an alternate form of the UpdateMinify method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateMinifyWithContext(ctx context.Context, updateMinifyOptions *UpdateMinifyOptions) (result *MinifyResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateMinifyOptions, "updateMinifyOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/minify"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/minify`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1249,16 +1502,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateMinify(updateMinifyOptions *UpdateMi
 // GetMinTlsVersion : Get minimum TLS version setting
 // Get minimum TLS version setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetMinTlsVersion(getMinTlsVersionOptions *GetMinTlsVersionOptions) (result *MinTlsVersionResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetMinTlsVersionWithContext(context.Background(), getMinTlsVersionOptions)
+}
+
+// GetMinTlsVersionWithContext is an alternate form of the GetMinTlsVersion method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetMinTlsVersionWithContext(ctx context.Context, getMinTlsVersionOptions *GetMinTlsVersionOptions) (result *MinTlsVersionResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getMinTlsVersionOptions, "getMinTlsVersionOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/min_tls_version"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/min_tls_version`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1295,16 +1557,25 @@ func (zonesSettings *ZonesSettingsV1) GetMinTlsVersion(getMinTlsVersionOptions *
 // UpdateMinTlsVersion : Update minimum TLS version setting
 // Update minimum TLS version setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateMinTlsVersion(updateMinTlsVersionOptions *UpdateMinTlsVersionOptions) (result *MinTlsVersionResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateMinTlsVersionWithContext(context.Background(), updateMinTlsVersionOptions)
+}
+
+// UpdateMinTlsVersionWithContext is an alternate form of the UpdateMinTlsVersion method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateMinTlsVersionWithContext(ctx context.Context, updateMinTlsVersionOptions *UpdateMinTlsVersionOptions) (result *MinTlsVersionResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateMinTlsVersionOptions, "updateMinTlsVersionOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/min_tls_version"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/min_tls_version`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1351,16 +1622,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateMinTlsVersion(updateMinTlsVersionOpt
 // GetIpGeolocation : Get IP geolocation setting
 // Get IP geolocation setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetIpGeolocation(getIpGeolocationOptions *GetIpGeolocationOptions) (result *IpGeolocationResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetIpGeolocationWithContext(context.Background(), getIpGeolocationOptions)
+}
+
+// GetIpGeolocationWithContext is an alternate form of the GetIpGeolocation method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetIpGeolocationWithContext(ctx context.Context, getIpGeolocationOptions *GetIpGeolocationOptions) (result *IpGeolocationResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getIpGeolocationOptions, "getIpGeolocationOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/ip_geolocation"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/ip_geolocation`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1397,16 +1677,25 @@ func (zonesSettings *ZonesSettingsV1) GetIpGeolocation(getIpGeolocationOptions *
 // UpdateIpGeolocation : Update IP geolocation setting
 // Update IP geolocation setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateIpGeolocation(updateIpGeolocationOptions *UpdateIpGeolocationOptions) (result *IpGeolocationResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateIpGeolocationWithContext(context.Background(), updateIpGeolocationOptions)
+}
+
+// UpdateIpGeolocationWithContext is an alternate form of the UpdateIpGeolocation method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateIpGeolocationWithContext(ctx context.Context, updateIpGeolocationOptions *UpdateIpGeolocationOptions) (result *IpGeolocationResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateIpGeolocationOptions, "updateIpGeolocationOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/ip_geolocation"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/ip_geolocation`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1453,16 +1742,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateIpGeolocation(updateIpGeolocationOpt
 // GetServerSideExclude : Get server side exclude setting
 // Get server side exclude setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetServerSideExclude(getServerSideExcludeOptions *GetServerSideExcludeOptions) (result *ServerSideExcludeResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetServerSideExcludeWithContext(context.Background(), getServerSideExcludeOptions)
+}
+
+// GetServerSideExcludeWithContext is an alternate form of the GetServerSideExclude method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetServerSideExcludeWithContext(ctx context.Context, getServerSideExcludeOptions *GetServerSideExcludeOptions) (result *ServerSideExcludeResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getServerSideExcludeOptions, "getServerSideExcludeOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/server_side_exclude"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/server_side_exclude`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1499,16 +1797,25 @@ func (zonesSettings *ZonesSettingsV1) GetServerSideExclude(getServerSideExcludeO
 // UpdateServerSideExclude : Update server side exclude setting
 // Update server side exclude setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateServerSideExclude(updateServerSideExcludeOptions *UpdateServerSideExcludeOptions) (result *ServerSideExcludeResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateServerSideExcludeWithContext(context.Background(), updateServerSideExcludeOptions)
+}
+
+// UpdateServerSideExcludeWithContext is an alternate form of the UpdateServerSideExclude method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateServerSideExcludeWithContext(ctx context.Context, updateServerSideExcludeOptions *UpdateServerSideExcludeOptions) (result *ServerSideExcludeResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateServerSideExcludeOptions, "updateServerSideExcludeOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/server_side_exclude"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/server_side_exclude`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1555,16 +1862,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateServerSideExclude(updateServerSideEx
 // GetSecurityHeader : Get HTTP strict transport security setting
 // Get HTTP strict transport security setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetSecurityHeader(getSecurityHeaderOptions *GetSecurityHeaderOptions) (result *SecurityHeaderResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetSecurityHeaderWithContext(context.Background(), getSecurityHeaderOptions)
+}
+
+// GetSecurityHeaderWithContext is an alternate form of the GetSecurityHeader method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetSecurityHeaderWithContext(ctx context.Context, getSecurityHeaderOptions *GetSecurityHeaderOptions) (result *SecurityHeaderResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getSecurityHeaderOptions, "getSecurityHeaderOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/security_header"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/security_header`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1601,16 +1917,25 @@ func (zonesSettings *ZonesSettingsV1) GetSecurityHeader(getSecurityHeaderOptions
 // UpdateSecurityHeader : Update HTTP strict transport security setting
 // Update HTTP strict transport security setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateSecurityHeader(updateSecurityHeaderOptions *UpdateSecurityHeaderOptions) (result *SecurityHeaderResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateSecurityHeaderWithContext(context.Background(), updateSecurityHeaderOptions)
+}
+
+// UpdateSecurityHeaderWithContext is an alternate form of the UpdateSecurityHeader method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateSecurityHeaderWithContext(ctx context.Context, updateSecurityHeaderOptions *UpdateSecurityHeaderOptions) (result *SecurityHeaderResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateSecurityHeaderOptions, "updateSecurityHeaderOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/security_header"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/security_header`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1657,16 +1982,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateSecurityHeader(updateSecurityHeaderO
 // GetMobileRedirect : Get mobile redirect setting
 // Get mobile redirect setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetMobileRedirect(getMobileRedirectOptions *GetMobileRedirectOptions) (result *MobileRedirectResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetMobileRedirectWithContext(context.Background(), getMobileRedirectOptions)
+}
+
+// GetMobileRedirectWithContext is an alternate form of the GetMobileRedirect method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetMobileRedirectWithContext(ctx context.Context, getMobileRedirectOptions *GetMobileRedirectOptions) (result *MobileRedirectResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getMobileRedirectOptions, "getMobileRedirectOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/mobile_redirect"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/mobile_redirect`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1703,16 +2037,25 @@ func (zonesSettings *ZonesSettingsV1) GetMobileRedirect(getMobileRedirectOptions
 // UpdateMobileRedirect : Update mobile redirect setting
 // Update mobile redirect setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateMobileRedirect(updateMobileRedirectOptions *UpdateMobileRedirectOptions) (result *MobileRedirectResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateMobileRedirectWithContext(context.Background(), updateMobileRedirectOptions)
+}
+
+// UpdateMobileRedirectWithContext is an alternate form of the UpdateMobileRedirect method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateMobileRedirectWithContext(ctx context.Context, updateMobileRedirectOptions *UpdateMobileRedirectOptions) (result *MobileRedirectResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateMobileRedirectOptions, "updateMobileRedirectOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/mobile_redirect"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/mobile_redirect`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1759,16 +2102,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateMobileRedirect(updateMobileRedirectO
 // GetPrefetchPreload : Get prefetch URLs from header setting
 // Get prefetch URLs from header setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetPrefetchPreload(getPrefetchPreloadOptions *GetPrefetchPreloadOptions) (result *PrefetchPreloadResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetPrefetchPreloadWithContext(context.Background(), getPrefetchPreloadOptions)
+}
+
+// GetPrefetchPreloadWithContext is an alternate form of the GetPrefetchPreload method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetPrefetchPreloadWithContext(ctx context.Context, getPrefetchPreloadOptions *GetPrefetchPreloadOptions) (result *PrefetchPreloadResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getPrefetchPreloadOptions, "getPrefetchPreloadOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/prefetch_preload"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/prefetch_preload`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1805,16 +2157,25 @@ func (zonesSettings *ZonesSettingsV1) GetPrefetchPreload(getPrefetchPreloadOptio
 // UpdatePrefetchPreload : Update prefetch URLs from header setting
 // Update prefetch URLs from header setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdatePrefetchPreload(updatePrefetchPreloadOptions *UpdatePrefetchPreloadOptions) (result *PrefetchPreloadResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdatePrefetchPreloadWithContext(context.Background(), updatePrefetchPreloadOptions)
+}
+
+// UpdatePrefetchPreloadWithContext is an alternate form of the UpdatePrefetchPreload method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdatePrefetchPreloadWithContext(ctx context.Context, updatePrefetchPreloadOptions *UpdatePrefetchPreloadOptions) (result *PrefetchPreloadResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updatePrefetchPreloadOptions, "updatePrefetchPreloadOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/prefetch_preload"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/prefetch_preload`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1861,16 +2222,25 @@ func (zonesSettings *ZonesSettingsV1) UpdatePrefetchPreload(updatePrefetchPreloa
 // GetHttp2 : Get http/2 setting
 // Get http/2 setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetHttp2(getHttp2Options *GetHttp2Options) (result *Http2Resp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetHttp2WithContext(context.Background(), getHttp2Options)
+}
+
+// GetHttp2WithContext is an alternate form of the GetHttp2 method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetHttp2WithContext(ctx context.Context, getHttp2Options *GetHttp2Options) (result *Http2Resp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getHttp2Options, "getHttp2Options")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/http2"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/http2`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1907,16 +2277,25 @@ func (zonesSettings *ZonesSettingsV1) GetHttp2(getHttp2Options *GetHttp2Options)
 // UpdateHttp2 : Update http/2 setting
 // Update http/2 setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateHttp2(updateHttp2Options *UpdateHttp2Options) (result *Http2Resp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateHttp2WithContext(context.Background(), updateHttp2Options)
+}
+
+// UpdateHttp2WithContext is an alternate form of the UpdateHttp2 method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateHttp2WithContext(ctx context.Context, updateHttp2Options *UpdateHttp2Options) (result *Http2Resp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateHttp2Options, "updateHttp2Options")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/http2"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/http2`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1963,16 +2342,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateHttp2(updateHttp2Options *UpdateHttp
 // GetIpv6 : Get IPv6 compatibility setting
 // Get IPv6 compatibility setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetIpv6(getIpv6Options *GetIpv6Options) (result *Ipv6Resp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetIpv6WithContext(context.Background(), getIpv6Options)
+}
+
+// GetIpv6WithContext is an alternate form of the GetIpv6 method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetIpv6WithContext(ctx context.Context, getIpv6Options *GetIpv6Options) (result *Ipv6Resp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getIpv6Options, "getIpv6Options")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/ipv6"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/ipv6`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2009,16 +2397,25 @@ func (zonesSettings *ZonesSettingsV1) GetIpv6(getIpv6Options *GetIpv6Options) (r
 // UpdateIpv6 : Update IPv6 compatibility setting
 // Update IPv6 compatibility setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateIpv6(updateIpv6Options *UpdateIpv6Options) (result *Ipv6Resp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateIpv6WithContext(context.Background(), updateIpv6Options)
+}
+
+// UpdateIpv6WithContext is an alternate form of the UpdateIpv6 method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateIpv6WithContext(ctx context.Context, updateIpv6Options *UpdateIpv6Options) (result *Ipv6Resp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateIpv6Options, "updateIpv6Options")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/ipv6"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/ipv6`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2065,16 +2462,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateIpv6(updateIpv6Options *UpdateIpv6Op
 // GetWebSockets : Get web sockets setting
 // Get web sockets setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetWebSockets(getWebSocketsOptions *GetWebSocketsOptions) (result *WebsocketsResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetWebSocketsWithContext(context.Background(), getWebSocketsOptions)
+}
+
+// GetWebSocketsWithContext is an alternate form of the GetWebSockets method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetWebSocketsWithContext(ctx context.Context, getWebSocketsOptions *GetWebSocketsOptions) (result *WebsocketsResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getWebSocketsOptions, "getWebSocketsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/websockets"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/websockets`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2111,16 +2517,25 @@ func (zonesSettings *ZonesSettingsV1) GetWebSockets(getWebSocketsOptions *GetWeb
 // UpdateWebSockets : Update web sockets setting
 // Update web sockets setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateWebSockets(updateWebSocketsOptions *UpdateWebSocketsOptions) (result *WebsocketsResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateWebSocketsWithContext(context.Background(), updateWebSocketsOptions)
+}
+
+// UpdateWebSocketsWithContext is an alternate form of the UpdateWebSockets method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateWebSocketsWithContext(ctx context.Context, updateWebSocketsOptions *UpdateWebSocketsOptions) (result *WebsocketsResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateWebSocketsOptions, "updateWebSocketsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/websockets"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/websockets`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2167,16 +2582,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateWebSockets(updateWebSocketsOptions *
 // GetPseudoIpv4 : Get pseudo IPv4 setting
 // Get pseudo IPv4 setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetPseudoIpv4(getPseudoIpv4Options *GetPseudoIpv4Options) (result *PseudoIpv4Resp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetPseudoIpv4WithContext(context.Background(), getPseudoIpv4Options)
+}
+
+// GetPseudoIpv4WithContext is an alternate form of the GetPseudoIpv4 method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetPseudoIpv4WithContext(ctx context.Context, getPseudoIpv4Options *GetPseudoIpv4Options) (result *PseudoIpv4Resp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getPseudoIpv4Options, "getPseudoIpv4Options")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/pseudo_ipv4"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/pseudo_ipv4`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2213,16 +2637,25 @@ func (zonesSettings *ZonesSettingsV1) GetPseudoIpv4(getPseudoIpv4Options *GetPse
 // UpdatePseudoIpv4 : Update pseudo IPv4 setting
 // Update pseudo IPv4 setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdatePseudoIpv4(updatePseudoIpv4Options *UpdatePseudoIpv4Options) (result *PseudoIpv4Resp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdatePseudoIpv4WithContext(context.Background(), updatePseudoIpv4Options)
+}
+
+// UpdatePseudoIpv4WithContext is an alternate form of the UpdatePseudoIpv4 method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdatePseudoIpv4WithContext(ctx context.Context, updatePseudoIpv4Options *UpdatePseudoIpv4Options) (result *PseudoIpv4Resp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updatePseudoIpv4Options, "updatePseudoIpv4Options")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/pseudo_ipv4"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/pseudo_ipv4`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2269,16 +2702,25 @@ func (zonesSettings *ZonesSettingsV1) UpdatePseudoIpv4(updatePseudoIpv4Options *
 // GetResponseBuffering : Get response buffering setting
 // Get response buffering setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetResponseBuffering(getResponseBufferingOptions *GetResponseBufferingOptions) (result *ResponseBufferingResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetResponseBufferingWithContext(context.Background(), getResponseBufferingOptions)
+}
+
+// GetResponseBufferingWithContext is an alternate form of the GetResponseBuffering method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetResponseBufferingWithContext(ctx context.Context, getResponseBufferingOptions *GetResponseBufferingOptions) (result *ResponseBufferingResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getResponseBufferingOptions, "getResponseBufferingOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/response_buffering"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/response_buffering`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2315,16 +2757,25 @@ func (zonesSettings *ZonesSettingsV1) GetResponseBuffering(getResponseBufferingO
 // UpdateResponseBuffering : Update response buffering setting
 // Update response buffering setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateResponseBuffering(updateResponseBufferingOptions *UpdateResponseBufferingOptions) (result *ResponseBufferingResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateResponseBufferingWithContext(context.Background(), updateResponseBufferingOptions)
+}
+
+// UpdateResponseBufferingWithContext is an alternate form of the UpdateResponseBuffering method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateResponseBufferingWithContext(ctx context.Context, updateResponseBufferingOptions *UpdateResponseBufferingOptions) (result *ResponseBufferingResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateResponseBufferingOptions, "updateResponseBufferingOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/response_buffering"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/response_buffering`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2371,16 +2822,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateResponseBuffering(updateResponseBuff
 // GetHotlinkProtection : Get hotlink protection setting
 // Get hotlink protection setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetHotlinkProtection(getHotlinkProtectionOptions *GetHotlinkProtectionOptions) (result *HotlinkProtectionResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetHotlinkProtectionWithContext(context.Background(), getHotlinkProtectionOptions)
+}
+
+// GetHotlinkProtectionWithContext is an alternate form of the GetHotlinkProtection method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetHotlinkProtectionWithContext(ctx context.Context, getHotlinkProtectionOptions *GetHotlinkProtectionOptions) (result *HotlinkProtectionResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getHotlinkProtectionOptions, "getHotlinkProtectionOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/hotlink_protection"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/hotlink_protection`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2417,16 +2877,25 @@ func (zonesSettings *ZonesSettingsV1) GetHotlinkProtection(getHotlinkProtectionO
 // UpdateHotlinkProtection : Update hotlink protection setting
 // Update hotlink protection setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateHotlinkProtection(updateHotlinkProtectionOptions *UpdateHotlinkProtectionOptions) (result *HotlinkProtectionResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateHotlinkProtectionWithContext(context.Background(), updateHotlinkProtectionOptions)
+}
+
+// UpdateHotlinkProtectionWithContext is an alternate form of the UpdateHotlinkProtection method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateHotlinkProtectionWithContext(ctx context.Context, updateHotlinkProtectionOptions *UpdateHotlinkProtectionOptions) (result *HotlinkProtectionResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateHotlinkProtectionOptions, "updateHotlinkProtectionOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/hotlink_protection"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/hotlink_protection`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2473,16 +2942,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateHotlinkProtection(updateHotlinkProte
 // GetMaxUpload : Get maximum upload size setting
 // Get maximum upload size setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetMaxUpload(getMaxUploadOptions *GetMaxUploadOptions) (result *MaxUploadResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetMaxUploadWithContext(context.Background(), getMaxUploadOptions)
+}
+
+// GetMaxUploadWithContext is an alternate form of the GetMaxUpload method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetMaxUploadWithContext(ctx context.Context, getMaxUploadOptions *GetMaxUploadOptions) (result *MaxUploadResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getMaxUploadOptions, "getMaxUploadOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/max_upload"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/max_upload`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2519,16 +2997,25 @@ func (zonesSettings *ZonesSettingsV1) GetMaxUpload(getMaxUploadOptions *GetMaxUp
 // UpdateMaxUpload : Update maximum upload size setting
 // Update maximum upload size setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateMaxUpload(updateMaxUploadOptions *UpdateMaxUploadOptions) (result *MaxUploadResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateMaxUploadWithContext(context.Background(), updateMaxUploadOptions)
+}
+
+// UpdateMaxUploadWithContext is an alternate form of the UpdateMaxUpload method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateMaxUploadWithContext(ctx context.Context, updateMaxUploadOptions *UpdateMaxUploadOptions) (result *MaxUploadResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateMaxUploadOptions, "updateMaxUploadOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/max_upload"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/max_upload`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2575,16 +3062,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateMaxUpload(updateMaxUploadOptions *Up
 // GetTlsClientAuth : Get TLS Client Auth setting
 // Get TLS Client Auth setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetTlsClientAuth(getTlsClientAuthOptions *GetTlsClientAuthOptions) (result *TlsClientAuthResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetTlsClientAuthWithContext(context.Background(), getTlsClientAuthOptions)
+}
+
+// GetTlsClientAuthWithContext is an alternate form of the GetTlsClientAuth method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetTlsClientAuthWithContext(ctx context.Context, getTlsClientAuthOptions *GetTlsClientAuthOptions) (result *TlsClientAuthResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getTlsClientAuthOptions, "getTlsClientAuthOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/tls_client_auth"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/tls_client_auth`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2621,16 +3117,25 @@ func (zonesSettings *ZonesSettingsV1) GetTlsClientAuth(getTlsClientAuthOptions *
 // UpdateTlsClientAuth : Update TLS Client Auth setting
 // Update TLS Client Auth setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateTlsClientAuth(updateTlsClientAuthOptions *UpdateTlsClientAuthOptions) (result *TlsClientAuthResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateTlsClientAuthWithContext(context.Background(), updateTlsClientAuthOptions)
+}
+
+// UpdateTlsClientAuthWithContext is an alternate form of the UpdateTlsClientAuth method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateTlsClientAuthWithContext(ctx context.Context, updateTlsClientAuthOptions *UpdateTlsClientAuthOptions) (result *TlsClientAuthResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateTlsClientAuthOptions, "updateTlsClientAuthOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/tls_client_auth"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/tls_client_auth`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2677,16 +3182,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateTlsClientAuth(updateTlsClientAuthOpt
 // GetBrowserCheck : Get browser check setting
 // Get browser check setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetBrowserCheck(getBrowserCheckOptions *GetBrowserCheckOptions) (result *BrowserCheckResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetBrowserCheckWithContext(context.Background(), getBrowserCheckOptions)
+}
+
+// GetBrowserCheckWithContext is an alternate form of the GetBrowserCheck method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetBrowserCheckWithContext(ctx context.Context, getBrowserCheckOptions *GetBrowserCheckOptions) (result *BrowserCheckResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getBrowserCheckOptions, "getBrowserCheckOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/browser_check"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/browser_check`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2723,16 +3237,25 @@ func (zonesSettings *ZonesSettingsV1) GetBrowserCheck(getBrowserCheckOptions *Ge
 // UpdateBrowserCheck : Update browser check setting
 // Update browser check setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateBrowserCheck(updateBrowserCheckOptions *UpdateBrowserCheckOptions) (result *BrowserCheckResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateBrowserCheckWithContext(context.Background(), updateBrowserCheckOptions)
+}
+
+// UpdateBrowserCheckWithContext is an alternate form of the UpdateBrowserCheck method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateBrowserCheckWithContext(ctx context.Context, updateBrowserCheckOptions *UpdateBrowserCheckOptions) (result *BrowserCheckResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateBrowserCheckOptions, "updateBrowserCheckOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/browser_check"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/browser_check`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2779,16 +3302,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateBrowserCheck(updateBrowserCheckOptio
 // GetEnableErrorPagesOn : Get enable error pages on setting
 // Get enable error pages on setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetEnableErrorPagesOn(getEnableErrorPagesOnOptions *GetEnableErrorPagesOnOptions) (result *OriginErrorPagePassThruResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetEnableErrorPagesOnWithContext(context.Background(), getEnableErrorPagesOnOptions)
+}
+
+// GetEnableErrorPagesOnWithContext is an alternate form of the GetEnableErrorPagesOn method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetEnableErrorPagesOnWithContext(ctx context.Context, getEnableErrorPagesOnOptions *GetEnableErrorPagesOnOptions) (result *OriginErrorPagePassThruResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getEnableErrorPagesOnOptions, "getEnableErrorPagesOnOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/origin_error_page_pass_thru"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/origin_error_page_pass_thru`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2825,16 +3357,25 @@ func (zonesSettings *ZonesSettingsV1) GetEnableErrorPagesOn(getEnableErrorPagesO
 // UpdateEnableErrorPagesOn : Update enable error pages on setting
 // Update enable error pages on setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateEnableErrorPagesOn(updateEnableErrorPagesOnOptions *UpdateEnableErrorPagesOnOptions) (result *OriginErrorPagePassThruResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateEnableErrorPagesOnWithContext(context.Background(), updateEnableErrorPagesOnOptions)
+}
+
+// UpdateEnableErrorPagesOnWithContext is an alternate form of the UpdateEnableErrorPagesOn method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateEnableErrorPagesOnWithContext(ctx context.Context, updateEnableErrorPagesOnOptions *UpdateEnableErrorPagesOnOptions) (result *OriginErrorPagePassThruResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateEnableErrorPagesOnOptions, "updateEnableErrorPagesOnOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/origin_error_page_pass_thru"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/origin_error_page_pass_thru`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2881,16 +3422,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateEnableErrorPagesOn(updateEnableError
 // GetWebApplicationFirewall : Get web application firewall setting
 // Get web application firewall setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetWebApplicationFirewall(getWebApplicationFirewallOptions *GetWebApplicationFirewallOptions) (result *WafResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetWebApplicationFirewallWithContext(context.Background(), getWebApplicationFirewallOptions)
+}
+
+// GetWebApplicationFirewallWithContext is an alternate form of the GetWebApplicationFirewall method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetWebApplicationFirewallWithContext(ctx context.Context, getWebApplicationFirewallOptions *GetWebApplicationFirewallOptions) (result *WafResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getWebApplicationFirewallOptions, "getWebApplicationFirewallOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/waf"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/waf`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2927,16 +3477,25 @@ func (zonesSettings *ZonesSettingsV1) GetWebApplicationFirewall(getWebApplicatio
 // UpdateWebApplicationFirewall : Update web application firewall setting
 // A Web Application Firewall (WAF) blocks requests that contain malicious content.
 func (zonesSettings *ZonesSettingsV1) UpdateWebApplicationFirewall(updateWebApplicationFirewallOptions *UpdateWebApplicationFirewallOptions) (result *WafResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateWebApplicationFirewallWithContext(context.Background(), updateWebApplicationFirewallOptions)
+}
+
+// UpdateWebApplicationFirewallWithContext is an alternate form of the UpdateWebApplicationFirewall method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateWebApplicationFirewallWithContext(ctx context.Context, updateWebApplicationFirewallOptions *UpdateWebApplicationFirewallOptions) (result *WafResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateWebApplicationFirewallOptions, "updateWebApplicationFirewallOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/waf"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/waf`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -2983,16 +3542,25 @@ func (zonesSettings *ZonesSettingsV1) UpdateWebApplicationFirewall(updateWebAppl
 // GetCiphers : Get ciphers setting
 // Get ciphers setting for a zone.
 func (zonesSettings *ZonesSettingsV1) GetCiphers(getCiphersOptions *GetCiphersOptions) (result *CiphersResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.GetCiphersWithContext(context.Background(), getCiphersOptions)
+}
+
+// GetCiphersWithContext is an alternate form of the GetCiphers method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) GetCiphersWithContext(ctx context.Context, getCiphersOptions *GetCiphersOptions) (result *CiphersResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getCiphersOptions, "getCiphersOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/ciphers"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/ciphers`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -3029,16 +3597,25 @@ func (zonesSettings *ZonesSettingsV1) GetCiphers(getCiphersOptions *GetCiphersOp
 // UpdateCiphers : Update ciphers setting
 // Update ciphers setting for a zone.
 func (zonesSettings *ZonesSettingsV1) UpdateCiphers(updateCiphersOptions *UpdateCiphersOptions) (result *CiphersResp, response *core.DetailedResponse, err error) {
+	return zonesSettings.UpdateCiphersWithContext(context.Background(), updateCiphersOptions)
+}
+
+// UpdateCiphersWithContext is an alternate form of the UpdateCiphers method which supports a Context parameter
+func (zonesSettings *ZonesSettingsV1) UpdateCiphersWithContext(ctx context.Context, updateCiphersOptions *UpdateCiphersOptions) (result *CiphersResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateCiphersOptions, "updateCiphersOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/ciphers"}
-	pathParameters := []string{*zonesSettings.Crn, *zonesSettings.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zonesSettings.Crn,
+		"zone_identifier": *zonesSettings.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zonesSettings.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zonesSettings.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zonesSettings.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/ciphers`, pathParamsMap)
 	if err != nil {
 		return
 	}

@@ -14,14 +14,23 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.20.0-debb9f29-20201203-202043
+ */
+ 
+
 // Package globalloadbalancermonitorv1 : Operations and models for the GlobalLoadBalancerMonitorV1 service
 package globalloadbalancermonitorv1
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/IBM/go-sdk-core/v4/core"
 	common "github.com/IBM/networking-go-sdk/common"
+	"net/http"
 	"reflect"
+	"time"
 )
 
 // GlobalLoadBalancerMonitorV1 : Global Load Balancer Monitor
@@ -111,24 +120,78 @@ func NewGlobalLoadBalancerMonitorV1(options *GlobalLoadBalancerMonitorV1Options)
 	return
 }
 
+// GetServiceURLForRegion returns the service URL to be used for the specified region
+func GetServiceURLForRegion(region string) (string, error) {
+	return "", fmt.Errorf("service does not support regional URLs")
+}
+
+// Clone makes a copy of "globalLoadBalancerMonitor" suitable for processing requests.
+func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) Clone() *GlobalLoadBalancerMonitorV1 {
+	if core.IsNil(globalLoadBalancerMonitor) {
+		return nil
+	}
+	clone := *globalLoadBalancerMonitor
+	clone.Service = globalLoadBalancerMonitor.Service.Clone()
+	return &clone
+}
+
 // SetServiceURL sets the service URL
 func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) SetServiceURL(url string) error {
 	return globalLoadBalancerMonitor.Service.SetServiceURL(url)
 }
 
+// GetServiceURL returns the service URL
+func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) GetServiceURL() string {
+	return globalLoadBalancerMonitor.Service.GetServiceURL()
+}
+
+// SetDefaultHeaders sets HTTP headers to be sent in every request
+func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) SetDefaultHeaders(headers http.Header) {
+	globalLoadBalancerMonitor.Service.SetDefaultHeaders(headers)
+}
+
+// SetEnableGzipCompression sets the service's EnableGzipCompression field
+func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) SetEnableGzipCompression(enableGzip bool) {
+	globalLoadBalancerMonitor.Service.SetEnableGzipCompression(enableGzip)
+}
+
+// GetEnableGzipCompression returns the service's EnableGzipCompression field
+func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) GetEnableGzipCompression() bool {
+	return globalLoadBalancerMonitor.Service.GetEnableGzipCompression()
+}
+
+// EnableRetries enables automatic retries for requests invoked for this service instance.
+// If either parameter is specified as 0, then a default value is used instead.
+func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) EnableRetries(maxRetries int, maxRetryInterval time.Duration) {
+	globalLoadBalancerMonitor.Service.EnableRetries(maxRetries, maxRetryInterval)
+}
+
+// DisableRetries disables automatic retries for requests invoked for this service instance.
+func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) DisableRetries() {
+	globalLoadBalancerMonitor.Service.DisableRetries()
+}
+
 // ListAllLoadBalancerMonitors : List all load balancer monitors
 // List configured load balancer monitors for a user.
 func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) ListAllLoadBalancerMonitors(listAllLoadBalancerMonitorsOptions *ListAllLoadBalancerMonitorsOptions) (result *ListMonitorResp, response *core.DetailedResponse, err error) {
+	return globalLoadBalancerMonitor.ListAllLoadBalancerMonitorsWithContext(context.Background(), listAllLoadBalancerMonitorsOptions)
+}
+
+// ListAllLoadBalancerMonitorsWithContext is an alternate form of the ListAllLoadBalancerMonitors method which supports a Context parameter
+func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) ListAllLoadBalancerMonitorsWithContext(ctx context.Context, listAllLoadBalancerMonitorsOptions *ListAllLoadBalancerMonitorsOptions) (result *ListMonitorResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listAllLoadBalancerMonitorsOptions, "listAllLoadBalancerMonitorsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "load_balancers/monitors"}
-	pathParameters := []string{*globalLoadBalancerMonitor.Crn}
+	pathParamsMap := map[string]string{
+		"crn": *globalLoadBalancerMonitor.Crn,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(globalLoadBalancerMonitor.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = globalLoadBalancerMonitor.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(globalLoadBalancerMonitor.Service.Options.URL, `/v1/{crn}/load_balancers/monitors`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -165,16 +228,24 @@ func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) ListAllLoadBalance
 // CreateLoadBalancerMonitor : Create load balancer monitor
 // Create a load balancer monitor for a given service instance.
 func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) CreateLoadBalancerMonitor(createLoadBalancerMonitorOptions *CreateLoadBalancerMonitorOptions) (result *MonitorResp, response *core.DetailedResponse, err error) {
+	return globalLoadBalancerMonitor.CreateLoadBalancerMonitorWithContext(context.Background(), createLoadBalancerMonitorOptions)
+}
+
+// CreateLoadBalancerMonitorWithContext is an alternate form of the CreateLoadBalancerMonitor method which supports a Context parameter
+func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) CreateLoadBalancerMonitorWithContext(ctx context.Context, createLoadBalancerMonitorOptions *CreateLoadBalancerMonitorOptions) (result *MonitorResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(createLoadBalancerMonitorOptions, "createLoadBalancerMonitorOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "load_balancers/monitors"}
-	pathParameters := []string{*globalLoadBalancerMonitor.Crn}
+	pathParamsMap := map[string]string{
+		"crn": *globalLoadBalancerMonitor.Crn,
+	}
 
 	builder := core.NewRequestBuilder(core.POST)
-	_, err = builder.ConstructHTTPURL(globalLoadBalancerMonitor.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = globalLoadBalancerMonitor.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(globalLoadBalancerMonitor.Service.Options.URL, `/v1/{crn}/load_balancers/monitors`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -257,6 +328,11 @@ func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) CreateLoadBalancer
 // EditLoadBalancerMonitor : Edit load balancer monitor
 // Edit porperties of an existing load balancer monitor.
 func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) EditLoadBalancerMonitor(editLoadBalancerMonitorOptions *EditLoadBalancerMonitorOptions) (result *MonitorResp, response *core.DetailedResponse, err error) {
+	return globalLoadBalancerMonitor.EditLoadBalancerMonitorWithContext(context.Background(), editLoadBalancerMonitorOptions)
+}
+
+// EditLoadBalancerMonitorWithContext is an alternate form of the EditLoadBalancerMonitor method which supports a Context parameter
+func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) EditLoadBalancerMonitorWithContext(ctx context.Context, editLoadBalancerMonitorOptions *EditLoadBalancerMonitorOptions) (result *MonitorResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(editLoadBalancerMonitorOptions, "editLoadBalancerMonitorOptions cannot be nil")
 	if err != nil {
 		return
@@ -266,11 +342,15 @@ func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) EditLoadBalancerMo
 		return
 	}
 
-	pathSegments := []string{"v1", "load_balancers/monitors"}
-	pathParameters := []string{*globalLoadBalancerMonitor.Crn, *editLoadBalancerMonitorOptions.MonitorIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *globalLoadBalancerMonitor.Crn,
+		"monitor_identifier": *editLoadBalancerMonitorOptions.MonitorIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PUT)
-	_, err = builder.ConstructHTTPURL(globalLoadBalancerMonitor.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = globalLoadBalancerMonitor.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(globalLoadBalancerMonitor.Service.Options.URL, `/v1/{crn}/load_balancers/monitors/{monitor_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -353,6 +433,11 @@ func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) EditLoadBalancerMo
 // DeleteLoadBalancerMonitor : Delete load balancer monitor
 // Delete a load balancer monitor.
 func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) DeleteLoadBalancerMonitor(deleteLoadBalancerMonitorOptions *DeleteLoadBalancerMonitorOptions) (result *DeleteMonitorResp, response *core.DetailedResponse, err error) {
+	return globalLoadBalancerMonitor.DeleteLoadBalancerMonitorWithContext(context.Background(), deleteLoadBalancerMonitorOptions)
+}
+
+// DeleteLoadBalancerMonitorWithContext is an alternate form of the DeleteLoadBalancerMonitor method which supports a Context parameter
+func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) DeleteLoadBalancerMonitorWithContext(ctx context.Context, deleteLoadBalancerMonitorOptions *DeleteLoadBalancerMonitorOptions) (result *DeleteMonitorResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteLoadBalancerMonitorOptions, "deleteLoadBalancerMonitorOptions cannot be nil")
 	if err != nil {
 		return
@@ -362,11 +447,15 @@ func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) DeleteLoadBalancer
 		return
 	}
 
-	pathSegments := []string{"v1", "load_balancers/monitors"}
-	pathParameters := []string{*globalLoadBalancerMonitor.Crn, *deleteLoadBalancerMonitorOptions.MonitorIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *globalLoadBalancerMonitor.Crn,
+		"monitor_identifier": *deleteLoadBalancerMonitorOptions.MonitorIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(globalLoadBalancerMonitor.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = globalLoadBalancerMonitor.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(globalLoadBalancerMonitor.Service.Options.URL, `/v1/{crn}/load_balancers/monitors/{monitor_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -403,6 +492,11 @@ func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) DeleteLoadBalancer
 // GetLoadBalancerMonitor : Get load balancer monitor
 // For a given service instance and load balancer monitor id, get the monitor details.
 func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) GetLoadBalancerMonitor(getLoadBalancerMonitorOptions *GetLoadBalancerMonitorOptions) (result *MonitorResp, response *core.DetailedResponse, err error) {
+	return globalLoadBalancerMonitor.GetLoadBalancerMonitorWithContext(context.Background(), getLoadBalancerMonitorOptions)
+}
+
+// GetLoadBalancerMonitorWithContext is an alternate form of the GetLoadBalancerMonitor method which supports a Context parameter
+func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) GetLoadBalancerMonitorWithContext(ctx context.Context, getLoadBalancerMonitorOptions *GetLoadBalancerMonitorOptions) (result *MonitorResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getLoadBalancerMonitorOptions, "getLoadBalancerMonitorOptions cannot be nil")
 	if err != nil {
 		return
@@ -412,11 +506,15 @@ func (globalLoadBalancerMonitor *GlobalLoadBalancerMonitorV1) GetLoadBalancerMon
 		return
 	}
 
-	pathSegments := []string{"v1", "load_balancers/monitors"}
-	pathParameters := []string{*globalLoadBalancerMonitor.Crn, *getLoadBalancerMonitorOptions.MonitorIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *globalLoadBalancerMonitor.Crn,
+		"monitor_identifier": *getLoadBalancerMonitorOptions.MonitorIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(globalLoadBalancerMonitor.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = globalLoadBalancerMonitor.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(globalLoadBalancerMonitor.Service.Options.URL, `/v1/{crn}/load_balancers/monitors/{monitor_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -587,7 +685,7 @@ func (options *CreateLoadBalancerMonitorOptions) SetHeaders(param map[string]str
 // DeleteLoadBalancerMonitorOptions : The DeleteLoadBalancerMonitor options.
 type DeleteLoadBalancerMonitorOptions struct {
 	// monitor identifier.
-	MonitorIdentifier *string `json:"monitor_identifier" validate:"required"`
+	MonitorIdentifier *string `json:"monitor_identifier" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -633,7 +731,7 @@ func UnmarshalDeleteMonitorRespResult(m map[string]json.RawMessage, result inter
 // EditLoadBalancerMonitorOptions : The EditLoadBalancerMonitor options.
 type EditLoadBalancerMonitorOptions struct {
 	// monitor identifier.
-	MonitorIdentifier *string `json:"monitor_identifier" validate:"required"`
+	MonitorIdentifier *string `json:"monitor_identifier" validate:"required,ne="`
 
 	// http type.
 	Type *string `json:"type,omitempty"`
@@ -778,7 +876,7 @@ func (options *EditLoadBalancerMonitorOptions) SetHeaders(param map[string]strin
 // GetLoadBalancerMonitorOptions : The GetLoadBalancerMonitor options.
 type GetLoadBalancerMonitorOptions struct {
 	// monitor identifier.
-	MonitorIdentifier *string `json:"monitor_identifier" validate:"required"`
+	MonitorIdentifier *string `json:"monitor_identifier" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string

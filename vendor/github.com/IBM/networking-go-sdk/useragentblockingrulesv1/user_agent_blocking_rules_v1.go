@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.20.0-debb9f29-20201203-202043
+ */
+ 
+
 // Package useragentblockingrulesv1 : Operations and models for the UserAgentBlockingRulesV1 service
 package useragentblockingrulesv1
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/go-sdk-core/v4/core"
 	common "github.com/IBM/networking-go-sdk/common"
+	"net/http"
 	"reflect"
+	"time"
 )
 
 // UserAgentBlockingRulesV1 : User-Agent Blocking Rules
@@ -119,24 +127,79 @@ func NewUserAgentBlockingRulesV1(options *UserAgentBlockingRulesV1Options) (serv
 	return
 }
 
+// GetServiceURLForRegion returns the service URL to be used for the specified region
+func GetServiceURLForRegion(region string) (string, error) {
+	return "", fmt.Errorf("service does not support regional URLs")
+}
+
+// Clone makes a copy of "userAgentBlockingRules" suitable for processing requests.
+func (userAgentBlockingRules *UserAgentBlockingRulesV1) Clone() *UserAgentBlockingRulesV1 {
+	if core.IsNil(userAgentBlockingRules) {
+		return nil
+	}
+	clone := *userAgentBlockingRules
+	clone.Service = userAgentBlockingRules.Service.Clone()
+	return &clone
+}
+
 // SetServiceURL sets the service URL
 func (userAgentBlockingRules *UserAgentBlockingRulesV1) SetServiceURL(url string) error {
 	return userAgentBlockingRules.Service.SetServiceURL(url)
 }
 
+// GetServiceURL returns the service URL
+func (userAgentBlockingRules *UserAgentBlockingRulesV1) GetServiceURL() string {
+	return userAgentBlockingRules.Service.GetServiceURL()
+}
+
+// SetDefaultHeaders sets HTTP headers to be sent in every request
+func (userAgentBlockingRules *UserAgentBlockingRulesV1) SetDefaultHeaders(headers http.Header) {
+	userAgentBlockingRules.Service.SetDefaultHeaders(headers)
+}
+
+// SetEnableGzipCompression sets the service's EnableGzipCompression field
+func (userAgentBlockingRules *UserAgentBlockingRulesV1) SetEnableGzipCompression(enableGzip bool) {
+	userAgentBlockingRules.Service.SetEnableGzipCompression(enableGzip)
+}
+
+// GetEnableGzipCompression returns the service's EnableGzipCompression field
+func (userAgentBlockingRules *UserAgentBlockingRulesV1) GetEnableGzipCompression() bool {
+	return userAgentBlockingRules.Service.GetEnableGzipCompression()
+}
+
+// EnableRetries enables automatic retries for requests invoked for this service instance.
+// If either parameter is specified as 0, then a default value is used instead.
+func (userAgentBlockingRules *UserAgentBlockingRulesV1) EnableRetries(maxRetries int, maxRetryInterval time.Duration) {
+	userAgentBlockingRules.Service.EnableRetries(maxRetries, maxRetryInterval)
+}
+
+// DisableRetries disables automatic retries for requests invoked for this service instance.
+func (userAgentBlockingRules *UserAgentBlockingRulesV1) DisableRetries() {
+	userAgentBlockingRules.Service.DisableRetries()
+}
+
 // ListAllZoneUserAgentRules : List all user-agent blocking rules
 // List all user agent blocking rules.
 func (userAgentBlockingRules *UserAgentBlockingRulesV1) ListAllZoneUserAgentRules(listAllZoneUserAgentRulesOptions *ListAllZoneUserAgentRulesOptions) (result *ListUseragentRulesResp, response *core.DetailedResponse, err error) {
+	return userAgentBlockingRules.ListAllZoneUserAgentRulesWithContext(context.Background(), listAllZoneUserAgentRulesOptions)
+}
+
+// ListAllZoneUserAgentRulesWithContext is an alternate form of the ListAllZoneUserAgentRules method which supports a Context parameter
+func (userAgentBlockingRules *UserAgentBlockingRulesV1) ListAllZoneUserAgentRulesWithContext(ctx context.Context, listAllZoneUserAgentRulesOptions *ListAllZoneUserAgentRulesOptions) (result *ListUseragentRulesResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listAllZoneUserAgentRulesOptions, "listAllZoneUserAgentRulesOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/ua_rules"}
-	pathParameters := []string{*userAgentBlockingRules.Crn, *userAgentBlockingRules.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *userAgentBlockingRules.Crn,
+		"zone_identifier": *userAgentBlockingRules.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(userAgentBlockingRules.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = userAgentBlockingRules.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(userAgentBlockingRules.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/firewall/ua_rules`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -177,19 +240,28 @@ func (userAgentBlockingRules *UserAgentBlockingRulesV1) ListAllZoneUserAgentRule
 	return
 }
 
-// CreateZoneUserAgentRule : Create a new user-agent blocking rule
+// CreateZoneUserAgentRule : Create user-agent blocking rule
 // Create a new user-agent blocking rule for a given zone under a service instance.
 func (userAgentBlockingRules *UserAgentBlockingRulesV1) CreateZoneUserAgentRule(createZoneUserAgentRuleOptions *CreateZoneUserAgentRuleOptions) (result *UseragentRuleResp, response *core.DetailedResponse, err error) {
+	return userAgentBlockingRules.CreateZoneUserAgentRuleWithContext(context.Background(), createZoneUserAgentRuleOptions)
+}
+
+// CreateZoneUserAgentRuleWithContext is an alternate form of the CreateZoneUserAgentRule method which supports a Context parameter
+func (userAgentBlockingRules *UserAgentBlockingRulesV1) CreateZoneUserAgentRuleWithContext(ctx context.Context, createZoneUserAgentRuleOptions *CreateZoneUserAgentRuleOptions) (result *UseragentRuleResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(createZoneUserAgentRuleOptions, "createZoneUserAgentRuleOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/ua_rules"}
-	pathParameters := []string{*userAgentBlockingRules.Crn, *userAgentBlockingRules.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *userAgentBlockingRules.Crn,
+		"zone_identifier": *userAgentBlockingRules.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.POST)
-	_, err = builder.ConstructHTTPURL(userAgentBlockingRules.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = userAgentBlockingRules.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(userAgentBlockingRules.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/firewall/ua_rules`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -242,9 +314,14 @@ func (userAgentBlockingRules *UserAgentBlockingRulesV1) CreateZoneUserAgentRule(
 	return
 }
 
-// DeleteZoneUserAgentRule : Delete a user-agent blocking rule
+// DeleteZoneUserAgentRule : Delete user-agent blocking rule
 // Delete a user-agent blocking rule for a particular zone, given its id.
 func (userAgentBlockingRules *UserAgentBlockingRulesV1) DeleteZoneUserAgentRule(deleteZoneUserAgentRuleOptions *DeleteZoneUserAgentRuleOptions) (result *DeleteUseragentRuleResp, response *core.DetailedResponse, err error) {
+	return userAgentBlockingRules.DeleteZoneUserAgentRuleWithContext(context.Background(), deleteZoneUserAgentRuleOptions)
+}
+
+// DeleteZoneUserAgentRuleWithContext is an alternate form of the DeleteZoneUserAgentRule method which supports a Context parameter
+func (userAgentBlockingRules *UserAgentBlockingRulesV1) DeleteZoneUserAgentRuleWithContext(ctx context.Context, deleteZoneUserAgentRuleOptions *DeleteZoneUserAgentRuleOptions) (result *DeleteUseragentRuleResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteZoneUserAgentRuleOptions, "deleteZoneUserAgentRuleOptions cannot be nil")
 	if err != nil {
 		return
@@ -254,11 +331,16 @@ func (userAgentBlockingRules *UserAgentBlockingRulesV1) DeleteZoneUserAgentRule(
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/ua_rules"}
-	pathParameters := []string{*userAgentBlockingRules.Crn, *userAgentBlockingRules.ZoneIdentifier, *deleteZoneUserAgentRuleOptions.UseragentRuleIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *userAgentBlockingRules.Crn,
+		"zone_identifier": *userAgentBlockingRules.ZoneIdentifier,
+		"useragent_rule_identifier": *deleteZoneUserAgentRuleOptions.UseragentRuleIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(userAgentBlockingRules.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = userAgentBlockingRules.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(userAgentBlockingRules.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/firewall/ua_rules/{useragent_rule_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -292,9 +374,14 @@ func (userAgentBlockingRules *UserAgentBlockingRulesV1) DeleteZoneUserAgentRule(
 	return
 }
 
-// GetUserAgentRule : Get a user-agent blocking rule's details by id
+// GetUserAgentRule : Get user-agent blocking rule
 // For a given service instance, zone id and user-agent rule id, get the user-agent blocking rule details.
 func (userAgentBlockingRules *UserAgentBlockingRulesV1) GetUserAgentRule(getUserAgentRuleOptions *GetUserAgentRuleOptions) (result *UseragentRuleResp, response *core.DetailedResponse, err error) {
+	return userAgentBlockingRules.GetUserAgentRuleWithContext(context.Background(), getUserAgentRuleOptions)
+}
+
+// GetUserAgentRuleWithContext is an alternate form of the GetUserAgentRule method which supports a Context parameter
+func (userAgentBlockingRules *UserAgentBlockingRulesV1) GetUserAgentRuleWithContext(ctx context.Context, getUserAgentRuleOptions *GetUserAgentRuleOptions) (result *UseragentRuleResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getUserAgentRuleOptions, "getUserAgentRuleOptions cannot be nil")
 	if err != nil {
 		return
@@ -304,11 +391,16 @@ func (userAgentBlockingRules *UserAgentBlockingRulesV1) GetUserAgentRule(getUser
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/ua_rules"}
-	pathParameters := []string{*userAgentBlockingRules.Crn, *userAgentBlockingRules.ZoneIdentifier, *getUserAgentRuleOptions.UseragentRuleIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *userAgentBlockingRules.Crn,
+		"zone_identifier": *userAgentBlockingRules.ZoneIdentifier,
+		"useragent_rule_identifier": *getUserAgentRuleOptions.UseragentRuleIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(userAgentBlockingRules.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = userAgentBlockingRules.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(userAgentBlockingRules.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/firewall/ua_rules/{useragent_rule_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -342,9 +434,14 @@ func (userAgentBlockingRules *UserAgentBlockingRulesV1) GetUserAgentRule(getUser
 	return
 }
 
-// UpdateUserAgentRule : Update a user-agent blocking rule
+// UpdateUserAgentRule : Update user-agent blocking rule
 // Update an existing user-agent blocking rule for a given zone under a given service instance.
 func (userAgentBlockingRules *UserAgentBlockingRulesV1) UpdateUserAgentRule(updateUserAgentRuleOptions *UpdateUserAgentRuleOptions) (result *UseragentRuleResp, response *core.DetailedResponse, err error) {
+	return userAgentBlockingRules.UpdateUserAgentRuleWithContext(context.Background(), updateUserAgentRuleOptions)
+}
+
+// UpdateUserAgentRuleWithContext is an alternate form of the UpdateUserAgentRule method which supports a Context parameter
+func (userAgentBlockingRules *UserAgentBlockingRulesV1) UpdateUserAgentRuleWithContext(ctx context.Context, updateUserAgentRuleOptions *UpdateUserAgentRuleOptions) (result *UseragentRuleResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateUserAgentRuleOptions, "updateUserAgentRuleOptions cannot be nil")
 	if err != nil {
 		return
@@ -354,11 +451,16 @@ func (userAgentBlockingRules *UserAgentBlockingRulesV1) UpdateUserAgentRule(upda
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/ua_rules"}
-	pathParameters := []string{*userAgentBlockingRules.Crn, *userAgentBlockingRules.ZoneIdentifier, *updateUserAgentRuleOptions.UseragentRuleIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *userAgentBlockingRules.Crn,
+		"zone_identifier": *userAgentBlockingRules.ZoneIdentifier,
+		"useragent_rule_identifier": *updateUserAgentRuleOptions.UseragentRuleIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PUT)
-	_, err = builder.ConstructHTTPURL(userAgentBlockingRules.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = userAgentBlockingRules.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(userAgentBlockingRules.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/firewall/ua_rules/{useragent_rule_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -493,7 +595,7 @@ func UnmarshalDeleteUseragentRuleRespResult(m map[string]json.RawMessage, result
 // DeleteZoneUserAgentRuleOptions : The DeleteZoneUserAgentRule options.
 type DeleteZoneUserAgentRuleOptions struct {
 	// Identifier of the user-agent rule to be deleted.
-	UseragentRuleIdentifier *string `json:"useragent_rule_identifier" validate:"required"`
+	UseragentRuleIdentifier *string `json:"useragent_rule_identifier" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -521,7 +623,7 @@ func (options *DeleteZoneUserAgentRuleOptions) SetHeaders(param map[string]strin
 // GetUserAgentRuleOptions : The GetUserAgentRule options.
 type GetUserAgentRuleOptions struct {
 	// Identifier of user-agent blocking rule for the given zone.
-	UseragentRuleIdentifier *string `json:"useragent_rule_identifier" validate:"required"`
+	UseragentRuleIdentifier *string `json:"useragent_rule_identifier" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -623,7 +725,7 @@ func UnmarshalListUseragentRulesRespResultInfo(m map[string]json.RawMessage, res
 // UpdateUserAgentRuleOptions : The UpdateUserAgentRule options.
 type UpdateUserAgentRuleOptions struct {
 	// Identifier of user-agent rule.
-	UseragentRuleIdentifier *string `json:"useragent_rule_identifier" validate:"required"`
+	UseragentRuleIdentifier *string `json:"useragent_rule_identifier" validate:"required,ne="`
 
 	// Whether this user-agent rule is currently disabled.
 	Paused *bool `json:"paused,omitempty"`

@@ -14,16 +14,23 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.20.0-debb9f29-20201203-202043
+ */
+ 
+
 // Package zonefirewallaccessrulesv1 : Operations and models for the ZoneFirewallAccessRulesV1 service
 package zonefirewallaccessrulesv1
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"reflect"
-
 	"github.com/IBM/go-sdk-core/v4/core"
 	common "github.com/IBM/networking-go-sdk/common"
+	"net/http"
+	"reflect"
+	"time"
 )
 
 // ZoneFirewallAccessRulesV1 : Zone Firewall Access Rules
@@ -120,24 +127,79 @@ func NewZoneFirewallAccessRulesV1(options *ZoneFirewallAccessRulesV1Options) (se
 	return
 }
 
+// GetServiceURLForRegion returns the service URL to be used for the specified region
+func GetServiceURLForRegion(region string) (string, error) {
+	return "", fmt.Errorf("service does not support regional URLs")
+}
+
+// Clone makes a copy of "zoneFirewallAccessRules" suitable for processing requests.
+func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) Clone() *ZoneFirewallAccessRulesV1 {
+	if core.IsNil(zoneFirewallAccessRules) {
+		return nil
+	}
+	clone := *zoneFirewallAccessRules
+	clone.Service = zoneFirewallAccessRules.Service.Clone()
+	return &clone
+}
+
 // SetServiceURL sets the service URL
 func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) SetServiceURL(url string) error {
 	return zoneFirewallAccessRules.Service.SetServiceURL(url)
 }
 
-// ListAllZoneAccessRules : List all firewall access rules for a zone
+// GetServiceURL returns the service URL
+func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) GetServiceURL() string {
+	return zoneFirewallAccessRules.Service.GetServiceURL()
+}
+
+// SetDefaultHeaders sets HTTP headers to be sent in every request
+func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) SetDefaultHeaders(headers http.Header) {
+	zoneFirewallAccessRules.Service.SetDefaultHeaders(headers)
+}
+
+// SetEnableGzipCompression sets the service's EnableGzipCompression field
+func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) SetEnableGzipCompression(enableGzip bool) {
+	zoneFirewallAccessRules.Service.SetEnableGzipCompression(enableGzip)
+}
+
+// GetEnableGzipCompression returns the service's EnableGzipCompression field
+func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) GetEnableGzipCompression() bool {
+	return zoneFirewallAccessRules.Service.GetEnableGzipCompression()
+}
+
+// EnableRetries enables automatic retries for requests invoked for this service instance.
+// If either parameter is specified as 0, then a default value is used instead.
+func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) EnableRetries(maxRetries int, maxRetryInterval time.Duration) {
+	zoneFirewallAccessRules.Service.EnableRetries(maxRetries, maxRetryInterval)
+}
+
+// DisableRetries disables automatic retries for requests invoked for this service instance.
+func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) DisableRetries() {
+	zoneFirewallAccessRules.Service.DisableRetries()
+}
+
+// ListAllZoneAccessRules : List all firewall access rules
 // List all firewall access rules for a zone.
 func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) ListAllZoneAccessRules(listAllZoneAccessRulesOptions *ListAllZoneAccessRulesOptions) (result *ListZoneAccessRulesResp, response *core.DetailedResponse, err error) {
+	return zoneFirewallAccessRules.ListAllZoneAccessRulesWithContext(context.Background(), listAllZoneAccessRulesOptions)
+}
+
+// ListAllZoneAccessRulesWithContext is an alternate form of the ListAllZoneAccessRules method which supports a Context parameter
+func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) ListAllZoneAccessRulesWithContext(ctx context.Context, listAllZoneAccessRulesOptions *ListAllZoneAccessRulesOptions) (result *ListZoneAccessRulesResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listAllZoneAccessRulesOptions, "listAllZoneAccessRulesOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/access_rules/rules"}
-	pathParameters := []string{*zoneFirewallAccessRules.Crn, *zoneFirewallAccessRules.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zoneFirewallAccessRules.Crn,
+		"zone_identifier": *zoneFirewallAccessRules.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zoneFirewallAccessRules.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zoneFirewallAccessRules.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zoneFirewallAccessRules.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/firewall/access_rules/rules`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -199,19 +261,28 @@ func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) ListAllZoneAccessRules
 	return
 }
 
-// CreateZoneAccessRule : Create a firewall access rule for a zone
+// CreateZoneAccessRule : Create firewall access rule
 // Create a new firewall access rule for a given zone under a service instance.
 func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) CreateZoneAccessRule(createZoneAccessRuleOptions *CreateZoneAccessRuleOptions) (result *ZoneAccessRuleResp, response *core.DetailedResponse, err error) {
+	return zoneFirewallAccessRules.CreateZoneAccessRuleWithContext(context.Background(), createZoneAccessRuleOptions)
+}
+
+// CreateZoneAccessRuleWithContext is an alternate form of the CreateZoneAccessRule method which supports a Context parameter
+func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) CreateZoneAccessRuleWithContext(ctx context.Context, createZoneAccessRuleOptions *CreateZoneAccessRuleOptions) (result *ZoneAccessRuleResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(createZoneAccessRuleOptions, "createZoneAccessRuleOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/access_rules/rules"}
-	pathParameters := []string{*zoneFirewallAccessRules.Crn, *zoneFirewallAccessRules.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zoneFirewallAccessRules.Crn,
+		"zone_identifier": *zoneFirewallAccessRules.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.POST)
-	_, err = builder.ConstructHTTPURL(zoneFirewallAccessRules.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zoneFirewallAccessRules.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zoneFirewallAccessRules.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/firewall/access_rules/rules`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -261,9 +332,14 @@ func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) CreateZoneAccessRule(c
 	return
 }
 
-// DeleteZoneAccessRule : Delete an access rule
+// DeleteZoneAccessRule : Delete firewall access rule
 // Delete an access rule given its id.
 func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) DeleteZoneAccessRule(deleteZoneAccessRuleOptions *DeleteZoneAccessRuleOptions) (result *DeleteZoneAccessRuleResp, response *core.DetailedResponse, err error) {
+	return zoneFirewallAccessRules.DeleteZoneAccessRuleWithContext(context.Background(), deleteZoneAccessRuleOptions)
+}
+
+// DeleteZoneAccessRuleWithContext is an alternate form of the DeleteZoneAccessRule method which supports a Context parameter
+func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) DeleteZoneAccessRuleWithContext(ctx context.Context, deleteZoneAccessRuleOptions *DeleteZoneAccessRuleOptions) (result *DeleteZoneAccessRuleResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteZoneAccessRuleOptions, "deleteZoneAccessRuleOptions cannot be nil")
 	if err != nil {
 		return
@@ -273,11 +349,16 @@ func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) DeleteZoneAccessRule(d
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/access_rules/rules"}
-	pathParameters := []string{*zoneFirewallAccessRules.Crn, *zoneFirewallAccessRules.ZoneIdentifier, *deleteZoneAccessRuleOptions.AccessruleIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zoneFirewallAccessRules.Crn,
+		"zone_identifier": *zoneFirewallAccessRules.ZoneIdentifier,
+		"accessrule_identifier": *deleteZoneAccessRuleOptions.AccessruleIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(zoneFirewallAccessRules.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zoneFirewallAccessRules.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zoneFirewallAccessRules.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/firewall/access_rules/rules/{accessrule_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -311,9 +392,14 @@ func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) DeleteZoneAccessRule(d
 	return
 }
 
-// GetZoneAccessRule : Get an access rule details by id
+// GetZoneAccessRule : Get firewall access rule
 // Get the details of a firewall access rule for a given zone under a given service instance.
 func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) GetZoneAccessRule(getZoneAccessRuleOptions *GetZoneAccessRuleOptions) (result *ZoneAccessRuleResp, response *core.DetailedResponse, err error) {
+	return zoneFirewallAccessRules.GetZoneAccessRuleWithContext(context.Background(), getZoneAccessRuleOptions)
+}
+
+// GetZoneAccessRuleWithContext is an alternate form of the GetZoneAccessRule method which supports a Context parameter
+func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) GetZoneAccessRuleWithContext(ctx context.Context, getZoneAccessRuleOptions *GetZoneAccessRuleOptions) (result *ZoneAccessRuleResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getZoneAccessRuleOptions, "getZoneAccessRuleOptions cannot be nil")
 	if err != nil {
 		return
@@ -323,11 +409,16 @@ func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) GetZoneAccessRule(getZ
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/access_rules/rules"}
-	pathParameters := []string{*zoneFirewallAccessRules.Crn, *zoneFirewallAccessRules.ZoneIdentifier, *getZoneAccessRuleOptions.AccessruleIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zoneFirewallAccessRules.Crn,
+		"zone_identifier": *zoneFirewallAccessRules.ZoneIdentifier,
+		"accessrule_identifier": *getZoneAccessRuleOptions.AccessruleIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(zoneFirewallAccessRules.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zoneFirewallAccessRules.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zoneFirewallAccessRules.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/firewall/access_rules/rules/{accessrule_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -361,9 +452,14 @@ func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) GetZoneAccessRule(getZ
 	return
 }
 
-// UpdateZoneAccessRule : Update a firewall access rule
+// UpdateZoneAccessRule : Update firewall access rule
 // Update an existing firewall access rule for a given zone under a given service instance.
 func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) UpdateZoneAccessRule(updateZoneAccessRuleOptions *UpdateZoneAccessRuleOptions) (result *ZoneAccessRuleResp, response *core.DetailedResponse, err error) {
+	return zoneFirewallAccessRules.UpdateZoneAccessRuleWithContext(context.Background(), updateZoneAccessRuleOptions)
+}
+
+// UpdateZoneAccessRuleWithContext is an alternate form of the UpdateZoneAccessRule method which supports a Context parameter
+func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) UpdateZoneAccessRuleWithContext(ctx context.Context, updateZoneAccessRuleOptions *UpdateZoneAccessRuleOptions) (result *ZoneAccessRuleResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateZoneAccessRuleOptions, "updateZoneAccessRuleOptions cannot be nil")
 	if err != nil {
 		return
@@ -373,11 +469,16 @@ func (zoneFirewallAccessRules *ZoneFirewallAccessRulesV1) UpdateZoneAccessRule(u
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/access_rules/rules"}
-	pathParameters := []string{*zoneFirewallAccessRules.Crn, *zoneFirewallAccessRules.ZoneIdentifier, *updateZoneAccessRuleOptions.AccessruleIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *zoneFirewallAccessRules.Crn,
+		"zone_identifier": *zoneFirewallAccessRules.ZoneIdentifier,
+		"accessrule_identifier": *updateZoneAccessRuleOptions.AccessruleIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(zoneFirewallAccessRules.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = zoneFirewallAccessRules.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(zoneFirewallAccessRules.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/firewall/access_rules/rules/{accessrule_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -480,7 +581,7 @@ func (options *CreateZoneAccessRuleOptions) SetHeaders(param map[string]string) 
 // DeleteZoneAccessRuleOptions : The DeleteZoneAccessRule options.
 type DeleteZoneAccessRuleOptions struct {
 	// Identifier of the access rule to be deleted.
-	AccessruleIdentifier *string `json:"accessrule_identifier" validate:"required"`
+	AccessruleIdentifier *string `json:"accessrule_identifier" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -526,7 +627,7 @@ func UnmarshalDeleteZoneAccessRuleRespResult(m map[string]json.RawMessage, resul
 // GetZoneAccessRuleOptions : The GetZoneAccessRule options.
 type GetZoneAccessRuleOptions struct {
 	// Identifier of firewall access rule for the given zone.
-	AccessruleIdentifier *string `json:"accessrule_identifier" validate:"required"`
+	AccessruleIdentifier *string `json:"accessrule_identifier" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -731,7 +832,7 @@ func UnmarshalListZoneAccessRulesRespResultInfo(m map[string]json.RawMessage, re
 // UpdateZoneAccessRuleOptions : The UpdateZoneAccessRule options.
 type UpdateZoneAccessRuleOptions struct {
 	// Identifier of firewall access rule.
-	AccessruleIdentifier *string `json:"accessrule_identifier" validate:"required"`
+	AccessruleIdentifier *string `json:"accessrule_identifier" validate:"required,ne="`
 
 	// The action to apply to a matched request.
 	Mode *string `json:"mode,omitempty"`
