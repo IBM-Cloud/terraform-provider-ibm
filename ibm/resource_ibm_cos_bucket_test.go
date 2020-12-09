@@ -56,7 +56,7 @@ func TestAccIBMCosBucket_ActivityTracker_Monitor(t *testing.T) {
 	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
 	activityServiceName := fmt.Sprintf("activity_tracker_%d", acctest.RandIntRange(10, 100))
 	monitorServiceName := fmt.Sprintf("metrics_monitor_%d", acctest.RandIntRange(10, 100))
-	bucketName := fmt.Sprintf("bucket%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "us"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
@@ -91,6 +91,65 @@ func TestAccIBMCosBucket_ActivityTracker_Monitor(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMCosBucket_Archive_Expiration(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("tf-bucket%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	arch_ruleId := "my-rule-id-bucket-arch"
+	arch_enable := true
+	archiveDays := 1
+	ruleType := "GLACIER"
+	exp_ruleId := "my-rule-id-bucket-expire"
+	exp_enable := true
+	expireDays := 1
+	prefix := "prefix/"
+	archDaysUpdate := 3
+	expDaysUpdate := 2
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_archive_expire(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, arch_ruleId, arch_enable, archiveDays, ruleType, exp_ruleId, exp_enable, expireDays, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "archive_rule.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.#", "1"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_archive_expire_updateDays(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, arch_ruleId, arch_enable, archDaysUpdate, ruleType, exp_ruleId, exp_enable, expDaysUpdate, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "archive_rule.0.days", fmt.Sprintf("%d", archDaysUpdate)),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.0.days", fmt.Sprintf("%d", expDaysUpdate)),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_update_archive_expire(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, arch_ruleId, arch_enable, archiveDays, ruleType, exp_ruleId, exp_enable, expireDays, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "archive_rule.#", "0"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.#", "0"),
+				),
+			},
+		},
+	})
+}
 
 func TestAccIBMCosBucket_Archive(t *testing.T) {
 
@@ -101,8 +160,9 @@ func TestAccIBMCosBucket_Archive(t *testing.T) {
 	bucketRegionType := "region_location"
 	ruleId := "my-rule-id-bucket-arch"
 	enable := true
-	archiveDays := 2
+	archiveDays := 1
 	ruleType := "GLACIER"
+	archiveDaysUpdate := 3
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -112,21 +172,83 @@ func TestAccIBMCosBucket_Archive(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMCosBucket_archive(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, archiveDays, ruleType),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance5", "ibm_cos_bucket.bucket5", bucketRegionType, bucketRegion, bucketName),
-					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "bucket_name", bucketName),
-					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "storage_class", bucketClass),
-					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "region_location", bucketRegion),
-					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "archive_rule.#", "1"),
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "archive_rule.#", "1"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_archive_updateDays(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, archiveDaysUpdate, ruleType),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "archive_rule.0.days", fmt.Sprintf("%d", archiveDaysUpdate)),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIBMCosBucket_update_archive(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, archiveDays, ruleType),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance5", "ibm_cos_bucket.bucket5", bucketRegionType, bucketRegion, bucketName),
-					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "bucket_name", bucketName),
-					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "storage_class", bucketClass),
-					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "region_location", bucketRegion),
-					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket5", "archive_rule.#", "0"),
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "archive_rule.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Expire(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	ruleId := "my-rule-id-bucket-expire"
+	enable := true
+	expireDays := 2
+	prefix := "prefix/"
+	expireDaysUpdate := 3
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_expire(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, expireDays, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.#", "1"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_expire_updateDays(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, expireDaysUpdate, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.0.days", fmt.Sprintf("%d", expireDaysUpdate)),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_update_expire(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, expireDays, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.#", "0"),
 				),
 			},
 		},
@@ -193,7 +315,7 @@ func TestAccIBMCosBucket_import(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "parameters"},
+					"wait_time_minutes", "parameters", "force_delete"},
 			},
 		},
 	})
@@ -324,13 +446,13 @@ func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regio
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "group" {
-		name = "default"
+		name = "Default"
 	}
 	  
 	resource "ibm_resource_instance" "instance" {
 		name              = "%s"
 		service           = "cloud-object-storage"
-		plan              = "lite"
+		plan              = "standard"
 		location          = "global"
 		resource_group_id = data.ibm_resource_group.group.id
 	}
@@ -350,13 +472,13 @@ func testAccCheckIBMCosBucket_updateWithSameName(serviceName string, bucketName 
 
 	return fmt.Sprintf(`	
 	data "ibm_resource_group" "group" {
-		name = "default"
+		name = "Default"
 	}
 	  
 	resource "ibm_resource_instance" "instance" {
 		name              = "%s"
 		service           = "cloud-object-storage"
-		plan              = "lite"
+		plan              = "standard"
 		location          = "global"
 		resource_group_id = data.ibm_resource_group.group.id
 	}
@@ -375,7 +497,7 @@ func testAccCheckIBMCosBucket_activityTracker_monitor(cosServiceName, activitySe
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		name = "Default"
 	  }
 	  resource "ibm_resource_instance" "instance2" {
 		name              = "%s"
@@ -388,14 +510,14 @@ func testAccCheckIBMCosBucket_activityTracker_monitor(cosServiceName, activitySe
 		name              = "%s"
 		resource_group_id = data.ibm_resource_group.cos_group.id
 		service           = "logdnaat"
-		plan              = "lite"
+		plan              = "standard"
 		location          = "us-south"
 	  }
 	  resource "ibm_resource_instance" "metrics_monitor2" {
 		name              = "%s"
 		resource_group_id = data.ibm_resource_group.cos_group.id
 		service           = "sysdig-monitor"
-		plan              = "lite"
+		plan              = "standard"
 		location          = "us-south"
 	  }
 	  resource "ibm_cos_bucket" "bucket2" {
@@ -420,7 +542,7 @@ func testAccCheckIBMCosBucket_update_activityTracker_monitor(cosServiceName, act
 
 	return fmt.Sprintf(`	
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		name = "Default"
 	}
 	  
 	resource "ibm_resource_instance" "instance2" {
@@ -435,7 +557,7 @@ func testAccCheckIBMCosBucket_update_activityTracker_monitor(cosServiceName, act
 		name              = "%s"
 		resource_group_id = data.ibm_resource_group.cos_group.id
 		service           = "logdnaat"
-		plan              = "lite"
+		plan              = "standard"
 		location          = "us-south"
 	}
 	  
@@ -443,7 +565,7 @@ func testAccCheckIBMCosBucket_update_activityTracker_monitor(cosServiceName, act
 		name              = "%s"
 		resource_group_id = data.ibm_resource_group.cos_group.id
 		service           = "sysdig-monitor"
-		plan              = "lite"
+		plan              = "standard"
 		location          = "us-south"
 	}
 	resource "ibm_cos_bucket" "bucket2" {
@@ -459,20 +581,20 @@ func testAccCheckIBMCosBucket_archive(cosServiceName string, bucketName string, 
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		name = "Default"
 	}
 
-	resource "ibm_resource_instance" "instance5" {
+	resource "ibm_resource_instance" "instance" {
 		name              = "%s"
 		service           = "cloud-object-storage"
-		plan              = "lite"
+		plan              = "standard"
 		location          = "global"
 		resource_group_id = data.ibm_resource_group.cos_group.id
 	}
 
-	resource "ibm_cos_bucket" "bucket5" {
+	resource "ibm_cos_bucket" "bucket" {
 		bucket_name           = "%s"
-		resource_instance_id  = ibm_resource_instance.instance5.id
+		resource_instance_id  = ibm_resource_instance.instance.id
 	    region_location       = "%s"
 		storage_class         = "%s"
 		archive_rule {
@@ -485,24 +607,231 @@ func testAccCheckIBMCosBucket_archive(cosServiceName string, bucketName string, 
 	`, cosServiceName, bucketName, region, storageClass, ruleId, archiveDays, ruleType)
 }
 
+func testAccCheckIBMCosBucket_archive_updateDays(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, ruleId string, enable bool, archiveDaysUpdate int, ruleType string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    region_location       = "%s"
+		storage_class         = "%s"
+		archive_rule {
+			rule_id             = “%s”
+			enable              = true
+			days                = %d
+			type                = “%s”
+		}
+	}
+	`, cosServiceName, bucketName, region, storageClass, ruleId, archiveDaysUpdate, ruleType)
+}
+
 func testAccCheckIBMCosBucket_update_archive(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, ruleId string, enable bool, archiveDays int, ruleType string) string {
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		name = "Default"
 	}
 
-	resource "ibm_resource_instance" "instance5" {
+	resource "ibm_resource_instance" "instance" {
 		name              = "%s"
 		service           = "cloud-object-storage"
-		plan              = "lite"
+		plan              = "standard"
 		location          = "global"
 		resource_group_id = data.ibm_resource_group.cos_group.id
 	}
 
-	resource "ibm_cos_bucket" "bucket5" {
+	resource "ibm_cos_bucket" "bucket" {
 		bucket_name           = "%s"
-		resource_instance_id  = ibm_resource_instance.instance5.id
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    region_location       = "%s"
+		storage_class         = "%s"
+	}
+	`, cosServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_expire(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, ruleId string, enable bool, expireDays int, prefix string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    region_location       = "%s"
+		storage_class         = "%s"
+		expire_rule {
+			rule_id             = "%s"
+			enable              = true
+			days                = %d
+			prefix              = "%s"
+		}
+	}
+	`, cosServiceName, bucketName, region, storageClass, ruleId, expireDays, prefix)
+}
+
+func testAccCheckIBMCosBucket_expire_updateDays(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, ruleId string, enable bool, expireDaysUpdate int, prefix string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    region_location       = "%s"
+		storage_class         = "%s"
+		expire_rule {
+			rule_id             = "%s"
+			enable              = true
+			days                = %d
+			prefix              = "%s"
+		  }
+	}
+	`, cosServiceName, bucketName, region, storageClass, ruleId, expireDaysUpdate, prefix)
+
+}
+
+func testAccCheckIBMCosBucket_update_expire(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, ruleId string, enable bool, expireDays int, prefix string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    region_location       = "%s"
+		storage_class         = "%s"
+	}
+	`, cosServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_archive_expire(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, arch_ruleId string, arch_enable bool, archiveDays int, ruleType string, exp_ruleId string, exp_enable bool, expireDays int, prefix string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    region_location       = "%s"
+		storage_class         = "%s"
+		archive_rule {
+			rule_id             = "%s"
+			enable              = true
+			days                = %d
+			type                = "%s"
+		}
+		expire_rule {
+			rule_id             = "%s"
+			enable              = true
+			days                = %d
+			prefix              = "%s"
+		  }
+	}
+	`, cosServiceName, bucketName, region, storageClass, arch_ruleId, archiveDays, ruleType, exp_ruleId, expireDays, prefix)
+
+}
+func testAccCheckIBMCosBucket_archive_expire_updateDays(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, arch_ruleId string, arch_enable bool, archDaysUpdate int, ruleType string, exp_ruleId string, exp_enable bool, expDaysUpdate int, prefix string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    region_location       = "%s"
+		storage_class         = "%s"
+		archive_rule {
+			rule_id             = "%s"
+			enable              = true
+			days                = %d
+			type                = "%s"
+		}
+		expire_rule {
+			rule_id             = "%s"
+			enable              = true
+			days                = %d
+			prefix              = "%s"
+		  }
+	}
+	`, cosServiceName, bucketName, region, storageClass, arch_ruleId, archDaysUpdate, ruleType, exp_ruleId, expDaysUpdate, prefix)
+
+}
+
+func testAccCheckIBMCosBucket_update_archive_expire(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, arch_ruleId string, arch_enable bool, archiveDays int, ruleType string, exp_ruleId string, exp_enable bool, expireDays int, prefix string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
 	    region_location       = "%s"
 		storage_class         = "%s"
 	}

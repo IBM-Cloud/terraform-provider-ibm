@@ -67,3 +67,13 @@ The following attributes are exported:
 * Nested `metrics_monitoring` block have the following structure:
 	*	`metrics_monitoring.usage_metrics_enabled` : (Optional,bool) If set to true, all usage metrics (i.e. bytes_used) will be sent to the monitoring service.
 	*	`metrics_monitoring.metrics_monitoring_crn` : (Required, string) Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics.
+* Nested `archive_rule` block have the following structure:
+	*	`archive_rule.rule_id` : (Optional, Computed, string) Unique identifier for the rule. Archive rules allow you to set a specific time frame after which objects transition to the archive.
+	*	`archive_rule.enable` :* (Required, bool) (Required) Specifies archive rule status either enable or disable for a bucket.
+	*	`archive_rule.days` :* (Required, string)  Specifies the number of days when the specific rule action takes effect.
+	*	`archive_rule.type` :* (Required, string) Specifies the storage class/archive type to which you want the object to transition. It can be Glacier or Accelerated.
+* Nested `expire_rule` block have the following structure:
+	*	`expire_rule.rule_id` : (Optional, Computed, string) Unique identifier for the rule. Expire rules allow you to set a specific time frame after which objects are deleted.
+	*	`expire_rule.enable` :* (Required, bool) (Required) Specifies expire rule status either enable or disable for a bucket.
+	*	`expire_rule.days`   :* (Required, string)  Specifies the number of days when the specific rule action takes effect.
+	*	`expire_rule.prefix` :* (Optional, string) Specifies a prefix filter to apply to only a subset of objects with names that match the prefix.

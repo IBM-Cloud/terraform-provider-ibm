@@ -155,6 +155,34 @@ func dataSourceIBMCosBucket() *schema.Resource {
 					},
 				},
 			},
+			"expire_rule": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Enable configuration expire_rule to COS Bucket",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rule_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"enable": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Enable or disable an archive rule for a bucket",
+						},
+						"days": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Specifies the number of days when the specific rule action takes effect.",
+						},
+						"prefix": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The rule applies to any objects with keys that match this prefix",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -297,15 +325,22 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		Bucket: aws.String(bucketName),
 	}
 
-	archiveptr, err := s3Client.GetBucketLifecycleConfiguration(gInput)
+	lifecycleptr, err := s3Client.GetBucketLifecycleConfiguration(gInput)
 
 	if (err != nil && !strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist")) && (err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied")) {
 		return err
 	}
 
-	if archiveptr != nil {
-		if len(archiveptr.Rules) > 0 {
-			d.Set("archive_rule", archiveRuleGet(archiveptr.Rules))
+	if lifecycleptr != nil {
+		if len(lifecycleptr.Rules) > 0 {
+			archiveRules := archiveRuleGet(lifecycleptr.Rules)
+			expireRules := expireRuleGet(lifecycleptr.Rules)
+			if len(archiveRules) > 0 {
+				d.Set("archive_rule", archiveRules)
+			}
+			if len(expireRules) > 0 {
+				d.Set("expire_rule", expireRules)
+			}
 		}
 	}
 

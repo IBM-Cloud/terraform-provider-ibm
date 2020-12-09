@@ -118,5 +118,6 @@ data "ibm_cos_bucket" "standard-ams03" {
 | regional_loc | The location for a regional bucket. Supported values are au-syd, eu-de, eu-gb, jp-tok,,us-east,us-south. | `string` | no
 | archive_days | Specifies the number of days when the specific archive rule action takes effect. | `int` | yes
 | archive_types | Specifies the archive type to which you want the object to transition. Supported values are  Glacier or Accelerated. | `string` | yes
-
-
+| expire_ruleid | Unique identifier for the rule. | `string` | no
+| expire_days | Specifies the number of days when the specific expire rule action takes effect. | `int` | yes
+| expire_prefix | Specifies a prefix filter to apply to only a subset of objects with names that match the prefix. | `string` | no
