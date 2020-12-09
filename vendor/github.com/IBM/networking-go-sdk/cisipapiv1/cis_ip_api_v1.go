@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.20.0-debb9f29-20201203-202043
+ */
+ 
+
 // Package cisipapiv1 : Operations and models for the CisIpApiV1 service
 package cisipapiv1
 
 import (
+	"context"
 	"encoding/json"
-	"reflect"
-
+	"fmt"
 	"github.com/IBM/go-sdk-core/v4/core"
 	common "github.com/IBM/networking-go-sdk/common"
+	"net/http"
+	"reflect"
+	"time"
 )
 
 // CisIpApiV1 : This document describes CIS IP API.
@@ -100,24 +108,74 @@ func NewCisIpApiV1(options *CisIpApiV1Options) (service *CisIpApiV1, err error) 
 	return
 }
 
+// GetServiceURLForRegion returns the service URL to be used for the specified region
+func GetServiceURLForRegion(region string) (string, error) {
+	return "", fmt.Errorf("service does not support regional URLs")
+}
+
+// Clone makes a copy of "cisIpApi" suitable for processing requests.
+func (cisIpApi *CisIpApiV1) Clone() *CisIpApiV1 {
+	if core.IsNil(cisIpApi) {
+		return nil
+	}
+	clone := *cisIpApi
+	clone.Service = cisIpApi.Service.Clone()
+	return &clone
+}
+
 // SetServiceURL sets the service URL
 func (cisIpApi *CisIpApiV1) SetServiceURL(url string) error {
 	return cisIpApi.Service.SetServiceURL(url)
 }
 
+// GetServiceURL returns the service URL
+func (cisIpApi *CisIpApiV1) GetServiceURL() string {
+	return cisIpApi.Service.GetServiceURL()
+}
+
+// SetDefaultHeaders sets HTTP headers to be sent in every request
+func (cisIpApi *CisIpApiV1) SetDefaultHeaders(headers http.Header) {
+	cisIpApi.Service.SetDefaultHeaders(headers)
+}
+
+// SetEnableGzipCompression sets the service's EnableGzipCompression field
+func (cisIpApi *CisIpApiV1) SetEnableGzipCompression(enableGzip bool) {
+	cisIpApi.Service.SetEnableGzipCompression(enableGzip)
+}
+
+// GetEnableGzipCompression returns the service's EnableGzipCompression field
+func (cisIpApi *CisIpApiV1) GetEnableGzipCompression() bool {
+	return cisIpApi.Service.GetEnableGzipCompression()
+}
+
+// EnableRetries enables automatic retries for requests invoked for this service instance.
+// If either parameter is specified as 0, then a default value is used instead.
+func (cisIpApi *CisIpApiV1) EnableRetries(maxRetries int, maxRetryInterval time.Duration) {
+	cisIpApi.Service.EnableRetries(maxRetries, maxRetryInterval)
+}
+
+// DisableRetries disables automatic retries for requests invoked for this service instance.
+func (cisIpApi *CisIpApiV1) DisableRetries() {
+	cisIpApi.Service.DisableRetries()
+}
+
 // ListIps : List of all IP addresses used by the CIS proxy
 // List of all IP addresses used by the CIS proxy.
 func (cisIpApi *CisIpApiV1) ListIps(listIpsOptions *ListIpsOptions) (result *IpResponse, response *core.DetailedResponse, err error) {
+	return cisIpApi.ListIpsWithContext(context.Background(), listIpsOptions)
+}
+
+// ListIpsWithContext is an alternate form of the ListIps method which supports a Context parameter
+func (cisIpApi *CisIpApiV1) ListIpsWithContext(ctx context.Context, listIpsOptions *ListIpsOptions) (result *IpResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listIpsOptions, "listIpsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1/ips"}
-	pathParameters := []string{}
-
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(cisIpApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = cisIpApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(cisIpApi.Service.Options.URL, `/v1/ips`, nil)
 	if err != nil {
 		return
 	}

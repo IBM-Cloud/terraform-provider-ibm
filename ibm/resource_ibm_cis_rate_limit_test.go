@@ -61,6 +61,27 @@ func TestAccIBMCisRateLimitWithoutMatchRequest_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMCisRateLimit_MultiDomain(t *testing.T) {
+	var record, record2 string
+	resource.Test(t, resource.TestCase{
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMCisRateLimitDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCisRateLimitConfigWithMultiDomain(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCisRateLimitExists("ibm_cis_rate_limit.ratelimit", &record),
+					testAccCheckIBMCisRateLimitExists("ibm_cis_rate_limit.ratelimit2", &record2),
+					resource.TestCheckResourceAttr(
+						"ibm_cis_rate_limit.ratelimit", "action.0.mode", "ban"),
+					resource.TestCheckResourceAttr(
+						"ibm_cis_rate_limit.ratelimit", "action.0.mode", "ban"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMCisRateLimit_Import(t *testing.T) {
 
 	var record string
@@ -257,4 +278,99 @@ func testAccCheckIBMCisRateLimitConfigUpdate() string {
 		description = "example rate limit for a zone"
 	}
 	  `)
+}
+
+func testAccCheckIBMCisRateLimitConfigWithMultiDomain() string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	data "ibm_cis" "cis" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+	}
+
+	resource "ibm_cis_domain" "domain2" {
+		cis_id = data.ibm_cis.cis.id
+		domain = "testdomain2.%[3]s"
+	}
+
+	resource "ibm_cis_domain" "domain" {
+		cis_id = data.ibm_cis.cis.id
+		domain = "testdomain.%[3]s"
+	}
+
+	data "ibm_cis_domain" "domain" {
+		cis_id = data.ibm_cis.cis.id
+		domain = ibm_cis_domain.domain.domain
+	}
+
+	data "ibm_cis_domain" "domain2" {
+		cis_id = data.ibm_cis.cis.id
+		domain = ibm_cis_domain.domain2.domain
+	}
+
+	resource "ibm_cis_rate_limit" "ratelimit" {
+		threshold = 20
+		period    = 900
+		match {
+		  request {
+			url     = "zeubiiii.ibm.com/*"
+			schemes = ["HTTP", "HTTPS"]
+			methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"]
+		  }
+		  response {
+			status         = [200, 201, 202, 301, 429]
+			origin_traffic = false
+		  }
+		}
+		action {
+		  mode    = "ban"
+		  timeout = 43200
+		  response {
+			content_type = "text/plain"
+			body         = "custom response body"
+		  }
+		}
+		correlate {
+		  by = "nat"
+		}
+		disabled    = false
+		description = "LANDINGZONE 2 INTEGRATION"
+		cis_id      = data.ibm_cis.cis.id
+		domain_id   = data.ibm_cis_domain.domain.id
+	}
+
+	resource "ibm_cis_rate_limit" "ratelimit2" {
+		threshold = 20
+		period    = 900
+		match {
+		  request {
+			url     = "zobaaaaaa.com/*"
+			schemes = ["HTTP", "HTTPS"]
+			methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"]
+		  }
+		  response {
+			status         = [200, 201, 202, 301, 429]
+			origin_traffic = false
+		  }
+		}
+		action {
+		  mode    = "ban"
+		  timeout = 43200
+		  response {
+			content_type = "text/plain"
+			body         = "custom response body"
+		  }
+		}
+		correlate {
+		  by = "nat"
+		}
+		disabled    = false
+		description = "SKT INTEGRATION"
+		cis_id      = data.ibm_cis.cis.id
+		domain_id   = data.ibm_cis_domain.domain2.id
+	}
+	`, cisResourceGroup, cisInstance, cisDomainStatic)
 }

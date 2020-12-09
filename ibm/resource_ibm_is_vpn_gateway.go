@@ -16,6 +16,7 @@ import (
 const (
 	isVPNGatewayName             = "name"
 	isVPNGatewayResourceGroup    = "resource_group"
+	isVPNGatewayMode             = "mode"
 	isVPNGatewayTags             = "tags"
 	isVPNGatewaySubnet           = "subnet"
 	isVPNGatewayStatus           = "status"
@@ -24,6 +25,8 @@ const (
 	isVPNGatewayProvisioning     = "provisioning"
 	isVPNGatewayProvisioningDone = "done"
 	isVPNGatewayPublicIPAddress  = "public_ip_address"
+	isVPNGatewayMembers          = "members"
+	isVPNGatewayCreatedAt        = "created_at"
 	isVPNGatewayPublicIPAddress2 = "public_ip_address2"
 )
 
@@ -65,15 +68,17 @@ func resourceIBMISVPNGateway() *schema.Resource {
 			},
 
 			isVPNGatewayResourceGroup: {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Computed:    true,
+				Description: "The resource group for this VPN gateway",
 			},
 
 			isVPNGatewayStatus: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the VPN gateway",
 			},
 
 			isVPNGatewayPublicIPAddress: {
@@ -124,13 +129,50 @@ func resourceIBMISVPNGateway() *schema.Resource {
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
 			},
+
+			isVPNGatewayMode: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Default:      "route",
+				ValidateFunc: InvokeValidator("ibm_is_vpn_gateway", isVPNGatewayMode),
+				Description:  "mode in VPN gateway(route/policy)",
+			},
+
+			isVPNGatewayMembers: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Collection of VPN gateway members",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The public IP address assigned to the VPN gateway member",
+						},
+
+						"role": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The high availability role assigned to the VPN gateway member",
+						},
+
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The status of the VPN gateway member",
+						},
+					},
+				},
+			},
 		},
 	}
 }
 
 func resourceIBMISVPNGatewayValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	modeCheckTypes := "route,policy"
+	validateSchema := make([]ValidateSchema, 2)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isVPNGatewayName,
@@ -140,6 +182,13 @@ func resourceIBMISVPNGatewayValidator() *ResourceValidator {
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPNGatewayMode,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   false,
+			AllowedValues:              modeCheckTypes})
 
 	ibmISVPNGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_is_vpn_gateway", Schema: validateSchema}
 	return &ibmISVPNGatewayResourceValidator
@@ -153,6 +202,7 @@ func resourceIBMISVPNGatewayCreate(d *schema.ResourceData, meta interface{}) err
 	log.Printf("[DEBUG] VPNGateway create")
 	name := d.Get(isVPNGatewayName).(string)
 	subnetID := d.Get(isVPNGatewaySubnet).(string)
+	mode := d.Get(isVPNGatewayMode).(string)
 
 	if userDetails.generation == 1 {
 		err := classicVpngwCreate(d, meta, name, subnetID)
@@ -160,7 +210,7 @@ func resourceIBMISVPNGatewayCreate(d *schema.ResourceData, meta interface{}) err
 			return err
 		}
 	} else {
-		err := vpngwCreate(d, meta, name, subnetID)
+		err := vpngwCreate(d, meta, name, subnetID, mode)
 		if err != nil {
 			return err
 		}
@@ -215,7 +265,7 @@ func classicVpngwCreate(d *schema.ResourceData, meta interface{}, name, subnetID
 	return nil
 }
 
-func vpngwCreate(d *schema.ResourceData, meta interface{}, name, subnetID string) error {
+func vpngwCreate(d *schema.ResourceData, meta interface{}, name, subnetID, mode string) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -225,6 +275,7 @@ func vpngwCreate(d *schema.ResourceData, meta interface{}, name, subnetID string
 			ID: &subnetID,
 		},
 		Name: &name,
+		Mode: &mode,
 	}
 	options := &vpcv1.CreateVPNGatewayOptions{
 		VPNGatewayPrototype: vpnGatewayPrototype,
@@ -449,6 +500,23 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if vpnGateway.ResourceGroup != nil {
 		d.Set(ResourceGroupName, *vpnGateway.ResourceGroup.Name)
 		d.Set(isVPNGatewayResourceGroup, *vpnGateway.ResourceGroup.ID)
+	}
+	d.Set(isVPNGatewayMode, *vpnGateway.Mode)
+	if vpnGateway.Members != nil {
+		vpcMembersIpsList := make([]map[string]interface{}, 0)
+		for _, memberIP := range vpnGateway.Members {
+			currentMemberIP := map[string]interface{}{}
+			if memberIP.PublicIP != nil {
+				currentMemberIP["address"] = *memberIP.PublicIP.Address
+				currentMemberIP["role"] = *memberIP.Role
+				currentMemberIP["status"] = *memberIP.Status
+				vpcMembersIpsList = append(vpcMembersIpsList, currentMemberIP)
+			}
+		}
+		d.Set(isVPNGatewayMembers, vpcMembersIpsList)
+	}
+	if vpnGateway.CreatedAt != nil {
+		d.Set(isVPNGatewayCreatedAt, vpnGateway.CreatedAt.String())
 	}
 	return nil
 }

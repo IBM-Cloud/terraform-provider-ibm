@@ -31,6 +31,7 @@ import (
 	cissslv1 "github.com/IBM/networking-go-sdk/sslcertificateapiv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	cisuarulev1 "github.com/IBM/networking-go-sdk/useragentblockingrulesv1"
+	ciswafgroupv1 "github.com/IBM/networking-go-sdk/wafrulegroupsapiv1"
 	ciswafpackagev1 "github.com/IBM/networking-go-sdk/wafrulepackagesapiv1"
 	cisaccessrulev1 "github.com/IBM/networking-go-sdk/zonefirewallaccessrulesv1"
 	cislockdownv1 "github.com/IBM/networking-go-sdk/zonelockdownv1"
@@ -212,6 +213,7 @@ type ClientSession interface {
 	CisWAFPackageClientSession() (*ciswafpackagev1.WafRulePackagesApiV1, error)
 	CisDomainSettingsClientSession() (*cisdomainsettingsv1.ZonesSettingsV1, error)
 	CisRoutingClientSession() (*cisroutingv1.RoutingV1, error)
+	CisWAFGroupClientSession() (*ciswafgroupv1.WafRuleGroupsApiV1, error)
 	CisCacheClientSession() (*ciscachev1.CachingApiV1, error)
 	CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error)
 	CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error)
@@ -384,6 +386,10 @@ type clientSession struct {
 	// CIS Routing service options
 	cisRoutingErr    error
 	cisRoutingClient *cisroutingv1.RoutingV1
+
+	// CIS WAF Group service options
+	cisWAFGroupErr    error
+	cisWAFGroupClient *ciswafgroupv1.WafRuleGroupsApiV1
 
 	// CIS Caching service options
 	cisCacheErr    error
@@ -594,92 +600,155 @@ func (sess clientSession) IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1
 
 // CIS Zones Service
 func (sess clientSession) CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error) {
-	return sess.cisZonesV1Client, sess.cisZonesErr
+	if sess.cisZonesErr != nil {
+		return sess.cisZonesV1Client, sess.cisZonesErr
+	}
+	return sess.cisZonesV1Client.Clone(), nil
 }
 
 // CIS DNS Service
 func (sess clientSession) CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error) {
-	return sess.cisDNSRecordsClient, sess.cisDNSErr
+	if sess.cisDNSErr != nil {
+		return sess.cisDNSRecordsClient, sess.cisDNSErr
+	}
+	return sess.cisDNSRecordsClient.Clone(), nil
+
 }
 
 // CIS GLB Pool
 func (sess clientSession) CisGLBPoolClientSession() (*cisglbpoolv0.GlobalLoadBalancerPoolsV0, error) {
-	return sess.cisGLBPoolClient, sess.cisGLBPoolErr
+	if sess.cisGLBPoolErr != nil {
+		return sess.cisGLBPoolClient, sess.cisGLBPoolErr
+	}
+	return sess.cisGLBPoolClient.Clone(), nil
 }
 
 // CIS GLB
 func (sess clientSession) CisGLBClientSession() (*cisglbv1.GlobalLoadBalancerV1, error) {
-	return sess.cisGLBClient, sess.cisGLBErr
+	if sess.cisGLBErr != nil {
+		return sess.cisGLBClient, sess.cisGLBErr
+	}
+	return sess.cisGLBClient.Clone(), nil
 }
 
 // CIS GLB Health Check/Monitor
 func (sess clientSession) CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error) {
-	return sess.cisGLBHealthCheckClient, sess.cisGLBHealthCheckErr
+	if sess.cisGLBHealthCheckErr != nil {
+		return sess.cisGLBHealthCheckClient, sess.cisGLBHealthCheckErr
+	}
+	return sess.cisGLBHealthCheckClient.Clone(), nil
 }
 
 // CIS Zone Rate Limits
 func (sess clientSession) CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1, error) {
-	return sess.cisRLClient, sess.cisRLErr
+	if sess.cisRLErr != nil {
+		return sess.cisRLClient, sess.cisRLErr
+	}
+	return sess.cisRLClient.Clone(), nil
 }
 
 // CIS IP
 func (sess clientSession) CisIPClientSession() (*cisipv1.CisIpApiV1, error) {
-	return sess.cisIPClient, sess.cisIPErr
+	if sess.cisIPErr != nil {
+		return sess.cisIPClient, sess.cisIPErr
+	}
+	return sess.cisIPClient.Clone(), nil
 }
 
 // CIS Page Rules
 func (sess clientSession) CisPageRuleClientSession() (*cispagerulev1.PageRuleApiV1, error) {
-	return sess.cisPageRuleClient, sess.cisPageRuleErr
+	if sess.cisPageRuleErr != nil {
+		return sess.cisPageRuleClient, sess.cisPageRuleErr
+	}
+	return sess.cisPageRuleClient.Clone(), nil
 }
 
-// cCIS Edge Function
+// CIS Edge Function
 func (sess clientSession) CisEdgeFunctionClientSession() (*cisedgefunctionv1.EdgeFunctionsApiV1, error) {
-	return sess.cisEdgeFunctionClient, sess.cisEdgeFunctionErr
+	if sess.cisEdgeFunctionErr != nil {
+		return sess.cisEdgeFunctionClient, sess.cisEdgeFunctionErr
+	}
+	return sess.cisEdgeFunctionClient.Clone(), nil
 }
 
 // CIS SSL certificate
 func (sess clientSession) CisSSLClientSession() (*cissslv1.SslCertificateApiV1, error) {
-	return sess.cisSSLClient, sess.cisSSLErr
+	if sess.cisSSLErr != nil {
+		return sess.cisSSLClient, sess.cisSSLErr
+	}
+	return sess.cisSSLClient.Clone(), nil
 }
 
 // CIS WAF Packages
 func (sess clientSession) CisWAFPackageClientSession() (*ciswafpackagev1.WafRulePackagesApiV1, error) {
-	return sess.cisWAFPackageClient, sess.cisWAFPackageErr
+	if sess.cisWAFPackageErr != nil {
+		return sess.cisWAFPackageClient, sess.cisWAFPackageErr
+	}
+	return sess.cisWAFPackageClient.Clone(), nil
 }
 
 // CIS Zone Settings
 func (sess clientSession) CisDomainSettingsClientSession() (*cisdomainsettingsv1.ZonesSettingsV1, error) {
-	return sess.cisDomainSettingsClient, sess.cisDomainSettingsErr
+	if sess.cisDomainSettingsErr != nil {
+		return sess.cisDomainSettingsClient, sess.cisDomainSettingsErr
+	}
+	return sess.cisDomainSettingsClient.Clone(), nil
 }
 
 // CIS Routing
 func (sess clientSession) CisRoutingClientSession() (*cisroutingv1.RoutingV1, error) {
-	return sess.cisRoutingClient, sess.cisRoutingErr
+	if sess.cisRoutingErr != nil {
+		return sess.cisRoutingClient, sess.cisRoutingErr
+	}
+	return sess.cisRoutingClient.Clone(), nil
+}
+
+// CIS WAF Group
+func (sess clientSession) CisWAFGroupClientSession() (*ciswafgroupv1.WafRuleGroupsApiV1, error) {
+	if sess.cisWAFGroupErr != nil {
+		return sess.cisWAFGroupClient, sess.cisWAFGroupErr
+	}
+	return sess.cisWAFGroupClient.Clone(), nil
 }
 
 // CIS Cache service
 func (sess clientSession) CisCacheClientSession() (*ciscachev1.CachingApiV1, error) {
-	return sess.cisCacheClient, sess.cisCacheErr
+	if sess.cisCacheErr != nil {
+		return sess.cisCacheClient, sess.cisCacheErr
+	}
+	return sess.cisCacheClient.Clone(), nil
 }
 
 // CIS Zone Settings
 func (sess clientSession) CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error) {
-	return sess.cisCustomPageClient, sess.cisCustomPageErr
+	if sess.cisCustomPageErr != nil {
+		return sess.cisCustomPageClient, sess.cisCustomPageErr
+	}
+	return sess.cisCustomPageClient.Clone(), nil
 }
 
 // CIS Firewall access rule
 func (sess clientSession) CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error) {
-	return sess.cisAccessRuleClient, sess.cisAccessRuleErr
+	if sess.cisAccessRuleErr != nil {
+		return sess.cisAccessRuleClient, sess.cisAccessRuleErr
+	}
+	return sess.cisAccessRuleClient.Clone(), nil
 }
 
 // CIS User Agent Blocking rule
 func (sess clientSession) CisUARuleClientSession() (*cisuarulev1.UserAgentBlockingRulesV1, error) {
-	return sess.cisUARuleClient, sess.cisUARuleErr
+	if sess.cisUARuleErr != nil {
+		return sess.cisUARuleClient, sess.cisUARuleErr
+	}
+	return sess.cisUARuleClient.Clone(), nil
 }
 
 // CIS Firewall Lockdown rule
 func (sess clientSession) CisLockdownClientSession() (*cislockdownv1.ZoneLockdownV1, error) {
-	return sess.cisLockdownClient, sess.cisLockdownErr
+	if sess.cisLockdownErr != nil {
+		return sess.cisLockdownClient, sess.cisLockdownErr
+	}
+	return sess.cisLockdownClient.Clone(), nil
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -747,6 +816,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisWAFPackageErr = errEmptyBluemixCredentials
 		session.cisDomainSettingsErr = errEmptyBluemixCredentials
 		session.cisRoutingErr = errEmptyBluemixCredentials
+		session.cisWAFGroupErr = errEmptyBluemixCredentials
 		session.cisCacheErr = errEmptyBluemixCredentials
 		session.cisCustomPageErr = errEmptyBluemixCredentials
 		session.cisAccessRuleErr = errEmptyBluemixCredentials
@@ -1259,6 +1329,21 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisRoutingErr =
 			fmt.Errorf("Error occured while configuring CIS Routing service: %s",
 				session.cisRoutingErr)
+	}
+
+	// IBM Network CIS WAF Group
+	cisWAFGroupOpt := &ciswafgroupv1.WafRuleGroupsApiV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		ZoneID:        core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisWAFGroupClient, session.cisWAFGroupErr =
+		ciswafgroupv1.NewWafRuleGroupsApiV1(cisWAFGroupOpt)
+	if session.cisWAFGroupErr != nil {
+		session.cisWAFGroupErr =
+			fmt.Errorf("Error occured while configuring CIS WAF Group service: %s",
+				session.cisWAFGroupErr)
 	}
 
 	// IBM Network CIS Cache service

@@ -21,6 +21,7 @@ These types of resources are supported:
 * [ CIS Custom Page](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-custom-page)
 * [ CIS Page Rule](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-page-rule)
 * [ CIS WAF Package ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-waf-package)
+* [ CIS WAF Rule Group](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-waf-group)
 
 ## Terraform versions
 
@@ -281,6 +282,17 @@ resource "ibm_cis_waf_package" "test" {
 }
 ```
 
+`CIS WAF Rule Group service`
+```hcl
+resource "ibm_cis_waf_group" "test" {
+  cis_id     = data.ibm_cis.cis.id
+  domain_id  = data.ibm_cis_domain.cis_domain.domain_id
+  package_id = "c504870194831cd12c3fc0284f294abb"
+  group_id   = "3d8fb0c18b5a6ba7682c80e94c7937b2"
+  mode       = "on"
+}
+```
+
 ## CIS Data Sources
 `CIS Instance`
 ```hcl
@@ -333,6 +345,15 @@ data "ibm_cis_custom_pages" "custom_pages" {
   domain_id = data.ibm_cis_domain.cis_domain.domain_id
 }
 ```
+`CIS WAF Rule Groups data source`
+```hcl
+data "ibm_cis_waf_groups" "waf_groups" {
+  cis_id     = data.ibm_cis.cis.id
+  domain_id  = data.ibm_cis_domain.cis_domain.id
+  package_id = "c504870194831cd12c3fc0284f294abb"
+}
+```
+
 
 `CIS Page rules service data source`
 ```hcl
@@ -368,6 +389,7 @@ data "ibm_cis_waf_packages" "packages" {
 - [Custom Page CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#custom-page)
 - [Page Rule CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#page-rule-cli-ref)
 - [WAF Packages CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#list-waf-packages)
+- [WAF Rule Group CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#list-waf-groups)
 
 ## Notes
 
@@ -472,6 +494,9 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | package_id | The WAF Rule Package ID | `string` | yes |
 | sensitivity | The WAF package sensitivity. Valid values are `high`, `medium`, `low`, `off` | `string` | yes |
 | action_mode | The WAF package action mode. Valid values are `simulate`, `block`, `challenge` | `string` | yes |
+| package_id | The WAF Rule Package id | `string` | yes |
+| group_id | The WAF Rule Group id | `string` | yes |
+| mode | The WAF Rule Group mode `on`/`off` setting | `string` | yes |
 
 ## Outputs
 
@@ -492,6 +517,9 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | name | waf package name |
 | description | waf package description |
 | detection_mode | waf package detection mode |
+| rules_count | The WAF rules count in WAF Group |
+| modified_rules_count | The modified waf rules count in WAF Group |
+| name | The WAF Rule Group name |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 

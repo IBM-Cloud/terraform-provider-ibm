@@ -140,6 +140,8 @@ func dataSourceIBMCISEdgeFunctionsActionsRead(d *schema.ResourceData, meta inter
 		scriptInfo = append(scriptInfo, l)
 	}
 	d.SetId(dataSourceIBMCISEdgeFunctionsActionsID(d))
+	d.Set(cisID, crn)
+	d.Set(cisDomainID, zoneID)
 	d.Set(cisEdgeFunctionsActions, scriptInfo)
 	return nil
 }

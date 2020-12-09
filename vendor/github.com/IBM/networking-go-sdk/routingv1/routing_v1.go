@@ -14,15 +14,24 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.20.0-debb9f29-20201203-202043
+ */
+ 
+
 // Package routingv1 : Operations and models for the RoutingV1 service
 package routingv1
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/IBM/go-sdk-core/v4/core"
-	"github.com/go-openapi/strfmt"
 	common "github.com/IBM/networking-go-sdk/common"
+	"github.com/go-openapi/strfmt"
+	"net/http"
 	"reflect"
+	"time"
 )
 
 // RoutingV1 : Routing
@@ -119,24 +128,79 @@ func NewRoutingV1(options *RoutingV1Options) (service *RoutingV1, err error) {
 	return
 }
 
+// GetServiceURLForRegion returns the service URL to be used for the specified region
+func GetServiceURLForRegion(region string) (string, error) {
+	return "", fmt.Errorf("service does not support regional URLs")
+}
+
+// Clone makes a copy of "routing" suitable for processing requests.
+func (routing *RoutingV1) Clone() *RoutingV1 {
+	if core.IsNil(routing) {
+		return nil
+	}
+	clone := *routing
+	clone.Service = routing.Service.Clone()
+	return &clone
+}
+
 // SetServiceURL sets the service URL
 func (routing *RoutingV1) SetServiceURL(url string) error {
 	return routing.Service.SetServiceURL(url)
 }
 
+// GetServiceURL returns the service URL
+func (routing *RoutingV1) GetServiceURL() string {
+	return routing.Service.GetServiceURL()
+}
+
+// SetDefaultHeaders sets HTTP headers to be sent in every request
+func (routing *RoutingV1) SetDefaultHeaders(headers http.Header) {
+	routing.Service.SetDefaultHeaders(headers)
+}
+
+// SetEnableGzipCompression sets the service's EnableGzipCompression field
+func (routing *RoutingV1) SetEnableGzipCompression(enableGzip bool) {
+	routing.Service.SetEnableGzipCompression(enableGzip)
+}
+
+// GetEnableGzipCompression returns the service's EnableGzipCompression field
+func (routing *RoutingV1) GetEnableGzipCompression() bool {
+	return routing.Service.GetEnableGzipCompression()
+}
+
+// EnableRetries enables automatic retries for requests invoked for this service instance.
+// If either parameter is specified as 0, then a default value is used instead.
+func (routing *RoutingV1) EnableRetries(maxRetries int, maxRetryInterval time.Duration) {
+	routing.Service.EnableRetries(maxRetries, maxRetryInterval)
+}
+
+// DisableRetries disables automatic retries for requests invoked for this service instance.
+func (routing *RoutingV1) DisableRetries() {
+	routing.Service.DisableRetries()
+}
+
 // GetSmartRouting : Get Routing feature smart routing setting
 // Get Routing feature smart routing setting for a zone.
 func (routing *RoutingV1) GetSmartRouting(getSmartRoutingOptions *GetSmartRoutingOptions) (result *SmartRoutingResp, response *core.DetailedResponse, err error) {
+	return routing.GetSmartRoutingWithContext(context.Background(), getSmartRoutingOptions)
+}
+
+// GetSmartRoutingWithContext is an alternate form of the GetSmartRouting method which supports a Context parameter
+func (routing *RoutingV1) GetSmartRoutingWithContext(ctx context.Context, getSmartRoutingOptions *GetSmartRoutingOptions) (result *SmartRoutingResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getSmartRoutingOptions, "getSmartRoutingOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "routing/smart_routing"}
-	pathParameters := []string{*routing.Crn, *routing.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *routing.Crn,
+		"zone_identifier": *routing.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(routing.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = routing.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(routing.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/routing/smart_routing`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -173,16 +237,25 @@ func (routing *RoutingV1) GetSmartRouting(getSmartRoutingOptions *GetSmartRoutin
 // UpdateSmartRouting : Update Routing feature smart route setting
 // Update Routing feature smart route setting for a zone.
 func (routing *RoutingV1) UpdateSmartRouting(updateSmartRoutingOptions *UpdateSmartRoutingOptions) (result *SmartRoutingResp, response *core.DetailedResponse, err error) {
+	return routing.UpdateSmartRoutingWithContext(context.Background(), updateSmartRoutingOptions)
+}
+
+// UpdateSmartRoutingWithContext is an alternate form of the UpdateSmartRouting method which supports a Context parameter
+func (routing *RoutingV1) UpdateSmartRoutingWithContext(ctx context.Context, updateSmartRoutingOptions *UpdateSmartRoutingOptions) (result *SmartRoutingResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(updateSmartRoutingOptions, "updateSmartRoutingOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "routing/smart_routing"}
-	pathParameters := []string{*routing.Crn, *routing.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *routing.Crn,
+		"zone_identifier": *routing.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(routing.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = routing.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(routing.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/routing/smart_routing`, pathParamsMap)
 	if err != nil {
 		return
 	}

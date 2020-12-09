@@ -19,6 +19,7 @@ In the following example, you can create a VPN gateway:
 resource "ibm_is_vpn_gateway" "testacc_vpn_gateway" {
   name   = "test"
   subnet = "a4ce411d-e118-4802-95ad-525e6ea0cfc9"
+  mode="route"
 }
 
 ```
@@ -38,6 +39,7 @@ The following arguments are supported:
 * `subnet` - (Required, Forces new resource, string) The unique identifier for this subnet.
 * `resource_group` - (Optional, Forces new resource, string) The resource group where the VPN gateway to be created.
 * `tags` - (Optional, array of strings) Tags associated with the VPN Gateway.
+* `mode` - (Optional, string) mode in VPN gateway(route/policy), Default value is route.
 
 ## Attribute Reference
 
@@ -47,6 +49,13 @@ The following attributes are exported:
 * `status` - The status of VPN gateway.
 * `public_ip_address` -  The IP address assigned to this VPN gateway.
 * `public_ip_address2` -  The Second IP address assigned to this VPN gateway.
+* `status` -  The status of the VPN gateway-(available, deleting, failed, pending).
+* `created_at` -  The Second IP address assigned to this VPN gateway.
+* `members` -  Collection of VPN gateway members.
+  * `address` -  The public IP address assigned to the VPN gateway member.
+  * `role` -  The high availability role assigned to the VPN gateway member.
+  * `status` -  The status of the VPN gateway member.
+
 
 
 ## Import

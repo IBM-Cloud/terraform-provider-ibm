@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.20.0-debb9f29-20201203-202043
+ */
+ 
+
 // Package sslcertificateapiv1 : Operations and models for the SslCertificateApiV1 service
 package sslcertificateapiv1
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/go-sdk-core/v4/core"
 	common "github.com/IBM/networking-go-sdk/common"
 	"github.com/go-openapi/strfmt"
+	"net/http"
 	"reflect"
+	"time"
 )
 
 // SslCertificateApiV1 : SSL Certificate
@@ -120,9 +128,55 @@ func NewSslCertificateApiV1(options *SslCertificateApiV1Options) (service *SslCe
 	return
 }
 
+// GetServiceURLForRegion returns the service URL to be used for the specified region
+func GetServiceURLForRegion(region string) (string, error) {
+	return "", fmt.Errorf("service does not support regional URLs")
+}
+
+// Clone makes a copy of "sslCertificateApi" suitable for processing requests.
+func (sslCertificateApi *SslCertificateApiV1) Clone() *SslCertificateApiV1 {
+	if core.IsNil(sslCertificateApi) {
+		return nil
+	}
+	clone := *sslCertificateApi
+	clone.Service = sslCertificateApi.Service.Clone()
+	return &clone
+}
+
 // SetServiceURL sets the service URL
 func (sslCertificateApi *SslCertificateApiV1) SetServiceURL(url string) error {
 	return sslCertificateApi.Service.SetServiceURL(url)
+}
+
+// GetServiceURL returns the service URL
+func (sslCertificateApi *SslCertificateApiV1) GetServiceURL() string {
+	return sslCertificateApi.Service.GetServiceURL()
+}
+
+// SetDefaultHeaders sets HTTP headers to be sent in every request
+func (sslCertificateApi *SslCertificateApiV1) SetDefaultHeaders(headers http.Header) {
+	sslCertificateApi.Service.SetDefaultHeaders(headers)
+}
+
+// SetEnableGzipCompression sets the service's EnableGzipCompression field
+func (sslCertificateApi *SslCertificateApiV1) SetEnableGzipCompression(enableGzip bool) {
+	sslCertificateApi.Service.SetEnableGzipCompression(enableGzip)
+}
+
+// GetEnableGzipCompression returns the service's EnableGzipCompression field
+func (sslCertificateApi *SslCertificateApiV1) GetEnableGzipCompression() bool {
+	return sslCertificateApi.Service.GetEnableGzipCompression()
+}
+
+// EnableRetries enables automatic retries for requests invoked for this service instance.
+// If either parameter is specified as 0, then a default value is used instead.
+func (sslCertificateApi *SslCertificateApiV1) EnableRetries(maxRetries int, maxRetryInterval time.Duration) {
+	sslCertificateApi.Service.EnableRetries(maxRetries, maxRetryInterval)
+}
+
+// DisableRetries disables automatic retries for requests invoked for this service instance.
+func (sslCertificateApi *SslCertificateApiV1) DisableRetries() {
+	sslCertificateApi.Service.DisableRetries()
 }
 
 // ListCertificates : List all certificates
@@ -130,16 +184,25 @@ func (sslCertificateApi *SslCertificateApiV1) SetServiceURL(url string) error {
 // may order dedicated certificates for the owning zones. This API list all certificates for a given zone, including
 // shared and dedicated certificates.
 func (sslCertificateApi *SslCertificateApiV1) ListCertificates(listCertificatesOptions *ListCertificatesOptions) (result *ListCertificateResp, response *core.DetailedResponse, err error) {
+	return sslCertificateApi.ListCertificatesWithContext(context.Background(), listCertificatesOptions)
+}
+
+// ListCertificatesWithContext is an alternate form of the ListCertificates method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) ListCertificatesWithContext(ctx context.Context, listCertificatesOptions *ListCertificatesOptions) (result *ListCertificateResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listCertificatesOptions, "listCertificatesOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "ssl/certificate_packs"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/ssl/certificate_packs`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -180,16 +243,25 @@ func (sslCertificateApi *SslCertificateApiV1) ListCertificates(listCertificatesO
 // Order a dedicated certificate for a given zone. The zone should be active before placing an order of a dedicated
 // certificate.
 func (sslCertificateApi *SslCertificateApiV1) OrderCertificate(orderCertificateOptions *OrderCertificateOptions) (result *DedicatedCertificateResp, response *core.DetailedResponse, err error) {
+	return sslCertificateApi.OrderCertificateWithContext(context.Background(), orderCertificateOptions)
+}
+
+// OrderCertificateWithContext is an alternate form of the OrderCertificate method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) OrderCertificateWithContext(ctx context.Context, orderCertificateOptions *OrderCertificateOptions) (result *DedicatedCertificateResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(orderCertificateOptions, "orderCertificateOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "ssl/certificate_packs"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.POST)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/ssl/certificate_packs`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -242,6 +314,11 @@ func (sslCertificateApi *SslCertificateApiV1) OrderCertificate(orderCertificateO
 // DeleteCertificate : Delete a certificate
 // Delete a given certificate.
 func (sslCertificateApi *SslCertificateApiV1) DeleteCertificate(deleteCertificateOptions *DeleteCertificateOptions) (response *core.DetailedResponse, err error) {
+	return sslCertificateApi.DeleteCertificateWithContext(context.Background(), deleteCertificateOptions)
+}
+
+// DeleteCertificateWithContext is an alternate form of the DeleteCertificate method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) DeleteCertificateWithContext(ctx context.Context, deleteCertificateOptions *DeleteCertificateOptions) (response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteCertificateOptions, "deleteCertificateOptions cannot be nil")
 	if err != nil {
 		return
@@ -251,11 +328,16 @@ func (sslCertificateApi *SslCertificateApiV1) DeleteCertificate(deleteCertificat
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "ssl/certificate_packs"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier, *deleteCertificateOptions.CertIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+		"cert_identifier": *deleteCertificateOptions.CertIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/ssl/certificate_packs/{cert_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -285,16 +367,25 @@ func (sslCertificateApi *SslCertificateApiV1) DeleteCertificate(deleteCertificat
 // GetSslSetting : Get SSL setting
 // For a given zone identifier, get SSL setting.
 func (sslCertificateApi *SslCertificateApiV1) GetSslSetting(getSslSettingOptions *GetSslSettingOptions) (result *SslSettingResp, response *core.DetailedResponse, err error) {
+	return sslCertificateApi.GetSslSettingWithContext(context.Background(), getSslSettingOptions)
+}
+
+// GetSslSettingWithContext is an alternate form of the GetSslSetting method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) GetSslSettingWithContext(ctx context.Context, getSslSettingOptions *GetSslSettingOptions) (result *SslSettingResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getSslSettingOptions, "getSslSettingOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/ssl"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/ssl`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -331,16 +422,25 @@ func (sslCertificateApi *SslCertificateApiV1) GetSslSetting(getSslSettingOptions
 // ChangeSslSetting : Change SSL setting
 // For a given zone identifier, change SSL setting.
 func (sslCertificateApi *SslCertificateApiV1) ChangeSslSetting(changeSslSettingOptions *ChangeSslSettingOptions) (result *SslSettingResp, response *core.DetailedResponse, err error) {
+	return sslCertificateApi.ChangeSslSettingWithContext(context.Background(), changeSslSettingOptions)
+}
+
+// ChangeSslSettingWithContext is an alternate form of the ChangeSslSetting method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) ChangeSslSettingWithContext(ctx context.Context, changeSslSettingOptions *ChangeSslSettingOptions) (result *SslSettingResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(changeSslSettingOptions, "changeSslSettingOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/ssl"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/ssl`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -387,16 +487,25 @@ func (sslCertificateApi *SslCertificateApiV1) ChangeSslSetting(changeSslSettingO
 // ListCustomCertificates : List all custom certificates
 // For a given zone identifier, list all custom certificates.
 func (sslCertificateApi *SslCertificateApiV1) ListCustomCertificates(listCustomCertificatesOptions *ListCustomCertificatesOptions) (result *ListCustomCertsResp, response *core.DetailedResponse, err error) {
+	return sslCertificateApi.ListCustomCertificatesWithContext(context.Background(), listCustomCertificatesOptions)
+}
+
+// ListCustomCertificatesWithContext is an alternate form of the ListCustomCertificates method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) ListCustomCertificatesWithContext(ctx context.Context, listCustomCertificatesOptions *ListCustomCertificatesOptions) (result *ListCustomCertsResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listCustomCertificatesOptions, "listCustomCertificatesOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "custom_certificates"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/custom_certificates`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -433,16 +542,25 @@ func (sslCertificateApi *SslCertificateApiV1) ListCustomCertificates(listCustomC
 // UploadCustomCertificate : Upload a custom certificate
 // For a given zone identifier, upload a custom certificates.
 func (sslCertificateApi *SslCertificateApiV1) UploadCustomCertificate(uploadCustomCertificateOptions *UploadCustomCertificateOptions) (result *CustomCertResp, response *core.DetailedResponse, err error) {
+	return sslCertificateApi.UploadCustomCertificateWithContext(context.Background(), uploadCustomCertificateOptions)
+}
+
+// UploadCustomCertificateWithContext is an alternate form of the UploadCustomCertificate method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) UploadCustomCertificateWithContext(ctx context.Context, uploadCustomCertificateOptions *UploadCustomCertificateOptions) (result *CustomCertResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(uploadCustomCertificateOptions, "uploadCustomCertificateOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "custom_certificates"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.POST)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/custom_certificates`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -498,6 +616,11 @@ func (sslCertificateApi *SslCertificateApiV1) UploadCustomCertificate(uploadCust
 // GetCustomCertificate : Get custom certificate
 // For a given zone identifier, get a custom certificates.
 func (sslCertificateApi *SslCertificateApiV1) GetCustomCertificate(getCustomCertificateOptions *GetCustomCertificateOptions) (result *CustomCertResp, response *core.DetailedResponse, err error) {
+	return sslCertificateApi.GetCustomCertificateWithContext(context.Background(), getCustomCertificateOptions)
+}
+
+// GetCustomCertificateWithContext is an alternate form of the GetCustomCertificate method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) GetCustomCertificateWithContext(ctx context.Context, getCustomCertificateOptions *GetCustomCertificateOptions) (result *CustomCertResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getCustomCertificateOptions, "getCustomCertificateOptions cannot be nil")
 	if err != nil {
 		return
@@ -507,11 +630,16 @@ func (sslCertificateApi *SslCertificateApiV1) GetCustomCertificate(getCustomCert
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "custom_certificates"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier, *getCustomCertificateOptions.CustomCertID}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+		"custom_cert_id": *getCustomCertificateOptions.CustomCertID,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/custom_certificates/{custom_cert_id}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -548,6 +676,11 @@ func (sslCertificateApi *SslCertificateApiV1) GetCustomCertificate(getCustomCert
 // UpdateCustomCertificate : Update custom certificate
 // For a given zone identifier, update a custom certificates.
 func (sslCertificateApi *SslCertificateApiV1) UpdateCustomCertificate(updateCustomCertificateOptions *UpdateCustomCertificateOptions) (result *CustomCertResp, response *core.DetailedResponse, err error) {
+	return sslCertificateApi.UpdateCustomCertificateWithContext(context.Background(), updateCustomCertificateOptions)
+}
+
+// UpdateCustomCertificateWithContext is an alternate form of the UpdateCustomCertificate method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) UpdateCustomCertificateWithContext(ctx context.Context, updateCustomCertificateOptions *UpdateCustomCertificateOptions) (result *CustomCertResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateCustomCertificateOptions, "updateCustomCertificateOptions cannot be nil")
 	if err != nil {
 		return
@@ -557,11 +690,16 @@ func (sslCertificateApi *SslCertificateApiV1) UpdateCustomCertificate(updateCust
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "custom_certificates"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier, *updateCustomCertificateOptions.CustomCertID}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+		"custom_cert_id": *updateCustomCertificateOptions.CustomCertID,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/custom_certificates/{custom_cert_id}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -617,6 +755,11 @@ func (sslCertificateApi *SslCertificateApiV1) UpdateCustomCertificate(updateCust
 // DeleteCustomCertificate : Delete custom certificate
 // For a given zone identifier, delete a custom certificates.
 func (sslCertificateApi *SslCertificateApiV1) DeleteCustomCertificate(deleteCustomCertificateOptions *DeleteCustomCertificateOptions) (response *core.DetailedResponse, err error) {
+	return sslCertificateApi.DeleteCustomCertificateWithContext(context.Background(), deleteCustomCertificateOptions)
+}
+
+// DeleteCustomCertificateWithContext is an alternate form of the DeleteCustomCertificate method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) DeleteCustomCertificateWithContext(ctx context.Context, deleteCustomCertificateOptions *DeleteCustomCertificateOptions) (response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteCustomCertificateOptions, "deleteCustomCertificateOptions cannot be nil")
 	if err != nil {
 		return
@@ -626,11 +769,16 @@ func (sslCertificateApi *SslCertificateApiV1) DeleteCustomCertificate(deleteCust
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "custom_certificates"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier, *deleteCustomCertificateOptions.CustomCertID}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+		"custom_cert_id": *deleteCustomCertificateOptions.CustomCertID,
+	}
 
 	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/custom_certificates/{custom_cert_id}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -657,16 +805,25 @@ func (sslCertificateApi *SslCertificateApiV1) DeleteCustomCertificate(deleteCust
 // ChangeCertificatePriority : Set certificate priority
 // For a given zone identifier, set priority of certificates.
 func (sslCertificateApi *SslCertificateApiV1) ChangeCertificatePriority(changeCertificatePriorityOptions *ChangeCertificatePriorityOptions) (response *core.DetailedResponse, err error) {
+	return sslCertificateApi.ChangeCertificatePriorityWithContext(context.Background(), changeCertificatePriorityOptions)
+}
+
+// ChangeCertificatePriorityWithContext is an alternate form of the ChangeCertificatePriority method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) ChangeCertificatePriorityWithContext(ctx context.Context, changeCertificatePriorityOptions *ChangeCertificatePriorityOptions) (response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(changeCertificatePriorityOptions, "changeCertificatePriorityOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "custom_certificates/prioritize"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PUT)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/custom_certificates/prioritize`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -703,16 +860,25 @@ func (sslCertificateApi *SslCertificateApiV1) ChangeCertificatePriority(changeCe
 // GetUniversalCertificateSetting : Get details of universal certificate
 // For a given zone identifier, get universal certificate.
 func (sslCertificateApi *SslCertificateApiV1) GetUniversalCertificateSetting(getUniversalCertificateSettingOptions *GetUniversalCertificateSettingOptions) (result *UniversalSettingResp, response *core.DetailedResponse, err error) {
+	return sslCertificateApi.GetUniversalCertificateSettingWithContext(context.Background(), getUniversalCertificateSettingOptions)
+}
+
+// GetUniversalCertificateSettingWithContext is an alternate form of the GetUniversalCertificateSetting method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) GetUniversalCertificateSettingWithContext(ctx context.Context, getUniversalCertificateSettingOptions *GetUniversalCertificateSettingOptions) (result *UniversalSettingResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getUniversalCertificateSettingOptions, "getUniversalCertificateSettingOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "ssl/universal/settings"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/ssl/universal/settings`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -749,16 +915,25 @@ func (sslCertificateApi *SslCertificateApiV1) GetUniversalCertificateSetting(get
 // ChangeUniversalCertificateSetting : Enable or Disable universal certificate
 // change universal certificate setting.
 func (sslCertificateApi *SslCertificateApiV1) ChangeUniversalCertificateSetting(changeUniversalCertificateSettingOptions *ChangeUniversalCertificateSettingOptions) (response *core.DetailedResponse, err error) {
+	return sslCertificateApi.ChangeUniversalCertificateSettingWithContext(context.Background(), changeUniversalCertificateSettingOptions)
+}
+
+// ChangeUniversalCertificateSettingWithContext is an alternate form of the ChangeUniversalCertificateSetting method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) ChangeUniversalCertificateSettingWithContext(ctx context.Context, changeUniversalCertificateSettingOptions *ChangeUniversalCertificateSettingOptions) (response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(changeUniversalCertificateSettingOptions, "changeUniversalCertificateSettingOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "ssl/universal/settings"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/ssl/universal/settings`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -795,16 +970,25 @@ func (sslCertificateApi *SslCertificateApiV1) ChangeUniversalCertificateSetting(
 // GetTls12Setting : Get TLS 1.2 only setting
 // For a given zone identifier, get TLS 1.2 only setting.
 func (sslCertificateApi *SslCertificateApiV1) GetTls12Setting(getTls12SettingOptions *GetTls12SettingOptions) (result *Tls12SettingResp, response *core.DetailedResponse, err error) {
+	return sslCertificateApi.GetTls12SettingWithContext(context.Background(), getTls12SettingOptions)
+}
+
+// GetTls12SettingWithContext is an alternate form of the GetTls12Setting method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) GetTls12SettingWithContext(ctx context.Context, getTls12SettingOptions *GetTls12SettingOptions) (result *Tls12SettingResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getTls12SettingOptions, "getTls12SettingOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/tls_1_2_only"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/tls_1_2_only`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -841,16 +1025,25 @@ func (sslCertificateApi *SslCertificateApiV1) GetTls12Setting(getTls12SettingOpt
 // ChangeTls12Setting : Set TLS 1.2 setting
 // For a given zone identifier, set TLS 1.2 setting.
 func (sslCertificateApi *SslCertificateApiV1) ChangeTls12Setting(changeTls12SettingOptions *ChangeTls12SettingOptions) (result *Tls12SettingResp, response *core.DetailedResponse, err error) {
+	return sslCertificateApi.ChangeTls12SettingWithContext(context.Background(), changeTls12SettingOptions)
+}
+
+// ChangeTls12SettingWithContext is an alternate form of the ChangeTls12Setting method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) ChangeTls12SettingWithContext(ctx context.Context, changeTls12SettingOptions *ChangeTls12SettingOptions) (result *Tls12SettingResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(changeTls12SettingOptions, "changeTls12SettingOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/tls_1_2_only"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/tls_1_2_only`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -897,16 +1090,25 @@ func (sslCertificateApi *SslCertificateApiV1) ChangeTls12Setting(changeTls12Sett
 // GetTls13Setting : Get TLS 1.3 setting
 // For a given zone identifier, get TLS 1.3 setting.
 func (sslCertificateApi *SslCertificateApiV1) GetTls13Setting(getTls13SettingOptions *GetTls13SettingOptions) (result *Tls13SettingResp, response *core.DetailedResponse, err error) {
+	return sslCertificateApi.GetTls13SettingWithContext(context.Background(), getTls13SettingOptions)
+}
+
+// GetTls13SettingWithContext is an alternate form of the GetTls13Setting method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) GetTls13SettingWithContext(ctx context.Context, getTls13SettingOptions *GetTls13SettingOptions) (result *Tls13SettingResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(getTls13SettingOptions, "getTls13SettingOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/tls_1_3"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/tls_1_3`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -943,16 +1145,25 @@ func (sslCertificateApi *SslCertificateApiV1) GetTls13Setting(getTls13SettingOpt
 // ChangeTls13Setting : Set TLS 1.3 setting
 // For a given zone identifier, set TLS 1.3 setting.
 func (sslCertificateApi *SslCertificateApiV1) ChangeTls13Setting(changeTls13SettingOptions *ChangeTls13SettingOptions) (result *Tls13SettingResp, response *core.DetailedResponse, err error) {
+	return sslCertificateApi.ChangeTls13SettingWithContext(context.Background(), changeTls13SettingOptions)
+}
+
+// ChangeTls13SettingWithContext is an alternate form of the ChangeTls13Setting method which supports a Context parameter
+func (sslCertificateApi *SslCertificateApiV1) ChangeTls13SettingWithContext(ctx context.Context, changeTls13SettingOptions *ChangeTls13SettingOptions) (result *Tls13SettingResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(changeTls13SettingOptions, "changeTls13SettingOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "settings/tls_1_3"}
-	pathParameters := []string{*sslCertificateApi.Crn, *sslCertificateApi.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *sslCertificateApi.Crn,
+		"zone_identifier": *sslCertificateApi.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(sslCertificateApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = sslCertificateApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(sslCertificateApi.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/settings/tls_1_3`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1222,7 +1433,7 @@ func UnmarshalCustomCertReqGeoRestrictions(m map[string]json.RawMessage, result 
 // DeleteCertificateOptions : The DeleteCertificate options.
 type DeleteCertificateOptions struct {
 	// cedrtificate identifier.
-	CertIdentifier *string `json:"cert_identifier" validate:"required"`
+	CertIdentifier *string `json:"cert_identifier" validate:"required,ne="`
 
 	// uuid, identify a session.
 	XCorrelationID *string `json:"X-Correlation-ID,omitempty"`
@@ -1259,7 +1470,7 @@ func (options *DeleteCertificateOptions) SetHeaders(param map[string]string) *De
 // DeleteCustomCertificateOptions : The DeleteCustomCertificate options.
 type DeleteCustomCertificateOptions struct {
 	// custom certificate id.
-	CustomCertID *string `json:"custom_cert_id" validate:"required"`
+	CustomCertID *string `json:"custom_cert_id" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -1287,7 +1498,7 @@ func (options *DeleteCustomCertificateOptions) SetHeaders(param map[string]strin
 // GetCustomCertificateOptions : The GetCustomCertificate options.
 type GetCustomCertificateOptions struct {
 	// custom certificate id.
-	CustomCertID *string `json:"custom_cert_id" validate:"required"`
+	CustomCertID *string `json:"custom_cert_id" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -1607,7 +1818,7 @@ func UnmarshalUniversalSettingRespResult(m map[string]json.RawMessage, result in
 // UpdateCustomCertificateOptions : The UpdateCustomCertificate options.
 type UpdateCustomCertificateOptions struct {
 	// custom certificate id.
-	CustomCertID *string `json:"custom_cert_id" validate:"required"`
+	CustomCertID *string `json:"custom_cert_id" validate:"required,ne="`
 
 	// certificates.
 	Certificate *string `json:"certificate,omitempty"`

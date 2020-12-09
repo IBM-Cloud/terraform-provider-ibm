@@ -50,6 +50,48 @@ func TestAccIBMISVPNGatewayConnection_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISVPNGatewayConnection_route(t *testing.T) {
+	var VPNGatewayConnection string
+	vpcname1 := fmt.Sprintf("tfvpngc-vpc-%d", acctest.RandIntRange(100, 200))
+	subnetname1 := fmt.Sprintf("tfvpngc-subnet-%d", acctest.RandIntRange(100, 200))
+	vpnname1 := fmt.Sprintf("tfvpngc-vpn-%d", acctest.RandIntRange(100, 200))
+	name1 := fmt.Sprintf("tfvpngc-createname-%d", acctest.RandIntRange(100, 200))
+
+	vpcname2 := fmt.Sprintf("tfvpngc-vpc-%d", acctest.RandIntRange(100, 200))
+	subnetname2 := fmt.Sprintf("tfvpngc-subnet-%d", acctest.RandIntRange(100, 200))
+	vpnname2 := fmt.Sprintf("tfvpngc-vpn-%d", acctest.RandIntRange(100, 200))
+	name2 := fmt.Sprintf("tfvpngc-createname-%d", acctest.RandIntRange(100, 200))
+	updname2 := fmt.Sprintf("tfvpngc-updatename-%d", acctest.RandIntRange(100, 200))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMISVPNGatewayConnectionDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMISVPNGatewayConnectionRouteConfig(vpcname1, subnetname1, vpnname1, name1, vpcname2, subnetname2, vpnname2, name2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayConnectionExists("ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", VPNGatewayConnection),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "mode", "route"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMISVPNGatewayConnectionRouteUpdate(vpcname1, subnetname1, vpnname1, name1, vpcname2, subnetname2, vpnname2, updname2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayConnectionExists("ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", VPNGatewayConnection),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "name", updname2),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "mode", "route"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISVPNGatewayConnectionDestroy(s *terraform.State) error {
 	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
@@ -173,6 +215,7 @@ func testAccCheckIBMISVPNGatewayConnectionConfig(vpc1, subnet1, vpnname1, name1,
 	resource "ibm_is_vpn_gateway" "testacc_VPNGateway1" {
 		name = "%s"
 		subnet = "${ibm_is_subnet.testacc_subnet1.id}"
+		mode = "policy"
 	}
 	resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection1" {
 		name = "%s"
@@ -198,6 +241,7 @@ func testAccCheckIBMISVPNGatewayConnectionConfig(vpc1, subnet1, vpnname1, name1,
 	resource "ibm_is_vpn_gateway" "testacc_VPNGateway2" {
 		name = "%s"
 		subnet = "${ibm_is_subnet.testacc_subnet2.id}"
+		mode = "policy"
 	}
 	resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection2" {
 		name = "%s"
@@ -228,6 +272,7 @@ func testAccCheckIBMISVPNGatewayConnectionUpdate(vpc1, subnet1, vpnname1, name1,
 	resource "ibm_is_vpn_gateway" "testacc_VPNGateway1" {
 		name = "%s"
 		subnet = "${ibm_is_subnet.testacc_subnet1.id}"
+		mode = "policy"
 	}
 	resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection1" {
 		name = "%s"
@@ -253,6 +298,7 @@ func testAccCheckIBMISVPNGatewayConnectionUpdate(vpc1, subnet1, vpnname1, name1,
 	resource "ibm_is_vpn_gateway" "testacc_VPNGateway2" {
 		name = "%s"
 		subnet = "${ibm_is_subnet.testacc_subnet2.id}"
+		mode = "policy"
 	}
 	resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection2" {
 		name = "%s"
@@ -264,6 +310,116 @@ func testAccCheckIBMISVPNGatewayConnectionUpdate(vpc1, subnet1, vpnname1, name1,
 
 	}
 
+	`, vpc1, subnet1, ISZoneName, ISCIDR, vpnname1, name1, vpc2, subnet2, ISZoneName, ISCIDR, vpnname2, name2)
+
+}
+
+func testAccCheckIBMISVPNGatewayConnectionRouteConfig(vpc1, subnet1, vpnname1, name1, vpc2, subnet2, vpnname2, name2 string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "rg" {
+		name = "Proof of Concepts"
+	}
+	resource "ibm_is_vpc" "testacc_vpc1" {
+		name = "%s"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "testacc_subnet1" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc1.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_vpn_gateway" "testacc_VPNGateway1" {
+		name = "%s"
+		subnet = "${ibm_is_subnet.testacc_subnet1.id}"
+		mode = "route"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection1" {
+		name = "%s"
+		vpn_gateway = "${ibm_is_vpn_gateway.testacc_VPNGateway1.id}"
+		peer_address = "${ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address}"
+		preshared_key = "VPNDemoPassword"
+	}
+	resource "ibm_is_vpc" "testacc_vpc2" {
+		name = "%s"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "testacc_subnet2" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc2.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_vpn_gateway" "testacc_VPNGateway2" {
+		name = "%s"
+		subnet = "${ibm_is_subnet.testacc_subnet2.id}"
+		mode = "route"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection2" {
+		name = "%s"
+		vpn_gateway = "${ibm_is_vpn_gateway.testacc_VPNGateway2.id}"
+		peer_address = "${ibm_is_vpn_gateway.testacc_VPNGateway2.public_ip_address}"
+		preshared_key = "VPNDemoPassword"
+	}
+	`, vpc1, subnet1, ISZoneName, ISCIDR, vpnname1, name1, vpc2, subnet2, ISZoneName, ISCIDR, vpnname2, name2)
+
+}
+
+func testAccCheckIBMISVPNGatewayConnectionRouteUpdate(vpc1, subnet1, vpnname1, name1, vpc2, subnet2, vpnname2, name2 string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "rg" {
+		name = "Proof of Concepts"
+	}
+	resource "ibm_is_vpc" "testacc_vpc1" {
+		name = "%s"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "testacc_subnet1" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc1.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_vpn_gateway" "testacc_VPNGateway1" {
+		name = "%s"
+		subnet = "${ibm_is_subnet.testacc_subnet1.id}"
+		mode = "route"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection1" {
+		name = "%s"
+		vpn_gateway = "${ibm_is_vpn_gateway.testacc_VPNGateway1.id}"
+		peer_address = "${ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address}"
+		preshared_key = "VPNDemoPassword"
+	}
+	resource "ibm_is_vpc" "testacc_vpc2" {
+		name = "%s"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "testacc_subnet2" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc2.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_vpn_gateway" "testacc_VPNGateway2" {
+		name = "%s"
+		subnet = "${ibm_is_subnet.testacc_subnet2.id}"
+		mode = "route"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection2" {
+		name = "%s"
+		vpn_gateway = "${ibm_is_vpn_gateway.testacc_VPNGateway2.id}"
+		peer_address = "${ibm_is_vpn_gateway.testacc_VPNGateway2.public_ip_address}"
+		preshared_key = "VPNDemoPassword"
+	}
 	`, vpc1, subnet1, ISZoneName, ISCIDR, vpnname1, name1, vpc2, subnet2, ISZoneName, ISCIDR, vpnname2, name2)
 
 }

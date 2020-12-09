@@ -3,6 +3,7 @@ package ibm
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -13,7 +14,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
-func TestAccFunctionRule_Basic(t *testing.T) {
+func TestAccCFFunctionRule_Basic(t *testing.T) {
 	var conf whisk.Rule
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
@@ -28,7 +29,7 @@ func TestAccFunctionRule_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckFunctionRuleCreate(actionName, triggerName, name, namespace),
+				Config: testAccCheckCFFunctionRuleCreate(actionName, triggerName, name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionRuleExists("ibm_function_rule.rule", &conf),
 					resource.TestCheckResourceAttr("ibm_function_rule.rule", "name", name),
@@ -39,7 +40,7 @@ func TestAccFunctionRule_Basic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckFunctionRuleUpdate(updatedTriggerName, name, namespace),
+				Config: testAccCheckCFFunctionRuleUpdate(updatedTriggerName, name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionRuleExists("ibm_function_rule.rule", &conf),
 					resource.TestCheckResourceAttr("ibm_function_rule.rule", "name", name),
@@ -54,7 +55,48 @@ func TestAccFunctionRule_Basic(t *testing.T) {
 	})
 }
 
-func TestAccFunctionRule_Import(t *testing.T) {
+func TestAccIAMFunctionRule_Basic(t *testing.T) {
+	var conf whisk.Rule
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
+	actionName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	triggerName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	updatedTriggerName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckFunctionRuleDestroy,
+		Steps: []resource.TestStep{
+
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionRuleCreate(actionName, triggerName, name, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionRuleExists("ibm_function_rule.rule", &conf),
+					resource.TestCheckResourceAttr("ibm_function_rule.rule", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_rule.rule", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_rule.rule", "version", "0.0.1"),
+					resource.TestCheckResourceAttr("ibm_function_rule.rule", "publish", "false"),
+					resource.TestCheckResourceAttr("ibm_function_rule.rule", "trigger_name", triggerName),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionRuleUpdate(updatedTriggerName, name, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionRuleExists("ibm_function_rule.rule", &conf),
+					resource.TestCheckResourceAttr("ibm_function_rule.rule", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_rule.rule", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_rule.rule", "version", "0.0.2"),
+					resource.TestCheckResourceAttr("ibm_function_rule.rule", "publish", "false"),
+					resource.TestCheckResourceAttr("ibm_function_rule.rule", "trigger_name", updatedTriggerName),
+					resource.TestCheckResourceAttr("ibm_function_rule.rule", "action_name", "/whisk.system/cloudant/delete-attachment"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccCFFunctionRule_Import(t *testing.T) {
 	var conf whisk.Rule
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	triggeName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -67,7 +109,39 @@ func TestAccFunctionRule_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckFunctionRuleImport(triggeName, name, namespace),
+				Config: testAccCheckCFFunctionRuleImport(triggeName, name, namespace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionRuleExists("ibm_function_rule.import", &conf),
+					resource.TestCheckResourceAttr("ibm_function_rule.import", "name", name),
+					resource.TestCheckResourceAttr("ibm_function_rule.import", "namespace", namespace),
+					resource.TestCheckResourceAttr("ibm_function_rule.import", "version", "0.0.1"),
+					resource.TestCheckResourceAttr("ibm_function_rule.import", "publish", "false"),
+				),
+			},
+
+			resource.TestStep{
+				ResourceName:      "ibm_function_rule.import",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccIAMFunctionRule_Import(t *testing.T) {
+	var conf whisk.Rule
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	triggeName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckFunctionRuleDestroy,
+		Steps: []resource.TestStep{
+
+			resource.TestStep{
+				Config: testAccCheckIAMFunctionRuleImport(triggeName, name, namespace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckFunctionRuleExists("ibm_function_rule.import", &conf),
 					resource.TestCheckResourceAttr("ibm_function_rule.import", "name", name),
@@ -150,9 +224,10 @@ func testAccCheckFunctionRuleDestroy(s *terraform.State) error {
 		name := parts[1]
 
 		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
-		if err != nil {
+		if err != nil && strings.Contains(err.Error(), "is not in the list of entitled namespaces") {
+			return nil
+		} else {
 			return err
-
 		}
 
 		_, _, err = client.Rules.Get(name)
@@ -166,7 +241,168 @@ func testAccCheckFunctionRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckFunctionRuleCreate(actionName, triggerName, name, namespace string) string {
+func testAccCheckIAMFunctionRuleCreate(actionName, triggerName, name, namespace string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
+
+	resource "ibm_function_action" "action" {
+		depends_on = [ibm_function_namespace.namespace]
+		name      = "%s"
+		namespace = ibm_function_namespace.namespace.name
+		exec {
+		  kind = "nodejs:6"
+		  code = file("test-fixtures/hellonode.js")
+		}
+	  }
+	  
+	  resource "ibm_function_trigger" "trigger" {
+		name = "%s"
+		namespace = ibm_function_namespace.namespace.name
+		feed {
+		  name       = "/whisk.system/alarms/alarm"
+		  parameters = <<EOF
+											  [
+													  {
+															  "key":"cron",
+															  "value":"0 */2 * * *"
+													  }
+											  ]
+	  
+	  EOF
+	  
+		}
+	  
+		user_defined_annotations = <<EOF
+					   [
+			   {
+					   "key":"sample trigger",
+					   "value":"Trigger for hello action"
+			   }
+					   ]
+	  
+	  EOF
+	  
+	  }
+	  
+	  resource "ibm_function_rule" "rule" {
+		name         = "%s"
+		namespace = ibm_function_namespace.namespace.name
+		trigger_name = ibm_function_trigger.trigger.name
+		action_name  = ibm_function_action.action.name
+	  }
+	  
+`, namespace, actionName, triggerName, name)
+
+}
+
+func testAccCheckIAMFunctionRuleUpdate(updatedTriggerName, name, namespace string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
+
+	resource "ibm_function_trigger" "triggerUpdated" {
+		name                     = "%s"
+		namespace 				 = ibm_function_namespace.namespace.name
+		user_defined_annotations = <<EOF
+					   [
+			   {
+					   "key":"sample trigger",
+					   "value":"Trigger for hello action"
+			   }
+					   ]
+	  
+	  EOF
+	  
+	  }
+	  
+	  resource "ibm_function_rule" "rule" {
+		name         = "%s"
+		namespace = ibm_function_namespace.namespace.name
+		trigger_name = ibm_function_trigger.triggerUpdated.name
+		action_name  = "/whisk.system/cloudant/delete-attachment"
+	  }
+`, namespace, updatedTriggerName, name)
+
+}
+
+func testAccCheckIAMFunctionRuleImport(triggerName, name, namespace string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "Default"
+	}
+
+	resource "ibm_function_namespace" "namespace" {
+		name                = "%s"
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+	}
+
+	resource "ibm_function_trigger" "trigger" {
+		name                     = "%s"
+		namespace 				 = ibm_function_namespace.namespace.name
+		user_defined_annotations = <<EOF
+					   [
+			   {
+					   "key":"sample trigger",
+					   "value":"Trigger for hello action"
+			   }
+					   ]
+	  
+	  EOF
+	  
+	  }
+	  
+	  resource "ibm_function_rule" "import" {
+		name         = "%s"
+		namespace = ibm_function_namespace.namespace.name
+		trigger_name = ibm_function_trigger.trigger.name
+		action_name  = "/whisk.system/cloudant/delete-attachment"
+	  }
+`, namespace, triggerName, name)
+
+}
+
+func testAccCheckCFFunctionRuleImport(triggerName, name, namespace string) string {
+	return fmt.Sprintf(`
+
+	resource "ibm_function_trigger" "trigger" {
+		name                     = "%s"
+		namespace 				 = "%s"
+		user_defined_annotations = <<EOF
+					   [
+			   {
+					   "key":"sample trigger",
+					   "value":"Trigger for hello action"
+			   }
+					   ]
+	  
+	  EOF
+	  
+	  }
+	  
+	  resource "ibm_function_rule" "import" {
+		name         = "%s"
+		namespace = "%s"
+		trigger_name = ibm_function_trigger.trigger.name
+		action_name  = "/whisk.system/cloudant/delete-attachment"
+	  }
+`, triggerName, namespace, name, namespace)
+
+}
+
+func testAccCheckCFFunctionRuleCreate(actionName, triggerName, name, namespace string) string {
 	return fmt.Sprintf(`
 	resource "ibm_function_action" "action" {
 		name      = "%s"
@@ -217,7 +453,7 @@ func testAccCheckFunctionRuleCreate(actionName, triggerName, name, namespace str
 
 }
 
-func testAccCheckFunctionRuleUpdate(updatedTriggerName, name, namespace string) string {
+func testAccCheckCFFunctionRuleUpdate(updatedTriggerName, name, namespace string) string {
 	return fmt.Sprintf(`
 	resource "ibm_function_trigger" "triggerUpdated" {
 		name                     = "%s"
@@ -241,32 +477,5 @@ func testAccCheckFunctionRuleUpdate(updatedTriggerName, name, namespace string) 
 		action_name  = "/whisk.system/cloudant/delete-attachment"
 	  }
 `, updatedTriggerName, namespace, name, namespace)
-
-}
-
-func testAccCheckFunctionRuleImport(triggerName, name, namespace string) string {
-	return fmt.Sprintf(`
-	resource "ibm_function_trigger" "trigger" {
-		name                     = "%s"
-		namespace		 = "%s"
-		user_defined_annotations = <<EOF
-					   [
-			   {
-					   "key":"sample trigger",
-					   "value":"Trigger for hello action"
-			   }
-					   ]
-	  
-	  EOF
-	  
-	  }
-	  
-	  resource "ibm_function_rule" "import" {
-		name         = "%s"
-		namespace    = "%s"
-		trigger_name = ibm_function_trigger.trigger.name
-		action_name  = "/whisk.system/cloudant/delete-attachment"
-	  }
-`, triggerName, namespace, name, namespace)
 
 }

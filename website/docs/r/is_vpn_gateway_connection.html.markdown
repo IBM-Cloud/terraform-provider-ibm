@@ -41,14 +41,9 @@ The following arguments are supported:
 * `vpn_gateway` - (Required, Forces new resource, string) The unique identifier of VPN gateway.
 * `peer_address` - (Required, string) The IP address of the peer VPN gateway.
 * `preshared_key`- (Required, string) The preshared key.
-* `local_cidrs` - (Optional, Forces new resource, list) List of CIDRs for this resource.
-* `peer_cidrs` - (Optional, Forces new resource, list) List of CIDRs for this resource.
-* `admin_state_up` - (Optional, bool) VPN gateway connection status. Default false. If set to false, the VPN gateway connection is shut down
-* `action` - (Optional, string) Dead Peer Detection actions. Supported values are restart, clear, hold, none. Default `none`
-* `interval` - (Optional, int) Dead Peer Detection interval in seconds. Default 30.
-* `timeout` - (Optional, int) Dead Peer Detection timeout in seconds. Default 120.
-* `ike_policy` - (Optional, string) ID of the IKE policy.
-* `ipsec_policy` - (Optional, string) ID of the IPSec policy.
+* `local_cidrs` - (Optional, Forces new resource, set) List of CIDRs for this resource,optional for mode route.
+* `peer_cidrs` - (Optional, Forces new resource, set) List of CIDRs for this resource,optional for mode route.
+
 
 ## Attribute Reference
 
@@ -56,6 +51,25 @@ The following attributes are exported:
 
 * `id` - The unique identifier of the VPN gateway connection. The id is composed of \<vpn_gateway_id\>/\<vpn_gateway_connection_id\>.
 * `status` - The status of VPN gateway connection.
+* `admin_state_up` - (Optional, bool) VPN gateway connection status. Default false. If set to false, the VPN gateway connection is shut down
+* `action` -  Dead Peer Detection actions. Supported values are restart, clear, hold, none. Default `restart`
+* `interval` -  Dead Peer Detection interval in seconds. Default 2.
+* `timeout` -  Dead Peer Detection timeout in seconds. Default 10.
+* `ike_policy` - ID of the IKE policy.
+* `ipsec_policy` -  ID of the IPSec policy.
+* `authentication_mode` -  The authentication mode,Only psk is currently supported..
+* `created_at` -  The date and time that this VPN gateway connection was created.
+* `id` -  The unique identifier for this VPN gateway connection.
+* `resource_type` -  The resource type(vpn_gateway_connection).
+* `status` -  The status of a VPN gateway connection(down, up).
+* `vpn_gateway` -  VPN Gateway info(ID).
+* `tunnels` -  The VPN tunnel configuration for this VPN gateway connection (in static route mode).
+  * `address` -  The IP address of the VPN gateway member in which the tunnel resides.
+  * `resource_type` -  The status of the VPN Tunnel.
+* `crn` -  VPN Gateway info(ID).
+* `mode` -  The mode of the VPN gateway(policy,route).
+* `vpn_gateway` -  VPN Gateway info(ID).
+* `vpn_gateway` -  VPN Gateway info(ID).
 
 ## Import
 

@@ -275,3 +275,19 @@ data "ibm_cis_waf_packages" "packages" {
   cis_id    = data.ibm_cis.cis.id
   domain_id = data.ibm_cis_domain.cis_domain.domain_id
 }
+
+# CIS WAF Rule Group service
+resource "ibm_cis_waf_group" "test" {
+  cis_id     = data.ibm_cis.cis.id
+  domain_id  = data.ibm_cis_domain.cis_domain.domain_id
+  package_id = "c504870194831cd12c3fc0284f294abb"
+  group_id   = "3d8fb0c18b5a6ba7682c80e94c7937b2"
+  mode       = "on"
+}
+
+# CIS WAF Rule Groups data source
+data "ibm_cis_waf_groups" "waf_groups" {
+  cis_id     = data.ibm_cis.cis.id
+  domain_id  = data.ibm_cis_domain.cis_domain.id
+  package_id = "c504870194831cd12c3fc0284f294abb"
+}

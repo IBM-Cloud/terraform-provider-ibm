@@ -35,6 +35,31 @@ func TestAccIBMISVPNGateway_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISVPNGateway_route(t *testing.T) {
+	var vpnGateway string
+	vpcname := fmt.Sprintf("tfvpnuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfvpnuat-subnet-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfvpnuat-createname-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMISVPNGatewayDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVPNGatewayRouteConfig(vpcname, subnetname, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayExists("ibm_is_vpn_gateway.testacc_vpnGateway", vpnGateway),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "mode", "route"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISVPNGatewayDestroy(s *terraform.State) error {
 	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
@@ -131,6 +156,32 @@ func testAccCheckIBMISVPNGatewayConfig(vpc, subnet, name string) string {
 	resource "ibm_is_vpn_gateway" "testacc_vpnGateway" {
 	name = "%s"
 	subnet = "${ibm_is_subnet.testacc_subnet.id}"
+	mode = "policy"
+	}`, vpc, subnet, ISZoneName, ISCIDR, name)
+
+}
+
+func testAccCheckIBMISVPNGatewayRouteConfig(vpc, subnet, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "rg" {
+		name = "Proof of Concepts"
+	}
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_vpn_gateway" "testacc_vpnGateway" {
+	name = "%s"
+	subnet = "${ibm_is_subnet.testacc_subnet.id}"
+	mode = "route"
+	resource_group = data.ibm_resource_group.rg.id
 	}`, vpc, subnet, ISZoneName, ISCIDR, name)
 
 }

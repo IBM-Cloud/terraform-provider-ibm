@@ -111,9 +111,31 @@ resource "ibm_is_lb_pool_member" "my_nlb_pool_mem" {
   target_id = data.ibm_is_instance.ds_instance.id
 }
 
+resource "ibm_is_vpn_gateway" "VPNGateway" {
+  name   = "vpn1"
+  subnet = ibm_is_subnet.subnet1.id
+  mode   = "route"
+}
+
+data "ibm_is_vpn_gateways" "vpngateways" {
+   
+}
+
+resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection" {
+  name          = "vpnconn1"
+  vpn_gateway   = ibm_is_vpn_gateway.VPNGateway1.id
+  peer_address  = ibm_is_vpn_gateway.VPNGateway1.public_ip_address
+  preshared_key = "VPNDemoPassword"
+}
+
+data "ibm_is_vpn_gateway_connections" "VPNGatewayConnections" {
+  vpn_gateway_id = ibm_is_vpn_gateway.VPNGateway.id
+}  
+
 resource "ibm_is_vpn_gateway" "VPNGateway1" {
   name   = "vpn1"
   subnet = ibm_is_subnet.subnet1.id
+  mode ="policy"
 }
 
 resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1" {
@@ -227,6 +249,7 @@ resource "ibm_is_ike_policy" "example" {
 resource "ibm_is_vpn_gateway" "VPNGateway2" {
   name   = "vpn2"
   subnet = ibm_is_subnet.subnet2.id
+  mode ="policy"
 }
 
 resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection2" {
