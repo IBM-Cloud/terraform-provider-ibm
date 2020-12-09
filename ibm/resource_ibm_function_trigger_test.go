@@ -282,7 +282,8 @@ func testAccCheckFunctionTriggerDestroy(s *terraform.State) error {
 		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
 		if err != nil && strings.Contains(err.Error(), "is not in the list of entitled namespaces") {
 			return nil
-		} else {
+		}
+		if err != nil {
 			return err
 		}
 		_, _, err = client.Triggers.Get(name)
