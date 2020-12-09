@@ -64,10 +64,10 @@ resource "ibm_cos_bucket" "cold-ap" {
 }
 
 resource "ibm_cos_bucket" "standard-ams03-firewall" {
-  bucket_name          = "a-standard-bucket-at-ams-firewall"
-  resource_instance_id = ibm_resource_instance.cos_instance.id
-  cross_region_location      = "us"
-  storage_class        = "standard"
+  bucket_name           = "a-standard-bucket-at-ams-firewall"
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  cross_region_location = "us"
+  storage_class         = "standard"
   activity_tracking {
     read_data_events     = true
     write_data_events    = true
@@ -77,14 +77,14 @@ resource "ibm_cos_bucket" "standard-ams03-firewall" {
     usage_metrics_enabled  = true
     metrics_monitoring_crn = ibm_resource_instance.metrics_monitor.id
   }
-  allowed_ip =  ["223.196.168.27","223.196.161.38","192.168.0.1"]
+  allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
 }
 
 resource "ibm_cos_bucket" "flex-us-south-firewall" {
-  bucket_name          = "a-flex-bucket-at-us-south"
-  resource_instance_id = ibm_resource_instance.cos_instance.id
-  cross_region_location      = "us"
-  storage_class        = "flex"
+  bucket_name           = "a-flex-bucket-at-us-south"
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  cross_region_location = "us"
+  storage_class         = "flex"
   activity_tracking {
     read_data_events     = true
     write_data_events    = true
@@ -94,14 +94,14 @@ resource "ibm_cos_bucket" "flex-us-south-firewall" {
     usage_metrics_enabled  = true
     metrics_monitoring_crn = ibm_resource_instance.metrics_monitor.id
   }
-  allowed_ip =  ["223.196.168.27","223.196.161.38","192.168.0.1"]
+  allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
 }
 
 resource "ibm_cos_bucket" "cold-ap-firewall" {
-  bucket_name          = "a-cold-bucket-at-ap"
-  resource_instance_id = ibm_resource_instance.cos_instance.id
-  cross_region_location      = "us"
-  storage_class        = "cold"
+  bucket_name           = "a-cold-bucket-at-ap"
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  cross_region_location = "us"
+  storage_class         = "cold"
   activity_tracking {
     read_data_events     = true
     write_data_events    = true
@@ -111,25 +111,45 @@ resource "ibm_cos_bucket" "cold-ap-firewall" {
     usage_metrics_enabled  = true
     metrics_monitoring_crn = ibm_resource_instance.metrics_monitor.id
   }
-  allowed_ip =  ["223.196.168.27","223.196.161.38","192.168.0.1"]
+  allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
 }
 
-### Configure archive rules on COS Bucket
+### Configure archive and expire rules on COS Bucket
 
-resource "ibm_cos_bucket" "archive_rule_cos"{
-  bucket_name          = "a-bucket-archive"
+resource "ibm_cos_bucket" "archive_expire_rule_cos" {
+  bucket_name          = "a-bucket-archive-expire"
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location      = "us-south"
   storage_class        = "standard"
   force_delete         = true
-  archive_rule{ 
+  archive_rule {
     rule_id = "a-bucket-arch-rule"
-    enable = true
-    days = 0
-    type = "GLACIER"
+    enable  = true
+    days    = 0
+    type    = "GLACIER"
   }
-} 
+  expire_rule {
+    rule_id = "a-bucket-expire-rule"
+    enable  = true
+    days    = 30
+    prefix  = "logs/"
+  }
+}
 
+### Configure expire rule to prepare a COS Bucket with a large number of objects for deletion
+
+resource "ibm_cos_bucket" "expire_rule_cos" {
+  bucket_name          = "a-bucket-expire"
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = "us-south"
+  storage_class        = "standard"
+  force_delete         = true
+  expire_rule {
+    rule_id = "a-bucket-expire-rule"
+    enable  = true
+    days    = 1
+  }
+}
 
 ```
 
@@ -150,24 +170,27 @@ The following arguments are supported:
 	*	`activity_tracking.activity_tracker_crn` : (Required, string) Required the first time activity_tracking is configured.
 * Nested `metrics_monitoring` block have the following structure:
 	*	`metrics_monitoring.usage_metrics_enabled` : (Optional,bool) If set to true, all usage metrics (i.e. bytes_used) will be sent to the monitoring service.
-	*	`metrics_monitoring.metrics_monitoring_crn` :* (Required, string) Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics.
+	*	`metrics_monitoring.metrics_monitoring_crn` : (Required, string) Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics.
 
 * **Note** - One of the location option must be present.
 * `storage_class` - (Required, string) Storage class of the bucket. Accepted values: 'standard', 'vault', 'cold', 'flex', 'smart'.
-
 * `endpoint_type` - (Optional, string) The type of the endpoint (public or private) to be used for buckets. Default value is `public`.
-
 * `force_delete` - (Optional, bool) Since Default value set to True, it will delete all the objects in the COS Bucket and then delete the bucket.  Default value is `true`.
+    * **Note** - `force_delete` will timeout on buckets with a large amount of objects.  24 hours before you delete the bucket you can set an expire rule to remove all files over a day old.  
 
+* **Note** - Both archive_rule and expire_rule must be managed by terraform as they use the same life cycle configuration.
 * Nested `archive_rule` block have the following structure:
 	*	`archive_rule.rule_id` : (Optional, Computed, string) Unique identifier for the rule. Archive rules allow you to set a specific time frame after which objects transition to the archive. 
-	*	`archive_rule.enable` :* (Required, bool) (Required) Specifies archive rule status either enable or disable for a bucket.
+	*	`archive_rule.enable` : (Required, bool) Specifies archive rule status either enable or disable for a bucket.
+    *	`archive_rule.days` : (Required, string) Specifies the number of days when the specific rule action takes effect.
+    *	`archive_rule.type` : (Required, string) Specifies the storage class/archive type to which you want the object to transition. It can be Glacier or Accelerated.
+    * **Note** - Archive is available in certain regions only. See Integrated Services for more details-https://cloud.ibm.com/docs/cloud-object-storage/basics?topic=cloud-object-storage-service-availability
 
-  *	`archive_rule.days` :* (Required, string)  Specifies the number of days when the specific rule action takes effect.
-
-  *	`archive_rule.type` :* (Required, string) Specifies the storage class/archive type to which you want the object to transition. It can be Glacier or Accelerated.
-* **Note** - Archive is available in certain regions only. See Integrated Services for more details-https://cloud.ibm.com/docs/cloud-object-storage/basics?topic=cloud-object-storage-service-availability
-
+* Nested `expire_rule` block have the following structure:
+	*	`expire_rule.rule_id` : (Optional, Computed, string) Unique identifier for the rule. Expire rules allow you to set a specific time frame after which objects are deleted. 
+	*	`expire_rule.enable` : (Required, bool) Specifies expire rule status either enable or disable for a bucket.
+    *	`expire_rule.days`   : (Required, string) Specifies the number of days when the specific rule action takes effect.
+    *	`expire_rule.prefix` : (Optional, string) Specifies a prefix filter to apply to only a subset of objects with names that match the prefix.
 
 ## Attribute Reference
 
@@ -187,7 +210,6 @@ The following attributes are exported:
 The `ibm_cos_bucket` resource can be imported using the `id`. The ID is formed from the `CRN` (Cloud Resource Name), the `bucket type` which must be `ssl` for single_site_location, `rl` for region_location or `crl` for cross_region_location, the bucket location and the endpoint type (public or private). The `CRN` and bucket location can be found on the portal.
 
 id = $CRN:meta:$buckettype:$bucketlocation
-
 
 ```
 $ terraform import ibm_cos_bucket.mybucket <crn>

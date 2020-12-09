@@ -215,6 +215,39 @@ func resourceIBMCOS() *schema.Resource {
 					},
 				},
 			},
+			"expire_rule": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1000,
+				Description: "Enable configuration expire_rule to COS Bucket after a defined period of time",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rule_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Unique identifier for the rule.Expire rules allow you to set a specific time frame after which objects are deleted. Set Rule ID for cos bucket",
+						},
+						"enable": {
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "Enable or disable an expire rule for a bucket",
+						},
+						"prefix": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The rule applies to any objects with keys that match this prefix",
+						},
+						"days": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							ValidateFunc: validateAllowedRangeInt(0, 3650),
+							Description:  "Specifies the number of days when the specific rule action takes effect.",
+						},
+					},
+				},
+			},
 			"force_delete": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -225,10 +258,108 @@ func resourceIBMCOS() *schema.Resource {
 	}
 }
 
+func archiveRuleList(archiveList []interface{}) []*s3.LifecycleRule {
+	var archive_status, archiveStorageClass, rule_id string
+	var days int64
+	var rules []*s3.LifecycleRule
+
+	for _, l := range archiveList {
+		archiveMap, _ := l.(map[string]interface{})
+		//Rule ID
+		if rule_idSet, exist := archiveMap["rule_id"]; exist {
+			id := rule_idSet.(string)
+			rule_id = id
+		}
+
+		//Status Enable/Disable
+		if archive_statusSet, exist := archiveMap["enable"]; exist {
+			archiveStatusEnabled := archive_statusSet.(bool)
+			if archiveStatusEnabled == true {
+				archive_status = "Enabled"
+			} else {
+				archive_status = "Disabled"
+			}
+		}
+		//Days
+		if daysarchiveSet, exist := archiveMap["days"]; exist {
+			daysarchive := int64(daysarchiveSet.(int))
+			days = daysarchive
+		}
+		//Archive Type
+		if archiveStorgaeClassSet, exist := archiveMap["type"]; exist {
+			archiveType := archiveStorgaeClassSet.(string)
+			archiveStorageClass = archiveType
+		}
+
+		archive_rule := s3.LifecycleRule{
+			ID:     aws.String(rule_id),
+			Status: aws.String(archive_status),
+			Filter: &s3.LifecycleRuleFilter{},
+			Transitions: []*s3.Transition{
+				{
+					Days:         aws.Int64(days),
+					StorageClass: aws.String(archiveStorageClass),
+				},
+			},
+		}
+
+		rules = append(rules, &archive_rule)
+	}
+	return rules
+}
+
+func expireRuleList(expireList []interface{}) []*s3.LifecycleRule {
+	var expire_prefix, expire_status, rule_id string
+	var days int64
+	var rules []*s3.LifecycleRule
+
+	for _, l := range expireList {
+		expireMap, _ := l.(map[string]interface{})
+		//Rule ID
+		if rule_idSet, exist := expireMap["rule_id"]; exist {
+			id := rule_idSet.(string)
+			rule_id = id
+		}
+
+		//Status Enable/Disable
+		if expire_statusSet, exist := expireMap["enable"]; exist {
+			archiveStatusEnabled := expire_statusSet.(bool)
+			if archiveStatusEnabled == true {
+				expire_status = "Enabled"
+			} else {
+				expire_status = "Disabled"
+			}
+		}
+		//Days
+		if daysexpireSet, exist := expireMap["days"]; exist {
+			daysexpire := int64(daysexpireSet.(int))
+			days = daysexpire
+		}
+		//Expire Prefix
+		if expirePrefixClassSet, exist := expireMap["prefix"]; exist {
+			expire_prefix = expirePrefixClassSet.(string)
+		}
+
+		expire_rule := s3.LifecycleRule{
+			ID:     aws.String(rule_id),
+			Status: aws.String(expire_status),
+			Filter: &s3.LifecycleRuleFilter{
+				Prefix: aws.String(expire_prefix),
+			},
+			Expiration: &s3.LifecycleExpiration{
+				Days: aws.Int64(days),
+			},
+		}
+
+		rules = append(rules, &expire_rule)
+	}
+	return rules
+}
+
 func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	//// Update  the lifecycle (Archive)
-	if d.HasChange("archive_rule") {
+	//// Update  the lifecycle (Archive or Expire)
+	if d.HasChange("archive_rule") || d.HasChange("expire_rule") {
 		var s3Conf *aws.Config
 		rsConClient, err := meta.(ClientSession).BluemixSession()
 		if err != nil {
@@ -266,55 +397,21 @@ func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
 		s3Sess := session.Must(session.NewSession())
 		s3Client := s3.New(s3Sess, s3Conf)
 
-		var rule_id, archive_status, archiveStorgaeClass string
-		var days int64
-		if archive, ok := d.GetOk("archive_rule"); ok {
-			archivelist := archive.([]interface{})
-			for _, l := range archivelist {
-				archiveMap, _ := l.(map[string]interface{})
-				//Rule ID
-				if rule_idSet, exist := archiveMap["rule_id"]; exist {
-					id := rule_idSet.(string)
-					rule_id = id
-				}
-
-				//Status Enable/Disable
-				if archive_statusSet, exist := archiveMap["enable"]; exist {
-					archiveStatusEnabled := archive_statusSet.(bool)
-					if archiveStatusEnabled == true {
-						archive_status = "Enabled"
-					} else {
-						archive_status = "Disabled"
-					}
-				}
-				//Days
-				if daysarchiveSet, exist := archiveMap["days"]; exist {
-					daysarchive := int64(daysarchiveSet.(int))
-					days = daysarchive
-				}
-				//Archive Type
-				if archiveStorgaeClassSet, exist := archiveMap["type"]; exist {
-					archiveType := archiveStorgaeClassSet.(string)
-					archiveStorgaeClass = archiveType
-				}
-
+		var archive, archive_ok = d.GetOk("archive_rule")
+		var expire, expire_ok = d.GetOk("expire_rule")
+		var rules []*s3.LifecycleRule
+		if archive_ok || expire_ok {
+			if expire_ok {
+				rules = append(rules, expireRuleList(expire.([]interface{}))...)
 			}
+			if archive_ok {
+				rules = append(rules, archiveRuleList(archive.([]interface{}))...)
+			}
+
 			lInput := &s3.PutBucketLifecycleConfigurationInput{
 				Bucket: aws.String(bucketName),
 				LifecycleConfiguration: &s3.LifecycleConfiguration{
-					Rules: []*s3.LifecycleRule{
-						{
-							Status: aws.String(archive_status),
-							Filter: &s3.LifecycleRuleFilter{},
-							ID:     aws.String(rule_id),
-							Transitions: []*s3.Transition{
-								{
-									Days:         aws.Int64(days),
-									StorageClass: aws.String(archiveStorgaeClass),
-								},
-							},
-						},
-					},
+					Rules: rules,
 				},
 			}
 			_, err := s3Client.PutBucketLifecycleConfiguration(lInput)
@@ -333,7 +430,6 @@ func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
 				return err
 			}
 		}
-
 	}
 
 	sess, err := meta.(ClientSession).CosConfigV1API()
@@ -558,15 +654,22 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 		Bucket: aws.String(bucketName),
 	}
 
-	archiveptr, err := s3Client.GetBucketLifecycleConfiguration(gInput)
+	lifecycleptr, err := s3Client.GetBucketLifecycleConfiguration(gInput)
 
 	if (err != nil && !strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist")) && (err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied")) {
 		return err
 	}
 
-	if archiveptr != nil {
-		if len(archiveptr.Rules) > 0 {
-			d.Set("archive_rule", archiveRuleGet(archiveptr.Rules))
+	if lifecycleptr != nil {
+		if len(lifecycleptr.Rules) > 0 {
+			archiveRules := archiveRuleGet(lifecycleptr.Rules)
+			expireRules := expireRuleGet(lifecycleptr.Rules)
+			if len(archiveRules) > 0 {
+				d.Set("archive_rule", archiveRules)
+			}
+			if len(expireRules) > 0 {
+				d.Set("expire_rule", expireRules)
+			}
 		}
 	}
 

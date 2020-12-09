@@ -662,32 +662,69 @@ func flattenMetricsMonitor(in *resourceconfigurationv1.MetricsMonitoring) []inte
 }
 
 func archiveRuleGet(in []*s3.LifecycleRule) []interface{} {
-	rule := make(map[string]interface{})
+	rules := make([]interface{}, 0, len(in))
 	for _, r := range in {
+		// Checking this is not an expire_rule.  LifeCycle rules are either archive or expire
+		if r.Expiration == nil {
+			rule := make(map[string]interface{})
 
-		if r.Status != nil {
-			if *r.Status == "Enabled" {
-				rule["enable"] = true
+			if r.Status != nil {
+				if *r.Status == "Enabled" {
+					rule["enable"] = true
 
-			} else {
-				rule["enable"] = false
+				} else {
+					rule["enable"] = false
+				}
+
+			}
+			if r.ID != nil {
+				rule["rule_id"] = *r.ID
 			}
 
-		}
-		if r.ID != nil {
-			rule["rule_id"] = *r.ID
-		}
+			for _, transition := range r.Transitions {
+				if transition.Days != nil {
+					rule["days"] = int(*transition.Days)
+				}
+				if transition.StorageClass != nil {
+					rule["type"] = *transition.StorageClass
+				}
+			}
 
-		for _, transition := range r.Transitions {
-			if transition.Days != nil {
-				rule["days"] = int(*transition.Days)
-			}
-			if transition.StorageClass != nil {
-				rule["type"] = *transition.StorageClass
-			}
+			rules = append(rules, rule)
 		}
 	}
-	return []interface{}{rule}
+	return rules
+}
+
+func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
+	rules := make([]interface{}, 0, len(in))
+	for _, r := range in {
+		if r.Expiration != nil {
+			rule := make(map[string]interface{})
+
+			if r.Status != nil {
+				if *r.Status == "Enabled" {
+					rule["enable"] = true
+
+				} else {
+					rule["enable"] = false
+				}
+			}
+			if r.ID != nil {
+				rule["rule_id"] = *r.ID
+			}
+
+			if r.Expiration != nil {
+				rule["days"] = int(*(r.Expiration).Days)
+			}
+			if r.Filter != nil {
+				rule["prefix"] = *(r.Filter).Prefix
+			}
+
+			rules = append(rules, rule)
+		}
+	}
+	return rules
 }
 
 func flattenLimits(in *whisk.Limits) []interface{} {
