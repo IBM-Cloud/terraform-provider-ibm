@@ -178,7 +178,7 @@ The following arguments are supported:
 * `force_delete` - (Optional, bool) Since Default value set to True, it will delete all the objects in the COS Bucket and then delete the bucket.  Default value is `true`.
     * **Note** - `force_delete` will timeout on buckets with a large amount of objects.  24 hours before you delete the bucket you can set an expire rule to remove all files over a day old.  
 
-* **Note** - Both archive_rule and expire_rule must be managed by terraform as they use the same life cycle configuration.
+* **Note** - Both archive_rule and expire_rule must be managed by terraform as they use the same lifecycle configuration. If user creates any of the rule outside of terraform using CLI/UI, you may see unexpected diff such as  removal of any of the rule or one rule overrides another , the policy may not match as expected due to API limitation because the LifeCycle is a single API request for both Archive and Expire.
 * Nested `archive_rule` block have the following structure:
 	*	`archive_rule.rule_id` : (Optional, Computed, string) Unique identifier for the rule. Archive rules allow you to set a specific time frame after which objects transition to the archive. 
 	*	`archive_rule.enable` : (Required, bool) Specifies archive rule status either enable or disable for a bucket.
