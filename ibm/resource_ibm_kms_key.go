@@ -428,6 +428,7 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	} else {
 		d.Set("policies", flattenKeyPolicies(policies))
 	}
+	d.Set("instance_id", instanceID)
 	d.Set("key_id", keyid)
 	d.Set("standard_key", key.Extractable)
 	d.Set("payload", key.Payload)
