@@ -102,6 +102,8 @@ func TestAccIBMContainerVpcCluster_importBasic(t *testing.T) {
 						"ibm_container_vpc_cluster.cluster", "flavor", flavor),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "zones.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "labels.%", "2"),
 				),
 			},
 			resource.TestStep{
@@ -116,6 +118,8 @@ func TestAccIBMContainerVpcCluster_importBasic(t *testing.T) {
 						"ibm_container_vpc_cluster.cluster", "flavor", flavor),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "zones.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "labels.%", "3"),
 				),
 			},
 
@@ -224,53 +228,59 @@ func getVpcClusterTargetHeaderTestACC() v2.ClusterTargetHeader {
 func testAccCheckIBMContainerVpcCluster_basic(zone, vpc, subnet, clusterName, flavor, workerCount string) string {
 	return fmt.Sprintf(`
 provider "ibm" {
-	generation =1
-}	
+  generation = 1
+}
 data "ibm_resource_group" "resource_group" {
-	is_default = "true"
+  is_default = "true"
 }
 
 locals {
-	ZONE1 = "%s-1"
+  ZONE1 = "%s-1"
 }
-  
+
 resource "ibm_is_vpc" "vpc1" {
-	name = "%s"
+  name = "%s"
 }
-  
+
 resource "ibm_is_subnet" "subnet1" {
-	name                     = "%s"
-	vpc                      = "${ibm_is_vpc.vpc1.id}"
-	zone                     = "${local.ZONE1}"
-	total_ipv4_address_count = 256
+  name                     = "%s"
+  vpc                      = "${ibm_is_vpc.vpc1.id}"
+  zone                     = "${local.ZONE1}"
+  total_ipv4_address_count = 256
 }
 
 resource "ibm_resource_instance" "kms_instance1" {
-    name              = "test_kms"
-    service           = "kms"
-    plan              = "tiered-pricing"
-    location          = "us-south"
+  name     = "test_kms"
+  service  = "kms"
+  plan     = "tiered-pricing"
+  location = "us-south"
 }
-  
+
 resource "ibm_kms_key" "test" {
-    instance_id = "${ibm_resource_instance.kms_instance1.id}"
-    key_name = "test_root_key"
-    standard_key =  false
-    force_delete = true
+  instance_id  = "${ibm_resource_instance.kms_instance1.id}"
+  key_name     = "test_root_key"
+  standard_key = false
+  force_delete = true
 }
 
 resource "ibm_container_vpc_cluster" "cluster" {
-	name              = "%s"
-	vpc_id            = "${ibm_is_vpc.vpc1.id}"
-	flavor            = "%s"
-	worker_count      = "%s"
-	wait_till         = "OneWorkerNodeReady"
-	resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-	zones {
-		 subnet_id = "${ibm_is_subnet.subnet1.id}"
-		 name      = "${local.ZONE1}"
-	  }
-  }`, zone, vpc, subnet, clusterName, flavor, workerCount)
+  name              = "%s"
+  vpc_id            = "${ibm_is_vpc.vpc1.id}"
+  flavor            = "%s"
+  worker_count      = "%s"
+  wait_till         = "OneWorkerNodeReady"
+  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+  zones {
+	subnet_id = "${ibm_is_subnet.subnet1.id}"
+	name      = "${local.ZONE1}"
+  }
+
+  worker_labels = {
+	"test"  = "test-default-pool"
+	"test1" = "test-default-pool1"
+  }
+}
+`, zone, vpc, subnet, clusterName, flavor, workerCount)
 
 }
 
@@ -336,50 +346,56 @@ resource "ibm_container_vpc_cluster" "testacc_cluster" {
 func testAccCheckIBMContainerVpcClusterZone_update(zone, zone1, vpc, subnet, subnet1, clusterName, flavor, workerCount string) string {
 	return fmt.Sprintf(`
 provider "ibm" {
-	generation =1
-}	
+  generation = 1
+}
 data "ibm_resource_group" "resource_group" {
-	is_default = "true"
+  is_default = "true"
 }
 
 locals {
-	ZONE1 = "%s-1"
+  ZONE1 = "%s-1"
 }
 locals {
-	ZONE2 = "%s-2"
+  ZONE2 = "%s-2"
 }
 resource "ibm_is_vpc" "vpc1" {
-	name = "%s"
+  name = "%s"
 }
-  
+
 resource "ibm_is_subnet" "subnet1" {
-	name                     = "%s"
-	vpc                      = "${ibm_is_vpc.vpc1.id}"
-	zone                     = "${local.ZONE1}"
-	total_ipv4_address_count = 256
+  name                     = "%s"
+  vpc                      = "${ibm_is_vpc.vpc1.id}"
+  zone                     = "${local.ZONE1}"
+  total_ipv4_address_count = 256
 }
 resource "ibm_is_subnet" "subnet2" {
-	name                     = "%s"
-	vpc                      = "${ibm_is_vpc.vpc1.id}"
-	zone                     = "${local.ZONE2}"
-	total_ipv4_address_count = 256
+  name                     = "%s"
+  vpc                      = "${ibm_is_vpc.vpc1.id}"
+  zone                     = "${local.ZONE2}"
+  total_ipv4_address_count = 256
 }
 resource "ibm_container_vpc_cluster" "cluster" {
-	name              = "%s"
-	vpc_id            = "${ibm_is_vpc.vpc1.id}"
-	flavor            = "%s"
-	worker_count      = "%s"
-	wait_till         = "OneWorkerNodeReady"
-	resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-	zones {
-		 subnet_id = "${ibm_is_subnet.subnet1.id}"
-		 name      = "${local.ZONE1}"
-	}
-	zones {
-		subnet_id = "${ibm_is_subnet.subnet2.id}"
-		name      = "${local.ZONE2}"
-	}
-  }`, zone, zone1, vpc, subnet, subnet1, clusterName, flavor, workerCount)
+  name              = "%s"
+  vpc_id            = "${ibm_is_vpc.vpc1.id}"
+  flavor            = "%s"
+  worker_count      = "%s"
+  wait_till         = "OneWorkerNodeReady"
+  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+  zones {
+	subnet_id = "${ibm_is_subnet.subnet1.id}"
+	name      = "${local.ZONE1}"
+  }
+  zones {
+	subnet_id = "${ibm_is_subnet.subnet2.id}"
+	name      = "${local.ZONE2}"
+  }
+  worker_labels = {
+	"test"  = "test-default-pool"
+	"test1" = "test-default-pool1"
+	"test2" = "test-default-pool2"
+  }
+}
+`, zone, zone1, vpc, subnet, subnet1, clusterName, flavor, workerCount)
 
 }
 

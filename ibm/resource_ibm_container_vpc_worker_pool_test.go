@@ -30,6 +30,8 @@ func TestAccIBMContainerVpcClusterWorkerPool_basic(t *testing.T) {
 						"ibm_container_vpc_worker_pool.test_pool", "flavor", flavor),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_worker_pool.test_pool", "zones.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "labels.%", "2"),
 				),
 			},
 			{
@@ -39,6 +41,8 @@ func TestAccIBMContainerVpcClusterWorkerPool_basic(t *testing.T) {
 						"ibm_container_vpc_worker_pool.test_pool", "flavor", flavor),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_worker_pool.test_pool", "zones.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "labels.%", "3"),
 				),
 			},
 		},
@@ -105,141 +109,148 @@ func testAccCheckIBMVpcContainerWorkerPoolDestroy(s *terraform.State) error {
 func testAccCheckIBMVpcContainerWorkerPool_basic(flavor string, worker_count, name1, name2 int) string {
 	return fmt.Sprintf(`
 	provider "ibm" {
-		generation = 1
+	  generation = 1
+	}
+	
+	variable "name1" {
+	  default = "%d"
+	}
+	variable "name2" {
+	  default = "%d"
+	}
+	
+	locals {
+	  ZONE1 = "us-south-1"
+	  ZONE2 = "us-south-2"
+	}
+	
+	resource "ibm_is_vpc" "vpc1" {
+	  name = "terraform-vpc-${var.name1}"
+	}
+	
+	resource "ibm_is_subnet" "subnet1" {
+	  name                     = "terraform-subnet-${var.name1}"
+	  vpc                      = "${ibm_is_vpc.vpc1.id}"
+	  zone                     = "${local.ZONE1}"
+	  total_ipv4_address_count = 256
+	}
+	
+	resource "ibm_is_subnet" "subnet2" {
+	  name                     = "terraform-subnet-${var.name2}"
+	  vpc                      = "${ibm_is_vpc.vpc1.id}"
+	  zone                     = "${local.ZONE2}"
+	  total_ipv4_address_count = 256
+	}
+	
+	data "ibm_resource_group" "resource_group" {
+	  name = "Default"
+	}
+	
+	resource "ibm_container_vpc_cluster" "cluster" {
+	  name              = "terraform_cluster${var.name1}"
+	  vpc_id            = "${ibm_is_vpc.vpc1.id}"
+	  flavor            = "%s"
+	  worker_count      = "%d"
+	  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+	  wait_till         = "oneWorkerNodeReady"
+	  zones {
+		subnet_id = "${ibm_is_subnet.subnet1.id}"
+		name      = "${local.ZONE1}"
 	  }
-	  
-	  variable "name1" {
-		default = "%d"
+	}
+	
+	resource "ibm_container_vpc_worker_pool" "test_pool" {
+	  cluster           = "${ibm_container_vpc_cluster.cluster.id}"
+	  worker_pool_name  = "terraform_workerpool${var.name1}"
+	  flavor            = "%s"
+	  vpc_id            = "${ibm_is_vpc.vpc1.id}"
+	  worker_count      = "%d"
+	  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+	  zones {
+		name      = "${local.ZONE2}"
+		subnet_id = "${ibm_is_subnet.subnet2.id}"
 	  }
-	  variable "name2" {
-		default = "%d"
+	  labels = {
+		"test"  = "test-pool"
+		"test1" = "test-pool1"
 	  }
-	 
-	  locals {
-		ZONE1 = "us-south-1"
-		ZONE2 = "us-south-2"
-	  }
-	  
-	  resource "ibm_is_vpc" "vpc1" {
-		name = "terraform-vpc-${var.name1}"
-	  }
-	  
-	  resource "ibm_is_subnet" "subnet1" {
-		name                     = "terraform-subnet-${var.name1}"
-		vpc                      = "${ibm_is_vpc.vpc1.id}"
-		zone                     = "${local.ZONE1}"
-		total_ipv4_address_count = 256
-	  }
-	  
-	  resource "ibm_is_subnet" "subnet2" {
-		name                     = "terraform-subnet-${var.name2}"
-		vpc                      = "${ibm_is_vpc.vpc1.id}"
-		zone                     = "${local.ZONE2}"
-		total_ipv4_address_count = 256
-	  }
-	  
-	  data "ibm_resource_group" "resource_group" {
-		name = "Default"
-	  }
-	  
-	  resource "ibm_container_vpc_cluster" "cluster" {
-		name              = "terraform_cluster${var.name1}"
-		vpc_id            = "${ibm_is_vpc.vpc1.id}"
-		flavor            = "%s"
-		worker_count      = "%d"
-		resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-		wait_till         = "oneWorkerNodeReady"
-		zones {
-			subnet_id = "${ibm_is_subnet.subnet1.id}"
-			name      = "${local.ZONE1}"
-		  }
-	  }
-	  
-	  resource "ibm_container_vpc_worker_pool" "test_pool" {
-		cluster          = "${ibm_container_vpc_cluster.cluster.id}"
-		worker_pool_name = "terraform_workerpool${var.name1}"
-		flavor           = "%s"
-		vpc_id           = "${ibm_is_vpc.vpc1.id}"
-		worker_count     = "%d"
-		resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-		zones {
-			name      = "${local.ZONE2}"
-			subnet_id = "${ibm_is_subnet.subnet2.id}"
-		  }
-	  }
-	  
+	}
 		`, name1, name2, flavor, worker_count, flavor, worker_count)
 }
 
 func testAccCheckIBMVpcContainerWorkerPool_update(flavor string, worker_count, name1, name2 int) string {
 	return fmt.Sprintf(`
 	provider "ibm" {
-		generation = 1
+	  generation = 1
+	}
+	
+	variable "name1" {
+	  default = "%d"
+	}
+	variable "name2" {
+	  default = "%d"
+	}
+	
+	locals {
+	  ZONE1 = "us-south-1"
+	  ZONE2 = "us-south-2"
+	}
+	
+	resource "ibm_is_vpc" "vpc1" {
+	  name = "terraform-vpc-${var.name1}"
+	}
+	
+	resource "ibm_is_subnet" "subnet1" {
+	  name                     = "terraform-subnet-${var.name1}"
+	  vpc                      = "${ibm_is_vpc.vpc1.id}"
+	  zone                     = "${local.ZONE1}"
+	  total_ipv4_address_count = 256
+	}
+	
+	resource "ibm_is_subnet" "subnet2" {
+	  name                     = "terraform-subnet-${var.name2}"
+	  vpc                      = "${ibm_is_vpc.vpc1.id}"
+	  zone                     = "${local.ZONE2}"
+	  total_ipv4_address_count = 256
+	}
+	
+	data "ibm_resource_group" "resource_group" {
+	  name = "Default"
+	}
+	
+	resource "ibm_container_vpc_cluster" "cluster" {
+	  name              = "terraform_cluster${var.name1}"
+	  vpc_id            = "${ibm_is_vpc.vpc1.id}"
+	  flavor            = "%s"
+	  worker_count      = "%d"
+	  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+	
+	  zones {
+		subnet_id = "${ibm_is_subnet.subnet1.id}"
+		name      = "${local.ZONE1}"
 	  }
-	  
-	  variable "name1" {
-		default = "%d"
+	}
+	
+	resource "ibm_container_vpc_worker_pool" "test_pool" {
+	  cluster           = "${ibm_container_vpc_cluster.cluster.id}"
+	  worker_pool_name  = "terraform_workerpool${var.name1}"
+	  flavor            = "%s"
+	  vpc_id            = "${ibm_is_vpc.vpc1.id}"
+	  worker_count      = "%d"
+	  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+	  zones {
+		name      = "${local.ZONE2}"
+		subnet_id = "${ibm_is_subnet.subnet2.id}"
 	  }
-	  variable "name2" {
-		default = "%d"
+	  zones {
+		subnet_id = "${ibm_is_subnet.subnet1.id}"
+		name      = "${local.ZONE1}"
 	  }
-	 
-	  locals {
-		ZONE1 = "us-south-1"
-		ZONE2 = "us-south-2"
+	  labels = {
+		"test"  = "test-pool"
+		"test1" = "test-pool1"
+		"test2" = "test-pool2"
 	  }
-	  
-	  resource "ibm_is_vpc" "vpc1" {
-		name = "terraform-vpc-${var.name1}"
-	  }
-	  
-	  resource "ibm_is_subnet" "subnet1" {
-		name                     = "terraform-subnet-${var.name1}"
-		vpc                      = "${ibm_is_vpc.vpc1.id}"
-		zone                     = "${local.ZONE1}"
-		total_ipv4_address_count = 256
-	  }
-	  
-	  resource "ibm_is_subnet" "subnet2" {
-		name                     = "terraform-subnet-${var.name2}"
-		vpc                      = "${ibm_is_vpc.vpc1.id}"
-		zone                     = "${local.ZONE2}"
-		total_ipv4_address_count = 256
-	  }
-	  
-	  data "ibm_resource_group" "resource_group" {
-		name = "Default"
-	  }
-	  
-	  resource "ibm_container_vpc_cluster" "cluster" {
-		name              = "terraform_cluster${var.name1}"
-		vpc_id            = "${ibm_is_vpc.vpc1.id}"
-		flavor            = "%s"
-		worker_count      = "%d"
-		resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-	  
-		zones {
-			subnet_id = "${ibm_is_subnet.subnet1.id}"
-			name      = "${local.ZONE1}"
-		  }
-	  }
-	  
-	  resource "ibm_container_vpc_worker_pool" "test_pool" {
-		cluster          = "${ibm_container_vpc_cluster.cluster.id}"
-		worker_pool_name = "terraform_workerpool${var.name1}"
-		flavor           = "%s"
-		vpc_id           = "${ibm_is_vpc.vpc1.id}"
-		worker_count     = "%d"
-		resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-		zones {
-			name      = "${local.ZONE2}"
-			subnet_id = "${ibm_is_subnet.subnet2.id}"
-		  }
-		  zones {
-			subnet_id = "${ibm_is_subnet.subnet1.id}"
-			name      = "${local.ZONE1}"
-		  }
-	  }
-	  
+	}
 		`, name1, name2, flavor, worker_count, flavor, worker_count)
 }
