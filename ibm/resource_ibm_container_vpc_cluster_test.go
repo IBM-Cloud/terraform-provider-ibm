@@ -103,7 +103,7 @@ func TestAccIBMContainerVpcCluster_importBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "zones.#", "1"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_cluster.cluster", "labels.%", "2"),
+						"ibm_container_vpc_cluster.cluster", "worker_labels.%", "2"),
 				),
 			},
 			resource.TestStep{
@@ -119,7 +119,7 @@ func TestAccIBMContainerVpcCluster_importBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "zones.#", "2"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_cluster.cluster", "labels.%", "3"),
+						"ibm_container_vpc_cluster.cluster", "worker_labels.%", "3"),
 				),
 			},
 
