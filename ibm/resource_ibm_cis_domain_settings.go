@@ -3,7 +3,7 @@ package ibm
 import (
 	"log"
 
-	"github.com/IBM/go-sdk-core/v3/core"
+	"github.com/IBM/go-sdk-core/v4/core"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -592,7 +592,7 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	for _, item := range settingsList {
 		var err error
-		var resp interface{}
+		var resp *core.DetailedResponse
 
 		switch item {
 		case cisDomainSettingsDNSSEC:
@@ -879,6 +879,10 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 		if err != nil {
+			if resp != nil && resp.StatusCode == 405 {
+				log.Printf("[WARN] Update %s : %s", item, err)
+				continue
+			}
 			log.Printf("Update settings Failed on %s, %v\n", item, resp)
 			return err
 		}
@@ -898,25 +902,26 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 
 	for _, item := range settingsList {
-
+		var settingErr error
+		var settingResponse *core.DetailedResponse
 		switch item {
 		case cisDomainSettingsDNSSEC:
 			opt := cisClient.NewGetZoneDnssecOptions()
 			result, resp, err := cisClient.GetZoneDnssec(opt)
-			if err != nil {
-				log.Printf("DNS SEC get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsDNSSEC, result.Result.Status)
 			}
-			d.Set(cisDomainSettingsDNSSEC, result.Result.Status)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsWAF:
 			opt := cisClient.NewGetWebApplicationFirewallOptions()
 			result, resp, err := cisClient.GetWebApplicationFirewall(opt)
-			if err != nil {
-				log.Printf("Waf get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsWAF, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsWAF, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsSSL:
 			cisClient, err := meta.(ClientSession).CisSSLClientSession()
@@ -927,11 +932,11 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 			cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 			opt := cisClient.NewGetSslSettingOptions()
 			result, resp, err := cisClient.GetSslSetting(opt)
-			if err != nil {
-				log.Printf("SSL setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsSSL, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsSSL, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsBrotli:
 			cisClient, err := meta.(ClientSession).CisAPI()
@@ -939,293 +944,302 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 				return err
 			}
 			settingsResult, err := cisClient.Settings().GetSetting(crn, zoneID, item)
-			if err != nil {
-				log.Printf("[WARN] Error getting %s zone during Domain read %v\n", item, err)
-				return err
+			if err == nil {
+				settingsObj := *settingsResult
+				d.Set(item, settingsObj.Value)
 			}
-			settingsObj := *settingsResult
-			d.Set(item, settingsObj.Value)
+			settingErr = err
 
 		case cisDomainSettingsMinTLSVersion:
 			opt := cisClient.NewGetMinTlsVersionOptions()
 			result, resp, err := cisClient.GetMinTlsVersion(opt)
-			if err != nil {
-				log.Printf("Min TLS Version setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsMinTLSVersion, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsMinTLSVersion, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsCNAMEFlattening:
 			opt := cisClient.NewGetZoneCnameFlatteningOptions()
 			result, resp, err := cisClient.GetZoneCnameFlattening(opt)
-			if err != nil {
-				log.Printf("CNAME Flattening setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsCNAMEFlattening, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsCNAMEFlattening, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsOpportunisticEncryption:
 			opt := cisClient.NewGetOpportunisticEncryptionOptions()
 			result, resp, err := cisClient.GetOpportunisticEncryption(opt)
-			if err != nil {
-				log.Printf("Opportunistic Encryption setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsOpportunisticEncryption, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsOpportunisticEncryption, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsAutomaticHTPSRewrites:
 			opt := cisClient.NewGetAutomaticHttpsRewritesOptions()
 			result, resp, err := cisClient.GetAutomaticHttpsRewrites(opt)
-			if err != nil {
-				log.Printf("Automatic HTTPS Rewrites setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsAutomaticHTPSRewrites, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsAutomaticHTPSRewrites, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsAlwaysUseHTTPS:
 			opt := cisClient.NewGetAlwaysUseHttpsOptions()
 			result, resp, err := cisClient.GetAlwaysUseHttps(opt)
-			if err != nil {
-				log.Printf("Always use HTTPS setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsAlwaysUseHTTPS, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsAlwaysUseHTTPS, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsIPv6:
 			opt := cisClient.NewGetIpv6Options()
 			result, resp, err := cisClient.GetIpv6(opt)
-			if err != nil {
-				log.Printf("IPv6 setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsIPv6, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsIPv6, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsBrowserCheck:
 			opt := cisClient.NewGetBrowserCheckOptions()
 			result, resp, err := cisClient.GetBrowserCheck(opt)
-			if err != nil {
-				log.Printf("Browser Check setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsBrowserCheck, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsBrowserCheck, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsHotlinkProtection:
 			opt := cisClient.NewGetHotlinkProtectionOptions()
 			result, resp, err := cisClient.GetHotlinkProtection(opt)
-			if err != nil {
-				log.Printf("Hotlink protection setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsHotlinkProtection, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsHotlinkProtection, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsHTTP2:
 			opt := cisClient.NewGetHttp2Options()
 			result, resp, err := cisClient.GetHttp2(opt)
-			if err != nil {
-				log.Printf("HTTP2 setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsHTTP2, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsHTTP2, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsImageLoadOptimization:
 			opt := cisClient.NewGetImageLoadOptimizationOptions()
 			result, resp, err := cisClient.GetImageLoadOptimization(opt)
-			if err != nil {
-				log.Printf("Image load optimization setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsImageLoadOptimization, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsImageLoadOptimization, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsImageSizeOptimization:
 			opt := cisClient.NewGetImageSizeOptimizationOptions()
 			result, resp, err := cisClient.GetImageSizeOptimization(opt)
-			if err != nil {
-				log.Printf("Image size optimization setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsImageSizeOptimization, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsImageSizeOptimization, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsIPGeoLocation:
 			opt := cisClient.NewGetIpGeolocationOptions()
 			result, resp, err := cisClient.GetIpGeolocation(opt)
-			if err != nil {
-				log.Printf("IP Geo location setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsIPGeoLocation, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsIPGeoLocation, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsOriginErrorPagePassThru:
 			opt := cisClient.NewGetEnableErrorPagesOnOptions()
 			result, resp, err := cisClient.GetEnableErrorPagesOn(opt)
-			if err != nil {
-				log.Printf("Origin error page pass thru setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsOriginErrorPagePassThru, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsOriginErrorPagePassThru, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsPseudoIPv4:
 			opt := cisClient.NewGetPseudoIpv4Options()
 			result, resp, err := cisClient.GetPseudoIpv4(opt)
-			if err != nil {
-				log.Printf("Pseudo IPv4 setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsPseudoIPv4, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsPseudoIPv4, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsPrefetchPreload:
 			opt := cisClient.NewGetPrefetchPreloadOptions()
 			result, resp, err := cisClient.GetPrefetchPreload(opt)
-			if err != nil {
-				log.Printf("Prefetch preload setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsPrefetchPreload, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsPrefetchPreload, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsResponseBuffering:
 			opt := cisClient.NewGetResponseBufferingOptions()
 			result, resp, err := cisClient.GetResponseBuffering(opt)
-			if err != nil {
-				log.Printf("Response buffering setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsResponseBuffering, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsResponseBuffering, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsScriptLoadOptimisation:
 			opt := cisClient.NewGetScriptLoadOptimizationOptions()
 			result, resp, err := cisClient.GetScriptLoadOptimization(opt)
-			if err != nil {
-				log.Printf("Script load optimisation setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsScriptLoadOptimisation, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsScriptLoadOptimisation, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsServerSideExclude:
 			opt := cisClient.NewGetServerSideExcludeOptions()
 			result, resp, err := cisClient.GetServerSideExclude(opt)
-			if err != nil {
-				log.Printf("Service side exclude setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsServerSideExclude, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsServerSideExclude, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsTLSClientAuth:
 			opt := cisClient.NewGetTlsClientAuthOptions()
 			result, resp, err := cisClient.GetTlsClientAuth(opt)
-			if err != nil {
-				log.Printf("TLS Client Auth setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsTLSClientAuth, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsTLSClientAuth, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsTrueClientIPHeader:
 			opt := cisClient.NewGetTrueClientIpOptions()
 			result, resp, err := cisClient.GetTrueClientIp(opt)
-			if err != nil {
-				log.Printf("True Client IP Header setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsTrueClientIPHeader, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsTrueClientIPHeader, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsWebSockets:
 			opt := cisClient.NewGetWebSocketsOptions()
 			result, resp, err := cisClient.GetWebSockets(opt)
-			if err != nil {
-				log.Printf("Get websockets setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsWebSockets, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsWebSockets, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsChallengeTTL:
 			opt := cisClient.NewGetChallengeTtlOptions()
 			result, resp, err := cisClient.GetChallengeTTL(opt)
-			if err != nil {
-				log.Printf("Challenge TTL setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsChallengeTTL, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsChallengeTTL, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsMaxUpload:
 			opt := cisClient.NewGetMaxUploadOptions()
 			result, resp, err := cisClient.GetMaxUpload(opt)
-			if err != nil {
-				log.Printf("Max upload setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsMaxUpload, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsMaxUpload, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsCipher:
 			opt := cisClient.NewGetCiphersOptions()
 			result, resp, err := cisClient.GetCiphers(opt)
-			if err != nil {
-				log.Printf("Cipher setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				d.Set(cisDomainSettingsCipher, result.Result.Value)
 			}
-			d.Set(cisDomainSettingsCipher, result.Result.Value)
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsMinify:
 			opt := cisClient.NewGetMinifyOptions()
 			result, resp, err := cisClient.GetMinify(opt)
-			if err != nil {
-				log.Printf("Minify setting get request failed : %v", resp)
-				return err
+			if err == nil {
+				minify := result.Result.Value
+				value := map[string]string{
+					cisDomainSettingsMinifyCSS:  *minify.Css,
+					cisDomainSettingsMinifyHTML: *minify.HTML,
+					cisDomainSettingsMinifyJS:   *minify.Js,
+				}
+				d.Set(cisDomainSettingsMinify, []interface{}{value})
 			}
-			minify := result.Result.Value
-			value := map[string]string{
-				cisDomainSettingsMinifyCSS:  *minify.Css,
-				cisDomainSettingsMinifyHTML: *minify.HTML,
-				cisDomainSettingsMinifyJS:   *minify.Js,
-			}
-			d.Set(cisDomainSettingsMinify, []interface{}{value})
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsSecurityHeader:
 			opt := cisClient.NewGetSecurityHeaderOptions()
 			result, resp, err := cisClient.GetSecurityHeader(opt)
-			if err != nil {
-				log.Printf("Security header setting get request failed : %v", resp)
-				return err
-			}
-			if result.Result.Value != nil && result.Result.Value.StrictTransportSecurity != nil {
+			if err == nil {
 
-				securityHeader := result.Result.Value.StrictTransportSecurity
-				value := map[string]interface{}{}
-				if securityHeader.Enabled != nil {
-					value[cisDomainSettingsSecurityHeaderEnabled] = *securityHeader.Enabled
+				if result.Result.Value != nil && result.Result.Value.StrictTransportSecurity != nil {
+
+					securityHeader := result.Result.Value.StrictTransportSecurity
+					value := map[string]interface{}{}
+					if securityHeader.Enabled != nil {
+						value[cisDomainSettingsSecurityHeaderEnabled] = *securityHeader.Enabled
+					}
+					if securityHeader.Nosniff != nil {
+						value[cisDomainSettingsSecurityHeaderNoSniff] = *securityHeader.Nosniff
+					}
+					if securityHeader.IncludeSubdomains != nil {
+						value[cisDomainSettingsSecurityHeaderIncludeSubdomains] = *securityHeader.IncludeSubdomains
+					}
+					if securityHeader.MaxAge != nil {
+						value[cisDomainSettingsSecurityHeaderMaxAge] = *securityHeader.MaxAge
+					}
+					d.Set(cisDomainSettingsSecurityHeader, []interface{}{value})
 				}
-				if securityHeader.Nosniff != nil {
-					value[cisDomainSettingsSecurityHeaderNoSniff] = *securityHeader.Nosniff
-				}
-				if securityHeader.IncludeSubdomains != nil {
-					value[cisDomainSettingsSecurityHeaderIncludeSubdomains] = *securityHeader.IncludeSubdomains
-				}
-				if securityHeader.MaxAge != nil {
-					value[cisDomainSettingsSecurityHeaderMaxAge] = *securityHeader.MaxAge
-				}
-				d.Set(cisDomainSettingsSecurityHeader, []interface{}{value})
 			}
+			settingResponse = resp
+			settingErr = err
 
 		case cisDomainSettingsMobileRedirect:
 			opt := cisClient.NewGetMobileRedirectOptions()
 			result, resp, err := cisClient.GetMobileRedirect(opt)
-			if err != nil {
-				log.Printf("Mobile redirect strip URI setting get request failed : %v", resp)
-				return err
-			}
-			if result.Result.Value != nil {
+			if err == nil {
+				if result.Result.Value != nil {
 
-				value := result.Result.Value
+					value := result.Result.Value
 
-				uri := map[string]interface{}{}
-				if value.MobileSubdomain != nil {
-					uri[cisDomainSettingsMobileRedirectMobileSubdomain] = *value.MobileSubdomain
+					uri := map[string]interface{}{}
+					if value.MobileSubdomain != nil {
+						uri[cisDomainSettingsMobileRedirectMobileSubdomain] = *value.MobileSubdomain
+					}
+					if value.Status != nil {
+						uri[cisDomainSettingsMobileRedirectStatus] = *value.Status
+					}
+					if value.StripURI != nil {
+						uri[cisDomainSettingsMobileRedirectStripURI] = *value.StripURI
+					}
+					d.Set(cisDomainSettingsMobileRedirect, []interface{}{uri})
 				}
-				if value.Status != nil {
-					uri[cisDomainSettingsMobileRedirectStatus] = *value.Status
-				}
-				if value.StripURI != nil {
-					uri[cisDomainSettingsMobileRedirectStripURI] = *value.StripURI
-				}
-				d.Set(cisDomainSettingsMobileRedirect, []interface{}{uri})
 			}
+			settingResponse = resp
+			settingErr = err
+		}
+
+		if settingErr != nil {
+			if settingResponse != nil && settingResponse.StatusCode == 405 {
+				log.Printf("[WARN] Get %s. : %s", item, settingErr)
+				continue
+			}
+			log.Printf("Get settings failed on %s, %v\n", item, settingErr)
+			return settingErr
 		}
 	}
 	d.Set(cisID, crn)
