@@ -549,14 +549,14 @@ func resourceIBMIAMGetUsers(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	res, err := Client.GetUsers(accountID)
+	res, err := Client.ListUsers(accountID)
 	if err != nil {
 		return err
 	}
 	users := make([]string, 0)
-	invitedUsers := make([]map[string]interface{}, 0, len(res.Resources))
+	invitedUsers := make([]map[string]interface{}, 0, len(res))
 
-	for _, user := range res.Resources {
+	for _, user := range res {
 
 		if user.AccountID != accountID {
 			users = append(users, user.Email)
@@ -645,7 +645,7 @@ func resourceIBMIAMGetUsers(d *schema.ResourceData, meta interface{}) error {
 		invitedUsers = append(invitedUsers, userInfo)
 	}
 	//set the number of users in an account
-	d.Set("number_of_invited_users", len(res.Resources)-1)
+	d.Set("number_of_invited_users", len(res)-1)
 	d.Set("invited_users", invitedUsers)
 	return nil
 }
@@ -786,14 +786,14 @@ func resourceIBMIAMGetUserProfileExists(d *schema.ResourceData, meta interface{}
 	usersSet := d.Get("users").(*schema.Set)
 	usersList := flattenUsersSet(usersSet)
 
-	res, err := Client.GetUsers(accountID)
+	res, err := Client.ListUsers(accountID)
 	if err != nil {
 		return false, err
 	}
 	var isFound bool
 	for _, user := range usersList {
 
-		for _, userInfo := range res.Resources {
+		for _, userInfo := range res {
 			if strings.Compare(userInfo.Email, user) == 0 {
 				isFound = true
 			}
@@ -827,12 +827,12 @@ func getUserIAMID(d *schema.ResourceData, meta interface{}, user string) (string
 		return "", err
 	}
 
-	res, err := Client.GetUsers(accountID)
+	res, err := Client.ListUsers(accountID)
 	if err != nil {
 		return "", err
 	}
 
-	for _, userInfo := range res.Resources {
+	for _, userInfo := range res {
 		if strings.Compare(userInfo.Email, user) == 0 {
 			return userInfo.IamID, nil
 		}

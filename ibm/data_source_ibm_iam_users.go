@@ -101,14 +101,14 @@ func dataSourceIBMIAMUsersRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	res, err := client.GetUsers(accountID)
+	res, err := client.ListUsers(accountID)
 	if err != nil {
 		return err
 	}
 
 	profileList := make([]interface{}, 0)
 
-	for _, userInfo := range res.Resources {
+	for _, userInfo := range res {
 		if userInfo.State == "ACTIVE" {
 
 			user := map[string]interface{}{

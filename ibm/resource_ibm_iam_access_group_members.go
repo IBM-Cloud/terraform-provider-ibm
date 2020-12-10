@@ -137,7 +137,7 @@ func resourceIBMIAMAccessGroupMembersRead(d *schema.ResourceData, meta interface
 		return err
 	}
 	client := userManagement.UserInvite()
-	res, err := client.GetUsers(accountID)
+	res, err := client.ListUsers(accountID)
 	if err != nil {
 		return err
 	}
@@ -156,7 +156,7 @@ func resourceIBMIAMAccessGroupMembersRead(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	d.Set("members", flattenAccessGroupMembers(members, res.Resources, serviceIDs))
+	d.Set("members", flattenAccessGroupMembers(members, res, serviceIDs))
 
 	return nil
 }
