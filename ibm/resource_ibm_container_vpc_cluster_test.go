@@ -44,6 +44,22 @@ func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
 						"ibm_container_vpc_cluster.cluster", "worker_count", workerCount),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "flavor", flavor),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "worker_labels.%", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMContainerVpcCluster_update(zone, vpc, subnet, clusterName, flavor, workerCount),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "worker_count", workerCount),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "flavor", flavor),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "worker_labels.%", "3"),
 				),
 			},
 			{
@@ -56,6 +72,8 @@ func TestAccIBMContainerVpcCluster_basic(t *testing.T) {
 						"ibm_container_vpc_cluster.clustergen2", "worker_count", workerCount),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.clustergen2", "flavor", flavorGen2),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "worker_labels.%", "2"),
 				),
 			},
 			{
@@ -281,7 +299,65 @@ resource "ibm_container_vpc_cluster" "cluster" {
   }
 }
 `, zone, vpc, subnet, clusterName, flavor, workerCount)
+}
 
+func testAccCheckIBMContainerVpcCluster_update(zone, vpc, subnet, clusterName, flavor, workerCount string) string {
+	return fmt.Sprintf(`
+provider "ibm" {
+  generation = 1
+}
+data "ibm_resource_group" "resource_group" {
+  is_default = "true"
+}
+
+locals {
+  ZONE1 = "%s-1"
+}
+
+resource "ibm_is_vpc" "vpc1" {
+  name = "%s"
+}
+
+resource "ibm_is_subnet" "subnet1" {
+  name                     = "%s"
+  vpc                      = "${ibm_is_vpc.vpc1.id}"
+  zone                     = "${local.ZONE1}"
+  total_ipv4_address_count = 256
+}
+
+resource "ibm_resource_instance" "kms_instance1" {
+  name     = "test_kms"
+  service  = "kms"
+  plan     = "tiered-pricing"
+  location = "us-south"
+}
+
+resource "ibm_kms_key" "test" {
+  instance_id  = "${ibm_resource_instance.kms_instance1.id}"
+  key_name     = "test_root_key"
+  standard_key = false
+  force_delete = true
+}
+
+resource "ibm_container_vpc_cluster" "cluster" {
+  name              = "%s"
+  vpc_id            = "${ibm_is_vpc.vpc1.id}"
+  flavor            = "%s"
+  worker_count      = "%s"
+  wait_till         = "OneWorkerNodeReady"
+  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+  zones {
+	subnet_id = "${ibm_is_subnet.subnet1.id}"
+	name      = "${local.ZONE1}"
+  }
+
+  worker_labels = {
+	"test"  = "test-default-pool"
+	"test1" = "test-default-pool1"
+	"test2" = "test-default-pool2"
+  }
+}
+`, zone, vpc, subnet, clusterName, flavor, workerCount)
 }
 
 func testAccCheckIBMContainerVpcCluster_KmsEnable(clusterName, KmsInstance, rootKey string) string {
@@ -450,6 +526,12 @@ resource "ibm_container_vpc_cluster" "clustergen2" {
 		 subnet_id = "${ibm_is_subnet.subnet1.id}"
 		 name      = "${local.ZONE1}"
 	  }
+
+	worker_labels = {
+	"test"  = "test-default-pool"
+	"test1" = "test-default-pool1"
+	"test2" = "test-default-pool2"
+	}
 	
   }`, zone, vpc, subnet, clusterName, flavor, workerCount)
 
