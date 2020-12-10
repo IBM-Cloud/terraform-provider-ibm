@@ -9,10 +9,9 @@ import (
 )
 
 const (
-	isvpnGateways               = "vpn_gateways"
-	isVPNGatewayResourceGroupID = "resource_group_id"
-	isVPNGatewayResourceType    = "resource_type"
-	isVPNGatewayCrn             = "crn"
+	isvpnGateways            = "vpn_gateways"
+	isVPNGatewayResourceType = "resource_type"
+	isVPNGatewayCrn          = "crn"
 )
 
 func dataSourceIBMISVPNGateways() *schema.Resource {
@@ -20,17 +19,6 @@ func dataSourceIBMISVPNGateways() *schema.Resource {
 		Read: dataSourceIBMVPNGatewaysRead,
 
 		Schema: map[string]*schema.Schema{
-
-			isVPNGatewayResourceGroupID: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "resource group identifiers ",
-			},
-			isVPNGatewayMode: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Filters the collection to VPN gateways with the specified mode(policy/route) ",
-			},
 
 			isvpnGateways: {
 				Type:        schema.TypeList,
@@ -80,12 +68,6 @@ func dataSourceIBMISVPNGateways() *schema.Resource {
 							},
 						},
 
-						isVPNGatewayResourceGroup: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The resource group ID for this VPN gateway",
-						},
-
 						isVPNGatewayResourceType: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -103,6 +85,16 @@ func dataSourceIBMISVPNGateways() *schema.Resource {
 							Computed:    true,
 							Description: "VPNGateway subnet info",
 						},
+						isVPNGatewayResourceGroup: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "resource group identifiers ",
+						},
+						isVPNGatewayMode: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: " VPN gateway mode(policy/route) ",
+						},
 					},
 				},
 			},
@@ -118,13 +110,6 @@ func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	listvpnGWOptions := sess.NewListVPNGatewaysOptions()
-
-	if resourcegroupid, ok := d.GetOk(isVPNGatewayResourceGroupID); ok {
-		listvpnGWOptions.SetResourceGroupID(resourcegroupid.(string))
-	}
-	if gwmode, ok := d.GetOk(isVPNGatewayMode); ok {
-		listvpnGWOptions.SetMode(gwmode.(string))
-	}
 
 	start := ""
 	allrecs := []vpcv1.VPNGatewayIntf{}

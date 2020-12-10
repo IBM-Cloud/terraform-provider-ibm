@@ -245,6 +245,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_volume":                          dataSourceIBMISVolume(),
 			"ibm_is_vpc":                             dataSourceIBMISVPC(),
 			"ibm_is_vpn_gateways":                    dataSourceIBMISVPNGateways(),
+			"ibm_is_vpn_gateway_connections":         dataSourceIBMISVPNGatewayConnections(),
 			"ibm_is_vpc_default_routing_table":       dataSourceIBMISVPCDefaultRoutingTable(),
 			"ibm_is_vpc_routing_tables":              dataSourceIBMISVPCRoutingTables(),
 			"ibm_is_vpc_routing_table_routes":        dataSourceIBMISVPCRoutingTableRoutes(),

@@ -163,25 +163,19 @@ func testAccCheckIBMISVPNGatewayConfig(vpc, subnet, name string) string {
 
 func testAccCheckIBMISVPNGatewayRouteConfig(vpc, subnet, name string) string {
 	return fmt.Sprintf(`
-	data "ibm_resource_group" "rg" {
-		name = "Proof of Concepts"
-	}
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
-		resource_group = data.ibm_resource_group.rg.id
 	}
 	resource "ibm_is_subnet" "testacc_subnet" {
 		name = "%s"
 		vpc = "${ibm_is_vpc.testacc_vpc.id}"
 		zone = "%s"
 		ipv4_cidr_block = "%s"
-		resource_group = data.ibm_resource_group.rg.id
 	}
 	resource "ibm_is_vpn_gateway" "testacc_vpnGateway" {
 	name = "%s"
 	subnet = "${ibm_is_subnet.testacc_subnet.id}"
 	mode = "route"
-	resource_group = data.ibm_resource_group.rg.id
 	}`, vpc, subnet, ISZoneName, ISCIDR, name)
 
 }

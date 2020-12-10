@@ -128,6 +128,10 @@ resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection" {
   preshared_key = "VPNDemoPassword"
 }
 
+data "ibm_is_vpn_gateway_connections" "VPNGatewayConnections" {
+  vpn_gateway = ibm_is_vpn_gateway.VPNGateway.id
+}  
+
 resource "ibm_is_vpn_gateway" "VPNGateway1" {
   name   = "vpn1"
   subnet = ibm_is_subnet.subnet1.id

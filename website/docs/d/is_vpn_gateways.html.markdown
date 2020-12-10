@@ -25,8 +25,7 @@ data "ibm_is_vpn_gateways" "ds_vpn_gateways" {
 
 The following arguments are supported:
 
-* `resource_group_id` - (Optional, string) resource group identifiers.
-* `mode` - (Optional, string) Filters the collection to VPN gateways with the specified mode(policy/route).
+
 
 ## Attribute Reference
 
@@ -39,9 +38,9 @@ The following attributes are exported:
 * `members` - Collection of VPN gateway members.
   * `address` - The public IP address assigned to the VPN gateway member.
   * `role` - The high availability role assigned to the VPN gateway member.
-  * `status` - The status of the VPN gateway member.
-* `resource_group` - The resource group ID for this VPN gateway
+  * `status` - The status of the VPN gateway member
 * `resource_type` - The resource type(vpn_gateway)
 * `status` - The status of the VPN gateway(available, deleting, failed, pending)
 * `subnet` - VPNGateway subnet info
-
+* `resource_group` - resource group identifiers(ID).
+* `mode` -  VPN gateway mode(policy/route)
