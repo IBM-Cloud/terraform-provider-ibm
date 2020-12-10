@@ -35,6 +35,9 @@ resource "ibm_container_cluster" "cluster" {
     crk_id = ibm_kms_key.test.key_id
     private_endpoint = false
   }
+  labels = {
+    "test" = "default-test-pool"
+  }
 }
 
 resource "ibm_container_worker_pool_zone_attachment" "default_zone" {
