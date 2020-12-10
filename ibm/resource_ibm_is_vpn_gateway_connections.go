@@ -13,6 +13,7 @@ import (
 
 const (
 	isVPNGatewayConnectionAdminStateup              = "admin_state_up"
+	isVPNGatewayConnectionAdminAuthenticationmode   = "authentication_mode"
 	isVPNGatewayConnectionName                      = "name"
 	isVPNGatewayConnectionVPNGateway                = "vpn_gateway"
 	isVPNGatewayConnectionPeerAddress               = "peer_address"
@@ -29,6 +30,10 @@ const (
 	isVPNGatewayConnectionDeleted                   = "done"
 	isVPNGatewayConnectionProvisioning              = "provisioning"
 	isVPNGatewayConnectionProvisioningDone          = "done"
+	isVPNGatewayConnectionMode                      = "mode"
+	isVPNGatewayConnectionTunnels                   = "tunnels"
+	isVPNGatewayConnectionResourcetype              = "resource_type"
+	isVPNGatewayConnectionCreatedat                 = "created_at"
 )
 
 func resourceIBMISVPNGatewayConnection() *schema.Resource {
@@ -100,21 +105,21 @@ func resourceIBMISVPNGatewayConnection() *schema.Resource {
 			isVPNGatewayConnectionDeadPeerDetectionAction: {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      "none",
+				Default:      "restart",
 				ValidateFunc: InvokeValidator("ibm_is_vpn_gateway_connection", isVPNGatewayConnectionDeadPeerDetectionAction),
 				Description:  "Action detection for dead peer detection action",
 			},
 			isVPNGatewayConnectionDeadPeerDetectionInterval: {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				Default:      30,
+				Default:      2,
 				ValidateFunc: InvokeValidator("ibm_is_vpn_gateway_connection", isVPNGatewayConnectionDeadPeerDetectionInterval),
 				Description:  "Interval for dead peer detection interval",
 			},
 			isVPNGatewayConnectionDeadPeerDetectionTimeout: {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				Default:      120,
+				Default:      10,
 				ValidateFunc: InvokeValidator("ibm_is_vpn_gateway_connection", isVPNGatewayConnectionDeadPeerDetectionTimeout),
 				Description:  "Timeout for dead peer detection",
 			},
@@ -142,6 +147,52 @@ func resourceIBMISVPNGatewayConnection() *schema.Resource {
 				Computed:    true,
 				Description: "The crn of the VPN Gateway resource",
 			},
+
+			isVPNGatewayConnectionAdminAuthenticationmode: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The authentication mode",
+			},
+
+			isVPNGatewayConnectionResourcetype: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource type",
+			},
+
+			isVPNGatewayConnectionCreatedat: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time that this VPN gateway connection was created",
+			},
+
+			isVPNGatewayConnectionMode: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The mode of the VPN gateway",
+			},
+
+			isVPNGatewayConnectionTunnels: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				MinItems:    0,
+				Description: "The VPN tunnel configuration for this VPN gateway connection (in static route mode)",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IP address of the VPN gateway member in which the tunnel resides",
+						},
+
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The status of the VPN Tunnel",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -165,21 +216,21 @@ func resourceIBMISVPNGatewayConnectionValidator() *ResourceValidator {
 			Identifier:                 isVPNGatewayConnectionDeadPeerDetectionAction,
 			ValidateFunctionIdentifier: ValidateAllowedStringValue,
 			Type:                       TypeString,
-			Required:                   true,
+			Optional:                   true,
 			AllowedValues:              action})
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isVPNGatewayConnectionDeadPeerDetectionInterval,
 			ValidateFunctionIdentifier: IntBetween,
 			Type:                       TypeInt,
-			MinValue:                   "15",
+			MinValue:                   "1",
 			MaxValue:                   "86399"})
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isVPNGatewayConnectionDeadPeerDetectionTimeout,
 			ValidateFunctionIdentifier: IntBetween,
 			Type:                       TypeInt,
-			MinValue:                   "15",
+			MinValue:                   "2",
 			MaxValue:                   "86399"})
 
 	ibmISVPNGatewayConnectionResourceValidator := ResourceValidator{ResourceName: "ibm_is_vpn_gateway_connection", Schema: validateSchema}
@@ -448,14 +499,51 @@ func vpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID string) 
 	d.Set(isVPNGatewayConnectionAdminStateup, *vpnGatewayConnection.AdminStateUp)
 	d.Set(isVPNGatewayConnectionPeerAddress, *vpnGatewayConnection.PeerAddress)
 	d.Set(isVPNGatewayConnectionPreSharedKey, *vpnGatewayConnection.Psk)
-	d.Set(isVPNGatewayConnectionLocalCIDRS, flattenStringList(vpnGatewayConnection.LocalCIDRs))
-	d.Set(isVPNGatewayConnectionPeerCIDRS, flattenStringList(vpnGatewayConnection.PeerCIDRs))
+
+	if vpnGatewayConnection.LocalCIDRs != nil {
+		d.Set(isVPNGatewayConnectionLocalCIDRS, flattenStringList(vpnGatewayConnection.LocalCIDRs))
+	}
+	if vpnGatewayConnection.PeerCIDRs != nil {
+		d.Set(isVPNGatewayConnectionPeerCIDRS, flattenStringList(vpnGatewayConnection.PeerCIDRs))
+	}
 	if vpnGatewayConnection.IkePolicy != nil {
 		d.Set(isVPNGatewayConnectionIKEPolicy, *vpnGatewayConnection.IkePolicy.ID)
 	}
 	if vpnGatewayConnection.IpsecPolicy != nil {
 		d.Set(isVPNGatewayConnectionIPSECPolicy, *vpnGatewayConnection.IpsecPolicy.ID)
 	}
+	if vpnGatewayConnection.AuthenticationMode != nil {
+		d.Set(isVPNGatewayConnectionAdminAuthenticationmode, *vpnGatewayConnection.AuthenticationMode)
+	}
+	if vpnGatewayConnection.Status != nil {
+		d.Set(isVPNGatewayConnectionStatus, *vpnGatewayConnection.Status)
+	}
+	if vpnGatewayConnection.ResourceType != nil {
+		d.Set(isVPNGatewayConnectionResourcetype, *vpnGatewayConnection.ResourceType)
+	}
+	if vpnGatewayConnection.CreatedAt != nil {
+		d.Set(isVPNGatewayConnectionCreatedat, vpnGatewayConnection.CreatedAt.String())
+	}
+
+	if vpnGatewayConnection.Mode != nil {
+		d.Set(isVPNGatewayConnectionMode, *vpnGatewayConnection.Mode)
+	}
+
+	if vpnGatewayConnection.Tunnels != nil {
+		vpcTunnelsList := make([]map[string]interface{}, 0)
+		for _, vpcTunnel := range vpnGatewayConnection.Tunnels {
+			currentTunnel := map[string]interface{}{}
+			if vpcTunnel.PublicIP != nil {
+				currentTunnel["address"] = *vpcTunnel.PublicIP.Address
+			}
+			if vpcTunnel.Status != nil {
+				currentTunnel["status"] = *vpcTunnel.Status
+			}
+			vpcTunnelsList = append(vpcTunnelsList, currentTunnel)
+		}
+		d.Set(isVPNGatewayConnectionTunnels, vpcTunnelsList)
+	}
+
 	d.Set(isVPNGatewayConnectionDeadPeerDetectionAction, *vpnGatewayConnection.DeadPeerDetection.Action)
 	d.Set(isVPNGatewayConnectionDeadPeerDetectionInterval, *vpnGatewayConnection.DeadPeerDetection.Interval)
 	d.Set(isVPNGatewayConnectionDeadPeerDetectionTimeout, *vpnGatewayConnection.DeadPeerDetection.Timeout)
@@ -612,9 +700,13 @@ func vpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 		action := d.Get(isVPNGatewayConnectionDeadPeerDetectionAction).(string)
 		interval := int64(d.Get(isVPNGatewayConnectionDeadPeerDetectionInterval).(int))
 		timeout := int64(d.Get(isVPNGatewayConnectionDeadPeerDetectionTimeout).(int))
-		vpnGatewayConnectionPatchModel.DeadPeerDetection.Action = &action
-		vpnGatewayConnectionPatchModel.DeadPeerDetection.Interval = &interval
-		vpnGatewayConnectionPatchModel.DeadPeerDetection.Timeout = &timeout
+
+		// Construct an instance of the VPNGatewayConnectionDpdPrototype model
+		vpnGatewayConnectionDpdPrototypeModel := new(vpcv1.VPNGatewayConnectionDpdPrototype)
+		vpnGatewayConnectionDpdPrototypeModel.Action = &action
+		vpnGatewayConnectionDpdPrototypeModel.Interval = &interval
+		vpnGatewayConnectionDpdPrototypeModel.Timeout = &timeout
+		vpnGatewayConnectionPatchModel.DeadPeerDetection = vpnGatewayConnectionDpdPrototypeModel
 		hasChanged = true
 	}
 
