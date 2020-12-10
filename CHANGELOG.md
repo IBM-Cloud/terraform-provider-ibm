@@ -1,3 +1,33 @@
+## 1.17.0 (Dec10, 2020)
+
+FEATURES:
+
+* Support CIS WAF resources `ibm_cis_range_app`, `ibm_cis_waf_package`, `ibm_cis_waf_group`, `ibm_cis_waf_rule`
+
+* Support CIS WAF datasources `ibm_cis_range_apps`, `ibm_cis_waf_packages`, `ibm_cis_waf_groups`, `ibm_cis_waf_rules`
+
+ENHANCEMENTS:
+
+* resource: Support `force_delete` argument for ibm_cos_bucket ([#2017](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2017)) 
+
+* resource: Move `bgp_base_cidr` as optiona argument ([#2087](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2087)) 
+
+* resource: Support `expire_rule` argument for ibm_cos_bucket ([#1590](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1590))
+
+* resource: Add validate function for resoure_instance_id argument to ibm_cos_bucket ([#2103](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2103))
+
+* resource: Support Route and Profile based VPN gateways ([#2094](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2094))
+
+
+BUGFIXES:
+
+* Fix users not found when adding to access group ([#2034](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2034))
+
+* Set the `instance_id` in ibm_kms_key ([#2106](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2106))
+
+* Fix multiple cis_domain leads into inconsistency ([#2086](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2086))
+
+
 ## 1.16.1 (Dec02, 2020)
 
 BUGFIXES:
