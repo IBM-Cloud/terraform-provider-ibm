@@ -30,7 +30,7 @@ func TestAccIBMContainerWorkerPool_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "size_per_zone", "1"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "labels.%", "3"),
+						"ibm_container_worker_pool.test_pool", "labels.%", "2"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "state", "active"),
 					resource.TestCheckResourceAttr(
@@ -169,8 +169,6 @@ resource "ibm_container_worker_pool" "test_pool" {
     "test1" = "test-pool1"
   }
 }
-
-		
 		`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeVersion, csRegion, workerPoolName, machineType, csRegion)
 }
 
@@ -207,10 +205,9 @@ resource "ibm_container_worker_pool" "test_pool" {
   labels = {
     "test"  = "test-pool"
     "test1" = "test-pool1"
+    "test2" = "test-pool2"
   }
 }
-
-		
 		`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeVersion, csRegion, workerPoolName, machineType, csRegion)
 }
 

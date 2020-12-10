@@ -42,6 +42,8 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 						"ibm_container_cluster.testacc_cluster", "worker_pools.#", "1"),
 					resource.TestCheckResourceAttrSet(
 						"ibm_container_cluster.testacc_cluster", "resource_group_id"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "labels.%", "2"),
 				),
 			},
 			{
@@ -65,6 +67,8 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 						"ibm_container_cluster.testacc_cluster", "worker_pools.#", "1"),
 					resource.TestCheckResourceAttrSet(
 						"ibm_container_cluster.testacc_cluster", "resource_group_id"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "labels.%", "3"),
 				),
 			},
 		},
@@ -435,7 +439,13 @@ resource "ibm_container_cluster" "testacc_cluster" {
   private_vlan_id = "%s"
   no_subnet       = true
   region          = "%s"
-}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeVersion, machineType, publicVlanID, privateVlanID, csRegion)
+
+  labels = {
+    "test"  = "test-default-pool"
+    "test1" = "test-default-pool1"
+  }
+}	
+`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeVersion, machineType, publicVlanID, privateVlanID, csRegion)
 }
 
 func testAccCheckIBMContainerClusterKmsEnable(clusterName, kmsInstanceName, rootKeyName string) string {
@@ -628,7 +638,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
 
 func testAccCheckIBMContainerClusterUpdate(clusterName string) string {
 	return fmt.Sprintf(`
-
 data "ibm_org" "org" {
   org = "%s"
 }
@@ -667,7 +676,14 @@ resource "ibm_container_cluster" "testacc_cluster" {
   no_subnet          = true
   update_all_workers = true
   region             = "%s"
-}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeUpdateVersion, machineType, publicVlanID, privateVlanID, csRegion)
+
+  labels = {
+    "test"  = "test-default-pool"
+    "test1" = "test--default-pool1"
+    "test2" = "test--default-pool2"
+  }
+} 
+`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeUpdateVersion, machineType, publicVlanID, privateVlanID, csRegion)
 }
 
 func testAccCheckIBMContainerClusterPrivateAndPublicSubnet(clusterName string) string {
