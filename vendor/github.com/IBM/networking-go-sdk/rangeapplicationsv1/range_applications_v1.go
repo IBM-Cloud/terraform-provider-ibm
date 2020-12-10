@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.20.0-debb9f29-20201203-202043
+ */
+ 
+
 // Package rangeapplicationsv1 : Operations and models for the RangeApplicationsV1 service
 package rangeapplicationsv1
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/go-sdk-core/v4/core"
-	"github.com/go-openapi/strfmt"
 	common "github.com/IBM/networking-go-sdk/common"
+	"github.com/go-openapi/strfmt"
+	"net/http"
 	"reflect"
+	"time"
 )
 
 // RangeApplicationsV1 : Range Applications
@@ -120,24 +128,79 @@ func NewRangeApplicationsV1(options *RangeApplicationsV1Options) (service *Range
 	return
 }
 
+// GetServiceURLForRegion returns the service URL to be used for the specified region
+func GetServiceURLForRegion(region string) (string, error) {
+	return "", fmt.Errorf("service does not support regional URLs")
+}
+
+// Clone makes a copy of "rangeApplications" suitable for processing requests.
+func (rangeApplications *RangeApplicationsV1) Clone() *RangeApplicationsV1 {
+	if core.IsNil(rangeApplications) {
+		return nil
+	}
+	clone := *rangeApplications
+	clone.Service = rangeApplications.Service.Clone()
+	return &clone
+}
+
 // SetServiceURL sets the service URL
 func (rangeApplications *RangeApplicationsV1) SetServiceURL(url string) error {
 	return rangeApplications.Service.SetServiceURL(url)
 }
 
-// ListRangeApps : Get a list of currently existing Range Applications inside a zone
+// GetServiceURL returns the service URL
+func (rangeApplications *RangeApplicationsV1) GetServiceURL() string {
+	return rangeApplications.Service.GetServiceURL()
+}
+
+// SetDefaultHeaders sets HTTP headers to be sent in every request
+func (rangeApplications *RangeApplicationsV1) SetDefaultHeaders(headers http.Header) {
+	rangeApplications.Service.SetDefaultHeaders(headers)
+}
+
+// SetEnableGzipCompression sets the service's EnableGzipCompression field
+func (rangeApplications *RangeApplicationsV1) SetEnableGzipCompression(enableGzip bool) {
+	rangeApplications.Service.SetEnableGzipCompression(enableGzip)
+}
+
+// GetEnableGzipCompression returns the service's EnableGzipCompression field
+func (rangeApplications *RangeApplicationsV1) GetEnableGzipCompression() bool {
+	return rangeApplications.Service.GetEnableGzipCompression()
+}
+
+// EnableRetries enables automatic retries for requests invoked for this service instance.
+// If either parameter is specified as 0, then a default value is used instead.
+func (rangeApplications *RangeApplicationsV1) EnableRetries(maxRetries int, maxRetryInterval time.Duration) {
+	rangeApplications.Service.EnableRetries(maxRetries, maxRetryInterval)
+}
+
+// DisableRetries disables automatic retries for requests invoked for this service instance.
+func (rangeApplications *RangeApplicationsV1) DisableRetries() {
+	rangeApplications.Service.DisableRetries()
+}
+
+// ListRangeApps : List range applications
 // Get a list of currently existing Range Applications inside a zone.
 func (rangeApplications *RangeApplicationsV1) ListRangeApps(listRangeAppsOptions *ListRangeAppsOptions) (result *RangeApplications, response *core.DetailedResponse, err error) {
+	return rangeApplications.ListRangeAppsWithContext(context.Background(), listRangeAppsOptions)
+}
+
+// ListRangeAppsWithContext is an alternate form of the ListRangeApps method which supports a Context parameter
+func (rangeApplications *RangeApplicationsV1) ListRangeAppsWithContext(ctx context.Context, listRangeAppsOptions *ListRangeAppsOptions) (result *RangeApplications, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listRangeAppsOptions, "listRangeAppsOptions")
 	if err != nil {
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "range/apps"}
-	pathParameters := []string{*rangeApplications.Crn, *rangeApplications.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *rangeApplications.Crn,
+		"zone_identifier": *rangeApplications.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(rangeApplications.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = rangeApplications.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(rangeApplications.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/range/apps`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -184,9 +247,14 @@ func (rangeApplications *RangeApplicationsV1) ListRangeApps(listRangeAppsOptions
 	return
 }
 
-// CreateRangeApp : Create a Range Applications inside a zone
+// CreateRangeApp : Create Range Application
 // Create a Range Applications inside a zone.
 func (rangeApplications *RangeApplicationsV1) CreateRangeApp(createRangeAppOptions *CreateRangeAppOptions) (result *RangeApplicationResp, response *core.DetailedResponse, err error) {
+	return rangeApplications.CreateRangeAppWithContext(context.Background(), createRangeAppOptions)
+}
+
+// CreateRangeAppWithContext is an alternate form of the CreateRangeApp method which supports a Context parameter
+func (rangeApplications *RangeApplicationsV1) CreateRangeAppWithContext(ctx context.Context, createRangeAppOptions *CreateRangeAppOptions) (result *RangeApplicationResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(createRangeAppOptions, "createRangeAppOptions cannot be nil")
 	if err != nil {
 		return
@@ -196,11 +264,15 @@ func (rangeApplications *RangeApplicationsV1) CreateRangeApp(createRangeAppOptio
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "range/apps"}
-	pathParameters := []string{*rangeApplications.Crn, *rangeApplications.ZoneIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *rangeApplications.Crn,
+		"zone_identifier": *rangeApplications.ZoneIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.POST)
-	_, err = builder.ConstructHTTPURL(rangeApplications.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = rangeApplications.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(rangeApplications.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/range/apps`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -271,9 +343,14 @@ func (rangeApplications *RangeApplicationsV1) CreateRangeApp(createRangeAppOptio
 	return
 }
 
-// GetRangeApp : Get the application configuration of a specific application inside a zone
+// GetRangeApp : Get range application a zone
 // Get the application configuration of a specific application inside a zone.
 func (rangeApplications *RangeApplicationsV1) GetRangeApp(getRangeAppOptions *GetRangeAppOptions) (result *RangeApplicationResp, response *core.DetailedResponse, err error) {
+	return rangeApplications.GetRangeAppWithContext(context.Background(), getRangeAppOptions)
+}
+
+// GetRangeAppWithContext is an alternate form of the GetRangeApp method which supports a Context parameter
+func (rangeApplications *RangeApplicationsV1) GetRangeAppWithContext(ctx context.Context, getRangeAppOptions *GetRangeAppOptions) (result *RangeApplicationResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getRangeAppOptions, "getRangeAppOptions cannot be nil")
 	if err != nil {
 		return
@@ -283,11 +360,16 @@ func (rangeApplications *RangeApplicationsV1) GetRangeApp(getRangeAppOptions *Ge
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "range/apps"}
-	pathParameters := []string{*rangeApplications.Crn, *rangeApplications.ZoneIdentifier, *getRangeAppOptions.AppIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *rangeApplications.Crn,
+		"zone_identifier": *rangeApplications.ZoneIdentifier,
+		"app_identifier": *getRangeAppOptions.AppIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(rangeApplications.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = rangeApplications.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(rangeApplications.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/range/apps/{app_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -321,9 +403,14 @@ func (rangeApplications *RangeApplicationsV1) GetRangeApp(getRangeAppOptions *Ge
 	return
 }
 
-// UpdateRangeApp : Update a specific range application
+// UpdateRangeApp : Update range application
 // Update a Range Application inside a zone.
 func (rangeApplications *RangeApplicationsV1) UpdateRangeApp(updateRangeAppOptions *UpdateRangeAppOptions) (result *RangeApplicationResp, response *core.DetailedResponse, err error) {
+	return rangeApplications.UpdateRangeAppWithContext(context.Background(), updateRangeAppOptions)
+}
+
+// UpdateRangeAppWithContext is an alternate form of the UpdateRangeApp method which supports a Context parameter
+func (rangeApplications *RangeApplicationsV1) UpdateRangeAppWithContext(ctx context.Context, updateRangeAppOptions *UpdateRangeAppOptions) (result *RangeApplicationResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateRangeAppOptions, "updateRangeAppOptions cannot be nil")
 	if err != nil {
 		return
@@ -333,11 +420,16 @@ func (rangeApplications *RangeApplicationsV1) UpdateRangeApp(updateRangeAppOptio
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "range/apps"}
-	pathParameters := []string{*rangeApplications.Crn, *rangeApplications.ZoneIdentifier, *updateRangeAppOptions.AppIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *rangeApplications.Crn,
+		"zone_identifier": *rangeApplications.ZoneIdentifier,
+		"app_identifier": *updateRangeAppOptions.AppIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PUT)
-	_, err = builder.ConstructHTTPURL(rangeApplications.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = rangeApplications.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(rangeApplications.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/range/apps/{app_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -408,9 +500,14 @@ func (rangeApplications *RangeApplicationsV1) UpdateRangeApp(updateRangeAppOptio
 	return
 }
 
-// DeleteRangeApp : Delete the application configuration
+// DeleteRangeApp : Delete range application
 // Delete a specific application configuration.
 func (rangeApplications *RangeApplicationsV1) DeleteRangeApp(deleteRangeAppOptions *DeleteRangeAppOptions) (result *RangeApplicationResp, response *core.DetailedResponse, err error) {
+	return rangeApplications.DeleteRangeAppWithContext(context.Background(), deleteRangeAppOptions)
+}
+
+// DeleteRangeAppWithContext is an alternate form of the DeleteRangeApp method which supports a Context parameter
+func (rangeApplications *RangeApplicationsV1) DeleteRangeAppWithContext(ctx context.Context, deleteRangeAppOptions *DeleteRangeAppOptions) (result *RangeApplicationResp, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteRangeAppOptions, "deleteRangeAppOptions cannot be nil")
 	if err != nil {
 		return
@@ -420,11 +517,16 @@ func (rangeApplications *RangeApplicationsV1) DeleteRangeApp(deleteRangeAppOptio
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "range/apps"}
-	pathParameters := []string{*rangeApplications.Crn, *rangeApplications.ZoneIdentifier, *deleteRangeAppOptions.AppIdentifier}
+	pathParamsMap := map[string]string{
+		"crn": *rangeApplications.Crn,
+		"zone_identifier": *rangeApplications.ZoneIdentifier,
+		"app_identifier": *deleteRangeAppOptions.AppIdentifier,
+	}
 
 	builder := core.NewRequestBuilder(core.DELETE)
-	_, err = builder.ConstructHTTPURL(rangeApplications.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = rangeApplications.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(rangeApplications.Service.Options.URL, `/v1/{crn}/zones/{zone_identifier}/range/apps/{app_identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -603,7 +705,7 @@ func (options *CreateRangeAppOptions) SetHeaders(param map[string]string) *Creat
 // DeleteRangeAppOptions : The DeleteRangeApp options.
 type DeleteRangeAppOptions struct {
 	// application identifier.
-	AppIdentifier *string `json:"app_identifier" validate:"required"`
+	AppIdentifier *string `json:"app_identifier" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -631,7 +733,7 @@ func (options *DeleteRangeAppOptions) SetHeaders(param map[string]string) *Delet
 // GetRangeAppOptions : The GetRangeApp options.
 type GetRangeAppOptions struct {
 	// application identifier.
-	AppIdentifier *string `json:"app_identifier" validate:"required"`
+	AppIdentifier *string `json:"app_identifier" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -892,7 +994,7 @@ func UnmarshalRangeApplicationObjectEdgeIps(m map[string]json.RawMessage, result
 // UpdateRangeAppOptions : The UpdateRangeApp options.
 type UpdateRangeAppOptions struct {
 	// application identifier.
-	AppIdentifier *string `json:"app_identifier" validate:"required"`
+	AppIdentifier *string `json:"app_identifier" validate:"required,ne="`
 
 	// Defines the protocol and port for this application.
 	Protocol *string `json:"protocol" validate:"required"`

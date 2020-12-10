@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
@@ -308,12 +309,13 @@ func getIBMUniqueId(accountID, userEmail string, meta interface{}) (string, erro
 		return "", err
 	}
 	client := userManagement.UserInvite()
-	res, err := client.GetUsers(accountID)
+	res, err := client.ListUsers(accountID)
 	if err != nil {
 		return "", err
 	}
-	for _, userInfo := range res.Resources {
-		if userInfo.Email == userEmail {
+	for _, userInfo := range res {
+		//handling case-sensitivity in userEmail
+		if strings.ToLower(userInfo.Email) == strings.ToLower(userEmail) {
 			return userInfo.IamID, nil
 		}
 	}

@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.20.0-debb9f29-20201203-202043
+ */
+ 
+
 // Package wafrulegroupsapiv1 : Operations and models for the WafRuleGroupsApiV1 service
 package wafrulegroupsapiv1
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/go-sdk-core/v4/core"
 	common "github.com/IBM/networking-go-sdk/common"
+	"net/http"
 	"reflect"
+	"time"
 )
 
 // WafRuleGroupsApiV1 : This document describes CIS WAF Rule Groups API.
@@ -119,14 +127,65 @@ func NewWafRuleGroupsApiV1(options *WafRuleGroupsApiV1Options) (service *WafRule
 	return
 }
 
+// GetServiceURLForRegion returns the service URL to be used for the specified region
+func GetServiceURLForRegion(region string) (string, error) {
+	return "", fmt.Errorf("service does not support regional URLs")
+}
+
+// Clone makes a copy of "wafRuleGroupsApi" suitable for processing requests.
+func (wafRuleGroupsApi *WafRuleGroupsApiV1) Clone() *WafRuleGroupsApiV1 {
+	if core.IsNil(wafRuleGroupsApi) {
+		return nil
+	}
+	clone := *wafRuleGroupsApi
+	clone.Service = wafRuleGroupsApi.Service.Clone()
+	return &clone
+}
+
 // SetServiceURL sets the service URL
 func (wafRuleGroupsApi *WafRuleGroupsApiV1) SetServiceURL(url string) error {
 	return wafRuleGroupsApi.Service.SetServiceURL(url)
 }
 
-// ListWafRuleGroups : List all WAF rule groups contained within a package
+// GetServiceURL returns the service URL
+func (wafRuleGroupsApi *WafRuleGroupsApiV1) GetServiceURL() string {
+	return wafRuleGroupsApi.Service.GetServiceURL()
+}
+
+// SetDefaultHeaders sets HTTP headers to be sent in every request
+func (wafRuleGroupsApi *WafRuleGroupsApiV1) SetDefaultHeaders(headers http.Header) {
+	wafRuleGroupsApi.Service.SetDefaultHeaders(headers)
+}
+
+// SetEnableGzipCompression sets the service's EnableGzipCompression field
+func (wafRuleGroupsApi *WafRuleGroupsApiV1) SetEnableGzipCompression(enableGzip bool) {
+	wafRuleGroupsApi.Service.SetEnableGzipCompression(enableGzip)
+}
+
+// GetEnableGzipCompression returns the service's EnableGzipCompression field
+func (wafRuleGroupsApi *WafRuleGroupsApiV1) GetEnableGzipCompression() bool {
+	return wafRuleGroupsApi.Service.GetEnableGzipCompression()
+}
+
+// EnableRetries enables automatic retries for requests invoked for this service instance.
+// If either parameter is specified as 0, then a default value is used instead.
+func (wafRuleGroupsApi *WafRuleGroupsApiV1) EnableRetries(maxRetries int, maxRetryInterval time.Duration) {
+	wafRuleGroupsApi.Service.EnableRetries(maxRetries, maxRetryInterval)
+}
+
+// DisableRetries disables automatic retries for requests invoked for this service instance.
+func (wafRuleGroupsApi *WafRuleGroupsApiV1) DisableRetries() {
+	wafRuleGroupsApi.Service.DisableRetries()
+}
+
+// ListWafRuleGroups : List all WAF rule groups
 // List all WAF rule groups contained within a package.
 func (wafRuleGroupsApi *WafRuleGroupsApiV1) ListWafRuleGroups(listWafRuleGroupsOptions *ListWafRuleGroupsOptions) (result *WafGroupsResponse, response *core.DetailedResponse, err error) {
+	return wafRuleGroupsApi.ListWafRuleGroupsWithContext(context.Background(), listWafRuleGroupsOptions)
+}
+
+// ListWafRuleGroupsWithContext is an alternate form of the ListWafRuleGroups method which supports a Context parameter
+func (wafRuleGroupsApi *WafRuleGroupsApiV1) ListWafRuleGroupsWithContext(ctx context.Context, listWafRuleGroupsOptions *ListWafRuleGroupsOptions) (result *WafGroupsResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(listWafRuleGroupsOptions, "listWafRuleGroupsOptions cannot be nil")
 	if err != nil {
 		return
@@ -136,11 +195,16 @@ func (wafRuleGroupsApi *WafRuleGroupsApiV1) ListWafRuleGroups(listWafRuleGroupsO
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/waf/packages", "groups"}
-	pathParameters := []string{*wafRuleGroupsApi.Crn, *wafRuleGroupsApi.ZoneID, *listWafRuleGroupsOptions.PkgID}
+	pathParamsMap := map[string]string{
+		"crn": *wafRuleGroupsApi.Crn,
+		"zone_id": *wafRuleGroupsApi.ZoneID,
+		"pkg_id": *listWafRuleGroupsOptions.PkgID,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(wafRuleGroupsApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = wafRuleGroupsApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(wafRuleGroupsApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/firewall/waf/packages/{pkg_id}/groups`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -199,9 +263,14 @@ func (wafRuleGroupsApi *WafRuleGroupsApiV1) ListWafRuleGroups(listWafRuleGroupsO
 	return
 }
 
-// GetWafRuleGroup : Get a single WAF rule group
+// GetWafRuleGroup : Get WAF rule group
 // Get a single WAF rule group.
 func (wafRuleGroupsApi *WafRuleGroupsApiV1) GetWafRuleGroup(getWafRuleGroupOptions *GetWafRuleGroupOptions) (result *WafGroupResponse, response *core.DetailedResponse, err error) {
+	return wafRuleGroupsApi.GetWafRuleGroupWithContext(context.Background(), getWafRuleGroupOptions)
+}
+
+// GetWafRuleGroupWithContext is an alternate form of the GetWafRuleGroup method which supports a Context parameter
+func (wafRuleGroupsApi *WafRuleGroupsApiV1) GetWafRuleGroupWithContext(ctx context.Context, getWafRuleGroupOptions *GetWafRuleGroupOptions) (result *WafGroupResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getWafRuleGroupOptions, "getWafRuleGroupOptions cannot be nil")
 	if err != nil {
 		return
@@ -211,11 +280,17 @@ func (wafRuleGroupsApi *WafRuleGroupsApiV1) GetWafRuleGroup(getWafRuleGroupOptio
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/waf/packages", "groups"}
-	pathParameters := []string{*wafRuleGroupsApi.Crn, *wafRuleGroupsApi.ZoneID, *getWafRuleGroupOptions.PkgID, *getWafRuleGroupOptions.GroupID}
+	pathParamsMap := map[string]string{
+		"crn": *wafRuleGroupsApi.Crn,
+		"zone_id": *wafRuleGroupsApi.ZoneID,
+		"pkg_id": *getWafRuleGroupOptions.PkgID,
+		"group_id": *getWafRuleGroupOptions.GroupID,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(wafRuleGroupsApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = wafRuleGroupsApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(wafRuleGroupsApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/firewall/waf/packages/{pkg_id}/groups/{group_id}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -249,9 +324,14 @@ func (wafRuleGroupsApi *WafRuleGroupsApiV1) GetWafRuleGroup(getWafRuleGroupOptio
 	return
 }
 
-// UpdateWafRuleGroup : Update the state of a WAF rule group
+// UpdateWafRuleGroup : Update WAF rule group
 // Update the state of a WAF rule group.
 func (wafRuleGroupsApi *WafRuleGroupsApiV1) UpdateWafRuleGroup(updateWafRuleGroupOptions *UpdateWafRuleGroupOptions) (result *WafGroupResponse, response *core.DetailedResponse, err error) {
+	return wafRuleGroupsApi.UpdateWafRuleGroupWithContext(context.Background(), updateWafRuleGroupOptions)
+}
+
+// UpdateWafRuleGroupWithContext is an alternate form of the UpdateWafRuleGroup method which supports a Context parameter
+func (wafRuleGroupsApi *WafRuleGroupsApiV1) UpdateWafRuleGroupWithContext(ctx context.Context, updateWafRuleGroupOptions *UpdateWafRuleGroupOptions) (result *WafGroupResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateWafRuleGroupOptions, "updateWafRuleGroupOptions cannot be nil")
 	if err != nil {
 		return
@@ -261,11 +341,17 @@ func (wafRuleGroupsApi *WafRuleGroupsApiV1) UpdateWafRuleGroup(updateWafRuleGrou
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/waf/packages", "groups"}
-	pathParameters := []string{*wafRuleGroupsApi.Crn, *wafRuleGroupsApi.ZoneID, *updateWafRuleGroupOptions.PkgID, *updateWafRuleGroupOptions.GroupID}
+	pathParamsMap := map[string]string{
+		"crn": *wafRuleGroupsApi.Crn,
+		"zone_id": *wafRuleGroupsApi.ZoneID,
+		"pkg_id": *updateWafRuleGroupOptions.PkgID,
+		"group_id": *updateWafRuleGroupOptions.GroupID,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(wafRuleGroupsApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = wafRuleGroupsApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(wafRuleGroupsApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/firewall/waf/packages/{pkg_id}/groups/{group_id}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -312,10 +398,10 @@ func (wafRuleGroupsApi *WafRuleGroupsApiV1) UpdateWafRuleGroup(updateWafRuleGrou
 // GetWafRuleGroupOptions : The GetWafRuleGroup options.
 type GetWafRuleGroupOptions struct {
 	// Package ID.
-	PkgID *string `json:"pkg_id" validate:"required"`
+	PkgID *string `json:"pkg_id" validate:"required,ne="`
 
 	// Group ID.
-	GroupID *string `json:"group_id" validate:"required"`
+	GroupID *string `json:"group_id" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -350,7 +436,7 @@ func (options *GetWafRuleGroupOptions) SetHeaders(param map[string]string) *GetW
 // ListWafRuleGroupsOptions : The ListWafRuleGroups options.
 type ListWafRuleGroupsOptions struct {
 	// Package ID.
-	PkgID *string `json:"pkg_id" validate:"required"`
+	PkgID *string `json:"pkg_id" validate:"required,ne="`
 
 	// Name of the firewall package.
 	Name *string `json:"name,omitempty"`
@@ -471,10 +557,10 @@ func (options *ListWafRuleGroupsOptions) SetHeaders(param map[string]string) *Li
 // UpdateWafRuleGroupOptions : The UpdateWafRuleGroup options.
 type UpdateWafRuleGroupOptions struct {
 	// Package ID.
-	PkgID *string `json:"pkg_id" validate:"required"`
+	PkgID *string `json:"pkg_id" validate:"required,ne="`
 
 	// Group ID.
-	GroupID *string `json:"group_id" validate:"required"`
+	GroupID *string `json:"group_id" validate:"required,ne="`
 
 	// Whether or not the rules contained within this group are configurable/usable.
 	Mode *string `json:"mode,omitempty"`

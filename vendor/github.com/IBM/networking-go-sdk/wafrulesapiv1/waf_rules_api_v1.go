@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
+/*
+ * IBM OpenAPI SDK Code Generator Version: 3.20.0-debb9f29-20201203-202043
+ */
+ 
+
 // Package wafrulesapiv1 : Operations and models for the WafRulesApiV1 service
 package wafrulesapiv1
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/go-sdk-core/v4/core"
 	common "github.com/IBM/networking-go-sdk/common"
+	"net/http"
 	"reflect"
+	"time"
 )
 
 // WafRulesApiV1 : This document describes CIS WAF Rules API.
@@ -119,14 +127,65 @@ func NewWafRulesApiV1(options *WafRulesApiV1Options) (service *WafRulesApiV1, er
 	return
 }
 
+// GetServiceURLForRegion returns the service URL to be used for the specified region
+func GetServiceURLForRegion(region string) (string, error) {
+	return "", fmt.Errorf("service does not support regional URLs")
+}
+
+// Clone makes a copy of "wafRulesApi" suitable for processing requests.
+func (wafRulesApi *WafRulesApiV1) Clone() *WafRulesApiV1 {
+	if core.IsNil(wafRulesApi) {
+		return nil
+	}
+	clone := *wafRulesApi
+	clone.Service = wafRulesApi.Service.Clone()
+	return &clone
+}
+
 // SetServiceURL sets the service URL
 func (wafRulesApi *WafRulesApiV1) SetServiceURL(url string) error {
 	return wafRulesApi.Service.SetServiceURL(url)
 }
 
+// GetServiceURL returns the service URL
+func (wafRulesApi *WafRulesApiV1) GetServiceURL() string {
+	return wafRulesApi.Service.GetServiceURL()
+}
+
+// SetDefaultHeaders sets HTTP headers to be sent in every request
+func (wafRulesApi *WafRulesApiV1) SetDefaultHeaders(headers http.Header) {
+	wafRulesApi.Service.SetDefaultHeaders(headers)
+}
+
+// SetEnableGzipCompression sets the service's EnableGzipCompression field
+func (wafRulesApi *WafRulesApiV1) SetEnableGzipCompression(enableGzip bool) {
+	wafRulesApi.Service.SetEnableGzipCompression(enableGzip)
+}
+
+// GetEnableGzipCompression returns the service's EnableGzipCompression field
+func (wafRulesApi *WafRulesApiV1) GetEnableGzipCompression() bool {
+	return wafRulesApi.Service.GetEnableGzipCompression()
+}
+
+// EnableRetries enables automatic retries for requests invoked for this service instance.
+// If either parameter is specified as 0, then a default value is used instead.
+func (wafRulesApi *WafRulesApiV1) EnableRetries(maxRetries int, maxRetryInterval time.Duration) {
+	wafRulesApi.Service.EnableRetries(maxRetries, maxRetryInterval)
+}
+
+// DisableRetries disables automatic retries for requests invoked for this service instance.
+func (wafRulesApi *WafRulesApiV1) DisableRetries() {
+	wafRulesApi.Service.DisableRetries()
+}
+
 // ListWafRules : List all WAF rules
 // List all Web Application Firewall (WAF) rules.
 func (wafRulesApi *WafRulesApiV1) ListWafRules(listWafRulesOptions *ListWafRulesOptions) (result *WafRulesResponse, response *core.DetailedResponse, err error) {
+	return wafRulesApi.ListWafRulesWithContext(context.Background(), listWafRulesOptions)
+}
+
+// ListWafRulesWithContext is an alternate form of the ListWafRules method which supports a Context parameter
+func (wafRulesApi *WafRulesApiV1) ListWafRulesWithContext(ctx context.Context, listWafRulesOptions *ListWafRulesOptions) (result *WafRulesResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(listWafRulesOptions, "listWafRulesOptions cannot be nil")
 	if err != nil {
 		return
@@ -136,11 +195,16 @@ func (wafRulesApi *WafRulesApiV1) ListWafRules(listWafRulesOptions *ListWafRules
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/waf/packages", "rules"}
-	pathParameters := []string{*wafRulesApi.Crn, *wafRulesApi.ZoneID, *listWafRulesOptions.PackageID}
+	pathParamsMap := map[string]string{
+		"crn": *wafRulesApi.Crn,
+		"zone_id": *wafRulesApi.ZoneID,
+		"package_id": *listWafRulesOptions.PackageID,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(wafRulesApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = wafRulesApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(wafRulesApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/firewall/waf/packages/{package_id}/rules`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -202,9 +266,14 @@ func (wafRulesApi *WafRulesApiV1) ListWafRules(listWafRulesOptions *ListWafRules
 	return
 }
 
-// GetWafRule : Get WAF Rule info
+// GetWafRule : Get WAF rule
 // Get individual information about a rule.
 func (wafRulesApi *WafRulesApiV1) GetWafRule(getWafRuleOptions *GetWafRuleOptions) (result *WafRuleResponse, response *core.DetailedResponse, err error) {
+	return wafRulesApi.GetWafRuleWithContext(context.Background(), getWafRuleOptions)
+}
+
+// GetWafRuleWithContext is an alternate form of the GetWafRule method which supports a Context parameter
+func (wafRulesApi *WafRulesApiV1) GetWafRuleWithContext(ctx context.Context, getWafRuleOptions *GetWafRuleOptions) (result *WafRuleResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getWafRuleOptions, "getWafRuleOptions cannot be nil")
 	if err != nil {
 		return
@@ -214,11 +283,17 @@ func (wafRulesApi *WafRulesApiV1) GetWafRule(getWafRuleOptions *GetWafRuleOption
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/waf/packages", "rules"}
-	pathParameters := []string{*wafRulesApi.Crn, *wafRulesApi.ZoneID, *getWafRuleOptions.PackageID, *getWafRuleOptions.Identifier}
+	pathParamsMap := map[string]string{
+		"crn": *wafRulesApi.Crn,
+		"zone_id": *wafRulesApi.ZoneID,
+		"package_id": *getWafRuleOptions.PackageID,
+		"identifier": *getWafRuleOptions.Identifier,
+	}
 
 	builder := core.NewRequestBuilder(core.GET)
-	_, err = builder.ConstructHTTPURL(wafRulesApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = wafRulesApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(wafRulesApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/firewall/waf/packages/{package_id}/rules/{identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -255,6 +330,11 @@ func (wafRulesApi *WafRulesApiV1) GetWafRule(getWafRuleOptions *GetWafRuleOption
 // UpdateWafRule : Update WAF rule
 // Update the action the rule will perform if triggered on the zone.
 func (wafRulesApi *WafRulesApiV1) UpdateWafRule(updateWafRuleOptions *UpdateWafRuleOptions) (result *WafRuleResponse, response *core.DetailedResponse, err error) {
+	return wafRulesApi.UpdateWafRuleWithContext(context.Background(), updateWafRuleOptions)
+}
+
+// UpdateWafRuleWithContext is an alternate form of the UpdateWafRule method which supports a Context parameter
+func (wafRulesApi *WafRulesApiV1) UpdateWafRuleWithContext(ctx context.Context, updateWafRuleOptions *UpdateWafRuleOptions) (result *WafRuleResponse, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateWafRuleOptions, "updateWafRuleOptions cannot be nil")
 	if err != nil {
 		return
@@ -264,11 +344,17 @@ func (wafRulesApi *WafRulesApiV1) UpdateWafRule(updateWafRuleOptions *UpdateWafR
 		return
 	}
 
-	pathSegments := []string{"v1", "zones", "firewall/waf/packages", "rules"}
-	pathParameters := []string{*wafRulesApi.Crn, *wafRulesApi.ZoneID, *updateWafRuleOptions.PackageID, *updateWafRuleOptions.Identifier}
+	pathParamsMap := map[string]string{
+		"crn": *wafRulesApi.Crn,
+		"zone_id": *wafRulesApi.ZoneID,
+		"package_id": *updateWafRuleOptions.PackageID,
+		"identifier": *updateWafRuleOptions.Identifier,
+	}
 
 	builder := core.NewRequestBuilder(core.PATCH)
-	_, err = builder.ConstructHTTPURL(wafRulesApi.Service.Options.URL, pathSegments, pathParameters)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = wafRulesApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(wafRulesApi.Service.Options.URL, `/v1/{crn}/zones/{zone_id}/firewall/waf/packages/{package_id}/rules/{identifier}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -318,10 +404,10 @@ func (wafRulesApi *WafRulesApiV1) UpdateWafRule(updateWafRuleOptions *UpdateWafR
 // GetWafRuleOptions : The GetWafRule options.
 type GetWafRuleOptions struct {
 	// package id.
-	PackageID *string `json:"package_id" validate:"required"`
+	PackageID *string `json:"package_id" validate:"required,ne="`
 
 	// rule identifier.
-	Identifier *string `json:"identifier" validate:"required"`
+	Identifier *string `json:"identifier" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -356,7 +442,7 @@ func (options *GetWafRuleOptions) SetHeaders(param map[string]string) *GetWafRul
 // ListWafRulesOptions : The ListWafRules options.
 type ListWafRulesOptions struct {
 	// package id.
-	PackageID *string `json:"package_id" validate:"required"`
+	PackageID *string `json:"package_id" validate:"required,ne="`
 
 	// The Rule Mode.
 	Mode *string `json:"mode,omitempty"`
@@ -472,10 +558,10 @@ func (options *ListWafRulesOptions) SetHeaders(param map[string]string) *ListWaf
 // UpdateWafRuleOptions : The UpdateWafRule options.
 type UpdateWafRuleOptions struct {
 	// package id.
-	PackageID *string `json:"package_id" validate:"required"`
+	PackageID *string `json:"package_id" validate:"required,ne="`
 
 	// rule identifier.
-	Identifier *string `json:"identifier" validate:"required"`
+	Identifier *string `json:"identifier" validate:"required,ne="`
 
 	// cis package.
 	Cis *WafRuleBodyCis `json:"cis,omitempty"`

@@ -16,7 +16,10 @@ const (
 
 // Users ...
 type Users interface {
+	//GetUsers returns users in the first page alone
 	GetUsers(ibmUniqueID string) (UsersList, error)
+	//ListUsers returns all the users in the account
+	ListUsers(ibmUniqueID string) ([]UserInfo, error)
 	GetUserProfile(ibmUniqueID string, userID string) (UserInfo, error)
 	InviteUsers(ibmUniqueID string, users UserInvite) (UserInvite, error)
 	UpdateUserProfile(ibmUniqueID string, userID string, user UserInfo) error
@@ -37,6 +40,7 @@ func NewUserInviteHandler(c *client.Client) Users {
 	}
 }
 
+//GetUsers returns users in the first page alone
 func (r *inviteUsersHandler) GetUsers(ibmUniqueID string) (UsersList, error) {
 	result := UsersList{}
 	URL := fmt.Sprintf(_UsersURL, ibmUniqueID)
@@ -51,6 +55,27 @@ func (r *inviteUsersHandler) GetUsers(ibmUniqueID string) (UsersList, error) {
 	}
 
 	return result, nil
+}
+
+//ListUsers returns all the users in the account
+func (r *inviteUsersHandler) ListUsers(ibmUniqueID string) ([]UserInfo, error) {
+	URL := fmt.Sprintf(_UsersURL, ibmUniqueID)
+
+	var users []UserInfo
+	_, err := r.client.GetPaginated(URL,
+		NewRCPaginatedResources(UserInfo{}),
+		func(resource interface{}) bool {
+			if user, ok := resource.(UserInfo); ok {
+				users = append(users, user)
+				return true
+			}
+			return false
+		},
+	)
+	if err != nil {
+		return users, err
+	}
+	return users, nil
 }
 
 func (r *inviteUsersHandler) GetUserProfile(ibmUniqueID string, userID string) (UserInfo, error) {
