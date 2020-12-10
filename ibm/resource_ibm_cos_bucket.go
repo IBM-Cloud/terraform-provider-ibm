@@ -61,10 +61,11 @@ func resourceIBMCOS() *schema.Resource {
 				Description: "COS Bucket name",
 			},
 			"resource_instance_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "resource instance ID",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				Description:  "resource instance ID",
+				ValidateFunc: validateRegexp(`^crn:.+:.+:.+:.+:.+:a\/[0-9a-f]{32}:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\:\:$`),
 			},
 			"crn": {
 				Type:        schema.TypeString,
