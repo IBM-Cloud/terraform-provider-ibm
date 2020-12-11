@@ -193,6 +193,34 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 
 func resourceIBMContainerVpcWorkerPoolUpdate(d *schema.ResourceData, meta interface{}) error {
 
+	if d.HasChange("labels") && !d.IsNewResource() {
+		clusterNameOrID := d.Get("cluster").(string)
+		workerPoolName := d.Get("worker_pool_name").(string)
+
+		labels := make(map[string]string)
+		if l, ok := d.GetOk("labels"); ok {
+			for k, v := range l.(map[string]interface{}) {
+				labels[k] = v.(string)
+			}
+		}
+
+		targetEnv, err := getVpcClusterTargetHeader(d, meta)
+		if err != nil {
+			return err
+		}
+		ClusterClient, err := meta.(ClientSession).ContainerAPI()
+		if err != nil {
+			return err
+		}
+		Env := v1.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
+
+		err = ClusterClient.WorkerPools().UpdateLabelsWorkerPool(clusterNameOrID, workerPoolName, labels, Env)
+		if err != nil {
+			return fmt.Errorf(
+				"Error updating the labels: %s", err)
+		}
+	}
+
 	if d.HasChange("worker_count") {
 		clusterNameOrID := d.Get("cluster").(string)
 		workerPoolName := d.Get("worker_pool_name").(string)

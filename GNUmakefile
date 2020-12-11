@@ -1,5 +1,5 @@
 TEST?=$$(go list ./... |grep -v 'vendor')
-GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
+GOFMT_FILES?=$$(find .  -path ./.direnv -prune -false -o -name '*.go' |grep -v vendor)
 COVER_TEST?=$$(go list ./... |grep -v 'vendor')
 TEST_TIMEOUT?=700m
 
