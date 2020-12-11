@@ -40,6 +40,7 @@ import (
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
+	"github.com/IBM/platform-services-go-sdk/atrackerv1"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -190,6 +191,7 @@ type ClientSession interface {
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	SchematicsAPI() (schematics.SchematicsServiceAPI, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
+	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
 	keyManagementAPI() (*kp.Client, error)
@@ -284,6 +286,9 @@ type clientSession struct {
 
 	userManagementErr error
 	userManagementAPI usermanagementv2.UserManagementAPI
+
+	atrackerClient    *atrackerv1.AtrackerV1
+	atrackerClientErr error
 
 	icdConfigErr  error
 	icdServiceAPI icdv4.ICDServiceAPI
@@ -492,6 +497,10 @@ func (sess clientSession) IAMAPI() (iamv1.IAMServiceAPI, error) {
 // UserManagementAPI provides User management APIs ...
 func (sess clientSession) UserManagementAPI() (usermanagementv2.UserManagementAPI, error) {
 	return sess.userManagementAPI, sess.userManagementErr
+}
+
+func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
+	return session.atrackerClient, session.atrackerClientErr
 }
 
 // IAMPAPAPI provides IAM PAP APIs ...
@@ -1093,6 +1102,25 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.userManagementErr = fmt.Errorf("Error occured while configuring user management service: %q", err)
 	}
 	session.userManagementAPI = userManagementAPI
+
+	// Construct an "options" struct for creating the service client.
+	atrackerClientURL, err := atrackerv1.GetServiceURLForRegion(c.Region)
+	if err != nil {
+		atrackerClientURL = atrackerv1.DefaultServiceURL
+	}
+	atrackerClientOptions := &atrackerv1.AtrackerV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_ATRACKER_API_ENDPOINT"}, atrackerClientURL),
+	}
+
+	// Construct the service client.
+	session.atrackerClient, err = atrackerv1.NewAtrackerV1(atrackerClientOptions)
+	// Enable retries for API calls
+	session.atrackerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	if err != nil {
+		session.atrackerClientErr = fmt.Errorf("Error occurred while configuring Activity Tracking API service: %q", err)
+	}
+
 	certManagementAPI, err := certificatemanager.New(sess.BluemixSession)
 	if err != nil {
 		session.certManagementErr = fmt.Errorf("Error occured while configuring Certificate manager service: %q", err)

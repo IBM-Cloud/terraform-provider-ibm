@@ -33,3 +33,7 @@ website/vendor
 !command/test-fixtures/**/*.tfstate
 !command/test-fixtures/**/.terraform/
 
+# Terraform generator
+.openapi-generator-ignore
+.openapi-generator/
+

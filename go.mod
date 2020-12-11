@@ -14,6 +14,7 @@ require (
 	github.com/IBM/ibm-cos-sdk-go-config v1.0.1
 	github.com/IBM/keyprotect-go-client v0.5.2
 	github.com/IBM/networking-go-sdk v0.12.1
+	github.com/IBM/platform-services-go-sdk v0.17.2
 	github.com/IBM/vpc-go-sdk v0.3.1
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.26.4
@@ -52,3 +53,5 @@ require (
 replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => ./common/github.com/softlayer/softlayer-go
 
 replace github.ibm.com/ibmcloud/namespace-go-sdk => ./common/github.ibm.com/ibmcloud/namespace-go-sdk
+
+replace github.com/IBM/platform-services-go-sdk => github.com/mkistler/platform-services-go-sdk v0.17.1-0.20201209210704-8e32ec97a3cd
