@@ -94,7 +94,6 @@ func dataSourceIBMAtrackerRoutes() *schema.Resource {
 	}
 }
 
-
 func dataSourceIBMAtrackerRoutesRead(d *schema.ResourceData, meta interface{}) error {
 	atrackerClient, err := meta.(ClientSession).AtrackerV1()
 	if err != nil {
@@ -102,7 +101,6 @@ func dataSourceIBMAtrackerRoutesRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	listRoutesOptions := &atrackerv1.ListRoutesOptions{}
-
 
 	routeList, response, err := atrackerClient.ListRoutes(listRoutesOptions)
 	if err != nil {
@@ -138,14 +136,12 @@ func dataSourceIBMAtrackerRoutesRead(d *schema.ResourceData, meta interface{}) e
 		d.SetId(dataSourceIBMAtrackerRoutesID(d))
 	}
 
-
 	if routeList.Routes != nil {
 		err = d.Set("routes", dataSourceRouteListFlattenRoutes(routeList.Routes))
 		if err != nil {
 			log.Printf("Error flattening routes list %s", err)
 		}
 	}
-
 
 	return nil
 }
@@ -204,6 +200,3 @@ func dataSourceRouteListRoutesRulesToMap(rulesItem atrackerv1.Rule) (rulesMap ma
 
 	return rulesMap
 }
-
-
-

@@ -58,7 +58,7 @@ func resourceIBMAtrackerRoute() *schema.Resource {
 							Type:        schema.TypeList,
 							Required:    true,
 							Description: "The target ID List. Only one target id is supported. For regional route, the id must be V4 uuid of a target in the same region. For global route, it will be region-code and target-id separated by colon.",
-								Elem: &schema.Schema{Type: schema.TypeString},
+							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 					},
 				},
@@ -181,13 +181,11 @@ func resourceIBMAtrackerRouteUpdate(d *schema.ResourceData, meta interface{}) er
 	}
 	replaceRouteOptions.SetRules(rules)
 
-
 	_, response, err := atrackerClient.ReplaceRoute(replaceRouteOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ReplaceRoute failed %s\n%s", err, response)
 		return err
 	}
-
 
 	return resourceIBMAtrackerRouteRead(d, meta)
 }

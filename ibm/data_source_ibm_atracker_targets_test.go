@@ -23,29 +23,12 @@ import (
 	"testing"
 )
 
-func TestAccIBMAtrackerTargetsDataSourceBasic(t *testing.T) {
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:	func() { testAccPreCheck(t) },
-		Providers:	testAccProviders,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMAtrackerTargetsDataSourceConfigBasic(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets", "targets.#"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccIBMAtrackerTargetsDataSourceAllArgs(t *testing.T) {
 	name := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:	func() { testAccPreCheck(t) },
-		Providers:	testAccProviders,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMAtrackerTargetsDataSourceConfig(name),
@@ -62,16 +45,19 @@ func TestAccIBMAtrackerTargetsDataSourceAllArgs(t *testing.T) {
 
 func testAccCheckIBMAtrackerTargetsDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
-		data "ibm_atracker_targets" "atracker_targets" {
+		resource "ibm_atracker_target" "atracker_target" {
 			name = "%s"
+			target_type = "cloud_object_storage"
+			cos_endpoint {
+				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
+				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+				bucket = "my-atracker-bucket"
+				api_key = "xxxxxxxxxxxxxx"
+			}
+		}
+
+		data "ibm_atracker_targets" "atracker_targets" {
+			name = ibm_atracker_target.atracker_target.name
 		}
 	`, name)
 }
-
-func testAccCheckIBMAtrackerTargetsDataSourceConfigBasic() string {
-	return fmt.Sprintf(`
-		data "ibm_atracker_targets" "atracker_targets" {
-		}
-	`, )
-}
-

@@ -153,8 +153,12 @@ func resourceIBMAtrackerTargetRead(d *schema.ResourceData, meta interface{}) err
 
 	d.Set("name", target.Name)
 	d.Set("target_type", target.TargetType)
-	CosEndpointMap := resourceIBMAtrackerTargetCosEndpointToMap(*target.CosEndpoint)
-	d.Set("cos_endpoint", []map[string]interface{}{CosEndpointMap})
+	cosEndpointMap := resourceIBMAtrackerTargetCosEndpointToMap(*target.CosEndpoint)
+	// This line is a workaround for api_key, which comes back as "REDACTED" from the service.
+	// This causes havok in the tests (in legacy testing framework) so we store the original
+	// api_key value into the state.  This is the least bad solution I could come up with.
+	cosEndpointMap["api_key"] = d.Get("cos_endpoint.0.api_key")
+	d.Set("cos_endpoint", []map[string]interface{}{cosEndpointMap})
 	d.Set("instance_id", target.InstanceID)
 	d.Set("crn", target.CRN)
 	d.Set("encrypt_key", target.EncryptKey)
@@ -187,13 +191,11 @@ func resourceIBMAtrackerTargetUpdate(d *schema.ResourceData, meta interface{}) e
 	cosEndpoint := resourceIBMAtrackerTargetMapToCosEndpoint(d.Get("cos_endpoint.0").(map[string]interface{}))
 	replaceTargetOptions.SetCosEndpoint(&cosEndpoint)
 
-
 	_, response, err := atrackerClient.ReplaceTarget(replaceTargetOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ReplaceTarget failed %s\n%s", err, response)
 		return err
 	}
-
 
 	return resourceIBMAtrackerTargetRead(d, meta)
 }

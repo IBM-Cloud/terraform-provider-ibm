@@ -107,7 +107,6 @@ func dataSourceIBMAtrackerTargets() *schema.Resource {
 	}
 }
 
-
 func dataSourceIBMAtrackerTargetsRead(d *schema.ResourceData, meta interface{}) error {
 	atrackerClient, err := meta.(ClientSession).AtrackerV1()
 	if err != nil {
@@ -115,7 +114,6 @@ func dataSourceIBMAtrackerTargetsRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	listTargetsOptions := &atrackerv1.ListTargetsOptions{}
-
 
 	targetList, response, err := atrackerClient.ListTargets(listTargetsOptions)
 	if err != nil {
@@ -151,14 +149,12 @@ func dataSourceIBMAtrackerTargetsRead(d *schema.ResourceData, meta interface{}) 
 		d.SetId(dataSourceIBMAtrackerTargetsID(d))
 	}
 
-
 	if targetList.Targets != nil {
 		err = d.Set("targets", dataSourceTargetListFlattenTargets(targetList.Targets))
 		if err != nil {
 			log.Printf("Error flattening targets list %s", err)
 		}
 	}
-
 
 	return nil
 }
@@ -225,6 +221,3 @@ func dataSourceTargetListTargetsCosEndpointToMap(cosEndpointItem atrackerv1.CosE
 
 	return cosEndpointMap
 }
-
-
-
