@@ -8,6 +8,7 @@ These types of resources are supported:
 * [ CIS Domain ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-domain)
 * [ CIS Domain Settings ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-domain-settings)
 * [ CIS DNS Record ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-dns-record)
+* [ CIS DNS Records Import](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-dns-records-import)
 * [ CIS Firewall ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-firewall)
 * [ CIS GLB ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-global-lb)
 * [ CIS Health Check | Monitor ](https://cloud.ibm.com/docs/terraform?topic=terraform-cis-resources#cis-health)
@@ -345,6 +346,15 @@ resource "ibm_cis_certificate_upload" "test" {
 }
 ```
 
+`CIS DNS Records import service`
+```hcl
+resource "ibm_cis_dns_records_import" "test" {
+	cis_id    = data.ibm_cis.cis.id
+	domain_id = data.ibm_cis_domain.cis_domain.domain_id
+	file      = "dns_records.txt"
+}
+```
+
 ## CIS Data Sources
 `CIS Instance`
 ```hcl
@@ -360,6 +370,16 @@ data "ibm_cis_domain" "cis_domain" {
   domain = "cis-terraform.com"
 }
 ```
+
+`CIS DNS Records data source`
+```hcl
+data "ibm_cis_dns_records" "records"{
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.id
+  file      = "records.txt"
+}
+```
+
 `CIS Firewall`
 ```hcl
 data "ibm_cis_firewall" "lockdown"{
@@ -478,6 +498,7 @@ data "ibm_cis_custom_certificates" "test" {
 - [WAF Rule CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#list-waf-rules)
 - [Certificate Order CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#order-dedicated-cert)
 - [Certificate Upload CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#upload-cert)
+- [DNS Record import & export CLI](https://cloud.ibm.com/docs/cis-cli-plugin?topic=cis-cli-plugin-cis-cli#dns-record-import)
 
 ## Notes
 
@@ -605,6 +626,7 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | private_key | The Certificate Private key | `string` | yes |
 | bundle_method | The certificate bundle method. Valid values are: `ubiquitous`, `optimal`, `force` | `string` | no |
 | priority | The Certificate priority | `number` | no |
+| file | The file which contain the dns records, to be imported and exported. | `string` | no |
 
 ## Outputs
 
@@ -638,6 +660,9 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | status | The certificate upload status |
 | issuer | The certificate issuer |
 | signature | The certificate signature |
+| total_records_parsed | The total records parsed from dns records zone imported file |
+| records_added | The total records added from dns records zone imported file |
+
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 

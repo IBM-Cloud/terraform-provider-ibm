@@ -21,6 +21,7 @@ import (
 	ciscustompagev1 "github.com/IBM/networking-go-sdk/custompagesv1"
 	dlProviderV2 "github.com/IBM/networking-go-sdk/directlinkproviderv2"
 	dl "github.com/IBM/networking-go-sdk/directlinkv1"
+	cisdnsbulkv1 "github.com/IBM/networking-go-sdk/dnsrecordbulkv1"
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
 	dns "github.com/IBM/networking-go-sdk/dnssvcsv1"
 	cisedgefunctionv1 "github.com/IBM/networking-go-sdk/edgefunctionsapiv1"
@@ -206,6 +207,7 @@ type ClientSession interface {
 	IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
+	CisDNSRecordBulkClientSession() (*cisdnsbulkv1.DnsRecordBulkV1, error)
 	CisGLBClientSession() (*cisglbv1.GlobalLoadBalancerV1, error)
 	CisGLBPoolClientSession() (*cisglbpoolv0.GlobalLoadBalancerPoolsV0, error)
 	CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error)
@@ -350,6 +352,10 @@ type clientSession struct {
 	// CIS dns service options
 	cisDNSErr           error
 	cisDNSRecordsClient *cisdnsrecordsv1.DnsRecordsV1
+
+	// CIS dns bulk service options
+	cisDNSBulkErr          error
+	cisDNSRecordBulkClient *cisdnsbulkv1.DnsRecordBulkV1
 
 	// CIS Global Load Balancer Pool service options
 	cisGLBPoolErr    error
@@ -630,7 +636,14 @@ func (sess clientSession) CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecor
 		return sess.cisDNSRecordsClient, sess.cisDNSErr
 	}
 	return sess.cisDNSRecordsClient.Clone(), nil
+}
 
+// CIS DNS Bulk Service
+func (sess clientSession) CisDNSRecordBulkClientSession() (*cisdnsbulkv1.DnsRecordBulkV1, error) {
+	if sess.cisDNSBulkErr != nil {
+		return sess.cisDNSRecordBulkClient, sess.cisDNSBulkErr
+	}
+	return sess.cisDNSRecordBulkClient.Clone(), nil
 }
 
 // CIS GLB Pool
@@ -839,6 +852,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.transitgatewayErr = errEmptyBluemixCredentials
 		session.iamNamespaceErr = errEmptyBluemixCredentials
 		session.cisDNSErr = errEmptyBluemixCredentials
+		session.cisDNSBulkErr = errEmptyBluemixCredentials
 		session.cisGLBPoolErr = errEmptyBluemixCredentials
 		session.cisGLBErr = errEmptyBluemixCredentials
 		session.cisGLBHealthCheckErr = errEmptyBluemixCredentials
@@ -1223,6 +1237,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.cisDNSRecordsClient, session.cisDNSErr = cisdnsrecordsv1.NewDnsRecordsV1(cisDNSRecordsOpt)
 	if session.cisDNSErr != nil {
 		session.cisDNSErr = fmt.Errorf("Error occured while configuring CIS DNS Service: %s", session.cisDNSErr)
+	}
+
+	// IBM Network CIS DNS Record bulk service
+	cisDNSRecordBulkOpt := &cisdnsbulkv1.DnsRecordBulkV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisDNSRecordBulkClient, session.cisDNSBulkErr = cisdnsbulkv1.NewDnsRecordBulkV1(cisDNSRecordBulkOpt)
+	if session.cisDNSBulkErr != nil {
+		session.cisDNSBulkErr = fmt.Errorf(
+			"Error occured while configuration CIS DNS bulk service : %s",
+			session.cisDNSBulkErr)
 	}
 
 	// IBM Network CIS Global load balancer pool

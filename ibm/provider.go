@@ -344,6 +344,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_cis_global_load_balancer":                       resourceIBMCISGlb(),
 			"ibm_cis_certificate_upload":                         resourceIBMCISCertificateUpload(),
 			"ibm_cis_dns_record":                                 resourceIBMCISDnsRecord(),
+			"ibm_cis_dns_records_import":                         resourceIBMCISDNSRecordsImport(),
 			"ibm_cis_rate_limit":                                 resourceIBMCISRateLimit(),
 			"ibm_cis_page_rule":                                  resourceIBMCISPageRule(),
 			"ibm_cis_edge_functions_action":                      resourceIBMCISEdgeFunctionsAction(),

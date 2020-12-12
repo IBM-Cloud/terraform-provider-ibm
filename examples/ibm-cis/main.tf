@@ -355,3 +355,10 @@ data "ibm_cis_custom_certificates" "test" {
   cis_id    = ibm_cis_certificate_upload.test.cis_id
   domain_id = ibm_cis_certificate_upload.test.domain_id
 }
+
+# CIS DNS Records import service
+resource "ibm_cis_dns_records_import" "test" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+  file      = "dns_records.txt"
+}
