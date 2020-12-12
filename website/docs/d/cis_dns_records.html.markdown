@@ -19,6 +19,7 @@ Import the details of an existing IBM Cloud Internet Service domain name service
 data "ibm_cis_dns_records" "test" {
   cis_id    = var.cis_crn
   domain_id = var.zone_id
+  file      = "records.txt"
 }
 
 ```
@@ -29,6 +30,7 @@ The following arguments are supported:
 
 - `cis_id` - (Required, string) The resource cis id of the CIS on which zones were created.
 - `domain_id` - (Required, string) The resource domain id of the DNS on which zones were created.
+- `file` - (Optional, string) The file which dns records to be exported.
 
 ## Attribute Reference
 

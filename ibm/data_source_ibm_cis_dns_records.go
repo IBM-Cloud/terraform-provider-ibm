@@ -2,7 +2,9 @@ package ibm
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 	"time"
 
 	"github.com/IBM/go-sdk-core/v3/core"
@@ -10,7 +12,8 @@ import (
 )
 
 const (
-	cisDNSRecords = "cis_dns_records"
+	cisDNSRecords           = "cis_dns_records"
+	cisDNSRecordsExportFile = "file"
 )
 
 func dataSourceIBMCISDNSRecords() *schema.Resource {
@@ -32,6 +35,11 @@ func dataSourceIBMCISDNSRecords() *schema.Resource {
 				Required:         true,
 				Description:      "Zone Id",
 				DiffSuppressFunc: suppressDomainIDDiff,
+			},
+			cisDNSRecordsExportFile: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "file to be exported",
 			},
 
 			cisDNSRecords: {
@@ -129,7 +137,38 @@ func dataSourceIBMCISDNSRecordsRead(d *schema.ResourceData, meta interface{}) er
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneIdentifier = core.StringPtr(zoneID)
 
+	if file, ok := d.GetOk(cisDNSRecordsExportFile); ok {
+		sess, err := meta.(ClientSession).CisDNSRecordBulkClientSession()
+		if err != nil {
+			return err
+		}
+		sess.Crn = core.StringPtr(crn)
+		sess.ZoneIdentifier = core.StringPtr(zoneID)
+		opt := sess.NewGetDnsRecordsBulkOptions()
+		result, response, err := sess.GetDnsRecordsBulk(opt)
+		if err != nil {
+			log.Printf("Error exporting dns records: %s", response)
+			return err
+		}
+		buf, err := ioutil.ReadAll(result)
+		if err != nil {
+			log.Printf("Error while reading io reader")
+			return err
+		}
+
+		f, err := os.Create(file.(string))
+		if err != nil {
+			log.Printf("Error opening file: %v", err)
+			return err
+		}
+		defer f.Close()
+		f.Write(buf)
+		d.Set(cisDNSRecordsExportFile, file)
+	}
+
 	opt := sess.NewListAllDnsRecordsOptions()
+	opt.SetPage(1)
+	opt.SetPerPage(1000)
 	result, response, err := sess.ListAllDnsRecords(opt)
 	if err != nil {
 		log.Printf("Error reading dns records: %s", response)
