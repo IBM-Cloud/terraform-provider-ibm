@@ -402,19 +402,6 @@ func getClusterTargetHeaderTestACC() v1.ClusterTargetHeader {
 func testAccCheckIBMContainerClusterBasic(clusterName string) string {
 	return fmt.Sprintf(`
 
-data "ibm_org" "org" {
-  org = "%s"
-}
-
-data "ibm_space" "space" {
-  org   = "%s"
-  space = "%s"
-}
-
-data "ibm_account" "acc" {
-  org_guid = data.ibm_org.org.id
-}
-
 data "ibm_resource_group" "testacc_ds_resource_group" {
   is_default = "true"
 }
@@ -422,10 +409,6 @@ data "ibm_resource_group" "testacc_ds_resource_group" {
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
-
-  org_guid     = data.ibm_org.org.id
-  space_guid   = data.ibm_space.space.id
-  account_guid = data.ibm_account.acc.id
 
   worker_num        = 1
   resource_group_id = data.ibm_resource_group.testacc_ds_resource_group.id
@@ -439,13 +422,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   private_vlan_id = "%s"
   no_subnet       = true
   region          = "%s"
-
-  labels = {
-    "test"  = "test-default-pool"
-    "test1" = "test-default-pool1"
-  }
-}	
-`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeVersion, machineType, publicVlanID, privateVlanID, csRegion)
+}	`, clusterName, datacenter, kubeVersion, machineType, publicVlanID, privateVlanID, csRegion)
 }
 
 func testAccCheckIBMContainerClusterKmsEnable(clusterName, kmsInstanceName, rootKeyName string) string {
@@ -638,18 +615,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
 
 func testAccCheckIBMContainerClusterUpdate(clusterName string) string {
 	return fmt.Sprintf(`
-data "ibm_org" "org" {
-  org = "%s"
-}
-
-data "ibm_space" "space" {
-  org   = "%s"
-  space = "%s"
-}
-
-data "ibm_account" "acc" {
-  org_guid = data.ibm_org.org.id
-}
 
 data "ibm_resource_group" "testacc_ds_resource_group" {
   is_default = "true"
@@ -658,11 +623,6 @@ data "ibm_resource_group" "testacc_ds_resource_group" {
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
-
-  org_guid     = data.ibm_org.org.id
-  space_guid   = data.ibm_space.space.id
-  account_guid = data.ibm_account.acc.id
-
   worker_num = 2
 
   default_pool_size = 2
@@ -676,14 +636,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   no_subnet          = true
   update_all_workers = true
   region             = "%s"
-
-  labels = {
-    "test"  = "test-default-pool"
-    "test1" = "test--default-pool1"
-    "test2" = "test--default-pool2"
-  }
-} 
-`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, kubeUpdateVersion, machineType, publicVlanID, privateVlanID, csRegion)
+}	`, clusterName, datacenter, kubeUpdateVersion, machineType, publicVlanID, privateVlanID, csRegion)
 }
 
 func testAccCheckIBMContainerClusterPrivateAndPublicSubnet(clusterName string) string {
@@ -722,98 +675,45 @@ resource "ibm_container_cluster" "testacc_cluster" {
 func testAccCheckIBMContainerClusterPrivateSubnet(clusterName string) string {
 	return fmt.Sprintf(`
 
-data "ibm_org" "org" {
-  org = "%s"
-}
-
-data "ibm_space" "space" {
-  org   = "%s"
-  space = "%s"
-}
-
-data "ibm_account" "acc" {
-  org_guid = data.ibm_org.org.id
-}
-
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
-
-  org_guid     = data.ibm_org.org.id
-  space_guid   = data.ibm_space.space.id
-  account_guid = data.ibm_account.acc.id
-
   machine_type    = "%s"
   hardware        = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   no_subnet       = true
   subnet_id       = ["%s"]
-}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, privateSubnetID)
+}	`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, privateSubnetID)
 }
 
 func testAccCheckIBMContainerClusterTag(clusterName string) string {
 	return fmt.Sprintf(`
 
-data "ibm_org" "org" {
-  org = "%s"
-}
-
-data "ibm_space" "space" {
-  org   = "%s"
-  space = "%s"
-}
-
-data "ibm_account" "acc" {
-  org_guid = data.ibm_org.org.id
-}
-
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
-
-  org_guid     = data.ibm_org.org.id
-  space_guid   = data.ibm_space.space.id
-  account_guid = data.ibm_account.acc.id
-
   machine_type    = "%s"
   hardware        = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   tags            = ["test"]
-}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+}	`, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }
 
 func testAccCheckIBMContainerClusterUpdateTag(clusterName string) string {
 	return fmt.Sprintf(`
 
-data "ibm_org" "org" {
-  org = "%s"
-}
-
-data "ibm_space" "space" {
-  org   = "%s"
-  space = "%s"
-}
-
-data "ibm_account" "acc" {
-  org_guid = data.ibm_org.org.id
-}
-
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
-
-  org_guid     = data.ibm_org.org.id
-  space_guid   = data.ibm_space.space.id
-  account_guid = data.ibm_account.acc.id
 
   machine_type    = "%s"
   hardware        = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   tags            = ["test", "once"]
-}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+}	`, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }
 
 func testAccCheckIBMContainerCluster_worker_count(clusterName string) string {
@@ -851,30 +751,15 @@ resource "ibm_container_cluster" "testacc_cluster" {
 func testAccCheckIBMContainerClusterWorkerCountUpdate(clusterName string) string {
 	return fmt.Sprintf(`
 
-data "ibm_org" "org" {
-  org = "%s"
-}
-
-data "ibm_space" "space" {
-  org   = "%s"
-  space = "%s"
-}
-
-data "ibm_account" "acc" {
-  org_guid = data.ibm_org.org.id
-}
-
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
 
-  account_guid      = data.ibm_account.acc.id
-  worker_num        = 2
   default_pool_size = 2
   machine_type      = "%s"
   hardware          = "shared"
   public_vlan_id    = "%s"
   private_vlan_id   = "%s"
   no_subnet         = true
-}	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
+}	`, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }

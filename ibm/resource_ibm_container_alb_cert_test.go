@@ -110,8 +110,7 @@ resource "ibm_container_alb_cert" "cert" {
   cert_crn    = "%s"
   secret_name = "%s"
   cluster_id  = ibm_container_cluster.testacc_cluster.id
-  region      = "%s"
-}`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, certCRN, secretName, csRegion)
+}`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, certCRN, secretName)
 }
 
 func testAccCheckIBMContainerALBCertNameSpace(clusterName, secretName, namespaceName string) string {
@@ -150,6 +149,5 @@ resource "ibm_container_alb_cert" "cert" {
   cert_crn    = "%s"
   secret_name = "%s"
   cluster_id  = ibm_container_cluster.testacc_cluster.id
-  region      = "%s"
-}`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, updatedCertCRN, secretName, csRegion)
+}`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, updatedCertCRN, secretName)
 }
