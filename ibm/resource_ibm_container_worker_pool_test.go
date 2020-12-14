@@ -47,7 +47,7 @@ func TestAccIBMContainerWorkerPool_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "size_per_zone", "2"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "labels.%", "3"),
+						"ibm_container_worker_pool.test_pool", "labels.%", "2"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "state", "active"),
 					resource.TestCheckResourceAttr(
@@ -136,24 +136,15 @@ func testAccCheckIBMContainerWorkerPoolDestroy(s *terraform.State) error {
 
 func testAccCheckIBMContainerWorkerPoolBasic(clusterName, workerPoolName string) string {
 	return fmt.Sprintf(`
-data "ibm_org" "org" {
-  org = "%s"
-}
-
-data "ibm_account" "acc" {
-  org_guid = data.ibm_org.org.id
-}
 
 resource "ibm_container_cluster" "testacc_cluster" {
   name            = "%s"
   datacenter      = "%s"
-  account_guid    = data.ibm_account.acc.id
   machine_type    = "%s"
   hardware        = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   kube_version    = "%s"
-  region          = "%s"
 }
 
 resource "ibm_container_worker_pool" "test_pool" {
@@ -163,35 +154,24 @@ resource "ibm_container_worker_pool" "test_pool" {
   size_per_zone    = 1
   hardware         = "shared"
   disk_encryption  = true
-  region           = "%s"
   labels = {
     "test"  = "test-pool"
     "test1" = "test-pool1"
   }
-}
-		`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeVersion, csRegion, workerPoolName, machineType, csRegion)
+}`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeVersion, workerPoolName, machineType)
 }
 
 func testAccCheckIBMContainerWorkerPoolUpdate(clusterName, workerPoolName string) string {
 	return fmt.Sprintf(`
-data "ibm_org" "org" {
-  org = "%s"
-}
-
-data "ibm_account" "acc" {
-  org_guid = data.ibm_org.org.id
-}
 
 resource "ibm_container_cluster" "testacc_cluster" {
   name            = "%s"
   datacenter      = "%s"
-  account_guid    = data.ibm_account.acc.id
   machine_type    = "%s"
   hardware        = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   kube_version    = "%s"
-  region          = "%s"
 }
 
 resource "ibm_container_worker_pool" "test_pool" {
@@ -201,20 +181,15 @@ resource "ibm_container_worker_pool" "test_pool" {
   size_per_zone    = 2
   hardware         = "shared"
   disk_encryption  = true
-  region           = "%s"
   labels = {
     "test"  = "test-pool"
     "test1" = "test-pool1"
-    "test2" = "test-pool2"
   }
-}
-		`, cfOrganization, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeVersion, csRegion, workerPoolName, machineType, csRegion)
+}`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeVersion, workerPoolName, machineType)
 }
 
 func testAccCheckIBMContainerWorkerPoolInvalidSizePerZone(clusterName, workerPoolName string) string {
 	return fmt.Sprintf(`
-
-
 resource "ibm_container_worker_pool" "test_pool" {
   worker_pool_name = "%s"
   machine_type     = "%s"
@@ -227,8 +202,5 @@ resource "ibm_container_worker_pool" "test_pool" {
     "test"  = "test-pool"
     "test1" = "test-pool1"
   }
-}
-
-		
-		`, workerPoolName, machineType, clusterName)
+}`, workerPoolName, machineType, clusterName)
 }

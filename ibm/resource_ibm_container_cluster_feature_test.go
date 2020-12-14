@@ -47,13 +47,16 @@ resource "ibm_container_cluster" "testacc_cluster" {
   hardware          = "shared"
   public_vlan_id    = "%s"
   private_vlan_id   = "%s"
+  timeouts {
+	  create = "120m"
+  }
 }
 
 resource "ibm_container_cluster_feature" "feature" {
   cluster                  = ibm_container_cluster.testacc_cluster.id
   private_service_endpoint = "true"
   timeouts {
-    create = "180m"
+    create = "720m"
   }
 }`, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }
@@ -68,13 +71,16 @@ resource "ibm_container_cluster" "testacc_cluster" {
   hardware          = "shared"
   public_vlan_id    = "%s"
   private_vlan_id   = "%s"
+  timeouts {
+	create = "120m"
+  }
 }
 
 resource "ibm_container_cluster_feature" "feature" {
   cluster                 = ibm_container_cluster.testacc_cluster.id
   public_service_endpoint = "false"
   timeouts {
-    update = "180m"
+    update = "720m"
   }
 }`, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }
