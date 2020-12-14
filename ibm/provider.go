@@ -307,6 +307,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dl_gateway":         dataSourceIBMDLGateway(),
 			"ibm_dl_locations":       dataSourceIBMDLLocations(),
 			"ibm_dl_routers":         dataSourceIBMDLRouters(),
+			"ibm_dl_provider_ports":  dataSourceIBMDirectLinkProviderPorts(),
 
 			//Added for Transit Gateway
 			"ibm_tg_gateway":   dataSourceIBMTransitGateway(),
