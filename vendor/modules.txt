@@ -130,6 +130,7 @@ github.com/IBM/networking-go-sdk/cachingapiv1
 github.com/IBM/networking-go-sdk/cisipapiv1
 github.com/IBM/networking-go-sdk/common
 github.com/IBM/networking-go-sdk/custompagesv1
+github.com/IBM/networking-go-sdk/directlinkproviderv2
 github.com/IBM/networking-go-sdk/directlinkv1
 github.com/IBM/networking-go-sdk/dnsrecordsv1
 github.com/IBM/networking-go-sdk/dnssvcsv1

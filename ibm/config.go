@@ -19,6 +19,7 @@ import (
 	ciscachev1 "github.com/IBM/networking-go-sdk/cachingapiv1"
 	cisipv1 "github.com/IBM/networking-go-sdk/cisipapiv1"
 	ciscustompagev1 "github.com/IBM/networking-go-sdk/custompagesv1"
+	dlProviderV2 "github.com/IBM/networking-go-sdk/directlinkproviderv2"
 	dl "github.com/IBM/networking-go-sdk/directlinkv1"
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
 	dns "github.com/IBM/networking-go-sdk/dnssvcsv1"
@@ -199,6 +200,7 @@ type ClientSession interface {
 	PrivateDNSClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
 	DirectlinkV1API() (*dl.DirectLinkV1, error)
+	DirectlinkProviderV2API() (*dlProviderV2.DirectLinkProviderV2, error)
 	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
 	HpcsEndpointAPI() (hpcs.HPCSV2, error)
 	IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1, error)
@@ -329,6 +331,8 @@ type clientSession struct {
 
 	directlinkAPI *dl.DirectLinkV1
 	directlinkErr error
+	dlProviderAPI *dlProviderV2.DirectLinkProviderV2
+	dlProviderErr error
 
 	cosConfigErr error
 	cosConfigAPI *cosconfig.ResourceConfigurationV1
@@ -583,7 +587,9 @@ func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
 func (sess clientSession) DirectlinkV1API() (*dl.DirectLinkV1, error) {
 	return sess.directlinkAPI, sess.directlinkErr
 }
-
+func (sess clientSession) DirectlinkProviderV2API() (*dlProviderV2.DirectLinkProviderV2, error) {
+	return sess.dlProviderAPI, sess.dlProviderErr
+}
 func (sess clientSession) CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error) {
 	return sess.cosConfigAPI, sess.cosConfigErr
 }
@@ -828,6 +834,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.pDNSErr = errEmptyBluemixCredentials
 		session.bmxUserFetchErr = errEmptyBluemixCredentials
 		session.directlinkErr = errEmptyBluemixCredentials
+		session.dlProviderErr = errEmptyBluemixCredentials
 		session.cosConfigErr = errEmptyBluemixCredentials
 		session.transitgatewayErr = errEmptyBluemixCredentials
 		session.iamNamespaceErr = errEmptyBluemixCredentials
@@ -1151,6 +1158,19 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.directlinkErr = fmt.Errorf("Error occured while configuring Direct Link Service: %s", session.directlinkErr)
 	}
 
+	//Direct link provider
+	directLinkProviderV2Options := &dlProviderV2.DirectLinkProviderV2Options{
+		URL: envFallBack([]string{"IBMCLOUD_DL_PROVIDER_API_ENDPOINT"}, "https://directlink.cloud.ibm.com/provider/v2"),
+		Authenticator: &core.BearerTokenAuthenticator{
+			BearerToken: bluemixToken,
+		},
+		Version: &version,
+	}
+
+	session.dlProviderAPI, session.dlProviderErr = dlProviderV2.NewDirectLinkProviderV2(directLinkProviderV2Options)
+	if session.dlProviderErr != nil {
+		session.dlProviderErr = fmt.Errorf("Error occured while configuring Direct Link Provider Service: %s", session.dlProviderErr)
+	}
 	transitgatewayOptions := &tg.TransitGatewayApisV1Options{
 		URL: envFallBack([]string{"IBMCLOUD_TG_API_ENDPOINT"}, "https://transit.cloud.ibm.com/v1"),
 		Authenticator: &core.BearerTokenAuthenticator{
