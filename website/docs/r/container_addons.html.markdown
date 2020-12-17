@@ -45,6 +45,10 @@ resource "ibm_container_addons" "addons" {
     name    = "vpc-block-csi-driver"
     version = "2.0.3"
   }
+  addons {
+    name    = "cluster-autoscaler"
+    version = "1.0.1"
+  }
 }
 
 ```
@@ -63,7 +67,7 @@ The following arguments are supported:
 * `cluster` - (Required, string) Cluster Name or ID
 * `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
 * `addons` - (Required, set) Set of AddOns that has to be enabled
-    * `name` - (Optional, string) The addon name such as 'istio'. Supported addons are [`kube-terminal`], [`alb-oauth-proxy`], [`debug-tool`],[`istio`],[`knative`],[`static-route`],[`vpc-block-csi-driver`].
+    * `name` - (Optional, string) The addon name such as 'istio'. Supported addons are [`kube-terminal`], [`alb-oauth-proxy`], [`debug-tool`],[`istio`],[`knative`],[`static-route`],[`vpc-block-csi-driver`],[`cluster-autoscaler`].
     * `version` - (Optional,string) The addon version, omit the version if you wish to use the default version. It is required when one wants to update the addon to specified version.
 
 ## Attribute Reference
