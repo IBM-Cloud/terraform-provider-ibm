@@ -118,7 +118,6 @@ resource "ibm_is_vpn_gateway" "VPNGateway" {
 }
 
 data "ibm_is_vpn_gateways" "vpngateways" {
-   
 }
 
 resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection" {
@@ -130,7 +129,7 @@ resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection" {
 
 data "ibm_is_vpn_gateway_connections" "VPNGatewayConnections" {
   vpn_gateway = ibm_is_vpn_gateway.VPNGateway.id
-}  
+}
 
 resource "ibm_is_vpn_gateway" "VPNGateway1" {
   name   = "vpn1"
@@ -425,7 +424,60 @@ data "ibm_is_vpc_routing_tables" "tables_test" {
 
 // data source for vpc routing table routes
 data "ibm_is_vpc_routing_table_routes" "routes_test" {
-  vpc = ibm_is_vpc.vpc1.id
+  vpc           = ibm_is_vpc.vpc1.id
   routing_table = ibm_is_vpc_routing_table.test_cr_route_table1.routing_table
 }
 
+resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway1" {
+  name = "my-endpoint-gateway-1"
+  target {
+    name          = "ibm-dns-server2"
+    resource_type = "provider_infrastructure_service"
+  }
+  vpc            = ibm_is_vpc.testacc_vpc.id
+  resource_group = data.ibm_resource_group.test_acc.id
+}
+
+resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway2" {
+  name = "my-endpoint-gateway-1"
+  target {
+    name          = "ibm-dns-server2"
+    resource_type = "provider_infrastructure_service"
+  }
+  vpc = ibm_is_vpc.testacc_vpc.id
+  ips {
+    subnet = ibm_is_subnet.testacc_subnet.id
+    name      = "test-reserved-ip1"
+  }
+  resource_group = data.ibm_resource_group.test_acc.id
+}
+
+resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway3" {
+  name = "my-endpoint-gateway-1"
+  target {
+    name          = "ibm-dns-server2"
+    resource_type = "provider_infrastructure_service"
+  }
+  vpc = ibm_is_vpc.testacc_vpc.id
+  ips {
+    id = "0737-5ab3c18e-6f6c-4a69-8f48-20e3456647b5"
+  }
+  resource_group = data.ibm_resource_group.test_acc.id
+}
+
+resource "ibm_is_virtual_endpoint_gateway_ip" "virtual_endpoint_gateway_ip" {
+  gateway    = ibm_is_virtual_endpoint_gateway.endpoint_gateway.id
+  reserved_ip = "0674-5ab3c18e-6f6c-4a69-8f48-20e3456647b5"
+}
+
+data "ibm_is_virtual_endpoint_gateway" "data_virtual_endpoint_gateway" {
+  name = ibm_is_virtual_endpoint_gateway.endpoint_gateway.name
+}
+
+data "ibm_is_virtual_endpoint_gateways" "data_virtual_endpoint_gateways" {
+
+}
+
+data "ibm_is_virtual_endpoint_gateway_ips" "data_virtual_endpoint_gateway_ips" {
+  gateway = ibm_is_virtual_endpoint_gateway.endpoint_gateway.id
+}
