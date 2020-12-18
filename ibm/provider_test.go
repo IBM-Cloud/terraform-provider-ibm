@@ -118,13 +118,13 @@ func init() {
 
 	machineType = os.Getenv("IBM_MACHINE_TYPE")
 	if machineType == "" {
-		machineType = "u2c.2x4"
+		machineType = "b3c.4x16"
 		fmt.Println("[WARN] Set the environment variable IBM_MACHINE_TYPE for testing ibm_container_cluster resource else it is set to default value 'u2c.2x4'")
 	}
 
 	certCRN = os.Getenv("IBM_CERT_CRN")
 	if certCRN == "" {
-		certCRN = "crn:v1:bluemix:public:cloudcerts:eu-de:a/e9021a4d06e9b108b4a221a3cec47e3d:77e527aa-65b2-4cb3-969b-7e8714174346:certificate:c79da56505597523567d56f76a0cd8a4"
+		certCRN = "crn:v1:bluemix:public:cloudcerts:us-south:a/52b2e14f385aca5da781baa1b9c28e53:6efac0c2-b955-49ca-939d-d7bc0cb8132f:certificate:e786b0ea2af8b5435603803ec2ff8118"
 		fmt.Println("[WARN] Set the environment variable IBM_CERT_CRN for testing ibm_container_alb_cert resource else it is set to default value")
 	}
 

@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -41,6 +40,27 @@ func TestAccIBMContainerALBCert_Basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMContainerALBCert_Namespace(t *testing.T) {
+	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	secretName := fmt.Sprintf("terraform-secret%d", acctest.RandIntRange(10, 100))
+	namespaceName := "ibm-cert-store"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMContainerALBCertDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMContainerALBCertNameSpace(clusterName, secretName, namespaceName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_alb_cert.cert", "secret_name", secretName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_alb_cert.cert", "cert_crn", certCRN),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckIBMContainerALBCertDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
@@ -54,20 +74,20 @@ func testAccCheckIBMContainerALBCertDestroy(s *terraform.State) error {
 		}
 		clusterID := parts[0]
 		secretName := parts[1]
-		targetEnv := v1.ClusterTargetHeader{
-			Region: "us-south",
+		namespace := "ibm-cert-store"
+		if len(parts) > 2 && len(parts[2]) > 0 {
+			namespace = parts[2]
 		}
-
-		csClient, err := testAccProvider.Meta().(ClientSession).ContainerAPI()
+		ingressClient, err := testAccProvider.Meta().(ClientSession).VpcContainerAPI()
 		if err != nil {
 			return err
 		}
-		albAPI := csClient.Albs()
-		_, err = albAPI.GetClusterALBCertBySecretName(clusterID, secretName, targetEnv)
 
-		if err == nil {
-			return fmt.Errorf("Instance still exists: %s", rs.Primary.ID)
-		} else if !strings.Contains(err.Error(), "404") {
+		ingressAPI := ingressClient.Ingresses()
+		resp, err := ingressAPI.GetIngressSecret(clusterID, secretName, namespace)
+		if err == nil && &resp != nil && resp.Status == "deleted" {
+			return nil
+		} else if err == nil || !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
@@ -92,6 +112,26 @@ resource "ibm_container_alb_cert" "cert" {
   cluster_id  = ibm_container_cluster.testacc_cluster.id
   region      = "%s"
 }`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, certCRN, secretName, csRegion)
+}
+
+func testAccCheckIBMContainerALBCertNameSpace(clusterName, secretName, namespaceName string) string {
+	return fmt.Sprintf(`
+resource "ibm_container_cluster" "testacc_cluster" {
+  name              = "%s"
+  datacenter        = "%s"
+  default_pool_size = 1
+  machine_type      = "%s"
+  hardware          = "shared"
+  public_vlan_id    = "%s"
+  private_vlan_id   = "%s"
+}
+
+resource "ibm_container_alb_cert" "cert" {
+  cert_crn    = "%s"
+  secret_name = "%s"
+  cluster_id  = ibm_container_cluster.testacc_cluster.id
+  namespace = "%s"
+}`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, certCRN, secretName, namespaceName)
 }
 
 func testAccCheckIBMContainerALBCertUpdate(clusterName, secretName string) string {

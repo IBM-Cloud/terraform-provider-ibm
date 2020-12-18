@@ -5,10 +5,11 @@ import (
 	"log"
 	"time"
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
+	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
 func resourceIBMContainerALB() *schema.Resource {
@@ -283,4 +284,25 @@ func waitForClusterAvailable(d *schema.ResourceData, meta interface{}, albID str
 	}
 
 	return stateConf.WaitForState()
+}
+func getAlbTargetHeader(d *schema.ResourceData, meta interface{}) (v1.ClusterTargetHeader, error) {
+	var region string
+	if v, ok := d.GetOk("region"); ok {
+		region = v.(string)
+	}
+
+	sess, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return v1.ClusterTargetHeader{}, err
+	}
+
+	if region == "" {
+		region = sess.Config.Region
+	}
+
+	targetEnv := v1.ClusterTargetHeader{
+		Region: region,
+	}
+
+	return targetEnv, nil
 }
