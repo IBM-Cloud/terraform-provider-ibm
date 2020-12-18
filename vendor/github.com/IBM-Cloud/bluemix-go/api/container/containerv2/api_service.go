@@ -21,6 +21,7 @@ type ContainerServiceAPI interface {
 	Albs() Alb
 	Workers() Workers
 	Kms() Kms
+	Ingresses() Ingress
 
 	//TODO Add other services
 }
@@ -79,6 +80,9 @@ func (c *csService) WorkerPools() WorkerPool {
 }
 func (c *csService) Albs() Alb {
 	return newAlbAPI(c.Client)
+}
+func (c *csService) Ingresses() Ingress {
+	return newIngressAPI(c.Client)
 }
 
 //Kms implements Cluster Kms API
