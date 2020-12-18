@@ -45,9 +45,10 @@ func resourceIBMIAMAccessGroupPolicy() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"service": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Service name of the policy definition",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "Service name of the policy definition",
+							AtLeastOneOf: []string{"resources.0.service", "resources.0.resource_instance_id", "resources.0.region", "resources.0.resource_type", "resources.0.resource", "resources.0.resource_group_id", "resources.0.attributes"},
 						},
 
 						"resource_instance_id": {
