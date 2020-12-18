@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
@@ -45,6 +45,18 @@ func resourceIBMContainerALBCert() *schema.Resource {
 				ForceNew:    true,
 				Description: "Secret name",
 			},
+			"namespace": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "ibm-cert-store",
+				ForceNew:    true,
+				Description: "Namespace of the secret",
+			},
+			"persistence": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Persistence of secret",
+			},
 			"domain_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -59,6 +71,12 @@ func resourceIBMContainerALBCert() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "certificate issuer name",
+				Deprecated:  "This field is depricated and is not available in v2 version of ingress api",
+			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Secret Status",
 			},
 			"cluster_crn": {
 				Type:        schema.TypeString,
@@ -82,7 +100,7 @@ func resourceIBMContainerALBCert() *schema.Resource {
 }
 
 func resourceIBMContainerALBCertCreate(d *schema.ResourceData, meta interface{}) error {
-	albClient, err := meta.(ClientSession).ContainerAPI()
+	ingressClient, err := meta.(ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
 	}
@@ -90,26 +108,26 @@ func resourceIBMContainerALBCertCreate(d *schema.ResourceData, meta interface{})
 	certCRN := d.Get("cert_crn").(string)
 	cluster := d.Get("cluster_id").(string)
 	secretName := d.Get("secret_name").(string)
+	namespace := d.Get("namespace").(string)
 
-	params := v1.ALBSecretConfig{
-		CertCrn:    certCRN,
-		ClusterID:  cluster,
-		SecretName: secretName,
+	params := v2.SecretCreateConfig{
+		CRN:       certCRN,
+		Cluster:   cluster,
+		Name:      secretName,
+		Namespace: namespace,
 	}
-	params.State = "update_false"
+	// params.State = "update_false"
+	if v, ok := d.GetOk("persistence"); ok {
+		params.Persistence = v.(bool)
+	}
 
-	targetEnv, err := getAlbTargetHeader(d, meta)
+	ingressAPI := ingressClient.Ingresses()
+	response, err := ingressAPI.CreateIngressSecret(params)
+
 	if err != nil {
 		return err
 	}
-
-	albAPI := albClient.Albs()
-	err = albAPI.DeployALBCert(params, targetEnv)
-
-	if err != nil {
-		return err
-	}
-	d.SetId(fmt.Sprintf("%s/%s", cluster, secretName))
+	d.SetId(fmt.Sprintf("%s/%s/%s", cluster, secretName, response.Namespace))
 	_, err = waitForContainerALBCert(d, meta, schema.TimeoutCreate)
 	if err != nil {
 		return fmt.Errorf(
@@ -120,7 +138,7 @@ func resourceIBMContainerALBCertCreate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceIBMContainerALBCertRead(d *schema.ResourceData, meta interface{}) error {
-	albClient, err := meta.(ClientSession).ContainerAPI()
+	ingressClient, err := meta.(ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
 	}
@@ -130,36 +148,38 @@ func resourceIBMContainerALBCertRead(d *schema.ResourceData, meta interface{}) e
 	}
 	clusterID := parts[0]
 	secretName := parts[1]
+	namespace := "ibm-cert-store"
+	if len(parts) > 2 && len(parts[2]) > 0 {
+		namespace = parts[2]
+	}
 
-	targetEnv, err := getAlbTargetHeader(d, meta)
+	ingressAPI := ingressClient.Ingresses()
+	ingressSecretConfig, err := ingressAPI.GetIngressSecret(clusterID, secretName, namespace)
 	if err != nil {
 		return err
 	}
-
-	albAPI := albClient.Albs()
-	albSecretConfig, err := albAPI.GetClusterALBCertBySecretName(clusterID, secretName, targetEnv)
-	if err != nil {
-		return err
-	}
-
-	d.Set("cluster_id", albSecretConfig.ClusterID)
-	d.Set("secret_name", albSecretConfig.SecretName)
-	d.Set("cert_crn", albSecretConfig.CertCrn)
-	d.Set("cloud_cert_instance_id", albSecretConfig.CloudCertInstanceID)
-	d.Set("domain_name", albSecretConfig.DomainName)
-	d.Set("expires_on", albSecretConfig.ExpiresOn)
-	d.Set("issuer_name", albSecretConfig.IssuerName)
+	d.SetId(fmt.Sprintf("%s/%s/%s", clusterID, secretName, namespace))
+	d.Set("cluster_id", ingressSecretConfig.Cluster)
+	d.Set("secret_name", ingressSecretConfig.Name)
+	d.Set("namespace", ingressSecretConfig.Namespace)
+	d.Set("cert_crn", ingressSecretConfig.CRN)
+	instancecrn := strings.Split(ingressSecretConfig.CRN, ":certificate:")
+	d.Set("cloud_cert_instance_id", fmt.Sprintf("%s::", instancecrn[0]))
+	d.Set("domain_name", ingressSecretConfig.Domain)
+	d.Set("expires_on", ingressSecretConfig.ExpiresOn)
+	d.Set("status", ingressSecretConfig.Status)
+	d.Set("persistence", ingressSecretConfig.Persistence)
 
 	return nil
 }
 
 func resourceIBMContainerALBCertDelete(d *schema.ResourceData, meta interface{}) error {
-	albClient, err := meta.(ClientSession).ContainerAPI()
+	ingressClient, err := meta.(ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
 	}
 
-	albAPI := albClient.Albs()
+	ingressAPI := ingressClient.Ingresses()
 
 	parts, err := idParts(d.Id())
 	if err != nil {
@@ -167,12 +187,17 @@ func resourceIBMContainerALBCertDelete(d *schema.ResourceData, meta interface{})
 	}
 	clusterID := parts[0]
 	secretName := parts[1]
-	targetEnv, err := getAlbTargetHeader(d, meta)
-	if err != nil {
-		return err
+	namespace := "ibm-cert-store"
+	if len(parts) > 2 && len(parts[2]) > 0 {
+		namespace = parts[2]
+	}
+	params := v2.SecretDeleteConfig{
+		Cluster:   clusterID,
+		Name:      secretName,
+		Namespace: namespace,
 	}
 
-	err = albAPI.RemoveALBCertBySecretName(clusterID, secretName, targetEnv)
+	err = ingressAPI.DeleteIngressSecret(params)
 	if err != nil {
 		return err
 	}
@@ -185,7 +210,7 @@ func resourceIBMContainerALBCertDelete(d *schema.ResourceData, meta interface{})
 }
 
 func waitForALBCertDelete(d *schema.ResourceData, meta interface{}, timeout string) (interface{}, error) {
-	albClient, err := meta.(ClientSession).ContainerAPI()
+	ingressClient, err := meta.(ClientSession).VpcContainerAPI()
 	if err != nil {
 		return false, err
 	}
@@ -195,26 +220,27 @@ func waitForALBCertDelete(d *schema.ResourceData, meta interface{}, timeout stri
 	}
 	clusterID := parts[0]
 	secretName := parts[1]
+	namespace := "ibm-cert-store"
+	if len(parts) > 2 && len(parts[2]) > 0 {
+		namespace = parts[2]
+	}
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"deleting"},
 		Target:  []string{"deleted"},
 		Refresh: func() (interface{}, string, error) {
-			targetEnv, err := getAlbTargetHeader(d, meta)
-			if err != nil {
-				return nil, "", err
-			}
-			alb, err := albClient.Albs().GetClusterALBCertBySecretName(clusterID, secretName, targetEnv)
+
+			secret, err := ingressClient.Ingresses().GetIngressSecret(clusterID, secretName, namespace)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return alb, "deleted", nil
+					return secret, "deleted", nil
 				}
 				return nil, "", err
 			}
-			if alb.State != "deleted" {
-				return alb, "deleting", nil
+			if secret.Status != "deleted" {
+				return secret, "deleting", nil
 			}
-			return alb, "deleted", nil
+			return secret, "deleted", nil
 		},
 		Timeout:    d.Timeout(timeout),
 		Delay:      10 * time.Second,
@@ -225,7 +251,7 @@ func waitForALBCertDelete(d *schema.ResourceData, meta interface{}, timeout stri
 }
 
 func resourceIBMContainerALBCertUpdate(d *schema.ResourceData, meta interface{}) error {
-	albClient, err := meta.(ClientSession).ContainerAPI()
+	ingressClient, err := meta.(ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
 	}
@@ -235,22 +261,23 @@ func resourceIBMContainerALBCertUpdate(d *schema.ResourceData, meta interface{})
 	}
 	cluster := parts[0]
 	secretName := parts[1]
+	namespace := "ibm-cert-store"
+	if len(parts) > 2 && len(parts[2]) > 0 {
+		namespace = parts[2]
+	}
 
 	if d.HasChange("cert_crn") {
 		crn := d.Get("cert_crn").(string)
-		params := v1.ALBSecretConfig{
-			CertCrn:    crn,
-			ClusterID:  cluster,
-			SecretName: secretName,
+		params := v2.SecretUpdateConfig{
+			CRN:       crn,
+			Cluster:   cluster,
+			Name:      secretName,
+			Namespace: namespace,
 		}
-		params.State = "update_true"
-		targetEnv, err := getAlbTargetHeader(d, meta)
-		if err != nil {
-			return err
-		}
+		// params.State = "update_true"
 
-		albAPI := albClient.Albs()
-		err = albAPI.UpdateALBCert(params, targetEnv)
+		ingressAPI := ingressClient.Ingresses()
+		_, err = ingressAPI.UpdateIngressSecret(params)
 		if err != nil {
 			return err
 		}
@@ -265,24 +292,25 @@ func resourceIBMContainerALBCertUpdate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceIBMContainerALBCertExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	albClient, err := meta.(ClientSession).ContainerAPI()
+	ingressClient, err := meta.(ClientSession).VpcContainerAPI()
 	if err != nil {
 		return false, err
 	}
+
 	parts, err := idParts(d.Id())
 	if err != nil {
 		return false, err
 	}
 	clusterID := parts[0]
 	secretName := parts[1]
-
-	targetEnv, err := getAlbTargetHeader(d, meta)
-	if err != nil {
-		return false, err
+	namespace := "ibm-cert-store"
+	if len(parts) > 2 && len(parts[2]) > 0 {
+		namespace = parts[2]
 	}
 
-	albAPI := albClient.Albs()
-	albSecretConfig, err := albAPI.GetClusterALBCertBySecretName(clusterID, secretName, targetEnv)
+	ingressAPI := ingressClient.Ingresses()
+	ingressSecretConfig, err := ingressAPI.GetIngressSecret(clusterID, secretName, namespace)
+
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
@@ -292,33 +320,11 @@ func resourceIBMContainerALBCertExists(d *schema.ResourceData, meta interface{})
 		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
 
-	return albSecretConfig.ClusterID == clusterID && albSecretConfig.SecretName == secretName, nil
-}
-
-func getAlbTargetHeader(d *schema.ResourceData, meta interface{}) (v1.ClusterTargetHeader, error) {
-	var region string
-	if v, ok := d.GetOk("region"); ok {
-		region = v.(string)
-	}
-
-	sess, err := meta.(ClientSession).BluemixSession()
-	if err != nil {
-		return v1.ClusterTargetHeader{}, err
-	}
-
-	if region == "" {
-		region = sess.Config.Region
-	}
-
-	targetEnv := v1.ClusterTargetHeader{
-		Region: region,
-	}
-
-	return targetEnv, nil
+	return ingressSecretConfig.Cluster == clusterID && ingressSecretConfig.Name == secretName, nil
 }
 
 func waitForContainerALBCert(d *schema.ResourceData, meta interface{}, timeout string) (interface{}, error) {
-	albClient, err := meta.(ClientSession).ContainerAPI()
+	ingressClient, err := meta.(ClientSession).VpcContainerAPI()
 	if err != nil {
 		return false, err
 	}
@@ -328,28 +334,29 @@ func waitForContainerALBCert(d *schema.ResourceData, meta interface{}, timeout s
 	}
 	clusterID := parts[0]
 	secretName := parts[1]
+	namespace := "ibm-cert-store"
+	if len(parts) > 2 && len(parts[2]) > 0 {
+		namespace = parts[2]
+	}
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"creating"},
 		Target:  []string{"done"},
 		Refresh: func() (interface{}, string, error) {
-			targetEnv, err := getAlbTargetHeader(d, meta)
-			if err != nil {
-				return nil, "", err
-			}
-			alb, err := albClient.Albs().GetClusterALBCertBySecretName(clusterID, secretName, targetEnv)
+
+			alb, err := ingressClient.Ingresses().GetIngressSecret(clusterID, secretName, namespace)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 					return alb, "creating", nil
 				}
 				return nil, "", err
 			}
-			if alb.State != "created" {
-				if strings.Contains(alb.State, "failed") {
+			if alb.Status != "created" {
+				if strings.Contains(alb.Status, "failed") {
 					return alb, "failed", fmt.Errorf("The resource alb cert %s failed: %v", d.Id(), err)
 				}
 
-				if alb.State == "updated" {
+				if alb.Status == "updated" {
 					return alb, "done", nil
 				}
 				return alb, "creating", nil

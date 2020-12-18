@@ -28,6 +28,8 @@ The following arguments are supported:
 
 * `cluster_id` - (Required, string)  The cluster ID.
 * `secret_name` - (Required, string) The name of the ALB certificate secret. 
+* `namespace` - (Optional, string) The namespace in which the secret has to be created.Default: `ibm-cert-store`
+
 
 ## Attribute Reference
 
@@ -40,3 +42,5 @@ The following attributes are exported:
 * `issuer_name` - The Issuer name of the certificate.
 * `cluster_crn` - The cluster crn.
 * `cloud_cert_instance_id` - Cloud Certificate instance ID from which certificate is downloaded.
+* `persistence`  - (Optional, bool) Persist the secret data in your cluster. If the secret is later deleted from the CLI or OpenShift web console, the secret is automatically re-created in your cluster.
+* `status` - The Status of the secret.
