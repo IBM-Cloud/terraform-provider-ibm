@@ -662,15 +662,13 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if lifecycleptr != nil {
-		if len(lifecycleptr.Rules) > 0 {
-			archiveRules := archiveRuleGet(lifecycleptr.Rules)
-			expireRules := expireRuleGet(lifecycleptr.Rules)
-			if len(archiveRules) > 0 {
-				d.Set("archive_rule", archiveRules)
-			}
-			if len(expireRules) > 0 {
-				d.Set("expire_rule", expireRules)
-			}
+		archiveRules := archiveRuleGet(lifecycleptr.Rules)
+		expireRules := expireRuleGet(lifecycleptr.Rules)
+		if len(archiveRules) > 0 {
+			d.Set("archive_rule", archiveRules)
+		}
+		if len(expireRules) > 0 {
+			d.Set("expire_rule", expireRules)
 		}
 	}
 
