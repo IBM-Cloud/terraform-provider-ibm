@@ -243,6 +243,9 @@ func resourceIBMResourceKeyExists(d *schema.ResourceData, meta interface{}) (boo
 		}
 		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
+	if err == nil && resourceKey.State == "removed" {
+		return false, nil
+	}
 
 	return resourceKey.ID == resourceKeyID, nil
 }
