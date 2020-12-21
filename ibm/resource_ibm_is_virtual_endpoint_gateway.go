@@ -1,11 +1,14 @@
 package ibm
 
 import (
+	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/IBM/go-sdk-core/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -26,6 +29,7 @@ const (
 	isVirtualEndpointGatewayTargetName         = "name"
 	isVirtualEndpointGatewayTargetResourceType = "resource_type"
 	isVirtualEndpointGatewayVpcID              = "vpc"
+	isVirtualEndpointGatewayTags               = "tags"
 )
 
 func resourceIBMISEndpointGateway() *schema.Resource {
@@ -36,6 +40,12 @@ func resourceIBMISEndpointGateway() *schema.Resource {
 		Delete:   resourceIBMisVirtualEndpointGatewayDelete,
 		Exists:   resourceIBMisVirtualEndpointGatewayExists,
 		Importer: &schema.ResourceImporter{},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
@@ -138,6 +148,14 @@ func resourceIBMISEndpointGateway() *schema.Resource {
 				ForceNew:    true,
 				Description: "The VPC id",
 			},
+			isVirtualEndpointGatewayTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of tags for VPE",
+			},
 		},
 	}
 }
@@ -193,6 +211,15 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 	}
 
 	d.SetId(*result.ID)
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isVirtualEndpointGatewayTags); ok || v != "" {
+		oldList, newList := d.GetChange(isVirtualEndpointGatewayTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *result.CRN)
+		if err != nil {
+			log.Printf(
+				"Error on create of VPE (%s) tags: %s", d.Id(), err)
+		}
+	}
 	return resourceIBMisVirtualEndpointGatewayRead(d, meta)
 }
 
@@ -216,6 +243,19 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 			return err
 		}
 
+	}
+	if d.HasChange(isVirtualEndpointGatewayTags) {
+		opt := sess.NewGetEndpointGatewayOptions(d.Id())
+		result, response, err := sess.GetEndpointGateway(opt)
+		if err != nil {
+			return fmt.Errorf("Error getting VPE: %s\n%s", err, response)
+		}
+		oldList, newList := d.GetChange(isVirtualEndpointGatewayTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *result.CRN)
+		if err != nil {
+			log.Printf(
+				"Error on update of VPE (%s) tags: %s", d.Id(), err)
+		}
 	}
 	return resourceIBMisVirtualEndpointGatewayRead(d, meta)
 }
@@ -242,6 +282,12 @@ func resourceIBMisVirtualEndpointGatewayRead(d *schema.ResourceData, meta interf
 	d.Set(isVirtualEndpointGatewayResourceGroupID, result.ResourceGroup.ID)
 	d.Set(isVirtualEndpointGatewayTarget, flattenEndpointGatewayTarget(result.Target.(*vpcv1.EndpointGatewayTarget)))
 	d.Set(isVirtualEndpointGatewayVpcID, result.VPC.ID)
+	tags, err := GetTagsUsingCRN(meta, *result.CRN)
+	if err != nil {
+		log.Printf(
+			"Error on get of VPE (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isVirtualEndpointGatewayTags, tags)
 	return nil
 }
 

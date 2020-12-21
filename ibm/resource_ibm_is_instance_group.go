@@ -3,9 +3,11 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -27,6 +29,12 @@ func resourceIBMISInstanceGroup() *schema.Resource {
 		Delete:   resourceIBMISInstanceGroupDelete,
 		Exists:   resourceIBMISInstanceGroupExists,
 		Importer: &schema.ResourceImporter{},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -113,6 +121,15 @@ func resourceIBMISInstanceGroup() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Instance group status - deleting, healthy, scaling, unhealthy",
+			},
+
+			"tags": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of tags for instance group",
 			},
 		},
 	}
@@ -213,6 +230,16 @@ func resourceIBMISInstanceGroupCreate(d *schema.ResourceData, meta interface{}) 
 		return healthError
 	}
 
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk("tags"); ok || v != "" {
+		oldList, newList := d.GetChange("tags")
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *instanceGroup.CRN)
+		if err != nil {
+			log.Printf(
+				"Error on create of instance group (%s) tags: %s", d.Id(), err)
+		}
+	}
+
 	return resourceIBMISInstanceGroupRead(d, meta)
 
 }
@@ -226,6 +253,21 @@ func resourceIBMISInstanceGroupUpdate(d *schema.ResourceData, meta interface{}) 
 	var changed bool
 	instanceGroupUpdateOptions := vpcv1.UpdateInstanceGroupOptions{}
 	instanceGroupPatchModel := vpcv1.InstanceGroupPatch{}
+
+	if d.HasChange("tags") {
+		instanceGroupID := d.Id()
+		getInstanceGroupOptions := vpcv1.GetInstanceGroupOptions{ID: &instanceGroupID}
+		instanceGroup, response, err := sess.GetInstanceGroup(&getInstanceGroupOptions)
+		if err != nil {
+			return fmt.Errorf("Error getting instance group: %s\n%s", err, response)
+		}
+		oldList, newList := d.GetChange("tags")
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *instanceGroup.CRN)
+		if err != nil {
+			log.Printf(
+				"Error on update of instance group (%s) tags: %s", d.Id(), err)
+		}
+	}
 
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
@@ -333,7 +375,12 @@ func resourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) er
 
 	d.Set("status", *instanceGroup.Status)
 	d.Set("vpc", *instanceGroup.VPC.ID)
-
+	tags, err := GetTagsUsingCRN(meta, *instanceGroup.CRN)
+	if err != nil {
+		log.Printf(
+			"Error on get of instance group (%s) tags: %s", d.Id(), err)
+	}
+	d.Set("tags", tags)
 	return nil
 }
 
