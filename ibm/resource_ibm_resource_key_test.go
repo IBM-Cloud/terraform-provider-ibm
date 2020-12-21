@@ -159,9 +159,12 @@ func testAccCheckIBMResourceKeyDestroy(s *terraform.State) error {
 		resourceKeyID := rs.Primary.ID
 
 		// Try to find the key
-		_, err := rsContClient.ResourceServiceKey().GetKey(resourceKeyID)
+		key, err := rsContClient.ResourceServiceKey().GetKey(resourceKeyID)
 
 		if err == nil {
+			if key.State == "removed" {
+				return nil
+			}
 			return fmt.Errorf("Resource key still exists: %s", rs.Primary.ID)
 		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error waiting for resource key (%s) to be destroyed: %s", rs.Primary.ID, err)
