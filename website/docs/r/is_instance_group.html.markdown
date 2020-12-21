@@ -82,8 +82,9 @@ The following arguments are supported:
 * `resource_group` - (Optional, string) Resource group ID.
 * `subnets` - (Required, list) The list of subnet IDs used by the instances.
 * `application_port` - (Optional, int) Used by the instance group when scaling up instances to supply the port for the load balancer pool member
-* `load_balancer` - (Optional, string) Load blamcer ID.
-* `load_balancer_pool` - (Optional, string) Load blamcer pool ID.
+* `load_balancer` - (Optional, string) Load balancer ID.
+* `load_balancer_pool` - (Optional, string) Load balancer pool ID.
+* `tags` - (Optional, array of strings) Tags associated with the instance.
 
 ## Attribute Reference
 

@@ -70,7 +70,8 @@ The following arguments are supported:
   * `name` -  (Optional, string)Endpoint gateway resource group IPs name
   * `subnet` -  (Optional, string)Endpoint gateway resource group Subnet id
   * `resource_type` -  (Computed, string)Endpoint gateway resource group VPC Resource Type
-* `resource_group` -  (Optional, string,ForceNew)The resource group id  
+* `resource_group` -  (Optional, string,ForceNew)The resource group id
+* `tags` - (Optional, array of strings) Tags associated with the instance.
 
 ## Attribute Reference
 
