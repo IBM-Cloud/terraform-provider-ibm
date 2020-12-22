@@ -129,7 +129,7 @@ func resourceIBMContainerAddOnsCreate(d *schema.ResourceData, meta interface{}) 
 	}
 	payload.Enable = true
 	_, err = addOnAPI.ConfigureAddons(cluster, &payload, targetEnv)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "Request failed with status code: 409") {
 		return err
 	}
 	_, err = waitForContainerAddOns(d, meta, cluster, schema.TimeoutCreate)
@@ -257,7 +257,7 @@ func resourceIBMContainerAddOnsUpdate(d *schema.ResourceData, meta interface{}) 
 					updateList.AddonsList = append(updateList.AddonsList, update)
 					updateList.Update = true
 					_, err = addOnAPI.ConfigureAddons(cluster, &updateList, targetEnv)
-					if err != nil {
+					if err != nil && !strings.Contains(err.Error(), "Request failed with status code: 409") {
 						return err
 					}
 					_, err = waitForContainerAddOns(d, meta, cluster, schema.TimeoutUpdate)
@@ -288,7 +288,7 @@ func resourceIBMContainerAddOnsUpdate(d *schema.ResourceData, meta interface{}) 
 			}
 			addOnParams.Enable = true
 			_, err = addOnAPI.ConfigureAddons(cluster, &addOnParams, targetEnv)
-			if err != nil {
+			if err != nil && !strings.Contains(err.Error(), "Request failed with status code: 409") {
 				return err
 			}
 			_, err = waitForContainerAddOns(d, meta, cluster, schema.TimeoutCreate)
