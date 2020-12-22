@@ -56,6 +56,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
+	registryv1 "github.com/IBM-Cloud/bluemix-go/api/container/registryv1"
 	"github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/hpcs"
@@ -172,6 +173,7 @@ type ClientSession interface {
 	BluemixUserDetails() (*UserConfig, error)
 	ContainerAPI() (containerv1.ContainerServiceAPI, error)
 	VpcContainerAPI() (containerv2.ContainerServiceAPI, error)
+	ContainerRegistryAPI() (registryv1.RegistryServiceAPI, error)
 	CisAPI() (cisv1.CisServiceAPI, error)
 	FunctionClient() (*whisk.Client, error)
 	GlobalSearchAPI() (globalsearchv2.GlobalSearchServiceAPI, error)
@@ -249,6 +251,9 @@ type clientSession struct {
 
 	csv2ConfigErr  error
 	csv2ServiceAPI containerv2.ContainerServiceAPI
+
+	crv1ConfigErr  error
+	crv1ServiceAPI registryv1.RegistryServiceAPI
 
 	stxConfigErr  error
 	stxServiceAPI schematics.SchematicsServiceAPI
@@ -462,6 +467,11 @@ func (sess clientSession) ContainerAPI() (containerv1.ContainerServiceAPI, error
 // VpcContainerAPI provides v2Container Service APIs ...
 func (sess clientSession) VpcContainerAPI() (containerv2.ContainerServiceAPI, error) {
 	return sess.csv2ServiceAPI, sess.csv2ConfigErr
+}
+
+// ContainerRegistryAPI provides v2Container Service APIs ...
+func (sess clientSession) ContainerRegistryAPI() (registryv1.RegistryServiceAPI, error) {
+	return sess.crv1ServiceAPI, sess.crv1ConfigErr
 }
 
 // SchematicsAPI provides schematics Service APIs ...
@@ -817,6 +827,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.accountV1ConfigErr = errEmptyBluemixCredentials
 		session.csConfigErr = errEmptyBluemixCredentials
 		session.csv2ConfigErr = errEmptyBluemixCredentials
+		session.crv1ConfigErr = errEmptyBluemixCredentials
 		session.kpErr = errEmptyBluemixCredentials
 		session.kmsErr = errEmptyBluemixCredentials
 		session.stxConfigErr = errEmptyBluemixCredentials
@@ -942,6 +953,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.csv2ConfigErr = fmt.Errorf("Error occured while configuring vpc Container Service for K8s cluster: %q", err)
 	}
 	session.csv2ServiceAPI = v2clusterAPI
+
+	v1registryAPI, err := registryv1.New(sess.BluemixSession)
+	if err != nil {
+		session.crv1ConfigErr = fmt.Errorf("Error occured while configuring Container Registry: %q", err)
+	}
+	session.crv1ServiceAPI = v1registryAPI
 
 	hpcsAPI, err := hpcs.New(sess.BluemixSession)
 	if err != nil {
