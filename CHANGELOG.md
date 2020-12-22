@@ -1,3 +1,31 @@
+## 1.18.0 (Dec22, 2020)
+
+FEATURES:
+
+* Support CIS Certificate resources `ibm_cis_certificate_order`, `ibm_cis_certificate_upload`
+
+* Support CIS Certificate datasources `ibm_cis_certificates`, `ibm_cis_custom_certificates`
+
+* Support CIS DNS Records import and export `ibm_cis_dns_records_import`, `ibm_cis_dns_records`
+
+* Support virtual private endpoint gateways `ibm_is_virtual_endpoint_gateway`, `ibm_is_virtual_endpoint_gateway_ip` resources and `ibm_is_virtual_endpoint_gateways`, `ibm_is_virtual_endpoint_gateway_ips`, `ibm_is_virtual_endpoint_gateway` datasources
+
+
+ENHANCEMENTS:
+
+* resource: Support `labels` argument and updates for kubernetes clusters ([#2109](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2109)) 
+
+* resource: Support `namespace` argument and `persistence` and `status` attributes ([#2097](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2097)) 
+
+
+
+BUGFIXES:
+
+* Fix an ibm_resource_key that is removed outside of Terraform is not being recreated ([#2125](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2125))
+
+* Fix cluster addon fails on apply after timeout ([#2129](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2129))
+
+
 ## 1.17.0 (Dec10, 2020)
 
 FEATURES:
