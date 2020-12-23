@@ -6,7 +6,7 @@ cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/trace
 cloud.google.com/go/internal/version
 cloud.google.com/go/storage
-# github.com/IBM-Cloud/bluemix-go v0.0.0-20201214130426-d34fed0e9aff
+# github.com/IBM-Cloud/bluemix-go v0.0.0-20201222104207-ac387d69450c
 github.com/IBM-Cloud/bluemix-go
 github.com/IBM-Cloud/bluemix-go/api/account/accountv1
 github.com/IBM-Cloud/bluemix-go/api/account/accountv2
@@ -14,6 +14,7 @@ github.com/IBM-Cloud/bluemix-go/api/certificatemanager
 github.com/IBM-Cloud/bluemix-go/api/cis/cisv1
 github.com/IBM-Cloud/bluemix-go/api/container/containerv1
 github.com/IBM-Cloud/bluemix-go/api/container/containerv2
+github.com/IBM-Cloud/bluemix-go/api/container/registryv1
 github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2
 github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3
 github.com/IBM-Cloud/bluemix-go/api/hpcs
