@@ -304,14 +304,15 @@ func Provider() terraform.ResourceProvider {
 
 			// Added for Direct Link
 
-			"ibm_dl_gateways":        dataSourceIBMDLGateways(),
-			"ibm_dl_offering_speeds": dataSourceIBMDLOfferingSpeeds(),
-			"ibm_dl_port":            dataSourceIBMDirectLinkPort(),
-			"ibm_dl_ports":           dataSourceIBMDirectLinkPorts(),
-			"ibm_dl_gateway":         dataSourceIBMDLGateway(),
-			"ibm_dl_locations":       dataSourceIBMDLLocations(),
-			"ibm_dl_routers":         dataSourceIBMDLRouters(),
-			"ibm_dl_provider_ports":  dataSourceIBMDirectLinkProviderPorts(),
+			"ibm_dl_gateways":          dataSourceIBMDLGateways(),
+			"ibm_dl_offering_speeds":   dataSourceIBMDLOfferingSpeeds(),
+			"ibm_dl_port":              dataSourceIBMDirectLinkPort(),
+			"ibm_dl_ports":             dataSourceIBMDirectLinkPorts(),
+			"ibm_dl_gateway":           dataSourceIBMDLGateway(),
+			"ibm_dl_locations":         dataSourceIBMDLLocations(),
+			"ibm_dl_routers":           dataSourceIBMDLRouters(),
+			"ibm_dl_provider_ports":    dataSourceIBMDirectLinkProviderPorts(),
+			"ibm_dl_provider_gateways": dataSourceIBMDirectLinkProviderGateways(),
 
 			//Added for Transit Gateway
 			"ibm_tg_gateway":   dataSourceIBMTransitGateway(),

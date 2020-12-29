@@ -18,3 +18,6 @@ resource ibm_dl_provider_gateway test_dl_gateway {
   port                 = data.ibm_dl_provider_ports.test_ds_dl_ports.ports[0].port_id
   customer_account_id  = var.customerAccID
 }
+data "ibm_dl_provider_gateways" "test_ibm_dl_provider_gws" {
+  
+}
