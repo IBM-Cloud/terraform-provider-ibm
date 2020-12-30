@@ -81,3 +81,6 @@ The following attributes are exported:
 * `public_service_endpoint` - Is public service endpoint enabled to make the master publicly accessible.
 * `private_service_endpoint` - Is private service endpoint enabled to make the master privately accessible.
 * `crn` - CRN of the instance.
+* `api_key_id` - ID of APIkey.
+* `api_key_owner_name` - "Name of the key owner.
+* `api_key_owner_email` - Email id of the key owner

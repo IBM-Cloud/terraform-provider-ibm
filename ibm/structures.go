@@ -11,6 +11,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
+	"github.com/IBM/ibm-cos-sdk-go/service/s3"
+	kp "github.com/IBM/keyprotect-go-client"
+	"github.com/apache/openwhisk-client-go/whisk"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/softlayer/softlayer-go/datatypes"
+	"github.com/softlayer/softlayer-go/sl"
+
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
@@ -23,13 +31,6 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
-	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
-	"github.com/IBM/ibm-cos-sdk-go/service/s3"
-	kp "github.com/IBM/keyprotect-go-client"
-	"github.com/apache/openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/softlayer/softlayer-go/datatypes"
-	"github.com/softlayer/softlayer-go/sl"
 )
 
 const (
@@ -1797,7 +1798,7 @@ func defaultResourceGroup(meta interface{}) (string, error) {
 		return "", err
 	}
 	if len(grpList) <= 0 {
-		return "", fmt.Errorf("The targeted resource group could not be found. Make sure you have required permissions to access the resource group.")
+		return "", fmt.Errorf("The default resource group could not be found. Make sure you have required permissions to access the resource group.")
 	}
 	return grpList[0].ID, nil
 }
