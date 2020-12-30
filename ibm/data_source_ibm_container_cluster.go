@@ -290,7 +290,21 @@ func dataSourceIBMContainerCluster() *schema.Resource {
 				Optional:    true,
 				Description: "If set to false bounded services won't be listed.",
 			},
-
+			"api_key_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of APIkey",
+			},
+			"api_key_owner_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Name of the key owner",
+			},
+			"api_key_owner_email": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "email id of the key owner",
+			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -414,6 +428,14 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	d.Set(ResourceControllerURL, controller+"/kubernetes/clusters")
+	apikeyAPI := csClient.Apikeys()
+	apikeyConfig, err := apikeyAPI.GetApiKeyInfo(name, targetEnv)
+	if err != nil {
+		return err
+	}
+	d.Set("api_key_id", apikeyConfig.ID)
+	d.Set("api_key_owner_name", apikeyConfig.Name)
+	d.Set("api_key_owner_email", apikeyConfig.Email)
 	d.Set(ResourceName, clusterFields.Name)
 	d.Set(ResourceCRN, clusterFields.CRN)
 	d.Set(ResourceStatus, clusterFields.State)

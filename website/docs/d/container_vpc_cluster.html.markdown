@@ -67,3 +67,6 @@ The following attributes are exported:
 * `status` - Status of cluster master.
 * `health` - Health of cluster master
 * `kube_version` -  The Kubernetes version, including at least the major.minor version.To see available versions, run 'ibmcloud ks versions'.
+* `api_key_id` - ID of APIkey.
+* `api_key_owner_name` - "Name of the key owner.
+* `api_key_owner_email` - Email id of the key owner
