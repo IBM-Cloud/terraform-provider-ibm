@@ -1,12 +1,13 @@
 package containerv1
 
 import (
-	"crypto/sha1"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"html/template"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -432,7 +433,7 @@ func (r *clusters) GetClusterConfig(name, dir string, admin bool, target Cluster
 				old := filepath.Join(kubedir, f.Name())
 				new := filepath.Join(kubedir, "../", f.Name())
 				if strings.HasSuffix(f.Name(), ".yml") {
-					new = filepath.Join(kubedir, "../", kubeConfigName)
+					new = filepath.Join(path.Clean(kubedir), "../", path.Clean(kubeConfigName))
 					kubeyml = new
 				}
 				err := os.Rename(old, new)
@@ -863,7 +864,7 @@ func kubeConfigDir(baseDir string) (string, error) {
 	// Locate the new directory in form "kubeConfigxxx" stored in the base directory
 	for _, baseDirFile := range baseDirFiles {
 		if baseDirFile.IsDir() && strings.Index(baseDirFile.Name(), "kubeConfig") == 0 {
-			return filepath.Join(baseDir, baseDirFile.Name()), nil
+			return filepath.Join(path.Clean(baseDir), path.Clean(baseDirFile.Name())), nil
 		}
 	}
 
@@ -949,14 +950,14 @@ func ComputeClusterConfigDir(dir, name string, admin bool) string {
 	resultDirSuffix := "_k8sconfig"
 	if len(name) < 30 {
 		//Make it longer for uniqueness
-		h := sha1.New()
+		h := sha256.New()
 		h.Write([]byte(name))
 		resultDirPrefix = fmt.Sprintf("%x_%s", h.Sum(nil), name)
 	}
 	if admin {
 		resultDirPrefix = fmt.Sprintf("%s_admin", resultDirPrefix)
 	}
-	resultDir := filepath.Join(dir, fmt.Sprintf("%s%s", resultDirPrefix, resultDirSuffix))
+	resultDir := filepath.Join(dir, fmt.Sprintf("%s%s", path.Clean(resultDirPrefix), path.Clean(resultDirSuffix)))
 	return resultDir
 }
 

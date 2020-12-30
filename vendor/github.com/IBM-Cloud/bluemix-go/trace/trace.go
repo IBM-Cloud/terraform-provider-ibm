@@ -77,7 +77,7 @@ func NewStdLogger() PrinterCloser {
 
 // NewFileLogger return a printer that writes to the given file path.
 func NewFileLogger(path string) PrinterCloser {
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0666)
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 	if err != nil {
 		logger := NewStdLogger()
 		logger.Printf("An error occurred when creating log file '%s':\n%v\n\n", path, err)
