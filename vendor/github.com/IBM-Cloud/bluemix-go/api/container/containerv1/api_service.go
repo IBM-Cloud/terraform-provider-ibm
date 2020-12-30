@@ -26,6 +26,7 @@ type ContainerServiceAPI interface {
 	Vlans() Vlans
 	Kms() Kms
 	AddOns() AddOns
+	Apikeys() Apikeys
 }
 
 //ContainerService holds the client
@@ -119,4 +120,9 @@ func (c *csService) Kms() Kms {
 //AddOns implements Cluster Add Ons
 func (c *csService) AddOns() AddOns {
 	return newAddOnsAPI(c.Client)
+}
+
+//AddOns implements Cluster Add Ons
+func (c *csService) Apikeys() Apikeys {
+	return newApiKeyAPI(c.Client)
 }

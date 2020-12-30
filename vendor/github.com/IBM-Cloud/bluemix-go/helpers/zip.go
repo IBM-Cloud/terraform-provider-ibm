@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 )
 
@@ -37,7 +38,7 @@ func extractFileInZipArchive(dest string, f *zip.File) error {
 	}
 	defer rc.Close()
 
-	path := filepath.Join(dest, f.Name)
+	path := filepath.Join(path.Clean(dest), path.Clean(f.Name))
 
 	if f.FileInfo().IsDir() {
 		return os.MkdirAll(path, f.Mode())
