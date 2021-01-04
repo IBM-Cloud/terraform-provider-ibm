@@ -13,7 +13,7 @@ import (
 	// Added code for the Power Colo Offering
 
 	apigateway "github.com/IBM/apigateway-go-sdk"
-	"github.com/IBM/go-sdk-core/v3/core"
+	"github.com/IBM/go-sdk-core/v4/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
 	ciscachev1 "github.com/IBM/networking-go-sdk/cachingapiv1"
