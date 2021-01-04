@@ -53,6 +53,8 @@ github.com/IBM/keyprotect-go-client v0.5.2 h1:A4yp2Fc7mg4dtotZErZXwJb9XKpb3ONexn
 github.com/IBM/keyprotect-go-client v0.5.2/go.mod h1:5TwDM/4FRJq1ZOlwQL1xFahLWQ3TveR88VmL1u3njyI=
 github.com/IBM/networking-go-sdk v0.12.1 h1:GmzrRjvAyqKMfUPM8Y/R5dce0x5AXTqmseVZ3n7eZks=
 github.com/IBM/networking-go-sdk v0.12.1/go.mod h1:lzkGBnw5glMB7Nxawfgu19MH4Tjy3KRQ2SYMYl2ck7o=
+github.com/IBM/platform-services-go-sdk v0.17.3 h1:lHP7A5v6ALI9jayMPuvHyhtl1trWxwJHWmoaHPKJQUs=
+github.com/IBM/platform-services-go-sdk v0.17.3/go.mod h1:ez3yDwaaa1+aqzaMOPUwjwkOMjdkmtVyMqyE+/Yx7AI=
 github.com/IBM/vpc-go-sdk v0.3.1 h1:v7jSq+pkORQOTUxsb/114TzSXvVu1+EIM53Tu/hkJ5o=
 github.com/IBM/vpc-go-sdk v0.3.1/go.mod h1:QlPyV8sf1K4Si7CgEyAbmDonabnhJ7tC4owcjrTz3Ys=
 github.com/PuerkitoBio/purell v1.1.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
