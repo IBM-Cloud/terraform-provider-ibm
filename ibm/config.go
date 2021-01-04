@@ -42,6 +42,7 @@ import (
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
+	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -229,6 +230,7 @@ type ClientSession interface {
 	CisLockdownClientSession() (*cislockdownv1.ZoneLockdownV1, error)
 	CisRangeAppClientSession() (*cisrangeappv1.RangeApplicationsV1, error)
 	CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1, error)
+	IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
 }
 
 type clientSession struct {
@@ -437,6 +439,9 @@ type clientSession struct {
 	// CIS WAF rule service options
 	cisWAFRuleErr    error
 	cisWAFRuleClient *ciswafrulev1.WafRulesApiV1
+	//IAM Identity Option
+	iamIdentityErr error
+	iamIdentityAPI *iamidentity.IamIdentityV1
 }
 
 // BluemixAcccountAPI ...
@@ -808,6 +813,11 @@ func (sess clientSession) CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1
 	return sess.cisWAFRuleClient.Clone(), nil
 }
 
+// IAM Identity Session
+func (sess clientSession) IAMIdentityV1API() (*iamidentity.IamIdentityV1, error) {
+	return sess.iamIdentityAPI, sess.iamIdentityErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -884,6 +894,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisLockdownErr = errEmptyBluemixCredentials
 		session.cisRangeAppErr = errEmptyBluemixCredentials
 		session.cisWAFRuleErr = errEmptyBluemixCredentials
+		session.iamIdentityErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1546,6 +1557,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"Error occured while configuring CIS WAF Rules service: %s",
 			session.cisWAFRuleErr)
 	}
+	// iamIdenityURL := fmt.Sprintf("https://%s.iam.cloud.ibm.com/v1", c.Region)
+	iamIdentityOptions := &iamidentity.IamIdentityV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, "https://iam.cloud.ibm.com"),
+	}
+	iamIdentityClient, err := iamidentity.NewIamIdentityV1(iamIdentityOptions)
+	if err != nil {
+		session.vpcErr = fmt.Errorf("Error occured while configuring IAM Identity service: %q", err)
+	}
+	session.iamIdentityAPI = iamIdentityClient
+
 	return session, nil
 }
 
