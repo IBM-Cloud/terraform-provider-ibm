@@ -1,7 +1,7 @@
 package ibm
 
 import (
-	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"log"
@@ -94,7 +94,7 @@ func resourceIBMComputeUser() *schema.Resource {
 				Optional:  true,
 				Sensitive: true,
 				StateFunc: func(v interface{}) string {
-					hash := sha1.Sum([]byte(v.(string)))
+					hash := sha256.Sum256([]byte(v.(string)))
 					return hex.EncodeToString(hash[:])
 				},
 				Description: "password for the user",
