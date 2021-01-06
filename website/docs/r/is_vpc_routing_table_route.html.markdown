@@ -36,7 +36,7 @@ The following arguments are supported:
 * `action` - (Optional,string) The action to perform with a packet matching the route.
 * `zone` - (Required, Forces new resource, string) Name of the zone. 
 * `destination` - (Required, Forces new resource, string) The destination of the route. 
-* `next_hop` - (Optional, string) The next hop of the route. 
+* `next_hop` - (Required, Forces new resource, string) The next hop of the route. 
 
 ## Attribute Reference
 
