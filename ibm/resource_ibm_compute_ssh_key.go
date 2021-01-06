@@ -1,7 +1,7 @@
 package ibm
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 	"log"
@@ -230,7 +230,7 @@ func computeSSHKeyFingerprint(key string) (fingerprint string, err error) {
 	if err != nil {
 		return "", fmt.Errorf("Error decoding the public key: %s\nPlease check the value of public_key", err)
 	}
-	fp := md5.Sum([]byte(k))
+	fp := sha256.Sum256([]byte(k))
 	prints := make([]string, len(fp))
 	for i, b := range fp {
 		prints[i] = fmt.Sprintf("%02x", b)
