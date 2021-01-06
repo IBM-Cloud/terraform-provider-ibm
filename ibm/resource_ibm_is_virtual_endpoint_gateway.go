@@ -89,10 +89,11 @@ func resourceIBMISEndpointGateway() *schema.Resource {
 				Description: "Endpoint gateway lifecycle state",
 			},
 			isVirtualEndpointGatewayIPs: {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				Description: "Endpoint gateway resource group",
+				Type:             schema.TypeList,
+				Optional:         true,
+				Computed:         true,
+				Description:      "Endpoint gateway resource group",
+				DiffSuppressFunc: applyOnce,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isVirtualEndpointGatewayIPsID: {
