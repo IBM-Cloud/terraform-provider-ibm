@@ -34,7 +34,7 @@ import (
 // VpcClassicV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage
 // infrastructure resources, including virtual server instances, subnets, volumes, and load balancers.
 //
-// Version: 2020-11-17
+// Version: 2020-12-15
 type VpcClassicV1 struct {
 	Service *core.BaseService
 
@@ -118,7 +118,7 @@ func NewVpcClassicV1(options *VpcClassicV1Options) (service *VpcClassicV1, err e
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2020-11-17")
+		options.Version = core.StringPtr("2020-12-15")
 	}
 
 	service = &VpcClassicV1{
@@ -2285,6 +2285,8 @@ func (vpcClassic *VpcClassicV1) UpdateKey(updateKeyOptions *UpdateKeyOptions) (r
 }
 
 // ListInstanceProfiles : List all instance profiles
+// This request lists provisionable instance profiles in the region. An instance profile specifies the performance
+// characteristics and pricing model for an instance.
 func (vpcClassic *VpcClassicV1) ListInstanceProfiles(listInstanceProfilesOptions *ListInstanceProfilesOptions) (result *InstanceProfileCollection, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listInstanceProfilesOptions, "listInstanceProfilesOptions")
 	if err != nil {
@@ -3793,10 +3795,10 @@ func (vpcClassic *VpcClassicV1) UpdateVolume(updateVolumeOptions *UpdateVolumeOp
 
 // ListRegions : List all regions
 // This request lists all regions. Each region is a separate geographic area that contains multiple isolated zones.
-// Resources can be provisioned into a one or more zones in a region. Each zone is isolated, but connected to other
-// zones in the same region with low-latency and high-bandwidth links. Regions represent the top-level of fault
-// isolation available. Resources deployed within a single region also benefit from the low latency afforded by
-// geographic proximity.
+// Resources can be provisioned into one or more zones in a region. Each zone is isolated, but connected to other zones
+// in the same region with low-latency and high-bandwidth links. Regions represent the top-level of fault isolation
+// available. Resources deployed within a single region also benefit from the low latency afforded by geographic
+// proximity.
 func (vpcClassic *VpcClassicV1) ListRegions(listRegionsOptions *ListRegionsOptions) (result *RegionCollection, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listRegionsOptions, "listRegionsOptions")
 	if err != nil {
@@ -7624,6 +7626,9 @@ func (vpcClassic *VpcClassicV1) CreateLoadBalancer(createLoadBalancerOptions *Cr
 	if createLoadBalancerOptions.Listeners != nil {
 		body["listeners"] = createLoadBalancerOptions.Listeners
 	}
+	if createLoadBalancerOptions.Logging != nil {
+		body["logging"] = createLoadBalancerOptions.Logging
+	}
 	if createLoadBalancerOptions.Name != nil {
 		body["name"] = createLoadBalancerOptions.Name
 	}
@@ -10724,6 +10729,14 @@ type CreateLoadBalancerOptions struct {
 	// The listeners of this load balancer.
 	Listeners []LoadBalancerListenerPrototypeLoadBalancerContext `json:"listeners,omitempty"`
 
+	// The logging configuration to use for this load balancer. See [VPC Datapath
+	// Logging](https://cloud.ibm.com/docs/vpc?topic=vpc-datapath-logging)
+	// on the logging format, fields and permitted values.
+	//
+	// To activate logging, the load balancer profile must support the specified logging
+	// type.
+	Logging *LoadBalancerLogging `json:"logging,omitempty"`
+
 	// The user-defined name for this load balancer. If unspecified, the name will be a hyphenated list of
 	// randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -10762,6 +10775,12 @@ func (options *CreateLoadBalancerOptions) SetSubnets(subnets []SubnetIdentityInt
 // SetListeners : Allow user to set Listeners
 func (options *CreateLoadBalancerOptions) SetListeners(listeners []LoadBalancerListenerPrototypeLoadBalancerContext) *CreateLoadBalancerOptions {
 	options.Listeners = listeners
+	return options
+}
+
+// SetLogging : Allow user to set Logging
+func (options *CreateLoadBalancerOptions) SetLogging(logging *LoadBalancerLogging) *CreateLoadBalancerOptions {
+	options.Logging = logging
 	return options
 }
 
@@ -11540,7 +11559,7 @@ func (options *CreateVPNGatewayOptions) SetHeaders(param map[string]string) *Cre
 	return options
 }
 
-// DefaultSecurityGroup : Collection of rules in a default security group.
+// DefaultSecurityGroup : DefaultSecurityGroup struct
 type DefaultSecurityGroup struct {
 	// The date and time that this security group was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
@@ -15391,7 +15410,7 @@ type Instance struct {
 	// Primary network interface.
 	PrimaryNetworkInterface *NetworkInterfaceInstanceContextReference `json:"primary_network_interface" validate:"required"`
 
-	// The profile this virtual server instance uses.
+	// The profile for this virtual server instance.
 	Profile *InstanceProfileReference `json:"profile" validate:"required"`
 
 	// The resource group for this instance.
@@ -15416,6 +15435,7 @@ type Instance struct {
 // Constants associated with the Instance.Status property.
 // The status of the virtual server instance.
 const (
+	InstanceStatusDeletingConst   = "deleting"
 	InstanceStatusFailedConst     = "failed"
 	InstanceStatusPausedConst     = "paused"
 	InstanceStatusPausingConst    = "pausing"
@@ -17955,6 +17975,9 @@ type LoadBalancer struct {
 	// The listeners of this load balancer.
 	Listeners []LoadBalancerListenerReference `json:"listeners" validate:"required"`
 
+	// The logging configuration for this load balancer.
+	Logging *LoadBalancerLogging `json:"logging" validate:"required"`
+
 	// The unique user-defined name for this load balancer.
 	Name *string `json:"name" validate:"required"`
 
@@ -17970,7 +17993,9 @@ type LoadBalancer struct {
 	// The provisioning status of this load balancer.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
 
-	// The public IP addresses assigned to this load balancer. Applicable only for public load balancers.
+	// The public IP addresses assigned to this load balancer.
+	//
+	// Applicable only for public load balancers.
 	PublicIps []IP `json:"public_ips" validate:"required"`
 
 	// The resource group for this load balancer.
@@ -18026,6 +18051,10 @@ func UnmarshalLoadBalancer(m map[string]json.RawMessage, result interface{}) (er
 		return
 	}
 	err = core.UnmarshalModel(m, "listeners", &obj.Listeners, UnmarshalLoadBalancerListenerReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "logging", &obj.Logging, UnmarshalLoadBalancerLogging)
 	if err != nil {
 		return
 	}
@@ -19041,8 +19070,56 @@ func UnmarshalLoadBalancerListenerReference(m map[string]json.RawMessage, result
 	return
 }
 
+// LoadBalancerLogging : The logging configuration for this load balancer.
+type LoadBalancerLogging struct {
+	// The datapath logging configuration for this load balancer.
+	Datapath *LoadBalancerLoggingDatapath `json:"datapath,omitempty"`
+}
+
+// UnmarshalLoadBalancerLogging unmarshals an instance of LoadBalancerLogging from the specified map of raw messages.
+func UnmarshalLoadBalancerLogging(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerLogging)
+	err = core.UnmarshalModel(m, "datapath", &obj.Datapath, UnmarshalLoadBalancerLoggingDatapath)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerLoggingDatapath : The datapath logging configuration for this load balancer.
+type LoadBalancerLoggingDatapath struct {
+	// If set to `true`, datapath logging is active for this load balancer.
+	Active *bool `json:"active" validate:"required"`
+}
+
+// NewLoadBalancerLoggingDatapath : Instantiate LoadBalancerLoggingDatapath (Generic Model Constructor)
+func (*VpcClassicV1) NewLoadBalancerLoggingDatapath(active bool) (model *LoadBalancerLoggingDatapath, err error) {
+	model = &LoadBalancerLoggingDatapath{
+		Active: core.BoolPtr(active),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+// UnmarshalLoadBalancerLoggingDatapath unmarshals an instance of LoadBalancerLoggingDatapath from the specified map of raw messages.
+func UnmarshalLoadBalancerLoggingDatapath(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerLoggingDatapath)
+	err = core.UnmarshalPrimitive(m, "active", &obj.Active)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // LoadBalancerPatch : LoadBalancerPatch struct
 type LoadBalancerPatch struct {
+	// The logging configuration to use for this load balancer.
+	//
+	// To activate logging, the load balancer profile must support the specified logging type.
+	Logging *LoadBalancerLogging `json:"logging,omitempty"`
+
 	// The unique user-defined name for this load balancer.
 	Name *string `json:"name,omitempty"`
 }
@@ -19050,6 +19127,10 @@ type LoadBalancerPatch struct {
 // UnmarshalLoadBalancerPatch unmarshals an instance of LoadBalancerPatch from the specified map of raw messages.
 func UnmarshalLoadBalancerPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPatch)
+	err = core.UnmarshalModel(m, "logging", &obj.Logging, UnmarshalLoadBalancerLogging)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -19246,7 +19327,9 @@ type LoadBalancerPoolHealthMonitor struct {
 	// the unexpected property value was encountered.
 	Type *string `json:"type" validate:"required"`
 
-	// The health check URL path. Applicable only if the health monitor `type` is `http` or `https`.
+	// The health check URL path. Applicable only if the health monitor `type` is `http` or
+	// `https`. This value must be in the format of an [origin-form request
+	// target](https://tools.ietf.org/html/rfc7230#section-5.3.1).
 	URLPath *string `json:"url_path,omitempty"`
 }
 
@@ -19311,7 +19394,9 @@ type LoadBalancerPoolHealthMonitorPatch struct {
 	// The protocol type of this load balancer pool health monitor.
 	Type *string `json:"type" validate:"required"`
 
-	// The health check URL path. Applicable only if the health monitor `type` is `http` or `https`.
+	// The health check URL path. Applicable only if the health monitor `type` is `http` or
+	// `https`. This value must be in the format of an [origin-form request
+	// target](https://tools.ietf.org/html/rfc7230#section-5.3.1).
 	URLPath *string `json:"url_path,omitempty"`
 }
 
@@ -19383,7 +19468,9 @@ type LoadBalancerPoolHealthMonitorPrototype struct {
 	// The protocol type of this load balancer pool health monitor.
 	Type *string `json:"type" validate:"required"`
 
-	// The health check URL path. Applicable only if the health monitor `type` is `http` or `https`.
+	// The health check URL path. Applicable only if the health monitor `type` is `http` or
+	// `https`. This value must be in the format of an [origin-form request
+	// target](https://tools.ietf.org/html/rfc7230#section-5.3.1).
 	URLPath *string `json:"url_path,omitempty"`
 }
 
@@ -21162,6 +21249,7 @@ const (
 const (
 	NetworkInterfaceStatusActiveConst    = "active"
 	NetworkInterfaceStatusAvailableConst = "available"
+	NetworkInterfaceStatusDeletingConst  = "deleting"
 	NetworkInterfaceStatusFailedConst    = "failed"
 	NetworkInterfaceStatusPendingConst   = "pending"
 )
@@ -26117,6 +26205,7 @@ type VolumeAttachment struct {
 const (
 	VolumeAttachmentStatusAttachedConst  = "attached"
 	VolumeAttachmentStatusAttachingConst = "attaching"
+	VolumeAttachmentStatusDeletingConst  = "deleting"
 	VolumeAttachmentStatusDetachingConst = "detaching"
 )
 

@@ -14,7 +14,7 @@ Import the details of an existing IBM Cloud Infrastructure virtual endpoint gate
 
 ```hcl
 data "ibm_is_virtual_endpoint_gateway_ips" "data_test1" {
-  gateway_id     = ibm_is_virtual_endpoint_gateway.endpoint_gateway.id
+  gateway = ibm_is_virtual_endpoint_gateway.endpoint_gateway.id
 }
 ```
 
@@ -23,7 +23,6 @@ data "ibm_is_virtual_endpoint_gateway_ips" "data_test1" {
 The following arguments are supported:
 
 - `gateway`(Required,string)- Endpoint gateway ID
-
 
 ## Attribute Reference
 
@@ -37,6 +36,6 @@ The following attributes are exported:
 - `auto_delete` - Endpoint gateway IP auto delete
 - `address` - Endpoint gateway IP address
 - `target` - Endpoint gateway detail
-    - `id` - The IPs target id
-    - `name` - The IPs target name
-    - `resource_type` - Endpoint gateway resource type
+  - `id` - The IPs target id
+  - `name` - The IPs target name
+  - `resource_type` - Endpoint gateway resource type
