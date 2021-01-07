@@ -24,7 +24,7 @@ var singleSiteLocation = []string{
 }
 
 var regionLocation = []string{
-	"au-syd", "eu-de", "eu-gb", "jp-tok", "us-east", "us-south",
+	"au-syd", "eu-de", "eu-gb", "jp-tok", "jp-osa", "us-east", "us-south",
 }
 
 var crossRegionLocation = []string{
@@ -933,6 +933,8 @@ func selectCosApi(apiType string, bLocation string) (string, string) {
 			return "s3.eu-gb.cloud-object-storage.appdomain.cloud", "s3.private.eu-gb.cloud-object-storage.appdomain.cloud"
 		case "jp-tok":
 			return "s3.jp-tok.cloud-object-storage.appdomain.cloud", "s3.private.jp-tok.cloud-object-storage.appdomain.cloud"
+		case "jp-osa":
+			return "s3.jp-osa.cloud-object-storage.appdomain.cloud", "s3.private.jp-osa.cloud-object-storage.appdomain.cloud"
 		case "us-east":
 			return "s3.us-east.cloud-object-storage.appdomain.cloud", "s3.private.us-east.cloud-object-storage.appdomain.cloud"
 		case "us-south":
