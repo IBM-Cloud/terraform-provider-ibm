@@ -24,6 +24,21 @@ def crypto_unit_add(cu_num):
     selected_crypto = "".join(out)
     print (selected_crypto)
 
+def crypto_unit_zeroize(admin_password):
+    print("########### ibmcloud tke crypto_unit-zeroize ########### \n")
+    if admin_password == "":
+        print ("[ERROR] the password is invalid")
+        return
+    child = pexpect.spawn('ibmcloud tke crypto_unit-zeroize', encoding='utf-8')
+    child.expect (r'Answer.*>.* ')
+    time.sleep(1)
+    child.sendline ('y')
+    child.expect (r'admin.*>.* ')
+    child.sendline (admin_password)
+    out= child.readlines()
+    zeroized = "".join(out)
+    print (zeroized)
+
 def list_sig_keys():
     print("########### ibmcloud tke sigkeys ########### \n")
     child = pexpect.spawn('ibmcloud tke sigkeys', encoding='utf-8')
@@ -209,4 +224,3 @@ def list_mk_registry():
     mk_registry = "".join(out)
     print (mk_registry)
     return mk_registry
-    
