@@ -27,12 +27,15 @@ const (
 	isVirtualEndpointGatewayLifecycleState     = "lifecycle_state"
 	isVirtualEndpointGatewayTarget             = "target"
 	isVirtualEndpointGatewayTargetName         = "name"
+	isVirtualEndpointGatewayTargetCRN          = "crn"
 	isVirtualEndpointGatewayTargetResourceType = "resource_type"
 	isVirtualEndpointGatewayVpcID              = "vpc"
 	isVirtualEndpointGatewayTags               = "tags"
 )
 
 func resourceIBMISEndpointGateway() *schema.Resource {
+	targetNameFmt := fmt.Sprintf("%s.0.%s", isVirtualEndpointGatewayTarget, isVirtualEndpointGatewayTargetName)
+	targetCRNFmt := fmt.Sprintf("%s.0.%s", isVirtualEndpointGatewayTarget, isVirtualEndpointGatewayTargetCRN)
 	return &schema.Resource{
 		Create:   resourceIBMisVirtualEndpointGatewayCreate,
 		Read:     resourceIBMisVirtualEndpointGatewayRead,
@@ -131,9 +134,24 @@ func resourceIBMISEndpointGateway() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isVirtualEndpointGatewayTargetName: {
-							Type:        schema.TypeString,
-							Required:    true,
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+							AtLeastOneOf: []string{
+								targetNameFmt,
+								targetCRNFmt,
+							},
 							Description: "The target name",
+						},
+						isVirtualEndpointGatewayTargetCRN: {
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+							AtLeastOneOf: []string{
+								targetNameFmt,
+								targetCRNFmt,
+							},
+							Description: "The target crn",
 						},
 						isVirtualEndpointGatewayTargetResourceType: {
 							Type:        schema.TypeString,
@@ -170,12 +188,16 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 	name := d.Get(isVirtualEndpointGatewayName).(string)
 
 	// target opiton
-	target := (d.Get(isVirtualEndpointGatewayTarget).([]interface{}))[0].(map[string]interface{})
-	taretName := target[isVirtualEndpointGatewayTargetName].(string)
-	targetResourceType := target[isVirtualEndpointGatewayResourceType].(string)
-	targetOpt := &vpcv1.EndpointGatewayTargetPrototype{
-		Name:         core.StringPtr(taretName),
-		ResourceType: core.StringPtr(targetResourceType),
+	targetOpt := &vpcv1.EndpointGatewayTargetPrototype{}
+	targetNameFmt := fmt.Sprintf("%s.0.%s", isVirtualEndpointGatewayTarget, isVirtualEndpointGatewayTargetName)
+	targetCRNFmt := fmt.Sprintf("%s.0.%s", isVirtualEndpointGatewayTarget, isVirtualEndpointGatewayTargetCRN)
+	targetResourceTypeFmt := fmt.Sprintf("%s.0.%s", isVirtualEndpointGatewayTarget, isVirtualEndpointGatewayTargetResourceType)
+	targetOpt.ResourceType = core.StringPtr(d.Get(targetResourceTypeFmt).(string))
+	if v, ok := d.GetOk(targetNameFmt); ok {
+		targetOpt.Name = core.StringPtr(v.(string))
+	}
+	if v, ok := d.GetOk(targetCRNFmt); ok {
+		targetOpt.CRN = core.StringPtr(v.(string))
 	}
 
 	// vpc option
@@ -281,7 +303,8 @@ func resourceIBMisVirtualEndpointGatewayRead(d *schema.ResourceData, meta interf
 	d.Set(isVirtualEndpointGatewayResourceType, result.ResourceType)
 	d.Set(isVirtualEndpointGatewayIPs, flattenIPs(result.Ips))
 	d.Set(isVirtualEndpointGatewayResourceGroupID, result.ResourceGroup.ID)
-	d.Set(isVirtualEndpointGatewayTarget, flattenEndpointGatewayTarget(result.Target.(*vpcv1.EndpointGatewayTarget)))
+	d.Set(isVirtualEndpointGatewayTarget,
+		flattenEndpointGatewayTarget(result.Target.(*vpcv1.EndpointGatewayTarget)))
 	d.Set(isVirtualEndpointGatewayVpcID, result.VPC.ID)
 	tags, err := GetTagsUsingCRN(meta, *result.CRN)
 	if err != nil {
@@ -371,6 +394,9 @@ func flattenEndpointGatewayTarget(target *vpcv1.EndpointGatewayTarget) interface
 	}
 	if target.Name != nil {
 		targetOutput[isVirtualEndpointGatewayTargetName] = *target.Name
+	}
+	if target.CRN != nil {
+		targetOutput[isVirtualEndpointGatewayTargetCRN] = *target.CRN
 	}
 	if target.ResourceType != nil {
 		targetOutput[isVirtualEndpointGatewayTargetResourceType] = *target.ResourceType

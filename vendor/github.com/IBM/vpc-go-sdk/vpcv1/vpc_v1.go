@@ -34,7 +34,7 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage
 // infrastructure resources, including virtual server instances, subnets, volumes, and load balancers.
 //
-// Version: 2020-11-17
+// Version: 2020-12-15
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -118,9 +118,8 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2020-11-17")
+		options.Version = core.StringPtr("2020-12-15")
 	}
-
 	service = &VpcV1{
 		Service:    baseService,
 		Version:    options.Version,
@@ -3444,6 +3443,8 @@ func (vpc *VpcV1) UpdateKey(updateKeyOptions *UpdateKeyOptions) (result *Key, re
 }
 
 // ListInstanceProfiles : List all instance profiles
+// This request lists provisionable instance profiles in the region. An instance profile specifies the performance
+// characteristics and pricing model for an instance.
 func (vpc *VpcV1) ListInstanceProfiles(listInstanceProfilesOptions *ListInstanceProfilesOptions) (result *InstanceProfileCollection, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listInstanceProfilesOptions, "listInstanceProfilesOptions")
 	if err != nil {
@@ -3543,6 +3544,7 @@ func (vpc *VpcV1) GetInstanceProfile(getInstanceProfileOptions *GetInstanceProfi
 }
 
 // ListInstanceTemplates : Get instance templates
+// This request lists all instance templates in the region.
 func (vpc *VpcV1) ListInstanceTemplates(listInstanceTemplatesOptions *ListInstanceTemplatesOptions) (result *InstanceTemplateCollection, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listInstanceTemplatesOptions, "listInstanceTemplatesOptions")
 	if err != nil {
@@ -3688,6 +3690,7 @@ func (vpc *VpcV1) DeleteInstanceTemplate(deleteInstanceTemplateOptions *DeleteIn
 }
 
 // GetInstanceTemplate : Retrieve specified instance template
+// This request retrieves a single instance template specified by the identifier in the URL.
 func (vpc *VpcV1) GetInstanceTemplate(getInstanceTemplateOptions *GetInstanceTemplateOptions) (result InstanceTemplateIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getInstanceTemplateOptions, "getInstanceTemplateOptions cannot be nil")
 	if err != nil {
@@ -5020,6 +5023,7 @@ func (vpc *VpcV1) UpdateInstanceVolumeAttachment(updateInstanceVolumeAttachmentO
 }
 
 // ListInstanceGroups : List all instance groups
+// This request lists all instance groups in the region.
 func (vpc *VpcV1) ListInstanceGroups(listInstanceGroupsOptions *ListInstanceGroupsOptions) (result *InstanceGroupCollection, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listInstanceGroupsOptions, "listInstanceGroupsOptions")
 	if err != nil {
@@ -5631,6 +5635,7 @@ func (vpc *VpcV1) UpdateInstanceGroupManager(updateInstanceGroupManagerOptions *
 }
 
 // ListInstanceGroupManagerPolicies : List all policies for an instance group manager
+// This request lists all instance group policies for an instance group manager.
 func (vpc *VpcV1) ListInstanceGroupManagerPolicies(listInstanceGroupManagerPoliciesOptions *ListInstanceGroupManagerPoliciesOptions) (result *InstanceGroupManagerPolicyCollection, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(listInstanceGroupManagerPoliciesOptions, "listInstanceGroupManagerPoliciesOptions cannot be nil")
 	if err != nil {
@@ -5955,6 +5960,7 @@ func (vpc *VpcV1) DeleteInstanceGroupMemberships(deleteInstanceGroupMembershipsO
 }
 
 // ListInstanceGroupMemberships : List all memberships for the instance group
+// This request lists all instance group memberships for an instance group.
 func (vpc *VpcV1) ListInstanceGroupMemberships(listInstanceGroupMembershipsOptions *ListInstanceGroupMembershipsOptions) (result *InstanceGroupMembershipCollection, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(listInstanceGroupMembershipsOptions, "listInstanceGroupMembershipsOptions cannot be nil")
 	if err != nil {
@@ -6161,6 +6167,677 @@ func (vpc *VpcV1) UpdateInstanceGroupMembership(updateInstanceGroupMembershipOpt
 		return
 	}
 	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceGroupMembership)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListDedicatedHostGroups : List all dedicated host groups
+// This request lists all dedicated host groups in the region. Host groups are a collection of dedicated hosts for
+// placement of instances. Each dedicated host must belong to one and only one group. Host groups do not span zones.
+func (vpc *VpcV1) ListDedicatedHostGroups(listDedicatedHostGroupsOptions *ListDedicatedHostGroupsOptions) (result *DedicatedHostGroupCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listDedicatedHostGroupsOptions, "listDedicatedHostGroupsOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/dedicated_host/groups`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listDedicatedHostGroupsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListDedicatedHostGroups")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listDedicatedHostGroupsOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listDedicatedHostGroupsOptions.Start))
+	}
+	if listDedicatedHostGroupsOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listDedicatedHostGroupsOptions.Limit))
+	}
+	if listDedicatedHostGroupsOptions.ResourceGroupID != nil {
+		builder.AddQuery("resource_group.id", fmt.Sprint(*listDedicatedHostGroupsOptions.ResourceGroupID))
+	}
+	if listDedicatedHostGroupsOptions.ZoneName != nil {
+		builder.AddQuery("zone.name", fmt.Sprint(*listDedicatedHostGroupsOptions.ZoneName))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDedicatedHostGroupCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// CreateDedicatedHostGroup : Create a dedicated host group
+// This request creates a new dedicated host group.
+func (vpc *VpcV1) CreateDedicatedHostGroup(createDedicatedHostGroupOptions *CreateDedicatedHostGroupOptions) (result *DedicatedHostGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(createDedicatedHostGroupOptions, "createDedicatedHostGroupOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/dedicated_host/groups`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createDedicatedHostGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateDedicatedHostGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if createDedicatedHostGroupOptions.Class != nil {
+		body["class"] = createDedicatedHostGroupOptions.Class
+	}
+	if createDedicatedHostGroupOptions.Family != nil {
+		body["family"] = createDedicatedHostGroupOptions.Family
+	}
+	if createDedicatedHostGroupOptions.Name != nil {
+		body["name"] = createDedicatedHostGroupOptions.Name
+	}
+	if createDedicatedHostGroupOptions.ResourceGroup != nil {
+		body["resource_group"] = createDedicatedHostGroupOptions.ResourceGroup
+	}
+	if createDedicatedHostGroupOptions.Zone != nil {
+		body["zone"] = createDedicatedHostGroupOptions.Zone
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDedicatedHostGroup)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// DeleteDedicatedHostGroup : Delete specified dedicated host group
+// This request deletes a dedicated host group.
+func (vpc *VpcV1) DeleteDedicatedHostGroup(deleteDedicatedHostGroupOptions *DeleteDedicatedHostGroupOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteDedicatedHostGroupOptions, "deleteDedicatedHostGroupOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteDedicatedHostGroupOptions, "deleteDedicatedHostGroupOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *deleteDedicatedHostGroupOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/dedicated_host/groups/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteDedicatedHostGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteDedicatedHostGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetDedicatedHostGroup : Retrieve a dedicated host group
+// This request retrieves a single dedicated host group specified by the identifier in the URL.
+func (vpc *VpcV1) GetDedicatedHostGroup(getDedicatedHostGroupOptions *GetDedicatedHostGroupOptions) (result *DedicatedHostGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getDedicatedHostGroupOptions, "getDedicatedHostGroupOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getDedicatedHostGroupOptions, "getDedicatedHostGroupOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *getDedicatedHostGroupOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/dedicated_host/groups/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getDedicatedHostGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetDedicatedHostGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDedicatedHostGroup)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// UpdateDedicatedHostGroup : Update specified dedicated host group
+// This request updates a dedicated host group with the information in a provided dedicated host group patch. The
+// dedicated host group patch object is structured in the same way as a retrieved dedicated host group and contains only
+// the information to be updated.
+func (vpc *VpcV1) UpdateDedicatedHostGroup(updateDedicatedHostGroupOptions *UpdateDedicatedHostGroupOptions) (result *DedicatedHostGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateDedicatedHostGroupOptions, "updateDedicatedHostGroupOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateDedicatedHostGroupOptions, "updateDedicatedHostGroupOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *updateDedicatedHostGroupOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/dedicated_host/groups/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateDedicatedHostGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateDedicatedHostGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/merge-patch+json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(updateDedicatedHostGroupOptions.DedicatedHostGroupPatch)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDedicatedHostGroup)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListDedicatedHostProfiles : List all dedicated host profiles
+// This request lists provisionable dedicated host profiles in the region. A dedicated host profile specifies the
+// hardware characteristics for a dedicated host.
+func (vpc *VpcV1) ListDedicatedHostProfiles(listDedicatedHostProfilesOptions *ListDedicatedHostProfilesOptions) (result *DedicatedHostProfileCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listDedicatedHostProfilesOptions, "listDedicatedHostProfilesOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/dedicated_host/profiles`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listDedicatedHostProfilesOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListDedicatedHostProfiles")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listDedicatedHostProfilesOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listDedicatedHostProfilesOptions.Start))
+	}
+	if listDedicatedHostProfilesOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listDedicatedHostProfilesOptions.Limit))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDedicatedHostProfileCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// GetDedicatedHostProfile : Retrieve specified dedicated host profile
+// This request retrieves a single dedicated host profile specified by the name in the URL.
+func (vpc *VpcV1) GetDedicatedHostProfile(getDedicatedHostProfileOptions *GetDedicatedHostProfileOptions) (result *DedicatedHostProfile, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getDedicatedHostProfileOptions, "getDedicatedHostProfileOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getDedicatedHostProfileOptions, "getDedicatedHostProfileOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"name": *getDedicatedHostProfileOptions.Name,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/dedicated_host/profiles/{name}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getDedicatedHostProfileOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetDedicatedHostProfile")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDedicatedHostProfile)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// ListDedicatedHosts : List all dedicated hosts
+// This request lists all dedicated hosts.
+func (vpc *VpcV1) ListDedicatedHosts(listDedicatedHostsOptions *ListDedicatedHostsOptions) (result *DedicatedHostCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listDedicatedHostsOptions, "listDedicatedHostsOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/dedicated_hosts`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listDedicatedHostsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListDedicatedHosts")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listDedicatedHostsOptions.DedicatedHostGroupID != nil {
+		builder.AddQuery("dedicated_host_group.id", fmt.Sprint(*listDedicatedHostsOptions.DedicatedHostGroupID))
+	}
+	if listDedicatedHostsOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listDedicatedHostsOptions.Start))
+	}
+	if listDedicatedHostsOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listDedicatedHostsOptions.Limit))
+	}
+	if listDedicatedHostsOptions.ResourceGroupID != nil {
+		builder.AddQuery("resource_group.id", fmt.Sprint(*listDedicatedHostsOptions.ResourceGroupID))
+	}
+	if listDedicatedHostsOptions.ZoneName != nil {
+		builder.AddQuery("zone.name", fmt.Sprint(*listDedicatedHostsOptions.ZoneName))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDedicatedHostCollection)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// CreateDedicatedHost : Create a dedicated host
+// This request creates a new dedicated host.
+func (vpc *VpcV1) CreateDedicatedHost(createDedicatedHostOptions *CreateDedicatedHostOptions) (result *DedicatedHost, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createDedicatedHostOptions, "createDedicatedHostOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createDedicatedHostOptions, "createDedicatedHostOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/dedicated_hosts`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createDedicatedHostOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateDedicatedHost")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(createDedicatedHostOptions.DedicatedHostPrototype)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDedicatedHost)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// DeleteDedicatedHost : Delete specified dedicated host
+// This request deletes a dedicated host.
+func (vpc *VpcV1) DeleteDedicatedHost(deleteDedicatedHostOptions *DeleteDedicatedHostOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteDedicatedHostOptions, "deleteDedicatedHostOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteDedicatedHostOptions, "deleteDedicatedHostOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *deleteDedicatedHostOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/dedicated_hosts/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteDedicatedHostOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteDedicatedHost")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetDedicatedHost : Retrieve a dedicated host
+// This request retrieves a single dedicated host specified by the identifiers in the URL.
+func (vpc *VpcV1) GetDedicatedHost(getDedicatedHostOptions *GetDedicatedHostOptions) (result *DedicatedHost, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getDedicatedHostOptions, "getDedicatedHostOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getDedicatedHostOptions, "getDedicatedHostOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *getDedicatedHostOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/dedicated_hosts/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getDedicatedHostOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetDedicatedHost")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDedicatedHost)
+	if err != nil {
+		return
+	}
+	response.Result = result
+
+	return
+}
+
+// UpdateDedicatedHost : Update specified dedicated host
+// This request updates a dedicated host with the information in a provided dedicated host patch. The dedicated host
+// patch object is structured in the same way as a retrieved dedicated host and contains only the information to be
+// updated.
+func (vpc *VpcV1) UpdateDedicatedHost(updateDedicatedHostOptions *UpdateDedicatedHostOptions) (result *DedicatedHost, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateDedicatedHostOptions, "updateDedicatedHostOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateDedicatedHostOptions, "updateDedicatedHostOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *updateDedicatedHostOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/dedicated_hosts/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateDedicatedHostOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateDedicatedHost")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/merge-patch+json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(updateDedicatedHostOptions.DedicatedHostPatch)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalDedicatedHost)
 	if err != nil {
 		return
 	}
@@ -6554,10 +7231,10 @@ func (vpc *VpcV1) UpdateVolume(updateVolumeOptions *UpdateVolumeOptions) (result
 
 // ListRegions : List all regions
 // This request lists all regions. Each region is a separate geographic area that contains multiple isolated zones.
-// Resources can be provisioned into a one or more zones in a region. Each zone is isolated, but connected to other
-// zones in the same region with low-latency and high-bandwidth links. Regions represent the top-level of fault
-// isolation available. Resources deployed within a single region also benefit from the low latency afforded by
-// geographic proximity.
+// Resources can be provisioned into one or more zones in a region. Each zone is isolated, but connected to other zones
+// in the same region with low-latency and high-bandwidth links. Regions represent the top-level of fault isolation
+// available. Resources deployed within a single region also benefit from the low latency afforded by geographic
+// proximity.
 func (vpc *VpcV1) ListRegions(listRegionsOptions *ListRegionsOptions) (result *RegionCollection, response *core.DetailedResponse, err error) {
 	err = core.ValidateStruct(listRegionsOptions, "listRegionsOptions")
 	if err != nil {
@@ -10519,6 +11196,9 @@ func (vpc *VpcV1) CreateLoadBalancer(createLoadBalancerOptions *CreateLoadBalanc
 	if createLoadBalancerOptions.Listeners != nil {
 		body["listeners"] = createLoadBalancerOptions.Listeners
 	}
+	if createLoadBalancerOptions.Logging != nil {
+		body["logging"] = createLoadBalancerOptions.Logging
+	}
 	if createLoadBalancerOptions.Name != nil {
 		body["name"] = createLoadBalancerOptions.Name
 	}
@@ -13762,6 +14442,106 @@ func UnmarshalCloudObjectStorageBucketReference(m map[string]json.RawMessage, re
 	return
 }
 
+// CreateDedicatedHostGroupOptions : The CreateDedicatedHostGroup options.
+type CreateDedicatedHostGroupOptions struct {
+	// The dedicated host profile class for hosts in this group.
+	Class *string `json:"class,omitempty"`
+
+	// The dedicated host profile family for hosts in this group.
+	Family *string `json:"family,omitempty"`
+
+	// The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of
+	// randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The zone to provision the dedicated host group in.
+	Zone ZoneIdentityIntf `json:"zone,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// Constants associated with the CreateDedicatedHostGroupOptions.Family property.
+// The dedicated host profile family for hosts in this group.
+const (
+	CreateDedicatedHostGroupOptionsFamilyBalancedConst = "balanced"
+	CreateDedicatedHostGroupOptionsFamilyComputeConst  = "compute"
+	CreateDedicatedHostGroupOptionsFamilyMemoryConst   = "memory"
+)
+
+// NewCreateDedicatedHostGroupOptions : Instantiate CreateDedicatedHostGroupOptions
+func (*VpcV1) NewCreateDedicatedHostGroupOptions() *CreateDedicatedHostGroupOptions {
+	return &CreateDedicatedHostGroupOptions{}
+}
+
+// SetClass : Allow user to set Class
+func (options *CreateDedicatedHostGroupOptions) SetClass(class string) *CreateDedicatedHostGroupOptions {
+	options.Class = core.StringPtr(class)
+	return options
+}
+
+// SetFamily : Allow user to set Family
+func (options *CreateDedicatedHostGroupOptions) SetFamily(family string) *CreateDedicatedHostGroupOptions {
+	options.Family = core.StringPtr(family)
+	return options
+}
+
+// SetName : Allow user to set Name
+func (options *CreateDedicatedHostGroupOptions) SetName(name string) *CreateDedicatedHostGroupOptions {
+	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetResourceGroup : Allow user to set ResourceGroup
+func (options *CreateDedicatedHostGroupOptions) SetResourceGroup(resourceGroup ResourceGroupIdentityIntf) *CreateDedicatedHostGroupOptions {
+	options.ResourceGroup = resourceGroup
+	return options
+}
+
+// SetZone : Allow user to set Zone
+func (options *CreateDedicatedHostGroupOptions) SetZone(zone ZoneIdentityIntf) *CreateDedicatedHostGroupOptions {
+	options.Zone = zone
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreateDedicatedHostGroupOptions) SetHeaders(param map[string]string) *CreateDedicatedHostGroupOptions {
+	options.Headers = param
+	return options
+}
+
+// CreateDedicatedHostOptions : The CreateDedicatedHost options.
+type CreateDedicatedHostOptions struct {
+	// The dedicated host prototype object.
+	DedicatedHostPrototype DedicatedHostPrototypeIntf `json:"DedicatedHostPrototype" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewCreateDedicatedHostOptions : Instantiate CreateDedicatedHostOptions
+func (*VpcV1) NewCreateDedicatedHostOptions(dedicatedHostPrototype DedicatedHostPrototypeIntf) *CreateDedicatedHostOptions {
+	return &CreateDedicatedHostOptions{
+		DedicatedHostPrototype: dedicatedHostPrototype,
+	}
+}
+
+// SetDedicatedHostPrototype : Allow user to set DedicatedHostPrototype
+func (options *CreateDedicatedHostOptions) SetDedicatedHostPrototype(dedicatedHostPrototype DedicatedHostPrototypeIntf) *CreateDedicatedHostOptions {
+	options.DedicatedHostPrototype = dedicatedHostPrototype
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreateDedicatedHostOptions) SetHeaders(param map[string]string) *CreateDedicatedHostOptions {
+	options.Headers = param
+	return options
+}
+
 // CreateEndpointGatewayOptions : The CreateEndpointGateway options.
 type CreateEndpointGatewayOptions struct {
 	// The target for this endpoint gateway.
@@ -13865,7 +14645,7 @@ type CreateFlowLogCollectorOptions struct {
 	// access to the bucket.
 	StorageBucket CloudObjectStorageBucketIdentityIntf `json:"storage_bucket" validate:"required"`
 
-	// The target this collector will collect flow logs for. If the target is an instance,
+	// The target this collector is collecting flow logs for. If the target is an instance,
 	// subnet, or VPC, flow logs will not be collected for any network interfaces within the
 	// target that are themselves the target of a more specific flow log collector.
 	Target FlowLogCollectorTargetPrototypeIntf `json:"target" validate:"required"`
@@ -14306,8 +15086,8 @@ type CreateInstanceNetworkInterfaceOptions struct {
 	// The associated subnet.
 	Subnet SubnetIdentityIntf `json:"subnet" validate:"required"`
 
-	// Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If
-	// true, IP spoofing is allowed on this interface.
+	// Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this
+	// interface. If true, source IP spoofing is allowed on this interface.
 	AllowIPSpoofing *bool `json:"allow_ip_spoofing,omitempty"`
 
 	// The user-defined name for this network interface. If unspecified, the name will be a hyphenated list of
@@ -14975,6 +15755,14 @@ type CreateLoadBalancerOptions struct {
 	// The listeners of this load balancer.
 	Listeners []LoadBalancerListenerPrototypeLoadBalancerContext `json:"listeners,omitempty"`
 
+	// The logging configuration to use for this load balancer. See [VPC Datapath
+	// Logging](https://cloud.ibm.com/docs/vpc?topic=vpc-datapath-logging)
+	// on the logging format, fields and permitted values.
+	//
+	// To activate logging, the load balancer profile must support the specified logging
+	// type.
+	Logging *LoadBalancerLogging `json:"logging,omitempty"`
+
 	// The user-defined name for this load balancer. If unspecified, the name will be a hyphenated list of
 	// randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -15016,6 +15804,12 @@ func (options *CreateLoadBalancerOptions) SetSubnets(subnets []SubnetIdentityInt
 // SetListeners : Allow user to set Listeners
 func (options *CreateLoadBalancerOptions) SetListeners(listeners []LoadBalancerListenerPrototypeLoadBalancerContext) *CreateLoadBalancerOptions {
 	options.Listeners = listeners
+	return options
+}
+
+// SetLogging : Allow user to set Logging
+func (options *CreateLoadBalancerOptions) SetLogging(logging *LoadBalancerLogging) *CreateLoadBalancerOptions {
+	options.Logging = logging
 	return options
 }
 
@@ -15839,8 +16633,8 @@ type CreateVPCRoutingTableOptions struct {
 	//
 	// Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of
 	// `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges.
-	// Therefore, if an incoming packet matches a route with with a `next_hop` of an internet-bound IP address or a VPN
-	// gateway connection, the packet will be dropped.
+	// Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway
+	// connection, the packet will be dropped.
 	RouteDirectLinkIngress *bool `json:"route_direct_link_ingress,omitempty"`
 
 	// If set to `true`, this routing table will be used to route traffic that originates from [Transit
@@ -15849,8 +16643,8 @@ type CreateVPCRoutingTableOptions struct {
 	//
 	// Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of
 	// `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges.
-	// Therefore, if an incoming packet matches a route with with a `next_hop` of an internet-bound IP address or a VPN
-	// gateway connection, the packet will be dropped.
+	// Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway
+	// connection, the packet will be dropped.
 	//
 	// If [Classic Access](https://cloud.ibm.com/docs/vpc?topic=vpc-setting-up-access-to-classic-infrastructure) is enabled
 	// for this VPC, and this property is set to `true`, its incoming traffic will also be routed according to this routing
@@ -15862,8 +16656,8 @@ type CreateVPCRoutingTableOptions struct {
 	//
 	// Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of
 	// `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges.
-	// Therefore, if an incoming packet matches a route with with a `next_hop` of an internet-bound IP address or a VPN
-	// gateway connection, the packet will be dropped.
+	// Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway
+	// connection, the packet will be dropped.
 	RouteVPCZoneIngress *bool `json:"route_vpc_zone_ingress,omitempty"`
 
 	// Array of route prototype objects for routes to create for this routing table. If unspecified, the routing table will
@@ -16094,6 +16888,1309 @@ func (options *CreateVPNGatewayOptions) SetHeaders(param map[string]string) *Cre
 	return options
 }
 
+// DedicatedHost : DedicatedHost struct
+type DedicatedHost struct {
+	// The amount of memory in gibibytes that is currently available for instances.
+	AvailableMemory *int64 `json:"available_memory" validate:"required"`
+
+	// The available VCPU for the dedicated host.
+	AvailableVcpu *Vcpu `json:"available_vcpu" validate:"required"`
+
+	// The date and time that the dedicated host was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The CRN for this dedicated host.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The dedicated host group this dedicated host is in.
+	Group *DedicatedHostGroupReference `json:"group" validate:"required"`
+
+	// The URL for this dedicated host.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this dedicated host.
+	ID *string `json:"id" validate:"required"`
+
+	// If set to true, instances can be placed on this dedicated host.
+	InstancePlacementEnabled *bool `json:"instance_placement_enabled" validate:"required"`
+
+	// Array of instances that are allocated to this dedicated host.
+	Instances []InstanceReference `json:"instances" validate:"required"`
+
+	// The lifecycle state of the dedicated host resource.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The total amount of memory in gibibytes for this host.
+	Memory *int64 `json:"memory" validate:"required"`
+
+	// The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of
+	// randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
+	// The profile this dedicated host uses.
+	Profile *DedicatedHostProfileReference `json:"profile" validate:"required"`
+
+	// Indicates whether this dedicated host is available for instance creation.
+	Provisionable *bool `json:"provisionable" validate:"required"`
+
+	// The resource group for this dedicated host.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The type of resource referenced.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The total number of sockets for this host.
+	SocketCount *int64 `json:"socket_count" validate:"required"`
+
+	// The administrative state of the dedicated host.
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the dedicated host on which
+	// the unexpected property value was encountered.
+	State *string `json:"state" validate:"required"`
+
+	// Array of instance profiles that can be used by instances placed on this dedicated host.
+	SupportedInstanceProfiles []InstanceProfileReference `json:"supported_instance_profiles" validate:"required"`
+
+	// The total VCPU of the dedicated host.
+	Vcpu *Vcpu `json:"vcpu" validate:"required"`
+
+	// The reference of the zone to provision the dedicated host in.
+	Zone *ZoneReference `json:"zone" validate:"required"`
+}
+
+// Constants associated with the DedicatedHost.LifecycleState property.
+// The lifecycle state of the dedicated host resource.
+const (
+	DedicatedHostLifecycleStateDeletedConst   = "deleted"
+	DedicatedHostLifecycleStateDeletingConst  = "deleting"
+	DedicatedHostLifecycleStateFailedConst    = "failed"
+	DedicatedHostLifecycleStatePendingConst   = "pending"
+	DedicatedHostLifecycleStateStableConst    = "stable"
+	DedicatedHostLifecycleStateSuspendedConst = "suspended"
+	DedicatedHostLifecycleStateUpdatingConst  = "updating"
+	DedicatedHostLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the DedicatedHost.ResourceType property.
+// The type of resource referenced.
+const (
+	DedicatedHostResourceTypeDedicatedHostConst = "dedicated_host"
+)
+
+// Constants associated with the DedicatedHost.State property.
+// The administrative state of the dedicated host.
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the dedicated host on which
+// the unexpected property value was encountered.
+const (
+	DedicatedHostStateAvailableConst   = "available"
+	DedicatedHostStateDegradedConst    = "degraded"
+	DedicatedHostStateMigratingConst   = "migrating"
+	DedicatedHostStateUnavailableConst = "unavailable"
+)
+
+// UnmarshalDedicatedHost unmarshals an instance of DedicatedHost from the specified map of raw messages.
+func UnmarshalDedicatedHost(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHost)
+	err = core.UnmarshalPrimitive(m, "available_memory", &obj.AvailableMemory)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "available_vcpu", &obj.AvailableVcpu, UnmarshalVcpu)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "group", &obj.Group, UnmarshalDedicatedHostGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "instance_placement_enabled", &obj.InstancePlacementEnabled)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "instances", &obj.Instances, UnmarshalInstanceReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "memory", &obj.Memory)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalDedicatedHostProfileReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "provisionable", &obj.Provisionable)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "socket_count", &obj.SocketCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "state", &obj.State)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "supported_instance_profiles", &obj.SupportedInstanceProfiles, UnmarshalInstanceProfileReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vcpu", &obj.Vcpu, UnmarshalVcpu)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostCollection : DedicatedHostCollection struct
+type DedicatedHostCollection struct {
+	// Collection of dedicated hosts.
+	DedicatedHosts []DedicatedHost `json:"dedicated_hosts" validate:"required"`
+
+	// A link to the first page of resources.
+	First *DedicatedHostCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *DedicatedHostCollectionNext `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+}
+
+// UnmarshalDedicatedHostCollection unmarshals an instance of DedicatedHostCollection from the specified map of raw messages.
+func UnmarshalDedicatedHostCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostCollection)
+	err = core.UnmarshalModel(m, "dedicated_hosts", &obj.DedicatedHosts, UnmarshalDedicatedHost)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalDedicatedHostCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalDedicatedHostCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostCollectionFirst : A link to the first page of resources.
+type DedicatedHostCollectionFirst struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalDedicatedHostCollectionFirst unmarshals an instance of DedicatedHostCollectionFirst from the specified map of raw messages.
+func UnmarshalDedicatedHostCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
+type DedicatedHostCollectionNext struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalDedicatedHostCollectionNext unmarshals an instance of DedicatedHostCollectionNext from the specified map of raw messages.
+func UnmarshalDedicatedHostCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostGroup : DedicatedHostGroup struct
+type DedicatedHostGroup struct {
+	// The dedicated host profile class for hosts in this group.
+	Class *string `json:"class" validate:"required"`
+
+	// The date and time that the dedicated host group was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The CRN for this dedicated host group.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The dedicated hosts that are in this dedicated host group.
+	DedicatedHosts []DedicatedHostReference `json:"dedicated_hosts" validate:"required"`
+
+	// The dedicated host profile family for hosts in this group.
+	Family *string `json:"family" validate:"required"`
+
+	// The URL for this dedicated host group.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this dedicated host group.
+	ID *string `json:"id" validate:"required"`
+
+	// The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of
+	// randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource group for this dedicated host group.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The type of resource referenced.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// Array of instance profiles that can be used by instances placed on this dedicated host group.
+	SupportedInstanceProfiles []InstanceProfileReference `json:"supported_instance_profiles" validate:"required"`
+
+	// The zone the dedicated host group resides in.
+	Zone *ZoneReference `json:"zone" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostGroup.Family property.
+// The dedicated host profile family for hosts in this group.
+const (
+	DedicatedHostGroupFamilyBalancedConst = "balanced"
+	DedicatedHostGroupFamilyComputeConst  = "compute"
+	DedicatedHostGroupFamilyMemoryConst   = "memory"
+)
+
+// Constants associated with the DedicatedHostGroup.ResourceType property.
+// The type of resource referenced.
+const (
+	DedicatedHostGroupResourceTypeDedicatedHostGroupConst = "dedicated_host_group"
+)
+
+// UnmarshalDedicatedHostGroup unmarshals an instance of DedicatedHostGroup from the specified map of raw messages.
+func UnmarshalDedicatedHostGroup(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostGroup)
+	err = core.UnmarshalPrimitive(m, "class", &obj.Class)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "dedicated_hosts", &obj.DedicatedHosts, UnmarshalDedicatedHostReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "supported_instance_profiles", &obj.SupportedInstanceProfiles, UnmarshalInstanceProfileReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostGroupCollection : DedicatedHostGroupCollection struct
+type DedicatedHostGroupCollection struct {
+	// A link to the first page of resources.
+	First *DedicatedHostGroupCollectionFirst `json:"first" validate:"required"`
+
+	// Collection of dedicated host groups.
+	Groups []DedicatedHostGroup `json:"groups" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *DedicatedHostGroupCollectionNext `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+}
+
+// UnmarshalDedicatedHostGroupCollection unmarshals an instance of DedicatedHostGroupCollection from the specified map of raw messages.
+func UnmarshalDedicatedHostGroupCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostGroupCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalDedicatedHostGroupCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "groups", &obj.Groups, UnmarshalDedicatedHostGroup)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalDedicatedHostGroupCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostGroupCollectionFirst : A link to the first page of resources.
+type DedicatedHostGroupCollectionFirst struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalDedicatedHostGroupCollectionFirst unmarshals an instance of DedicatedHostGroupCollectionFirst from the specified map of raw messages.
+func UnmarshalDedicatedHostGroupCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostGroupCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostGroupCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
+type DedicatedHostGroupCollectionNext struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalDedicatedHostGroupCollectionNext unmarshals an instance of DedicatedHostGroupCollectionNext from the specified map of raw messages.
+func UnmarshalDedicatedHostGroupCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostGroupCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostGroupIdentity : Identifies a dedicated host group by a unique property.
+// Models which "extend" this model:
+// - DedicatedHostGroupIdentityByID
+// - DedicatedHostGroupIdentityByCRN
+// - DedicatedHostGroupIdentityByHref
+type DedicatedHostGroupIdentity struct {
+	// The unique identifier for this dedicated host group.
+	ID *string `json:"id,omitempty"`
+
+	// The CRN for this dedicated host group.
+	CRN *string `json:"crn,omitempty"`
+
+	// The URL for this dedicated host group.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*DedicatedHostGroupIdentity) isaDedicatedHostGroupIdentity() bool {
+	return true
+}
+
+type DedicatedHostGroupIdentityIntf interface {
+	isaDedicatedHostGroupIdentity() bool
+}
+
+// UnmarshalDedicatedHostGroupIdentity unmarshals an instance of DedicatedHostGroupIdentity from the specified map of raw messages.
+func UnmarshalDedicatedHostGroupIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostGroupIdentity)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostGroupPatch : DedicatedHostGroupPatch struct
+type DedicatedHostGroupPatch struct {
+	// The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of
+	// randomly-selected words.
+	Name *string `json:"name,omitempty"`
+}
+
+// UnmarshalDedicatedHostGroupPatch unmarshals an instance of DedicatedHostGroupPatch from the specified map of raw messages.
+func UnmarshalDedicatedHostGroupPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostGroupPatch)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AsPatch returns a generic map representation of the DedicatedHostGroupPatch
+func (dedicatedHostGroupPatch *DedicatedHostGroupPatch) AsPatch() (patch map[string]interface{}, err error) {
+	var jsonData []byte
+	jsonData, err = json.Marshal(dedicatedHostGroupPatch)
+	if err == nil {
+		err = json.Unmarshal(jsonData, &patch)
+	}
+	return
+}
+
+// DedicatedHostGroupPrototypeDedicatedHostByZoneContext : DedicatedHostGroupPrototypeDedicatedHostByZoneContext struct
+type DedicatedHostGroupPrototypeDedicatedHostByZoneContext struct {
+	// The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of
+	// randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The resource group to use. If unspecified, the host's resource group is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+}
+
+// UnmarshalDedicatedHostGroupPrototypeDedicatedHostByZoneContext unmarshals an instance of DedicatedHostGroupPrototypeDedicatedHostByZoneContext from the specified map of raw messages.
+func UnmarshalDedicatedHostGroupPrototypeDedicatedHostByZoneContext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostGroupPrototypeDedicatedHostByZoneContext)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostGroupReference : DedicatedHostGroupReference struct
+type DedicatedHostGroupReference struct {
+	// The CRN for this dedicated host group.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted and provides
+	// some supplementary information.
+	Deleted *DedicatedHostGroupReferenceDeleted `json:"deleted,omitempty"`
+
+	// The URL for this dedicated host group.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this dedicated host group.
+	ID *string `json:"id" validate:"required"`
+
+	// The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of
+	// randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
+	// The type of resource referenced.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostGroupReference.ResourceType property.
+// The type of resource referenced.
+const (
+	DedicatedHostGroupReferenceResourceTypeDedicatedHostGroupConst = "dedicated_host_group"
+)
+
+// UnmarshalDedicatedHostGroupReference unmarshals an instance of DedicatedHostGroupReference from the specified map of raw messages.
+func UnmarshalDedicatedHostGroupReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostGroupReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalDedicatedHostGroupReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostGroupReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// information.
+type DedicatedHostGroupReferenceDeleted struct {
+	// Link to documentation about deleted resources.
+	MoreInfo *string `json:"more_info" validate:"required"`
+}
+
+// UnmarshalDedicatedHostGroupReferenceDeleted unmarshals an instance of DedicatedHostGroupReferenceDeleted from the specified map of raw messages.
+func UnmarshalDedicatedHostGroupReferenceDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostGroupReferenceDeleted)
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostPatch : DedicatedHostPatch struct
+type DedicatedHostPatch struct {
+	// If set to true, instances can be placed on this dedicated host.
+	InstancePlacementEnabled *bool `json:"instance_placement_enabled,omitempty"`
+
+	// The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of
+	// randomly-selected words.
+	Name *string `json:"name,omitempty"`
+}
+
+// UnmarshalDedicatedHostPatch unmarshals an instance of DedicatedHostPatch from the specified map of raw messages.
+func UnmarshalDedicatedHostPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostPatch)
+	err = core.UnmarshalPrimitive(m, "instance_placement_enabled", &obj.InstancePlacementEnabled)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AsPatch returns a generic map representation of the DedicatedHostPatch
+func (dedicatedHostPatch *DedicatedHostPatch) AsPatch() (patch map[string]interface{}, err error) {
+	var jsonData []byte
+	jsonData, err = json.Marshal(dedicatedHostPatch)
+	if err == nil {
+		err = json.Unmarshal(jsonData, &patch)
+	}
+	return
+}
+
+// DedicatedHostProfile : DedicatedHostProfile struct
+type DedicatedHostProfile struct {
+	// The product class this dedicated host profile belongs to.
+	Class *string `json:"class" validate:"required"`
+
+	// The product family this dedicated host profile belongs to
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected property value was encountered.
+	Family *string `json:"family" validate:"required"`
+
+	// The URL for this dedicated host.
+	Href *string `json:"href" validate:"required"`
+
+	Memory DedicatedHostProfileMemoryIntf `json:"memory" validate:"required"`
+
+	// The globally unique name for this dedicated host profile.
+	Name *string `json:"name" validate:"required"`
+
+	SocketCount DedicatedHostProfileSocketIntf `json:"socket_count" validate:"required"`
+
+	// Array of instance profiles that can be used by instances placed on dedicated hosts with this profile.
+	SupportedInstanceProfiles []InstanceProfileReference `json:"supported_instance_profiles" validate:"required"`
+
+	VcpuArchitecture *DedicatedHostProfileVcpuArchitecture `json:"vcpu_architecture" validate:"required"`
+
+	VcpuCount DedicatedHostProfileVcpuIntf `json:"vcpu_count" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostProfile.Family property.
+// The product family this dedicated host profile belongs to
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+// unexpected property value was encountered.
+const (
+	DedicatedHostProfileFamilyBalancedConst = "balanced"
+	DedicatedHostProfileFamilyComputeConst  = "compute"
+	DedicatedHostProfileFamilyMemoryConst   = "memory"
+)
+
+// UnmarshalDedicatedHostProfile unmarshals an instance of DedicatedHostProfile from the specified map of raw messages.
+func UnmarshalDedicatedHostProfile(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfile)
+	err = core.UnmarshalPrimitive(m, "class", &obj.Class)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "memory", &obj.Memory, UnmarshalDedicatedHostProfileMemory)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "socket_count", &obj.SocketCount, UnmarshalDedicatedHostProfileSocket)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "supported_instance_profiles", &obj.SupportedInstanceProfiles, UnmarshalInstanceProfileReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vcpu_architecture", &obj.VcpuArchitecture, UnmarshalDedicatedHostProfileVcpuArchitecture)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vcpu_count", &obj.VcpuCount, UnmarshalDedicatedHostProfileVcpu)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileCollection : DedicatedHostProfileCollection struct
+type DedicatedHostProfileCollection struct {
+	// A link to the first page of resources.
+	First *DedicatedHostProfileCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *DedicatedHostProfileCollectionNext `json:"next,omitempty"`
+
+	// Collection of dedicated host profiles.
+	Profiles []DedicatedHostProfile `json:"profiles" validate:"required"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+}
+
+// UnmarshalDedicatedHostProfileCollection unmarshals an instance of DedicatedHostProfileCollection from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalDedicatedHostProfileCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalDedicatedHostProfileCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profiles", &obj.Profiles, UnmarshalDedicatedHostProfile)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileCollectionFirst : A link to the first page of resources.
+type DedicatedHostProfileCollectionFirst struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalDedicatedHostProfileCollectionFirst unmarshals an instance of DedicatedHostProfileCollectionFirst from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
+type DedicatedHostProfileCollectionNext struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalDedicatedHostProfileCollectionNext unmarshals an instance of DedicatedHostProfileCollectionNext from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileIdentity : Identifies a dedicated host profile by a unique property.
+// Models which "extend" this model:
+// - DedicatedHostProfileIdentityByName
+// - DedicatedHostProfileIdentityByHref
+type DedicatedHostProfileIdentity struct {
+	// The globally unique name for this dedicated host profile.
+	Name *string `json:"name,omitempty"`
+
+	// The URL for this dedicated host profile.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*DedicatedHostProfileIdentity) isaDedicatedHostProfileIdentity() bool {
+	return true
+}
+
+type DedicatedHostProfileIdentityIntf interface {
+	isaDedicatedHostProfileIdentity() bool
+}
+
+// UnmarshalDedicatedHostProfileIdentity unmarshals an instance of DedicatedHostProfileIdentity from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileIdentity)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileMemory : DedicatedHostProfileMemory struct
+// Models which "extend" this model:
+// - DedicatedHostProfileMemoryFixed
+// - DedicatedHostProfileMemoryRange
+// - DedicatedHostProfileMemoryEnum
+// - DedicatedHostProfileMemoryDependent
+type DedicatedHostProfileMemory struct {
+	// The type for this profile field.
+	Type *string `json:"type,omitempty"`
+
+	// The value for this profile field.
+	Value *int64 `json:"value,omitempty"`
+
+	// The default value for this profile field.
+	Default *int64 `json:"default,omitempty"`
+
+	// The maximum value for this profile field.
+	Max *int64 `json:"max,omitempty"`
+
+	// The minimum value for this profile field.
+	Min *int64 `json:"min,omitempty"`
+
+	// The increment step value for this profile field.
+	Step *int64 `json:"step,omitempty"`
+
+	// The permitted values for this profile field.
+	Values []int64 `json:"values,omitempty"`
+}
+
+// Constants associated with the DedicatedHostProfileMemory.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileMemoryTypeFixedConst = "fixed"
+)
+
+func (*DedicatedHostProfileMemory) isaDedicatedHostProfileMemory() bool {
+	return true
+}
+
+type DedicatedHostProfileMemoryIntf interface {
+	isaDedicatedHostProfileMemory() bool
+}
+
+// UnmarshalDedicatedHostProfileMemory unmarshals an instance of DedicatedHostProfileMemory from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileMemory(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileMemory)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "values", &obj.Values)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileReference : DedicatedHostProfileReference struct
+type DedicatedHostProfileReference struct {
+	// The URL for this dedicated host.
+	Href *string `json:"href" validate:"required"`
+
+	// The globally unique name for this dedicated host profile.
+	Name *string `json:"name" validate:"required"`
+}
+
+// UnmarshalDedicatedHostProfileReference unmarshals an instance of DedicatedHostProfileReference from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileReference)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileSocket : DedicatedHostProfileSocket struct
+// Models which "extend" this model:
+// - DedicatedHostProfileSocketFixed
+// - DedicatedHostProfileSocketRange
+// - DedicatedHostProfileSocketEnum
+// - DedicatedHostProfileSocketDependent
+type DedicatedHostProfileSocket struct {
+	// The type for this profile field.
+	Type *string `json:"type,omitempty"`
+
+	// The value for this profile field.
+	Value *int64 `json:"value,omitempty"`
+
+	// The default value for this profile field.
+	Default *int64 `json:"default,omitempty"`
+
+	// The maximum value for this profile field.
+	Max *int64 `json:"max,omitempty"`
+
+	// The minimum value for this profile field.
+	Min *int64 `json:"min,omitempty"`
+
+	// The increment step value for this profile field.
+	Step *int64 `json:"step,omitempty"`
+
+	// The permitted values for this profile field.
+	Values []int64 `json:"values,omitempty"`
+}
+
+// Constants associated with the DedicatedHostProfileSocket.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileSocketTypeFixedConst = "fixed"
+)
+
+func (*DedicatedHostProfileSocket) isaDedicatedHostProfileSocket() bool {
+	return true
+}
+
+type DedicatedHostProfileSocketIntf interface {
+	isaDedicatedHostProfileSocket() bool
+}
+
+// UnmarshalDedicatedHostProfileSocket unmarshals an instance of DedicatedHostProfileSocket from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileSocket(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileSocket)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "values", &obj.Values)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileVcpu : DedicatedHostProfileVcpu struct
+// Models which "extend" this model:
+// - DedicatedHostProfileVcpuFixed
+// - DedicatedHostProfileVcpuRange
+// - DedicatedHostProfileVcpuEnum
+// - DedicatedHostProfileVcpuDependent
+type DedicatedHostProfileVcpu struct {
+	// The type for this profile field.
+	Type *string `json:"type,omitempty"`
+
+	// The value for this profile field.
+	Value *int64 `json:"value,omitempty"`
+
+	// The default value for this profile field.
+	Default *int64 `json:"default,omitempty"`
+
+	// The maximum value for this profile field.
+	Max *int64 `json:"max,omitempty"`
+
+	// The minimum value for this profile field.
+	Min *int64 `json:"min,omitempty"`
+
+	// The increment step value for this profile field.
+	Step *int64 `json:"step,omitempty"`
+
+	// The permitted values for this profile field.
+	Values []int64 `json:"values,omitempty"`
+}
+
+// Constants associated with the DedicatedHostProfileVcpu.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileVcpuTypeFixedConst = "fixed"
+)
+
+func (*DedicatedHostProfileVcpu) isaDedicatedHostProfileVcpu() bool {
+	return true
+}
+
+type DedicatedHostProfileVcpuIntf interface {
+	isaDedicatedHostProfileVcpu() bool
+}
+
+// UnmarshalDedicatedHostProfileVcpu unmarshals an instance of DedicatedHostProfileVcpu from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileVcpu(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileVcpu)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "values", &obj.Values)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileVcpuArchitecture : DedicatedHostProfileVcpuArchitecture struct
+type DedicatedHostProfileVcpuArchitecture struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The VCPU architecture for a dedicated host with this profile.
+	Value *string `json:"value" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostProfileVcpuArchitecture.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileVcpuArchitectureTypeFixedConst = "fixed"
+)
+
+// UnmarshalDedicatedHostProfileVcpuArchitecture unmarshals an instance of DedicatedHostProfileVcpuArchitecture from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileVcpuArchitecture(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileVcpuArchitecture)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostPrototype : DedicatedHostPrototype struct
+// Models which "extend" this model:
+// - DedicatedHostPrototypeDedicatedHostByGroup
+// - DedicatedHostPrototypeDedicatedHostByZone
+type DedicatedHostPrototype struct {
+	// If set to true, instances can be placed on this dedicated host.
+	InstancePlacementEnabled *bool `json:"instance_placement_enabled,omitempty"`
+
+	// The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of
+	// randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The profile to use for this dedicated host.
+	Profile DedicatedHostProfileIdentityIntf `json:"profile" validate:"required"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The dedicated host group for this dedicated host.
+	Group DedicatedHostGroupIdentityIntf `json:"group,omitempty"`
+
+	// The zone to provision the dedicated host in.
+	Zone ZoneIdentityIntf `json:"zone,omitempty"`
+}
+
+func (*DedicatedHostPrototype) isaDedicatedHostPrototype() bool {
+	return true
+}
+
+type DedicatedHostPrototypeIntf interface {
+	isaDedicatedHostPrototype() bool
+}
+
+// UnmarshalDedicatedHostPrototype unmarshals an instance of DedicatedHostPrototype from the specified map of raw messages.
+func UnmarshalDedicatedHostPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostPrototype)
+	err = core.UnmarshalPrimitive(m, "instance_placement_enabled", &obj.InstancePlacementEnabled)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalDedicatedHostProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "group", &obj.Group, UnmarshalDedicatedHostGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostReference : DedicatedHostReference struct
+type DedicatedHostReference struct {
+	// The CRN for this dedicated host.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted and provides
+	// some supplementary information.
+	Deleted *DedicatedHostReferenceDeleted `json:"deleted,omitempty"`
+
+	// The URL for this dedicated host.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this dedicated host.
+	ID *string `json:"id" validate:"required"`
+
+	// The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of
+	// randomly-selected words.
+	Name *string `json:"name" validate:"required"`
+
+	// The type of resource referenced.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostReference.ResourceType property.
+// The type of resource referenced.
+const (
+	DedicatedHostReferenceResourceTypeDedicatedHostConst = "dedicated_host"
+)
+
+// UnmarshalDedicatedHostReference unmarshals an instance of DedicatedHostReference from the specified map of raw messages.
+func UnmarshalDedicatedHostReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalDedicatedHostReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// information.
+type DedicatedHostReferenceDeleted struct {
+	// Link to documentation about deleted resources.
+	MoreInfo *string `json:"more_info" validate:"required"`
+}
+
+// UnmarshalDedicatedHostReferenceDeleted unmarshals an instance of DedicatedHostReferenceDeleted from the specified map of raw messages.
+func UnmarshalDedicatedHostReferenceDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostReferenceDeleted)
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // DefaultNetworkACL : DefaultNetworkACL struct
 type DefaultNetworkACL struct {
 	// The date and time that the network ACL was created.
@@ -16199,8 +18296,8 @@ type DefaultRoutingTable struct {
 	//
 	// Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of
 	// `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges.
-	// Therefore, if an incoming packet matches a route with with a `next_hop` of an internet-bound IP address or a VPN
-	// gateway connection, the packet will be dropped.
+	// Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway
+	// connection, the packet will be dropped.
 	RouteDirectLinkIngress *bool `json:"route_direct_link_ingress" validate:"required"`
 
 	// Indicates whether this routing table is used to route traffic that originates from from [Transit
@@ -16208,8 +18305,8 @@ type DefaultRoutingTable struct {
 	//
 	// Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of
 	// `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges.
-	// Therefore, if an incoming packet matches a route with with a `next_hop` of an internet-bound IP address or a VPN
-	// gateway connection, the packet will be dropped.
+	// Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway
+	// connection, the packet will be dropped.
 	RouteTransitGatewayIngress *bool `json:"route_transit_gateway_ingress" validate:"required"`
 
 	// Indicates whether this routing table is used to route traffic that originates from subnets in other zones in this
@@ -16217,8 +18314,8 @@ type DefaultRoutingTable struct {
 	//
 	// Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of
 	// `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges.
-	// Therefore, if an incoming packet matches a route with with a `next_hop` of an internet-bound IP address or a VPN
-	// gateway connection, the packet will be dropped.
+	// Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway
+	// connection, the packet will be dropped.
 	RouteVPCZoneIngress *bool `json:"route_vpc_zone_ingress" validate:"required"`
 
 	// The routes for the default routing table for this VPC. The table is created with no routes, but routes may be added,
@@ -16303,7 +18400,7 @@ func UnmarshalDefaultRoutingTable(m map[string]json.RawMessage, result interface
 	return
 }
 
-// DefaultSecurityGroup : Collection of rules in a default security group.
+// DefaultSecurityGroup : DefaultSecurityGroup struct
 type DefaultSecurityGroup struct {
 	// The date and time that this security group was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
@@ -16370,6 +18467,62 @@ func UnmarshalDefaultSecurityGroup(m map[string]json.RawMessage, result interfac
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
+}
+
+// DeleteDedicatedHostGroupOptions : The DeleteDedicatedHostGroup options.
+type DeleteDedicatedHostGroupOptions struct {
+	// The dedicated host group identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeleteDedicatedHostGroupOptions : Instantiate DeleteDedicatedHostGroupOptions
+func (*VpcV1) NewDeleteDedicatedHostGroupOptions(id string) *DeleteDedicatedHostGroupOptions {
+	return &DeleteDedicatedHostGroupOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (options *DeleteDedicatedHostGroupOptions) SetID(id string) *DeleteDedicatedHostGroupOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteDedicatedHostGroupOptions) SetHeaders(param map[string]string) *DeleteDedicatedHostGroupOptions {
+	options.Headers = param
+	return options
+}
+
+// DeleteDedicatedHostOptions : The DeleteDedicatedHost options.
+type DeleteDedicatedHostOptions struct {
+	// The dedicated host identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeleteDedicatedHostOptions : Instantiate DeleteDedicatedHostOptions
+func (*VpcV1) NewDeleteDedicatedHostOptions(id string) *DeleteDedicatedHostOptions {
+	return &DeleteDedicatedHostOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (options *DeleteDedicatedHostOptions) SetID(id string) *DeleteDedicatedHostOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteDedicatedHostOptions) SetHeaders(param map[string]string) *DeleteDedicatedHostOptions {
+	options.Headers = param
+	return options
 }
 
 // DeleteEndpointGatewayOptions : The DeleteEndpointGateway options.
@@ -17998,9 +20151,9 @@ func UnmarshalEndpointGatewayReferenceDeleted(m map[string]json.RawMessage, resu
 	return
 }
 
-// EndpointGatewayReservedIP : A reserved IP to bind to the endpoint gateway. This can be a an existing reserved IP, or a prototype used to allocate
-// a reserved IP. The reserved IP will be bound to the endpoint gateway to function as a virtual private endpoint for
-// the service.
+// EndpointGatewayReservedIP : A reserved IP to bind to the endpoint gateway. This can be an existing reserved IP, or a prototype used to allocate a
+// reserved IP. The reserved IP will be bound to the endpoint gateway to function as a virtual private endpoint for the
+// service.
 // Models which "extend" this model:
 // - EndpointGatewayReservedIPReservedIPIdentity
 // - EndpointGatewayReservedIPReservedIPPrototypeTargetContext
@@ -18952,7 +21105,7 @@ func UnmarshalFlowLogCollectorTarget(m map[string]json.RawMessage, result interf
 	return
 }
 
-// FlowLogCollectorTargetPrototype : The target this collector will collect flow logs for. If the target is an instance, subnet, or VPC, flow logs will
+// FlowLogCollectorTargetPrototype : The target this collector is collecting flow logs for. If the target is an instance, subnet, or VPC, flow logs will
 // not be collected for any network interfaces within the target that are themselves the target of a more specific flow
 // log collector.
 // Models which "extend" this model:
@@ -18996,6 +21149,90 @@ func UnmarshalFlowLogCollectorTargetPrototype(m map[string]json.RawMessage, resu
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
+}
+
+// GetDedicatedHostGroupOptions : The GetDedicatedHostGroup options.
+type GetDedicatedHostGroupOptions struct {
+	// The dedicated host group identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetDedicatedHostGroupOptions : Instantiate GetDedicatedHostGroupOptions
+func (*VpcV1) NewGetDedicatedHostGroupOptions(id string) *GetDedicatedHostGroupOptions {
+	return &GetDedicatedHostGroupOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (options *GetDedicatedHostGroupOptions) SetID(id string) *GetDedicatedHostGroupOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetDedicatedHostGroupOptions) SetHeaders(param map[string]string) *GetDedicatedHostGroupOptions {
+	options.Headers = param
+	return options
+}
+
+// GetDedicatedHostOptions : The GetDedicatedHost options.
+type GetDedicatedHostOptions struct {
+	// The dedicated host identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetDedicatedHostOptions : Instantiate GetDedicatedHostOptions
+func (*VpcV1) NewGetDedicatedHostOptions(id string) *GetDedicatedHostOptions {
+	return &GetDedicatedHostOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (options *GetDedicatedHostOptions) SetID(id string) *GetDedicatedHostOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetDedicatedHostOptions) SetHeaders(param map[string]string) *GetDedicatedHostOptions {
+	options.Headers = param
+	return options
+}
+
+// GetDedicatedHostProfileOptions : The GetDedicatedHostProfile options.
+type GetDedicatedHostProfileOptions struct {
+	// The dedicated host profile name.
+	Name *string `json:"name" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetDedicatedHostProfileOptions : Instantiate GetDedicatedHostProfileOptions
+func (*VpcV1) NewGetDedicatedHostProfileOptions(name string) *GetDedicatedHostProfileOptions {
+	return &GetDedicatedHostProfileOptions{
+		Name: core.StringPtr(name),
+	}
+}
+
+// SetName : Allow user to set Name
+func (options *GetDedicatedHostProfileOptions) SetName(name string) *GetDedicatedHostProfileOptions {
+	options.Name = core.StringPtr(name)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetDedicatedHostProfileOptions) SetHeaders(param map[string]string) *GetDedicatedHostProfileOptions {
+	options.Headers = param
+	return options
 }
 
 // GetEndpointGatewayIPOptions : The GetEndpointGatewayIP options.
@@ -21633,8 +23870,28 @@ type Image struct {
 	// The resource group for this image.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
-	// The status of this image.
+	// The status of this image
+	// - available: image can be used (provisionable)
+	// - deleting: image is being deleted, and can no longer be used to provision new
+	//   resources
+	// - deprecated: image can be used, but is slated to become `obsolete` (provisionable)
+	// - failed: image is corrupt or did not pass validation
+	// - obsolete: image can no longer be used to provision new resources
+	// - pending: image is being imported and is not yet `available`
+	// - tentative: image import has timed out (contact support)
+	// - unusable: image cannot be used (see `status_reasons[]` for possible remediation)
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the image on which the
+	// unexpected property value was encountered.
 	Status *string `json:"status" validate:"required"`
+
+	// Array of reasons for the current status (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []ImageStatusReason `json:"status_reasons" validate:"required"`
 
 	// Whether the image is publicly visible or private to the account.
 	Visibility *string `json:"visibility" validate:"required"`
@@ -21648,7 +23905,20 @@ const (
 )
 
 // Constants associated with the Image.Status property.
-// The status of this image.
+// The status of this image
+// - available: image can be used (provisionable)
+// - deleting: image is being deleted, and can no longer be used to provision new
+//   resources
+// - deprecated: image can be used, but is slated to become `obsolete` (provisionable)
+// - failed: image is corrupt or did not pass validation
+// - obsolete: image can no longer be used to provision new resources
+// - pending: image is being imported and is not yet `available`
+// - tentative: image import has timed out (contact support)
+// - unusable: image cannot be used (see `status_reasons[]` for possible remediation)
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the image on which the
+// unexpected property value was encountered.
 const (
 	ImageStatusAvailableConst  = "available"
 	ImageStatusDeletingConst   = "deleting"
@@ -21714,6 +23984,10 @@ func UnmarshalImage(m map[string]json.RawMessage, result interface{}) (err error
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalImageStatusReason)
 	if err != nil {
 		return
 	}
@@ -22055,6 +24329,44 @@ func UnmarshalImageReferenceDeleted(m map[string]json.RawMessage, result interfa
 	return
 }
 
+// ImageStatusReason : ImageStatusReason struct
+type ImageStatusReason struct {
+	// A snake case string succinctly identifying the status reason.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the status reason.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about this status reason.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the ImageStatusReason.Code property.
+// A snake case string succinctly identifying the status reason.
+const (
+	ImageStatusReasonCodeEncryptionKeyDeletedConst  = "encryption_key_deleted"
+	ImageStatusReasonCodeEncryptionKeyDisabledConst = "encryption_key_disabled"
+)
+
+// UnmarshalImageStatusReason unmarshals an instance of ImageStatusReason from the specified map of raw messages.
+func UnmarshalImageStatusReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ImageStatusReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // Instance : Instance struct
 type Instance struct {
 	// The total bandwidth (in megabits per second) shared across the virtual server instance's network interfaces.
@@ -22093,7 +24405,7 @@ type Instance struct {
 	// Primary network interface.
 	PrimaryNetworkInterface *NetworkInterfaceInstanceContextReference `json:"primary_network_interface" validate:"required"`
 
-	// The profile this virtual server instance uses.
+	// The profile for this virtual server instance.
 	Profile *InstanceProfileReference `json:"profile" validate:"required"`
 
 	// The resource group for this instance.
@@ -22118,6 +24430,7 @@ type Instance struct {
 // Constants associated with the Instance.Status property.
 // The status of the virtual server instance.
 const (
+	InstanceStatusDeletingConst   = "deleting"
 	InstanceStatusFailedConst     = "failed"
 	InstanceStatusPausedConst     = "paused"
 	InstanceStatusPausingConst    = "pausing"
@@ -24822,6 +27135,9 @@ type InstanceTemplateReference struct {
 
 	// The unique identifier for this instance template.
 	ID *string `json:"id" validate:"required"`
+
+	// The unique user-defined name for this instance template.
+	Name *string `json:"name" validate:"required"`
 }
 
 // UnmarshalInstanceTemplateReference unmarshals an instance of InstanceTemplateReference from the specified map of raw messages.
@@ -24840,6 +27156,10 @@ func UnmarshalInstanceTemplateReference(m map[string]json.RawMessage, result int
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
 	}
@@ -25154,6 +27474,158 @@ func UnmarshalKeyReferenceInstanceInitializationContext(m map[string]json.RawMes
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
+}
+
+// ListDedicatedHostGroupsOptions : The ListDedicatedHostGroups options.
+type ListDedicatedHostGroupsOptions struct {
+	// A server-supplied token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Filters the collection to resources within one of the resource groups identified in a comma-separated list of
+	// resource group identifiers.
+	ResourceGroupID *string `json:"resource_group.id,omitempty"`
+
+	// Filters the collection to resources in the zone with the exact specified name.
+	ZoneName *string `json:"zone.name,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewListDedicatedHostGroupsOptions : Instantiate ListDedicatedHostGroupsOptions
+func (*VpcV1) NewListDedicatedHostGroupsOptions() *ListDedicatedHostGroupsOptions {
+	return &ListDedicatedHostGroupsOptions{}
+}
+
+// SetStart : Allow user to set Start
+func (options *ListDedicatedHostGroupsOptions) SetStart(start string) *ListDedicatedHostGroupsOptions {
+	options.Start = core.StringPtr(start)
+	return options
+}
+
+// SetLimit : Allow user to set Limit
+func (options *ListDedicatedHostGroupsOptions) SetLimit(limit int64) *ListDedicatedHostGroupsOptions {
+	options.Limit = core.Int64Ptr(limit)
+	return options
+}
+
+// SetResourceGroupID : Allow user to set ResourceGroupID
+func (options *ListDedicatedHostGroupsOptions) SetResourceGroupID(resourceGroupID string) *ListDedicatedHostGroupsOptions {
+	options.ResourceGroupID = core.StringPtr(resourceGroupID)
+	return options
+}
+
+// SetZoneName : Allow user to set ZoneName
+func (options *ListDedicatedHostGroupsOptions) SetZoneName(zoneName string) *ListDedicatedHostGroupsOptions {
+	options.ZoneName = core.StringPtr(zoneName)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListDedicatedHostGroupsOptions) SetHeaders(param map[string]string) *ListDedicatedHostGroupsOptions {
+	options.Headers = param
+	return options
+}
+
+// ListDedicatedHostProfilesOptions : The ListDedicatedHostProfiles options.
+type ListDedicatedHostProfilesOptions struct {
+	// A server-supplied token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewListDedicatedHostProfilesOptions : Instantiate ListDedicatedHostProfilesOptions
+func (*VpcV1) NewListDedicatedHostProfilesOptions() *ListDedicatedHostProfilesOptions {
+	return &ListDedicatedHostProfilesOptions{}
+}
+
+// SetStart : Allow user to set Start
+func (options *ListDedicatedHostProfilesOptions) SetStart(start string) *ListDedicatedHostProfilesOptions {
+	options.Start = core.StringPtr(start)
+	return options
+}
+
+// SetLimit : Allow user to set Limit
+func (options *ListDedicatedHostProfilesOptions) SetLimit(limit int64) *ListDedicatedHostProfilesOptions {
+	options.Limit = core.Int64Ptr(limit)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListDedicatedHostProfilesOptions) SetHeaders(param map[string]string) *ListDedicatedHostProfilesOptions {
+	options.Headers = param
+	return options
+}
+
+// ListDedicatedHostsOptions : The ListDedicatedHosts options.
+type ListDedicatedHostsOptions struct {
+	// Filters the collection to dedicated host groups with specified identifier.
+	DedicatedHostGroupID *string `json:"dedicated_host_group.id,omitempty"`
+
+	// A server-supplied token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Filters the collection to resources within one of the resource groups identified in a comma-separated list of
+	// resource group identifiers.
+	ResourceGroupID *string `json:"resource_group.id,omitempty"`
+
+	// Filters the collection to resources in the zone with the exact specified name.
+	ZoneName *string `json:"zone.name,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewListDedicatedHostsOptions : Instantiate ListDedicatedHostsOptions
+func (*VpcV1) NewListDedicatedHostsOptions() *ListDedicatedHostsOptions {
+	return &ListDedicatedHostsOptions{}
+}
+
+// SetDedicatedHostGroupID : Allow user to set DedicatedHostGroupID
+func (options *ListDedicatedHostsOptions) SetDedicatedHostGroupID(dedicatedHostGroupID string) *ListDedicatedHostsOptions {
+	options.DedicatedHostGroupID = core.StringPtr(dedicatedHostGroupID)
+	return options
+}
+
+// SetStart : Allow user to set Start
+func (options *ListDedicatedHostsOptions) SetStart(start string) *ListDedicatedHostsOptions {
+	options.Start = core.StringPtr(start)
+	return options
+}
+
+// SetLimit : Allow user to set Limit
+func (options *ListDedicatedHostsOptions) SetLimit(limit int64) *ListDedicatedHostsOptions {
+	options.Limit = core.Int64Ptr(limit)
+	return options
+}
+
+// SetResourceGroupID : Allow user to set ResourceGroupID
+func (options *ListDedicatedHostsOptions) SetResourceGroupID(resourceGroupID string) *ListDedicatedHostsOptions {
+	options.ResourceGroupID = core.StringPtr(resourceGroupID)
+	return options
+}
+
+// SetZoneName : Allow user to set ZoneName
+func (options *ListDedicatedHostsOptions) SetZoneName(zoneName string) *ListDedicatedHostsOptions {
+	options.ZoneName = core.StringPtr(zoneName)
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListDedicatedHostsOptions) SetHeaders(param map[string]string) *ListDedicatedHostsOptions {
+	options.Headers = param
+	return options
 }
 
 // ListEndpointGatewayIpsOptions : The ListEndpointGatewayIps options.
@@ -27293,6 +29765,9 @@ type LoadBalancer struct {
 	// The listeners of this load balancer.
 	Listeners []LoadBalancerListenerReference `json:"listeners" validate:"required"`
 
+	// The logging configuration for this load balancer.
+	Logging *LoadBalancerLogging `json:"logging" validate:"required"`
+
 	// The unique user-defined name for this load balancer.
 	Name *string `json:"name" validate:"required"`
 
@@ -27311,7 +29786,9 @@ type LoadBalancer struct {
 	// The provisioning status of this load balancer.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
 
-	// The public IP addresses assigned to this load balancer. Applicable only for public load balancers.
+	// The public IP addresses assigned to this load balancer.
+	//
+	// Applicable only for public load balancers.
 	PublicIps []IP `json:"public_ips" validate:"required"`
 
 	// The resource group for this load balancer.
@@ -27367,6 +29844,10 @@ func UnmarshalLoadBalancer(m map[string]json.RawMessage, result interface{}) (er
 		return
 	}
 	err = core.UnmarshalModel(m, "listeners", &obj.Listeners, UnmarshalLoadBalancerListenerReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "logging", &obj.Logging, UnmarshalLoadBalancerLogging)
 	if err != nil {
 		return
 	}
@@ -28527,8 +31008,56 @@ func UnmarshalLoadBalancerListenerReferenceDeleted(m map[string]json.RawMessage,
 	return
 }
 
+// LoadBalancerLogging : The logging configuration for this load balancer.
+type LoadBalancerLogging struct {
+	// The datapath logging configuration for this load balancer.
+	Datapath *LoadBalancerLoggingDatapath `json:"datapath,omitempty"`
+}
+
+// UnmarshalLoadBalancerLogging unmarshals an instance of LoadBalancerLogging from the specified map of raw messages.
+func UnmarshalLoadBalancerLogging(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerLogging)
+	err = core.UnmarshalModel(m, "datapath", &obj.Datapath, UnmarshalLoadBalancerLoggingDatapath)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerLoggingDatapath : The datapath logging configuration for this load balancer.
+type LoadBalancerLoggingDatapath struct {
+	// If set to `true`, datapath logging is active for this load balancer.
+	Active *bool `json:"active" validate:"required"`
+}
+
+// NewLoadBalancerLoggingDatapath : Instantiate LoadBalancerLoggingDatapath (Generic Model Constructor)
+func (*VpcV1) NewLoadBalancerLoggingDatapath(active bool) (model *LoadBalancerLoggingDatapath, err error) {
+	model = &LoadBalancerLoggingDatapath{
+		Active: core.BoolPtr(active),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+// UnmarshalLoadBalancerLoggingDatapath unmarshals an instance of LoadBalancerLoggingDatapath from the specified map of raw messages.
+func UnmarshalLoadBalancerLoggingDatapath(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerLoggingDatapath)
+	err = core.UnmarshalPrimitive(m, "active", &obj.Active)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // LoadBalancerPatch : LoadBalancerPatch struct
 type LoadBalancerPatch struct {
+	// The logging configuration to use for this load balancer.
+	//
+	// To activate logging, the load balancer profile must support the specified logging type.
+	Logging *LoadBalancerLogging `json:"logging,omitempty"`
+
 	// The unique user-defined name for this load balancer.
 	Name *string `json:"name,omitempty"`
 }
@@ -28536,6 +31065,10 @@ type LoadBalancerPatch struct {
 // UnmarshalLoadBalancerPatch unmarshals an instance of LoadBalancerPatch from the specified map of raw messages.
 func UnmarshalLoadBalancerPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPatch)
+	err = core.UnmarshalModel(m, "logging", &obj.Logging, UnmarshalLoadBalancerLogging)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -28739,7 +31272,9 @@ type LoadBalancerPoolHealthMonitor struct {
 	// the unexpected property value was encountered.
 	Type *string `json:"type" validate:"required"`
 
-	// The health check URL path. Applicable only if the health monitor `type` is `http` or `https`.
+	// The health check URL path. Applicable only if the health monitor `type` is `http` or
+	// `https`. This value must be in the format of an [origin-form request
+	// target](https://tools.ietf.org/html/rfc7230#section-5.3.1).
 	URLPath *string `json:"url_path,omitempty"`
 }
 
@@ -28804,7 +31339,9 @@ type LoadBalancerPoolHealthMonitorPatch struct {
 	// The protocol type of this load balancer pool health monitor.
 	Type *string `json:"type" validate:"required"`
 
-	// The health check URL path. Applicable only if the health monitor `type` is `http` or `https`.
+	// The health check URL path. Applicable only if the health monitor `type` is `http` or
+	// `https`. This value must be in the format of an [origin-form request
+	// target](https://tools.ietf.org/html/rfc7230#section-5.3.1).
 	URLPath *string `json:"url_path,omitempty"`
 }
 
@@ -28876,7 +31413,9 @@ type LoadBalancerPoolHealthMonitorPrototype struct {
 	// The protocol type of this load balancer pool health monitor.
 	Type *string `json:"type" validate:"required"`
 
-	// The health check URL path. Applicable only if the health monitor `type` is `http` or `https`.
+	// The health check URL path. Applicable only if the health monitor `type` is `http` or
+	// `https`. This value must be in the format of an [origin-form request
+	// target](https://tools.ietf.org/html/rfc7230#section-5.3.1).
 	URLPath *string `json:"url_path,omitempty"`
 }
 
@@ -29717,6 +32256,9 @@ type LoadBalancerProfile struct {
 	// The URL for this load balancer profile.
 	Href *string `json:"href" validate:"required"`
 
+	// Indicates which logging type(s) are supported for a load balancer with this profile.
+	LoggingSupported *LoadBalancerProfileLoggingSupported `json:"logging_supported" validate:"required"`
+
 	// The globally unique name for this load balancer profile.
 	Name *string `json:"name" validate:"required"`
 }
@@ -29729,6 +32271,10 @@ func UnmarshalLoadBalancerProfile(m map[string]json.RawMessage, result interface
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "logging_supported", &obj.LoggingSupported, UnmarshalLoadBalancerProfileLoggingSupported)
 	if err != nil {
 		return
 	}
@@ -29848,6 +32394,36 @@ func UnmarshalLoadBalancerProfileIdentity(m map[string]json.RawMessage, result i
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileLoggingSupported : Indicates which logging type(s) are supported for a load balancer with this profile.
+type LoadBalancerProfileLoggingSupported struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The supported logging type(s) for a load balancer with this profile.
+	Value []string `json:"value" validate:"required"`
+}
+
+// Constants associated with the LoadBalancerProfileLoggingSupported.Type property.
+// The type for this profile field.
+const (
+	LoadBalancerProfileLoggingSupportedTypeFixedConst = "fixed"
+)
+
+// UnmarshalLoadBalancerProfileLoggingSupported unmarshals an instance of LoadBalancerProfileLoggingSupported from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileLoggingSupported(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileLoggingSupported)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
 	if err != nil {
 		return
 	}
@@ -31023,8 +33599,8 @@ func UnmarshalNetworkACLRuleReferenceDeleted(m map[string]json.RawMessage, resul
 
 // NetworkInterface : NetworkInterface struct
 type NetworkInterface struct {
-	// Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If
-	// true, IP spoofing is allowed on this interface.
+	// Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this
+	// interface. If true, source IP spoofing is allowed on this interface.
 	AllowIPSpoofing *bool `json:"allow_ip_spoofing" validate:"required"`
 
 	// The date and time that the network interface was created.
@@ -31074,6 +33650,7 @@ const (
 // The status of the network interface.
 const (
 	NetworkInterfaceStatusAvailableConst = "available"
+	NetworkInterfaceStatusDeletingConst  = "deleting"
 	NetworkInterfaceStatusFailedConst    = "failed"
 	NetworkInterfaceStatusPendingConst   = "pending"
 )
@@ -31310,8 +33887,8 @@ func UnmarshalNetworkInterfaceInstanceContextReferenceDeleted(m map[string]json.
 
 // NetworkInterfacePatch : NetworkInterfacePatch struct
 type NetworkInterfacePatch struct {
-	// Indicates whether IP spoofing is allowed on this interface. Updating to true allows IP spoofing on this interface.
-	// Updating to false prevents IP spoofing on this interface.
+	// Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this
+	// interface. If true, source IP spoofing is allowed on this interface.
 	AllowIPSpoofing *bool `json:"allow_ip_spoofing,omitempty"`
 
 	// The user-defined name for this network interface.
@@ -31345,8 +33922,8 @@ func (networkInterfacePatch *NetworkInterfacePatch) AsPatch() (patch map[string]
 
 // NetworkInterfacePrototype : NetworkInterfacePrototype struct
 type NetworkInterfacePrototype struct {
-	// Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If
-	// true, IP spoofing is allowed on this interface.
+	// Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this
+	// interface. If true, source IP spoofing is allowed on this interface.
 	AllowIPSpoofing *bool `json:"allow_ip_spoofing,omitempty"`
 
 	// The user-defined name for this network interface. If unspecified, the name will be a hyphenated list of
@@ -33549,8 +36126,8 @@ type RoutingTable struct {
 	//
 	// Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of
 	// `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges.
-	// Therefore, if an incoming packet matches a route with with a `next_hop` of an internet-bound IP address or a VPN
-	// gateway connection, the packet will be dropped.
+	// Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway
+	// connection, the packet will be dropped.
 	RouteDirectLinkIngress *bool `json:"route_direct_link_ingress" validate:"required"`
 
 	// Indicates whether this routing table is used to route traffic that originates from from [Transit
@@ -33558,8 +36135,8 @@ type RoutingTable struct {
 	//
 	// Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of
 	// `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges.
-	// Therefore, if an incoming packet matches a route with with a `next_hop` of an internet-bound IP address or a VPN
-	// gateway connection, the packet will be dropped.
+	// Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway
+	// connection, the packet will be dropped.
 	RouteTransitGatewayIngress *bool `json:"route_transit_gateway_ingress" validate:"required"`
 
 	// Indicates whether this routing table is used to route traffic that originates from subnets in other zones in this
@@ -33567,8 +36144,8 @@ type RoutingTable struct {
 	//
 	// Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of
 	// `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges.
-	// Therefore, if an incoming packet matches a route with with a `next_hop` of an internet-bound IP address or a VPN
-	// gateway connection, the packet will be dropped.
+	// Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway
+	// connection, the packet will be dropped.
 	RouteVPCZoneIngress *bool `json:"route_vpc_zone_ingress" validate:"required"`
 
 	// The routes for this routing table.
@@ -33779,8 +36356,8 @@ type RoutingTablePatch struct {
 	//
 	// Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of
 	// `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges.
-	// Therefore, if an incoming packet matches a route with with a `next_hop` of an internet-bound IP address or a VPN
-	// gateway connection, the packet will be dropped.
+	// Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway
+	// connection, the packet will be dropped.
 	RouteDirectLinkIngress *bool `json:"route_direct_link_ingress,omitempty"`
 
 	// Indicates whether this routing table is used to route traffic that originates from
@@ -33790,8 +36367,8 @@ type RoutingTablePatch struct {
 	//
 	// Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of
 	// `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges.
-	// Therefore, if an incoming packet matches a route with with a `next_hop` of an internet-bound IP address or a VPN
-	// gateway connection, the packet will be dropped.
+	// Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway
+	// connection, the packet will be dropped.
 	//
 	// If [Classic Access](https://cloud.ibm.com/docs/vpc?topic=vpc-setting-up-access-to-classic-infrastructure) is enabled
 	// for this VPC, and this property is set to `true`, its incoming traffic will also be routed according to this routing
@@ -33805,8 +36382,8 @@ type RoutingTablePatch struct {
 	//
 	// Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of
 	// `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges.
-	// Therefore, if an incoming packet matches a route with with a `next_hop` of an internet-bound IP address or a VPN
-	// gateway connection, the packet will be dropped.
+	// Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway
+	// connection, the packet will be dropped.
 	RouteVPCZoneIngress *bool `json:"route_vpc_zone_ingress,omitempty"`
 }
 
@@ -35233,6 +37810,82 @@ func (options *UnsetSubnetPublicGatewayOptions) SetID(id string) *UnsetSubnetPub
 
 // SetHeaders : Allow user to set Headers
 func (options *UnsetSubnetPublicGatewayOptions) SetHeaders(param map[string]string) *UnsetSubnetPublicGatewayOptions {
+	options.Headers = param
+	return options
+}
+
+// UpdateDedicatedHostGroupOptions : The UpdateDedicatedHostGroup options.
+type UpdateDedicatedHostGroupOptions struct {
+	// The dedicated host group identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The dedicated host group patch.
+	DedicatedHostGroupPatch map[string]interface{} `json:"DedicatedHostGroup_patch" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewUpdateDedicatedHostGroupOptions : Instantiate UpdateDedicatedHostGroupOptions
+func (*VpcV1) NewUpdateDedicatedHostGroupOptions(id string, dedicatedHostGroupPatch map[string]interface{}) *UpdateDedicatedHostGroupOptions {
+	return &UpdateDedicatedHostGroupOptions{
+		ID:                      core.StringPtr(id),
+		DedicatedHostGroupPatch: dedicatedHostGroupPatch,
+	}
+}
+
+// SetID : Allow user to set ID
+func (options *UpdateDedicatedHostGroupOptions) SetID(id string) *UpdateDedicatedHostGroupOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetDedicatedHostGroupPatch : Allow user to set DedicatedHostGroupPatch
+func (options *UpdateDedicatedHostGroupOptions) SetDedicatedHostGroupPatch(dedicatedHostGroupPatch map[string]interface{}) *UpdateDedicatedHostGroupOptions {
+	options.DedicatedHostGroupPatch = dedicatedHostGroupPatch
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateDedicatedHostGroupOptions) SetHeaders(param map[string]string) *UpdateDedicatedHostGroupOptions {
+	options.Headers = param
+	return options
+}
+
+// UpdateDedicatedHostOptions : The UpdateDedicatedHost options.
+type UpdateDedicatedHostOptions struct {
+	// The dedicated host identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The dedicated host patch.
+	DedicatedHostPatch map[string]interface{} `json:"DedicatedHost_patch" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewUpdateDedicatedHostOptions : Instantiate UpdateDedicatedHostOptions
+func (*VpcV1) NewUpdateDedicatedHostOptions(id string, dedicatedHostPatch map[string]interface{}) *UpdateDedicatedHostOptions {
+	return &UpdateDedicatedHostOptions{
+		ID:                 core.StringPtr(id),
+		DedicatedHostPatch: dedicatedHostPatch,
+	}
+}
+
+// SetID : Allow user to set ID
+func (options *UpdateDedicatedHostOptions) SetID(id string) *UpdateDedicatedHostOptions {
+	options.ID = core.StringPtr(id)
+	return options
+}
+
+// SetDedicatedHostPatch : Allow user to set DedicatedHostPatch
+func (options *UpdateDedicatedHostOptions) SetDedicatedHostPatch(dedicatedHostPatch map[string]interface{}) *UpdateDedicatedHostOptions {
+	options.DedicatedHostPatch = dedicatedHostPatch
+	return options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateDedicatedHostOptions) SetHeaders(param map[string]string) *UpdateDedicatedHostOptions {
 	options.Headers = param
 	return options
 }
@@ -36845,6 +39498,30 @@ func (options *UpdateVPNGatewayOptions) SetHeaders(param map[string]string) *Upd
 	return options
 }
 
+// Vcpu : The VCPU configuration.
+type Vcpu struct {
+	// The VCPU architecture.
+	Architecture *string `json:"architecture" validate:"required"`
+
+	// The number of VCPUs assigned.
+	Count *int64 `json:"count" validate:"required"`
+}
+
+// UnmarshalVcpu unmarshals an instance of Vcpu from the specified map of raw messages.
+func UnmarshalVcpu(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(Vcpu)
+	err = core.UnmarshalPrimitive(m, "architecture", &obj.Architecture)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "count", &obj.Count)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // VPC : VPC struct
 type VPC struct {
 	// Indicates whether this VPC is connected to Classic Infrastructure. If true, this VPC's resources have private
@@ -38173,6 +40850,13 @@ type Volume struct {
 	// property value was encountered.
 	Status *string `json:"status" validate:"required"`
 
+	// Array of reasons for the current status (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []VolumeStatusReason `json:"status_reasons" validate:"required"`
+
 	// The collection of volume attachments attaching instances to the volume.
 	VolumeAttachments []VolumeAttachmentReferenceVolumeContext `json:"volume_attachments" validate:"required"`
 
@@ -38252,6 +40936,10 @@ func UnmarshalVolume(m map[string]json.RawMessage, result interface{}) (err erro
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVolumeStatusReason)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentReferenceVolumeContext)
 	if err != nil {
 		return
@@ -38301,6 +40989,7 @@ type VolumeAttachment struct {
 const (
 	VolumeAttachmentStatusAttachedConst  = "attached"
 	VolumeAttachmentStatusAttachingConst = "attaching"
+	VolumeAttachmentStatusDeletingConst  = "deleting"
 	VolumeAttachmentStatusDetachingConst = "detaching"
 )
 
@@ -39261,6 +41950,43 @@ func UnmarshalVolumeReferenceDeleted(m map[string]json.RawMessage, result interf
 	return
 }
 
+// VolumeStatusReason : VolumeStatusReason struct
+type VolumeStatusReason struct {
+	// A snake case string succinctly identifying the status reason.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the status reason.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about this status reason.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VolumeStatusReason.Code property.
+// A snake case string succinctly identifying the status reason.
+const (
+	VolumeStatusReasonCodeEncryptionKeyDeletedConst = "encryption_key_deleted"
+)
+
+// UnmarshalVolumeStatusReason unmarshals an instance of VolumeStatusReason from the specified map of raw messages.
+func UnmarshalVolumeStatusReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeStatusReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // Zone : Zone struct
 type Zone struct {
 	// The URL for this zone.
@@ -39438,6 +42164,770 @@ func (*CloudObjectStorageBucketIdentityByName) isaCloudObjectStorageBucketIdenti
 func UnmarshalCloudObjectStorageBucketIdentityByName(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(CloudObjectStorageBucketIdentityByName)
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostGroupIdentityByCRN : DedicatedHostGroupIdentityByCRN struct
+// This model "extends" DedicatedHostGroupIdentity
+type DedicatedHostGroupIdentityByCRN struct {
+	// The CRN for this dedicated host group.
+	CRN *string `json:"crn" validate:"required"`
+}
+
+// NewDedicatedHostGroupIdentityByCRN : Instantiate DedicatedHostGroupIdentityByCRN (Generic Model Constructor)
+func (*VpcV1) NewDedicatedHostGroupIdentityByCRN(crn string) (model *DedicatedHostGroupIdentityByCRN, err error) {
+	model = &DedicatedHostGroupIdentityByCRN{
+		CRN: core.StringPtr(crn),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*DedicatedHostGroupIdentityByCRN) isaDedicatedHostGroupIdentity() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostGroupIdentityByCRN unmarshals an instance of DedicatedHostGroupIdentityByCRN from the specified map of raw messages.
+func UnmarshalDedicatedHostGroupIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostGroupIdentityByCRN)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostGroupIdentityByHref : DedicatedHostGroupIdentityByHref struct
+// This model "extends" DedicatedHostGroupIdentity
+type DedicatedHostGroupIdentityByHref struct {
+	// The URL for this dedicated host group.
+	Href *string `json:"href" validate:"required"`
+}
+
+// NewDedicatedHostGroupIdentityByHref : Instantiate DedicatedHostGroupIdentityByHref (Generic Model Constructor)
+func (*VpcV1) NewDedicatedHostGroupIdentityByHref(href string) (model *DedicatedHostGroupIdentityByHref, err error) {
+	model = &DedicatedHostGroupIdentityByHref{
+		Href: core.StringPtr(href),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*DedicatedHostGroupIdentityByHref) isaDedicatedHostGroupIdentity() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostGroupIdentityByHref unmarshals an instance of DedicatedHostGroupIdentityByHref from the specified map of raw messages.
+func UnmarshalDedicatedHostGroupIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostGroupIdentityByHref)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostGroupIdentityByID : DedicatedHostGroupIdentityByID struct
+// This model "extends" DedicatedHostGroupIdentity
+type DedicatedHostGroupIdentityByID struct {
+	// The unique identifier for this dedicated host group.
+	ID *string `json:"id" validate:"required"`
+}
+
+// NewDedicatedHostGroupIdentityByID : Instantiate DedicatedHostGroupIdentityByID (Generic Model Constructor)
+func (*VpcV1) NewDedicatedHostGroupIdentityByID(id string) (model *DedicatedHostGroupIdentityByID, err error) {
+	model = &DedicatedHostGroupIdentityByID{
+		ID: core.StringPtr(id),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*DedicatedHostGroupIdentityByID) isaDedicatedHostGroupIdentity() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostGroupIdentityByID unmarshals an instance of DedicatedHostGroupIdentityByID from the specified map of raw messages.
+func UnmarshalDedicatedHostGroupIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostGroupIdentityByID)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileIdentityByHref : DedicatedHostProfileIdentityByHref struct
+// This model "extends" DedicatedHostProfileIdentity
+type DedicatedHostProfileIdentityByHref struct {
+	// The URL for this dedicated host profile.
+	Href *string `json:"href" validate:"required"`
+}
+
+// NewDedicatedHostProfileIdentityByHref : Instantiate DedicatedHostProfileIdentityByHref (Generic Model Constructor)
+func (*VpcV1) NewDedicatedHostProfileIdentityByHref(href string) (model *DedicatedHostProfileIdentityByHref, err error) {
+	model = &DedicatedHostProfileIdentityByHref{
+		Href: core.StringPtr(href),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*DedicatedHostProfileIdentityByHref) isaDedicatedHostProfileIdentity() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostProfileIdentityByHref unmarshals an instance of DedicatedHostProfileIdentityByHref from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileIdentityByHref)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileIdentityByName : DedicatedHostProfileIdentityByName struct
+// This model "extends" DedicatedHostProfileIdentity
+type DedicatedHostProfileIdentityByName struct {
+	// The globally unique name for this dedicated host profile.
+	Name *string `json:"name" validate:"required"`
+}
+
+// NewDedicatedHostProfileIdentityByName : Instantiate DedicatedHostProfileIdentityByName (Generic Model Constructor)
+func (*VpcV1) NewDedicatedHostProfileIdentityByName(name string) (model *DedicatedHostProfileIdentityByName, err error) {
+	model = &DedicatedHostProfileIdentityByName{
+		Name: core.StringPtr(name),
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*DedicatedHostProfileIdentityByName) isaDedicatedHostProfileIdentity() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostProfileIdentityByName unmarshals an instance of DedicatedHostProfileIdentityByName from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileIdentityByName(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileIdentityByName)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileMemoryDependent : The memory value for a dedicated host with this profile depends on its configuration.
+// This model "extends" DedicatedHostProfileMemory
+type DedicatedHostProfileMemoryDependent struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostProfileMemoryDependent.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileMemoryDependentTypeDependentConst = "dependent"
+)
+
+func (*DedicatedHostProfileMemoryDependent) isaDedicatedHostProfileMemory() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostProfileMemoryDependent unmarshals an instance of DedicatedHostProfileMemoryDependent from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileMemoryDependent(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileMemoryDependent)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileMemoryEnum : The permitted memory values (in gibibytes) for a dedicated host with this profile.
+// This model "extends" DedicatedHostProfileMemory
+type DedicatedHostProfileMemoryEnum struct {
+	// The default value for this profile field.
+	Default *int64 `json:"default" validate:"required"`
+
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The permitted values for this profile field.
+	Values []int64 `json:"values" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostProfileMemoryEnum.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileMemoryEnumTypeEnumConst = "enum"
+)
+
+func (*DedicatedHostProfileMemoryEnum) isaDedicatedHostProfileMemory() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostProfileMemoryEnum unmarshals an instance of DedicatedHostProfileMemoryEnum from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileMemoryEnum(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileMemoryEnum)
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "values", &obj.Values)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileMemoryFixed : The memory (in gibibytes) for a dedicated host with this profile.
+// This model "extends" DedicatedHostProfileMemory
+type DedicatedHostProfileMemoryFixed struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The value for this profile field.
+	Value *int64 `json:"value" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostProfileMemoryFixed.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileMemoryFixedTypeFixedConst = "fixed"
+)
+
+func (*DedicatedHostProfileMemoryFixed) isaDedicatedHostProfileMemory() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostProfileMemoryFixed unmarshals an instance of DedicatedHostProfileMemoryFixed from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileMemoryFixed(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileMemoryFixed)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileMemoryRange : The permitted memory range (in gibibytes) for a dedicated host with this profile.
+// This model "extends" DedicatedHostProfileMemory
+type DedicatedHostProfileMemoryRange struct {
+	// The default value for this profile field.
+	Default *int64 `json:"default" validate:"required"`
+
+	// The maximum value for this profile field.
+	Max *int64 `json:"max" validate:"required"`
+
+	// The minimum value for this profile field.
+	Min *int64 `json:"min" validate:"required"`
+
+	// The increment step value for this profile field.
+	Step *int64 `json:"step" validate:"required"`
+
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostProfileMemoryRange.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileMemoryRangeTypeRangeConst = "range"
+)
+
+func (*DedicatedHostProfileMemoryRange) isaDedicatedHostProfileMemory() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostProfileMemoryRange unmarshals an instance of DedicatedHostProfileMemoryRange from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileMemoryRange(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileMemoryRange)
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileSocketDependent : The CPU socket count for a dedicated host with this profile depends on its configuration.
+// This model "extends" DedicatedHostProfileSocket
+type DedicatedHostProfileSocketDependent struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostProfileSocketDependent.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileSocketDependentTypeDependentConst = "dependent"
+)
+
+func (*DedicatedHostProfileSocketDependent) isaDedicatedHostProfileSocket() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostProfileSocketDependent unmarshals an instance of DedicatedHostProfileSocketDependent from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileSocketDependent(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileSocketDependent)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileSocketEnum : The permitted values for CPU socket count for a dedicated host with this profile.
+// This model "extends" DedicatedHostProfileSocket
+type DedicatedHostProfileSocketEnum struct {
+	// The default value for this profile field.
+	Default *int64 `json:"default" validate:"required"`
+
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The permitted values for this profile field.
+	Values []int64 `json:"values" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostProfileSocketEnum.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileSocketEnumTypeEnumConst = "enum"
+)
+
+func (*DedicatedHostProfileSocketEnum) isaDedicatedHostProfileSocket() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostProfileSocketEnum unmarshals an instance of DedicatedHostProfileSocketEnum from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileSocketEnum(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileSocketEnum)
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "values", &obj.Values)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileSocketFixed : The CPU socket count for a dedicated host with this profile.
+// This model "extends" DedicatedHostProfileSocket
+type DedicatedHostProfileSocketFixed struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The value for this profile field.
+	Value *int64 `json:"value" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostProfileSocketFixed.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileSocketFixedTypeFixedConst = "fixed"
+)
+
+func (*DedicatedHostProfileSocketFixed) isaDedicatedHostProfileSocket() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostProfileSocketFixed unmarshals an instance of DedicatedHostProfileSocketFixed from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileSocketFixed(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileSocketFixed)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileSocketRange : The permitted range for CPU socket count for a dedicated host with this profile.
+// This model "extends" DedicatedHostProfileSocket
+type DedicatedHostProfileSocketRange struct {
+	// The default value for this profile field.
+	Default *int64 `json:"default" validate:"required"`
+
+	// The maximum value for this profile field.
+	Max *int64 `json:"max" validate:"required"`
+
+	// The minimum value for this profile field.
+	Min *int64 `json:"min" validate:"required"`
+
+	// The increment step value for this profile field.
+	Step *int64 `json:"step" validate:"required"`
+
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostProfileSocketRange.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileSocketRangeTypeRangeConst = "range"
+)
+
+func (*DedicatedHostProfileSocketRange) isaDedicatedHostProfileSocket() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostProfileSocketRange unmarshals an instance of DedicatedHostProfileSocketRange from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileSocketRange(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileSocketRange)
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileVcpuDependent : The VCPU count for a dedicated host with this profile depends on its configuration.
+// This model "extends" DedicatedHostProfileVcpu
+type DedicatedHostProfileVcpuDependent struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostProfileVcpuDependent.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileVcpuDependentTypeDependentConst = "dependent"
+)
+
+func (*DedicatedHostProfileVcpuDependent) isaDedicatedHostProfileVcpu() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostProfileVcpuDependent unmarshals an instance of DedicatedHostProfileVcpuDependent from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileVcpuDependent(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileVcpuDependent)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileVcpuEnum : The permitted values for VCPU count for a dedicated host with this profile.
+// This model "extends" DedicatedHostProfileVcpu
+type DedicatedHostProfileVcpuEnum struct {
+	// The default value for this profile field.
+	Default *int64 `json:"default" validate:"required"`
+
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The permitted values for this profile field.
+	Values []int64 `json:"values" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostProfileVcpuEnum.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileVcpuEnumTypeEnumConst = "enum"
+)
+
+func (*DedicatedHostProfileVcpuEnum) isaDedicatedHostProfileVcpu() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostProfileVcpuEnum unmarshals an instance of DedicatedHostProfileVcpuEnum from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileVcpuEnum(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileVcpuEnum)
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "values", &obj.Values)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileVcpuFixed : The VCPU count for a dedicated host with this profile.
+// This model "extends" DedicatedHostProfileVcpu
+type DedicatedHostProfileVcpuFixed struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The value for this profile field.
+	Value *int64 `json:"value" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostProfileVcpuFixed.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileVcpuFixedTypeFixedConst = "fixed"
+)
+
+func (*DedicatedHostProfileVcpuFixed) isaDedicatedHostProfileVcpu() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostProfileVcpuFixed unmarshals an instance of DedicatedHostProfileVcpuFixed from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileVcpuFixed(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileVcpuFixed)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileVcpuRange : The permitted range for VCPU count for a dedicated host with this profile.
+// This model "extends" DedicatedHostProfileVcpu
+type DedicatedHostProfileVcpuRange struct {
+	// The default value for this profile field.
+	Default *int64 `json:"default" validate:"required"`
+
+	// The maximum value for this profile field.
+	Max *int64 `json:"max" validate:"required"`
+
+	// The minimum value for this profile field.
+	Min *int64 `json:"min" validate:"required"`
+
+	// The increment step value for this profile field.
+	Step *int64 `json:"step" validate:"required"`
+
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostProfileVcpuRange.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileVcpuRangeTypeRangeConst = "range"
+)
+
+func (*DedicatedHostProfileVcpuRange) isaDedicatedHostProfileVcpu() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostProfileVcpuRange unmarshals an instance of DedicatedHostProfileVcpuRange from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileVcpuRange(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileVcpuRange)
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostPrototypeDedicatedHostByGroup : DedicatedHostPrototypeDedicatedHostByGroup struct
+// This model "extends" DedicatedHostPrototype
+type DedicatedHostPrototypeDedicatedHostByGroup struct {
+	// If set to true, instances can be placed on this dedicated host.
+	InstancePlacementEnabled *bool `json:"instance_placement_enabled,omitempty"`
+
+	// The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of
+	// randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The profile to use for this dedicated host.
+	Profile DedicatedHostProfileIdentityIntf `json:"profile" validate:"required"`
+
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The dedicated host group for this dedicated host.
+	Group DedicatedHostGroupIdentityIntf `json:"group" validate:"required"`
+}
+
+// NewDedicatedHostPrototypeDedicatedHostByGroup : Instantiate DedicatedHostPrototypeDedicatedHostByGroup (Generic Model Constructor)
+func (*VpcV1) NewDedicatedHostPrototypeDedicatedHostByGroup(profile DedicatedHostProfileIdentityIntf, group DedicatedHostGroupIdentityIntf) (model *DedicatedHostPrototypeDedicatedHostByGroup, err error) {
+	model = &DedicatedHostPrototypeDedicatedHostByGroup{
+		Profile: profile,
+		Group:   group,
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*DedicatedHostPrototypeDedicatedHostByGroup) isaDedicatedHostPrototype() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostPrototypeDedicatedHostByGroup unmarshals an instance of DedicatedHostPrototypeDedicatedHostByGroup from the specified map of raw messages.
+func UnmarshalDedicatedHostPrototypeDedicatedHostByGroup(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostPrototypeDedicatedHostByGroup)
+	err = core.UnmarshalPrimitive(m, "instance_placement_enabled", &obj.InstancePlacementEnabled)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalDedicatedHostProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "group", &obj.Group, UnmarshalDedicatedHostGroupIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostPrototypeDedicatedHostByZone : DedicatedHostPrototypeDedicatedHostByZone struct
+// This model "extends" DedicatedHostPrototype
+type DedicatedHostPrototypeDedicatedHostByZone struct {
+	// If set to true, instances can be placed on this dedicated host.
+	InstancePlacementEnabled *bool `json:"instance_placement_enabled,omitempty"`
+
+	// The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of
+	// randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The profile to use for this dedicated host.
+	Profile DedicatedHostProfileIdentityIntf `json:"profile" validate:"required"`
+
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	Group *DedicatedHostGroupPrototypeDedicatedHostByZoneContext `json:"group,omitempty"`
+
+	// The zone to provision the dedicated host in.
+	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
+}
+
+// NewDedicatedHostPrototypeDedicatedHostByZone : Instantiate DedicatedHostPrototypeDedicatedHostByZone (Generic Model Constructor)
+func (*VpcV1) NewDedicatedHostPrototypeDedicatedHostByZone(profile DedicatedHostProfileIdentityIntf, zone ZoneIdentityIntf) (model *DedicatedHostPrototypeDedicatedHostByZone, err error) {
+	model = &DedicatedHostPrototypeDedicatedHostByZone{
+		Profile: profile,
+		Zone:    zone,
+	}
+	err = core.ValidateStruct(model, "required parameters")
+	return
+}
+
+func (*DedicatedHostPrototypeDedicatedHostByZone) isaDedicatedHostPrototype() bool {
+	return true
+}
+
+// UnmarshalDedicatedHostPrototypeDedicatedHostByZone unmarshals an instance of DedicatedHostPrototypeDedicatedHostByZone from the specified map of raw messages.
+func UnmarshalDedicatedHostPrototypeDedicatedHostByZone(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostPrototypeDedicatedHostByZone)
+	err = core.UnmarshalPrimitive(m, "instance_placement_enabled", &obj.InstancePlacementEnabled)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalDedicatedHostProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "group", &obj.Group, UnmarshalDedicatedHostGroupPrototypeDedicatedHostByZoneContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneIdentity)
 	if err != nil {
 		return
 	}

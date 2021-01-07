@@ -6,10 +6,9 @@ description: |-
   Manages IBM Virtual endpoint gateway
 ---
 
-# ibm\_is_virtual_endpoint_gateway
+# ibm_is_virtual_endpoint_gateway
 
-Provides a Virtual endpoint gateway  resource. This allows Virtual endpoint gateway  to be created, updated, and cancelled.
-
+Provides a Virtual endpoint gateway resource. This allows Virtual endpoint gateway to be created, updated, and cancelled.
 
 ## Example Usage
 
@@ -17,14 +16,14 @@ In the following example, you can create a VPN gateway:
 
 ```hcl
 resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway1" {
-		
+
   name = "my-endpoint-gateway-1"
   target {
 	name          = "ibm-dns-server2"
     resource_type = "provider_infrastructure_service"
   }
   vpc = ibm_is_vpc.testacc_vpc.id
-  resource_group = data.ibm_resource_group.test_acc.id    
+  resource_group = data.ibm_resource_group.test_acc.id
 }
 
 resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway2" {
@@ -55,34 +54,33 @@ resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway3" {
 }
 ```
 
-
 ## Argument Reference
 
 The following arguments are supported:
 
-* `name` - (Required, string,ForceNew) Endpoint gateway name
-* `target` - (Required, stringList) Endpoint gateway target
-  * `name` - (Required, string) Endpoint gateway target name
-  * `resource_type`- (Required, string) Endpoint gateway target resource type
-* `vpc` - (Required, string) The VPC id
-* `ips` -  (Optional, stringList)Endpoint gateway resource group
-  * `id` -  (Optional, string)Endpoint gateway resource group IPs id
-  * `name` -  (Optional, string)Endpoint gateway resource group IPs name
-  * `subnet` -  (Optional, string)Endpoint gateway resource group Subnet id
-  * `resource_type` -  (Computed, string)Endpoint gateway resource group VPC Resource Type
-* `resource_group` -  (Optional, string,ForceNew)The resource group id
-* `tags` - (Optional, array of strings) Tags associated with the instance.
+- `name` - (Required, string,ForceNew) Endpoint gateway name
+- `target` - (Required, stringList) Endpoint gateway target
+  - `name` - (Optional, string, ForceNew) Endpoint gateway target name. If it is not specified, `crn` must be specified.
+  - `crn` - (Optional, string, ForceNew) Endpoint gateway target crn. If it is not specified, `name` must be specified.
+  - `resource_type`- (Required, string) Endpoint gateway target resource type
+- `vpc` - (Required, string, ForceNew) The VPC id
+- `ips` - (Optional, stringList)Endpoint gateway resource group
+  - `id` - (Optional, string)Endpoint gateway resource group IPs id
+  - `name` - (Optional, string)Endpoint gateway resource group IPs name
+  - `subnet` - (Optional, string)Endpoint gateway resource group Subnet id
+  - `resource_type` - (Computed, string)Endpoint gateway resource group VPC Resource Type
+- `resource_group` - (Optional, string,ForceNew)The resource group id
+- `tags` - (Optional, array of strings) Tags associated with the instance.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the VPN gateway connection. The id is composed of \<gateway_id>
-* `resource_type` - Endpoint gateway resource type
-* `created_at` -  Endpoint gateway created date and time
-* `health_state` -  Endpoint gateway health state
-* `lifecycle_state` -  Endpoint gateway lifecycle state
-
+- `id` - The unique identifier of the endpoint gateway connection.
+- `resource_type` - Endpoint gateway resource type
+- `created_at` - Endpoint gateway created date and time
+- `health_state` - Endpoint gateway health state
+- `lifecycle_state` - Endpoint gateway lifecycle state
 
 ## Import
 
