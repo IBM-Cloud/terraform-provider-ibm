@@ -1,7 +1,6 @@
 package ibm
 
 import (
-	"crypto/tls"
 	"fmt"
 	"log"
 	"os"
@@ -269,6 +268,10 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 		log.Printf("[DEBUG] createSaramaAdminClient GetInstance err %s", err)
 		return nil, "", err
 	}
+	if instance.Extensions == nil {
+		log.Printf("[DEBUG] createSaramaAdminClient instance %s extension is nil", instance.ID)
+		return nil, "", fmt.Errorf("instance %s extension is nil", instance.ID)
+	}
 	adminURL := instance.Extensions["kafka_http_url"].(string)
 	d.Set("kafka_http_url", adminURL)
 	log.Printf("[INFO] createSaramaAdminClient kafka_http_url is set to %s", adminURL)
@@ -286,9 +289,6 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 	config.Net.SASL.User = "token"
 	config.Net.SASL.Password = apiKey
 	config.Net.TLS.Enable = true
-	config.Net.TLS.Config = &tls.Config{
-		InsecureSkipVerify: true,
-	}
 	config.Version = brokerVersion
 	adminClient, err := sarama.NewClusterAdmin(brokerAddress, config)
 	if err != nil {
