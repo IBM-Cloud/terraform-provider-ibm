@@ -46,7 +46,8 @@ require (
 	github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22
 	github.ibm.com/ibmcloud/namespace-go-sdk v0.0.0-00010101000000-000000000000
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
-	golang.org/x/tools v0.0.0-20201005185003-576e169c3de7 // indirect
+	golang.org/x/sys v0.0.0-20210105210732-16f7687f5001 // indirect
+	golang.org/x/tools v0.0.0-20210107193943-4ed967dd8eff // indirect
 	gotest.tools v2.2.0+incompatible
 )
 

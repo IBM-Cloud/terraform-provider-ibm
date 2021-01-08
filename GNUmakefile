@@ -6,6 +6,7 @@ TEST_TIMEOUT?=700m
 default: build
 
 tools:
+	@go get golang.org/x/sys/unix
 	@go get github.com/kardianos/govendor
 	@go get github.com/mitchellh/gox
 	@go get golang.org/x/tools/cmd/cover
