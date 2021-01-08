@@ -17,7 +17,7 @@ require (
 	github.com/IBM/platform-services-go-sdk v0.17.3
 	github.com/IBM/vpc-go-sdk v0.4.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
-	github.com/Shopify/sarama v1.26.4
+	github.com/Shopify/sarama v1.27.2
 	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32 // indirect
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
 	github.com/apparentlymart/go-cidr v1.0.1
