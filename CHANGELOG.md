@@ -1,3 +1,20 @@
+# 1.19.0 (Jan08, 2020)
+
+FEATURES:
+* Support Contianer Registry resource and datasource `ibm_cr_namespace`, `ibm_cr_namespaces` ([#2119](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2119))
+
+* Support reset APIkey for cluster `ibm_container_api_key_reset` ([#2118](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2118))
+
+* Support APIkey for serviceID `ibm_iam_service_api_key` ([#666](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/666))
+
+ENHANCEMENTS:
+
+* Move next_hop from optional to required for `ibm_is_vpc_routing_table_route` ([#2141](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2141))
+
+* Support jp-osa endpoints for `ibm_cos_bucket` [#2149](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2149))
+
+* Support crn in target attribute for `ibm_is_virtual_endpoint_gateway` ([#2147](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2147))
+
 ## 1.18.0 (Dec22, 2020)
 
 FEATURES:
