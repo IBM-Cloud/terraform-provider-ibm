@@ -196,6 +196,7 @@ The following arguments are supported:
 	* `private_endpoint` - Set this to true to configure the KMS private service endpoint. Default is false.
 * `force_delete_storage` - (Optional, bool) If set to true, force the removal of persistent storage associated with the cluster during cluster deletion. Default: false
     **NOTE**: Before doing terraform destroy if force_delete_storage param is introduced after provisioning the cluster, a terraform apply must be done before terraform destroy for force_delete_storage param to take effect.
+* `patch_version` - (Optional, string) Set this to update the worker nodes with the required patch version. Learn More about the Kuberentes version [here](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions)
 ## Attribute Reference
 
 The following attributes are exported:

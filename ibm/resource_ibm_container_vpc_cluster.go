@@ -143,6 +143,12 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "Updates all the woker nodes if sets to true",
 			},
 
+			"patch_version": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Kubernetes patch version",
+			},
+
 			"wait_for_worker_update": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -541,7 +547,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 
 	}
 
-	if (d.HasChange("kube_version") || d.HasChange("update_all_workers")) && !d.IsNewResource() {
+	if (d.HasChange("kube_version") || d.HasChange("update_all_workers")) || d.HasChange("patch_version") && !d.IsNewResource() {
 
 		if d.HasChange("kube_version") {
 			ClusterClient, err := meta.(ClientSession).ContainerAPI()
@@ -594,7 +600,9 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		workersInfo := make(map[string]int, 0)
 
 		updateAllWorkers := d.Get("update_all_workers").(bool)
-		if updateAllWorkers {
+		if updateAllWorkers || d.HasChange("patch_version") {
+
+			patchVersion := d.Get("patch_version").(string)
 			workers, err := csClient.Workers().ListWorkers(clusterID, false, targetEnv)
 			if err != nil {
 				return fmt.Errorf("Error retrieving workers for cluster: %s", err)
@@ -608,7 +616,8 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 			waitForWorkerUpdate := d.Get("wait_for_worker_update").(bool)
 
 			for _, worker := range workers {
-				if strings.Split(worker.KubeVersion.Actual, "_")[0] != strings.Split(cls.MasterKubeVersion, "_")[0] {
+				// check if change is present in MAJOR.MINOR version or in PATCH version
+				if strings.Split(worker.KubeVersion.Actual, "_")[0] != strings.Split(cls.MasterKubeVersion, "_")[0] || (strings.Split(worker.KubeVersion.Actual, ".")[2] != patchVersion && patchVersion == strings.Split(cls.MasterKubeVersion, ".")[2]) {
 					_, err := csClient.Workers().ReplaceWokerNode(clusterID, worker.ID, targetEnv)
 					// As API returns http response 204 NO CONTENT, error raised will be exempted.
 					if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {
@@ -829,7 +838,6 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0]+"_openshift")
 	} else {
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
-
 	}
 	d.Set("worker_count", workerPool.WorkerCount)
 	d.Set("worker_labels", IgnoreSystemLabels(workerPool.Labels))
