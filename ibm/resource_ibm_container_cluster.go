@@ -218,6 +218,12 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Description: "Kubernetes version info",
 			},
 
+			"patch_version": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Kubernetes patch version",
+			},
+
 			"update_all_workers": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -809,7 +815,6 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0]+"_openshift")
 	} else {
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
-
 	}
 	d.Set("albs", flattenAlbs(albs, "all"))
 	d.Set("resource_group_id", cls.ResourceGroupID)
@@ -856,7 +861,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 
 	clusterID := d.Id()
 
-	if (d.HasChange("kube_version") || d.HasChange("update_all_workers")) && !d.IsNewResource() {
+	if (d.HasChange("kube_version") || d.HasChange("update_all_workers")) || d.HasChange("patch_version") && !d.IsNewResource() {
 		if d.HasChange("kube_version") {
 			var masterVersion string
 			if v, ok := d.GetOk("kube_version"); ok {
@@ -877,10 +882,11 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 					"Error waiting for cluster (%s) version to be updated: %s", d.Id(), err)
 			}
 		}
-		// "update_all_workers" deafult is false, enable to true when all eorker nodes to be updated
+		// "update_all_workers" deafult is false, enable to true when all worker nodes to be updated
 		// with major and minor updates.
 		updateAllWorkers := d.Get("update_all_workers").(bool)
-		if updateAllWorkers {
+		if updateAllWorkers || d.HasChange("patch_version") {
+			patchVersion := d.Get("patch_version").(string)
 			workerFields, err := wrkAPI.List(clusterID, targetEnv)
 			if err != nil {
 				return fmt.Errorf("Error retrieving workers for cluster: %s", err)
@@ -893,7 +899,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 			waitForWorkerUpdate := d.Get("wait_for_worker_update").(bool)
 
 			for _, w := range workerFields {
-				if strings.Split(w.KubeVersion, "_")[0] != strings.Split(cluster.MasterKubeVersion, "_")[0] {
+				if strings.Split(w.KubeVersion, "_")[0] != strings.Split(cluster.MasterKubeVersion, "_")[0] || (strings.Split(w.KubeVersion, ".")[2] != patchVersion && strings.Split(cluster.MasterKubeVersion, ".")[2] != patchVersion) {
 					params := v1.WorkerUpdateParam{
 						Action: "update",
 					}
