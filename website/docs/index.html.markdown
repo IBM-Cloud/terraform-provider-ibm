@@ -235,4 +235,4 @@ export IBMCLOUD_UAA_ENDPOINT="https://iam.cloud.ibm.com/cloudfoundry/login/<regi
 
 ## References 
 
-* [IBM Cloud Terraform Docs](https://cloud.ibm.com/docs/terraform?topic=terraform-tf-provider)
+* [IBM Cloud Terraform Docs](https://cloud.ibm.com/docs/terraform?topic=terraform-index-of-ibm-cloud-provider-plug-in-for-terraform-resources-and-data-sources)
