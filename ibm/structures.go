@@ -722,7 +722,7 @@ func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
 				rule["days"] = int(*(r.Expiration).Days)
 			}
 			if r.Filter != nil {
-				rule["prefix"] = *(r.Filter).Prefix
+				rule["prefix"] = r.Filter.Prefix
 			}
 
 			rules = append(rules, rule)
