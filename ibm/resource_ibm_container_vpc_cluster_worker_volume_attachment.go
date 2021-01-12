@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -62,7 +63,7 @@ func resourceIBMContainerVpcWorkerVolumeAttachment() *schema.Resource {
 				Description: "Volume attachment status",
 			},
 
-			"volume_attachemnt_id": {
+			"volume_attachment_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Volume attachment ID",
@@ -139,7 +140,7 @@ func resourceIBMContainerVpcWorkerVolumeAttachmentRead(d *schema.ResourceData, m
 	}
 	d.Set("cluster", clusterNameorID)
 	d.Set("worker", workerID)
-	d.Set("volume_attachemnt_id", volumeAttachmentID)
+	d.Set("volume_attachment_id", volumeAttachmentID)
 	d.Set("volume_attachment_name", volume.Name)
 	d.Set("status", volume.Status)
 	d.Set("volume_type", volume.Type)
@@ -172,8 +173,12 @@ func resourceIBMContainerVpcWorkerVolumeAttachmentDelete(d *schema.ResourceData,
 		Worker:             workerID,
 	}
 
-	_, deleteErr := workersAPI.DeleteStorageAttachment(detachVolumeRequest, target)
-	if deleteErr != nil {
+	response, deleteErr := workersAPI.DeleteStorageAttachment(detachVolumeRequest, target)
+	if deleteErr != nil && !strings.Contains(deleteErr.Error(), "EmptyResponseBody") {
+		if response != "Ok" && strings.Contains(response, "Not found") {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Failed to delete the volume attachment: %s", deleteErr)
 	}
 	return nil
@@ -199,14 +204,14 @@ func resourceIBMContainerVpcWorkerVolumeAttachmentExists(d *schema.ResourceData,
 	workerID := parts[1]
 	volumeAttachmentID := parts[2]
 
-	_, Err := workersAPI.GetStorageAttachment(clusterNameorID, workerID, volumeAttachmentID, target)
-	if Err != nil {
-		if apiErr, ok := Err.(bmxerror.RequestFailure); ok {
+	_, getErr := workersAPI.GetStorageAttachment(clusterNameorID, workerID, volumeAttachmentID, target)
+	if getErr != nil {
+		if apiErr, ok := getErr.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", Err)
+		return false, fmt.Errorf("Error communicating with the API: %s", getErr)
 	}
 	return true, nil
 }

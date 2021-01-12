@@ -246,7 +246,7 @@ func getVpcClusterTargetHeaderTestACC() v2.ClusterTargetHeader {
 func testAccCheckIBMContainerVpcCluster_basic(zone, vpc, subnet, clusterName, flavor, workerCount string) string {
 	return fmt.Sprintf(`
 provider "ibm" {
-  generation = 1
+  generation = 2
 }
 data "ibm_resource_group" "resource_group" {
   is_default = "true"
@@ -265,20 +265,6 @@ resource "ibm_is_subnet" "subnet1" {
   vpc                      = "${ibm_is_vpc.vpc1.id}"
   zone                     = "${local.ZONE1}"
   total_ipv4_address_count = 256
-}
-
-resource "ibm_resource_instance" "kms_instance1" {
-  name     = "test_kms"
-  service  = "kms"
-  plan     = "tiered-pricing"
-  location = "us-south"
-}
-
-resource "ibm_kms_key" "test" {
-  instance_id  = "${ibm_resource_instance.kms_instance1.id}"
-  key_name     = "test_root_key"
-  standard_key = false
-  force_delete = true
 }
 
 resource "ibm_container_vpc_cluster" "cluster" {

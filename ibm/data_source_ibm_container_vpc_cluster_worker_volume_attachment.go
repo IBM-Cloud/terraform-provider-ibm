@@ -1,6 +1,8 @@
 package ibm
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -9,7 +11,7 @@ func dataSourceIBMContainerVpcWorkerVolumeAttachment() *schema.Resource {
 		Read: dataSourceIBMContainerVpcWorkerVolumeAttachmentRead,
 
 		Schema: map[string]*schema.Schema{
-			"volume_attachament": {
+			"volume_attachment_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "vpc volume attachment ID",
@@ -66,7 +68,7 @@ func dataSourceIBMContainerVpcWorkerVolumeAttachmentRead(d *schema.ResourceData,
 	}
 
 	clusterNameorID := d.Get("cluster").(string)
-	volumeAttachmentID := d.Get("volume_attachament").(string)
+	volumeAttachmentID := d.Get("volume_attachment_id").(string)
 	workerID := d.Get("worker").(string)
 
 	volume, err := workersAPI.GetStorageAttachment(clusterNameorID, workerID, volumeAttachmentID, target)
@@ -76,5 +78,6 @@ func dataSourceIBMContainerVpcWorkerVolumeAttachmentRead(d *schema.ResourceData,
 	d.Set("volume_attachment_name", volume.Name)
 	d.Set("status", volume.Status)
 	d.Set("volume_type", volume.Type)
+	d.SetId(fmt.Sprintf("%s/%s/%s", clusterNameorID, workerID, volumeAttachmentID))
 	return nil
 }

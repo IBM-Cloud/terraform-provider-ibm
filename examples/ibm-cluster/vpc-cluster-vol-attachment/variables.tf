@@ -1,11 +1,31 @@
-variable "worker_id" {
-  default = ""
+variable "volume_name" {
+  default = "testvolume"
 }
 
-variable "cluster_id" {
-  default = ""
+variable "volume_profile" {
+  default = "custom"
 }
 
-variable "volume_id" {
-  default = ""
+variable "flavor" {
+  default = "bx2.2x8"
+}
+
+variable "worker_count" {
+  default = "1"
+}
+
+variable "resource_group" {
+  default = "Default"
+}
+
+variable "name" {
+  default = "cluster"
+}
+
+variable "region" {
+  default = "us-south"
+}
+
+variable "kube_version" {
+  default = "1.17.7"
 }
