@@ -28,7 +28,7 @@ data "ibm_resource_group" "rg" {
 resource "ibm_cr_namespace" "rg_namespace" {
   name              = "testaasd2312"
   resource_group_id = data.ibm_resource_group.rg.id
-# }
+}
 
 ```
 

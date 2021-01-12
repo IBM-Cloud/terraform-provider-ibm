@@ -6,7 +6,7 @@ description: |-
   Reads IBM Container Registry Namespaces.
 ---
 
-# ibm\_cr_namespace
+# ibm\_cr_namespaces
 
 Lists a Container Registry Namespaces of an account. 
 
@@ -15,7 +15,7 @@ Lists a Container Registry Namespaces of an account.
 In the following example, you can configure a alb:
 
 ```hcl
-data "ibm_cr_namespace" "test" {}
+data "ibm_cr_namespaces" "test" {}
 
 ```
 
