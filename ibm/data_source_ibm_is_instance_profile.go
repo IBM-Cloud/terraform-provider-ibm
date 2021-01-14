@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	isInstanceProfileName   = "name"
-	isInstanceProfileFamily = "family"
+	isInstanceProfileName         = "name"
+	isInstanceProfileFamily       = "family"
+	isInstanceProfileArchitecture = "architecture"
 )
 
 func dataSourceIBMISInstanceProfile() *schema.Resource {
@@ -23,6 +24,11 @@ func dataSourceIBMISInstanceProfile() *schema.Resource {
 			},
 
 			isInstanceProfileFamily: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			isInstanceProfileArchitecture: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -85,5 +91,7 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 	d.SetId(*profile.Name)
 	d.Set(isInstanceProfileName, *profile.Name)
 	d.Set(isInstanceProfileFamily, *profile.Family)
+	d.Set(isInstanceProfileArchitecture, *profile.OsArchitecture.Default)
+	d.Set(isInstanceProfile, *profile.OsArchitecture.Default)
 	return nil
 }
