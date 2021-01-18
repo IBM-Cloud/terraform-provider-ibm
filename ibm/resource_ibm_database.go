@@ -679,7 +679,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-	d.Partial(true)
+
 	serviceName := d.Get("service").(string)
 	plan := d.Get("plan").(string)
 	name := d.Get("name").(string)
@@ -833,7 +833,6 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf(
 				"Error waiting for update of database (%s) admin password task to complete: %s", icdId, err)
 		}
-		d.SetPartial("adminpassword")
 	}
 
 	if wl, ok := d.GetOk("whitelist"); ok {
@@ -855,7 +854,6 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 					"Error waiting for update of database (%s) whitelist task to complete: %s", icdId, err)
 			}
 		}
-		d.SetPartial("whitelist")
 	}
 	if cpuRecord, ok := d.GetOk("auto_scaling.0.cpu"); ok {
 		params := icdv4.AutoscalingSetGroup{}
@@ -931,9 +929,8 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 					"Error waiting for update of database (%s) user (%s) create task to complete: %s", icdId, user.UserName, err)
 			}
 		}
-		d.SetPartial("users")
 	}
-	d.Partial(false)
+
 	return resourceIBMDatabaseInstanceRead(d, meta)
 }
 

@@ -373,7 +373,6 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 				"please check public_vlan_id and private_vlan_id property on individual members")
 		}
 	}
-	d.Partial(true)
 
 	//Build order for one member
 	order, err := getMonthlyGatewayOrder(members[0], meta)
@@ -520,7 +519,6 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 	member1Id := *bm.(datatypes.Hardware).Id
 	members[0]["member_id"] = member1Id
 	log.Printf("[INFO] Member 1 ID: %d", member1Id)
-	d.SetPartial("members")
 
 	err = setTagsAndNotes(members[0], meta)
 	if err != nil {
@@ -542,14 +540,12 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 		if err != nil {
 			return err
 		}
-		d.SetPartial("members")
 	} else if len(members) == 2 {
 		//Add the new gateway which has different configuration than the first
 		err := addGatewayMember(id, members[1], meta)
 		if err != nil {
 			return err
 		}
-		d.SetPartial("members")
 	}
 
 	name := d.Get("name").(string)
@@ -558,7 +554,6 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	d.Partial(false)
 	return resourceIBMNetworkGatewayRead(d, meta)
 }
 
