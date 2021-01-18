@@ -5,9 +5,10 @@ import (
 	"log"
 	"time"
 
-	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
+	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 )
 
 const (
@@ -80,13 +81,6 @@ func resourceIBMContainerClusterFeature() *schema.Resource {
 				Description:      "ID of the resource group.",
 				Computed:         true,
 				DiffSuppressFunc: applyOnce,
-			},
-
-			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				Removed:  "This field is deprecated",
 			},
 		},
 	}

@@ -18,7 +18,6 @@ import (
 
 const (
 	isVPCDefaultNetworkACL          = "default_network_acl"
-	isVPCIsDefault                  = "is_default"
 	isVPCIDefaultSecurityGroup      = "default_security_group"
 	isVPCName                       = "name"
 	isVPCResourceGroup              = "resource_group"
@@ -88,13 +87,6 @@ func resourceIBMISVPC() *schema.Resource {
 				Computed:    true,
 				Deprecated:  "This field is deprecated",
 				Description: "Default network ACL",
-			},
-
-			isVPCIsDefault: {
-				Type:     schema.TypeBool,
-				ForceNew: true,
-				Optional: true,
-				Removed:  "This field is removed use classic_access",
 			},
 
 			isVPCClassicAccess: {

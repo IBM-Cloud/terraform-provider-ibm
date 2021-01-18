@@ -3,10 +3,11 @@ package ibm
 import (
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceIBMResourceGroup() *schema.Resource {
@@ -24,14 +25,6 @@ func resourceIBMResourceGroup() *schema.Resource {
 				Required:    true,
 				Description: "The name of the resource group",
 			},
-
-			"quota_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The id of the quota",
-				Removed:     "This field is removed",
-			},
-
 			"default": {
 				Description: "Specifies whether its default resource group or not",
 				Type:        schema.TypeBool,

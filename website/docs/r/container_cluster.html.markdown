@@ -161,7 +161,7 @@ The following arguments are supported:
 * `default_pool_size` - (Optional,int) The number of workers created under the default worker pool which support Multi-AZ. 
 * `machine_type` - (Optional, Forces new resource, string) The machine type of the worker nodes. You can retrieve the value by running the `ibmcloud ks machine-types <data-center>` command in the IBM Cloud CLI.
 * `billing` - (Deprecated, Optional, Forces new resource, string) The billing type for the instance. Accepted values are `hourly` or `monthly`.
-* `isolation` - (Removed, Forces new resource) Accepted values are `public` or `private`. Use `private` if you want to have available physical resources dedicated to you only or `public` to allow physical resources to be shared with other IBM customers. Use hardware instead.
+
 * `hardware` - (Optional, Forces new resource, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, it can be shared or dedicated. For IBM Cloud Dedicated accounts, dedicated is the only available option.
 * `public_vlan_id`- (Optional, Forces new resource, string) The public VLAN ID for the worker node. You can retrieve the value by running the ibmcloud ks vlans <data-center> command in the IBM Cloud CLI.
   * Free clusters: You must not specify any public VLAN. Your free cluster is automatically connected to a public VLAN that is owned by IBM.

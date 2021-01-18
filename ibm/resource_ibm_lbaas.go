@@ -218,35 +218,6 @@ func resourceIBMLbaas() *schema.Resource {
 				},
 			},
 
-			"server_instances": {
-				Type:        schema.TypeSet,
-				Description: "The Server instances for this load balancer",
-				Optional:    true,
-				Removed:     "Please use the server instance resource instead",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"private_ip_address": {
-							Type:         schema.TypeString,
-							Description:  "The Private IP address of a load balancer member.",
-							Required:     true,
-							ValidateFunc: validateIP,
-						},
-						"weight": {
-							Type:         schema.TypeInt,
-							Description:  "The weight of a load balancer member.",
-							Computed:     true,
-							Optional:     true,
-							ValidateFunc: validateWeight,
-						},
-						"member_id": {
-							Type:        schema.TypeString,
-							Description: "The UUID of a load balancer member",
-							Computed:    true,
-						},
-					},
-				},
-				Set: resourceIBMLBMemberHash,
-			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,

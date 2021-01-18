@@ -22,12 +22,11 @@ const (
 	isImageVisibility             = "visibility"
 	isImageFile                   = "file"
 	isImageMinimumProvisionedSize = "size"
-	isImageFormat                 = "format"
-	isImageArchitecure            = "architecture"
-	isImageResourceGroup          = "resource_group"
-	isImageEncryptedDataKey       = "encrypted_data_key"
-	isImageEncryptionKey          = "encryption_key"
-	isImageEncryption             = "encryption"
+
+	isImageResourceGroup    = "resource_group"
+	isImageEncryptedDataKey = "encrypted_data_key"
+	isImageEncryptionKey    = "encryption_key"
+	isImageEncryption       = "encryption"
 
 	isImageProvisioning     = "provisioning"
 	isImageProvisioningDone = "done"
@@ -111,13 +110,6 @@ func resourceIBMISImage() *schema.Resource {
 				Description: "The status of this image",
 			},
 
-			isImageArchitecure: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Removed:     "This field is removed",
-				Description: "The operating system architecture",
-			},
-
 			isImageMinimumProvisionedSize: {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -134,12 +126,6 @@ func resourceIBMISImage() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Details for the stored image file",
-			},
-
-			isImageFormat: {
-				Type:     schema.TypeString,
-				Computed: true,
-				Removed:  "This field is removed",
 			},
 
 			isImageResourceGroup: {

@@ -65,12 +65,6 @@ func resourceIBMNetworkVlan() *schema.Resource {
 				},
 				Description: "VLAN type",
 			},
-			"subnet_size": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
-				Removed:  "This field has been removed",
-			},
 
 			"name": {
 				Type:         schema.TypeString,
