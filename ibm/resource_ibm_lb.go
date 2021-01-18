@@ -229,15 +229,12 @@ func resourceIBMLbUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	vipID, _ := strconv.Atoi(d.Id())
 
-	d.Partial(true)
-
 	certID := d.Get("security_certificate_id").(int)
 
 	err := setLocalLBSecurityCert(sess, vipID, certID)
 	if err != nil {
 		return fmt.Errorf("Update load balancer failed: %s", err)
 	}
-	d.SetPartial("security_certificate_id")
 
 	if d.HasChange("connections") {
 		vip, err := services.GetNetworkApplicationDeliveryControllerLoadBalancerVirtualIpAddressService(sess).
@@ -263,7 +260,6 @@ func resourceIBMLbUpdate(d *schema.ResourceData, meta interface{}) error {
 					if err != nil {
 						return fmt.Errorf("Error Updating load balancer connection limit: %s", err)
 					}
-					d.SetPartial("connections")
 				} else {
 
 					return fmt.Errorf("Error Updating load balancer connection limit : Valid value to which connection limit can be upgraded is : %d ", int(*validUpgradeValue))
@@ -286,7 +282,6 @@ func resourceIBMLbUpdate(d *schema.ResourceData, meta interface{}) error {
 			if err != nil {
 				return fmt.Errorf("Error starting ssl acceleration for load balancer : %s", err)
 			}
-			d.SetPartial("ssl_offload")
 
 		} else {
 
@@ -295,12 +290,10 @@ func resourceIBMLbUpdate(d *schema.ResourceData, meta interface{}) error {
 			if err != nil {
 				return fmt.Errorf("Error stopping ssl acceleration for load balancer : %s", err)
 			}
-			d.SetPartial("ssl_offload")
 
 		}
 	}
 
-	d.Partial(false)
 	return resourceIBMLbRead(d, meta)
 }
 

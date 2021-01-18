@@ -315,14 +315,12 @@ func resourceIBMLbaasRead(d *schema.ResourceData, meta interface{}) error {
 func resourceIBMLbaasUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetNetworkLBaaSLoadBalancerService(sess.SetRetries(0))
-	d.Partial(true)
 
 	if d.HasChange("description") {
 		_, err := service.UpdateLoadBalancer(sl.String(d.Id()), sl.String(d.Get("description").(string)))
 		if err != nil {
 			return err
 		}
-		d.SetPartial("description")
 	}
 	listenerService := services.GetNetworkLBaaSListenerService(sess.SetRetries(0))
 	if d.HasChange("protocols") {
@@ -366,7 +364,6 @@ func resourceIBMLbaasUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 
-		d.SetPartial("protocols")
 	}
 	if d.HasChange("ssl_ciphers") {
 		if v, ok := d.GetOk("ssl_ciphers"); ok && v.(*schema.Set).Len() > 0 {
@@ -396,9 +393,7 @@ func resourceIBMLbaasUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		}
 
-		d.SetPartial("ssl_ciphers")
 	}
-	d.Partial(false)
 
 	return resourceIBMLbaasRead(d, meta)
 }
