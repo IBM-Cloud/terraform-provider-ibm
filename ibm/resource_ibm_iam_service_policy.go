@@ -3,11 +3,11 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
-	"github.com/IBM-Cloud/bluemix-go/models"
-
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 func resourceIBMIAMServicePolicy() *schema.Resource {
@@ -43,10 +43,9 @@ func resourceIBMIAMServicePolicy() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"service": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Description:  "Service name of the policy definition",
-							AtLeastOneOf: []string{"resources.0.service", "resources.0.resource_instance_id", "resources.0.region", "resources.0.resource_type", "resources.0.resource", "resources.0.resource_group_id", "resources.0.attributes"},
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Service name of the policy definition",
 						},
 
 						"resource_instance_id": {

@@ -3,13 +3,13 @@ package ibm
 import (
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/bluemix-go/utils"
-
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceIBMIAMAccessGroupPolicy() *schema.Resource {
@@ -45,10 +45,9 @@ func resourceIBMIAMAccessGroupPolicy() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"service": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Description:  "Service name of the policy definition",
-							AtLeastOneOf: []string{"resources.0.service", "resources.0.resource_instance_id", "resources.0.region", "resources.0.resource_type", "resources.0.resource", "resources.0.resource_group_id", "resources.0.attributes"},
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Service name of the policy definition",
 						},
 
 						"resource_instance_id": {
@@ -404,8 +403,8 @@ func generateAccountPolicyV2(d *schema.ResourceData, meta interface{}) (iampapv1
 		resources := res.([]interface{})
 		for _, resource := range resources {
 			r, _ := resource.(map[string]interface{})
-			serviceName = r["service"].(string)
-			if r, ok := r["service"]; ok {
+			if r, ok := r["service"]; ok && r != nil {
+				serviceName = r.(string)
 				if r.(string) != "" {
 					policyResource.SetServiceName(r.(string))
 				}
