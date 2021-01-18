@@ -5,13 +5,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/mutexkv"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 // This is a global MutexKV for use within this plugin.
-var ibmMutexKV = mutexkv.NewMutexKV()
+var ibmMutexKV = NewMutexKV()
 
 // Provider returns a terraform.ResourceProvider.
 func Provider() terraform.ResourceProvider {

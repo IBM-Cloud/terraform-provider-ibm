@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -587,7 +586,7 @@ func resourceIBMBulkVMHostHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-",
 		m["hostname"].(string)))
 
-	return hashcode.String(buf.String())
+	return String(buf.String())
 }
 
 func getNameForBlockDevice(i int) string {

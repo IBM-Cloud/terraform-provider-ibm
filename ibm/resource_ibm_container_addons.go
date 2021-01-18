@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
@@ -411,5 +410,5 @@ func resourceIBMContainerAddonsHash(v interface{}) int {
 	a := v.(map[string]interface{})
 	buf.WriteString(fmt.Sprintf("%s-", a["name"].(string)))
 
-	return hashcode.String(buf.String())
+	return String(buf.String())
 }
