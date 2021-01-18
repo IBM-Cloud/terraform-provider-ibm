@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
@@ -545,7 +544,7 @@ func resourceIBMComputeAutoScalePolicyTriggerHash(v interface{}) int {
 			buf.WriteString(fmt.Sprintf("%d-", watch["period"].(int)))
 		}
 	}
-	return hashcode.String(buf.String())
+	return String(buf.String())
 }
 
 func resourceIBMComputeAutoScalePolicyHandlerHash(v interface{}) int {
@@ -555,5 +554,5 @@ func resourceIBMComputeAutoScalePolicyHandlerHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-", watch["operator"].(string)))
 	buf.WriteString(fmt.Sprintf("%s-", watch["value"].(string)))
 	buf.WriteString(fmt.Sprintf("%d-", watch["period"].(int)))
-	return hashcode.String(buf.String())
+	return String(buf.String())
 }

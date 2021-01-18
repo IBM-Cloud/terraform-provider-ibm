@@ -12,7 +12,6 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -1310,5 +1309,5 @@ func resourceIBMVPCHash(v interface{}) int {
 	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf("%s",
 		strings.ToLower(v.(string))))
-	return hashcode.String(buf.String())
+	return String(buf.String())
 }
