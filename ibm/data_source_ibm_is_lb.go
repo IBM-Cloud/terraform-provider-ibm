@@ -2,11 +2,12 @@ package ibm
 
 import (
 	"fmt"
+	"log"
+	"strconv"
+
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"log"
-	"strconv"
 )
 
 const (
@@ -123,70 +124,12 @@ func dataSourceIBMISLB() *schema.Resource {
 							Description: "The health monitor of this pool.",
 							Computed:    true,
 							Type:        schema.TypeMap,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									healthMonitorDelay: {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The health check interval in seconds. Interval must be greater than timeout value.",
-									},
-									healthMonitorMaxRetries: {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The unique identifier for this virtual connection",
-									},
-									healthMonitorPort: {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The health check port number. If specified, this overrides the ports specified in the server member resources.",
-									},
-									healthMonitorTimeout: {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The health check timeout in seconds.",
-									},
-									healthMonitorType: {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The protocol type of this load balancer pool health monitor.",
-									},
-									healthMonitorURLPath: {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The health check URL. This is applicable only to http type of health monitor.",
-									},
-								},
-							},
 						},
 
 						instanceGroup: {
 							Description: "The instance group that is managing this pool.",
 							Computed:    true,
 							Type:        schema.TypeMap,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									crnInstance: {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The CRN for this instance group.",
-									},
-									href: {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The URL for this instance group.",
-									},
-									ID: {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The unique identifier for this instance group.",
-									},
-									name: {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The user-defined name for this instance group.",
-									},
-								},
-							},
 						},
 
 						members: {
@@ -212,15 +155,6 @@ func dataSourceIBMISLB() *schema.Resource {
 							Description: "The session persistence of this pool.",
 							Computed:    true,
 							Type:        schema.TypeMap,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									sessionType: {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The session persistence type.",
-									},
-								},
-							},
 						},
 						poolCreatedAt: {
 							Type:        schema.TypeString,

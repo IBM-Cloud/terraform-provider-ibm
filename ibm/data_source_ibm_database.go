@@ -90,25 +90,6 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 				Description: "Platform-specific options for this deployment.r",
 				Type:        schema.TypeMap,
 				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key_protect_key_id": {
-							Description: "The CRN of Key protect key",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"disk_encryption_key_crn": {
-							Description: "The CRN of Disk encryption Key",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"backup_encryption_key_crn": {
-							Description: "The CRN of Backup encryption Key",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-					},
-				},
 			},
 			"tags": {
 				Type:     schema.TypeSet,

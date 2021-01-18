@@ -158,25 +158,6 @@ func dataSourceIBMISLBS() *schema.Resource {
 							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "The profile to use for this load balancer",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The name for this load balancer profile",
-									},
-									"href": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The URL for this load balancer profile",
-									},
-									"family": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The product family this load balancer profile belongs to",
-									},
-								},
-							},
 						},
 
 						isLBPools: {

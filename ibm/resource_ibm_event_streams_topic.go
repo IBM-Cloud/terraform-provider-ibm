@@ -76,34 +76,6 @@ func resourceIBMEventStreamsTopic() *schema.Resource {
 				Type:        schema.TypeMap,
 				Description: "The configuration parameters of a topic",
 				Optional:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"cleanup.policy": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"retention.ms": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"retention.bytes": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"segment.bytes": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"segment.ms": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"segment.index.bytes": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
 			},
 		},
 	}

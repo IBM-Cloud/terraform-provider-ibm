@@ -24,20 +24,6 @@ func dataSourceIBMISPublicGateway() *schema.Resource {
 				Type:        schema.TypeMap,
 				Computed:    true,
 				Description: "Public gateway floating IP",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Public gateway floating IP ID",
-						},
-						isPublicGatewayFloatingIPAddress: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Public gateway floating IP Address",
-						},
-					},
-				},
 			},
 
 			isPublicGatewayStatus: {

@@ -74,26 +74,6 @@ func dataSourceSchematicsWorkspace() *schema.Resource {
 				Type:        schema.TypeMap,
 				Computed:    true,
 				Description: "Catalog references",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"item_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"item_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"offering_version": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"item_url": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
 			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
