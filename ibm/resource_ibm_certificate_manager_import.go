@@ -33,25 +33,6 @@ func resourceIBMCertificateManagerImport() *schema.Resource {
 				Type:        schema.TypeMap,
 				Required:    true,
 				Description: "certificate data",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"content": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Certificate Content",
-						},
-						"priv_key": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Private Key for the certificate",
-						},
-						"intermediate": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Intermidiate Value for the certificate",
-						},
-					},
-				},
 			},
 			"description": {
 				Type:        schema.TypeString,

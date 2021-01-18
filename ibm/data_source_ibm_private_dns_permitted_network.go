@@ -66,17 +66,6 @@ func dataSourceIBMPrivateDNSPermittedNetworks() *schema.Resource {
 							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "permitted network",
-							Elem: &schema.Resource{
-
-								Schema: map[string]*schema.Schema{
-
-									pdnsVpcCRN: {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "VPC CRN id",
-									},
-								},
-							},
 						},
 
 						pdnsPermittedNetworkCreatedOn: {

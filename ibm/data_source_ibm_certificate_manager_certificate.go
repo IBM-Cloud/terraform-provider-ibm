@@ -36,22 +36,6 @@ func dataIBMCertificateManagerCertificate() *schema.Resource {
 						"data": {
 							Type:     schema.TypeMap,
 							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"content": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"priv_key": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"intermediate": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
 						},
 						"description": {
 							Type:     schema.TypeString,

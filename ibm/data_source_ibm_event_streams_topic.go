@@ -41,34 +41,6 @@ func dataSourceIBMEventStreamsTopic() *schema.Resource {
 				Type:        schema.TypeMap,
 				Description: "The configuration parameters of the topic.",
 				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"cleanup.policy": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"retention.ms": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"retention.bytes": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"segment.bytes": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"segment.ms": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"segment.index.bytes": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
 			},
 		},
 	}
