@@ -83,35 +83,6 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Computed:    true,
 				Description: "The cluster region",
 			},
-			"workers": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				ConflictsWith: []string{"worker_num"},
-				Removed:       "Use worker_num instead.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"action": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Default:      "add",
-							ValidateFunc: validateAllowedStringValue([]string{"add", "reboot", "reload"}),
-						},
-						"version": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-						},
-					},
-				},
-			},
 
 			"kms_config": {
 				Type:        schema.TypeList,
@@ -141,13 +112,12 @@ func resourceIBMContainerCluster() *schema.Resource {
 			},
 
 			"worker_num": {
-				Type:          schema.TypeInt,
-				Optional:      true,
-				Default:       0,
-				Description:   "Number of worker nodes",
-				ConflictsWith: []string{"workers"},
-				ValidateFunc:  validateWorkerNum,
-				Deprecated:    "This field is deprecated",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      0,
+				Description:  "Number of worker nodes",
+				ValidateFunc: validateWorkerNum,
+				Deprecated:   "This field is deprecated",
 			},
 
 			"default_pool_size": {
@@ -237,13 +207,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Optional:    true,
 				Description: "Machine type",
 			},
-			"isolation": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Computed: true,
-				Removed:  "Use hardware instead",
-			},
+
 			"hardware": {
 				Type:         schema.TypeString,
 				ForceNew:     true,

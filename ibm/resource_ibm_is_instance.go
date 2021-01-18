@@ -57,7 +57,6 @@ const (
 	isInstanceGpuModel                = "model"
 	isInstanceMemory                  = "memory"
 	isInstanceStatus                  = "status"
-	isInstanceGeneration              = "generation"
 
 	isInstanceProvisioning     = "provisioning"
 	isInstanceProvisioningDone = "done"
@@ -274,14 +273,6 @@ func resourceIBMISInstance() *schema.Resource {
 						},
 					},
 				},
-			},
-
-			isInstanceGeneration: {
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: applyOnce,
-				ValidateFunc:     validateGeneration,
-				Removed:          "This field is removed",
 			},
 
 			isInstanceUserData: {
