@@ -42,6 +42,7 @@ The following attributes are exported:
 * `updated_at` - The date and time that this connection was last updated.
 * `status` - What is the current configuration state of this connection
 Possible values: [attached,failed,pending,deleting]
+* `request_status` - Only visible for cross account connections, this field represents the status of the request to connect the given network between accounts . Possible values: [pending,approved,rejected,expired,detached]
 
 **NOTE** If the the user is provisioning the cross-account gateway/connection the resource doesn't wait for the available status. It goes into provisioning status where the user need to complete the manual approval process
 
