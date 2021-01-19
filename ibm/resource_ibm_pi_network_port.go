@@ -2,16 +2,16 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"log"
 	"time"
 
-	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_networks"
-	"github.com/IBM-Cloud/power-go-client/power/models"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_networks"
+	"github.com/IBM-Cloud/power-go-client/power/models"
 )
 
 func resourceIBMPINetworkPort() *schema.Resource {
@@ -102,7 +102,7 @@ func resourceIBMPINetworkPortCreate(d *schema.ResourceData, meta interface{}) er
 
 	IBMPINetworkPortID := *networkPortResponse.PortID
 
-	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, IBMPINetworkPortID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", powerinstanceid, IBMPINetworkPortID, networkname))
 	if err != nil {
 		log.Printf("[DEBUG]  err %s", err)
 		return err
@@ -126,9 +126,15 @@ func resourceIBMPINetworkPortRead(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return err
 	}
+	var powernetworkname string
+	if len(parts) > 2 {
+		powernetworkname = parts[2]
+	} else {
+		powernetworkname = d.Get(helpers.PINetworkName).(string)
+		d.SetId(fmt.Sprintf("%s/%s", d.Id(), powernetworkname))
+	}
 
 	powerinstanceid := parts[0]
-	powernetworkname := d.Get(helpers.PINetworkName).(string)
 	networkC := st.NewIBMPINetworkClient(sess, powerinstanceid)
 	networkdata, err := networkC.GetPort(powernetworkname, powerinstanceid, parts[1], getTimeOut)
 
@@ -153,7 +159,6 @@ func resourceIBMPINetworkPortUpdate(data *schema.ResourceData, meta interface{})
 func resourceIBMPINetworkPortDelete(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("Calling the network delete functions. ")
-	powernetworkname := d.Get(helpers.PINetworkName).(string)
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
 		return err
@@ -162,6 +167,12 @@ func resourceIBMPINetworkPortDelete(d *schema.ResourceData, meta interface{}) er
 
 	if err != nil {
 		return err
+	}
+	var powernetworkname string
+	if len(parts) > 2 {
+		powernetworkname = parts[2]
+	} else {
+		powernetworkname = d.Get(helpers.PINetworkName).(string)
 	}
 	powerinstanceid := parts[0]
 	client := st.NewIBMPINetworkClient(sess, powerinstanceid)
@@ -177,27 +188,6 @@ func resourceIBMPINetworkPortDelete(d *schema.ResourceData, meta interface{}) er
 	}
 	d.SetId("")
 	return nil
-}
-
-func resourceIBMPINetworkPortExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-
-	sess, err := meta.(ClientSession).IBMPISession()
-	if err != nil {
-		return false, err
-	}
-	parts, err := idParts(d.Id())
-	if err != nil {
-		return false, err
-	}
-	powerinstanceid := parts[0]
-	client := st.NewIBMPINetworkClient(sess, powerinstanceid)
-
-	network, err := client.Get(parts[0], powerinstanceid, getTimeOut)
-	if err != nil {
-
-		return false, err
-	}
-	return *network.NetworkID == parts[1], nil
 }
 
 func isWaitForIBMPINetworkPortAvailable(client *st.IBMPINetworkClient, id string, timeout time.Duration, powerinstanceid, networkname string) (interface{}, error) {

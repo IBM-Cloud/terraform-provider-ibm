@@ -17,7 +17,7 @@ In the following example, you can create a snapshot:
 ```hcl
 resource "ibm_pi_snapshot" "testacc_snapshot"{
   pi_instance_name       = test-instance
-  pi_snapshot_name       = test-snapshot
+  pi_snap_shot_name       = test-snapshot
   pi_volume_ids       = ["volumeid1","volumeid2"]
   description  = "Testing snapshot for instance"
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
@@ -39,7 +39,7 @@ The following arguments are supported:
 * `pi_instance_name` - (Required, string) The instance name that we want to take a snapshot of.
 * `pi_snapshot_name` - (Required, string) The name of this snasphot ( make sure it's unique) .
 * `description` - (Optional, string) Description of the snapshot.
-* `pi_volume_ids` - (Optional, string) String of volumeids. If none provided then all volumes of the instance
+* `pi_volume_ids` - (Optional, List) String of volumeids. If none provided then all volumes of the instance
 will be part of the snapshot.
 * `pi_cloud_instance_id` - (Required, string) The cloud_instance_id for this account.
 

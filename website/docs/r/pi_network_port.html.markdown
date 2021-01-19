@@ -36,14 +36,14 @@ ibm_pi_network_port provides the following [timeouts](https://www.terraform.io/d
 
 The following arguments are supported:
 
-* `pi_instance_name` - (Required, string) The name of the VM.
+* `pi_network_name` - (Required, string) The name of the PI Network.
 * `pi_cloud_instance_id` - (Required, string) The cloud_instance_id for this account.
 * `pi_network_port_description` - (Optional, string) The description for the Network Port
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the instance.The id is composed of \<power_network_port_id\>/\<id\>.
+* `id` - The unique identifier of the instance.The id is composed of \<power_network_port_id\>/\<id\>/<pi_network_name>.
 * `ipaddress` - The unique identifier of the instance.
 * `macaddress` - The macaddress of the port
 * `status` - The status of the port
@@ -52,8 +52,8 @@ The following attributes are exported:
 
 ## Import
 
-ibm_pi_network_port can be imported using `power_instance_id` and `port_id`, eg
+ibm_pi_network_port can be imported using `power_instance_id`, `port_id` and `pi_network_name` eg
 
 ```
-$ terraform import ibm_pi_network_port.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+$ terraform import ibm_pi_network_port.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb/network-name
 ```

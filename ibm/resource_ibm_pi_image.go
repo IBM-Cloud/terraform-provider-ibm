@@ -5,11 +5,12 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceIBMPIImage() *schema.Resource {
@@ -29,15 +30,17 @@ func resourceIBMPIImage() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			helpers.PIImageName: {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Image name",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "Image name",
+				DiffSuppressFunc: applyOnce,
 			},
 
 			helpers.PIInstanceImageName: {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Instance image name",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "Instance image name",
+				DiffSuppressFunc: applyOnce,
 			},
 
 			helpers.PICloudInstanceId: {
@@ -71,27 +74,14 @@ func resourceIBMPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	client := st.NewIBMPIImageClient(sess, powerinstanceid)
 
 	imageResponse, err := client.Create(name, imageid, powerinstanceid)
-
 	if err != nil {
 		return err
 	}
-
-	log.Printf("Printing the image post response %+v", &imageResponse)
 
 	IBMPIImageID := imageResponse.ImageID
-	log.Printf("the imageid from the post call is..%s", *IBMPIImageID)
-
 	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, *IBMPIImageID))
-	log.Printf("the Image id from the post is %s", *IBMPIImageID)
-	if err != nil {
-		log.Printf("[DEBUG]  err %s", err)
-		return err
-	}
-	_, err = isWaitForIBMPIImageAvailable(client, *IBMPIImageID, d.Timeout(schema.TimeoutCreate), powerinstanceid)
-	if err != nil {
-		return err
-	}
 
+	_, err = isWaitForIBMPIImageAvailable(client, *IBMPIImageID, d.Timeout(schema.TimeoutCreate), powerinstanceid)
 	if err != nil {
 		log.Printf("[DEBUG]  err %s", err)
 		return err
@@ -174,7 +164,7 @@ func resourceIBMPIImageExists(d *schema.ResourceData, meta interface{}) (bool, e
 		}
 		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
-	return *image.Name == name, nil
+	return *image.ImageID == name, nil
 }
 
 func isWaitForIBMPIImageAvailable(client *st.IBMPIImageClient, id string, timeout time.Duration, powerinstanceid string) (interface{}, error) {
