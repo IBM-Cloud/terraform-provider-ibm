@@ -23,8 +23,8 @@ const (
 	isTransitGatewayConnectionDeleted   = "detached"
 	isTransitGatewayConnectionPending   = "pending"
 	isTransitGatewayConnectionAttached  = "attached"
-
-	tgConnectionId = "connection_id"
+	tgRequestStatus                     = "request_status"
+	tgConnectionId                      = "connection_id"
 )
 
 func resourceIBMTransitGatewayConnection() *schema.Resource {
@@ -78,6 +78,7 @@ func resourceIBMTransitGatewayConnection() *schema.Resource {
 			tgNetworkAccountID: {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "The ID of the account which owns the network that is being connected. Generally only used if the network is in a different account than the gateway.",
 			},
@@ -94,9 +95,13 @@ func resourceIBMTransitGatewayConnection() *schema.Resource {
 			tgStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Status of the virtual connection.Possible values: [pending,attached,approval_pending,rejected,expired,deleting,detached_by_network_pending,detached_by_network]",
+				Description: "What is the current configuration state of this connection. Possible values: [attached,failed,pending,deleting,detaching,detached]",
 			},
-
+			tgRequestStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Only visible for cross account connections, this field represents the status of the request to connect the given network between accounts.Possible values: [pending,approved,rejected,expired,detached]",
+			},
 			RelatedCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -164,7 +169,9 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 
 	d.SetId(fmt.Sprintf("%s/%s", gatewayId, *tgConnections.ID))
 	d.Set(tgConnectionId, *tgConnections.ID)
-	if _, ok := d.GetOk(tgNetworkAccountID); ok {
+
+	if tgConnections.NetworkAccountID != nil {
+		d.Set(tgNetworkAccountID, *tgConnections.NetworkAccountID)
 		return resourceIBMTransitGatewayConnectionRead(d, meta)
 	}
 	_, err = isWaitForTransitGatewayConnectionAvailable(client, d.Id(), d.Timeout(schema.TimeoutCreate))
@@ -259,6 +266,9 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 	}
 	if instance.NetworkAccountID != nil {
 		d.Set(tgNetworkAccountID, *instance.NetworkAccountID)
+	}
+	if instance.RequestStatus != nil {
+		d.Set(tgRequestStatus, *instance.RequestStatus)
 	}
 	d.Set(tgConnectionId, *instance.ID)
 	d.Set(tgGatewayId, gatewayId)
