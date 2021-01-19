@@ -1,11 +1,14 @@
 package ibm
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	//"fmt"
+	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 func dataSourceIBMPIPublicNetwork() *schema.Resource {
@@ -67,11 +70,15 @@ func dataSourceIBMPIPublicNetworksRead(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-
+	if len(networkdata.Networks) < 1 {
+		return fmt.Errorf("No Public Network Found in %s", powerinstanceid)
+	}
 	d.SetId(*networkdata.Networks[0].NetworkID)
 	d.Set("type", networkdata.Networks[0].Type)
 	d.Set("name", networkdata.Networks[0].Name)
 	d.Set("vlan_id", networkdata.Networks[0].VlanID)
+	d.Set("network_id", networkdata.Networks[0].NetworkID)
+	d.Set(helpers.PICloudInstanceId, powerinstanceid)
 
 	return nil
 
