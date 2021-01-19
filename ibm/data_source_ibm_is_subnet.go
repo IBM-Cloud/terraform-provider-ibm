@@ -238,6 +238,9 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 				break
 			}
 		}
+		if subnet == nil {
+			return fmt.Errorf("No subnet found with name (%s)", name)
+		}
 	}
 
 	d.SetId(*subnet.ID)
