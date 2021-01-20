@@ -298,6 +298,21 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Default:     true,
 				Description: "Wait for worker node to update during kube version update.",
 			},
+			"service_subnet": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Custom subnet CIDR to provide private IP addresses for services",
+				Computed:    true,
+			},
+
+			"pod_subnet": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Custom subnet CIDR to provide private IP addresses for pods",
+				Computed:    true,
+			},
 
 			"ingress_hostname": {
 				Type:     schema.TypeString,
@@ -591,7 +606,6 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	diskEncryption := d.Get("disk_encryption").(bool)
 	defaultPoolSize := d.Get("default_pool_size").(int)
 	gatewayEnabled := d.Get("gateway_enabled").(bool)
-
 	hardware := d.Get("hardware").(string)
 	switch strings.ToLower(hardware) {
 	case hardwareDedicated:
@@ -615,6 +629,12 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	// Update params with Entitlement option if provided
 	if v, ok := d.GetOk("entitlement"); ok {
 		params.DefaultWorkerPoolEntitlement = v.(string)
+	}
+	if v, ok := d.GetOk("pod_subnet"); ok {
+		params.PodSubnet = v.(string)
+	}
+	if v, ok := d.GetOk("service_subnet"); ok {
+		params.ServiceSubnet = v.(string)
 	}
 
 	if gatewayEnabled {
@@ -781,6 +801,8 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("ingress_hostname", cls.IngressHostname)
 	d.Set("ingress_secret", cls.IngressSecretName)
 	d.Set("region", cls.Region)
+	d.Set("service_subnet", cls.ServiceSubnet)
+	d.Set("pod_subnet", cls.PodSubnet)
 	d.Set("subnet_id", d.Get("subnet_id").(*schema.Set))
 	d.Set("workers_info", workers)
 	if strings.HasSuffix(cls.MasterKubeVersion, "_openshift") {

@@ -168,7 +168,8 @@ The following arguments are supported:
   * Standard clusters:  
     (a) If you already have a public VLAN set up in your IBM Cloud Classic Infrastructure (SoftLayer) account for that zone, enter the ID of the public VLAN.<br/>
     (b) If you want to connect your worker nodes to a private VLAN only, do not specify this option.
-
+* `pod_subnet` - (Optional, Forces new resource,String) Specify a custom subnet CIDR to provide private IP addresses for pods. The subnet must be at least '/23' or larger. For more info, refer [here](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#pod-subnet).
+* `service_subnet` - (Optional, Forces new resource,String) Specify a custom subnet CIDR to provide private IP addresses for services. The subnet must be at least '/24' or larger. For more info, refer [here](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#service-subnet).
 * `private_vlan_id` - (Optional, Forces new resource, string) The private VLAN of the worker node. You can retrieve the value by running the ibmcloud ks vlans <data-center> command in the IBM Cloud CLI.
   * Free clusters: You must not specify any private VLAN. Your free cluster is automatically connected to a private VLAN that is owned by IBM.
   * Standard clusters:<br/>
