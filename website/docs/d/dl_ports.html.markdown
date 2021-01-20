@@ -17,6 +17,11 @@ Import the details of an existing IBM Cloud Infrastructure direct link ports as 
 data "ibm_dl_ports" "ds_dlports" {
 }
 ```
+## Argument Reference
+
+The following arguments are supported:
+
+* `location_name` - (Optional, string) Direct Link location short name.
 
 ## Attribute Reference
 

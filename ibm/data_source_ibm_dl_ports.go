@@ -1,6 +1,8 @@
 package ibm
 
 import (
+	dl "github.com/IBM/networking-go-sdk/directlinkv1"
+
 	"log"
 	"time"
 
@@ -23,7 +25,11 @@ func dataSourceIBMDirectLinkPorts() *schema.Resource {
 		Read: dataSourceIBMDirectLinkPortsRead,
 
 		Schema: map[string]*schema.Schema{
-
+			dlLocationName: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Direct Link location short name",
+			},
 			dlPorts: {
 
 				Type:        schema.TypeList,
@@ -85,15 +91,33 @@ func dataSourceIBMDirectLinkPortsRead(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	listPortsOptions := sess.NewListPortsOptions()
-	response, resp, err := sess.ListPorts(listPortsOptions)
-	if err != nil {
-		log.Println("[WARN] Error listing dl ports", resp, err)
-		return err
+	start := ""
+	allrecs := []dl.Port{}
+	for {
+		listPortsOptions := sess.NewListPortsOptions()
+		if _, ok := d.GetOk(dlLocationName); ok {
+			dlLocationName := d.Get(dlLocationName).(string)
+			listPortsOptions.SetLocationName(dlLocationName)
+		}
+		if start != "" {
+			listPortsOptions.Start = &start
+
+		}
+
+		response, resp, err := sess.ListPorts(listPortsOptions)
+		if err != nil {
+			log.Println("[WARN] Error listing dl ports", resp, err)
+			return err
+		}
+		start = GetNext(response.Next)
+		allrecs = append(allrecs, response.Ports...)
+		if start == "" {
+			break
+		}
 	}
 
 	portCollections := make([]map[string]interface{}, 0)
-	for _, port := range response.Ports {
+	for _, port := range allrecs {
 		portCollection := map[string]interface{}{}
 		portCollection[dlPortID] = *port.ID
 		portCollection[dlCount] = *port.DirectLinkCount
