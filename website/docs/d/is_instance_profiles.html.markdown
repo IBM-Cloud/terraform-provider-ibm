@@ -27,4 +27,4 @@ The following attributes are exported:
 * `profiles` - List of all server instance profiles in the region.
   * `name` - The name for this virtual server instance profile.
   * `family` - The family of the virtual server instance profile.
-
+  * `architecture` - The default OS architecture for an instance with this profile.
