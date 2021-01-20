@@ -26,7 +26,9 @@ func TestAccIBMDLPortsDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMDLPortsDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
+	
 	   data "ibm_dl_ports" "test_%s" {
+		   location_name = "dal10" 
 	   }
 	  `, name)
 }
