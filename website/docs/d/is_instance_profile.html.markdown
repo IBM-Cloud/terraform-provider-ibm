@@ -32,3 +32,4 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `family` - The family of the virtual server instance profile.
+* `architecture` - The default OS architecture for an instance with this profile.
