@@ -20,6 +20,19 @@ data "ibm_is_instances" "ds_instances" {
 
 ```
 
+```hcl
+
+data "ibm_is_instances" "ds_instances1" {
+  vpc_name = "testacc_vpc"
+}
+
+```
+## Argument Reference
+
+The following arguments are supported:
+
+* `vpc_name` - (optional, string) Name of the vpc to filter the instances attached to it.
+* `vpc` - (optional, string) VPC ID to filter the instances attached to it.
 
 ## Attribute Reference
 
