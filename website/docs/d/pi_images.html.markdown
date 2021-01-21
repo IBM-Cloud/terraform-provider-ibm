@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM: pi_images"
 sidebar_current: "docs-ibm-datasources-pi-images"
 description: |-
-  Manages images in the Power Virtual Server Cloud.
+  List all of the images for the respective cloud instance that are imported  from catalog by the user
 ---
 
 # ibm\_pi_images
