@@ -18,6 +18,19 @@ func dataSourceIBMISInstances() *schema.Resource {
 		Read: dataSourceIBMISInstancesRead,
 
 		Schema: map[string]*schema.Schema{
+			"vpc_name": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"vpc"},
+				Description:   "Name of the vpc to filter the instances attached to it",
+			},
+
+			"vpc": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"vpc_name"},
+				Description:   "VPC ID to filter the instances attached to it",
+			},
 
 			isInstances: {
 				Type:        schema.TypeList,
@@ -407,6 +420,17 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	var vpcName, vpcID string
+
+	if vpc, ok := d.GetOk("vpc_name"); ok {
+		vpcName = vpc.(string)
+	}
+
+	if vpc, ok := d.GetOk("vpc"); ok {
+		vpcID = vpc.(string)
+	}
+
 	start := ""
 	allrecs := []vpcv1.Instance{}
 	for {
@@ -414,6 +438,14 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		if start != "" {
 			listInstancesOptions.Start = &start
 		}
+
+		if vpcName != "" {
+			listInstancesOptions.VPCName = &vpcName
+		}
+		if vpcID != "" {
+			listInstancesOptions.VPCID = &vpcID
+		}
+
 		instances, response, err := sess.ListInstances(listInstancesOptions)
 		if err != nil {
 			return fmt.Errorf("Error Fetching Instances %s\n%s", err, response)
