@@ -28,7 +28,6 @@ data "ibm_resource_instance" "hpcs_instance" {
 # --------------------------------
 
 resource "ibm_kms_key" "key" {
-  depends_on   = [null_resource.hpcs_init]
   instance_id  = data.ibm_resource_instance.hpcs_instance.guid
   key_name     = var.key_name
   standard_key = false
