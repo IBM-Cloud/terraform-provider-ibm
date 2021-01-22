@@ -148,9 +148,9 @@ func resourceIBMISLBPoolMemberCreate(d *schema.ResourceData, meta interface{}) e
 	if w, ok := d.GetOk(isLBPoolMemberWeight); ok {
 		weight = int64(w.(int))
 	}
-	isLBPoolMemberKey := "load_balancer_pool_member_key_" + lbID + lbPoolID
-	ibmMutexKV.Lock(isLBPoolMemberKey)
-	defer ibmMutexKV.Unlock(isLBPoolMemberKey)
+	isLBKey := "load_balancer_key_" + lbID
+	ibmMutexKV.Lock(isLBKey)
+	defer ibmMutexKV.Unlock(isLBKey)
 
 	if userDetails.generation == 1 {
 		targetAddress := d.Get(isLBPoolMemberTargetAddress).(string)
@@ -523,9 +523,9 @@ func classiclbpmemberUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPo
 		targetAddress := d.Get(isLBPoolMemberTargetAddress).(string)
 		weight := int64(d.Get(isLBPoolMemberWeight).(int))
 
-		isLBPoolMemberKey := "load_balancer_pool_member_key_" + lbID + lbPoolID
-		ibmMutexKV.Lock(isLBPoolMemberKey)
-		defer ibmMutexKV.Unlock(isLBPoolMemberKey)
+		isLBKey := "load_balancer_key_" + lbID
+		ibmMutexKV.Lock(isLBKey)
+		defer ibmMutexKV.Unlock(isLBKey)
 
 		_, err = isWaitForClassicLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
@@ -599,9 +599,9 @@ func lbpmemberUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID, l
 		port := int64(d.Get(isLBPoolMemberPort).(int))
 		weight := int64(d.Get(isLBPoolMemberWeight).(int))
 
-		isLBPoolMemberKey := "load_balancer_pool_member_key_" + lbID + lbPoolID
-		ibmMutexKV.Lock(isLBPoolMemberKey)
-		defer ibmMutexKV.Unlock(isLBPoolMemberKey)
+		isLBKey := "load_balancer_key_" + lbID
+		ibmMutexKV.Lock(isLBKey)
+		defer ibmMutexKV.Unlock(isLBKey)
 
 		_, err = isWaitForLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
@@ -691,9 +691,9 @@ func resourceIBMISLBPoolMemberDelete(d *schema.ResourceData, meta interface{}) e
 	lbPoolID := parts[1]
 	lbPoolMemID := parts[2]
 
-	isLBPoolMemberKey := "load_balancer_pool_member_key_" + lbID + lbPoolID
-	ibmMutexKV.Lock(isLBPoolMemberKey)
-	defer ibmMutexKV.Unlock(isLBPoolMemberKey)
+	isLBKey := "load_balancer_key_" + lbID
+	ibmMutexKV.Lock(isLBKey)
+	defer ibmMutexKV.Unlock(isLBKey)
 
 	if userDetails.generation == 1 {
 		err := classiclbpmemberDelete(d, meta, lbID, lbPoolID, lbPoolMemID)

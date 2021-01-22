@@ -321,22 +321,22 @@ func init() {
 
 	isImage = os.Getenv("IS_IMAGE")
 	if isImage == "" {
-		isImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
-		// isImage = "r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00" // for next gen infrastructure
-		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'fc538f61-7dd6-4408-978c-c6b85b69fe76'")
+		//isImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
+		isImage = "r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00'")
 	}
 
 	isWinImage = os.Getenv("IS_WIN_IMAGE")
 	if isWinImage == "" {
-		isWinImage = "a7a0626c-f97e-4180-afbe-0331ec62f32a" // classic windows machine: ibm-windows-server-2012-full-standard-amd64-1
-		// isWinImage = "r006-5f9568ae-792e-47e1-a710-5538b2bdfca7" // next gen windows machine: ibm-windows-server-2012-full-standard-amd64-3
-		fmt.Println("[INFO] Set the environment variable IS_WIN_IMAGE for testing ibm_is_instance data source else it is set to default value 'a7a0626c-f97e-4180-afbe-0331ec62f32a'")
+		//isWinImage = "a7a0626c-f97e-4180-afbe-0331ec62f32a" // classic windows machine: ibm-windows-server-2012-full-standard-amd64-1
+		isWinImage = "r006-5f9568ae-792e-47e1-a710-5538b2bdfca7" // next gen windows machine: ibm-windows-server-2012-full-standard-amd64-3
+		fmt.Println("[INFO] Set the environment variable IS_WIN_IMAGE for testing ibm_is_instance data source else it is set to default value 'r006-5f9568ae-792e-47e1-a710-5538b2bdfca7'")
 	}
 
 	instanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")
 	if instanceProfileName == "" {
-		instanceProfileName = "bc1-2x8" // for classic infrastructure
-		// instanceProfileName = "cx2-2x4" // for next gen infrastructure
+		//instanceProfileName = "bc1-2x8" // for classic infrastructure
+		instanceProfileName = "cx2-2x4" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'b-2x8'")
 	}
 
@@ -415,9 +415,9 @@ func init() {
 
 	IsImageName = os.Getenv("IS_IMAGE_NAME")
 	if IsImageName == "" {
-		IsImageName = "ibm-ubuntu-18-04-2-minimal-amd64-1" // for classic infrastructure
-		// IsImageName = "ibm-ubuntu-18-04-1-minimal-amd64-2" // for next gen infrastructure
-		fmt.Println("[INFO] Set the environment variable IS_IMAGE_NAME for testing data source ibm_is_image else it is set to default value `ubuntu-18.04-amd64`")
+		//IsImageName = "ibm-ubuntu-18-04-2-minimal-amd64-1" // for classic infrastructure
+		IsImageName = "ibm-ubuntu-18-04-1-minimal-amd64-2" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE_NAME for testing data source ibm_is_image else it is set to default value `ibm-ubuntu-18-04-1-minimal-amd64-2`")
 	}
 	IsImageEncryptedDataKey = os.Getenv("IS_IMAGE_ENCRYPTED_DATA_KEY")
 	if IsImageEncryptedDataKey == "" {
