@@ -17,7 +17,18 @@ data "ibm_pi_cloud_instance" "ds_cloud_instance" {
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
-
+## Notes:
+* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  * `region` - `lon`
+  * `zone` - `lon04`
+  Example Usage:
+  ```hcl
+    provider "ibm" {
+      region    =   "lon"
+      zone      =   "lon04"
+    }
+  ```
 ## Argument Reference
 
 The following arguments are supported:

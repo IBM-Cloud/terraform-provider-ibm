@@ -24,7 +24,18 @@ resource "ibm_pi_network_port" "test-network-port" {
 }
 ```
 
-
+## Notes:
+* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  * `region` - `lon`
+  * `zone` - `lon04`
+  Example Usage:
+  ```hcl
+    provider "ibm" {
+      region    =   "lon"
+      zone      =   "lon04"
+    }
+  ```
 ## Timeouts
 
 ibm_pi_network_port provides the following [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:

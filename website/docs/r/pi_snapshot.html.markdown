@@ -23,7 +23,18 @@ resource "ibm_pi_snapshot" "testacc_snapshot"{
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
 }
 ```
-
+## Notes:
+* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  * `region` - `lon`
+  * `zone` - `lon04`
+  Example Usage:
+  ```hcl
+    provider "ibm" {
+      region    =   "lon"
+      zone      =   "lon04"
+    }
+  ```
 ## Timeouts
 
 ibm_pi_snapshot provides the following [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
