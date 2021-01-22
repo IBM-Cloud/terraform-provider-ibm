@@ -12,7 +12,7 @@ Creates deletes a Container Registry Namespace.
 
 ## Example Usage
 
-In the following example, you can configure a alb:
+In the following example, you can configure a namespace:
 
 ```hcl
 resource "ibm_cr_namespace" "test" {
