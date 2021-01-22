@@ -285,3 +285,10 @@ resource "ibm_is_public_gateway" "publicgateway1" {
 data "ibm_is_vpc" "vpc1" {
   name = ibm_is_vpc.vpc1.name
 }
+
+data "ibm_is_volume_profile" "volprofile"{
+  name = "general-purpose"
+}
+
+data "ibm_is_volume_profiles" "volprofiles"{
+}
