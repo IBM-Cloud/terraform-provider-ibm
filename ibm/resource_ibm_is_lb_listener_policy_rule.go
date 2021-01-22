@@ -261,9 +261,9 @@ func classicLbListenerPolicyRuleCreate(d *schema.ResourceData, meta interface{},
 		Field:          &field,
 	}
 
-	isLBListenerPolicyKey := "load_balancer_listener_policy_rule_key_" + lbID + listenerID + policyID
-	ibmMutexKV.Lock(isLBListenerPolicyKey)
-	defer ibmMutexKV.Unlock(isLBListenerPolicyKey)
+	isLBKey := "load_balancer_key_" + lbID
+	ibmMutexKV.Lock(isLBKey)
+	defer ibmMutexKV.Unlock(isLBKey)
 
 	_, err = isWaitForClassicLoadbalancerAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -388,9 +388,9 @@ func lbListenerPolicyRuleCreate(d *schema.ResourceData, meta interface{}, lbID, 
 		Field:          &field,
 	}
 
-	isLBListenerPolicyKey := "load_balancer_listener_policy_rule_key_" + lbID + listenerID + policyID
-	ibmMutexKV.Lock(isLBListenerPolicyKey)
-	defer ibmMutexKV.Unlock(isLBListenerPolicyKey)
+	isLBKey := "load_balancer_key_" + lbID
+	ibmMutexKV.Lock(isLBKey)
+	defer ibmMutexKV.Unlock(isLBKey)
 
 	_, err = isWaitForLoadbalancerAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -684,9 +684,9 @@ func classicLbListenerPolicyRuleUpdate(d *schema.ResourceData, meta interface{},
 		hasChanged = true
 	}
 
-	isLBListenerPolicyRuleKey := "load_balancer_listener_policy_rule_key_" + lbID + listenerID + policyID
-	ibmMutexKV.Lock(isLBListenerPolicyRuleKey)
-	defer ibmMutexKV.Unlock(isLBListenerPolicyRuleKey)
+	isLBKey := "load_balancer_key_" + lbID
+	ibmMutexKV.Lock(isLBKey)
+	defer ibmMutexKV.Unlock(isLBKey)
 
 	if hasChanged {
 		loadBalancerListenerPolicyRulePatch, err := loadBalancerListenerPolicyRulePatchModel.AsPatch()
@@ -758,9 +758,9 @@ func lbListenerPolicyRuleUpdate(d *schema.ResourceData, meta interface{}, lbID, 
 		}
 		updatePolicyRuleOptions.LoadBalancerListenerPolicyRulePatch = loadBalancerListenerPolicyRulePatch
 
-		isLBListenerPolicyRuleKey := "load_balancer_listener_policy_rule_key_" + lbID + listenerID + policyID
-		ibmMutexKV.Lock(isLBListenerPolicyRuleKey)
-		defer ibmMutexKV.Unlock(isLBListenerPolicyRuleKey)
+		isLBKey := "load_balancer_key_" + lbID
+		ibmMutexKV.Lock(isLBKey)
+		defer ibmMutexKV.Unlock(isLBKey)
 
 		_, err = isWaitForLoadbalancerAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
@@ -798,6 +798,10 @@ func resourceIBMISLBListenerPolicyRuleDelete(d *schema.ResourceData, meta interf
 	listenerID := parts[1]
 	policyID := parts[2]
 	ruleID := parts[3]
+
+	isLBKey := "load_balancer_key_" + lbID
+	ibmMutexKV.Lock(isLBKey)
+	defer ibmMutexKV.Unlock(isLBKey)
 
 	if userDetails.generation == 1 {
 		err := classicLbListenerPolicyRuleDelete(d, meta, lbID, listenerID, policyID, ruleID)

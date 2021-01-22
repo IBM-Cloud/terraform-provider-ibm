@@ -168,6 +168,11 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 	if limit, ok := d.GetOk(isLBListenerConnectionLimit); ok {
 		connLimit = int64(limit.(int))
 	}
+
+	isLBKey := "load_balancer_key_" + lbID
+	ibmMutexKV.Lock(isLBKey)
+	defer ibmMutexKV.Unlock(isLBKey)
+
 	if userDetails.generation == 1 {
 		err := classicLBListenerCreate(d, meta, lbID, protocol, defPool, certificateCRN, port, connLimit)
 		if err != nil {
@@ -550,6 +555,10 @@ func classicLBListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbL
 		}
 		updateLoadBalancerListenerOptions.LoadBalancerListenerPatch = loadBalancerListenerPatch
 
+		isLBKey := "load_balancer_key_" + lbID
+		ibmMutexKV.Lock(isLBKey)
+		defer ibmMutexKV.Unlock(isLBKey)
+
 		_, err = isWaitForClassicLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
@@ -634,6 +643,10 @@ func lbListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListener
 		}
 		updateLoadBalancerListenerOptions.LoadBalancerListenerPatch = loadBalancerListenerPatch
 
+		isLBKey := "load_balancer_key_" + lbID
+		ibmMutexKV.Lock(isLBKey)
+		defer ibmMutexKV.Unlock(isLBKey)
+
 		_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
@@ -671,6 +684,10 @@ func resourceIBMISLBListenerDelete(d *schema.ResourceData, meta interface{}) err
 
 	lbID := parts[0]
 	lbListenerID := parts[1]
+
+	isLBKey := "load_balancer_key_" + lbID
+	ibmMutexKV.Lock(isLBKey)
+	defer ibmMutexKV.Unlock(isLBKey)
 
 	if userDetails.generation == 1 {
 		err := classicLBListenerDelete(d, meta, lbID, lbListenerID)
