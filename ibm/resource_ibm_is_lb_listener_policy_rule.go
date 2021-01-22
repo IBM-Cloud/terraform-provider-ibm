@@ -799,6 +799,10 @@ func resourceIBMISLBListenerPolicyRuleDelete(d *schema.ResourceData, meta interf
 	policyID := parts[2]
 	ruleID := parts[3]
 
+	isLBKey := "load_balancer_key_" + lbID
+	ibmMutexKV.Lock(isLBKey)
+	defer ibmMutexKV.Unlock(isLBKey)
+
 	if userDetails.generation == 1 {
 		err := classicLbListenerPolicyRuleDelete(d, meta, lbID, listenerID, policyID, ruleID)
 		if err != nil {
