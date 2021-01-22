@@ -248,6 +248,8 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_subnets":                         dataSourceIBMISSubnets(),
 			"ibm_is_security_group":                  dataSourceIBMISSecurityGroup(),
 			"ibm_is_volume":                          dataSourceIBMISVolume(),
+			"ibm_is_volume_profile":                  dataSourceIBMISVolumeProfile(),
+			"ibm_is_volume_profiles":                 dataSourceIBMISVolumeProfiles(),
 			"ibm_is_vpc":                             dataSourceIBMISVPC(),
 			"ibm_is_vpn_gateways":                    dataSourceIBMISVPNGateways(),
 			"ibm_is_vpn_gateway_connections":         dataSourceIBMISVPNGatewayConnections(),

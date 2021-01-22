@@ -52,6 +52,7 @@ var ISZoneName string
 var ISCIDR string
 var ISAddressPrefixCIDR string
 var instanceProfileName string
+var volumeProfileName string
 var ISRouteDestination string
 var ISRouteNextHop string
 var workspaceID string
@@ -337,7 +338,13 @@ func init() {
 	if instanceProfileName == "" {
 		//instanceProfileName = "bc1-2x8" // for classic infrastructure
 		instanceProfileName = "cx2-2x4" // for next gen infrastructure
-		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'b-2x8'")
+		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'cx2-2x4'")
+	}
+
+	volumeProfileName = os.Getenv("IS_VOLUME_PROFILE")
+	if volumeProfileName == "" {
+		volumeProfileName = "general-purpose"
+		fmt.Println("[INFO] Set the environment variable IS_VOLUME_PROFILE for testing ibm_is_volume_profile else it is set to default value 'general-purpose'")
 	}
 
 	ISRouteDestination = os.Getenv("SL_ROUTE_DESTINATION")
