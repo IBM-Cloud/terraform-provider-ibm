@@ -143,6 +143,8 @@ func TestAccIBMStorageBlock_hourly(t *testing.T) {
 						"ibm_storage_block.bs_endurance", "notes", "endurance notes"),
 					resource.TestCheckResourceAttr(
 						"ibm_storage_block.bs_endurance", "hourly_billing", "true"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_storage_block.bs_endurance", "lunid"),
 					testAccCheckIBMResources("ibm_storage_block.bs_endurance", "datacenter",
 						"ibm_compute_vm_instance.storagevm2", "datacenter"),
 					// Performance Storage
@@ -157,6 +159,8 @@ func TestAccIBMStorageBlock_hourly(t *testing.T) {
 						"ibm_storage_block.bs_performance", "os_format_type", "Linux"),
 					resource.TestCheckResourceAttr(
 						"ibm_storage_block.bs_performance", "hourly_billing", "true"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_storage_block.bs_performance", "lunid"),
 					resource.TestCheckResourceAttr(
 						"ibm_storage_block.bs_performance", "snapshot_capacity", "20"),
 					testAccCheckIBMResources("ibm_storage_block.bs_performance", "datacenter",
@@ -212,7 +216,7 @@ const testAccCheckIBMStorageBlockConfig_basic = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -244,7 +248,7 @@ const testAccCheckIBMStorageBlockConfig_update = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -280,7 +284,7 @@ const testAccCheckIBMStorageBlockWithTag = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -306,7 +310,7 @@ const testAccCheckIBMStorageBlockWithUpdatedTag = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -332,7 +336,7 @@ const testAccCheckIBMStorageBlockConfig_hourly = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal10"
     network_speed = 100
     hourly_billing = true
@@ -370,7 +374,7 @@ const testAccCheckIBMStorageBlockConfig_hourly_update = `
 resource "ibm_compute_vm_instance" "storagevm2" {
     hostname = "storagevm2"
     domain = "example.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal10"
     network_speed = 100
     hourly_billing = true
