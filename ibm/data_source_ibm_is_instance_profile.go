@@ -91,6 +91,9 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 	d.SetId(*profile.Name)
 	d.Set(isInstanceProfileName, *profile.Name)
 	d.Set(isInstanceProfileFamily, *profile.Family)
-	d.Set(isInstanceProfileArchitecture, *profile.OsArchitecture.Default)
+	if profile.OsArchitecture != nil && profile.OsArchitecture.Default != nil {
+		d.Set(isInstanceProfileArchitecture, *profile.OsArchitecture.Default)
+	}
+
 	return nil
 }

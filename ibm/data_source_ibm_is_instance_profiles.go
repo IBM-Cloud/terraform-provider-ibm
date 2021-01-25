@@ -33,6 +33,10 @@ func dataSourceIBMISInstanceProfiles() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"architecture": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -111,6 +115,9 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 		l := map[string]interface{}{
 			"name":   *profile.Name,
 			"family": *profile.Family,
+		}
+		if profile.OsArchitecture != nil && profile.OsArchitecture.Default != nil {
+			l["architecture"] = *profile.OsArchitecture.Default
 		}
 		profilesInfo = append(profilesInfo, l)
 	}
