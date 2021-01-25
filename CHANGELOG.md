@@ -1,3 +1,33 @@
+## 1.20.0 (Jan25, 2021)
+
+FEATURES:
+
+* Support directlink provider gateway resource `ibm_dl_provider_gateway`
+
+* Support directlink provider gateways, ports datasource `ibm_dl_provider_gateways`, `ibm_dl_provider_ports`
+
+ENHANCEMENTS
+
+* Support provision file storage size from 10TB to 13TB ([#2158](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2158))
+
+* Support for pod-subnet and service-subnet for `ibm_container_cluster` resource ([#1196](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1196))
+
+* Support the ability to retrieve the instances in a specific VPC ([#1961](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1961))
+
+* Support for patch update for cluster worker nodes ([#1978](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1978)) 
+
+* Support architecture attribute for VPC instance profiles ([#2002](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2002)) 
+
+BUGFIXES
+
+* Fix the nil pointer exception for cos bucket import scenario ([#2151](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2151))
+
+* Fix Transit gateway Connection creation fails for cross account ([#2170](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2170))
+
+* Fix Terraform crash when subnet not found ([#2058](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2058))
+
+* Fix VPC LB creation with count greater than 1 ([#2168](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2168))
+
 # 1.19.0 (Jan08, 2020)
 
 FEATURES:
