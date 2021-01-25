@@ -70,6 +70,7 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 			isSecurityGroupRuleRemote: {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Security group id: an IP address, a CIDR block, or a single security group identifier",
 			},
 
