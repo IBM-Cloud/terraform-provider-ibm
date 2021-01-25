@@ -69,6 +69,12 @@ func resourceIBMStorageBlock() *schema.Resource {
 				Description: "Hostname",
 			},
 
+			"lunid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "LUN Id",
+			},
+
 			"snapshot_capacity": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -346,6 +352,7 @@ func resourceIBMStorageBlockRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("capacity", *storage.CapacityGb)
 	d.Set("volumename", *storage.Username)
 	d.Set("hostname", *storage.ServiceResourceBackendIpAddress)
+	d.Set("lunid", *storage.LunId)
 	d.Set("iops", iops)
 	if storage.SnapshotCapacityGb != nil {
 		snapshotCapacity, _ := strconv.Atoi(*storage.SnapshotCapacityGb)

@@ -24,7 +24,7 @@ import (
 const (
 	storagePackageType = "STORAGE_AS_A_SERVICE"
 	storageMask        = "id,billingItem.orderItem.order.id"
-	storageDetailMask  = "id,billingItem[location],storageTierLevel,provisionedIops,capacityGb,iops,storageType[keyName,description],username,serviceResourceBackendIpAddress,properties[type]" +
+	storageDetailMask  = "id,billingItem[location],storageTierLevel,provisionedIops,capacityGb,iops,lunId,storageType[keyName,description],username,serviceResourceBackendIpAddress,properties[type]" +
 		",serviceResourceName,allowedIpAddresses[id,ipAddress,subnetId,allowedHost[name,credential[username,password]]],allowedSubnets[allowedHost[name,credential[username,password]]],allowedHardware[allowedHost[name,credential[username,password]]],allowedVirtualGuests[id,allowedHost[name,credential[username,password]]],snapshotCapacityGb,osType,notes,billingItem[hourlyFlag],serviceResource[datacenter[name]],schedules[dayOfWeek,hour,minute,retentionCount,type[keyname,name]],iscsiTargetIpAddresses"
 	itemMask        = "id,capacity,description,units,keyName,capacityMinimum,capacityMaximum,prices[id,categories[id,name,categoryCode],capacityRestrictionMinimum,capacityRestrictionMaximum,capacityRestrictionType,locationGroupId],itemCategory[categoryCode]"
 	enduranceType   = "Endurance"
