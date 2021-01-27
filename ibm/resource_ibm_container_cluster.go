@@ -861,7 +861,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 
 	clusterID := d.Id()
 
-	if (d.HasChange("kube_version") || d.HasChange("update_all_workers")) || d.HasChange("patch_version") && !d.IsNewResource() {
+	if (d.HasChange("kube_version") || d.HasChange("update_all_workers") || d.HasChange("patch_version")) && !d.IsNewResource() {
 		if d.HasChange("kube_version") {
 			var masterVersion string
 			if v, ok := d.GetOk("kube_version"); ok {
