@@ -1,3 +1,8 @@
+## 1.20.1 (Jan27, 2021)
+
+BUGFIXES
+Fix the regression issue provisioning of contianer clusters ([#2206](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2206)) 
+
 ## 1.20.0 (Jan25, 2021)
 
 FEATURES:
