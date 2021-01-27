@@ -547,7 +547,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 
 	}
 
-	if (d.HasChange("kube_version") || d.HasChange("update_all_workers")) || d.HasChange("patch_version") && !d.IsNewResource() {
+	if (d.HasChange("kube_version") || d.HasChange("update_all_workers") || d.HasChange("patch_version")) && !d.IsNewResource() {
 
 		if d.HasChange("kube_version") {
 			ClusterClient, err := meta.(ClientSession).ContainerAPI()
