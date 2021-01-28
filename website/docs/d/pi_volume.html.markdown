@@ -35,7 +35,7 @@ data "ibm_pi_volume" "ds_volume" {
 The following arguments are supported:
 
 * `pi_volume_name` - (Required, string) The name of the volume.
-* `pi_cloud_instance_id` - (Required, string) The service instance associated with the account
+* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
 
 ## Attribute Reference
 

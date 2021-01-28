@@ -35,7 +35,7 @@ data "ibm_pi_image" "ds_image" {
 The following arguments are supported:
 
 * `pi_image_name` - (Required, string) The name of the image.
-* `pi_cloud_instance_id` - (Required, string) The service instance associated with the account.
+* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account.
 
 ## Attribute Reference
 

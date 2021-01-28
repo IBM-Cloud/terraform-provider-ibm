@@ -48,7 +48,7 @@ ibm_pi_network_port provides the following [timeouts](https://www.terraform.io/d
 The following arguments are supported:
 
 * `pi_network_name` - (Required, string) The name of the PI Network.
-* `pi_cloud_instance_id` - (Required, string) The cloud_instance_id for this account.
+* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
 * `pi_network_port_description` - (Optional, string) The description for the Network Port
 ## Attribute Reference
 
