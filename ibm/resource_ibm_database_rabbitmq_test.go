@@ -12,7 +12,7 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
-	rnd := fmt.Sprintf("tf_test_acc_%d", acctest.RandIntRange(10, 100))
+	rnd := fmt.Sprintf("tf-Rmq-%d", acctest.RandIntRange(10, 100))
 	testName := rnd
 	name := "ibm_database." + testName
 
@@ -21,8 +21,8 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMDatabaseInstance_Rabbitmq_basic(databaseResourceGroup, testName),
+			{
+				Config: testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -40,8 +40,8 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.database", ""),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMDatabaseInstance_Rabbitmq_fullyspecified(databaseResourceGroup, testName),
+			{
+				Config: testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -56,8 +56,8 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMDatabaseInstance_Rabbitmq_reduced(databaseResourceGroup, testName),
+			{
+				Config: testAccCheckIBMDatabaseInstanceRabbitmqReduced(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -82,11 +82,11 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 
 // TestAccIBMDatabaseInstance_CreateAfterManualDestroy not required as tested by resource_instance tests
 
-func TestAccIBMDatabaseInstance_Rabbitmq_import(t *testing.T) {
+func TestAccIBMDatabaseInstanceRabbitmqImport(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
-	serviceName := fmt.Sprintf("tf_test_acc_%d", acctest.RandIntRange(10, 100))
+	serviceName := fmt.Sprintf("tf-Rmq-%d", acctest.RandIntRange(10, 100))
 	//serviceName := "test_acc"
 	resourceName := "ibm_database." + serviceName
 
@@ -95,8 +95,8 @@ func TestAccIBMDatabaseInstance_Rabbitmq_import(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMDatabaseInstance_Rabbitmq_import(databaseResourceGroup, serviceName),
+			{
+				Config: testAccCheckIBMDatabaseInstanceRabbitmqImport(databaseResourceGroup, serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
@@ -105,7 +105,7 @@ func TestAccIBMDatabaseInstance_Rabbitmq_import(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "location", "us-south"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -118,7 +118,7 @@ func TestAccIBMDatabaseInstance_Rabbitmq_import(t *testing.T) {
 
 // func testAccCheckIBMDatabaseInstanceDestroy(s *terraform.State) etc in resource_ibm_database_postgresql_test.go
 
-func testAccCheckIBMDatabaseInstance_Rabbitmq_basic(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -146,7 +146,7 @@ func testAccCheckIBMDatabaseInstance_Rabbitmq_basic(databaseResourceGroup string
 				`, databaseResourceGroup, name)
 }
 
-func testAccCheckIBMDatabaseInstance_Rabbitmq_fullyspecified(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -183,7 +183,7 @@ func testAccCheckIBMDatabaseInstance_Rabbitmq_fullyspecified(databaseResourceGro
 				`, databaseResourceGroup, name)
 }
 
-func testAccCheckIBMDatabaseInstance_Rabbitmq_reduced(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceRabbitmqReduced(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -203,7 +203,7 @@ func testAccCheckIBMDatabaseInstance_Rabbitmq_reduced(databaseResourceGroup stri
 				`, databaseResourceGroup, name)
 }
 
-func testAccCheckIBMDatabaseInstance_Rabbitmq_import(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceRabbitmqImport(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
