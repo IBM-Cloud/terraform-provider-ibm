@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20210125055453-344c1ff77d84
-	github.com/IBM-Cloud/power-go-client v1.0.53
+	github.com/IBM-Cloud/power-go-client v1.0.55
 	github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.3.1
@@ -20,7 +20,7 @@ require (
 	github.com/Shopify/sarama v1.27.2
 	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32 // indirect
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
-	github.com/apparentlymart/go-cidr v1.0.1
+	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21 // indirect
 	github.com/dchest/safefile v0.0.0-20151022103144-855e8d98f185 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible

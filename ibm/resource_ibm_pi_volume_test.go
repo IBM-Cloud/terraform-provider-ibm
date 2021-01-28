@@ -3,6 +3,7 @@ package ibm
 import (
 	"errors"
 	"fmt"
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -19,7 +20,7 @@ func TestAccIBMPIVolumebasic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMPIVolumeDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMPIVolumeConfig(name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIVolumeExists("ibm_pi_volume.power_volume"),
@@ -42,9 +43,10 @@ func testAccCheckIBMPIVolumeDestroy(s *terraform.State) error {
 		}
 		parts, err := idParts(rs.Primary.ID)
 		powerinstanceid := parts[0]
-		networkC := st.NewIBMPIVolumeClient(sess, powerinstanceid)
-		_, err = networkC.Get(parts[1], powerinstanceid, volGetTimeOut)
+		volumeC := st.NewIBMPIVolumeClient(sess, powerinstanceid)
+		volume, err := volumeC.Get(parts[1], powerinstanceid, volGetTimeOut)
 		if err == nil {
+			log.Println("volume*****", volume.State)
 			return fmt.Errorf("PI Volume still exists: %s", rs.Primary.ID)
 		}
 	}
