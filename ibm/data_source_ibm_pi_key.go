@@ -1,10 +1,11 @@
 package ibm
 
 import (
-	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/helpers"
 )
 
 func dataSourceIBMPIKey() *schema.Resource {
@@ -30,8 +31,9 @@ func dataSourceIBMPIKey() *schema.Resource {
 				Computed: true,
 			},
 			"sshkey": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Sensitive: true,
+				Computed:  true,
 			},
 		},
 	}
@@ -54,7 +56,10 @@ func dataSourceIBMPIKeysRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(*sshkeydata.Name)
+	d.Set("creation_date", sshkeydata.CreationDate.String())
 	d.Set("sshkey", sshkeydata.SSHKey)
+	d.Set(helpers.PIKeyName, sshkeydata.Name)
+	d.Set(helpers.PICloudInstanceId, powerinstanceid)
 
 	return nil
 

@@ -1,11 +1,13 @@
 package ibm
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	//"fmt"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 func dataSourceIBMPINetwork() *schema.Resource {
@@ -83,14 +85,30 @@ func dataSourceIBMPINetworksRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	d.SetId(*networkdata.NetworkID)
-	d.Set("cidr", networkdata.Cidr)
-	d.Set("type", networkdata.Type)
-	d.Set("gateway", networkdata.Gateway)
-	d.Set("vlan_id", networkdata.VlanID)
-	d.Set("available_ip_count", networkdata.IPAddressMetrics.Available)
-	d.Set("used_ip_count", networkdata.IPAddressMetrics.Used)
-	d.Set("used_ip_percent", networkdata.IPAddressMetrics.Utilization)
-	d.Set("name", networkdata.Name)
+	if networkdata.Cidr != nil {
+		d.Set("cidr", networkdata.Cidr)
+	}
+	if networkdata.Type != nil {
+		d.Set("type", networkdata.Type)
+	}
+	if &networkdata.Gateway != nil {
+		d.Set("gateway", networkdata.Gateway)
+	}
+	if networkdata.VlanID != nil {
+		d.Set("vlan_id", networkdata.VlanID)
+	}
+	if networkdata.IPAddressMetrics.Available != nil {
+		d.Set("available_ip_count", networkdata.IPAddressMetrics.Available)
+	}
+	if networkdata.IPAddressMetrics.Used != nil {
+		d.Set("used_ip_count", networkdata.IPAddressMetrics.Used)
+	}
+	if networkdata.IPAddressMetrics.Utilization != nil {
+		d.Set("used_ip_percent", networkdata.IPAddressMetrics.Utilization)
+	}
+	if networkdata.Name != nil {
+		d.Set("name", networkdata.Name)
+	}
 
 	return nil
 

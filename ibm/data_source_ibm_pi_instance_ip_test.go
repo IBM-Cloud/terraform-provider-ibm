@@ -27,11 +27,15 @@ func TestAccIBMPIInstanceIPDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMPIInstanceIPDataSourceConfig() string {
 	return fmt.Sprintf(`
-	
+	resource "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[3]s"
+		pi_network_name      = "%[1]s"
+		pi_network_type      = "pub-vlan"
+	}
 data "ibm_pi_instance_ip" "testacc_ds_instance_ip" {
-    pi_network_name = "%s"
-    pi_instance_name = "%s"
-    pi_cloud_instance_id = "%s"
+    pi_network_name = "%[1]s"
+    pi_instance_name = "%[2]s"
+    pi_cloud_instance_id = "%[3]s"
 }`, pi_network_name, pi_instance_name, pi_cloud_instance_id)
 
 }
