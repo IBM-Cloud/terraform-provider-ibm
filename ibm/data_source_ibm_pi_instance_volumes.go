@@ -10,10 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-func dataSourceIBMPIVolumes() *schema.Resource {
+func dataSourceIBMPIInstanceVolumes() *schema.Resource {
 
 	return &schema.Resource{
-		Read: dataSourceIBMPIVolumesRead,
+		Read: dataSourceIBMPIInstanceVolumesRead,
 		Schema: map[string]*schema.Schema{
 
 			helpers.PIInstanceName: {
@@ -80,7 +80,7 @@ func dataSourceIBMPIVolumes() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMPIInstanceVolumesRead(d *schema.ResourceData, meta interface{}) error {
 
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {

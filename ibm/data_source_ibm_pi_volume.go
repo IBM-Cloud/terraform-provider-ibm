@@ -1,12 +1,13 @@
 package ibm
 
 import (
-	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-
 	//"fmt"
-	"github.com/IBM-Cloud/power-go-client/clients/instance"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/helpers"
 )
 
 func dataSourceIBMPIVolume() *schema.Resource {
@@ -77,17 +78,26 @@ func dataSourceIBMPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	volumeC := instance.NewIBMPIVolumeClient(sess, powerinstanceid)
 	volumedata, err := volumeC.Get(d.Get(helpers.PIVolumeName).(string), powerinstanceid, getTimeOut)
-
 	if err != nil {
 		return err
 	}
 
 	d.SetId(*volumedata.VolumeID)
-	d.Set("size", volumedata.Size)
-	d.Set("disk_type", volumedata.DiskType)
-	d.Set("bootable", volumedata.Bootable)
-	d.Set("state", volumedata.State)
-	d.Set("wwn", volumedata.Wwn)
+	if volumedata.Size != nil {
+		d.Set("size", volumedata.Size)
+	}
+	if &volumedata.DiskType != nil {
+		d.Set("disk_type", volumedata.DiskType)
+	}
+	if &volumedata.Bootable != nil {
+		d.Set("bootable", volumedata.Bootable)
+	}
+	if &volumedata.State != nil {
+		d.Set("state", volumedata.State)
+	}
+	if &volumedata.Wwn != nil {
+		d.Set("wwn", volumedata.Wwn)
+	}
 	return nil
 
 }

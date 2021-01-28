@@ -1,13 +1,12 @@
 package ibm
 
 import (
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	//"fmt"
-	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 func dataSourceIBMPICloudInstance() *schema.Resource {
