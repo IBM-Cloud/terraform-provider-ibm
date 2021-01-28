@@ -2,22 +2,25 @@ package ibm
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 func TestAccIBMDatabaseInstance_Postgres_Basic(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
-	rnd := fmt.Sprintf("tf_test_acc_%d", acctest.RandIntRange(10, 100))
+	rnd := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
 	testName := rnd
 	name := "ibm_database." + testName
 
@@ -26,8 +29,8 @@ func TestAccIBMDatabaseInstance_Postgres_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMDatabaseInstance_Postgres_basic(databaseResourceGroup, testName),
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresBasic(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -48,8 +51,8 @@ func TestAccIBMDatabaseInstance_Postgres_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMDatabaseInstance_Postgres_fullyspecified(databaseResourceGroup, testName),
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresFullyspecified(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -71,8 +74,8 @@ func TestAccIBMDatabaseInstance_Postgres_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMDatabaseInstance_Postgres_reduced(databaseResourceGroup, testName),
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresReduced(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -98,11 +101,11 @@ func TestAccIBMDatabaseInstance_Postgres_Basic(t *testing.T) {
 
 // TestAccIBMDatabaseInstance_CreateAfterManualDestroy not required as tested by resource_instance tests
 
-func TestAccIBMDatabaseInstance_Postgres_import(t *testing.T) {
+func TestAccIBMDatabaseInstancePostgresImport(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
-	serviceName := fmt.Sprintf("tf_test_acc_%d", acctest.RandIntRange(10, 100))
+	serviceName := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
 	//serviceName := "test_acc"
 	resourceName := "ibm_database." + serviceName
 
@@ -111,8 +114,8 @@ func TestAccIBMDatabaseInstance_Postgres_import(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMDatabaseInstance_Postgres_import(databaseResourceGroup, serviceName),
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresImport(databaseResourceGroup, serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
@@ -121,7 +124,7 @@ func TestAccIBMDatabaseInstance_Postgres_import(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "location", "us-south"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -144,37 +147,41 @@ func testAccCheckIBMDatabaseInstanceDestroy(s *terraform.State) error {
 
 		instanceID := rs.Primary.ID
 
-		_, err := rsContClient.ResourceServiceInstance().GetInstance(instanceID)
+		instance, err := rsContClient.ResourceServiceInstance().GetInstance(instanceID)
 
 		if err == nil {
-			return fmt.Errorf("Instance still exists: %s", rs.Primary.ID)
-		} else if !strings.Contains(err.Error(), "404") {
-			return fmt.Errorf("Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+			if !reflect.DeepEqual(instance, models.ServiceInstance{}) && instance.State == "active" {
+				return fmt.Errorf("Database still exists: %s", rs.Primary.ID)
+			}
+		} else {
+			if !strings.Contains(err.Error(), "404") {
+				return fmt.Errorf("Error checking if database (%s) has been destroyed: %s", rs.Primary.ID, err)
+			}
 		}
 	}
 	return nil
 }
 
-func testAccDatabaseInstanceManuallyDelete(tfDatabaseId *string) resource.TestCheckFunc {
+func testAccDatabaseInstanceManuallyDelete(tfDatabaseID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		_ = testAccDatabaseInstanceManuallyDeleteUnwrapped(s, tfDatabaseId)
+		_ = testAccDatabaseInstanceManuallyDeleteUnwrapped(s, tfDatabaseID)
 		return nil
 	}
 }
 
-func testAccDatabaseInstanceManuallyDeleteUnwrapped(s *terraform.State, tfDatabaseId *string) error {
+func testAccDatabaseInstanceManuallyDeleteUnwrapped(s *terraform.State, tfDatabaseID *string) error {
 	rsConClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerAPI()
 	if err != nil {
 		return err
 	}
-	instance := *tfDatabaseId
-	var instanceId string
+	instance := *tfDatabaseID
+	var instanceID string
 	if strings.HasPrefix(instance, "crn") {
-		instanceId = instance
+		instanceID = instance
 	} else {
-		_, instanceId, _ = convertTftoCisTwoVar(instance)
+		_, instanceID, _ = convertTftoCisTwoVar(instance)
 	}
-	err = rsConClient.ResourceServiceInstance().DeleteInstance(instanceId, true)
+	err = rsConClient.ResourceServiceInstance().DeleteInstance(instanceID, true)
 	if err != nil {
 		return fmt.Errorf("Error deleting resource instance: %s", err)
 	}
@@ -183,7 +190,7 @@ func testAccDatabaseInstanceManuallyDeleteUnwrapped(s *terraform.State, tfDataba
 		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus, databaseInstanceSuccessStatus},
 		Target:  []string{databaseInstanceRemovedStatus},
 		Refresh: func() (interface{}, string, error) {
-			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceId)
+			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 					return instance, databaseInstanceSuccessStatus, nil
@@ -191,7 +198,7 @@ func testAccDatabaseInstanceManuallyDeleteUnwrapped(s *terraform.State, tfDataba
 				return nil, "", err
 			}
 			if instance.State == databaseInstanceFailStatus {
-				return instance, instance.State, fmt.Errorf("The resource instance %s failed to delete: %v", instanceId, err)
+				return instance, instance.State, fmt.Errorf("The resource instance %s failed to delete: %v", instanceID, err)
 			}
 			return instance, instance.State, nil
 		},
@@ -201,12 +208,12 @@ func testAccDatabaseInstanceManuallyDeleteUnwrapped(s *terraform.State, tfDataba
 	}
 	if err != nil {
 		return fmt.Errorf(
-			"Error waiting for resource instance (%s) to be deleted: %s", instanceId, err)
+			"Error waiting for resource instance (%s) to be deleted: %s", instanceID, err)
 	}
 	return nil
 }
 
-func testAccCheckIBMDatabaseInstanceExists(n string, tfDatabaseId *string) resource.TestCheckFunc {
+func testAccCheckIBMDatabaseInstanceExists(n string, tfDatabaseID *string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -224,22 +231,22 @@ func testAccCheckIBMDatabaseInstanceExists(n string, tfDatabaseId *string) resou
 		if err != nil {
 			if strings.Contains(err.Error(), "Object not found") ||
 				strings.Contains(err.Error(), "status code: 404") {
-				*tfDatabaseId = ""
+				*tfDatabaseID = ""
 				return nil
 			}
 			return fmt.Errorf("Error retrieving resource instance: %s", err)
 		}
 		if strings.Contains(instance.State, "removed") {
-			*tfDatabaseId = ""
+			*tfDatabaseID = ""
 			return nil
 		}
 
-		*tfDatabaseId = instanceID
+		*tfDatabaseID = instanceID
 		return nil
 	}
 }
 
-func testAccCheckIBMDatabaseInstance_Postgres_basic(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstancePostgresBasic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
@@ -267,7 +274,7 @@ func testAccCheckIBMDatabaseInstance_Postgres_basic(databaseResourceGroup string
 				`, databaseResourceGroup, name)
 }
 
-func testAccCheckIBMDatabaseInstance_Postgres_fullyspecified(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstancePostgresFullyspecified(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
@@ -305,7 +312,7 @@ func testAccCheckIBMDatabaseInstance_Postgres_fullyspecified(databaseResourceGro
 				`, databaseResourceGroup, name)
 }
 
-func testAccCheckIBMDatabaseInstance_Postgres_reduced(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstancePostgresReduced(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
@@ -320,14 +327,13 @@ func testAccCheckIBMDatabaseInstance_Postgres_reduced(databaseResourceGroup stri
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 2048
 		members_disk_allocation_mb   = 14336
-		members_cpu_allocation_count = 3
 		service_endpoints            = "public"
 		tags                         = ["one:two"]
 	  }
 				`, databaseResourceGroup, name)
 }
 
-func testAccCheckIBMDatabaseInstance_Postgres_import(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstancePostgresImport(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
