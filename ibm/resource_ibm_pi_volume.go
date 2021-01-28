@@ -3,13 +3,15 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 const (
@@ -102,28 +104,26 @@ func resourceIBMPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	name := d.Get(helpers.PIVolumeName).(string)
 	volType := d.Get(helpers.PIVolumeType).(string)
 	size := float64(d.Get(helpers.PIVolumeSize).(float64))
-	shared := d.Get(helpers.PIVolumeShareable).(bool)
+	var shared bool
+	if v, ok := d.GetOk(helpers.PIVolumeShareable); ok {
+		shared = v.(bool)
+	}
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 
 	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
-
 	vol, err := client.Create(name, size, volType, shared, powerinstanceid, volPostTimeOut)
-
 	if err != nil {
 		return fmt.Errorf("Failed to Create the volume %v", err)
 	}
 
 	volumeid := *vol.VolumeID
 	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, volumeid))
-	if err != nil {
-		log.Printf("[DEBUG]  err %s", err)
-		return err
-	}
+
 	_, err = isWaitForIBMPIVolumeAvailable(client, volumeid, powerinstanceid, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
-	//return nil
+
 	return resourceIBMPIVolumeRead(d, meta)
 }
 
@@ -141,23 +141,30 @@ func resourceIBMPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Failed to get the volume %v", err)
 
 	}
-
 	d.Set(helpers.PIVolumeName, vol.Name)
 	d.Set(helpers.PIVolumeSize, vol.Size)
-	d.Set(helpers.PIVolumeShareable, vol.Shareable)
+	if &vol.Shareable != nil {
+		d.Set(helpers.PIVolumeShareable, vol.Shareable)
+	}
 	d.Set(helpers.PIVolumeType, vol.DiskType)
-	d.Set("volume_status", vol.State)
-	d.Set("volume_id", vol.VolumeID)
+	if &vol.State != nil {
+		d.Set("volume_status", vol.State)
+	}
+	if &vol.VolumeID != nil {
+		d.Set("volume_id", vol.VolumeID)
+	}
+	if &vol.DeleteOnTermination != nil {
+		d.Set("delete_on_termination", vol.DeleteOnTermination)
+	}
+	if &vol.Wwn != nil {
+		d.Set("wwn", vol.Wwn)
+	}
 	d.Set(helpers.PICloudInstanceId, powerinstanceid)
-	d.Set("delete_on_termination", vol.DeleteOnTermination)
-	d.Set("wwn", vol.Wwn)
 
 	return nil
 }
 
 func resourceIBMPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
-
-	log.Printf("Calling the IBM Power Volume update call")
 	sess, _ := meta.(ClientSession).IBMPISession()
 	parts, err := idParts(d.Id())
 	if err != nil {
@@ -165,20 +172,16 @@ func resourceIBMPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	powerinstanceid := parts[0]
 	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
-
-	//name := ""
-	//if d.HasChange(helpers.PIVolumeName) {
 	name := d.Get(helpers.PIVolumeName).(string)
-	//}
-
 	size := float64(d.Get(helpers.PIVolumeSize).(float64))
-	shareable := bool(d.Get(helpers.PIVolumeShareable).(bool))
-
+	var shareable bool
+	if v, ok := d.GetOk(helpers.PIVolumeShareable); ok {
+		shareable = v.(bool)
+	}
 	volrequest, err := client.Update(parts[1], name, size, shareable, powerinstanceid, volPostTimeOut)
 	if err != nil {
 		return err
 	}
-
 	_, err = isWaitForIBMPIVolumeAvailable(client, *volrequest.VolumeID, powerinstanceid, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return err
@@ -197,22 +200,14 @@ func resourceIBMPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 	powerinstanceid := parts[0]
 
 	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
-
-	vol, err := client.Get(parts[1], powerinstanceid, volDeleteTimeOut)
+	voldeleteErr := client.Delete(parts[1], powerinstanceid, deleteTimeOut)
+	if voldeleteErr != nil {
+		return voldeleteErr
+	}
+	_, err = isWaitForIBMPIVolumeDeleted(client, parts[1], powerinstanceid, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return err
 	}
-
-	log.Printf("The volume to be deleted is in the following state .. %s", vol.State)
-	_, err = isWaitForIBMPIVolumeAvailable(client, parts[1], powerinstanceid, d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		return err
-	}
-	voldelete_err := client.Delete(parts[1], powerinstanceid, deleteTimeOut)
-	if voldelete_err != nil {
-		return voldelete_err
-	}
-
 	d.SetId("")
 	return nil
 }
@@ -273,5 +268,33 @@ func isIBMPIVolumeRefreshFunc(client *st.IBMPIVolumeClient, id, powerinstanceid 
 		}
 
 		return vol, helpers.PIVolumeProvisioning, nil
+	}
+}
+
+func isWaitForIBMPIVolumeDeleted(client *st.IBMPIVolumeClient, id, powerinstanceid string, timeout time.Duration) (interface{}, error) {
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"deleting", helpers.PIVolumeProvisioning},
+		Target:     []string{"deleted"},
+		Refresh:    isIBMPIVolumeDeleteRefreshFunc(client, id, powerinstanceid),
+		Delay:      10 * time.Second,
+		MinTimeout: 2 * time.Minute,
+		Timeout:    30 * time.Minute,
+	}
+	return stateConf.WaitForState()
+}
+
+func isIBMPIVolumeDeleteRefreshFunc(client *st.IBMPIVolumeClient, id, powerinstanceid string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		vol, err := client.Get(id, powerinstanceid, volGetTimeOut)
+		if err != nil {
+			if strings.Contains(err.Error(), "Resource not found") {
+				return vol, "deleted", nil
+			}
+			return nil, "", err
+		}
+		if vol == nil {
+			return vol, "deleted", nil
+		}
+		return vol, "deleting", nil
 	}
 }

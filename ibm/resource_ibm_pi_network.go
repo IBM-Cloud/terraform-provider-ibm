@@ -7,11 +7,12 @@ import (
 	"strconv"
 	"time"
 
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
+	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/helpers"
 )
 
 func resourceIBMPINetwork() *schema.Resource {
@@ -101,20 +102,14 @@ func resourceIBMPINetworkCreate(d *schema.ResourceData, meta interface{}) error 
 		networkgateway, firstip, lastip = generateIPData(networkcidr)
 	}
 	networkResponse, _, err := client.Create(networkname, networktype, networkcidr, networkdns, networkgateway, firstip, lastip, powerinstanceid, postTimeOut)
-
 	if err != nil {
 		return err
 	}
-
-	log.Printf("Printing the networkresponse %+v", &networkResponse)
 
 	IBMPINetworkID := *networkResponse.NetworkID
 
 	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, IBMPINetworkID))
-	if err != nil {
-		log.Printf("[DEBUG]  err %s", err)
-		return err
-	}
+
 	_, err = isWaitForIBMPINetworkAvailable(client, IBMPINetworkID, d.Timeout(schema.TimeoutCreate), powerinstanceid)
 	if err != nil {
 		return err
@@ -138,7 +133,6 @@ func resourceIBMPINetworkRead(d *schema.ResourceData, meta interface{}) error {
 	powerinstanceid := parts[0]
 	networkC := st.NewIBMPINetworkClient(sess, powerinstanceid)
 	networkdata, err := networkC.Get(parts[1], powerinstanceid, getTimeOut)
-
 	if err != nil {
 		return err
 	}
@@ -203,7 +197,6 @@ func resourceIBMPINetworkExists(d *schema.ResourceData, meta interface{}) (bool,
 }
 
 func isWaitForIBMPINetworkAvailable(client *st.IBMPINetworkClient, id string, timeout time.Duration, powerinstanceid string) (interface{}, error) {
-	log.Printf("Waiting for Power Network (%s) to be available.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", helpers.PINetworkProvisioning},
@@ -218,8 +211,6 @@ func isWaitForIBMPINetworkAvailable(client *st.IBMPINetworkClient, id string, ti
 }
 
 func isIBMPINetworkRefreshFunc(client *st.IBMPINetworkClient, id, powerinstanceid string) resource.StateRefreshFunc {
-
-	log.Printf("Calling the IsIBMPINetwork Refresh Function....with the following id %s and waiting for network to be READY", id)
 	return func() (interface{}, string, error) {
 		network, err := client.Get(id, powerinstanceid, getTimeOut)
 		if err != nil {
@@ -227,7 +218,6 @@ func isIBMPINetworkRefreshFunc(client *st.IBMPINetworkClient, id, powerinstancei
 		}
 
 		if &network.VlanID != nil {
-			//if network.State == "available" {
 			return network, "NETWORK_READY", nil
 		}
 
@@ -242,7 +232,7 @@ func generateIPData(cdir string) (gway, firstip, lastip string) {
 		log.Fatal(err)
 	}
 
-	var subnet_to_size = map[string]int{
+	var subnetToSize = map[string]int{
 		"21": 2048,
 		"22": 1024,
 		"23": 512,
@@ -268,9 +258,13 @@ func generateIPData(cdir string) (gway, firstip, lastip string) {
 	convertedad := strconv.FormatUint(ad, 10)
 	// Powervc in wdc04 has to reserve 3 ip address hence we start from the 4th. This will be the default behaviour
 	firstusable, err := cidr.Host(ipv4Net, 4)
-	lastusable, err := cidr.Host(ipv4Net, subnet_to_size[convertedad]-2)
-	log.Printf("The gateway  value is %s and the count is %s and first ip is %s last one is  %s", gateway, convertedad, firstusable, lastusable)
-
+	if err != nil {
+		log.Fatal(err)
+	}
+	lastusable, err := cidr.Host(ipv4Net, subnetToSize[convertedad]-2)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return gateway.String(), firstusable.String(), lastusable.String()
 
 }

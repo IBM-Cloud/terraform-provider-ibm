@@ -386,8 +386,7 @@ func init() {
 
 	pi_cloud_instance_id = os.Getenv("PI_CLOUDINSTANCE_ID")
 	if pi_cloud_instance_id == "" {
-		//pi_cloud_instance_id = "d16705bd-7f1a-48c9-9e0e-1c17b71e7331"
-		pi_cloud_instance_id = "db0e5c7d-a708-454b-8a52-f0f2f2771075"
+		pi_cloud_instance_id = "fd3454a3-14d8-4eb0-b075-acf3da5cd324"
 		fmt.Println("[INFO] Set the environment variable PI_CLOUDINSTANCE_ID for testing ibm_pi_image resource else it is set to default value 'd16705bd-7f1a-48c9-9e0e-1c17b71e7331'")
 	}
 	workspaceID = os.Getenv("WORKSPACE_ID")
