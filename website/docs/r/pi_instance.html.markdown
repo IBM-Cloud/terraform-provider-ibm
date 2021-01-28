@@ -62,7 +62,7 @@ The following arguments are supported:
 * `pi_sys_type` - (Required, string) The type of system on which to create the VM (s922/e880/e980/any).
 * `pi_volume_ids` - (Optional, list(string)) The list of volume IDs to attach to the VM at creation time.
 * `pi_network_ids` - (Required, list(string)) The list of network IDs assigned to the VM.
-* `pi_cloud_instance_id` - (Required, string) The cloud_instance_id for this account.
+* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
 * `pi_user_data` - (Optional, string) The base64-encoded form of the user data (cloud-init) to pass to the VM at creation time.
 * `pi_replicants` - (Optional, float) Specifies the number of VMs to deploy; default is 1.
 * `pi_replication_policy` - (Optional, string) Specifies the replication policy (e.g., none).

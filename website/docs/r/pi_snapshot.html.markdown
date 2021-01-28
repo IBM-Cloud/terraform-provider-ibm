@@ -52,7 +52,7 @@ The following arguments are supported:
 * `description` - (Optional, string) Description of the snapshot.
 * `pi_volume_ids` - (Optional, List) String of volumeids. If none provided then all volumes of the instance
 will be part of the snapshot.
-* `pi_cloud_instance_id` - (Required, string) The cloud_instance_id for this account.
+* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
 
 ## Attribute Reference
 

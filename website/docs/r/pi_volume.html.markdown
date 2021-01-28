@@ -50,7 +50,7 @@ The following arguments are supported:
 * `pi_volume_name` - (Required, string) The name of this volume.
 * `pi_volume_type` - (Required, string) The volume type - supported types are (ssd/standard/tier1/tier3).
 * `pi_volume_shareable` - (Optional, boolean) If the volume can be shared or not (true/false).
-* `pi_cloud_instance_id` - (Required, string) The cloud_instance_id for this account.
+* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
 
 ## Attribute Reference
 
