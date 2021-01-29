@@ -36,7 +36,7 @@ const (
 	isInstanceBootVolume              = "boot_volume"
 	isInstanceVolAttName              = "name"
 	isInstanceVolAttVolume            = "volume"
-	isInstanceVolAttVolAutoDelete     = "auto_delete"
+	isInstanceVolAttVolAutoDelete     = "auto_delete_volume"
 	isInstanceVolAttVolCapacity       = "capacity"
 	isInstanceVolAttVolIops           = "iops"
 	isInstanceVolAttVolName           = "name"
@@ -329,6 +329,13 @@ func resourceIBMISInstance() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
 				Description: "List of volumes",
+			},
+
+			isInstanceVolAttVolAutoDelete: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Auto delete volume along with instance",
 			},
 
 			isInstanceResourceGroup: {
@@ -1595,6 +1602,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		remove := expandStringList(ov.Difference(nv).List())
 		add := expandStringList(nv.Difference(ov).List())
 
+		volautoDelete := false
+		if volumeautodeleteIntf, ok := d.GetOk(isInstanceVolAttVolAutoDelete); ok && volumeautodeleteIntf != nil {
+			volautoDelete = volumeautodeleteIntf.(bool)
+		}
+
 		if len(add) > 0 {
 			for i := range add {
 				createvolattoptions := &vpcv1.CreateInstanceVolumeAttachmentOptions{
@@ -1602,6 +1614,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					Volume: &vpcv1.VolumeIdentity{
 						ID: &add[i],
 					},
+					DeleteVolumeOnInstanceDelete: &volautoDelete,
 				}
 				vol, _, err := instanceC.CreateInstanceVolumeAttachment(createvolattoptions)
 				if err != nil {

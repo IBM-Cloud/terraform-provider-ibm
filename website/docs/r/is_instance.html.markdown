@@ -179,6 +179,7 @@ Nested `network_interfaces` block have the following structure:
   * `security_groups` - (Optional, list) Comma separated IDs of security groups.
   * `allow_ip_spoofing` - (Optional, bool) Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If true, IP spoofing is allowed on this interface.
 * `volumes` - (Optional, list) Comma separated IDs of volumes. 
+* `auto_delete_volume` - (Optional, bool) If set to True, automatically deletes volumes attached to the instance.  Note that in some cases where volume is defined in a different TF, it could throw error while destroying the volume separately as the volume could have been destroyed along with the instance.
 * `user_data` - (Optional, string) User data to transfer to the server instance.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID for this instance.
 * `tags` - (Optional, array of strings) Tags associated with the instance.
