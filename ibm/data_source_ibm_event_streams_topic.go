@@ -50,7 +50,7 @@ func dataSourceIBMEventStreamsTopicRead(d *schema.ResourceData, meta interface{}
 	adminClient, instanceCRN, err := createSaramaAdminClient(d, meta)
 	if err != nil {
 		log.Printf("[DEBUG]dataSourceIBMEventStreamsTopicRead createSaramaAdminClient err %s", err)
-		return nil
+		return err
 	}
 	topics, err := adminClient.ListTopics()
 	if err != nil {

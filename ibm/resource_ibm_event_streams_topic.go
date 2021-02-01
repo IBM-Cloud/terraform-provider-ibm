@@ -154,8 +154,9 @@ func resourceIBMEventStreamsTopicRead(d *schema.ResourceData, meta interface{}) 
 			return nil
 		}
 	}
-	log.Printf("[DEBUG] resourceIBMEventStreamsTopicRead topic %s does not exist", topicName)
-	return fmt.Errorf("topic %s does not exist", topicName)
+	log.Printf("[INFO] resourceIBMEventStreamsTopicRead topic %s does not exist", topicName)
+	d.SetId("")
+	return nil
 }
 
 func resourceIBMEventStreamsTopicUpdate(d *schema.ResourceData, meta interface{}) error {
