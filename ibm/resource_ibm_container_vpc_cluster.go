@@ -617,7 +617,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 
 			for _, worker := range workers {
 				// check if change is present in MAJOR.MINOR version or in PATCH version
-				if strings.Split(worker.KubeVersion.Actual, "_")[0] != strings.Split(cls.MasterKubeVersion, "_")[0] || (strings.Split(worker.KubeVersion.Actual, ".")[2] != patchVersion && patchVersion == strings.Split(cls.MasterKubeVersion, ".")[2]) {
+				if strings.Split(worker.KubeVersion.Actual, "_")[0] != strings.Split(cls.MasterKubeVersion, "_")[0] || (strings.Split(worker.KubeVersion.Actual, ".")[2] != patchVersion && patchVersion == strings.Split(worker.KubeVersion.Target, ".")[2]) {
 					_, err := csClient.Workers().ReplaceWokerNode(clusterID, worker.ID, targetEnv)
 					// As API returns http response 204 NO CONTENT, error raised will be exempted.
 					if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {

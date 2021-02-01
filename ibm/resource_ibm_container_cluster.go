@@ -863,7 +863,11 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 			waitForWorkerUpdate := d.Get("wait_for_worker_update").(bool)
 
 			for _, w := range workerFields {
-				if strings.Split(w.KubeVersion, "_")[0] != strings.Split(cluster.MasterKubeVersion, "_")[0] || (strings.Split(w.KubeVersion, ".")[2] != patchVersion && strings.Split(cluster.MasterKubeVersion, ".")[2] != patchVersion) {
+				/*kubeversion update done if
+				1. There is a change in Major.Minor version
+				2. Therese is a change in patch_version & Traget kube patch version and patch_version are same
+				*/
+				if strings.Split(w.KubeVersion, "_")[0] != strings.Split(cluster.MasterKubeVersion, "_")[0] || (strings.Split(w.KubeVersion, ".")[2] != patchVersion && strings.Split(w.TargetVersion, ".")[2] == patchVersion) {
 					params := v1.WorkerUpdateParam{
 						Action: "update",
 					}
