@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -1171,7 +1172,7 @@ func resourceIBMFilSnapshotHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%d-",
 		m["retention_count"].(int)))
 
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }
 
 func getPrice(prices []datatypes.Product_Item_Price, category, restrictionType string, restrictionValue int) datatypes.Product_Item_Price {

@@ -8,10 +8,10 @@ import (
 	"log"
 	"testing"
 
+	"github.com/IBM-Cloud/bluemix-go/api/functions"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/IBM-Cloud/bluemix-go/api/functions"
 )
 
 func TestAccFunctionNamespace_Basic(t *testing.T) {

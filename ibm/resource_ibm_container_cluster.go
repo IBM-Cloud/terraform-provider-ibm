@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -62,7 +63,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),

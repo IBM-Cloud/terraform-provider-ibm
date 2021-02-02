@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -579,7 +580,7 @@ func resourceIBMMemberHostHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-",
 		m["hostname"].(string)))
 
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }
 
 func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) error {

@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/hashcode"
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -69,7 +71,7 @@ func resourceIBMISVPC() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -1314,5 +1316,5 @@ func resourceIBMVPCHash(v interface{}) int {
 	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf("%s",
 		strings.ToLower(v.(string))))
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }
