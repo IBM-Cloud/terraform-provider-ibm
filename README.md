@@ -61,7 +61,7 @@ export IAAS_CLASSIC_USERNAME="IBM Cloud Classic Infrastructure username associat
 provider "ibm" {}
 ```
 
-See the [official documentation](https://cloud.ibm.com/docs/terraform?topic=terraform-tf-provider) for more details on using the IBM provider.
+See the [official documentation](https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform?topic=ibm-cloud-provider-for-terraform-getting-started) for more details on using the IBM provider.
 
 ## Developing the Provider
 
