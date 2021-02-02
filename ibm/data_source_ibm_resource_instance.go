@@ -6,11 +6,10 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 func dataSourceIBMResourceInstance() *schema.Resource {

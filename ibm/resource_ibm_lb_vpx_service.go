@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	dt "github.com/minsikl/netscaler-nitro-go/datatypes"
 	"github.com/minsikl/netscaler-nitro-go/op"
 	"github.com/softlayer/softlayer-go/datatypes"

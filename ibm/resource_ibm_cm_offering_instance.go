@@ -8,7 +8,7 @@ import (
 	"log"
 
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceIBMCmOfferingInstance() *schema.Resource {

@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMCmOfferingInstance(t *testing.T) {

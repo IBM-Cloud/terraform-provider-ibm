@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	kp "github.com/IBM/keyprotect-go-client"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIBMKMSkey() *schema.Resource {

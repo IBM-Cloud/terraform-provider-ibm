@@ -11,8 +11,8 @@ import (
 
 	"github.com/IBM/go-sdk-core/v3/core"
 	dns "github.com/IBM/networking-go-sdk/dnssvcsv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
