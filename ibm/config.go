@@ -44,6 +44,7 @@ import (
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -233,6 +234,7 @@ type ClientSession interface {
 	CisRangeAppClientSession() (*cisrangeappv1.RangeApplicationsV1, error)
 	CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1, error)
 	IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
+	ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error)
 }
 
 type clientSession struct {
@@ -444,6 +446,9 @@ type clientSession struct {
 	//IAM Identity Option
 	iamIdentityErr error
 	iamIdentityAPI *iamidentity.IamIdentityV1
+	//Resource Manager Option
+	resourceManagerErr error
+	resourceManagerAPI *resourcemanager.ResourceManagerV2
 }
 
 // BluemixAcccountAPI ...
@@ -818,6 +823,11 @@ func (sess clientSession) CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1
 // IAM Identity Session
 func (sess clientSession) IAMIdentityV1API() (*iamidentity.IamIdentityV1, error) {
 	return sess.iamIdentityAPI, sess.iamIdentityErr
+}
+
+// ResourceMAanger Session
+func (sess clientSession) ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error) {
+	return sess.resourceManagerAPI, sess.resourceManagerErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -1584,6 +1594,19 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.vpcErr = fmt.Errorf("Error occured while configuring IAM Identity service: %q", err)
 	}
 	session.iamIdentityAPI = iamIdentityClient
+
+	resourceManagerOptions := &resourcemanager.ResourceManagerV2Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_MANAGER_API_ENDPOINT"}, "https://resource-controller.cloud.ibm.com/v2"),
+	}
+	resourceManagerClient, err := resourcemanager.NewResourceManagerV2(resourceManagerOptions)
+	if err != nil {
+		session.resourceManagerErr = fmt.Errorf("Error occured while configuring Resource Manager service: %q", err)
+	}
+	if resourceManagerClient != nil {
+		resourceManagerClient.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+	session.resourceManagerAPI = resourceManagerClient
 
 	return session, nil
 }

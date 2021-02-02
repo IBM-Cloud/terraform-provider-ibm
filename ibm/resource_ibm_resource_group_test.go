@@ -4,26 +4,23 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
-
-	"strings"
-
+	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccIBMResourceGroup_Basic(t *testing.T) {
-	var conf models.ResourceGroupv2
-	resourceGroupName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	resourceGroupUpdateName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+func TestAccIBMResourceGroupBasic(t *testing.T) {
+	var conf string
+	resourceGroupName := fmt.Sprintf("tf-rg-%d", acctest.RandIntRange(10, 100))
+	resourceGroupUpdateName := fmt.Sprintf("tf-rg-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMResourceGroup_basic(resourceGroupName),
+			{
+				Config: testAccCheckIBMResourceGroupBasic(resourceGroupName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMResourceGroupExists("ibm_resource_group.resourceGroup", &conf),
 					resource.TestCheckResourceAttr("ibm_resource_group.resourceGroup", "name", resourceGroupName),
@@ -31,8 +28,8 @@ func TestAccIBMResourceGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_resource_group.resourceGroup", "state", "ACTIVE"),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMResourceGroup_basic(resourceGroupUpdateName),
+			{
+				Config: testAccCheckIBMResourceGroupBasic(resourceGroupUpdateName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMResourceGroupExists("ibm_resource_group.resourceGroup", &conf),
 					resource.TestCheckResourceAttr("ibm_resource_group.resourceGroup", "name", resourceGroupUpdateName),
@@ -40,7 +37,7 @@ func TestAccIBMResourceGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_resource_group.resourceGroup", "state", "ACTIVE"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_resource_group.resourceGroup",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -49,16 +46,15 @@ func TestAccIBMResourceGroup_Basic(t *testing.T) {
 	})
 }
 
-func TestAccIBMResourceGroup_With_Tags(t *testing.T) {
-	var conf models.ResourceGroupv2
-	resourceGroupName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-
+func TestAccIBMResourceGroupWithTags(t *testing.T) {
+	var conf string
+	resourceGroupName := fmt.Sprintf("tf-rg-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMResourceGroup_with_tags(resourceGroupName),
+			{
+				Config: testAccCheckIBMResourceGroupWithtags(resourceGroupName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMResourceGroupExists("ibm_resource_group.resourceGroup", &conf),
 					resource.TestCheckResourceAttr("ibm_resource_group.resourceGroup", "name", resourceGroupName),
@@ -67,8 +63,8 @@ func TestAccIBMResourceGroup_With_Tags(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_resource_group.resourceGroup", "tags.#", "1"),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMResourceGroup_with_updated_tags(resourceGroupName),
+			{
+				Config: testAccCheckIBMResourceGroupWithupdatedTags(resourceGroupName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMResourceGroupExists("ibm_resource_group.resourceGroup", &conf),
 					resource.TestCheckResourceAttr("ibm_resource_group.resourceGroup", "tags.#", "2"),
@@ -78,32 +74,38 @@ func TestAccIBMResourceGroup_With_Tags(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMResourceGroupExists(n string, obj *models.ResourceGroupv2) resource.TestCheckFunc {
-
+func testAccCheckIBMResourceGroupExists(n string, obj *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceManagementAPIv2()
+		rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceManagerV2API()
 		if err != nil {
 			return err
 		}
 		resourceGroupID := rs.Primary.ID
 
-		resourceGroup, err := rsContClient.ResourceGroup().Get(resourceGroupID)
-		if err != nil {
-			return err
+		resourceGroupGet := rg.GetResourceGroupOptions{
+			ID: &resourceGroupID,
 		}
 
-		obj = resourceGroup
+		resourceGroup, resp, err := rsContClient.GetResourceGroup(&resourceGroupGet)
+		if err != nil {
+			if resp != nil && resp.StatusCode == 404 {
+				return nil
+			}
+			return fmt.Errorf("Error retrieving resource group: %s\n Response code is: %+v", err, resp)
+		}
+
+		obj = resourceGroup.ID
 		return nil
 	}
 }
 
 func testAccCheckIBMResourceGroupDestroy(s *terraform.State) error {
-	rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceManagementAPIv2()
+	rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceManagerV2API()
 	if err != nil {
 		return err
 	}
@@ -114,21 +116,24 @@ func testAccCheckIBMResourceGroupDestroy(s *terraform.State) error {
 		}
 
 		resourceGroupID := rs.Primary.ID
+		resourceGroupGet := rg.GetResourceGroupOptions{
+			ID: &resourceGroupID,
+		}
 
-		// Try to find the key
-		_, err := rsContClient.ResourceGroup().Get(resourceGroupID)
+		_, resp, err := rsContClient.GetResourceGroup(&resourceGroupGet)
 
 		if err == nil {
+			if resp != nil && resp.StatusCode == 404 {
+				return nil
+			}
 			return fmt.Errorf("Resource group still exists: %s", rs.Primary.ID)
-		} else if !strings.Contains(err.Error(), "404") {
-			return fmt.Errorf("Error waiting for resource group (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMResourceGroup_basic(resourceGroupName string) string {
+func testAccCheckIBMResourceGroupBasic(resourceGroupName string) string {
 	return fmt.Sprintf(`
 		  
 		  resource "ibm_resource_group" "resourceGroup" {
@@ -137,7 +142,7 @@ func testAccCheckIBMResourceGroup_basic(resourceGroupName string) string {
 	`, resourceGroupName)
 }
 
-func testAccCheckIBMResourceGroup_with_tags(resourceGroupName string) string {
+func testAccCheckIBMResourceGroupWithtags(resourceGroupName string) string {
 	return fmt.Sprintf(`
 		  
 		  resource "ibm_resource_group" "resourceGroup" {
@@ -147,7 +152,7 @@ func testAccCheckIBMResourceGroup_with_tags(resourceGroupName string) string {
 	`, resourceGroupName)
 }
 
-func testAccCheckIBMResourceGroup_with_updated_tags(resourceGroupName string) string {
+func testAccCheckIBMResourceGroupWithupdatedTags(resourceGroupName string) string {
 	return fmt.Sprintf(`
 		  
 		  resource "ibm_resource_group" "resourceGroup" {
