@@ -9,7 +9,7 @@ import (
 
 	"github.com/IBM/go-sdk-core/v4/core"
 	cispagerulev1 "github.com/IBM/networking-go-sdk/pageruleapiv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (

@@ -13,7 +13,7 @@ import (
 	"time"
 
 	kp "github.com/IBM/keyprotect-go-client"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceIBMKmskey() *schema.Resource {

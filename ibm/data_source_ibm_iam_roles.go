@@ -5,7 +5,7 @@ package ibm
 
 import (
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func datasourceIBMIAMRole() *schema.Resource {
