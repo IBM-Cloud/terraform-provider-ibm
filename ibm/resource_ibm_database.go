@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -72,7 +73,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),

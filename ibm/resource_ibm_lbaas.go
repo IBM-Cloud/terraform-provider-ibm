@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -619,7 +620,7 @@ func resourceIBMLBProtocolHash(v interface{}) int {
 		buf.WriteString(fmt.Sprintf("%d-", v.(int)))
 	}
 
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }
 
 func resourceIBMLBMemberHash(v interface{}) int {
@@ -628,5 +629,5 @@ func resourceIBMLBMemberHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-",
 		m["private_ip_address"].(string)))
 
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }

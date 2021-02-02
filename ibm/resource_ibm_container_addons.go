@@ -14,6 +14,7 @@ import (
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/hashcode"
 )
 
 func resourceIBMContainerAddOns() *schema.Resource {
@@ -414,5 +415,5 @@ func resourceIBMContainerAddonsHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-", a["name"].(string)))
 	buf.WriteString(fmt.Sprintf("%s-", a["version"].(string)))
 
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }

@@ -16,6 +16,8 @@ import (
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
 	"github.com/softlayer/softlayer-go/sl"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/hashcode"
 )
 
 const (
@@ -547,7 +549,7 @@ func resourceIBMComputeAutoScalePolicyTriggerHash(v interface{}) int {
 			buf.WriteString(fmt.Sprintf("%d-", watch["period"].(int)))
 		}
 	}
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }
 
 func resourceIBMComputeAutoScalePolicyHandlerHash(v interface{}) int {
@@ -557,5 +559,5 @@ func resourceIBMComputeAutoScalePolicyHandlerHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-", watch["operator"].(string)))
 	buf.WriteString(fmt.Sprintf("%s-", watch["value"].(string)))
 	buf.WriteString(fmt.Sprintf("%d-", watch["period"].(int)))
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }
