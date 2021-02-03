@@ -14,10 +14,10 @@ import (
 	"log"
 	"testing"
 
+	"github.com/IBM-Cloud/bluemix-go/api/functions"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.ibm.com/ibmcloud/namespace-go-sdk/ibmcloudfunctionsnamespaceapiv1"
 )
 
 func TestAccFunctionNamespace_Basic(t *testing.T) {
@@ -96,18 +96,17 @@ func testAccCheckFunctionNamespaceExists(n string, instance string) resource.Tes
 
 		ID := rs.Primary.ID
 
-		nsClient, err := testAccProvider.Meta().(ClientSession).IAMNamespaceAPI()
+		nsClient, err := testAccProvider.Meta().(ClientSession).FunctionIAMNamespaceAPI()
 		if err != nil {
 			return err
 		}
 
-		getOptions := &ibmcloudfunctionsnamespaceapiv1.GetNamespaceOptions{
+		getOptions := functions.GetNamespaceOptions{
 			ID: &ID,
-			//Headers: headers,
 		}
-		instance1, _, err := nsClient.GetNamespace(getOptions)
+		instance1, err := nsClient.Namespaces().GetNamespace(getOptions)
 		if err != nil {
-			return fmt.Errorf("Error Getting Namesapce (IAM): %s\n", err)
+			return fmt.Errorf("Error Getting Namesapce (IAM): %s", err)
 		}
 
 		instance = *instance1.ID
@@ -116,7 +115,7 @@ func testAccCheckFunctionNamespaceExists(n string, instance string) resource.Tes
 }
 
 func testAccCheckFunctionNamespaceDestroy(s *terraform.State) error {
-	nsClient, err := testAccProvider.Meta().(ClientSession).IAMNamespaceAPI()
+	nsClient, err := testAccProvider.Meta().(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -127,20 +126,16 @@ func testAccCheckFunctionNamespaceDestroy(s *terraform.State) error {
 		}
 
 		ID := rs.Primary.ID
-
-		delOptions := &ibmcloudfunctionsnamespaceapiv1.DeleteNamespaceOptions{
-			ID: &ID,
-		}
-		response, err := nsClient.DeleteNamespace(delOptions)
-		if err != nil && response.StatusCode != 404 {
-			log.Printf("Error deleting namespace (IAM): %s", response)
+		_, err := nsClient.Namespaces().DeleteNamespace(ID)
+		if err != nil {
+			log.Printf("Error deleting namespace (IAM): %s", err)
 			return err
 		}
 
-		getOptions := &ibmcloudfunctionsnamespaceapiv1.GetNamespaceOptions{
+		getOptions := functions.GetNamespaceOptions{
 			ID: &ID,
 		}
-		_, _, err = nsClient.GetNamespace(getOptions)
+		_, err = nsClient.Namespaces().GetNamespace(getOptions)
 		if err == nil {
 			return fmt.Errorf("Namespace still exists: %s", rs.Primary.ID)
 		}
