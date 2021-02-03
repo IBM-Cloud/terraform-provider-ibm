@@ -18,6 +18,11 @@ func dataSourceIBMIAMUserPolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"sort": {
+				Description: "Sort query for policies",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"policies": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -99,11 +104,21 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	policies, err := iampapClient.V1Policy().List(iampapv1.SearchParams{
+	query := iampapv1.SearchParams{
 		AccountID: accountID,
-		IAMID:     ibmUniqueID,
-		Type:      iampapv1.AccessPolicyType,
-	})
+		Type:      ibmUniqueID,
+		IAMID:     iampapv1.AccessPolicyType,
+	}
+
+	if v, ok := d.GetOk("sort"); ok {
+		query.Sort = v.(string)
+	}
+
+	policies, err := iampapClient.V1Policy().List(query)
+	if err != nil {
+		return err
+	}
+
 	if err != nil {
 		return err
 	}
