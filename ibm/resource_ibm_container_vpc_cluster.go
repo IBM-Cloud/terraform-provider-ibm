@@ -959,7 +959,7 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 			if err1 != nil {
 				log.Printf("Error Retrieving vpc load balancers: %s\n%s", err, response)
 			}
-			if len(lbs.LoadBalancers) > 0 {
+			if lbs != nil && lbs.LoadBalancers != nil && len(lbs.LoadBalancers) > 0 {
 				for _, lb := range lbs.LoadBalancers {
 					if strings.Contains(*lb.Name, clusterID) {
 						log.Println("Deleting Load Balancer", *lb.Name)
@@ -987,7 +987,7 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 			if err1 != nil {
 				log.Printf("Error Retrieving vpc load balancers: %s\n%s", err, response)
 			}
-			if len(lbs.LoadBalancers) > 0 {
+			if lbs != nil && lbs.LoadBalancers != nil && len(lbs.LoadBalancers) > 0 {
 				for _, lb := range lbs.LoadBalancers {
 					if strings.Contains(*lb.Name, clusterID) {
 						log.Println("Deleting Load Balancer", *lb.Name)

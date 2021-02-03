@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20210125055453-344c1ff77d84
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20210203095940-db28d5e07b55
 	github.com/IBM-Cloud/power-go-client v1.0.55
 	github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
 	github.com/IBM/go-sdk-core v1.1.0
@@ -25,9 +25,7 @@ require (
 	github.com/dchest/safefile v0.0.0-20151022103144-855e8d98f185 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-openapi/runtime v0.19.15 // indirect
-	github.com/go-openapi/swag v0.19.9 // indirect
-	github.com/go-openapi/validate v0.19.8 // indirect
+	github.com/go-openapi/validate v0.20.1 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/uuid v1.1.1
@@ -46,7 +44,6 @@ require (
 	github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22
 	github.ibm.com/ibmcloud/namespace-go-sdk v0.0.0-00010101000000-000000000000
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
-	golang.org/x/sys v0.0.0-20210105210732-16f7687f5001 // indirect
 	golang.org/x/tools v0.0.0-20210107193943-4ed967dd8eff // indirect
 	gotest.tools v2.2.0+incompatible
 )
