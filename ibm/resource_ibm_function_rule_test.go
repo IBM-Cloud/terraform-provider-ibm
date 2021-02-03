@@ -184,7 +184,7 @@ func testAccCheckFunctionRuleExists(n string, obj *whisk.Rule) resource.TestChec
 		namespace := parts[0]
 		name := parts[1]
 
-		client, err := testAccProvider.Meta().(ClientSession).FunctionClient()
+		functionNamespaceAPI, err := testAccProvider.Meta().(ClientSession).FunctionIAMNamespaceAPI()
 		if err != nil {
 			return err
 		}
@@ -193,13 +193,14 @@ func testAccCheckFunctionRuleExists(n string, obj *whisk.Rule) resource.TestChec
 		if err != nil {
 			return err
 		}
-		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
+
+		wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 		if err != nil {
 			return err
 
 		}
 
-		rule, _, err := client.Rules.Get(name)
+		rule, _, err := wskClient.Rules.Get(name)
 		if err != nil {
 			return err
 		}
@@ -210,7 +211,7 @@ func testAccCheckFunctionRuleExists(n string, obj *whisk.Rule) resource.TestChec
 }
 
 func testAccCheckFunctionRuleDestroy(s *terraform.State) error {
-	client, err := testAccProvider.Meta().(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := testAccProvider.Meta().(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -232,7 +233,7 @@ func testAccCheckFunctionRuleDestroy(s *terraform.State) error {
 		namespace := parts[0]
 		name := parts[1]
 
-		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
+		client, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 		if err != nil && strings.Contains(err.Error(), "is not in the list of entitled namespaces") {
 			return nil
 		}

@@ -59,7 +59,6 @@ import (
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/dgrijalva/jwt-go"
 	slsession "github.com/softlayer/softlayer-go/session"
-	ns "github.ibm.com/ibmcloud/namespace-go-sdk/ibmcloudfunctionsnamespaceapiv1"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
@@ -69,6 +68,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	registryv1 "github.com/IBM-Cloud/bluemix-go/api/container/registryv1"
+	"github.com/IBM-Cloud/bluemix-go/api/functions"
 	"github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/hpcs"
@@ -219,7 +219,7 @@ type ClientSession interface {
 	DirectlinkProviderV2API() (*dlProviderV2.DirectLinkProviderV2, error)
 	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
 	HpcsEndpointAPI() (hpcs.HPCSV2, error)
-	IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1, error)
+	FunctionIAMNamespaceAPI() (functions.FunctionServiceAPI, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
 	CisDNSRecordBulkClientSession() (*cisdnsbulkv1.DnsRecordBulkV1, error)
@@ -362,8 +362,8 @@ type clientSession struct {
 	transitgatewayAPI *tg.TransitGatewayApisV1
 	transitgatewayErr error
 
-	iamNamespaceAPI *ns.IbmCloudFunctionsNamespaceAPIV1
-	iamNamespaceErr error
+	functionIAMNamespaceAPI functions.FunctionServiceAPI
+	functionIAMNamespaceErr error
 
 	// CIS Zones
 	cisZonesErr      error
@@ -649,8 +649,8 @@ func (sess clientSession) PrivateDNSClientSession() (*dns.DnsSvcsV1, error) {
 
 // Session to the Namespace cloud function
 
-func (sess clientSession) IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1, error) {
-	return sess.iamNamespaceAPI, sess.iamNamespaceErr
+func (sess clientSession) FunctionIAMNamespaceAPI() (functions.FunctionServiceAPI, error) {
+	return sess.functionIAMNamespaceAPI, sess.functionIAMNamespaceErr
 }
 
 // CIS Zones Service
@@ -892,7 +892,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.dlProviderErr = errEmptyBluemixCredentials
 		session.cosConfigErr = errEmptyBluemixCredentials
 		session.transitgatewayErr = errEmptyBluemixCredentials
-		session.iamNamespaceErr = errEmptyBluemixCredentials
+		session.functionIAMNamespaceErr = errEmptyBluemixCredentials
 		session.cisDNSErr = errEmptyBluemixCredentials
 		session.cisDNSBulkErr = errEmptyBluemixCredentials
 		session.cisGLBPoolErr = errEmptyBluemixCredentials
@@ -1201,6 +1201,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.certManagementAPI = certManagementAPI
 
+	namespaceFunction, err := functions.New(sess.BluemixSession)
+	if err != nil {
+		session.functionIAMNamespaceErr = fmt.Errorf("Error occured while configuring Cloud Funciton Service : %q", err)
+	}
+	session.functionIAMNamespaceAPI = namespaceFunction
+
 	apicurl := fmt.Sprintf("https://api.%s.apigw.cloud.ibm.com/controller", c.Region)
 	APIGatewayControllerAPIV1Options := &apigateway.ApiGatewayControllerApiV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_API_GATEWAY_ENDPOINT"}, apicurl),
@@ -1262,17 +1268,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.transitgatewayAPI, session.transitgatewayErr = tg.NewTransitGatewayApisV1(transitgatewayOptions)
 	if session.transitgatewayErr != nil {
 		session.transitgatewayErr = fmt.Errorf("Error occured while configuring Transit Gateway Service: %s", session.transitgatewayErr)
-	}
-
-	cfcurl := fmt.Sprintf("https://%s.functions.cloud.ibm.com/api/v1", c.Region)
-	ibmCloudFunctionsNamespaceOptions := &ns.IbmCloudFunctionsNamespaceOptions{
-		URL:           envFallBack([]string{"IBMCLOUD_NAMESPACE_API_ENDPOINT"}, cfcurl),
-		Authenticator: authenticator,
-	}
-
-	session.iamNamespaceAPI, err = ns.NewIbmCloudFunctionsNamespaceAPIV1(ibmCloudFunctionsNamespaceOptions)
-	if err != nil {
-		session.iamNamespaceErr = fmt.Errorf("Error occured while configuring IAM namespace service: %q", err)
 	}
 
 	// CIS Service instances starts here.

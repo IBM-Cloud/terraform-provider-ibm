@@ -12,8 +12,8 @@ package ibm
 import (
 	"fmt"
 
+	"github.com/IBM-Cloud/bluemix-go/api/functions"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/namespace-go-sdk/ibmcloudfunctionsnamespaceapiv1"
 )
 
 func dataSourceIBMFunctionNamespace() *schema.Resource {
@@ -46,30 +46,26 @@ func dataSourceIBMFunctionNamespace() *schema.Resource {
 }
 
 func dataSourceIBMFunctionNamespaceRead(d *schema.ResourceData, meta interface{}) error {
-	nsClient, err := meta.(ClientSession).IAMNamespaceAPI()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
 
-	namespaceOptions := &ibmcloudfunctionsnamespaceapiv1.GetNamespacesOptions{}
-	nsList, _, err := nsClient.GetNamespaces(namespaceOptions)
-	if err != nil {
-		return nil
-	}
-
 	name := d.Get("name").(string)
+	nsList, err := functionNamespaceAPI.Namespaces().GetNamespaces()
+	if err != nil {
+		return err
+	}
 	for _, n := range nsList.Namespaces {
 		if n.Name != nil && *n.Name == name {
-			getOptions := &ibmcloudfunctionsnamespaceapiv1.GetNamespaceOptions{
+			getOptions := functions.GetNamespaceOptions{
 				ID: n.ID,
 			}
 
-			instance, response, err := nsClient.GetNamespace(getOptions)
+			instance, err := functionNamespaceAPI.Namespaces().GetNamespace(getOptions)
 			if err != nil {
-				if response != nil && response.StatusCode == 404 {
-					d.SetId("")
-					return nil
-				}
+				d.SetId("")
+				return nil
 			}
 
 			if instance.ID != nil {
