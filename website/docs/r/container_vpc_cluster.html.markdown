@@ -45,13 +45,11 @@ resource "ibm_container_vpc_cluster" "cluster" {
   kube_version      = "1.17.5"
   flavor            = "bx2.2x8"
   worker_count      = "1"
-  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-  zones = [
-    {
+  resource_group_id = data.ibm_resource_group.resource_group.id
+  zones {
       subnet_id = "0717-0c0899ce-48ac-4eb6-892d-4e2e1ff8c9478"
       name      = "us-south-1"
     }
-  ]
 }
 ```
 
@@ -76,13 +74,11 @@ resource "ibm_container_vpc_cluster" "cluster" {
   worker_count      = "2"
   entitlement       = "cloud_pak"
   cos_instance_crn  = ibm_resource_instance.cos_instance.id
-  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-  zones = [
-    {
+  resource_group_id = data.ibm_resource_group.resource_group.id
+  zones {
       subnet_id = "0717-0c0899ce-48ac-4eb6-892d-4e2e1ff8c9478"
       name      = "us-south-1"
     }
-  ]
 }
 ```
 
@@ -91,13 +87,13 @@ Create a Kms Enabled Kubernetes cluster:
 ```hcl
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = "cluster2"
-  vpc_id            = "${ibm_is_vpc.vpc1.id}"
+  vpc_id            = ibm_is_vpc.vpc1.id
   flavor            = "bx2.2x8"
   worker_count      = "1"
   wait_till         = "OneWorkerNodeReady"
-  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+  resource_group_id = data.ibm_resource_group.resource_group.id
   zones {
-    subnet_id = "${ibm_is_subnet.subnet1.id}"
+    subnet_id = ibm_is_subnet.subnet1.id
     name      = "us-south-1"
   }
 
