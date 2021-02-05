@@ -170,6 +170,13 @@ The following arguments are supported:
     (b) If you want to connect your worker nodes to a private VLAN only, do not specify this option.
 * `pod_subnet` - (Optional, Forces new resource,String) Specify a custom subnet CIDR to provide private IP addresses for pods. The subnet must be at least '/23' or larger. For more info, refer [here](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#pod-subnet).
 * `service_subnet` - (Optional, Forces new resource,String) Specify a custom subnet CIDR to provide private IP addresses for services. The subnet must be at least '/24' or larger. For more info, refer [here](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#service-subnet).
+* `wait_till` - (Optional, String) The cluster creation happens in multi-stages. To avoid the longer wait times for resource execution, this field is introduced.
+Resource will wait for only the specified stage and complete execution. The supported stages are
+  - *MasterNodeReady*: resource will wait till the master node is ready
+  - *OneWorkerNodeReady*: resource will wait till atleast one worker node becomes to ready state
+  - *IngressReady*: resource will wait till the ingress-host and ingress-secret are available.
+
+  Default value: IngressReady
 * `private_vlan_id` - (Optional, Forces new resource, string) The private VLAN of the worker node. You can retrieve the value by running the ibmcloud ks vlans <data-center> command in the IBM Cloud CLI.
   * Free clusters: You must not specify any private VLAN. Your free cluster is automatically connected to a private VLAN that is owned by IBM.
   * Standard clusters:<br/>
