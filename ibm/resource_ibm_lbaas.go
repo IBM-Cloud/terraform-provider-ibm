@@ -145,8 +145,8 @@ func resourceIBMLbaas() *schema.Resource {
 						"session_stickiness": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							Description:  "Session stickness. Valid values is SOURCE_IP",
-							ValidateFunc: validateAllowedStringValue([]string{"SOURCE_IP"}),
+							Description:  "Session stickness. Valid values is SOURCE_IP and HTTP_COOKIE",
+							ValidateFunc: validateAllowedStringValue([]string{"SOURCE_IP", "HTTP_COOKIE"}),
 						},
 						"max_conn": {
 							Type:         schema.TypeInt,
