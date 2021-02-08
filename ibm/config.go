@@ -1003,8 +1003,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.kmsAPI = kmsAPIclient
 
-	var authenticator *core.BearerTokenAuthenticator
-	if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
+	var authenticator core.Authenticator
+	if c.BluemixAPIKey != "" {
+		authenticator = &core.IamAuthenticator{
+			ApiKey: c.BluemixAPIKey,
+			URL:    envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, "https://iam.cloud.ibm.com") + "/identity/token",
+		}
+	} else if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
 		authenticator = &core.BearerTokenAuthenticator{
 			BearerToken: sess.BluemixSession.Config.IAMAccessToken[7:],
 		}
