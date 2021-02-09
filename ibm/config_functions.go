@@ -18,7 +18,10 @@ const DefaultServiceURL = "https://us-south.functions.cloud.ibm.com"
 //FunctionClient ...
 func FunctionClient(c *bluemix.Config) (*whisk.Client, error) {
 	baseEndpoint := getBaseURL(c.Region)
-	u, _ := url.Parse(fmt.Sprintf("%s/api", baseEndpoint))
+	u, err := url.Parse(fmt.Sprintf("%s/api", baseEndpoint))
+	if err != nil {
+		return nil, err
+	}
 
 	functionsClient, err := whisk.NewClient(http.DefaultClient, &whisk.Config{
 		Host:    u.Host,
