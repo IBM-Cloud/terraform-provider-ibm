@@ -946,7 +946,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 
 	}
-	userConfig, err := fetchUserDetails(sess.BluemixSession, c.Generation)
+	userConfig, err := fetchUserDetails(sess.BluemixSession, c.Generation, c.RetryCount)
 	if err != nil {
 		session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
 	}
@@ -1692,7 +1692,7 @@ func authenticateCF(sess *bxsession.Session) error {
 	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
 }
 
-func fetchUserDetails(sess *bxsession.Session, generation int) (*UserConfig, error) {
+func fetchUserDetails(sess *bxsession.Session, generation, retries int) (*UserConfig, error) {
 	config := sess.Config
 	user := UserConfig{}
 	var bluemixToken string
@@ -1708,6 +1708,12 @@ func fetchUserDetails(sess *bxsession.Session, generation int) (*UserConfig, err
 	})
 	//TODO validate with key
 	if err != nil && !strings.Contains(err.Error(), "key is of invalid type") {
+		if retries > 0 {
+			if config.BluemixAPIKey != "" {
+				_ = authenticateAPIKey(sess)
+				return fetchUserDetails(sess, generation, retries-1)
+			}
+		}
 		return &user, err
 	}
 	claims := token.Claims.(jwt.MapClaims)
