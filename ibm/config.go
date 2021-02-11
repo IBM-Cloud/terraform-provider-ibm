@@ -1065,6 +1065,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if err != nil {
 		session.vpcErr = fmt.Errorf("Error occured while configuring vpc service: %q", err)
 	}
+	if vpcclient != nil && vpcclient.Service != nil {
+		vpcclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 	session.vpcAPI = vpcclient
 
 	//cosconfigurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
