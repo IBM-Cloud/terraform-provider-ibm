@@ -140,7 +140,7 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 						isLBListenerPolicyRuleType: {
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: InvokeValidator("ibm_is_lb_listener_policy_rule", isLBListenerPolicyRulecondition),
+							ValidateFunc: InvokeValidator("ibm_is_lb_listener_policy_rule", isLBListenerPolicyRuleType),
 							Description:  "Type of the rule",
 						},
 
