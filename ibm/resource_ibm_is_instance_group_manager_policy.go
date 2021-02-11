@@ -126,7 +126,7 @@ func resourceIBMISInstanceGroupManagerPolicyCreate(d *schema.ResourceData, meta 
 		InstanceGroupManagerPolicyPrototype: &instanceGroupManagerPolicyPrototype,
 	}
 	data, response, err := sess.CreateInstanceGroupManagerPolicy(&createInstanceGroupManagerPolicyOptions)
-	if err != nil {
+	if err != nil || data == nil {
 		return fmt.Errorf("Error Creating InstanceGroup Manager Policy: %s\n%s", err, response)
 	}
 	instanceGroupManagerPolicy := data.(*vpcv1.InstanceGroupManagerPolicy)
@@ -205,7 +205,7 @@ func resourceIBMISInstanceGroupManagerPolicyRead(d *schema.ResourceData, meta in
 		InstanceGroupManagerID: &instanceGroupManagerID,
 	}
 	data, response, err := sess.GetInstanceGroupManagerPolicy(&getInstanceGroupManagerPolicyOptions)
-	if err != nil {
+	if err != nil || data == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
