@@ -1,3 +1,37 @@
+## 1.21.0 (Feb12, 2021)
+
+FEATURES:
+
+* Support datasource for VPC volume profiles `ibm_is_volume_profile`, `ibm_is_volume_profiles`
+
+* Support datasource to list power instance catalog images `ibm_pi_catalog_images`
+
+ENHANCEMENTS
+
+* Support `lunid` attribute for block classic block storage ([#1491]https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1491)
+
+* Support `HTTP_COOKIE` session_affinity for lbass ([#2218](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2218)) 
+
+* Support `auto_delete_volume` argument to delete data volumes of VPC instance [#646](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/646)) 
+
+* Support `wait_till` argument for ibm_containar_cluster to control the behaviour of waiting for cluster ([#2232]https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2232)
+
+* Enable retries on authnetication failures ([#2248]https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2248)
+
+
+BUGFIXES
+
+* Fix the nil pointer exception on lbs of vpc_cluster destroy ([#2226](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/22276)) 
+
+* Fix the nil pointer exception on is_instance_group ([#2247](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2247)) 
+
+* Fix the nil pointer on iam_service_api_key ([#2259](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2259)) 
+
+* Fix the validation for LB listener policy rule ([#2257](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2257)) 
+
+* Fix the patch_version update for kubernetes clusters ([#2217](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2217)
+
+
 ## 1.20.1 (Jan27, 2021)
 
 BUGFIXES
