@@ -6,14 +6,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
-	"github.com/IBM-Cloud/bluemix-go/utils"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/crn"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/IBM-Cloud/bluemix-go/utils"
 )
 
 func resourceIBMResourceKey() *schema.Resource {
@@ -39,11 +39,10 @@ func resourceIBMResourceKey() *schema.Resource {
 			},
 
 			"role": {
-				Type:     schema.TypeString,
-				Required: true,
-				// ForceNew:    true,
-				DiffSuppressFunc: applyOnce,
-				Description:      "Name of the user role.Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor and Custom Roles.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Name of the user role.Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor and Custom Roles.",
 				// ValidateFunc: validateRole,
 			},
 
@@ -64,12 +63,10 @@ func resourceIBMResourceKey() *schema.Resource {
 			},
 
 			"parameters": {
-				Type:             schema.TypeMap,
-				Optional:         true,
-				Computed:         true,
-				DiffSuppressFunc: applyOnce,
-				ForceNew:         true,
-				Description:      "Arbitrary parameters to pass. Must be a JSON object",
+				Type:        schema.TypeMap,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Arbitrary parameters to pass. Must be a JSON object",
 			},
 
 			"credentials": {
@@ -197,13 +194,32 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("credentials", Flatten(resourceKey.Credentials))
 	d.Set("name", resourceKey.Name)
 	d.Set("status", resourceKey.State)
-	if roleCrn, ok := resourceKey.Parameters["role_crn"].(string); ok {
-		d.Set("role", roleCrn[strings.LastIndex(roleCrn, ":")+1:])
-	} else if roleCrn, ok := resourceKey.Credentials["iam_role_crn"].(string); ok {
-		d.Set("role", roleCrn[strings.LastIndex(roleCrn, ":")+1:])
+	if roleCrn, ok := resourceKey.Credentials["iam_role_crn"].(string); ok {
+
+		roleName := roleCrn[strings.LastIndex(roleCrn, ":")+1:]
+
+		if strings.Contains(roleCrn, ":customRole:") {
+			iampapv2Client, err := meta.(ClientSession).IAMPAPAPIV2()
+			if err == nil {
+				resourceCRN := resourceKey.Crn.ServiceName
+				roles, err := iampapv2Client.IAMRoles().ListCustomRoles(resourceKey.AccountID, resourceCRN)
+				if err == nil && len(roles) > 0 {
+					for _, role := range roles {
+						if role.Name == roleName {
+							customRoleName := role.DisplayName
+							d.Set("role", customRoleName)
+						}
+					}
+				}
+			}
+		} else {
+			d.Set("role", roleName)
+		}
+	}
+	if instanceID, ok := resourceKey.Credentials["resource_instance_id"]; ok {
+		d.Set("resource_instance_id", instanceID.(string))
 	}
 
-	d.Set("parameters", filterResourceKeyParameters(resourceKey.Parameters))
 	d.Set("crn", (resourceKey.Crn).String())
 
 	return nil
@@ -237,7 +253,7 @@ func resourceIBMResourceKeyExists(d *schema.ResourceData, meta interface{}) (boo
 	resourceKey, err := rsContClient.ResourceServiceKey().GetKey(resourceKeyID)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
+			if apiErr.StatusCode() == 404 || apiErr.StatusCode() == 410 {
 				return false, nil
 			}
 		}
