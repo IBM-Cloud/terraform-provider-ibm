@@ -24,7 +24,6 @@ data "ibm_iam_service_id" "ds_serviceID" {
 The following arguments are supported:
 
 * `name` - (Required, string) Name of the serviceID.
-* `sort` - (Optional, string) Single field sort query for policies.
 
 ## Attribute Reference
 
