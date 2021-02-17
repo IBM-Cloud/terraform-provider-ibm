@@ -194,7 +194,7 @@ func resourceIBMISInstanceGroupManagerCreate(d *schema.ResourceData, meta interf
 		InstanceGroupManagerPrototype: &instanceGroupManagerPrototype,
 	}
 	instanceGroupManager, response, err := sess.CreateInstanceGroupManager(&createInstanceGroupManagerOptions)
-	if err != nil {
+	if err != nil || instanceGroupManager == nil {
 		return fmt.Errorf("Error creating InstanceGroup manager: %s\n%s", err, response)
 	}
 	d.SetId(fmt.Sprintf("%s/%s", instanceGroupID, *instanceGroupManager.ID))
@@ -289,7 +289,7 @@ func resourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interfac
 		InstanceGroupID: &instanceGroupID,
 	}
 	instanceGroupManager, response, err := sess.GetInstanceGroupManager(&getInstanceGroupManagerOptions)
-	if err != nil {
+	if err != nil || instanceGroupManager == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
