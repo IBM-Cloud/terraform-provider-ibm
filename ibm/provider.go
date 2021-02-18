@@ -515,8 +515,9 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dl_virtual_connection": resourceIBMDLGatewayVC(),
 			"ibm_dl_provider_gateway":   resourceIBMDLProviderGateway(),
 			//Added for Transit Gateway
-			"ibm_tg_gateway":    resourceIBMTransitGateway(),
-			"ibm_tg_connection": resourceIBMTransitGatewayConnection(),
+			"ibm_tg_gateway":           resourceIBMTransitGateway(),
+			"ibm_tg_connection":        resourceIBMTransitGatewayConnection(),
+			"ibm_cm_offering_instance": resourceIBMCmOfferingInstance(),
 		},
 
 		ConfigureFunc: providerConfigure,
