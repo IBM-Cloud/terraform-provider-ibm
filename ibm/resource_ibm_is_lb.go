@@ -135,6 +135,7 @@ func resourceIBMISLB() *schema.Resource {
 			isLBLogging: {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     false,
 				Description: "Logging of Load Balancer",
 			},
 
