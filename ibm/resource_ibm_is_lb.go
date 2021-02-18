@@ -524,7 +524,7 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	id := d.Id()
-
+	isLogging := d.Get(isLBLogging).(bool)
 	name := ""
 	hasChanged := false
 
@@ -538,7 +538,7 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	} else {
-		err := lbUpdate(d, meta, id, name, hasChanged)
+		err := lbUpdate(d, meta, id, name, hasChanged, isLogging)
 		if err != nil {
 			return err
 		}
@@ -588,7 +588,7 @@ func classicLBUpdate(d *schema.ResourceData, meta interface{}, id, name string, 
 	return nil
 }
 
-func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool, isLogging bool) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -613,8 +613,15 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 			ID: &id,
 		}
 
+		dataPath := &vpcv1.LoadBalancerLoggingDatapath{
+			Active: &isLogging,
+		}
+		loadBalancerLogging := &vpcv1.LoadBalancerLogging{
+			Datapath: dataPath,
+		}
 		loadBalancerPatchModel := &vpcv1.LoadBalancerPatch{
-			Name: &name,
+			Name:    &name,
+			Logging: loadBalancerLogging,
 		}
 		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
 		if err != nil {
