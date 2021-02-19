@@ -1068,8 +1068,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct an "options" struct for creating the service client.
+	catalogManagementURL := "https://cm.globalcatalog.cloud.ibm.com/api/v1-beta"
 	catalogManagementClientOptions := &catalogmanagementv1.CatalogManagementV1Options{
-		URL:           "https://dev-cm.globalcatalog.test.cloud.ibm.com/api/v1-beta",
+		URL:           envFallBack([]string{"IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT"}, catalogManagementURL),
 		Authenticator: authenticator,
 	}
 
