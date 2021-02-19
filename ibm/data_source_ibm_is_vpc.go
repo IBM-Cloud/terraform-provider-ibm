@@ -25,6 +25,12 @@ func dataSourceIBMISVPC() *schema.Resource {
 				Computed: true,
 			},
 
+			isVPCDefaultRoutingTable: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default routing table associated with VPC",
+			},
+
 			isVPCName: {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -516,6 +522,9 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID)
 			} else {
 				d.Set(isVPCDefaultNetworkACL, nil)
+			}
+			if vpc.DefaultRoutingTable != nil {
+				d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID)
 			}
 			if vpc.DefaultSecurityGroup != nil {
 				d.Set(isVPCIDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
