@@ -220,6 +220,14 @@ func dataSourceIBMISInstanceTemplates() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
+									isInstanceTemplateBootSize: {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									isInstanceTemplateBootProfile: {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
 								},
 							},
 						},
@@ -343,7 +351,7 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 				volumeAttach[isInstanceTemplateVolAttName] = *volume.Name
 				volumeAttach[isInstanceTemplateDeleteVolume] = *volume.DeleteVolumeOnInstanceDelete
 				volumeIntf := volume.Volume
-				volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext)
+				volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentVolumePrototypeInstanceContext)
 				volumeAttach[isInstanceTemplateVolAttVolume] = volumeInst.Name
 				interfacesList = append(interfacesList, volumeAttach)
 			}
@@ -357,6 +365,10 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			bootVol[isInstanceTemplatesDeleteVol] = *instance.BootVolumeAttachment.DeleteVolumeOnInstanceDelete
 			volumeIntf := instance.BootVolumeAttachment.Volume
 			bootVol[isInstanceTemplatesVol] = volumeIntf.Name
+			bootVol[isInstanceTemplateBootSize] = volumeIntf.Capacity
+			volProfIntf := instance.BootVolumeAttachment.Volume.Profile
+			volProfInst := volProfIntf.(*vpcv1.VolumeProfileIdentity)
+			bootVol[isInstanceTemplateBootProfile] = volProfInst.Name
 			bootVolList = append(bootVolList, bootVol)
 			template[isInstanceTemplatesBootVolumeAttachment] = bootVolList
 		}
