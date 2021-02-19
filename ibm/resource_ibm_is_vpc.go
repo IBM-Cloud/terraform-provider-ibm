@@ -28,6 +28,7 @@ import (
 const (
 	isVPCDefaultNetworkACL          = "default_network_acl"
 	isVPCIDefaultSecurityGroup      = "default_security_group"
+	isVPCDefaultRoutingTable        = "default_routing_table"
 	isVPCName                       = "name"
 	isVPCResourceGroup              = "resource_group"
 	isVPCStatus                     = "status"
@@ -96,6 +97,12 @@ func resourceIBMISVPC() *schema.Resource {
 				Computed:    true,
 				Deprecated:  "This field is deprecated",
 				Description: "Default network ACL",
+			},
+
+			isVPCDefaultRoutingTable: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default routing table associated with VPC",
 			},
 
 			isVPCClassicAccess: {
@@ -804,6 +811,9 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isVPCIDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
 	} else {
 		d.Set(isVPCIDefaultSecurityGroup, nil)
+	}
+	if vpc.DefaultRoutingTable != nil {
+		d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID)
 	}
 	tags, err := GetTagsUsingCRN(meta, *vpc.CRN)
 	if err != nil {
