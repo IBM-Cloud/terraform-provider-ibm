@@ -34,6 +34,7 @@ data "ibm_iam_user_policy" "testacc_ds_user_policy" {
 The following arguments are supported:
 
 * `ibm_id` - (Required, string) The ibm id or email of user.
+* `sort` - (Optional, string) Single field sort query for policies.
 
 ## Attribute Reference
 

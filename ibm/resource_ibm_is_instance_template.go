@@ -1,3 +1,12 @@
+/* IBM Confidential
+*  Object Code Only Source Materials
+*  5747-SM3
+*  (c) Copyright IBM Corp. 2017,2021
+*
+*  The source code for this program is not published or otherwise divested
+*  of its trade secrets, irrespective of what has been deposited with the
+*  U.S. Copyright Office. */
+
 package ibm
 
 import (
@@ -224,17 +233,10 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 						},
 						isInstanceTemplateBootSize: {
 							Type:     schema.TypeInt,
-							Optional: true,
-							Computed: true,
-						},
-						isInstanceTemplateBootIOPS: {
-							Type:     schema.TypeInt,
-							Optional: true,
 							Computed: true,
 						},
 						isInstanceTemplateBootProfile: {
 							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
 						},
 						isInstanceTemplateVolumeDeleteOnInstanceDelete: {
@@ -341,24 +343,12 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			volTemplate.Name = &namestr
 		}
 
-		if volcap, ok := bootvol[isInstanceTemplateBootSize]; ok {
-			if volcapint64 := int64(volcap.(int)); volcapint64 != 0 {
-				volTemplate.Capacity = &volcapint64
-			}
-		}
-
-		if volprof, ok := bootvol[isInstanceTemplateBootProfile]; ok {
-			if volumeProfile := volprof.(string); volumeProfile != "" {
-				volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
-					Name: &volumeProfile,
-				}
-			}
-		}
-
-		if iops, ok := bootvol[isInstanceTemplateBootIOPS]; ok {
-			if bootVolIOPS := int64(iops.(int)); bootVolIOPS != 0 {
-				volTemplate.Iops = &bootVolIOPS
-			}
+		volcap := 100
+		volcapint64 := int64(volcap)
+		volprof := "general-purpose"
+		volTemplate.Capacity = &volcapint64
+		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
+			Name: &volprof,
 		}
 
 		if encryption, ok := bootvol[isInstanceTemplateBootEncryption]; ok {
@@ -649,6 +639,12 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 		bootVol[isInstanceTemplateBootName] = *instance.BootVolumeAttachment.Name
 		bootVol[isInstanceTemplateVolAttVolume] = *instance.BootVolumeAttachment.Volume
 		bootVol[isInstanceTemplateDeleteVolume] = *instance.BootVolumeAttachment.DeleteVolumeOnInstanceDelete
+		volumeIntf := instance.BootVolumeAttachment.Volume
+		bootVol[isInstanceTemplatesVol] = volumeIntf.Name
+		bootVol[isInstanceTemplateBootSize] = volumeIntf.Capacity
+		volProfIntf := instance.BootVolumeAttachment.Volume.Profile
+		volProfInst := volProfIntf.(*vpcv1.VolumeProfileIdentity)
+		bootVol[isInstanceTemplateBootProfile] = volProfInst.Name
 		bootVolList = append(bootVolList, bootVol)
 		d.Set(isInstanceTemplateBootVolume, bootVolList)
 	}

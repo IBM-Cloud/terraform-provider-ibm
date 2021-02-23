@@ -1,3 +1,12 @@
+/* IBM Confidential
+*  Object Code Only Source Materials
+*  5747-SM3
+*  (c) Copyright IBM Corp. 2017,2021
+*
+*  The source code for this program is not published or otherwise divested
+*  of its trade secrets, irrespective of what has been deposited with the
+*  U.S. Copyright Office. */
+
 package ibm
 
 import (
@@ -115,6 +124,7 @@ resource "ibm_iam_service_policy" "policy1" {
 
 data "ibm_iam_service_policy" "testacc_ds_service_policy" {
   iam_service_id = ibm_iam_service_policy.policy.iam_service_id
+  sort = "id"
 }`, name, name)
 
 }

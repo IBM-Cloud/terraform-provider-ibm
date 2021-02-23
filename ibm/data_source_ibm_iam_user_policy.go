@@ -1,3 +1,12 @@
+/* IBM Confidential
+*  Object Code Only Source Materials
+*  5747-SM3
+*  (c) Copyright IBM Corp. 2017,2021
+*
+*  The source code for this program is not published or otherwise divested
+*  of its trade secrets, irrespective of what has been deposited with the
+*  U.S. Copyright Office. */
+
 package ibm
 
 import (
@@ -17,6 +26,11 @@ func dataSourceIBMIAMUserPolicy() *schema.Resource {
 				Description: "The ibm id or email of user",
 				Type:        schema.TypeString,
 				Required:    true,
+			},
+			"sort": {
+				Description: "Sort query for policies",
+				Type:        schema.TypeString,
+				Optional:    true,
 			},
 			"policies": {
 				Type:     schema.TypeList,
@@ -99,11 +113,21 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	policies, err := iampapClient.V1Policy().List(iampapv1.SearchParams{
+	query := iampapv1.SearchParams{
 		AccountID: accountID,
-		IAMID:     ibmUniqueID,
-		Type:      iampapv1.AccessPolicyType,
-	})
+		Type:      ibmUniqueID,
+		IAMID:     iampapv1.AccessPolicyType,
+	}
+
+	if v, ok := d.GetOk("sort"); ok {
+		query.Sort = v.(string)
+	}
+
+	policies, err := iampapClient.V1Policy().List(query)
+	if err != nil {
+		return err
+	}
+
 	if err != nil {
 		return err
 	}
