@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -229,7 +220,7 @@ func resourceIBMISInstanceGroupCreate(d *schema.ResourceData, meta interface{}) 
 	}
 
 	instanceGroup, response, err := sess.CreateInstanceGroup(&instanceGroupOptions)
-	if err != nil || instanceGroup == nil {
+	if err != nil {
 		return fmt.Errorf("Error Creating InstanceGroup: %s\n%s", err, response)
 	}
 	d.SetId(*instanceGroup.ID)
@@ -267,7 +258,7 @@ func resourceIBMISInstanceGroupUpdate(d *schema.ResourceData, meta interface{}) 
 		instanceGroupID := d.Id()
 		getInstanceGroupOptions := vpcv1.GetInstanceGroupOptions{ID: &instanceGroupID}
 		instanceGroup, response, err := sess.GetInstanceGroup(&getInstanceGroupOptions)
-		if err != nil || instanceGroup == nil {
+		if err != nil {
 			return fmt.Errorf("Error getting instance group: %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange("tags")
@@ -351,7 +342,7 @@ func resourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) er
 	instanceGroupID := d.Id()
 	getInstanceGroupOptions := vpcv1.GetInstanceGroupOptions{ID: &instanceGroupID}
 	instanceGroup, response, err := sess.GetInstanceGroup(&getInstanceGroupOptions)
-	if err != nil || instanceGroup == nil {
+	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
@@ -406,7 +397,7 @@ func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) 
 	instanceGroupPatchModel := vpcv1.InstanceGroupPatch{}
 
 	instanceGroupPatchModel.MembershipCount = &zeroMembers
-	instanceGroupPatch, err := instanceGroupPatchModel.AsPatch()
+	instanceGroupPatch, _ := instanceGroupPatchModel.AsPatch()
 	if err != nil {
 		return fmt.Errorf("Error calling asPatch for ImagePatch: %s", err)
 	}
@@ -470,11 +461,10 @@ func waitForHealthyInstanceGroup(d *schema.ResourceData, meta interface{}, timeo
 		Target:  []string{HEALTHY},
 		Refresh: func() (interface{}, string, error) {
 			instanceGroup, response, err := sess.GetInstanceGroup(&getInstanceGroupOptions)
-			if err != nil || instanceGroup == nil {
+			log.Println("Status : ", *instanceGroup.Status)
+			if err != nil {
 				return nil, SCALING, fmt.Errorf("Error Getting InstanceGroup: %s\n%s", err, response)
 			}
-			log.Println("Status : ", *instanceGroup.Status)
-
 			if *instanceGroup.Status == "" {
 				return instanceGroup, SCALING, nil
 			}

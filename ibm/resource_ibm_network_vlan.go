@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -73,6 +64,12 @@ func resourceIBMNetworkVlan() *schema.Resource {
 					return
 				},
 				Description: "VLAN type",
+			},
+			"subnet_size": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				ForceNew: true,
+				Removed:  "This field has been removed",
 			},
 
 			"name": {

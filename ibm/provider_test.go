@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -61,7 +52,6 @@ var ISZoneName string
 var ISCIDR string
 var ISAddressPrefixCIDR string
 var instanceProfileName string
-var volumeProfileName string
 var ISRouteDestination string
 var ISRouteNextHop string
 var workspaceID string
@@ -199,14 +189,14 @@ func init() {
 
 	kubeVersion = os.Getenv("IBM_KUBE_VERSION")
 	if kubeVersion == "" {
-		kubeVersion = "1.18.15"
-		fmt.Println("[WARN] Set the environment variable IBM_KUBE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.18.14'")
+		kubeVersion = "1.17.9"
+		fmt.Println("[WARN] Set the environment variable IBM_KUBE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.13.10'")
 	}
 
 	kubeUpdateVersion = os.Getenv("IBM_KUBE_UPDATE_VERSION")
 	if kubeUpdateVersion == "" {
-		kubeUpdateVersion = "1.19.7"
-		fmt.Println("[WARN] Set the environment variable IBM_KUBE_UPDATE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.19.6'")
+		kubeUpdateVersion = "1.14.6"
+		fmt.Println("[WARN] Set the environment variable IBM_KUBE_UPDATE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.14.6'")
 	}
 
 	privateSubnetID = os.Getenv("IBM_PRIVATE_SUBNET_ID")
@@ -347,13 +337,7 @@ func init() {
 	if instanceProfileName == "" {
 		//instanceProfileName = "bc1-2x8" // for classic infrastructure
 		instanceProfileName = "cx2-2x4" // for next gen infrastructure
-		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'cx2-2x4'")
-	}
-
-	volumeProfileName = os.Getenv("IS_VOLUME_PROFILE")
-	if volumeProfileName == "" {
-		volumeProfileName = "general-purpose"
-		fmt.Println("[INFO] Set the environment variable IS_VOLUME_PROFILE for testing ibm_is_volume_profile else it is set to default value 'general-purpose'")
+		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'b-2x8'")
 	}
 
 	ISRouteDestination = os.Getenv("SL_ROUTE_DESTINATION")
@@ -395,7 +379,8 @@ func init() {
 
 	pi_cloud_instance_id = os.Getenv("PI_CLOUDINSTANCE_ID")
 	if pi_cloud_instance_id == "" {
-		pi_cloud_instance_id = "fd3454a3-14d8-4eb0-b075-acf3da5cd324"
+		//pi_cloud_instance_id = "d16705bd-7f1a-48c9-9e0e-1c17b71e7331"
+		pi_cloud_instance_id = "db0e5c7d-a708-454b-8a52-f0f2f2771075"
 		fmt.Println("[INFO] Set the environment variable PI_CLOUDINSTANCE_ID for testing ibm_pi_image resource else it is set to default value 'd16705bd-7f1a-48c9-9e0e-1c17b71e7331'")
 	}
 	workspaceID = os.Getenv("WORKSPACE_ID")

@@ -1,30 +1,18 @@
 ---
 layout: "ibm"
-page_title: "IBM: certificate_manager_order"
-sidebar_current: "docs-ibm-resource-certificate-manager-order"
+page_title: "IBM: certificate_manager_Order_Certificate"
+sidebar_current: "docs-ibm-resource-certificate-manager-Order"
 description: |-
-  Orders and Manages Ordered Certificate.
+  Orders and Manages Certificates.
 ---
 
-# ibm\_certificate_manager_order
+# ibm\_certificate_manager
 
-Orders and manages ordered certificate of Certificate manager Instance
+Provides a certificate manager. This allows certificates to be ordered, renewed, updated, and deleted.
 
 ## Example Usage
 
-This example creates a CMS instance by enabling customer managed keys and orders a certificate.
-``` hcl
-resource "ibm_resource_instance" "cm" {
-  name     = "test"
-  location = "us-south"
-  plan     = "free"
-  service  = "cloudcerts"
-  parameters = {
-    kms_info = "{\"id\":\"<GUID OF KMS/HPCS INSTANCE>\",\"url\":\"<KMS/HPCS ENDPOINT>\"}",
-    tek_id   = "CRN OF KMS/HPCS KEY",
-  }
-}
-
+```hcl
 resource "ibm_certificate_manager_order" "cert" {
   certificate_manager_instance_id = ibm_resource_instance.cm.id
   name                            = "test"

@@ -35,6 +35,7 @@ ibm_is_vpc provides the following [Timeouts](https://www.terraform.io/docs/confi
 The following arguments are supported:
 
 * `default_network_acl` - (Deprecated, string) ID of the default network ACL.
+* `is_default` - (Removed, bool) This field is removed.
 * `address_prefix_management` - (Optional, string) Indicates whether a default address prefix should be automatically created for each zone in this VPC. Default value `auto`
 * `classic_access` -(Optional, bool) Indicates whether this VPC should be connected to Classic Infrastructure. If true, This VPC's resources will have private network connectivity to the account's Classic Infrastructure resources. Only one VPC on an account may be connected in this way. 
 * `name` - (Required, string) The name of the VPC.

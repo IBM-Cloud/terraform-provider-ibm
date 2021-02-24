@@ -1,22 +1,14 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -99,12 +91,28 @@ func resourceIBMLbVpx() *schema.Resource {
 				Description: "Piblic VLAN id",
 			},
 
+			"front_end_vlan": {
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Removed:     "Please use 'public_vlan_id'",
+				ForceNew:    true,
+				Description: "Front end VLAN id",
+			},
+
 			"public_subnet": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 				Computed:    true,
 				Description: "Public subnet",
+			},
+
+			"front_end_subnet": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				Removed:  "Renamed as 'public_subnet'",
 			},
 
 			"private_vlan_id": {
@@ -115,12 +123,26 @@ func resourceIBMLbVpx() *schema.Resource {
 				Description: "Private VLAN id",
 			},
 
+			"back_end_vlan": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Removed:  "Please use 'private_vlan_id'",
+				ForceNew: true,
+			},
+
 			"private_subnet": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 				Computed:    true,
 				Description: "Private subnet",
+			},
+
+			"back_end_subnet": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Removed:  "Renamed as 'private_subnet'",
+				ForceNew: true,
 			},
 
 			"vip_pool": {

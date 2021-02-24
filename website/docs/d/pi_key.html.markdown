@@ -35,7 +35,7 @@ data "ibm_pi_key" "ds_instance" {
 The following arguments are supported:
 
 * `pi_key_name` - (Required, string) The name of the key.
-* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
+* `pi_cloud_instance_id` - (Required, string) The service instance associated with the account
 
 ## Attribute Reference
 

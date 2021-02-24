@@ -25,6 +25,10 @@ resource "ibm_resource_instance" "resource_instance" {
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
 
+  parameters = {
+    "HMAC" = true
+  }
+
   //User can increase timeouts
   timeouts {
     create = "15m"

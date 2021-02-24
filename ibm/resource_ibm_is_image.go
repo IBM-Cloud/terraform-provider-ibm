@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -31,11 +22,12 @@ const (
 	isImageVisibility             = "visibility"
 	isImageFile                   = "file"
 	isImageMinimumProvisionedSize = "size"
-
-	isImageResourceGroup    = "resource_group"
-	isImageEncryptedDataKey = "encrypted_data_key"
-	isImageEncryptionKey    = "encryption_key"
-	isImageEncryption       = "encryption"
+	isImageFormat                 = "format"
+	isImageArchitecure            = "architecture"
+	isImageResourceGroup          = "resource_group"
+	isImageEncryptedDataKey       = "encrypted_data_key"
+	isImageEncryptionKey          = "encryption_key"
+	isImageEncryption             = "encryption"
 
 	isImageProvisioning     = "provisioning"
 	isImageProvisioningDone = "done"
@@ -119,6 +111,13 @@ func resourceIBMISImage() *schema.Resource {
 				Description: "The status of this image",
 			},
 
+			isImageArchitecure: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Removed:     "This field is removed",
+				Description: "The operating system architecture",
+			},
+
 			isImageMinimumProvisionedSize: {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -135,6 +134,12 @@ func resourceIBMISImage() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Details for the stored image file",
+			},
+
+			isImageFormat: {
+				Type:     schema.TypeString,
+				Computed: true,
+				Removed:  "This field is removed",
 			},
 
 			isImageResourceGroup: {

@@ -33,7 +33,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-- `id` - The unique identifier of the endpoint gateway connection. The id is composed of <`gateway`>/<`reserved_ip`>.
+- `id` - The unique identifier of the endpoint gateway connection. The id is composed of <`gateway_id`>/<`reserved_ip_id`>.
 - `name` - Endpoint gateway IP name
 - `created_at` - Endpoint gateway IP created date and time
 - `resource_type` - Endpoint gateway IP resource type

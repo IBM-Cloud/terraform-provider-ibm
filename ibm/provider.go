@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -14,12 +5,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/mutexkv"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 // This is a global MutexKV for use within this plugin.
-var ibmMutexKV = NewMutexKV()
+var ibmMutexKV = mutexkv.NewMutexKV()
 
 // Provider returns a terraform.ResourceProvider.
 func Provider() terraform.ResourceProvider {
@@ -162,6 +154,10 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
+			"ibm_sa_note":                            dataSourceIBMNote(),
+			"ibm_sa_notes":                           dataSourceIBMNotes(),
+			"ibm_sa_notification_channel":            dataSourceIBMNotificationChannel(),
+			"ibm_sa_notification_channels":           dataSourceIBMNotificationChannels(),
 			"ibm_api_gateway":                        dataSourceIBMApiGateway(),
 			"ibm_account":                            dataSourceIBMAccount(),
 			"ibm_app":                                dataSourceIBMApp(),
@@ -257,8 +253,6 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_subnets":                         dataSourceIBMISSubnets(),
 			"ibm_is_security_group":                  dataSourceIBMISSecurityGroup(),
 			"ibm_is_volume":                          dataSourceIBMISVolume(),
-			"ibm_is_volume_profile":                  dataSourceIBMISVolumeProfile(),
-			"ibm_is_volume_profiles":                 dataSourceIBMISVolumeProfiles(),
 			"ibm_is_vpc":                             dataSourceIBMISVPC(),
 			"ibm_is_vpn_gateways":                    dataSourceIBMISVPNGateways(),
 			"ibm_is_vpn_gateway_connections":         dataSourceIBMISVPNGatewayConnections(),
@@ -294,7 +288,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_pi_tenant":             dataSourceIBMPITenant(),
 			"ibm_pi_network":            dataSourceIBMPINetwork(),
 			"ibm_pi_volume":             dataSourceIBMPIVolume(),
-			"ibm_pi_instance_volumes":   dataSourceIBMPIInstanceVolumes(),
+			"ibm_pi_instance_volumes":   dataSourceIBMPIVolumes(),
 			"ibm_pi_public_network":     dataSourceIBMPIPublicNetwork(),
 			"ibm_pi_images":             dataSourceIBMPIImages(),
 			"ibm_pi_instance_ip":        dataSourceIBMPIInstanceIP(),
@@ -302,7 +296,6 @@ func Provider() terraform.ResourceProvider {
 			"ibm_pi_pvm_snapshots":      dataSourceIBMPISnapshot(),
 			"ibm_pi_network_port":       dataSourceIBMPINetworkPort(),
 			"ibm_pi_cloud_instance":     dataSourceIBMPICloudInstance(),
-			"ibm_pi_catalog_images":     dataSourceIBMPICatalogImages(),
 
 			// Added for private dns zones
 
@@ -333,6 +326,8 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"ibm_sa_note":                                        resourceIBMNote(),
+			"ibm_sa_notification_channel":                        resourceIBMNotificationChannel(),
 			"ibm_api_gateway_endpoint":                           resourceIBMApiGatewayEndPoint(),
 			"ibm_api_gateway_endpoint_subscription":              resourceIBMApiGatewayEndpointSubscription(),
 			"ibm_app":                                            resourceIBMApp(),

@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -169,7 +160,7 @@ func resourceIBMIAMServiceAPIkeyCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	apiKey, response, err := iamIdentityClient.CreateAPIKey(createAPIKeyOptions)
-	if err != nil || apiKey == nil {
+	if err != nil {
 		return fmt.Errorf("[DEBUG] Service API Key creation Error: %s\n%s", err, response)
 	}
 
@@ -197,46 +188,29 @@ func resourceIBMIAMServiceAPIKeyRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	apiKey, response, err := iamIdentityClient.GetAPIKey(getAPIKeyOptions)
-	if err != nil || apiKey == nil {
+	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
 		return fmt.Errorf("[DEBUG] Error retrieving Service API Key: %s\n%s", err, response)
 	}
-	if apiKey.Name != nil {
-		d.Set("name", *apiKey.Name)
-	}
-	if apiKey.IamID != nil {
-		d.Set("iam_service_id", *apiKey.IamID)
-	}
+
+	d.Set("name", *apiKey.Name)
+	d.Set("iam_service_id", *apiKey.IamID)
 	if apiKey.Description != nil {
 		d.Set("description", *apiKey.Description)
 	}
-	if apiKey.AccountID != nil {
-		d.Set("account_id", *apiKey.AccountID)
-	}
+	d.Set("account_id", *apiKey.AccountID)
 	if *apiKey.Apikey != "" {
 		d.Set("apikey", *apiKey.Apikey)
 	}
-	if apiKey.CRN != nil {
-		d.Set("crn", *apiKey.CRN)
-	}
-	if apiKey.EntityTag != nil {
-		d.Set("entity_tag", *apiKey.EntityTag)
-	}
-	if apiKey.Locked != nil {
-		d.Set("locked", *apiKey.Locked)
-	}
-	if apiKey.CreatedBy != nil {
-		d.Set("created_by", *apiKey.CreatedBy)
-	}
-	if apiKey.CreatedAt != nil {
-		d.Set("created_at", apiKey.CreatedAt.String())
-	}
-	if apiKey.ModifiedAt != nil {
-		d.Set("modified_at", apiKey.ModifiedAt.String())
-	}
+	d.Set("crn", *apiKey.CRN)
+	d.Set("entity_tag", *apiKey.EntityTag)
+	d.Set("locked", *apiKey.Locked)
+	d.Set("created_by", *apiKey.CreatedBy)
+	d.Set("created_at", apiKey.CreatedAt.String())
+	d.Set("modified_at", apiKey.ModifiedAt.String())
 
 	return nil
 }
@@ -254,7 +228,7 @@ func resourceIBMIAMServiceAPIKeyUpdate(d *schema.ResourceData, meta interface{})
 	}
 
 	apiKey, resp, err := iamIdentityClient.GetAPIKey(getAPIKeyOptions)
-	if err != nil || apiKey == nil {
+	if err != nil {
 		return fmt.Errorf("[DEBUG] Error retrieving Service API Key: %s\n%s", err, resp)
 	}
 

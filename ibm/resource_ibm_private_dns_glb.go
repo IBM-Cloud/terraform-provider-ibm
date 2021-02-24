@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -16,7 +7,6 @@ import (
 	"time"
 
 	"github.com/IBM/networking-go-sdk/dnssvcsv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -34,8 +24,6 @@ const (
 	pdnsGLBAZPoolsPools     = "pools"
 	pdnsGLBCreatedOn        = "created_on"
 	pdnsGLBModifiedOn       = "modified_on"
-	pdnsGLBDeleting         = "deleting"
-	pdnsGLBDeleted          = "done"
 )
 
 func resourceIBMPrivateDNSGLB() *schema.Resource {
@@ -282,10 +270,6 @@ func resourceIBMPrivateDNSGLBDelete(d *schema.ResourceData, meta interface{}) er
 	if err != nil {
 		return fmt.Errorf("Error deleting pdns GLB :%s\n%s", err, response)
 	}
-	_, err = isWaitForLoadBalancerDeleted(sess, d, d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -342,35 +326,4 @@ func suppressPDNSGlbNameDiff(k, old, new string, d *schema.ResourceData) bool {
 		return true
 	}
 	return false
-}
-
-func isWaitForLoadBalancerDeleted(LoadBalancer *dnssvcsv1.DnsSvcsV1, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
-	idset := strings.Split(d.Id(), "/")
-	log.Printf("Waiting for PDNS GLB (%s) to be deleted.", idset[2])
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{pdnsGLBDeleting},
-		Target:     []string{pdnsGLBDeleted},
-		Refresh:    isVLoadBalancerDeleteRefreshFunc(LoadBalancer, d),
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}
-
-func isVLoadBalancerDeleteRefreshFunc(LoadBalancer *dnssvcsv1.DnsSvcsV1, d *schema.ResourceData) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		idset := strings.Split(d.Id(), "/")
-		getlbOptions := LoadBalancer.NewGetLoadBalancerOptions(idset[0], idset[1], idset[2])
-		_, response, err := LoadBalancer.GetLoadBalancer(getlbOptions)
-		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				return "", pdnsGLBDeleted, nil
-			}
-			return "", "", fmt.Errorf("Error Getting PDNS Load Balancer : %s\n%s", err, response)
-		}
-		return LoadBalancer, pdnsGLBDeleting, err
-
-	}
 }

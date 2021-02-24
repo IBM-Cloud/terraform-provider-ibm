@@ -45,11 +45,13 @@ resource "ibm_container_vpc_cluster" "cluster" {
   kube_version      = "1.17.5"
   flavor            = "bx2.2x8"
   worker_count      = "1"
-  resource_group_id = data.ibm_resource_group.resource_group.id
-  zones {
+  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+  zones = [
+    {
       subnet_id = "0717-0c0899ce-48ac-4eb6-892d-4e2e1ff8c9478"
       name      = "us-south-1"
     }
+  ]
 }
 ```
 
@@ -74,11 +76,13 @@ resource "ibm_container_vpc_cluster" "cluster" {
   worker_count      = "2"
   entitlement       = "cloud_pak"
   cos_instance_crn  = ibm_resource_instance.cos_instance.id
-  resource_group_id = data.ibm_resource_group.resource_group.id
-  zones {
+  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+  zones = [
+    {
       subnet_id = "0717-0c0899ce-48ac-4eb6-892d-4e2e1ff8c9478"
       name      = "us-south-1"
     }
+  ]
 }
 ```
 
@@ -87,13 +91,13 @@ Create a Kms Enabled Kubernetes cluster:
 ```hcl
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = "cluster2"
-  vpc_id            = ibm_is_vpc.vpc1.id
+  vpc_id            = "${ibm_is_vpc.vpc1.id}"
   flavor            = "bx2.2x8"
   worker_count      = "1"
   wait_till         = "OneWorkerNodeReady"
-  resource_group_id = data.ibm_resource_group.resource_group.id
+  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
   zones {
-    subnet_id = ibm_is_subnet.subnet1.id
+    subnet_id = "${ibm_is_subnet.subnet1.id}"
     name      = "us-south-1"
   }
 
@@ -144,9 +148,7 @@ Resource will wait for only the specified stage and complete execution. The supp
   Default value: IngressReady
 * `force_delete_storage` - (Optional, bool) If set to true, force the removal of persistent storage associated with the cluster during cluster deletion. Default: false
     **NOTE**: Before doing terraform destroy if force_delete_storage param is introduced after provisioning the cluster, a terraform apply must be done before terraform destroy for force_delete_storage param to take effect.
-* `patch_version` - (Optional, string) Set this to update the worker nodes with the required patch version. 
-   The patch_version should be in the format - `patch_version_fixpack_version`. Learn more about the Kuberentes version [here](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions).
-    **NOTE**: To update the patch/fixpack versions of the worker nodes, Run the command `ibmcloud ks workers -c <cluster_name_or_id> --output json`, fetch the required patch & fixpack versions from `kubeVersion.target` and set the patch_version parameter.
+* `patch_version` - (Optional, string) Set this to update the worker nodes with the required patch version. Learn More about the Kuberentes version [here](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions)
 
 **NOTE**:
 1. For users on account to add tags to a resource, they must be assigned the appropriate access. Learn more about tags permission [here](https://cloud.ibm.com/docs/resources?topic=resources-access)

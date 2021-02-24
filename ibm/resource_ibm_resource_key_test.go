@@ -1,38 +1,30 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
 	"fmt"
-	"strings"
 	"testing"
+
+	"github.com/IBM-Cloud/bluemix-go/models"
+
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-
-	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 func TestAccIBMResourceKey_Basic(t *testing.T) {
 	var conf models.ServiceKey
-	resourceName := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
-	resourceKey := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
+	resourceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMResourceKeyDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMResourceKeyBasic(resourceName, resourceKey),
+			resource.TestStep{
+				Config: testAccCheckIBMResourceKey_basic(resourceName, resourceKey),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey", conf),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
@@ -40,7 +32,7 @@ func TestAccIBMResourceKey_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", "Reader"),
 				),
 			},
-			{
+			resource.TestStep{
 				ResourceName:      "ibm_resource_key.resourceKey",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -53,16 +45,16 @@ func TestAccIBMResourceKey_Basic(t *testing.T) {
 
 func TestAccIBMResourceKey_With_Tags(t *testing.T) {
 	var conf models.ServiceKey
-	resourceName := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
-	resourceKey := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
+	resourceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMResourceKeyDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMResourceKeyWithTags(resourceName, resourceKey),
+			resource.TestStep{
+				Config: testAccCheckIBMResourceKey_with_tags(resourceName, resourceKey),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey", conf),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
@@ -70,8 +62,8 @@ func TestAccIBMResourceKey_With_Tags(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "tags.#", "1"),
 				),
 			},
-			{
-				Config: testAccCheckIBMResourceKeyWithUpdatedTags(resourceName, resourceKey),
+			resource.TestStep{
+				Config: testAccCheckIBMResourceKey_with_updated_tags(resourceName, resourceKey),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey", conf),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "tags.#", "2"),
@@ -83,16 +75,16 @@ func TestAccIBMResourceKey_With_Tags(t *testing.T) {
 
 func TestAccIBMResourceKey_Parameters(t *testing.T) {
 	var conf models.ServiceKey
-	resourceName := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
-	resourceKey := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
+	resourceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMResourceKeyDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMResourceKeyParameters(resourceName, resourceKey),
+			resource.TestStep{
+				Config: testAccCheckIBMResourceKey_parameters(resourceName, resourceKey),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey", conf),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
@@ -106,8 +98,8 @@ func TestAccIBMResourceKey_Parameters(t *testing.T) {
 
 func TestAccIBMResourceKeyWithCustomRole(t *testing.T) {
 	var conf models.ServiceKey
-	resourceName := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
-	resourceKey := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
+	resourceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	crName := fmt.Sprintf("Name%d", acctest.RandIntRange(10, 100))
 	displayName := fmt.Sprintf("Disp%d", acctest.RandIntRange(10, 100))
 
@@ -116,7 +108,7 @@ func TestAccIBMResourceKeyWithCustomRole(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMResourceKeyDestroy,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMResourceKeyWithCustomRole(resourceName, resourceKey, crName, displayName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey", conf),
@@ -182,7 +174,7 @@ func testAccCheckIBMResourceKeyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMResourceKeyBasic(resourceName, resourceKey string) string {
+func testAccCheckIBMResourceKey_basic(resourceName, resourceKey string) string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_resource_instance" "resource" {
@@ -205,7 +197,7 @@ func testAccCheckIBMResourceKeyWithCustomRole(resourceName, resourceKey, crName,
 		resource "ibm_resource_instance" "resource" {
 			name              = "%s"
 			service           = "cloud-object-storage"
-			plan              = "standard"
+			plan              = "lite"
 			location          = "global"
 		}
 		resource "ibm_iam_custom_role" "customrole" {
@@ -223,7 +215,7 @@ func testAccCheckIBMResourceKeyWithCustomRole(resourceName, resourceKey, crName,
 	`, resourceName, crName, displayName, resourceKey)
 }
 
-func testAccCheckIBMResourceKeyWithTags(resourceName, resourceKey string) string {
+func testAccCheckIBMResourceKey_with_tags(resourceName, resourceKey string) string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_resource_instance" "resource" {
@@ -241,7 +233,7 @@ func testAccCheckIBMResourceKeyWithTags(resourceName, resourceKey string) string
 	`, resourceName, resourceKey)
 }
 
-func testAccCheckIBMResourceKeyWithUpdatedTags(resourceName, resourceKey string) string {
+func testAccCheckIBMResourceKey_with_updated_tags(resourceName, resourceKey string) string {
 	return fmt.Sprintf(`
 		resource "ibm_resource_instance" "resource" {
 			name              = "%s"
@@ -258,7 +250,7 @@ func testAccCheckIBMResourceKeyWithUpdatedTags(resourceName, resourceKey string)
 	`, resourceName, resourceKey)
 }
 
-func testAccCheckIBMResourceKeyParameters(resourceName, resourceKey string) string {
+func testAccCheckIBMResourceKey_parameters(resourceName, resourceKey string) string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_resource_instance" "resource" {

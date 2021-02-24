@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -75,6 +66,17 @@ func dataSourceIBMPrivateDNSPermittedNetworks() *schema.Resource {
 							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "permitted network",
+							Elem: &schema.Resource{
+
+								Schema: map[string]*schema.Schema{
+
+									pdnsVpcCRN: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "VPC CRN id",
+									},
+								},
+							},
 						},
 
 						pdnsPermittedNetworkCreatedOn: {

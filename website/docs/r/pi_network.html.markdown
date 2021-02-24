@@ -50,7 +50,7 @@ The following arguments are supported:
 
 * `pi_network_name` - (Required, string) The name of the network.
 * `pi_network_type` - (Required, string) The type of network (e.g., pub-vlan, vlan).
-* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
+* `pi_cloud_instance_id` - (Required, string) The cloud_instance_id for this account.
 * `pi_dns` - (Optional, list(strings)) List of DNS entries for the network. Required for `vlan` network type.
 * `pi_cidr` - (Optional, string) The network CIDR. Required for `vlan` network type.
 

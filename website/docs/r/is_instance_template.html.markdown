@@ -50,6 +50,8 @@ resource "ibm_is_instance_template" "instancetemplate1" {
 
   boot_volume {
     name                             = "testbootvol"
+    size                             = 16
+    profile                          = "custom"
     delete_volume_on_instance_delete = true
   }
 }
@@ -82,6 +84,9 @@ The following arguments are supported:
 * `boot_volume` - (Optional, block) A nested block describing the boot volume configuration for the template. Nested  boot_volume blocks have the following structure:
   * `encryption` - (Optional, string) encryption key CRN to encrypt the boot volume attached. 
   * `name` - (Optional, string) Name of the boot volume.
+  * `size` - (Optional, string) Boot volume size to configured in GB.
+  * `iops` - (Optional, string) IOPS for the boot volume.
+  * `profile` - (Optional, string) Profile for the boot volume configured.
   * `delete_volume_on_instance_delete` - (Optional, bool) Configured to delete the boot volume to be deleted upon instance deletion.
 * `volume_attachments` - (Optional, list) A nested block describing the storage volume configuration for the template. Nested volume_attachments blocks have the following structure: 
   * `name` - (Required, string) Name of the boot volume.

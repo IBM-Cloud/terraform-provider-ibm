@@ -87,7 +87,6 @@ The following attributes are exported:
 * `id` - The unique identifier of the storage.
 * `hostname` - The fully qualified domain name of the storage.
 * `volumename` - The name of the storage volume.
-* `lunid` - The LUN Id of the storage device.
 * `allowed_virtual_guest_info` - Deprecated please use `allowed_host_info` instead.
 * `allowed_hardware_info` - Deprecated please use `allowed_host_info` instead.
 * `allowed_host_info` - The user name, password, and host IQN of the hosts with access to the storage.

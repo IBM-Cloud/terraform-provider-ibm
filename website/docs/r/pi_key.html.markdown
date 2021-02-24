@@ -47,7 +47,7 @@ The following arguments are supported:
 
 * `pi_key_name` - (Required, int) The key name.
 * `pi_ssh_key` - (Required, string) The value of the ssh key.
-* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
+* `pi_cloud_instance_id` - (Required, string) The cloud_instance_id for this account.
 * `pi_creation_date` - (Optional, string) Date of sshkey creation.
 
 ## Attribute Reference

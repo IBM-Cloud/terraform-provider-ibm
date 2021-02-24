@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -18,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
@@ -553,7 +545,7 @@ func resourceIBMComputeAutoScalePolicyTriggerHash(v interface{}) int {
 			buf.WriteString(fmt.Sprintf("%d-", watch["period"].(int)))
 		}
 	}
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }
 
 func resourceIBMComputeAutoScalePolicyHandlerHash(v interface{}) int {
@@ -563,5 +555,5 @@ func resourceIBMComputeAutoScalePolicyHandlerHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-", watch["operator"].(string)))
 	buf.WriteString(fmt.Sprintf("%s-", watch["value"].(string)))
 	buf.WriteString(fmt.Sprintf("%d-", watch["period"].(int)))
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }

@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -20,6 +11,7 @@ import (
 func TestAccIBMContainerBindService_basic(t *testing.T) {
 
 	serviceName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
+	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -27,7 +19,7 @@ func TestAccIBMContainerBindService_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMContainerBindService_basic(clusterName, serviceName),
+				Config: testAccCheckIBMContainerBindService_basic(clusterName, serviceName, serviceKey),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_bind_service.bind_service", "namespace_id", "default"),
@@ -40,6 +32,7 @@ func TestAccIBMContainerBindService_basic(t *testing.T) {
 func TestAccIBMContainerBindService_withTag(t *testing.T) {
 
 	serviceName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
+	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -47,11 +40,11 @@ func TestAccIBMContainerBindService_withTag(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMContainerBindServiceWithTag(clusterName, serviceName),
+				Config: testAccCheckIBMContainerBindServiceWithTag(clusterName, serviceName, serviceKey),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_container_bind_service.bind_service", "namespace_id", "default"),
-					resource.TestCheckResourceAttr("ibm_container_bind_service.bind_service", "cluster_name_id", clusterName),
 					resource.TestCheckResourceAttr("ibm_container_bind_service.bind_service", "tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_container_bind_service.bind_service", "cluster_name_id", clusterName),
 				)},
 		},
 	})
@@ -60,6 +53,7 @@ func TestAccIBMContainerBindService_withTag(t *testing.T) {
 func TestAccIBMContainerBindService_WithoutOptionalFields(t *testing.T) {
 
 	serviceName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
+	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -67,7 +61,7 @@ func TestAccIBMContainerBindService_WithoutOptionalFields(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMContainerBindService_WithoutOptionalFields(clusterName, serviceName),
+				Config: testAccCheckIBMContainerBindService_WithoutOptionalFields(clusterName, serviceName, serviceKey),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_bind_service.bind_service", "namespace_id", "default"),
@@ -77,8 +71,12 @@ func TestAccIBMContainerBindService_WithoutOptionalFields(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMContainerBindService_WithoutOptionalFields(clusterName, serviceName string) string {
+func testAccCheckIBMContainerBindService_WithoutOptionalFields(clusterName, serviceName, serviceKey string) string {
 	return fmt.Sprintf(`
+data "ibm_space" "space" {
+  org   = "%s"
+  space = "%s"
+}
 
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
@@ -91,56 +89,106 @@ resource "ibm_container_cluster" "testacc_cluster" {
   region          = "%s"
 }
 
-resource "ibm_resource_instance" "cos_instance" {
-  name     = "%s"
-  service  = "cloud-object-storage"
-  plan     = "standard"
-  location = "global"
+resource "ibm_service_instance" "service" {
+  name       = "%s"
+  space_guid = data.ibm_space.space.id
+  service    = "speech_to_text"
+  plan       = "lite"
+  tags       = ["cluster-service", "cluster-bind"]
+}
+
+resource "ibm_service_key" "serviceKey" {
+  name                  = "%s"
+  service_instance_guid = ibm_service_instance.service.id
 }
 
 resource "ibm_container_bind_service" "bind_service" {
-  cluster_name_id     = ibm_container_cluster.testacc_cluster.id
-  service_instance_id = element(split(":", ibm_resource_instance.cos_instance.id), 7)
+  cluster_name_id     = ibm_container_cluster.testacc_cluster.name
+  service_instance_id = ibm_service_instance.service.id
   namespace_id        = "default"
-  role                = "Writer"
+  region              = "%s"
 }
-	`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, csRegion, serviceName)
+	`, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, csRegion, serviceName, serviceKey, csRegion)
 }
 
-func testAccCheckIBMContainerBindService_basic(clusterName, serviceName string) string {
+func testAccCheckIBMContainerBindService_basic(clusterName, serviceName, serviceKey string) string {
 	return fmt.Sprintf(`
-  
+
+data "ibm_org" "org" {
+  org = "%s"
+}
+
+data "ibm_space" "space" {
+  org   = "%s"
+  space = "%s"
+}
+
+data "ibm_account" "acc" {
+  org_guid = data.ibm_org.org.id
+}
+
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
+
+  org_guid     = data.ibm_org.org.id
+  space_guid   = data.ibm_space.space.id
+  account_guid = data.ibm_account.acc.id
+
   machine_type    = "%s"
   hardware        = "shared"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
 }
 
-resource "ibm_resource_instance" "cos_instance" {
-  name     = "%s"
-  service  = "cloud-object-storage"
-  plan     = "standard"
-  location = "global"
+
+resource "ibm_service_instance" "service" {
+  name       = "%s"
+  space_guid = data.ibm_space.space.id
+  service    = "speech_to_text"
+  plan       = "lite"
+  tags       = ["cluster-service", "cluster-bind"]
+}
+
+resource "ibm_service_key" "serviceKey" {
+  name                  = "%s"
+  service_instance_guid = ibm_service_instance.service.id
 }
 
 resource "ibm_container_bind_service" "bind_service" {
-  cluster_name_id     = ibm_container_cluster.testacc_cluster.id
-  service_instance_id = element(split(":", ibm_resource_instance.cos_instance.id), 7)
+  cluster_name_id     = ibm_container_cluster.testacc_cluster.name
+  service_instance_id = ibm_service_instance.service.id
   namespace_id        = "default"
-  role                = "Writer"
+  org_guid            = data.ibm_org.org.id
+  space_guid          = data.ibm_space.space.id
+  account_guid        = data.ibm_account.acc.id
 }
-	`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, serviceName)
+	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, serviceName, serviceKey)
 }
 
-func testAccCheckIBMContainerBindServiceWithTag(clusterName, serviceName string) string {
+func testAccCheckIBMContainerBindServiceWithTag(clusterName, serviceName, serviceKey string) string {
 	return fmt.Sprintf(`
-  
+	
+data "ibm_org" "org" {
+  org = "%s"
+}
+
+data "ibm_space" "space" {
+  org   = "%s"
+  space = "%s"
+}
+
+data "ibm_account" "acc" {
+  org_guid = data.ibm_org.org.id
+}
+
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
+
+  org_guid     = data.ibm_org.org.id
+  space_guid   = data.ibm_space.space.id
+  account_guid = data.ibm_account.acc.id
 
   machine_type    = "%s"
   hardware        = "shared"
@@ -148,19 +196,28 @@ resource "ibm_container_cluster" "testacc_cluster" {
   private_vlan_id = "%s"
 }
 
-resource "ibm_resource_instance" "cos_instance" {
-  name     = "%s"
-  service  = "cloud-object-storage"
-  plan     = "standard"
-  location = "global"
+
+resource "ibm_service_instance" "service" {
+  name       = "%s"
+  space_guid = data.ibm_space.space.id
+  service    = "speech_to_text"
+  plan       = "lite"
+  tags       = ["cluster-service", "cluster-bind"]
+}
+
+resource "ibm_service_key" "serviceKey" {
+  name                  = "%s"
+  service_instance_guid = ibm_service_instance.service.id
 }
 
 resource "ibm_container_bind_service" "bind_service" {
-  cluster_name_id     = ibm_container_cluster.testacc_cluster.id
-  service_instance_id = element(split(":", ibm_resource_instance.cos_instance.id), 7)
+  cluster_name_id     = ibm_container_cluster.testacc_cluster.name
+  service_instance_id = ibm_service_instance.service.id
   namespace_id        = "default"
-  role                = "Writer"
+  org_guid            = data.ibm_org.org.id
+  space_guid          = data.ibm_space.space.id
+  account_guid        = data.ibm_account.acc.id
   tags                = ["test"]
 }
-	`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, serviceName)
+	`, cfOrganization, cfOrganization, cfSpace, clusterName, datacenter, machineType, publicVlanID, privateVlanID, serviceName, serviceKey)
 }

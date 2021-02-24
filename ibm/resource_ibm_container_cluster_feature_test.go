@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -56,16 +47,13 @@ resource "ibm_container_cluster" "testacc_cluster" {
   hardware          = "shared"
   public_vlan_id    = "%s"
   private_vlan_id   = "%s"
-  timeouts {
-	  create = "120m"
-  }
 }
 
 resource "ibm_container_cluster_feature" "feature" {
   cluster                  = ibm_container_cluster.testacc_cluster.id
   private_service_endpoint = "true"
   timeouts {
-    create = "720m"
+    create = "180m"
   }
 }`, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }
@@ -80,16 +68,13 @@ resource "ibm_container_cluster" "testacc_cluster" {
   hardware          = "shared"
   public_vlan_id    = "%s"
   private_vlan_id   = "%s"
-  timeouts {
-	create = "120m"
-  }
 }
 
 resource "ibm_container_cluster_feature" "feature" {
   cluster                 = ibm_container_cluster.testacc_cluster.id
   public_service_endpoint = "false"
   timeouts {
-    update = "720m"
+    update = "180m"
   }
 }`, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }

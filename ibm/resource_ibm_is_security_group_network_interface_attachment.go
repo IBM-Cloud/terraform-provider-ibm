@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -24,6 +15,7 @@ const (
 	isSGNICAName                  = "name"
 	isSGNICAPortSpeed             = "port_speed"
 	isSGNICAPrimaryIPV4Address    = "primary_ipv4_address"
+	isSGNICAPrimaryIPV6Address    = "primary_ipv6_address"
 	isSGNICASecondaryAddresses    = "secondary_address"
 	isSGNICASecurityGroups        = "security_groups"
 	isSGNICASecurityGroupCRN      = "crn"
@@ -34,6 +26,7 @@ const (
 	isSGNICAType                  = "type"
 	isSGNICAFloatingIps           = "floating_ips"
 	isSGNICAFloatingIpID          = "id"
+	isSGNICAFloatingIpAddress     = "address"
 	isSGNICAFloatingIpName        = "name"
 	isSGNICAFloatingIpCRN         = "crn"
 )
@@ -79,6 +72,11 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachment() *schema.Resource {
 				Computed:    true,
 				Description: "security group network interface attachment Primary IPV4 address",
 			},
+			isSGNICAPrimaryIPV6Address: {
+				Type:     schema.TypeString,
+				Computed: true,
+				Removed:  "This field is removed",
+			},
 			isSGNICASecondaryAddresses: {
 				Type:        schema.TypeSet,
 				Computed:    true,
@@ -110,6 +108,11 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachment() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "security group network interface attachment floating IP ID",
+						},
+						isSGNICAFloatingIpAddress: {
+							Type:     schema.TypeString,
+							Computed: true,
+							Removed:  "This field is removed",
 						},
 						isSGNICAFloatingIpName: {
 							Type:        schema.TypeString,

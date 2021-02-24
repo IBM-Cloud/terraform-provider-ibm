@@ -1,23 +1,13 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
 	"errors"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/helpers"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 var (
@@ -165,7 +155,7 @@ func resourceIBMOrgUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	orgAPI := cfAPI.Organizations()
 	id := d.Id()
-
+	d.Partial(true)
 	req := mccpv2.OrgUpdateRequest{}
 	if d.HasChange("name") {
 		req.Name = helpers.String(d.Get("name").(string))
@@ -190,7 +180,7 @@ func resourceIBMOrgUpdate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-
+	d.Partial(false)
 	return resourceIBMOrgRead(d, meta)
 }
 
@@ -253,6 +243,7 @@ func updateOrgBillingManagers(api mccpv2.Organizations, orgGUID string, d *schem
 			}
 		}
 	}
+	d.SetPartial("billing_managers")
 	return nil
 }
 
@@ -298,6 +289,7 @@ func updateOrgManagers(meta interface{}, orgGUID string, d *schema.ResourceData)
 			}
 		}
 	}
+	d.SetPartial("managers")
 	return nil
 }
 func updateOrgAuditors(api mccpv2.Organizations, orgGUID string, d *schema.ResourceData) error {
@@ -326,6 +318,7 @@ func updateOrgAuditors(api mccpv2.Organizations, orgGUID string, d *schema.Resou
 			}
 		}
 	}
+	d.SetPartial("auditors")
 	return nil
 }
 
@@ -368,5 +361,6 @@ func updateOrgUsers(meta interface{}, orgGUID string, d *schema.ResourceData) er
 			}
 		}
 	}
+	d.SetPartial("users")
 	return nil
 }

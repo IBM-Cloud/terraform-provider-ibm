@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -14,13 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net"
 	gohttp "net/http"
 	"os"
 	"strings"
 	"time"
 
 	// Added code for the Power Colo Offering
+
+	findingsapiv1 "github.com/ibm-cloud-security/security-advisor-sdk-go/findingsapiv1"
+	notificationsapiv1 "github.com/ibm-cloud-security/security-advisor-sdk-go/notificationsapiv1"
 
 	apigateway "github.com/IBM/apigateway-go-sdk"
 	"github.com/IBM/go-sdk-core/v4/core"
@@ -53,7 +46,6 @@ import (
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
-	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -87,7 +79,6 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/authentication"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/http"
 	"github.com/IBM-Cloud/bluemix-go/rest"
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
@@ -243,7 +234,8 @@ type ClientSession interface {
 	CisRangeAppClientSession() (*cisrangeappv1.RangeApplicationsV1, error)
 	CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1, error)
 	IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
-	ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error)
+	FindingsV1API() (*findingsapiv1.FindingsApiV1, error)
+	NotificationsV1API() (*notificationsapiv1.NotificationsApiV1, error)
 }
 
 type clientSession struct {
@@ -455,9 +447,24 @@ type clientSession struct {
 	//IAM Identity Option
 	iamIdentityErr error
 	iamIdentityAPI *iamidentity.IamIdentityV1
-	//Resource Manager Option
-	resourceManagerErr error
-	resourceManagerAPI *resourcemanager.ResourceManagerV2
+
+	//SA Findings Option
+	findingsErr error
+	findingsAPI *findingsapiv1.FindingsApiV1
+
+	//SA Notifications Option
+	notificationsErr error
+	notificationsAPI *notificationsapiv1.NotificationsApiV1
+}
+
+// FindingsAPI ...
+func (sess clientSession) FindingsV1API() (*findingsapiv1.FindingsApiV1, error) {
+	return sess.findingsAPI, sess.findingsErr
+}
+
+// NotificationsAPI ...
+func (sess clientSession) NotificationsV1API() (*notificationsapiv1.NotificationsApiV1, error) {
+	return sess.notificationsAPI, sess.notificationsErr
 }
 
 // BluemixAcccountAPI ...
@@ -834,11 +841,6 @@ func (sess clientSession) IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
 	return sess.iamIdentityAPI, sess.iamIdentityErr
 }
 
-// ResourceMAanger Session
-func (sess clientSession) ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error) {
-	return sess.resourceManagerAPI, sess.resourceManagerErr
-}
-
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -916,6 +918,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisRangeAppErr = errEmptyBluemixCredentials
 		session.cisWAFRuleErr = errEmptyBluemixCredentials
 		session.iamIdentityErr = errEmptyBluemixCredentials
+		session.findingsErr = errEmptyBluemixCredentials
+		session.notificationsErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -923,49 +927,25 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if sess.BluemixSession.Config.BluemixAPIKey != "" {
 		err = authenticateAPIKey(sess.BluemixSession)
 		if err != nil {
-			for count := c.RetryCount; count >= 0; count-- {
-				if err == nil || !isRetryable(err) {
-					break
-				}
-				err = authenticateAPIKey(sess.BluemixSession)
-			}
-			if err != nil {
-				session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching auth key for account user details: %q", err)
-				session.functionConfigErr = fmt.Errorf("Error occured while fetching auth key for function: %q", err)
-				session.powerConfigErr = fmt.Errorf("Error occured while fetching the auth key for power iaas: %q", err)
-				session.ibmpiConfigErr = fmt.Errorf("Error occured while fetching the auth key for power iaas: %q", err)
-			}
+			session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
+			session.functionConfigErr = fmt.Errorf("Error occured while fetching auth key for function: %q", err)
+			session.powerConfigErr = fmt.Errorf("Error occured while fetching the auth key for power iaas: %q", err)
+			session.ibmpiConfigErr = fmt.Errorf("Error occured while fetching the auth key for power iaas: %q", err)
 		}
 		err = authenticateCF(sess.BluemixSession)
 		if err != nil {
-			for count := c.RetryCount; count >= 0; count-- {
-				if err == nil || !isRetryable(err) {
-					break
-				}
-				err = authenticateCF(sess.BluemixSession)
-			}
-			if err != nil {
-				session.functionConfigErr = fmt.Errorf("Error occured while fetching auth key for function: %q", err)
-			}
+			session.functionConfigErr = fmt.Errorf("Error occured while fetching auth key for function: %q", err)
 		}
 	}
 
 	if sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.BluemixAPIKey == "" {
 		err := refreshToken(sess.BluemixSession)
 		if err != nil {
-			for count := c.RetryCount; count >= 0; count-- {
-				if err == nil || !isRetryable(err) {
-					break
-				}
-				err = refreshToken(sess.BluemixSession)
-			}
-			if err != nil {
-				return nil, err
-			}
+			return nil, err
 		}
 
 	}
-	userConfig, err := fetchUserDetails(sess.BluemixSession, c.Generation, c.RetryCount)
+	userConfig, err := fetchUserDetails(sess.BluemixSession, c.Generation)
 	if err != nil {
 		session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
 	}
@@ -1048,13 +1028,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.kmsAPI = kmsAPIclient
 
-	var authenticator core.Authenticator
-	if c.BluemixAPIKey != "" {
-		authenticator = &core.IamAuthenticator{
-			ApiKey: c.BluemixAPIKey,
-			URL:    envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, "https://iam.cloud.ibm.com") + "/identity/token",
-		}
-	} else if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
+	var authenticator *core.BearerTokenAuthenticator
+	if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
 		authenticator = &core.BearerTokenAuthenticator{
 			BearerToken: sess.BluemixSession.Config.IAMAccessToken[7:],
 		}
@@ -1083,9 +1058,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	vpcclient, err := vpc.NewVpcV1(vpcoptions)
 	if err != nil {
 		session.vpcErr = fmt.Errorf("Error occured while configuring vpc service: %q", err)
-	}
-	if vpcclient != nil && vpcclient.Service != nil {
-		vpcclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 	session.vpcAPI = vpcclient
 
@@ -1220,9 +1192,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	session.ibmpiSession = ibmpisession
 
+	bluemixToken := ""
+	if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
+		bluemixToken = sess.BluemixSession.Config.IAMAccessToken[7:len(sess.BluemixSession.Config.IAMAccessToken)]
+	} else {
+		bluemixToken = sess.BluemixSession.Config.IAMAccessToken
+	}
+
 	dnsOptions := &dns.DnsSvcsV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_PRIVATE_DNS_API_ENDPOINT"}, "https://api.dns-svcs.cloud.ibm.com/v1"),
-		Authenticator: authenticator,
+		URL: envFallBack([]string{"IBMCLOUD_PRIVATE_DNS_API_ENDPOINT"}, "https://api.dns-svcs.cloud.ibm.com/v1"),
+		Authenticator: &core.BearerTokenAuthenticator{
+			BearerToken: bluemixToken,
+		},
 	}
 
 	session.pDNSClient, session.pDNSErr = dns.NewDnsSvcsV1(dnsOptions)
@@ -1232,9 +1213,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 	version := time.Now().Format("2006-01-02")
 
 	directlinkOptions := &dl.DirectLinkV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_DL_API_ENDPOINT"}, "https://directlink.cloud.ibm.com/v1"),
-		Authenticator: authenticator,
-		Version:       &version,
+		URL: envFallBack([]string{"IBMCLOUD_DL_API_ENDPOINT"}, "https://directlink.cloud.ibm.com/v1"),
+		Authenticator: &core.BearerTokenAuthenticator{
+			BearerToken: bluemixToken,
+		},
+		Version: &version,
 	}
 
 	session.directlinkAPI, session.directlinkErr = dl.NewDirectLinkV1(directlinkOptions)
@@ -1244,9 +1227,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	//Direct link provider
 	directLinkProviderV2Options := &dlProviderV2.DirectLinkProviderV2Options{
-		URL:           envFallBack([]string{"IBMCLOUD_DL_PROVIDER_API_ENDPOINT"}, "https://directlink.cloud.ibm.com/provider/v2"),
-		Authenticator: authenticator,
-		Version:       &version,
+		URL: envFallBack([]string{"IBMCLOUD_DL_PROVIDER_API_ENDPOINT"}, "https://directlink.cloud.ibm.com/provider/v2"),
+		Authenticator: &core.BearerTokenAuthenticator{
+			BearerToken: bluemixToken,
+		},
+		Version: &version,
 	}
 
 	session.dlProviderAPI, session.dlProviderErr = dlProviderV2.NewDirectLinkProviderV2(directLinkProviderV2Options)
@@ -1254,9 +1239,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.dlProviderErr = fmt.Errorf("Error occured while configuring Direct Link Provider Service: %s", session.dlProviderErr)
 	}
 	transitgatewayOptions := &tg.TransitGatewayApisV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_TG_API_ENDPOINT"}, "https://transit.cloud.ibm.com/v1"),
-		Authenticator: authenticator,
-		Version:       CreateVersionDate(),
+		URL: envFallBack([]string{"IBMCLOUD_TG_API_ENDPOINT"}, "https://transit.cloud.ibm.com/v1"),
+		Authenticator: &core.BearerTokenAuthenticator{
+			BearerToken: bluemixToken,
+		},
+		Version: CreateVersionDate(),
 	}
 
 	session.transitgatewayAPI, session.transitgatewayErr = tg.NewTransitGatewayApisV1(transitgatewayOptions)
@@ -1266,8 +1253,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	cfcurl := fmt.Sprintf("https://%s.functions.cloud.ibm.com/api/v1", c.Region)
 	ibmCloudFunctionsNamespaceOptions := &ns.IbmCloudFunctionsNamespaceOptions{
-		URL:           envFallBack([]string{"IBMCLOUD_NAMESPACE_API_ENDPOINT"}, cfcurl),
-		Authenticator: authenticator,
+		URL: envFallBack([]string{"IBMCLOUD_NAMESPACE_API_ENDPOINT"}, cfcurl),
+		Authenticator: &core.BearerTokenAuthenticator{
+			BearerToken: bluemixToken,
+		},
 	}
 
 	session.iamNamespaceAPI, err = ns.NewIbmCloudFunctionsNamespaceAPIV1(ibmCloudFunctionsNamespaceOptions)
@@ -1604,18 +1593,23 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.iamIdentityAPI = iamIdentityClient
 
-	resourceManagerOptions := &resourcemanager.ResourceManagerV2Options{
+	findings, err := findingsapiv1.NewFindingsApiV1(&findingsapiv1.FindingsApiV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_MANAGER_API_ENDPOINT"}, "https://resource-controller.cloud.ibm.com/v2"),
-	}
-	resourceManagerClient, err := resourcemanager.NewResourceManagerV2(resourceManagerOptions)
+		URL:           envFallBack([]string{"IBMCLOUD_SA_FINDINGS_ENDPOINT"}, fmt.Sprintf("https://%s.secadvisor.cloud.ibm.com/findings", c.Region)),
+	})
 	if err != nil {
-		session.resourceManagerErr = fmt.Errorf("Error occured while configuring Resource Manager service: %q", err)
+		session.findingsErr = fmt.Errorf("Error occured while configuring SA Findings service: %q", err)
 	}
-	if resourceManagerClient != nil {
-		resourceManagerClient.EnableRetries(c.RetryCount, c.RetryDelay)
+	session.findingsAPI = findings
+
+	notifications, err := notificationsapiv1.NewNotificationsApiV1(&notificationsapiv1.NotificationsApiV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_SA_NOTIFICATIONS_ENDPOINT"}, fmt.Sprintf("https://%s.secadvisor.cloud.ibm.com/notifications", c.Region)),
+	})
+	if err != nil {
+		session.notificationsErr = fmt.Errorf("Error occured while configuring SA Notifications service: %q", err)
 	}
-	session.resourceManagerAPI = resourceManagerClient
+	session.notificationsAPI = notifications
 
 	return session, nil
 }
@@ -1727,7 +1721,7 @@ func authenticateCF(sess *bxsession.Session) error {
 	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
 }
 
-func fetchUserDetails(sess *bxsession.Session, generation, retries int) (*UserConfig, error) {
+func fetchUserDetails(sess *bxsession.Session, generation int) (*UserConfig, error) {
 	config := sess.Config
 	user := UserConfig{}
 	var bluemixToken string
@@ -1743,12 +1737,6 @@ func fetchUserDetails(sess *bxsession.Session, generation, retries int) (*UserCo
 	})
 	//TODO validate with key
 	if err != nil && !strings.Contains(err.Error(), "key is of invalid type") {
-		if retries > 0 {
-			if config.BluemixAPIKey != "" {
-				_ = authenticateAPIKey(sess)
-				return fetchUserDetails(sess, generation, retries-1)
-			}
-		}
 		return &user, err
 	}
 	claims := token.Claims.(jwt.MapClaims)
@@ -1807,27 +1795,4 @@ func DefaultTransport() gohttp.RoundTripper {
 		},
 	}
 	return transport
-}
-
-func isRetryable(err error) bool {
-	if bmErr, ok := err.(bmxerror.RequestFailure); ok {
-		switch bmErr.StatusCode() {
-		case 408, 504, 599, 429, 500, 502, 520, 503:
-			return true
-		}
-	}
-
-	if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-		return true
-	}
-
-	if netErr, ok := err.(*net.OpError); ok && netErr.Timeout() {
-		return true
-	}
-
-	if netErr, ok := err.(net.UnknownNetworkError); ok && netErr.Timeout() {
-		return true
-	}
-
-	return false
 }

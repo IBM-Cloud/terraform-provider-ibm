@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -105,6 +96,31 @@ func resourceIBMComputeAutoScaleGroup() *schema.Resource {
 			"health_check": {
 				Type:     schema.TypeMap,
 				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:     schema.TypeString,
+							Required: false,
+						},
+
+						// Conditionally-required fields, based on value of "type"
+						"custom_method": {
+							Type:     schema.TypeString,
+							Optional: true,
+							// TODO: Must be GET or HEAD
+						},
+
+						"custom_request": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+
+						"custom_response": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
 			},
 
 			// This has to be a TypeList, because TypeMap does not handle non-primitive

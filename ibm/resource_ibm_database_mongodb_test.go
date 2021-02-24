@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -18,11 +9,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
+func TestAccIBMDatabaseInstance_Mongodb_Basic(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
-	rnd := fmt.Sprintf("tf-Mongo-%d", acctest.RandIntRange(10, 100))
+	rnd := fmt.Sprintf("tf_test_acc_%d", acctest.RandIntRange(10, 100))
 	testName := rnd
 	name := "ibm_database." + testName
 
@@ -31,8 +22,8 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup, testName),
+			resource.TestStep{
+				Config: testAccCheckIBMDatabaseInstance_Mongodb_basic(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -40,8 +31,8 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", "us-south"),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "30720"),
+					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "2048"),
+					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "20480"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
@@ -50,33 +41,35 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 					resource.TestMatchResourceAttr(name, "connectionstrings.1.certbase64", regexp.MustCompile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")),
 				),
 			},
-			{
-				Config: testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup, testName),
+			resource.TestStep{
+				Config: testAccCheckIBMDatabaseInstance_Mongodb_fullyspecified(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", "us-south"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "6144"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "30720"),
+					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "4096"),
+					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "22528"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
+					resource.TestCheckResourceAttr(name, "connectionstrings.0.hosts.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.scheme", "mongodb"),
+					resource.TestCheckResourceAttr(name, "connectionstrings.0.database", ""),
 				),
 			},
-			{
-				Config: testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup, testName),
+			resource.TestStep{
+				Config: testAccCheckIBMDatabaseInstance_Mongodb_reduced(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", "us-south"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "30720"),
+					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "2048"),
+					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "22528"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -93,11 +86,11 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 
 // TestAccIBMDatabaseInstance_CreateAfterManualDestroy not required as tested by resource_instance tests
 
-func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
+func TestAccIBMDatabaseInstance_Mongodb_import(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
-	serviceName := fmt.Sprintf("tf-Mongo-%d", acctest.RandIntRange(10, 100))
+	serviceName := fmt.Sprintf("tf_test_acc_%d", acctest.RandIntRange(10, 100))
 	//serviceName := "test_acc"
 	resourceName := "ibm_database." + serviceName
 
@@ -106,8 +99,8 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMDatabaseInstanceMongodbImport(databaseResourceGroup, serviceName),
+			resource.TestStep{
+				Config: testAccCheckIBMDatabaseInstance_Mongodb_import(databaseResourceGroup, serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
@@ -116,18 +109,18 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "location", "us-south"),
 				),
 			},
-			{
+			resource.TestStep{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "connectionstrings"},
+					"wait_time_minutes"},
 			},
 		},
 	})
 }
 
-func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstance_Mongodb_basic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
@@ -154,7 +147,7 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 				`, databaseResourceGroup, name)
 }
 
-func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstance_Mongodb_fullyspecified(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
@@ -167,8 +160,8 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 		plan                         = "standard"
 		location                     = "us-south"
 		adminpassword                = "password12"
-		members_memory_allocation_mb = 6144
-		members_disk_allocation_mb   = 30720
+		members_memory_allocation_mb = 4096
+		members_disk_allocation_mb   = 22528
 		users {
 		  name     = "user123"
 		  password = "password12"
@@ -189,7 +182,7 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 				`, databaseResourceGroup, name)
 }
 
-func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstance_Mongodb_reduced(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
@@ -202,14 +195,14 @@ func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string,
 		plan                         = "standard"
 		location                     = "us-south"
 		adminpassword                = "password12"
-		members_memory_allocation_mb = 3072
-		members_disk_allocation_mb   = 30720
+		members_memory_allocation_mb = 2048
+		members_disk_allocation_mb   = 22528
 	}
 	  
 				`, databaseResourceGroup, name)
 }
 
-func testAccCheckIBMDatabaseInstanceMongodbImport(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstance_Mongodb_import(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true

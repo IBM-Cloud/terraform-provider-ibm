@@ -58,7 +58,7 @@ The default is 'PUBLIC'.
   * `backend_protocol` - (Required, string) The backend protocol. Accepted values are 'TCP', 'HTTP', and 'HTTPS'.
   * `backend_port` - (Required, integer) The backend protocol port number. The port number must be in the range of 1 - 65535.
   * `load_balancing_method` - (Optional, string) The load balancing algorithm. Accepted values are 'round_robin', 'weighted_round_robin', and 'least_connection'. The default is 'round_robin'.
-  * `session_stickiness` - (Optional, string) The SOURCE_IP or HTTP_COOKIE for session stickiness.
+  * `session_stickiness` - (Optional, string) The SOURCE_IP for session stickiness.
   * `max_conn` - (Optional, integer) The maximum number of connections the listener can accept. The number must be 1 - 64000.
   * `tls_certificate_id` - (Optional, integer) The ID of the SSL/TLS certificate being used for a protocol. This ID should be specified when `frontend protocol` has a value of `HTTPS`.
 * `ssl_ciphers` - (Optional, list) The comma seperated list of SSL Ciphers. You can find list of supported cipheres [ssl_offload](https://cloud.ibm.com/docs/infrastructure/loadbalancer-service?topic=loadbalancer-service-ssl-offload-with-ibm-cloud-load-balancer).

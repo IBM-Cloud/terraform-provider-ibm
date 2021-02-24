@@ -1,19 +1,11 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
 	"fmt"
-	"log"
 
-	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -32,6 +24,14 @@ func resourceIBMResourceGroup() *schema.Resource {
 				Required:    true,
 				Description: "The name of the resource group",
 			},
+
+			"quota_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The id of the quota",
+				Removed:     "This field is removed",
+			},
+
 			"default": {
 				Description: "Specifies whether its default resource group or not",
 				Type:        schema.TypeBool,
@@ -50,53 +50,12 @@ func resourceIBMResourceGroup() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
-			"crn": {
-				Type:        schema.TypeString,
-				Description: "The full CRN associated with the resource group",
-				Computed:    true,
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Description: "The date when the resource group was initially created.",
-				Computed:    true,
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Description: "The date when the resource group was last updated.",
-				Computed:    true,
-			},
-			"teams_url": {
-				Type:        schema.TypeString,
-				Description: "The URL to access the team details that associated with the resource group.",
-				Computed:    true,
-			},
-			"payment_methods_url": {
-				Type:        schema.TypeString,
-				Description: "The URL to access the payment methods details that associated with the resource group.",
-				Computed:    true,
-			},
-			"quota_url": {
-				Type:        schema.TypeString,
-				Description: "The URL to access the quota details that associated with the resource group.",
-				Computed:    true,
-			},
-			"quota_id": {
-				Type:        schema.TypeString,
-				Description: "An alpha-numeric value identifying the quota ID associated with the resource group.",
-				Computed:    true,
-			},
-			"resource_linkages": {
-				Type:        schema.TypeSet,
-				Description: "An array of the resources that linked to the resource group",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Computed:    true,
-			},
 		},
 	}
 }
 
 func resourceIBMResourceGroupCreate(d *schema.ResourceData, meta interface{}) error {
-	rMgtClient, err := meta.(ClientSession).ResourceManagerV2API()
+	rMgtClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return err
 	}
@@ -106,104 +65,64 @@ func resourceIBMResourceGroupCreate(d *schema.ResourceData, meta interface{}) er
 	if err != nil {
 		return err
 	}
+
 	accountID := userDetails.userAccount
 
-	resourceGroupCreate := rg.CreateResourceGroupOptions{
-		Name:      &name,
-		AccountID: &accountID,
+	resourceGroupCreate := models.ResourceGroupv2{
+		ResourceGroup: models.ResourceGroup{
+			Name:      name,
+			AccountID: accountID,
+		},
 	}
 
-	resourceGroup, resp, err := rMgtClient.CreateResourceGroup(&resourceGroupCreate)
+	resourceGroup, err := rMgtClient.ResourceGroup().Create(resourceGroupCreate)
 	if err != nil {
-		return fmt.Errorf("Error creating resource group: %s with responce code  %s", err, resp)
+		return fmt.Errorf("Error creating resource group: %s", err)
 	}
 
-	d.SetId(*resourceGroup.ID)
+	d.SetId(resourceGroup.ID)
 
 	return resourceIBMResourceGroupRead(d, meta)
 }
 
 func resourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) error {
-	rMgtClient, err := meta.(ClientSession).ResourceManagerV2API()
+	rMgtClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return err
 	}
 	resourceGroupID := d.Id()
-	resourceGroupGet := rg.GetResourceGroupOptions{
-		ID: &resourceGroupID,
-	}
 
-	resourceGroup, resp, err := rMgtClient.GetResourceGroup(&resourceGroupGet)
+	resourceGroup, err := rMgtClient.ResourceGroup().Get(resourceGroupID)
 	if err != nil {
-		if resp != nil && resp.StatusCode == 404 {
-			log.Printf("[WARN] Resource Group is not found")
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("Error retrieving resource group: %swith responce code  %s", err, resp)
+		return fmt.Errorf("Error retrieving resource group: %s", err)
 	}
 
-	d.Set("name", *resourceGroup.Name)
-	if resourceGroup.State != nil {
-		d.Set("state", *resourceGroup.State)
-	}
-	if resourceGroup.Default != nil {
-		d.Set("default", *resourceGroup.Default)
-	}
-	if resourceGroup.CRN != nil {
-		d.Set("crn", *resourceGroup.CRN)
-	}
-	if resourceGroup.CreatedAt != nil {
-		createdAt := *resourceGroup.CreatedAt
-		d.Set("created_at", createdAt.String())
-	}
-	if resourceGroup.UpdatedAt != nil {
-		UpdatedAt := *resourceGroup.UpdatedAt
-		d.Set("updated_at", UpdatedAt.String())
-	}
-	if resourceGroup.TeamsURL != nil {
-		d.Set("teams_url", *resourceGroup.TeamsURL)
-	}
-	if resourceGroup.PaymentMethodsURL != nil {
-		d.Set("payment_methods_url", *resourceGroup.PaymentMethodsURL)
-	}
-	if resourceGroup.QuotaURL != nil {
-		d.Set("quota_url", *resourceGroup.QuotaURL)
-	}
-	if resourceGroup.QuotaID != nil {
-		d.Set("quota_id", *resourceGroup.QuotaID)
-	}
-	if resourceGroup.ResourceLinkages != nil {
-		rl := make([]string, 0)
-		for _, r := range resourceGroup.ResourceLinkages {
-			rl = append(rl, r.(string))
-		}
-		d.Set("resource_linkages", rl)
-	}
+	d.Set("name", resourceGroup.Name)
+	d.Set("state", resourceGroup.State)
+	d.Set("default", resourceGroup.Default)
+
 	return nil
 }
 
 func resourceIBMResourceGroupUpdate(d *schema.ResourceData, meta interface{}) error {
-	rMgtClient, err := meta.(ClientSession).ResourceManagerV2API()
+	rMgtClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return err
 	}
 
 	resourceGroupID := d.Id()
-	resourceGroupUpdate := rg.UpdateResourceGroupOptions{
-		ID: &resourceGroupID,
-	}
+
+	updateReq := managementv2.ResourceGroupUpdateRequest{}
 	hasChange := false
 	if d.HasChange("name") {
-		name := d.Get("name").(string)
-		resourceGroupUpdate.Name = &name
+		updateReq.Name = d.Get("name").(string)
 		hasChange = true
 	}
 
 	if hasChange {
-		_, resp, err := rMgtClient.UpdateResourceGroup(&resourceGroupUpdate)
+		_, err := rMgtClient.ResourceGroup().Update(resourceGroupID, &updateReq)
 		if err != nil {
-			return fmt.Errorf("Error updating resource group: %s with responce code  %s", err, resp)
+			return fmt.Errorf("Error updating resource group: %s", err)
 		}
 
 	}
@@ -211,23 +130,16 @@ func resourceIBMResourceGroupUpdate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMResourceGroupDelete(d *schema.ResourceData, meta interface{}) error {
-	rMgtClient, err := meta.(ClientSession).ResourceManagerV2API()
+	rMgtClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return err
 	}
 
 	resourceGroupID := d.Id()
-	resourceGroupDelete := rg.DeleteResourceGroupOptions{
-		ID: &resourceGroupID,
-	}
 
-	resp, err := rMgtClient.DeleteResourceGroup(&resourceGroupDelete)
+	err = rMgtClient.ResourceGroup().Delete(resourceGroupID)
 	if err != nil {
-		if resp != nil && resp.StatusCode == 404 {
-			log.Printf("[WARN] Resource Group is not found")
-			return nil
-		}
-		return fmt.Errorf("Error Deleting resource group: %s with responce code  %s", err, resp)
+		return fmt.Errorf("Error Deleting resource group: %s", err)
 	}
 
 	d.SetId("")
@@ -236,22 +148,21 @@ func resourceIBMResourceGroupDelete(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMResourceGroupExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	rMgtClient, err := meta.(ClientSession).ResourceManagerV2API()
+	rMgtClient, err := meta.(ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return false, err
 	}
 	resourceGroupID := d.Id()
-	resourceGroupGet := rg.GetResourceGroupOptions{
-		ID: &resourceGroupID,
-	}
 
-	resourceGroup, resp, err := rMgtClient.GetResourceGroup(&resourceGroupGet)
+	resourceGroup, err := rMgtClient.ResourceGroup().Get(resourceGroupID)
 	if err != nil {
-		if resp != nil && resp.StatusCode == 404 {
-			return false, nil
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() == 404 {
+				return false, nil
+			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s with responce code  %s", err, resp)
+		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
 
-	return *resourceGroup.ID == resourceGroupID, nil
+	return resourceGroup.ID == resourceGroupID, nil
 }

@@ -1,18 +1,8 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
 	"errors"
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -29,7 +19,7 @@ func TestAccIBMPIVolumebasic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMPIVolumeDestroy,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMPIVolumeConfig(name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIVolumeExists("ibm_pi_volume.power_volume"),
@@ -52,10 +42,9 @@ func testAccCheckIBMPIVolumeDestroy(s *terraform.State) error {
 		}
 		parts, err := idParts(rs.Primary.ID)
 		powerinstanceid := parts[0]
-		volumeC := st.NewIBMPIVolumeClient(sess, powerinstanceid)
-		volume, err := volumeC.Get(parts[1], powerinstanceid, volGetTimeOut)
+		networkC := st.NewIBMPIVolumeClient(sess, powerinstanceid)
+		_, err = networkC.Get(parts[1], powerinstanceid, volGetTimeOut)
 		if err == nil {
-			log.Println("volume*****", volume.State)
 			return fmt.Errorf("PI Volume still exists: %s", rs.Primary.ID)
 		}
 	}

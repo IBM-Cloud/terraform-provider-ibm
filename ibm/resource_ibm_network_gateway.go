@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -19,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -382,6 +374,7 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 				"please check public_vlan_id and private_vlan_id property on individual members")
 		}
 	}
+	d.Partial(true)
 
 	//Build order for one member
 	order, err := getMonthlyGatewayOrder(members[0], meta)
@@ -528,6 +521,7 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 	member1Id := *bm.(datatypes.Hardware).Id
 	members[0]["member_id"] = member1Id
 	log.Printf("[INFO] Member 1 ID: %d", member1Id)
+	d.SetPartial("members")
 
 	err = setTagsAndNotes(members[0], meta)
 	if err != nil {
@@ -549,12 +543,14 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 		if err != nil {
 			return err
 		}
+		d.SetPartial("members")
 	} else if len(members) == 2 {
 		//Add the new gateway which has different configuration than the first
 		err := addGatewayMember(id, members[1], meta)
 		if err != nil {
 			return err
 		}
+		d.SetPartial("members")
 	}
 
 	name := d.Get("name").(string)
@@ -563,6 +559,7 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
+	d.Partial(false)
 	return resourceIBMNetworkGatewayRead(d, meta)
 }
 
@@ -585,7 +582,7 @@ func resourceIBMMemberHostHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-",
 		m["hostname"].(string)))
 
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }
 
 func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) error {

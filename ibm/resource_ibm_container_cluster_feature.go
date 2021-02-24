@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -14,10 +5,9 @@ import (
 	"log"
 	"time"
 
+	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-
-	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 )
 
 const (
@@ -90,6 +80,13 @@ func resourceIBMContainerClusterFeature() *schema.Resource {
 				Description:      "ID of the resource group.",
 				Computed:         true,
 				DiffSuppressFunc: applyOnce,
+			},
+
+			"region": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				Removed:  "This field is deprecated",
 			},
 		},
 	}

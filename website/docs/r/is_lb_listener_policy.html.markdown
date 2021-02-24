@@ -95,15 +95,15 @@ The following arguments are supported:
 
     `Note` - As of now we rules can’t be updated, will be supported in upcoming release as a new resource
 
-* `target_id` - (Optional, integer) The unique identifier for this load balancer pool, specified with 'forward' action.
-* `target_http_status_code` -(Optional, integer) The http status code in the redirect response, one of [301, 302, 303, 307, 308], specified with 'redirect' action.
-* `target_url` - (Optional, integer) The redirect target URL, specified with 'redirect' action
+* `target-id` - (Optional, integer) The unique identifier for this load balancer pool, specified with 'forward' action.
+* `target-http-status-code` -(Optional, integer) The http status code in the redirect response, one of [301, 302, 303, 307, 308], specified with 'redirect' action.
+* `target-url` - (Optional, integer) The redirect target URL, specified with 'redirect' action
 
 
 `Note :`
 
-When action is forward, target_id should specify which pool the load balancer forwards the traffic to.
-When action is redirect,target_url should specify the url and target_http_status_code to specify the code used in the redirect response.
+When action is forward, target-id should specify which pool the load balancer forwards the traffic to.
+When action is redirect,target-url should specify the url and target-http-status-code to specify the code used in the redirect response.
 Network load balancer does not support ibm_is_lb_listener_policy.
 
 ## Attribute Reference

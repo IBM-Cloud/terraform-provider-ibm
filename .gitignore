@@ -28,6 +28,7 @@ website/vendor
 *.attach
 *.xml
 *.old
+test.sh
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate

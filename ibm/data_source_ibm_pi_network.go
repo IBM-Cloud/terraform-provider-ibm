@@ -1,22 +1,11 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
-	//"fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-
+	//"fmt"
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 func dataSourceIBMPINetwork() *schema.Resource {
@@ -94,30 +83,14 @@ func dataSourceIBMPINetworksRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	d.SetId(*networkdata.NetworkID)
-	if networkdata.Cidr != nil {
-		d.Set("cidr", networkdata.Cidr)
-	}
-	if networkdata.Type != nil {
-		d.Set("type", networkdata.Type)
-	}
-	if &networkdata.Gateway != nil {
-		d.Set("gateway", networkdata.Gateway)
-	}
-	if networkdata.VlanID != nil {
-		d.Set("vlan_id", networkdata.VlanID)
-	}
-	if networkdata.IPAddressMetrics.Available != nil {
-		d.Set("available_ip_count", networkdata.IPAddressMetrics.Available)
-	}
-	if networkdata.IPAddressMetrics.Used != nil {
-		d.Set("used_ip_count", networkdata.IPAddressMetrics.Used)
-	}
-	if networkdata.IPAddressMetrics.Utilization != nil {
-		d.Set("used_ip_percent", networkdata.IPAddressMetrics.Utilization)
-	}
-	if networkdata.Name != nil {
-		d.Set("name", networkdata.Name)
-	}
+	d.Set("cidr", networkdata.Cidr)
+	d.Set("type", networkdata.Type)
+	d.Set("gateway", networkdata.Gateway)
+	d.Set("vlan_id", networkdata.VlanID)
+	d.Set("available_ip_count", networkdata.IPAddressMetrics.Available)
+	d.Set("used_ip_count", networkdata.IPAddressMetrics.Used)
+	d.Set("used_ip_percent", networkdata.IPAddressMetrics.Utilization)
+	d.Set("name", networkdata.Name)
 
 	return nil
 

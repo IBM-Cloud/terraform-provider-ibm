@@ -45,6 +45,7 @@ The following attributes are exported:
     * `encryption` - encryption key CRN to encrypt the boot volume attached. 
     * `name` - Name of the boot volume.
     * `size` - Boot volume size to configured in GB.
+    * `iops` - IOPS for the boot volume.
     * `profile` - Profile for the boot volume configured.
     * `delete_volume_on_instance_delete` - Configured to delete the boot volume to be deleted upon instance deletion.
   * `volume_attachments` - A nested block describing the storage volume configuration for the template. 

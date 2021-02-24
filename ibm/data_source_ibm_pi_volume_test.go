@@ -1,43 +1,34 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccIBMPIVolumeDataSource_basic(t *testing.T) {
-	name := fmt.Sprintf("tf-pi-volume-%d", acctest.RandIntRange(10, 100))
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMPIVolumeDataSourceConfig(name),
+			resource.TestStep{
+				Config: testAccCheckIBMPIVolumeDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pi_volume.testacc_ds_volume", "id"),
+					resource.TestCheckResourceAttr("data.ibm_pi_volume.testacc_ds_volume", "pi_volume_name", pi_volume_name),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPIVolumeDataSourceConfig(name string) string {
-	return testAccCheckIBMPIVolumeConfig(name) + fmt.Sprintf(`
+func testAccCheckIBMPIVolumeDataSourceConfig() string {
+	return fmt.Sprintf(`
+	
 data "ibm_pi_volume" "testacc_ds_volume" {
-    pi_volume_name = ibm_pi_volume.power_volume.pi_volume_name
+    pi_volume_name = "%s"
     pi_cloud_instance_id = "%s"
-}`, pi_cloud_instance_id)
+}`, pi_volume_name, pi_cloud_instance_id)
 
 }

@@ -36,6 +36,7 @@ The following attributes are exported:
 * `name` - The user-defined name for this network interface.
 * `port_speed` - The network interface port speed in Mbp.
 * `primary_ipv4_address` - The network interface port speed in Mbp.
+* `primary_ipv6_address` - The primary IPv6 address in compressed notation as specified by RFC 5952.
 * `secondary_address` - Collection seconary IP addresses.
 * `status` - The status of the volume.
 * `subnet` - The Subnet id.
@@ -51,6 +52,7 @@ Nested `floating_ips` blocks have the following structure:
   * `id` - The id of this floating Ip.
   * `crn` - The CRN of this floating Ip.
   * `name` - The name of this floating Ip.
+  * `address` - The globally unique IP address
 
 ## Import
 

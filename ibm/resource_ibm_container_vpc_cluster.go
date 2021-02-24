@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -556,7 +547,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 
 	}
 
-	if (d.HasChange("kube_version") || d.HasChange("update_all_workers") || d.HasChange("patch_version")) && !d.IsNewResource() {
+	if (d.HasChange("kube_version") || d.HasChange("update_all_workers")) || d.HasChange("patch_version") && !d.IsNewResource() {
 
 		if d.HasChange("kube_version") {
 			ClusterClient, err := meta.(ClientSession).ContainerAPI()
@@ -626,7 +617,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 
 			for _, worker := range workers {
 				// check if change is present in MAJOR.MINOR version or in PATCH version
-				if strings.Split(worker.KubeVersion.Actual, "_")[0] != strings.Split(cls.MasterKubeVersion, "_")[0] || (strings.Split(worker.KubeVersion.Actual, ".")[2] != patchVersion && patchVersion == strings.Split(worker.KubeVersion.Target, ".")[2]) {
+				if strings.Split(worker.KubeVersion.Actual, "_")[0] != strings.Split(cls.MasterKubeVersion, "_")[0] || (strings.Split(worker.KubeVersion.Actual, ".")[2] != patchVersion && patchVersion == strings.Split(cls.MasterKubeVersion, ".")[2]) {
 					_, err := csClient.Workers().ReplaceWokerNode(clusterID, worker.ID, targetEnv)
 					// As API returns http response 204 NO CONTENT, error raised will be exempted.
 					if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {
@@ -968,7 +959,7 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 			if err1 != nil {
 				log.Printf("Error Retrieving vpc load balancers: %s\n%s", err, response)
 			}
-			if lbs != nil && lbs.LoadBalancers != nil && len(lbs.LoadBalancers) > 0 {
+			if len(lbs.LoadBalancers) > 0 {
 				for _, lb := range lbs.LoadBalancers {
 					if strings.Contains(*lb.Name, clusterID) {
 						log.Println("Deleting Load Balancer", *lb.Name)
@@ -996,7 +987,7 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 			if err1 != nil {
 				log.Printf("Error Retrieving vpc load balancers: %s\n%s", err, response)
 			}
-			if lbs != nil && lbs.LoadBalancers != nil && len(lbs.LoadBalancers) > 0 {
+			if len(lbs.LoadBalancers) > 0 {
 				for _, lb := range lbs.LoadBalancers {
 					if strings.Contains(*lb.Name, clusterID) {
 						log.Println("Deleting Load Balancer", *lb.Name)

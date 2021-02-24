@@ -27,7 +27,8 @@ resource "ibm_container_bind_service" "bind_service" {
 The following arguments are supported:
 
 * `cluster_name_id` - (Required, Forces new resource, string) The name or ID of the cluster.
-
+* `service_instance_space_guid` - (Removed, Forces new resource) The space GUID associated with the service instance. This attribute is removed.
+* `service_instance_name_id` - (Removed, Forces new resource) The name or ID of the service that you want to bind to the cluster. This attribute is removed, use `service_instance_id` or `service_instance_name` instead.
 * `namespace_id` - (Required, Forces new resource, string) The Kubernetes namespace.
 * `service_instance_name` - (Optional, Forces new resource, string) The name of the service that you want to bind to the cluster. Conflicts with `service_instance_id`.
 * `service_instance_id` - (Optional, Forces new resource, string) The ID of the service that you want to bind to the cluster. Conflicts with `service_instance_name`.
@@ -47,7 +48,7 @@ The following attributes are exported:
 
 * `id` - The unique identifier of the bind service resource. The id is composed of \<cluster_name_id\>/\<service_instance_name or service_instance_id\>/\<namespace_id/>
 * `namespace_id` -  The Kubernetes namespace.
-
+* `secret_name` - The secret name. This field is removed.
 
 ## Import
 

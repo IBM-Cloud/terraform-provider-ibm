@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -21,12 +12,14 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 const (
 	isVPCDefaultNetworkACL          = "default_network_acl"
+	isVPCIsDefault                  = "is_default"
 	isVPCIDefaultSecurityGroup      = "default_security_group"
 	isVPCName                       = "name"
 	isVPCResourceGroup              = "resource_group"
@@ -96,6 +89,13 @@ func resourceIBMISVPC() *schema.Resource {
 				Computed:    true,
 				Deprecated:  "This field is deprecated",
 				Description: "Default network ACL",
+			},
+
+			isVPCIsDefault: {
+				Type:     schema.TypeBool,
+				ForceNew: true,
+				Optional: true,
+				Removed:  "This field is removed use classic_access",
 			},
 
 			isVPCClassicAccess: {
@@ -1310,5 +1310,5 @@ func resourceIBMVPCHash(v interface{}) int {
 	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf("%s",
 		strings.ToLower(v.(string))))
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }

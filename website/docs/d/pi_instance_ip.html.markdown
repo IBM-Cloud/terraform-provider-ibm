@@ -37,7 +37,7 @@ The following arguments are supported:
 
 * `pi_instance_name` - (Required, string) The name of the instance.
 * `pi_network_name` - (Required,string) - The subnet that the vm belongs to. This should have been created.
-* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
+* `pi_cloud_instance_id` - (Required, string) The service instance associated with the account
 
 ## Attribute Reference
 

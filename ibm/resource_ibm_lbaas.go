@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -16,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -154,8 +146,8 @@ func resourceIBMLbaas() *schema.Resource {
 						"session_stickiness": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							Description:  "Session stickness. Valid values is SOURCE_IP and HTTP_COOKIE",
-							ValidateFunc: validateAllowedStringValue([]string{"SOURCE_IP", "HTTP_COOKIE"}),
+							Description:  "Session stickness. Valid values is SOURCE_IP",
+							ValidateFunc: validateAllowedStringValue([]string{"SOURCE_IP"}),
 						},
 						"max_conn": {
 							Type:         schema.TypeInt,
@@ -227,6 +219,35 @@ func resourceIBMLbaas() *schema.Resource {
 				},
 			},
 
+			"server_instances": {
+				Type:        schema.TypeSet,
+				Description: "The Server instances for this load balancer",
+				Optional:    true,
+				Removed:     "Please use the server instance resource instead",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"private_ip_address": {
+							Type:         schema.TypeString,
+							Description:  "The Private IP address of a load balancer member.",
+							Required:     true,
+							ValidateFunc: validateIP,
+						},
+						"weight": {
+							Type:         schema.TypeInt,
+							Description:  "The weight of a load balancer member.",
+							Computed:     true,
+							Optional:     true,
+							ValidateFunc: validateWeight,
+						},
+						"member_id": {
+							Type:        schema.TypeString,
+							Description: "The UUID of a load balancer member",
+							Computed:    true,
+						},
+					},
+				},
+				Set: resourceIBMLBMemberHash,
+			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -324,12 +345,14 @@ func resourceIBMLbaasRead(d *schema.ResourceData, meta interface{}) error {
 func resourceIBMLbaasUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetNetworkLBaaSLoadBalancerService(sess.SetRetries(0))
+	d.Partial(true)
 
 	if d.HasChange("description") {
 		_, err := service.UpdateLoadBalancer(sl.String(d.Id()), sl.String(d.Get("description").(string)))
 		if err != nil {
 			return err
 		}
+		d.SetPartial("description")
 	}
 	listenerService := services.GetNetworkLBaaSListenerService(sess.SetRetries(0))
 	if d.HasChange("protocols") {
@@ -373,6 +396,7 @@ func resourceIBMLbaasUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 
+		d.SetPartial("protocols")
 	}
 	if d.HasChange("ssl_ciphers") {
 		if v, ok := d.GetOk("ssl_ciphers"); ok && v.(*schema.Set).Len() > 0 {
@@ -402,7 +426,9 @@ func resourceIBMLbaasUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		}
 
+		d.SetPartial("ssl_ciphers")
 	}
+	d.Partial(false)
 
 	return resourceIBMLbaasRead(d, meta)
 }
@@ -625,7 +651,7 @@ func resourceIBMLBProtocolHash(v interface{}) int {
 		buf.WriteString(fmt.Sprintf("%d-", v.(int)))
 	}
 
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }
 
 func resourceIBMLBMemberHash(v interface{}) int {
@@ -634,5 +660,5 @@ func resourceIBMLBMemberHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-",
 		m["private_ip_address"].(string)))
 
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }

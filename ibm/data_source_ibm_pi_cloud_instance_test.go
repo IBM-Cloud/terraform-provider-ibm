@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -22,10 +13,10 @@ func TestAccIBMPICloudInstanceDataSource_basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMPICloudInstanceDataSourceConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pi_cloud_instance.testacc_ds_cloud_instance", "id"),
+				Check:  resource.ComposeTestCheckFunc(
+				//resource.TestCheckResourceAttr("data.ibm_pi_image.testacc_ds_image", "pi_image_name", pi_image),
 				),
 			},
 		},
@@ -35,7 +26,7 @@ func TestAccIBMPICloudInstanceDataSource_basic(t *testing.T) {
 func testAccCheckIBMPICloudInstanceDataSourceConfig() string {
 	return fmt.Sprintf(`
 	
-data "ibm_pi_cloud_instance" "testacc_ds_cloud_instance" {
+data "ibm_pi_cloud_instances" "testacc_ds_cloud_instance" {
     pi_cloud_instance_id = "%s"
 }`, pi_cloud_instance_id)
 

@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -45,6 +36,22 @@ func dataIBMCertificateManagerCertificate() *schema.Resource {
 						"data": {
 							Type:     schema.TypeMap,
 							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"content": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"priv_key": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"intermediate": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
 						},
 						"description": {
 							Type:     schema.TypeString,

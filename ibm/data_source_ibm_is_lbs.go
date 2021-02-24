@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -167,6 +158,25 @@ func dataSourceIBMISLBS() *schema.Resource {
 							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "The profile to use for this load balancer",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this load balancer profile",
+									},
+									"href": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this load balancer profile",
+									},
+									"family": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The product family this load balancer profile belongs to",
+									},
+								},
+							},
 						},
 
 						isLBPools: {

@@ -1,35 +1,29 @@
 ---
 layout: "ibm"
-page_title: "IBM: certificate_manager_import"
+page_title: "IBM: certificate_manager_Import"
 sidebar_current: "docs-ibm-resource-certificate-manager-import"
 description: |-
-  Imports and Manages Imported Certificate.
+  Imports and Manages Certificates.
 ---
 
-# ibm\_certificate_manager_import
+# ibm\_certificate_manager
 
-Imports and manages imported certificate of Certificate Manager Instance.
+Provides a certificate manager. This allows certificates to be imported, updated, and deleted.
 
 ## Example Usage
-This example creates a CMS instance by enabling customer managed keys and imports a certificate.
-``` hcl
-resource "ibm_resource_instance" "cm" {
-  name     = "test"
-  location = "us-south"
-  plan     = "free"
-  service  = "cloudcerts"
-  parameters = {
-    kms_info = "{\"id\":\"<GUID OF KMS/HPCS INSTANCE>\",\"url\":\"<KMS/HPCS ENDPOINT>\"}",
-    tek_id   = "CRN OF KMS/HPCS KEY",
-  }
-}
 
+```hcl
+provider "ibm"
+{
+}
 resource "ibm_certificate_manager_import" "cert" {
   certificate_manager_instance_id = ibm_resource_instance.cm.id
   name                            = "test"
   description="string"
   data = {
     content = file(var.certfile_path)
+    priv_key = ""
+    intermediate = ""
   }
 }
 ```

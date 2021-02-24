@@ -59,35 +59,6 @@ resource "ibm_resource_key" "resourceKey" {
   }
 }
 ```
-## Example Usage with HMAC 
-
-```hcl
-data "ibm_resource_group" "group" {
-    name ="Default"
-}
-resource "ibm_resource_instance" "resource_instance" {
-  name              = "test-21"
-  service           = "cloud-object-storage"
-  plan              = "lite"
-  location          = "global"
-  resource_group_id = data.ibm_resource_group.group.id
-  tags              = ["tag1", "tag2"]
-  
-  //User can increase timeouts
-  timeouts {
-    create = "15m"
-    update = "15m"
-    delete = "15m"
-  }
-}
-resource "ibm_resource_key" "resourceKey" {
-  name                 = "my-cos-bucket-xx-key"
-  resource_instance_id = ibm_resource_instance.resource_instance.id
-  parameters           = { "HMAC" = true }
-  role                 = "Manager"
-}
-
-```
 
 ## Timeouts
 

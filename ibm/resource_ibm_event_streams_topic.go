@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -85,6 +76,34 @@ func resourceIBMEventStreamsTopic() *schema.Resource {
 				Type:        schema.TypeMap,
 				Description: "The configuration parameters of a topic",
 				Optional:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"cleanup.policy": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"retention.ms": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"retention.bytes": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"segment.bytes": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"segment.ms": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"segment.index.bytes": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -163,9 +182,8 @@ func resourceIBMEventStreamsTopicRead(d *schema.ResourceData, meta interface{}) 
 			return nil
 		}
 	}
-	log.Printf("[INFO] resourceIBMEventStreamsTopicRead topic %s does not exist", topicName)
-	d.SetId("")
-	return nil
+	log.Printf("[DEBUG] resourceIBMEventStreamsTopicRead topic %s does not exist", topicName)
+	return fmt.Errorf("topic %s does not exist", topicName)
 }
 
 func resourceIBMEventStreamsTopicUpdate(d *schema.ResourceData, meta interface{}) error {

@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -45,7 +36,7 @@ const (
 	isInstanceBootVolume              = "boot_volume"
 	isInstanceVolAttName              = "name"
 	isInstanceVolAttVolume            = "volume"
-	isInstanceVolAttVolAutoDelete     = "auto_delete_volume"
+	isInstanceVolAttVolAutoDelete     = "auto_delete"
 	isInstanceVolAttVolCapacity       = "capacity"
 	isInstanceVolAttVolIops           = "iops"
 	isInstanceVolAttVolName           = "name"
@@ -66,8 +57,8 @@ const (
 	isInstanceGpuModel                = "model"
 	isInstanceMemory                  = "memory"
 	isInstanceStatus                  = "status"
+	isInstanceGeneration              = "generation"
 
-	isEnableCleanDelete        = "wait_before_delete"
 	isInstanceProvisioning     = "provisioning"
 	isInstanceProvisioningDone = "done"
 	isInstanceAvailable        = "available"
@@ -161,13 +152,6 @@ func resourceIBMISInstance() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         resourceIBMVPCHash,
 				Description: "list of tags for the instance",
-			},
-
-			isEnableCleanDelete: {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				Description: "Enables stopping of instance before deleting and waits till deletion is complete",
 			},
 
 			isInstanceVolumeAttachments: {
@@ -292,6 +276,14 @@ func resourceIBMISInstance() *schema.Resource {
 				},
 			},
 
+			isInstanceGeneration: {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				ValidateFunc:     validateGeneration,
+				Removed:          "This field is removed",
+			},
+
 			isInstanceUserData: {
 				Type:        schema.TypeString,
 				ForceNew:    true,
@@ -346,12 +338,6 @@ func resourceIBMISInstance() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
 				Description: "List of volumes",
-			},
-
-			isInstanceVolAttVolAutoDelete: {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Auto delete volume along with instance",
 			},
 
 			isInstanceResourceGroup: {
@@ -1618,11 +1604,6 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		remove := expandStringList(ov.Difference(nv).List())
 		add := expandStringList(nv.Difference(ov).List())
 
-		var volautoDelete bool
-		if volumeautodeleteIntf, ok := d.GetOk(isInstanceVolAttVolAutoDelete); ok && volumeautodeleteIntf != nil {
-			volautoDelete = volumeautodeleteIntf.(bool)
-		}
-
 		if len(add) > 0 {
 			for i := range add {
 				createvolattoptions := &vpcv1.CreateInstanceVolumeAttachmentOptions{
@@ -1630,7 +1611,6 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					Volume: &vpcv1.VolumeIdentity{
 						ID: &add[i],
 					},
-					DeleteVolumeOnInstanceDelete: &volautoDelete,
 				}
 				vol, _, err := instanceC.CreateInstanceVolumeAttachment(createvolattoptions)
 				if err != nil {
@@ -1975,7 +1955,6 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		return err
 	}
 
-	cleanDelete := d.Get(isEnableCleanDelete).(bool)
 	getinsOptions := &vpcv1.GetInstanceOptions{
 		ID: &id,
 	}
@@ -1987,52 +1966,47 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("Error Getting Instance (%s): %s\n%s", id, err, response)
 	}
-
+	actiontype := "stop"
+	createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+		InstanceID: &id,
+		Type:       &actiontype,
+	}
+	_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
+		return fmt.Errorf("Error Creating Instance Action: %s\n%s", err, response)
+	}
+	_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutDelete), id, d)
+	if err != nil {
+		return err
+	}
+	listvolattoptions := &vpcv1.ListInstanceVolumeAttachmentsOptions{
+		InstanceID: &id,
+	}
+	vols, response, err := instanceC.ListInstanceVolumeAttachments(listvolattoptions)
+	if err != nil {
+		return fmt.Errorf("Error Listing volume attachments to the instance: %s\n%s", err, response)
+	}
 	bootvolid := ""
-
-	if cleanDelete {
-		actiontype := "stop"
-		createinsactoptions := &vpcv1.CreateInstanceActionOptions{
-			InstanceID: &id,
-			Type:       &actiontype,
-		}
-		_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
-		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				return nil
+	for _, vol := range vols.VolumeAttachments {
+		if *vol.Type == "data" {
+			delvolattoptions := &vpcv1.DeleteInstanceVolumeAttachmentOptions{
+				InstanceID: &id,
+				ID:         vol.ID,
 			}
-			return fmt.Errorf("Error Creating Instance Action: %s\n%s", err, response)
-		}
-		_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutDelete), id, d)
-		if err != nil {
-			return err
-		}
-		listvolattoptions := &vpcv1.ListInstanceVolumeAttachmentsOptions{
-			InstanceID: &id,
-		}
-		vols, response, err := instanceC.ListInstanceVolumeAttachments(listvolattoptions)
-		if err != nil {
-			return fmt.Errorf("Error Listing volume attachments to the instance: %s\n%s", err, response)
-		}
-
-		for _, vol := range vols.VolumeAttachments {
-			if *vol.Type == "data" {
-				delvolattoptions := &vpcv1.DeleteInstanceVolumeAttachmentOptions{
-					InstanceID: &id,
-					ID:         vol.ID,
-				}
-				_, err := instanceC.DeleteInstanceVolumeAttachment(delvolattoptions)
-				if err != nil {
-					return fmt.Errorf("Error while removing volume Attachment %q for instance %s: %q", *vol.ID, d.Id(), err)
-				}
-				_, err = isWaitForInstanceVolumeDetached(instanceC, d, d.Id(), *vol.ID)
-				if err != nil {
-					return err
-				}
+			_, err := instanceC.DeleteInstanceVolumeAttachment(delvolattoptions)
+			if err != nil {
+				return fmt.Errorf("Error while removing volume Attachment %q for instance %s: %q", *vol.ID, d.Id(), err)
 			}
-			if *vol.Type == "boot" {
-				bootvolid = *vol.Volume.ID
+			_, err = isWaitForInstanceVolumeDetached(instanceC, d, d.Id(), *vol.ID)
+			if err != nil {
+				return err
 			}
+		}
+		if *vol.Type == "boot" {
+			bootvolid = *vol.Volume.ID
 		}
 	}
 	deleteinstanceOptions := &vpcv1.DeleteInstanceOptions{
@@ -2042,16 +2016,14 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
-	if cleanDelete {
-		_, err = isWaitForInstanceDelete(instanceC, d, d.Id())
+	_, err = isWaitForInstanceDelete(instanceC, d, d.Id())
+	if err != nil {
+		return err
+	}
+	if _, ok := d.GetOk(isInstanceBootVolume); ok {
+		_, err = isWaitForVolumeDeleted(instanceC, bootvolid, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
 			return err
-		}
-		if _, ok := d.GetOk(isInstanceBootVolume); ok {
-			_, err = isWaitForVolumeDeleted(instanceC, bootvolid, d.Timeout(schema.TimeoutDelete))
-			if err != nil {
-				return err
-			}
 		}
 	}
 	return nil

@@ -1,20 +1,10 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceIBMContainerBindService() *schema.Resource {
@@ -31,6 +21,19 @@ func resourceIBMContainerBindService() *schema.Resource {
 				ForceNew:    true,
 				Required:    true,
 				Description: "Cluster name or ID",
+			},
+			"service_instance_space_guid": {
+				Type:        schema.TypeString,
+				Description: "The space guid the service instance belongs to",
+				ForceNew:    true,
+				Optional:    true,
+				Removed:     "This field has been removed",
+			},
+			"service_instance_name_id": {
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
+				Removed:  "This field has been removed. User service_instance_name or service_instance_id instead",
 			},
 			"service_instance_name": {
 				Type:          schema.TypeString,
@@ -54,7 +57,12 @@ func resourceIBMContainerBindService() *schema.Resource {
 				Required:    true,
 				Description: "namespace ID",
 			},
-
+			"secret_name": {
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
+				Removed:   "This field has been removed",
+			},
 			"org_guid": {
 				Description: "The bluemix organization guid this cluster belongs to",
 				Type:        schema.TypeString,

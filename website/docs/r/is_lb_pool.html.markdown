@@ -76,8 +76,6 @@ The following attributes are exported:
 
 * `id` - The unique identifier of the load balancer pool.The id is composed of \<lb_id\>/\<pool_id\>.
 * `provisioning_status` - The status of load balancer pool.
-* `pool_id`  - Id of the load balancer Pool
-* `related_crn` - The crn of the load balancer resource. 
 
 ## Import
 

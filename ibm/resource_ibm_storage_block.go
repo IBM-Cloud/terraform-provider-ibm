@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -76,12 +67,6 @@ func resourceIBMStorageBlock() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Hostname",
-			},
-
-			"lunid": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "LUN Id",
 			},
 
 			"snapshot_capacity": {
@@ -361,7 +346,6 @@ func resourceIBMStorageBlockRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("capacity", *storage.CapacityGb)
 	d.Set("volumename", *storage.Username)
 	d.Set("hostname", *storage.ServiceResourceBackendIpAddress)
-	d.Set("lunid", *storage.LunId)
 	d.Set("iops", iops)
 	if storage.SnapshotCapacityGb != nil {
 		snapshotCapacity, _ := strconv.Atoi(*storage.SnapshotCapacityGb)

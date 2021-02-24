@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -21,7 +12,7 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 	//t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
-	testName := fmt.Sprintf("tf-Pgress-%s", acctest.RandString(16))
+	testName := fmt.Sprintf("tf_test_acc_%s", acctest.RandString(16))
 	dataName := "data.ibm_database." + testName
 	resourceName := "ibm_database.db"
 
@@ -29,7 +20,7 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config:  testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup, testName),
 				Destroy: false,
 				Check: resource.ComposeTestCheckFunc(

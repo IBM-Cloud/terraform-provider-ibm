@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -18,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -32,7 +24,7 @@ import (
 const (
 	storagePackageType = "STORAGE_AS_A_SERVICE"
 	storageMask        = "id,billingItem.orderItem.order.id"
-	storageDetailMask  = "id,billingItem[location],storageTierLevel,provisionedIops,capacityGb,iops,lunId,storageType[keyName,description],username,serviceResourceBackendIpAddress,properties[type]" +
+	storageDetailMask  = "id,billingItem[location],storageTierLevel,provisionedIops,capacityGb,iops,storageType[keyName,description],username,serviceResourceBackendIpAddress,properties[type]" +
 		",serviceResourceName,allowedIpAddresses[id,ipAddress,subnetId,allowedHost[name,credential[username,password]]],allowedSubnets[allowedHost[name,credential[username,password]]],allowedHardware[allowedHost[name,credential[username,password]]],allowedVirtualGuests[id,allowedHost[name,credential[username,password]]],snapshotCapacityGb,osType,notes,billingItem[hourlyFlag],serviceResource[datacenter[name]],schedules[dayOfWeek,hour,minute,retentionCount,type[keyname,name]],iscsiTargetIpAddresses"
 	itemMask        = "id,capacity,description,units,keyName,capacityMinimum,capacityMaximum,prices[id,categories[id,name,categoryCode],capacityRestrictionMinimum,capacityRestrictionMaximum,capacityRestrictionType,locationGroupId],itemCategory[categoryCode]"
 	enduranceType   = "Endurance"
@@ -1177,7 +1169,7 @@ func resourceIBMFilSnapshotHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%d-",
 		m["retention_count"].(int)))
 
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }
 
 func getPrice(prices []datatypes.Product_Item_Price, category, restrictionType string, restrictionValue int) datatypes.Product_Item_Price {

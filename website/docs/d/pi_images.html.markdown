@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM: pi_images"
 sidebar_current: "docs-ibm-datasources-pi-images"
 description: |-
-  List all of the images for the respective cloud instance that are imported  from catalog by the user
+  Manages images in the Power Virtual Server Cloud.
 ---
 
 # ibm\_pi_images
@@ -32,7 +32,7 @@ data "ibm_pi_images" "ds_images" {
 ## Argument Reference
 The following arguments are supported:
 
-* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
+* `pi_cloud_instance_id` - (Required, string) The service instance associated with the account
 
 ## Attribute Reference
 
