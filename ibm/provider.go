@@ -1,12 +1,3 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
-
 package ibm
 
 import (
@@ -326,11 +317,11 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dl_provider_gateways": dataSourceIBMDirectLinkProviderGateways(),
 
 			//Added for Transit Gateway
-			"ibm_tg_gateway":          dataSourceIBMTransitGateway(),
-			"ibm_tg_gateways":         dataSourceIBMTransitGateways(),
-			"ibm_tg_locations":        dataSourceIBMTransitGatewaysLocations(),
-			"ibm_tg_location":         dataSourceIBMTransitGatewaysLocation(),
-			"ibm_cm_version_instance": dataSourceIbmCmVersionInstance(),
+			"ibm_tg_gateway":           dataSourceIBMTransitGateway(),
+			"ibm_tg_gateways":          dataSourceIBMTransitGateways(),
+			"ibm_tg_locations":         dataSourceIBMTransitGatewaysLocations(),
+			"ibm_tg_location":          dataSourceIBMTransitGatewaysLocation(),
+			"ibm_cm_offering_instance": dataSourceIBMCmOfferingInstance(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -516,9 +507,9 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dl_virtual_connection": resourceIBMDLGatewayVC(),
 			"ibm_dl_provider_gateway":   resourceIBMDLProviderGateway(),
 			//Added for Transit Gateway
-			"ibm_tg_gateway":          resourceIBMTransitGateway(),
-			"ibm_tg_connection":       resourceIBMTransitGatewayConnection(),
-			"ibm_cm_version_instance": resourceIbmCmVersionInstance(),
+			"ibm_tg_gateway":           resourceIBMTransitGateway(),
+			"ibm_tg_connection":        resourceIBMTransitGatewayConnection(),
+			"ibm_cm_offering_instance": resourceIBMCmOfferingInstance(),
 		},
 
 		ConfigureFunc: providerConfigure,
