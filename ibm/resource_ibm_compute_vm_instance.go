@@ -409,7 +409,7 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 			},
 
 			"public_ipv6_subnet_id": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 
@@ -1147,9 +1147,6 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("memory", *result.MaxMemory)
 	d.Set("dedicated_acct_host_only", *result.DedicatedAccountHostOnlyFlag)
 	d.Set("transient", *result.TransientGuestFlag)
-	if result.PrimaryIpAddress != nil {
-		d.Set("has_public_ip", *result.PrimaryIpAddress != "")
-	}
 	d.Set("ipv4_address", result.PrimaryIpAddress)
 	d.Set("ipv4_address_private", result.PrimaryBackendIpAddress)
 	if result.PrimaryNetworkComponent != nil && result.PrimaryNetworkComponent.PrimaryIpAddressRecord != nil {

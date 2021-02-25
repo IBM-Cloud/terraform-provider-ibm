@@ -24,6 +24,7 @@ import (
 )
 
 func TestAccIBMComputeMonitor_Basic(t *testing.T) {
+	t.Skip()
 	var basicMonitor datatypes.Network_Monitor_Version1_Query_Host
 
 	hostname := acctest.RandString(16)
@@ -85,6 +86,7 @@ func TestAccIBMComputeMonitor_Basic(t *testing.T) {
 }
 
 func TestAccIBMComputeMonitorWithTag(t *testing.T) {
+	t.Skip()
 	var basicMonitor datatypes.Network_Monitor_Version1_Query_Host
 
 	hostname := acctest.RandString(16)
@@ -211,7 +213,7 @@ func testAccCheckIBMComputeMonitorConfigBasic(hostname, domain, queryTypeID, res
 resource "ibm_compute_vm_instance" "vg-basic-monitor-test" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true
@@ -247,7 +249,7 @@ func testAccCheckIBMComputeMonitorWithTag(hostname, domain, queryTypeID, respons
 resource "ibm_compute_vm_instance" "vg-basic-monitor-test" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true
@@ -284,7 +286,7 @@ func testAccCheckIBMComputeMonitorWithUpdatedTag(hostname, domain, queryTypeID, 
 resource "ibm_compute_vm_instance" "vg-basic-monitor-test" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true

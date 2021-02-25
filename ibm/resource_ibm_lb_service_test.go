@@ -92,7 +92,7 @@ func testAccCheckBluemixIBMLbServiceConfig_basic(hostname string) string {
 resource "ibm_compute_vm_instance" "test_server_1" {
     hostname = "%s"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true
@@ -135,7 +135,7 @@ func testAccCheckBluemixIBMLbServiceWithTag(hostname string) string {
 resource "ibm_compute_vm_instance" "test_server_1" {
     hostname = "%s"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true
@@ -180,7 +180,7 @@ func testAccCheckBluemixIBMLbServiceWithUpdatedTag(hostname string) string {
 resource "ibm_compute_vm_instance" "test_server_1" {
     hostname = "%s"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true

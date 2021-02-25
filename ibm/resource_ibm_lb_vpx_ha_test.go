@@ -75,7 +75,7 @@ var testAccCheckIBMLbVpxHaConfig_basic = `
 resource "ibm_compute_vm_instance" "vm1" {
     hostname = "vm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true
@@ -121,7 +121,7 @@ var testAccCheckIBMLbVpxHaWithTag = `
 resource "ibm_compute_vm_instance" "vm1" {
     hostname = "vm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true
@@ -169,7 +169,7 @@ var testAccCheckIBMLbVpxHaWithUpdatedTag = `
 resource "ibm_compute_vm_instance" "vm1" {
     hostname = "vm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true

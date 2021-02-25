@@ -103,7 +103,7 @@ var testAccCheckIBMLbVpxServiceConfig_basic = `
 resource "ibm_compute_vm_instance" "vm1" {
     hostname = "vm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal09"
     network_speed = 10
     hourly_billing = true
@@ -117,7 +117,7 @@ resource "ibm_compute_vm_instance" "vm1" {
 resource "ibm_compute_vm_instance" "vm2" {
     hostname = "vm2"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal09"
     network_speed = 10
     hourly_billing = true
@@ -171,7 +171,7 @@ var testAccCheckIBMLbVpxServiceConfig_basic105 = `
 resource "ibm_compute_vm_instance" "vm3" {
     hostname = "vm3"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal09"
     network_speed = 10
     hourly_billing = true
@@ -185,7 +185,7 @@ resource "ibm_compute_vm_instance" "vm3" {
 resource "ibm_compute_vm_instance" "vm4" {
     hostname = "vm4"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal09"
     network_speed = 10
     hourly_billing = true
@@ -238,7 +238,7 @@ var testAccCheckIBMLbVpxServiceWithTag = `
 resource "ibm_compute_vm_instance" "vm1" {
     hostname = "vm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal09"
     network_speed = 10
     hourly_billing = true
@@ -282,7 +282,7 @@ var testAccCheckIBMLbVpxServiceWithUpdatedTag = `
 resource "ibm_compute_vm_instance" "vm1" {
     hostname = "vm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal09"
     network_speed = 10
     hourly_billing = true

@@ -10,13 +10,12 @@
 package ibm
 
 import (
-	"fmt"
-	"strconv"
-	"testing"
-
 	"crypto/sha1"
 	"encoding/hex"
+	"fmt"
 	"regexp"
+	"strconv"
+	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -26,6 +25,7 @@ import (
 )
 
 func TestAccIBMComputeUser_Basic(t *testing.T) {
+	t.Skip()
 	var user datatypes.User_Customer
 
 	resource.Test(t, resource.TestCase{
@@ -114,6 +114,8 @@ func TestAccIBMComputeUser_Basic(t *testing.T) {
 }
 
 func TestAccIBMComputeUserWithTag(t *testing.T) {
+	t.Skip()
+
 	var user datatypes.User_Customer
 
 	resource.Test(t, resource.TestCase{

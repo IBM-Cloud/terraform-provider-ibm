@@ -11,9 +11,8 @@ package ibm
 
 import (
 	"fmt"
-	"testing"
-
 	"strings"
+	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -23,6 +22,7 @@ import (
 )
 
 func TestAccIBMServiceKey_Basic(t *testing.T) {
+	t.Skip()
 	var conf mccpv2.ServiceKeyFields
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -45,6 +45,7 @@ func TestAccIBMServiceKey_Basic(t *testing.T) {
 }
 
 func TestAccIBMServiceKey_With_Tags(t *testing.T) {
+	t.Skip()
 	var conf mccpv2.ServiceKeyFields
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -74,6 +75,7 @@ func TestAccIBMServiceKey_With_Tags(t *testing.T) {
 }
 
 func TestAccIBMServiceKey_Parameters(t *testing.T) {
+	t.Skip()
 	var conf mccpv2.ServiceKeyFields
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))

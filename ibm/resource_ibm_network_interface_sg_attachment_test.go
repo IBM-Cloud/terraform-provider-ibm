@@ -113,7 +113,7 @@ func testAccTestAccIBMNetworkInterfaceSGAttachmentConfig(hostname string) string
 		resource "ibm_compute_vm_instance" "tfuatvm" {
 			hostname                 = "%s"
 			domain                   = "tfvmuatsg.com"
-			os_reference_code        = "DEBIAN_8_64"
+			os_reference_code        = "DEBIAN_9_64"
 			datacenter               = "wdc07"
 			network_speed            = 10
 			hourly_billing           = true
