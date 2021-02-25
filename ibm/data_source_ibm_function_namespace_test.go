@@ -19,7 +19,7 @@ import (
 
 func TestAccFunctionNamespaceDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("Namespace-%d", acctest.RandIntRange(10, 100))
-	resourceGroupName := "Default"
+	resourceGroupName := "default"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

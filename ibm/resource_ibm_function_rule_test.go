@@ -255,7 +255,7 @@ func testAccCheckFunctionRuleDestroy(s *terraform.State) error {
 func testAccCheckIAMFunctionRuleCreate(actionName, triggerName, name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -316,7 +316,7 @@ func testAccCheckIAMFunctionRuleCreate(actionName, triggerName, name, namespace 
 func testAccCheckIAMFunctionRuleUpdate(updatedTriggerName, name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -352,7 +352,7 @@ func testAccCheckIAMFunctionRuleUpdate(updatedTriggerName, name, namespace strin
 func testAccCheckIAMFunctionRuleImport(triggerName, name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
