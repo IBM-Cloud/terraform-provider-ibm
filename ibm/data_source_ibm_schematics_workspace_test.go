@@ -22,7 +22,7 @@ func TestAccIBMSchematicsWorkspaceDataSource_basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMSchematicsWorkspaceDataSourceConfig(workspaceID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_schematics_workspace.test", "workspace_id", workspaceID),
@@ -36,10 +36,10 @@ func testAccCheckIBMSchematicsWorkspaceDataSourceConfig(workspaceID string) stri
 	return fmt.Sprintf(`
 	data "ibm_schematics_workspace" "test" {
 		workspace_id = "%s"
-	  }
+	}
 	  
-	  output "WorkSpaceValues" {
+	output "WorkSpaceValues" {
 		value = data.ibm_schematics_workspace.test.template_id.0
-	  }
+	}
 `, workspaceID)
 }
