@@ -119,7 +119,7 @@ func TestAccIBMDatabaseInstanceRedisImport(t *testing.T) {
 
 func TestAccIBMDatabaseInstanceRedisKP_Encrypt(t *testing.T) {
 	t.Parallel()
-	databaseResourceGroup := "Default"
+	databaseResourceGroup := "default"
 	var databaseInstanceOne string
 	rnd := fmt.Sprintf("tf-redis-%d", acctest.RandIntRange(10, 100))
 	testName := rnd
