@@ -117,11 +117,14 @@ func dataSourceIBMISInstanceGroupManagersRead(d *schema.ResourceData, meta inter
 		if err != nil {
 			return fmt.Errorf("Error Getting InstanceGroup Managers %s\n%s", err, response)
 		}
+
 		start = GetNext(instanceGroupManagerCollections.Next)
 		allrecs = append(allrecs, instanceGroupManagerCollections.Managers...)
+
 		if start == "" {
 			break
 		}
+
 	}
 
 	instanceGroupMnagers := make([]map[string]interface{}, 0)
@@ -138,8 +141,10 @@ func dataSourceIBMISInstanceGroupManagersRead(d *schema.ResourceData, meta inter
 		}
 
 		policies := make([]string, 0)
-		for i := 0; i < len(instanceGroupManager.Policies); i++ {
-			policies = append(policies, string(*(instanceGroupManager.Policies[i].ID)))
+		if instanceGroupManager.Policies != nil {
+			for i := 0; i < len(instanceGroupManager.Policies); i++ {
+				policies = append(policies, string(*(instanceGroupManager.Policies[i].ID)))
+			}
 		}
 		manager["policies"] = policies
 		instanceGroupMnagers = append(instanceGroupMnagers, manager)

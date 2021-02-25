@@ -149,7 +149,7 @@ func resourceIBMisVirtualEndpointGatewayIPRead(d *schema.ResourceData, meta inte
 	d.Set(isVirtualEndpointGatewayIPID, result.ID)
 	d.Set(isVirtualEndpointGatewayIPName, result.Name)
 	d.Set(isVirtualEndpointGatewayIPAddress, result.Address)
-	d.Set(isVirtualEndpointGatewayIPCreatedAt, result.CreatedAt)
+	d.Set(isVirtualEndpointGatewayIPCreatedAt, (result.CreatedAt).String())
 	d.Set(isVirtualEndpointGatewayIPResourceType, result.ResourceType)
 	d.Set(isVirtualEndpointGatewayIPAutoDelete, result.AutoDelete)
 	d.Set(isVirtualEndpointGatewayIPTarget,

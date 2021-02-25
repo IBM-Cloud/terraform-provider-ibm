@@ -370,14 +370,19 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 		if instance.BootVolumeAttachment != nil {
 			bootVolList := make([]map[string]interface{}, 0)
 			bootVol := map[string]interface{}{}
-			bootVol[isInstanceTemplatesName] = *instance.BootVolumeAttachment.Name
+
 			bootVol[isInstanceTemplatesDeleteVol] = *instance.BootVolumeAttachment.DeleteVolumeOnInstanceDelete
-			volumeIntf := instance.BootVolumeAttachment.Volume
-			bootVol[isInstanceTemplatesVol] = volumeIntf.Name
-			bootVol[isInstanceTemplateBootSize] = volumeIntf.Capacity
-			volProfIntf := instance.BootVolumeAttachment.Volume.Profile
-			volProfInst := volProfIntf.(*vpcv1.VolumeProfileIdentity)
-			bootVol[isInstanceTemplateBootProfile] = volProfInst.Name
+			if instance.BootVolumeAttachment.Volume != nil {
+				volumeIntf := instance.BootVolumeAttachment.Volume
+				bootVol[isInstanceTemplatesName] = volumeIntf.Name
+				bootVol[isInstanceTemplatesVol] = volumeIntf.Name
+				bootVol[isInstanceTemplateBootSize] = volumeIntf.Capacity
+				if instance.BootVolumeAttachment.Volume.Profile != nil {
+					volProfIntf := instance.BootVolumeAttachment.Volume.Profile
+					volProfInst := volProfIntf.(*vpcv1.VolumeProfileIdentity)
+					bootVol[isInstanceTemplateBootProfile] = volProfInst.Name
+				}
+			}
 			bootVolList = append(bootVolList, bootVol)
 			template[isInstanceTemplatesBootVolumeAttachment] = bootVolList
 		}
