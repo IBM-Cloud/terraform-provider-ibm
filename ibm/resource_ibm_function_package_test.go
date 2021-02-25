@@ -465,7 +465,7 @@ func testAccCheckFunctionPackageExists(n string, obj *whisk.Package) resource.Te
 		namespace := parts[0]
 		name := parts[1]
 
-		client, err := testAccProvider.Meta().(ClientSession).FunctionClient()
+		functionNamespaceAPI, err := testAccProvider.Meta().(ClientSession).FunctionIAMNamespaceAPI()
 		if err != nil {
 			return err
 		}
@@ -474,7 +474,7 @@ func testAccCheckFunctionPackageExists(n string, obj *whisk.Package) resource.Te
 		if err != nil {
 			return err
 		}
-		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
+		client, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 		if err != nil {
 			return err
 
@@ -491,7 +491,7 @@ func testAccCheckFunctionPackageExists(n string, obj *whisk.Package) resource.Te
 }
 
 func testAccCheckFunctionPackageDestroy(s *terraform.State) error {
-	client, err := testAccProvider.Meta().(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := testAccProvider.Meta().(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -513,7 +513,7 @@ func testAccCheckFunctionPackageDestroy(s *terraform.State) error {
 		namespace := parts[0]
 		name := parts[1]
 
-		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
+		wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 		if err != nil && strings.Contains(err.Error(), "is not in the list of entitled namespaces") {
 			return nil
 		}
@@ -521,7 +521,7 @@ func testAccCheckFunctionPackageDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, _, err = client.Packages.Get(name)
+		_, _, err = wskClient.Packages.Get(name)
 
 		if err != nil {
 			if apierr, ok := err.(bmxerror.RequestFailure); ok && apierr.StatusCode() != 404 {

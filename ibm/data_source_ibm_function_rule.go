@@ -65,7 +65,7 @@ func dataSourceIBMFunctionRule() *schema.Resource {
 }
 
 func dataSourceIBMFunctionRuleRead(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -74,9 +74,8 @@ func dataSourceIBMFunctionRuleRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
-
 	namespace := d.Get("namespace").(string)
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return err
 

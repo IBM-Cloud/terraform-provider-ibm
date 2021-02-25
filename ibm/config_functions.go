@@ -16,9 +16,8 @@ import (
 	"os"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
-	"github.com/IBM/go-sdk-core/core"
+	"github.com/IBM-Cloud/bluemix-go/api/functions"
 	"github.com/apache/openwhisk-client-go/whisk"
-	namespaceapi "github.ibm.com/ibmcloud/namespace-go-sdk/ibmcloudfunctionsnamespaceapiv1"
 )
 
 // DefaultServiceURL is the default URL to make service requests to.
@@ -57,21 +56,14 @@ func getBaseURL(region string) string {
  * iam-based namespace don't have an auth key and needs only iam token for authorization.
  *
  */
-func setupOpenWhiskClientConfig(namespace string, c *bluemix.Config, wskClient *whisk.Client) (*whisk.Client, error) {
-	baseEndpoint := getBaseURL(c.Region)
-	apiOptions := &namespaceapi.IbmCloudFunctionsNamespaceOptions{
-		URL:           fmt.Sprintf("%s", baseEndpoint),
-		Authenticator: &core.NoAuthAuthenticator{},
-	}
+func setupOpenWhiskClientConfig(namespace string, c *bluemix.Config, functionNamespace functions.FunctionServiceAPI) (*whisk.Client, error) {
+	u, _ := url.Parse(fmt.Sprintf("https://%s.functions.cloud.ibm.com/api", c.Region))
+	wskClient, _ := whisk.NewClient(http.DefaultClient, &whisk.Config{
+		Host:    u.Host,
+		Version: "v1",
+	})
 
-	payload := make(map[string]string)
-	payload["Authorization"] = c.IAMAccessToken
-	namespaceOptions := &namespaceapi.GetNamespacesOptions{
-		Headers: payload,
-	}
-
-	nsService, _ := namespaceapi.NewIbmCloudFunctionsNamespaceAPIV1(apiOptions)
-	nsList, _, err := nsService.GetNamespaces(namespaceOptions)
+	nsList, err := functionNamespace.Namespaces().GetNamespaces()
 	if err != nil {
 		return nil, err
 	}
@@ -112,15 +104,8 @@ func setupOpenWhiskClientConfig(namespace string, c *bluemix.Config, wskClient *
 		if err != nil {
 			return nil, err
 		}
-		payload = make(map[string]string)
-		payload["accessToken"] = c.UAAAccessToken[7:len(c.UAAAccessToken)]
-		payload["refreshToken"] = c.UAARefreshToken[7:len(c.UAARefreshToken)]
-		namespaceOptions = &namespaceapi.GetNamespacesOptions{
-			Headers: payload,
-		}
 
-		nsService, err := namespaceapi.NewIbmCloudFunctionsNamespaceAPIV1(apiOptions)
-		nsList, _, err := nsService.GetCloudFoundaryNamespaces(namespaceOptions)
+		nsList, err := functionNamespace.Namespaces().GetCloudFoundaryNamespaces()
 		if err != nil {
 			return nil, err
 		}

@@ -151,4 +151,3 @@ resource "ibm_function_rule" "rule" {
   trigger_name = ibm_function_trigger.trigger.name
   action_name  = ibm_function_action.action.name
 }
-
