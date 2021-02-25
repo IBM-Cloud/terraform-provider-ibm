@@ -507,6 +507,16 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 		sgUpdate(d, meta, *vpc.DefaultSecurityGroup.ID, defaultSGName, true)
 	}
 
+	defaultRTName := d.Get(isVPCDefaultRoutingTableName).(string)
+	if defaultRTName != "" {
+		//sess.UpdateVPCRoutingTable()
+	}
+
+	defaultACLName := d.Get(isVPCDefaultNetworkACLName).(string)
+	if defaultACLName != "" {
+		nwaclUpdate(d, meta, *vpc.DefaultNetworkACL.ID, defaultACLName, true)
+	}
+
 	log.Printf("[INFO] VPC : %s", *vpc.ID)
 	_, err = isWaitForVPCAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
