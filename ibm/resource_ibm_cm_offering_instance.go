@@ -34,65 +34,60 @@ func resourceIBMCmOfferingInstance() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"iid": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "provisioned instance ID (part of the CRN).",
-			},
 			"url": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "url reference to this object.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "platform CRN for this instance.",
 			},
 			"label": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "the label for this instance.",
 			},
 			"catalog_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Catalog ID this instance was created from.",
 			},
 			"offering_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Offering ID this instance was created from.",
 			},
 			"kind_format": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "the format this instance has (helm, operator, ova...).",
 			},
 			"version": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "The version this instance was installed from (not version id).",
 			},
 			"cluster_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Cluster ID.",
 			},
 			"cluster_region": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Cluster region (e.g., us-south).",
 			},
 			"cluster_namespaces": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
 				Description: "List of target namespaces to install into.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"cluster_all_namespaces": &schema.Schema{
 				Type:        schema.TypeBool,
-				Optional:    true,
+				Required:    true,
 				Description: "designate to install into all namespaces.",
 			},
 		},
@@ -180,9 +175,6 @@ func resourceIBMCmOfferingInstanceRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	if err = d.Set("iid", offeringInstance.ID); err != nil {
-		return fmt.Errorf("Error setting iid: %s", err)
-	}
 	if err = d.Set("url", offeringInstance.URL); err != nil {
 		return fmt.Errorf("Error setting url: %s", err)
 	}
@@ -237,9 +229,6 @@ func resourceIBMCmOfferingInstanceUpdate(d *schema.ResourceData, meta interface{
 
 	putOfferingInstanceOptions.SetInstanceIdentifier(d.Id())
 	putOfferingInstanceOptions.SetXAuthRefreshToken(rsConClient.Config.IAMRefreshToken)
-	if _, ok := d.GetOk("iid"); ok {
-		putOfferingInstanceOptions.SetID(d.Get("id").(string))
-	}
 	if _, ok := d.GetOk("url"); ok {
 		putOfferingInstanceOptions.SetURL(d.Get("url").(string))
 	}

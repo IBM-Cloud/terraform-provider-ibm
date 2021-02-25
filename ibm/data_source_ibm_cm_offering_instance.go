@@ -29,16 +29,6 @@ func dataSourceIBMCmOfferingInstance() *schema.Resource {
 		Read: dataSourceIBMCmOfferingInstanceRead,
 
 		Schema: map[string]*schema.Schema{
-			"instance_identifier": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Version Instance identifier.",
-			},
-			"iid": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "provisioned instance ID (part of the CRN).",
-			},
 			"url": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
