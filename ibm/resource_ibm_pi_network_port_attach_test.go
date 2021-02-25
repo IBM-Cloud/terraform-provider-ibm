@@ -22,6 +22,7 @@ import (
 )
 
 func TestAccIBMPINetworkPortAttachbasic(t *testing.T) {
+	t.Skip()
 	name := fmt.Sprintf("tf-pi-network-port-attach-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
