@@ -21,25 +21,22 @@ import (
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 )
 
-func TestAccIBMContainerVPCClusterALB_Basic(t *testing.T) {
-	flavor := "c2.2x4"
-	worker_count := 1
-	name1 := acctest.RandIntRange(10, 100)
-	name2 := acctest.RandIntRange(10, 100)
+func TestAccIBMContainerVPCClusterALBBasic(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-alb-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMVpcContainerALBDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMVpcContainerALB_basic(true, flavor, worker_count, name1, name2),
+			{
+				Config: testAccCheckIBMVpcContainerALBBasic(true, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_alb.alb", "enable", "true"),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMVpcContainerALB_basic(false, flavor, worker_count, name1, name2),
+			{
+				Config: testAccCheckIBMVpcContainerALBBasic(false, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_alb.alb", "enable", "false"),
@@ -74,62 +71,38 @@ func testAccCheckIBMVpcContainerALBDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMVpcContainerALB_basic(enable bool, flavor string, worker_count, name1, name2 int) string {
+func testAccCheckIBMVpcContainerALBBasic(enable bool, name string) string {
 	return fmt.Sprintf(`
 	provider "ibm" {
-		generation = 1
-	  }
-	  
-	  variable "name1" {
-		default = "%d"
-	  }
-	  variable "name2" {
-		default = "%d"
-	  }
-	 
-	  locals {
-		ZONE1 = "us-south-1"
-		ZONE2 = "us-south-2"
-	  }
-	  
-	  resource "ibm_is_vpc" "vpc1" {
-		name = "terraform-vpc-${var.name1}"
-	  }
-	  
-	  resource "ibm_is_subnet" "subnet1" {
-		name                     = "terraform-subnet-${var.name1}"
-		vpc                      = "${ibm_is_vpc.vpc1.id}"
-		zone                     = "${local.ZONE1}"
-		total_ipv4_address_count = 256
-	  }
-	  
-	  resource "ibm_is_subnet" "subnet2" {
-		name                     = "terraform-subnet-${var.name2}"
-		vpc                      = "${ibm_is_vpc.vpc1.id}"
-		zone                     = "${local.ZONE2}"
-		total_ipv4_address_count = 256
-	  }
-	  
-	  data "ibm_resource_group" "resource_group" {
-		name = "Default"
-	  }
-	  
-	  resource "ibm_container_vpc_cluster" "cluster" {
-		name              = "terraform_cluster${var.name1}"
-		vpc_id            = "${ibm_is_vpc.vpc1.id}"
-		flavor            = "%s"
-		worker_count      = "%d"
-		resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-		
+		region="eu-de"
+	}
+	data "ibm_resource_group" "resource_group" {
+		is_default=true
+	}
+	resource "ibm_is_vpc" "vpc" {
+	  name = "%[1]s"
+	}
+	
+	resource "ibm_is_subnet" "subnet1" {
+	  name                     = "%[1]s-1"
+	  vpc                      = ibm_is_vpc.vpc.id
+	  zone                     = "eu-de-1"
+	  total_ipv4_address_count = 256
+	}
+	resource "ibm_container_vpc_cluster" "cluster" {
+		name              = "%[1]s"
+		vpc_id            = ibm_is_vpc.vpc.id
+		flavor            = "cx2.2x4"
+		worker_count      = 1
+		resource_group_id = data.ibm_resource_group.resource_group.id
 		zones {
-			subnet_id = "${ibm_is_subnet.subnet1.id}"
-			name      = "${local.ZONE1}"
-		  }
-	  }
-	  
+			subnet_id = ibm_is_subnet.subnet1.id
+			name      = "eu-de-1"
+		}
+	}
 	  resource ibm_container_vpc_alb alb {
 		alb_id = "${ibm_container_vpc_cluster.cluster.albs.0.id}"
 		enable = "%t"
 	  }
-	  `, name1, name2, flavor, worker_count, enable)
+	  `, name, enable)
 }

@@ -18,16 +18,17 @@ import (
 )
 
 func TestAccIBMContainerWorkerPoolDataSource_basic(t *testing.T) {
-	workerPoolName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	workerPoolName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMContainerWorkerPoolDataSourceConfig(clusterName, workerPoolName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_container_worker_pool.testacc_ds_worker_pool", "state", "active"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_container_worker_pool.testacc_ds_worker_pool", "id"),
 				),
 			},
 		},
@@ -45,7 +46,6 @@ resource "ibm_container_cluster" "testacc_cluster" {
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   kube_version    = "%s"
-  region          = "%s"
 }
 
 resource "ibm_container_worker_pool" "test_pool" {
@@ -60,9 +60,8 @@ resource "ibm_container_worker_pool" "test_pool" {
     "test1" = "test-pool1"
   }
 }
-
 data "ibm_container_worker_pool" "testacc_ds_worker_pool"{
   worker_pool_name = ibm_container_worker_pool.test_pool.worker_pool_name
   cluster          = ibm_container_cluster.testacc_cluster.id
-}`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeVersion, csRegion, workerPoolName, machineType)
+}`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, kubeVersion, workerPoolName, machineType)
 }

@@ -87,11 +87,6 @@ func resourceIBMContainerALBCert() *schema.Resource {
 				Computed:    true,
 				Description: "Secret Status",
 			},
-			"cluster_crn": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "cluster CRN",
-			},
 			"cloud_cert_instance_id": {
 				Type:        schema.TypeString,
 				Computed:    true,

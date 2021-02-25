@@ -21,22 +21,19 @@ import (
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 )
 
-func TestAccIBMContainerVpcClusterWorkerPool_basic(t *testing.T) {
+func TestAccIBMContainerVpcClusterWorkerPoolBasic(t *testing.T) {
 
-	flavor := "c2.2x4"
-	worker_count := 1
-	name1 := acctest.RandIntRange(10, 100)
-	name2 := acctest.RandIntRange(10, 100)
+	name := fmt.Sprintf("tf-vpc-worker-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMVpcContainerWorkerPoolDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMVpcContainerWorkerPool_basic(flavor, worker_count, name1, name2),
+				Config: testAccCheckIBMVpcContainerWorkerPoolBasic(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_worker_pool.test_pool", "flavor", flavor),
+						"ibm_container_vpc_worker_pool.test_pool", "flavor", "cx2.2x4"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_worker_pool.test_pool", "zones.#", "1"),
 					resource.TestCheckResourceAttr(
@@ -44,35 +41,17 @@ func TestAccIBMContainerVpcClusterWorkerPool_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMVpcContainerWorkerPool_update(flavor, worker_count, name1, name2),
+				Config: testAccCheckIBMVpcContainerWorkerPoolUpdate(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_worker_pool.test_pool", "flavor", flavor),
+						"ibm_container_vpc_worker_pool.test_pool", "flavor", "cx2.2x4"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_worker_pool.test_pool", "zones.#", "2"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_worker_pool.test_pool", "labels.%", "3"),
 				),
 			},
-		},
-	})
-}
-
-func TestAccIBMContainerVpcClusterWorkerPool_importBasic(t *testing.T) {
-	flavor := "c2.2x4"
-	worker_count := 1
-	name1 := acctest.RandIntRange(10, 100)
-	name2 := acctest.RandIntRange(10, 100)
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMVpcContainerWorkerPoolDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMVpcContainerWorkerPool_basic(flavor, worker_count, name1, name2),
-			},
-
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_container_vpc_worker_pool.test_pool",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -115,145 +94,112 @@ func testAccCheckIBMVpcContainerWorkerPoolDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMVpcContainerWorkerPool_basic(flavor string, worker_count, name1, name2 int) string {
+func testAccCheckIBMVpcContainerWorkerPoolBasic(name string) string {
 	return fmt.Sprintf(`
 	provider "ibm" {
-	  generation = 1
+		region="eu-de"
 	}
-	
-	variable "name1" {
-	  default = "%d"
+	data "ibm_resource_group" "resource_group" {
+		is_default=true
 	}
-	variable "name2" {
-	  default = "%d"
-	}
-	
-	locals {
-	  ZONE1 = "us-south-1"
-	  ZONE2 = "us-south-2"
-	}
-	
-	resource "ibm_is_vpc" "vpc1" {
-	  name = "terraform-vpc-${var.name1}"
+	resource "ibm_is_vpc" "vpc" {
+	  name = "%[1]s"
 	}
 	
 	resource "ibm_is_subnet" "subnet1" {
-	  name                     = "terraform-subnet-${var.name1}"
-	  vpc                      = "${ibm_is_vpc.vpc1.id}"
-	  zone                     = "${local.ZONE1}"
+	  name                     = "%[1]s-1"
+	  vpc                      = ibm_is_vpc.vpc.id
+	  zone                     = "eu-de-1"
 	  total_ipv4_address_count = 256
 	}
 	
 	resource "ibm_is_subnet" "subnet2" {
-	  name                     = "terraform-subnet-${var.name2}"
-	  vpc                      = "${ibm_is_vpc.vpc1.id}"
-	  zone                     = "${local.ZONE2}"
+	  name                     = "%[1]s-2"
+	  vpc                      = ibm_is_vpc.vpc.id
+	  zone                     = "eu-de-2"
 	  total_ipv4_address_count = 256
 	}
 	
-	data "ibm_resource_group" "resource_group" {
-	  name = "Default"
-	}
-	
 	resource "ibm_container_vpc_cluster" "cluster" {
-	  name              = "terraform_cluster${var.name1}"
-	  vpc_id            = "${ibm_is_vpc.vpc1.id}"
-	  flavor            = "%s"
-	  worker_count      = "%d"
-	  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-	  wait_till         = "oneWorkerNodeReady"
+	  name              = "%[1]s"
+	  vpc_id            = ibm_is_vpc.vpc.id
+	  flavor            = "cx2.2x4"
+	  worker_count      = 1
+	  resource_group_id = data.ibm_resource_group.resource_group.id
+	  wait_till         = "MasterNodeReady"
 	  zones {
-		subnet_id = "${ibm_is_subnet.subnet1.id}"
-		name      = "${local.ZONE1}"
+		subnet_id = ibm_is_subnet.subnet1.id
+		name      = "eu-de-1"
 	  }
 	}
-	
 	resource "ibm_container_vpc_worker_pool" "test_pool" {
-	  cluster           = "${ibm_container_vpc_cluster.cluster.id}"
-	  worker_pool_name  = "terraform_workerpool${var.name1}"
-	  flavor            = "%s"
-	  vpc_id            = "${ibm_is_vpc.vpc1.id}"
-	  worker_count      = "%d"
-	  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+	  cluster           = ibm_container_vpc_cluster.cluster.id
+	  worker_pool_name  = "%[1]s"
+	  flavor            = "cx2.2x4"
+	  vpc_id            = ibm_is_vpc.vpc.id
+	  worker_count      = 1
+	  resource_group_id = data.ibm_resource_group.resource_group.id
 	  zones {
-		name      = "${local.ZONE2}"
-		subnet_id = "${ibm_is_subnet.subnet2.id}"
+		name      = "eu-de-2"
+		subnet_id = ibm_is_subnet.subnet2.id
 	  }
 	  labels = {
 		"test"  = "test-pool"
 		"test1" = "test-pool1"
 	  }
 	}
-		`, name1, name2, flavor, worker_count, flavor, worker_count)
+		`, name)
 }
 
-func testAccCheckIBMVpcContainerWorkerPool_update(flavor string, worker_count, name1, name2 int) string {
+func testAccCheckIBMVpcContainerWorkerPoolUpdate(name string) string {
 	return fmt.Sprintf(`
 	provider "ibm" {
-	  generation = 1
+		region="eu-de"
 	}
-	
-	variable "name1" {
-	  default = "%d"
-	}
-	variable "name2" {
-	  default = "%d"
-	}
-	
-	locals {
-	  ZONE1 = "us-south-1"
-	  ZONE2 = "us-south-2"
-	}
-	
-	resource "ibm_is_vpc" "vpc1" {
-	  name = "terraform-vpc-${var.name1}"
-	}
-	
-	resource "ibm_is_subnet" "subnet1" {
-	  name                     = "terraform-subnet-${var.name1}"
-	  vpc                      = "${ibm_is_vpc.vpc1.id}"
-	  zone                     = "${local.ZONE1}"
-	  total_ipv4_address_count = 256
-	}
-	
-	resource "ibm_is_subnet" "subnet2" {
-	  name                     = "terraform-subnet-${var.name2}"
-	  vpc                      = "${ibm_is_vpc.vpc1.id}"
-	  zone                     = "${local.ZONE2}"
-	  total_ipv4_address_count = 256
-	}
-	
 	data "ibm_resource_group" "resource_group" {
-	  name = "Default"
+		is_default=true
 	}
-	
+	resource "ibm_is_vpc" "vpc" {
+	  name = "%[1]s"
+	}
+	resource "ibm_is_subnet" "subnet1" {
+	  name                     = "%[1]s-1"
+	  vpc                      = ibm_is_vpc.vpc.id
+	  zone                     = "eu-de-1"
+	  total_ipv4_address_count = 256
+	}
+	resource "ibm_is_subnet" "subnet2" {
+	  name                     = "%[1]s-2"
+	  vpc                      = ibm_is_vpc.vpc.id
+	  zone                     = "eu-de-2"
+	  total_ipv4_address_count = 256
+	}
 	resource "ibm_container_vpc_cluster" "cluster" {
-	  name              = "terraform_cluster${var.name1}"
-	  vpc_id            = "${ibm_is_vpc.vpc1.id}"
-	  flavor            = "%s"
-	  worker_count      = "%d"
-	  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
-	
+	  name              = "%[1]s"
+	  vpc_id            = ibm_is_vpc.vpc.id
+	  flavor            = "cx2.2x4"
+	  worker_count      = 1
+	  resource_group_id = data.ibm_resource_group.resource_group.id
+	  wait_till         = "MasterNodeReady"
 	  zones {
-		subnet_id = "${ibm_is_subnet.subnet1.id}"
-		name      = "${local.ZONE1}"
+		subnet_id = ibm_is_subnet.subnet1.id
+		name      = "eu-de-1"
 	  }
 	}
-	
 	resource "ibm_container_vpc_worker_pool" "test_pool" {
-	  cluster           = "${ibm_container_vpc_cluster.cluster.id}"
-	  worker_pool_name  = "terraform_workerpool${var.name1}"
-	  flavor            = "%s"
-	  vpc_id            = "${ibm_is_vpc.vpc1.id}"
-	  worker_count      = "%d"
-	  resource_group_id = "${data.ibm_resource_group.resource_group.id}"
+	  cluster           = ibm_container_vpc_cluster.cluster.id
+	  worker_pool_name  = "%[1]s"
+	  flavor            = "cx2.2x4"
+	  vpc_id            = ibm_is_vpc.vpc.id
+	  worker_count      = 1
+	  resource_group_id = data.ibm_resource_group.resource_group.id
 	  zones {
-		name      = "${local.ZONE2}"
-		subnet_id = "${ibm_is_subnet.subnet2.id}"
+		name      = "eu-de-2"
+		subnet_id = ibm_is_subnet.subnet2.id
 	  }
 	  zones {
-		subnet_id = "${ibm_is_subnet.subnet1.id}"
-		name      = "${local.ZONE1}"
+		subnet_id = ibm_is_subnet.subnet1.id
+		name      = "eu-de-1"
 	  }
 	  labels = {
 		"test"  = "test-pool"
@@ -261,5 +207,5 @@ func testAccCheckIBMVpcContainerWorkerPool_update(flavor string, worker_count, n
 		"test2" = "test-pool2"
 	  }
 	}
-		`, name1, name2, flavor, worker_count, flavor, worker_count)
+		`, name)
 }
