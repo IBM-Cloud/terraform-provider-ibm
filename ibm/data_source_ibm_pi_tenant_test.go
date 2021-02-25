@@ -23,10 +23,10 @@ func TestAccIBMPITenantDataSource_basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMPITenantDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_pi_tenant.testacc_ds_tenant", "pi_cloud_instance_id", pi_cloud_instance_id),
+					resource.TestCheckResourceAttrSet("data.ibm_pi_tenant.testacc_ds_tenant", "id"),
 				),
 			},
 		},

@@ -22,10 +22,10 @@ func TestAccIBMPIInstanceDataSource_basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMPIInstanceDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_pi_instance.testacc_ds_instance", "pi_cloud_instance_id", pi_cloud_instance_id),
+					resource.TestCheckResourceAttrSet("data.ibm_pi_instance.testacc_ds_instance", "id"),
 				),
 			},
 		},
@@ -36,7 +36,8 @@ func testAccCheckIBMPIInstanceDataSourceConfig() string {
 	return fmt.Sprintf(`
 	
 data "ibm_pi_instance" "testacc_ds_instance" {
+	pi_instance_name="%s"
     pi_cloud_instance_id = "%s"
-}`, pi_cloud_instance_id)
+}`, pi_instance_name, pi_cloud_instance_id)
 
 }
