@@ -202,7 +202,6 @@ func resourceIBMContainerWorkerPoolZoneAttachmentRead(d *schema.ResourceData, me
 			d.Set("zone", zone.ID)
 			d.Set("cluster", cluster)
 			d.Set("worker_pool", workerPool)
-			d.Set("region", workerPoolRes.Region)
 
 			break
 		}

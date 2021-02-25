@@ -840,7 +840,6 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 
 	d.Set("name", cls.Name)
 	d.Set("crn", cls.CRN)
-	d.Set("disable_auto_update", cls.DisableAutoUpdate)
 	d.Set("master_status", cls.Lifecycle.MasterStatus)
 	d.Set("zones", zones)
 	if strings.HasSuffix(cls.MasterKubeVersion, "_openshift") {
@@ -858,7 +857,6 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("service_subnet", cls.ServiceSubnet)
 	d.Set("pod_subnet", cls.PodSubnet)
 	d.Set("state", cls.State)
-	d.Set("region", cls.Region)
 	d.Set("ingress_hostname", cls.Ingress.HostName)
 	d.Set("ingress_secret", cls.Ingress.SecretName)
 	d.Set("albs", flattenVpcAlbs(albs, "all"))

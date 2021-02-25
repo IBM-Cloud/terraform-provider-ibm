@@ -18,32 +18,29 @@ import (
 )
 
 func TestAccIBMContainerVPCClusterWorkerDataSource_basic(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	randint := acctest.RandIntRange(10, 100)
-	vpc := fmt.Sprintf("terraform_vpc-%d", randint)
-	subnet := fmt.Sprintf("terraform_subnet-%d", randint)
-	flavor := "c2.2x4"
-	zone := "us-south"
-	workerCount := "1"
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMContainerVPCClusterWorkerDataSourceConfig(zone, vpc, subnet, clusterName, flavor, workerCount),
+			{
+				Config: testAccCheckIBMContainerVPCClusterWorkerDataSourceConfig(name),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker.testacc_ds_worker", "state", "normal"),
+					resource.TestCheckResourceAttrSet("data.ibm_container_vpc_cluster_worker.testacc_ds_worker", "id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMContainerVPCClusterWorkerDataSourceConfig(zone, vpc, subnet, clusterName, flavor, workerCount string) string {
-	return testAccCheckIBMContainerVPCClusterDataSource(zone, vpc, subnet, clusterName, flavor, workerCount) + fmt.Sprintf(`
+func testAccCheckIBMContainerVPCClusterWorkerDataSourceConfig(name string) string {
+	return testAccCheckIBMVpcContainerWorkerPoolBasic(name) + fmt.Sprintf(`
+	data "ibm_container_vpc_cluster" "testacc_ds_cluster" {
+		cluster_name_id = ibm_container_vpc_cluster.cluster.id
+	}
 	data "ibm_container_vpc_cluster_worker" "testacc_ds_worker" {
-	    cluster_name_id = "${ibm_container_vpc_cluster.cluster.id}"
-	    worker_id = "${data.ibm_container_vpc_cluster.testacc_ds_cluster.workers[0]}"
+	    cluster_name_id = ibm_container_vpc_cluster.cluster.id
+	    worker_id = data.ibm_container_vpc_cluster.testacc_ds_cluster.workers[0]
 	}
 `)
 }
