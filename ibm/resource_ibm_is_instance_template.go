@@ -636,15 +636,23 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 	if instance.BootVolumeAttachment != nil {
 		bootVolList := make([]map[string]interface{}, 0)
 		bootVol := map[string]interface{}{}
-		bootVol[isInstanceTemplateBootName] = *instance.BootVolumeAttachment.Name
-		bootVol[isInstanceTemplateVolAttVolume] = *instance.BootVolumeAttachment.Volume
 		bootVol[isInstanceTemplateDeleteVolume] = *instance.BootVolumeAttachment.DeleteVolumeOnInstanceDelete
-		volumeIntf := instance.BootVolumeAttachment.Volume
-		bootVol[isInstanceTemplatesVol] = volumeIntf.Name
-		bootVol[isInstanceTemplateBootSize] = volumeIntf.Capacity
-		volProfIntf := instance.BootVolumeAttachment.Volume.Profile
-		volProfInst := volProfIntf.(*vpcv1.VolumeProfileIdentity)
-		bootVol[isInstanceTemplateBootProfile] = volProfInst.Name
+		if instance.BootVolumeAttachment.Volume != nil {
+			volumeIntf := instance.BootVolumeAttachment.Volume
+			bootVol[isInstanceTemplateBootName] = volumeIntf.Name
+			bootVol[isInstanceTemplateBootSize] = volumeIntf.Capacity
+			if volumeIntf.Profile != nil {
+				volProfIntf := volumeIntf.Profile
+				volProfInst := volProfIntf.(*vpcv1.VolumeProfileIdentity)
+				bootVol[isInstanceTemplateBootProfile] = volProfInst.Name
+			}
+			if volumeIntf.EncryptionKey != nil {
+				volEncryption := volumeIntf.EncryptionKey
+				volEncryptionIntf := volEncryption.(*vpcv1.EncryptionKeyIdentity)
+				bootVol[isInstanceTemplateBootEncryption] = volEncryptionIntf.CRN
+			}
+		}
+
 		bootVolList = append(bootVolList, bootVol)
 		d.Set(isInstanceTemplateBootVolume, bootVolList)
 	}

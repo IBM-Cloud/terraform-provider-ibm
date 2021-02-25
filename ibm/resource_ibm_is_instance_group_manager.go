@@ -313,7 +313,6 @@ func resourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interfac
 	d.Set("enable_manager", *instanceGroupManager.ManagementEnabled)
 	d.Set("manager_id", instanceGroupManagerID)
 	d.Set("instance_group", instanceGroupID)
-	d.Set("instance_group_manager", instanceGroupManagerID)
 	d.Set("manager_type", *instanceGroupManager.ManagerType)
 
 	policies := make([]string, 0)

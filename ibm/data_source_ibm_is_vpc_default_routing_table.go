@@ -152,7 +152,8 @@ func dataSourceIBMISVPCDefaultRoutingTableGet(d *schema.ResourceData, meta inter
 	d.Set(isDefaultRoutingTableHref, *result.Href)
 	d.Set(isDefaultRoutingTableName, *result.Name)
 	d.Set(isDefaultRoutingTableResourceType, *result.ResourceType)
-	d.Set(isDefaultRoutingTableCreatedAt, *result.CreatedAt)
+	createdAt := *result.CreatedAt
+	d.Set(isDefaultRoutingTableCreatedAt, createdAt.String())
 	d.Set(isDefaultRoutingTableLifecycleState, *result.LifecycleState)
 	d.Set(isDefaultRTDirectLinkIngress, *result.RouteDirectLinkIngress)
 	d.Set(isDefaultRTTransitGatewayIngress, *result.RouteTransitGatewayIngress)

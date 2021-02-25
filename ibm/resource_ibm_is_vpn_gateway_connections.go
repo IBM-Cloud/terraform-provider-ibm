@@ -184,7 +184,6 @@ func resourceIBMISVPNGatewayConnection() *schema.Resource {
 			isVPNGatewayConnectionTunnels: {
 				Type:        schema.TypeList,
 				Computed:    true,
-				MinItems:    0,
 				Description: "The VPN tunnel configuration for this VPN gateway connection (in static route mode)",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -537,21 +536,21 @@ func vpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID string) 
 	if vpnGatewayConnection.Mode != nil {
 		d.Set(isVPNGatewayConnectionMode, *vpnGatewayConnection.Mode)
 	}
-
+	vpcTunnelsList := make([]map[string]interface{}, 0)
 	if vpnGatewayConnection.Tunnels != nil {
-		vpcTunnelsList := make([]map[string]interface{}, 0)
 		for _, vpcTunnel := range vpnGatewayConnection.Tunnels {
 			currentTunnel := map[string]interface{}{}
 			if vpcTunnel.PublicIP != nil {
-				currentTunnel["address"] = *vpcTunnel.PublicIP.Address
+				publicIP := *vpcTunnel.PublicIP
+				currentTunnel["address"] = *publicIP.Address
 			}
 			if vpcTunnel.Status != nil {
 				currentTunnel["status"] = *vpcTunnel.Status
 			}
 			vpcTunnelsList = append(vpcTunnelsList, currentTunnel)
 		}
-		d.Set(isVPNGatewayConnectionTunnels, vpcTunnelsList)
 	}
+	d.Set(isVPNGatewayConnectionTunnels, vpcTunnelsList)
 
 	d.Set(isVPNGatewayConnectionDeadPeerDetectionAction, *vpnGatewayConnection.DeadPeerDetection.Action)
 	d.Set(isVPNGatewayConnectionDeadPeerDetectionInterval, *vpnGatewayConnection.DeadPeerDetection.Interval)
