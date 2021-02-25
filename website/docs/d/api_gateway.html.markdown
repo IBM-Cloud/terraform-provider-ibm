@@ -1,4 +1,5 @@
 ---
+subcategory: "api_gateway"
 layout: "ibm"
 page_title: "IBM: API Gateway"
 sidebar_current: "docs-ibm-resource-api-gateway"
