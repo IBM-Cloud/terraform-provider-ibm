@@ -195,13 +195,13 @@ resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "desc-used for terraform uat"
   subnets     = ["%s"]
-  protocols = [{
-    "frontend_protocol" = "HTTP"
-    "frontend_port" = 80
-    "backend_protocol" = "HTTP"
-    "backend_port" = 80
-    "load_balancing_method" = "weighted_round_robin"
-  }]
+  protocols {
+    frontend_protocol = "HTTP"
+    frontend_port = 80
+    backend_protocol = "HTTP"
+    backend_port = 80
+    load_balancing_method = "weighted_round_robin"
+  }
 }
 data "ibm_lbaas" "ds_lbaas" {
     name = "${ibm_lbaas.lbaas.name}"
@@ -223,14 +223,13 @@ resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "desc-used for terraform uat"
   subnets     = ["%s"]
-  protocols = [{
-    "frontend_protocol" = "HTTP"
-    "frontend_port" = 80
-    "backend_protocol" = "HTTP"
-    "backend_port" = 80
-    "load_balancing_method" = "weighted_round_robin"
-  },
-  ]
+  protocols {
+    frontend_protocol = "HTTP"
+    frontend_port = 80
+    backend_protocol = "HTTP"
+    backend_port = 80
+    load_balancing_method = "weighted_round_robin"
+  }
 }
 data "ibm_lbaas" "ds_lbaas" {
     name = "${ibm_lbaas.lbaas.name}"
@@ -255,13 +254,13 @@ resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "desc-used for terraform uat"
   subnets     = ["%s"]
-  protocols = [{
-    "frontend_protocol" = "TCP"
-    "frontend_port" = 9443
-    "backend_protocol" = "TCP"
-    "backend_port" = 9443
-    "load_balancing_method" = "weighted_round_robin"
-  }]
+  protocols {
+    frontend_protocol = "TCP"
+    frontend_port = 9443
+    backend_protocol = "TCP"
+    backend_port = 9443
+    load_balancing_method = "weighted_round_robin"
+  }
 }
 data "ibm_lbaas" "ds_lbaas" {
     name = "${ibm_lbaas.lbaas.name}"
@@ -283,14 +282,13 @@ resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "desc-used for terraform uat"
   subnets     = ["%s"]
-  protocols = [
-  {
-    "frontend_protocol" = "TCP"
-    "frontend_port" = 9443
-    "backend_protocol" = "TCP"
-    "backend_port" = 9443
-    "load_balancing_method" = "weighted_round_robin"
-  }]
+  protocols {
+    frontend_protocol = "TCP"
+    frontend_port = 9443
+    backend_protocol = "TCP"
+    backend_port = 9443
+    load_balancing_method = "weighted_round_robin"
+  }
 }
 data "ibm_lbaas" "ds_lbaas" {
     name = "${ibm_lbaas.lbaas.name}"

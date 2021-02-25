@@ -226,7 +226,7 @@ const testAccCheckIBMStorageFileConfig_basic = `
 resource "ibm_compute_vm_instance" "storagevm1" {
     hostname = "storagevm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -256,7 +256,7 @@ const testAccCheckIBMStorageFileConfig_update = `
 resource "ibm_compute_vm_instance" "storagevm1" {
     hostname = "storagevm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -290,7 +290,7 @@ const testAccCheckIBMStorageFileConfig_enablesnapshot = `
 resource "ibm_compute_vm_instance" "storagevm1" {
     hostname = "storagevm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -306,23 +306,22 @@ resource "ibm_storage_file" "fs_endurance" {
         capacity = 20
         iops = 0.25
         snapshot_capacity = 10
-        snapshot_schedule = [
-  		{
+        snapshot_schedule {
 			schedule_type="WEEKLY",
 			retention_count= 5,
 			minute= 2,
 			hour= 13,
 			day_of_week= "SUNDAY",
 			enable= true
-		},
-		{
+		}
+		snapshot_schedule{
 			schedule_type="HOURLY",
 			retention_count= 5,
 			minute= 30,
 			enable= true
-		},
+		}
 		
-		{
+		snapshot_schedule{
 			schedule_type="DAILY",
 			retention_count= 6,
 			minute= 2,
@@ -336,7 +335,7 @@ const testAccCheckIBMStorageFileConfig_updatesnapshot = `
 resource "ibm_compute_vm_instance" "storagevm1" {
     hostname = "storagevm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -352,7 +351,7 @@ resource "ibm_storage_file" "fs_endurance" {
         capacity = 20
         iops = 0.25
         snapshot_capacity = 10
-        snapshot_schedule = [
+        snapshot_schedule [
   		{
 			schedule_type="WEEKLY",
 			retention_count= 2,
@@ -360,15 +359,15 @@ resource "ibm_storage_file" "fs_endurance" {
 			hour= 13,
 			day_of_week= "MONDAY",
 			enable= true
-		},
-		{
+		}
+		snapshot_schedule{
 			schedule_type="HOURLY",
 			retention_count= 3,
 			minute= 40,
 			enable= true
-		},
+		}
 		
-		{
+		snapshot_schedule{
 			schedule_type="DAILY",
 			retention_count= 5,
 			minute= 2,
@@ -383,7 +382,7 @@ const testAccCheckIBMStorageFileWithTag = `
 resource "ibm_compute_vm_instance" "storagevm1" {
     hostname = "storagevm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -408,7 +407,7 @@ const testAccCheckIBMStorageFileWithUpdatedTag = `
 resource "ibm_compute_vm_instance" "storagevm1" {
     hostname = "storagevm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -433,7 +432,7 @@ const testAccCheckIBMStorageFileConfigWithHourlyBilling = `
 resource "ibm_compute_vm_instance" "storagevm1" {
     hostname = "storagevm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal09"
     network_speed = 100
     hourly_billing = true

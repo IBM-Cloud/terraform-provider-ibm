@@ -65,7 +65,7 @@ const testAccCheckIBMFirewallShared_basic = `
 resource "ibm_compute_vm_instance" "fwvm1" {
     hostname = "testing"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "sjc01"
     network_speed = 100
     hourly_billing = false

@@ -11,9 +11,8 @@ package ibm
 
 import (
 	"fmt"
-	"testing"
-
 	"strings"
+	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -23,6 +22,7 @@ import (
 )
 
 func TestAccIBMServiceInstance_Basic(t *testing.T) {
+	t.Skip()
 	var conf mccpv2.ServiceInstanceFields
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	updateName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -75,6 +75,7 @@ func TestAccIBMServiceInstance_Basic(t *testing.T) {
 }
 
 func TestAccIBMServiceInstance_import(t *testing.T) {
+	t.Skip()
 	var conf mccpv2.ServiceInstanceFields
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_service_instance.service"
@@ -224,6 +225,7 @@ func testAccCheckIBMServiceInstance_newServiceType(updateName string) string {
 }
 
 func TestAccIBMServiceInstance_Discovery_Basic(t *testing.T) {
+	t.Skip()
 	var conf mccpv2.ServiceInstanceFields
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 

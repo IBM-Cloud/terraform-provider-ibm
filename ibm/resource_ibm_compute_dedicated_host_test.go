@@ -181,7 +181,7 @@ func TestAccIBMComputeDedicatedHostImport(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					"wait_time_minutes",
 					"hourly_billing",
-					"domain",
+					"domain", "flavor",
 				},
 			},
 		},

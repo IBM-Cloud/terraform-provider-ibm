@@ -164,7 +164,7 @@ func testAccCheckIBMNetworkPublicIpConfig_basic(hostname1 string, hostname2 stri
 resource "ibm_compute_vm_instance" "vm1" {
     hostname = "%s"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 100
     hourly_billing = true
@@ -178,7 +178,7 @@ resource "ibm_compute_vm_instance" "vm1" {
 resource "ibm_compute_vm_instance" "vm2" {
     hostname = "%s"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "tor01"
     network_speed = 100
     hourly_billing = true
@@ -201,7 +201,7 @@ func testAccCheckIBMNetworkPublicIpConfig_updated(hostname1 string, hostname2 st
 resource "ibm_compute_vm_instance" "vm1" {
     hostname = "%s"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 100
     hourly_billing = true
@@ -215,7 +215,7 @@ resource "ibm_compute_vm_instance" "vm1" {
 resource "ibm_compute_vm_instance" "vm2" {
     hostname = "%s"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "tor01"
     network_speed = 100
     hourly_billing = true
@@ -237,7 +237,7 @@ const testAccCheckIBMNetworkPublicIpConfig_Ipv6Basic = `
 resource "ibm_compute_vm_instance" "vm3" {
     hostname = "vm3"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "che01"
     network_speed = 100
     hourly_billing = true
@@ -252,7 +252,7 @@ resource "ibm_compute_vm_instance" "vm3" {
 resource "ibm_compute_vm_instance" "vm4" {
     hostname = "vm4"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "che01"
     network_speed = 100
     hourly_billing = true
@@ -273,7 +273,7 @@ const testAccCheckIBMNetworkPublicIpConfig_Ipv6Updated = `
 resource "ibm_compute_vm_instance" "vm3" {
     hostname = "vm3"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "che01"
     network_speed = 100
     hourly_billing = true
@@ -288,7 +288,7 @@ resource "ibm_compute_vm_instance" "vm3" {
 resource "ibm_compute_vm_instance" "vm4" {
     hostname = "vm4"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "che01"
     network_speed = 100
     hourly_billing = true
@@ -310,7 +310,7 @@ func testAccCheckIBMNetworkPublicIpWithTag(hostname1 string) string {
 resource "ibm_compute_vm_instance" "vm1" {
     hostname = "%s"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 100
     hourly_billing = true
@@ -333,7 +333,7 @@ func testAccCheckIBMNetworkPublicIpWithUpdatedTag(hostname1 string) string {
 resource "ibm_compute_vm_instance" "vm1" {
     hostname = "%s"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 100
     hourly_billing = true

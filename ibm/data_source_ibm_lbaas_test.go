@@ -66,15 +66,15 @@ resource "ibm_lbaas" "lbaas" {
   description = "updated desc-used for terraform uat"
   subnets     = ["%s"]
 
-  protocols = [{
+  protocols {
 
-    "frontend_protocol" = "HTTP"
-    "frontend_port" = 80
-    "backend_protocol" = "HTTP"
-    "backend_port" = 80
+    frontend_protocol = "HTTP"
+    frontend_port = 80
+    backend_protocol = "HTTP"
+    backend_port = 80
 
-    "load_balancing_method" = "round_robin"
-  }]
+    load_balancing_method = "round_robin"
+  }
   use_system_public_ip_pool = false
 }
 resource "ibm_lbaas_server_instance_attachment" "lbaas_member" {

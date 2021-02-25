@@ -95,7 +95,7 @@ func dataSourceIBMComputeSSHKeyRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	d.SetId(fmt.Sprintf("%d", *key.Id))
-	d.Set("name", label)
+	d.Set("label", label)
 	d.Set("public_key", strings.TrimSpace(*key.Key))
 	d.Set("fingerprint", key.Fingerprint)
 	d.Set("notes", key.Notes)

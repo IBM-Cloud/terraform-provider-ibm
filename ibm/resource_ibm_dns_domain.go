@@ -120,7 +120,7 @@ func resourceIBMDNSDomainRead(d *schema.ResourceData, meta interface{}) error {
 	// populate fields
 	d.Set("name", dns_domain.Name)
 	d.Set("serial", sl.Get(dns_domain.Serial, nil))
-	d.Set("update_date", sl.Get(dns_domain.UpdateDate, nil))
+	d.Set("update_date", sl.Get(dns_domain.UpdateDate.String(), nil))
 
 	// find a record with host @; that will have the current target.
 	for _, record := range dns_domain.ResourceRecords {
