@@ -108,9 +108,6 @@ func resourceIBMCmOfferingInstanceCreate(d *schema.ResourceData, meta interface{
 	createOfferingInstanceOptions := &catalogmanagementv1.CreateOfferingInstanceOptions{}
 
 	createOfferingInstanceOptions.SetXAuthRefreshToken(rsConClient.Config.IAMRefreshToken)
-	if _, ok := d.GetOk("iid"); ok {
-		createOfferingInstanceOptions.SetID(d.Get("iid").(string))
-	}
 	if _, ok := d.GetOk("url"); ok {
 		createOfferingInstanceOptions.SetURL(d.Get("url").(string))
 	}
