@@ -25,6 +25,7 @@ import (
 func TestAccIBMCertificateManagerOrder_Import(t *testing.T) {
 	var conf models.CertificateInfo
 	orderName := fmt.Sprintf("tf-acc-test1-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
+	updatedName := fmt.Sprintf("tf-acc-test1-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 	cmsName := fmt.Sprintf("tf-acc-test1-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -39,6 +40,15 @@ func TestAccIBMCertificateManagerOrder_Import(t *testing.T) {
 				),
 			},
 			resource.TestStep{
+				Config: testAccCheckIBMCertificateManagerOrder_Update(cmsName, updatedName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCMOrderExists("ibm_certificate_manager_order.cert", conf),
+					resource.TestCheckResourceAttr("ibm_certificate_manager_order.cert", "name", updatedName),
+					resource.TestCheckResourceAttr("ibm_certificate_manager_order.cert", "auto_renew_enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_certificate_manager_order.cert", "renew_certificate", "true"),
+				),
+			},
+			resource.TestStep{
 				ResourceName:      "ibm_certificate_manager_order.cert",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -49,6 +59,7 @@ func TestAccIBMCertificateManagerOrder_Import(t *testing.T) {
 	})
 }
 func TestAccIBMCertificateManagerOrder_Basic(t *testing.T) {
+	t.Skip()
 	var conf models.CertificateInfo
 	orderName := fmt.Sprintf("tf-acc-test1-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 	updatedName := fmt.Sprintf("tf-acc-test1-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
