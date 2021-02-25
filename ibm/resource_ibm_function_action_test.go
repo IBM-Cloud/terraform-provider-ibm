@@ -841,7 +841,7 @@ func testAccCheckIAMFunctionActionPythonZip(name, namespace string) string {
 		namespace = ibm_function_namespace.namespace.name
 		exec {
 		  kind = "python:3"
-		  code = base64encode("test-fixtures/pythonaction.zip")
+		  code_path = "test-fixtures/pythonaction.zip"
 		}
 	  }
 `, namespace, name)
@@ -888,8 +888,8 @@ func testAccCheckIAMFunctionActionPHPZip(name, namespace string) string {
 		name = "%s"
 		namespace = ibm_function_namespace.namespace.name
 		exec {
-		  kind = "php:7.1"
-		  code = base64encode("test-fixtures/phpaction.zip")
+		  kind 		= "php:7.1"
+		  code_path = "test-fixtures/phpaction.zip"
 		}
 	  }
 `, namespace, name)

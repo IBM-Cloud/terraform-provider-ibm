@@ -100,9 +100,16 @@ func resourceIBMFunctionAction() *schema.Resource {
 						},
 						"code": {
 							Type:          schema.TypeString,
+							Computed:      true,
 							Optional:      true,
 							Description:   "The code to execute when kind is not ‘blackbox’.",
-							ConflictsWith: []string{"exec.image", "exec.components"},
+							ConflictsWith: []string{"exec.0.image", "exec.0.components", "exec.0.code_path"},
+						},
+						"code_path": {
+							Type:          schema.TypeString,
+							Optional:      true,
+							Description:   "The code to execute when kind is not ‘blackbox’.",
+							ConflictsWith: []string{"exec.0.image", "exec.0.components", "exec.0.code"},
 						},
 						"kind": {
 							Type:        schema.TypeString,
@@ -120,7 +127,7 @@ func resourceIBMFunctionAction() *schema.Resource {
 							Optional:      true,
 							Elem:          &schema.Schema{Type: schema.TypeString},
 							Description:   "The List of fully qualified action.",
-							ConflictsWith: []string{"exec.image", "exec.code"},
+							ConflictsWith: []string{"exec.0.image", "exec.0.code", "exec.0.code_path"},
 						},
 					},
 				},
@@ -323,7 +330,7 @@ func resourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) err
 	}
 	d.Set("namespace", namespace)
 	d.Set("limits", flattenLimits(action.Limits))
-	d.Set("exec", flattenExec(action.Exec))
+	d.Set("exec", flattenExec(action.Exec, d))
 	d.Set("publish", action.Publish)
 	d.Set("version", action.Version)
 	d.Set("action_id", action.Name)

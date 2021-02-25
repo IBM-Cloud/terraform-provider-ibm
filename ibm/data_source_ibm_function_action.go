@@ -166,7 +166,7 @@ func dataSourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) e
 
 	d.Set("namespace", namespace)
 	d.Set("limits", flattenLimits(action.Limits))
-	d.Set("exec", flattenExec(action.Exec))
+	d.Set("exec", flattenExec(action.Exec, d))
 	d.Set("publish", action.Publish)
 	d.Set("version", action.Version)
 	d.Set("action_id", action.Name)
