@@ -72,7 +72,7 @@ func resourceIBMCertificateManagerImport() *schema.Resource {
 				Computed: true,
 			},
 			"has_previous": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeBool,
 				Computed: true,
 			},
 			"key_algorithm": {
