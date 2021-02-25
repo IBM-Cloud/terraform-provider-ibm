@@ -509,6 +509,17 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 
 	defaultRTName := d.Get(isVPCDefaultRoutingTableName).(string)
 	if defaultRTName != "" {
+		updateVpcRoutingTableOptions := new(vpcv1.UpdateVPCRoutingTableOptions)
+		updateVpcRoutingTableOptions.VPCID = *&vpc.ID
+		updateVpcRoutingTableOptions.ID = *&vpc.DefaultRoutingTable.ID
+		routingTablePatchModel := new(vpcv1.RoutingTablePatch)
+		routingTablePatchModel.Name = &defaultRTName
+		routingTablePatchModelAsPatch, asPatchErr := routingTablePatchModel.AsPatch()
+		if asPatchErr != nil {
+			return fmt.Errorf("Error calling asPatch for RoutingTablePatchModel: %s", asPatchErr)
+		}
+		updateVpcRoutingTableOptions.RoutingTablePatch = routingTablePatchModelAsPatch
+		sess.UpdateVPCRoutingTable(updateVpcRoutingTableOptions)
 		//sess.UpdateVPCRoutingTable()
 	}
 
