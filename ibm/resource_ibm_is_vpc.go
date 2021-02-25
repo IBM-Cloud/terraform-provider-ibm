@@ -20,6 +20,9 @@ const (
 	isVPCDefaultNetworkACL          = "default_network_acl"
 	isVPCIDefaultSecurityGroup      = "default_security_group"
 	isVPCName                       = "name"
+	isVPCDefaultNetworkACLName      = "default_network_acl_name"
+	isVPCIDefaultSecurityGroupName  = "default_security_group_name"
+	isVPCDefaultRoutingTableName    = "default_routing_table_name"
 	isVPCResourceGroup              = "resource_group"
 	isVPCStatus                     = "status"
 	isVPCDeleting                   = "deleting"
@@ -103,6 +106,30 @@ func resourceIBMISVPC() *schema.Resource {
 				ForceNew:     false,
 				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCName),
 				Description:  "VPC name",
+			},
+
+			isVPCDefaultNetworkACLName: {
+				Type:         schema.TypeString,
+				Required:     false,
+				ForceNew:     false,
+				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCDefaultNetworkACLName),
+				Description:  "Default Network ACL name",
+			},
+
+			isVPCIDefaultSecurityGroupName: {
+				Type:         schema.TypeString,
+				Required:     false,
+				ForceNew:     false,
+				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCIDefaultSecurityGroupName),
+				Description:  "Default security group name",
+			},
+
+			isVPCDefaultRoutingTableName: {
+				Type:         schema.TypeString,
+				Required:     false,
+				ForceNew:     false,
+				ValidateFunc: InvokeValidator("isVPCDefaultRoutingTableName", isVPCName),
+				Description:  "Default routing table name",
 			},
 
 			isVPCResourceGroup: {
@@ -474,6 +501,12 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 		return fmt.Errorf("Error while creating VPC err %s\n%s", err, response)
 	}
 	d.SetId(*vpc.ID)
+
+	defaultSGName := d.Get(isVPCIDefaultSecurityGroupName).(string)
+	if defaultSGName != "" {
+		sgUpdate(d, meta, *vpc.DefaultSecurityGroup.ID, defaultSGName, true)
+	}
+
 	log.Printf("[INFO] VPC : %s", *vpc.ID)
 	_, err = isWaitForVPCAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
