@@ -519,14 +519,14 @@ func testAccCheckIBMCosBucket_activityTracker_monitor(cosServiceName, activitySe
 		name              = "%s"
 		resource_group_id = data.ibm_resource_group.cos_group.id
 		service           = "logdnaat"
-		plan              = "standard"
+		plan              = "7-day "
 		location          = "us-south"
 	  }
 	  resource "ibm_resource_instance" "metrics_monitor2" {
 		name              = "%s"
 		resource_group_id = data.ibm_resource_group.cos_group.id
 		service           = "sysdig-monitor"
-		plan              = "standard"
+		plan              = "graduated-tier"
 		location          = "us-south"
 	  }
 	  resource "ibm_cos_bucket" "bucket2" {
@@ -636,7 +636,7 @@ func testAccCheckIBMCosBucket_archive_updateDays(cosServiceName string, bucketNa
 	    region_location       = "%s"
 		storage_class         = "%s"
 		archive_rule {
-			rule_id             = "%s""
+			rule_id             = "%s"
 			enable              = true
 			days                = %d
 			type                = "%s"

@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccIBMPISnapshotsDataSource_basic(t *testing.T) {
-
+	t.Skip()
 	//name := "Trial "
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

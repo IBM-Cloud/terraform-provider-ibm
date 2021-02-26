@@ -22,30 +22,31 @@ import (
 )
 
 func TestAccIBMContainerAddOns_Basic(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
-	vpc := fmt.Sprintf("terraform-vpc-%d", acctest.RandIntRange(10, 100))
-	subnet := fmt.Sprintf("terraform-subnet-%d", acctest.RandIntRange(10, 100))
-	flavor := "c2.2x4"
-	zone := "us-south"
-	workerCount := "1"
+	name := fmt.Sprintf("tf-cluster-addon-%d", acctest.RandIntRange(10, 100))
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMContainerAddOnsDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMContainerAddOnsBasic(clusterName, zone, vpc, subnet, flavor, workerCount),
+			{
+				Config: testAccCheckIBMContainerAddOnsBasic(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_container_addons.addons", "addons.#", "3"),
+						"ibm_container_addons.addons", "addons.#", "2"),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMContainerAddOnsUpdate(zone, vpc, subnet, clusterName, flavor, workerCount),
+			{
+				Config: testAccCheckIBMContainerAddOnsUpdate(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_container_addons.addons", "addons.#", "3"),
+						"ibm_container_addons.addons", "addons.#", "1"),
 				),
+			},
+			{
+				ResourceName:      "ibm_container_addons.addons",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -75,39 +76,70 @@ func testAccCheckIBMContainerAddOnsDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMContainerAddOnsBasic(zone, vpc, subnet, clusterName, flavor, workerCount string) string {
-	return testAccCheckIBMContainerVpcOcpClusterGen2basic(zone, vpc, subnet, clusterName, flavor, workerCount) + fmt.Sprintf(`
+func testAccCheckIBMContainerAddOnsBasic(name string) string {
+	return fmt.Sprintf(`
+	provider "ibm"{
+		region = "eu-de"
+	}
+	resource "ibm_is_vpc" "vpc" {
+		name = "%[1]s"
+	}
+	resource "ibm_is_subnet" "subnet" {
+		name                     = "%[1]s"
+		vpc                      = ibm_is_vpc.vpc.id
+		zone                     = "eu-de-1"
+		total_ipv4_address_count = 256
+	}
+	resource "ibm_container_vpc_cluster" "cluster" {
+		name              = "%[1]s"
+		vpc_id            = ibm_is_vpc.vpc.id
+		flavor            = "cx2.2x4"
+		worker_count      = 1
+		wait_till         = "OneWorkerNodeReady"
+		zones {
+			subnet_id = ibm_is_subnet.subnet.id
+			name      = "eu-de-1"
+		}
+	}
 	resource "ibm_container_addons" "addons" {
-	cluster = ibm_container_vpc_cluster.clustergen2.name
-	addons {
-		name    = "istio"
-		version = "1.6"
-	}
-	addons {
-		name    = "vpc-block-csi-driver"
-		version = "2.0.3"
-	}
-	addons {
-		name    = "static-route"
-		version = "1.0.0"
-	}
-}`)
+		cluster = ibm_container_vpc_cluster.cluster.id
+		addons {
+			name    = "vpc-block-csi-driver"
+		}
+		addons {
+			name    = "cluster-autoscaler"
+		}
+}`, name)
 }
-func testAccCheckIBMContainerAddOnsUpdate(clusterName, zone, vpc, subnet, flavor, workerCount string) string {
-	return testAccCheckIBMContainerVpcOcpClusterGen2basic(zone, vpc, subnet, clusterName, flavor, workerCount) + fmt.Sprintf(`
+func testAccCheckIBMContainerAddOnsUpdate(name string) string {
+	return fmt.Sprintf(`
+	provider "ibm"{
+		region = "eu-de"
+	}
+	resource "ibm_is_vpc" "vpc" {
+		name = "%[1]s"
+	}
+	resource "ibm_is_subnet" "subnet" {
+		name                     = "%[1]s"
+		vpc                      = ibm_is_vpc.vpc.id
+		zone                     = "eu-de-1"
+		total_ipv4_address_count = 256
+	}
+	resource "ibm_container_vpc_cluster" "cluster" {
+		name              = "%[1]s"
+		vpc_id            = ibm_is_vpc.vpc.id
+		flavor            = "cx2.2x4"
+		worker_count      = 1
+		wait_till         = "OneWorkerNodeReady"
+		zones {
+			subnet_id = ibm_is_subnet.subnet.id
+			name      = "eu-de-1"
+		}
+	}
 	resource "ibm_container_addons" "addons" {
-	cluster = ibm_container_vpc_cluster.clustergen2.name
-	addons {
-		name    = "istio"
-		version = "1.7"
-	}
-	addons {
-		name    = "vpc-block-csi-driver"
-		version = "2.0.3"
-	}
-	addons {
-		name    = "kube-terminal"
-		version = "1.0.0"
-	}
-}`)
+		cluster = ibm_container_vpc_cluster.cluster.id
+		addons {
+			name    = "cluster-autoscaler"
+		}
+}`, name)
 }

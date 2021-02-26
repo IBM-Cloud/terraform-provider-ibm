@@ -124,7 +124,7 @@ func resourceIBMCertificateManagerOrder() *schema.Resource {
 				Description: "Status  of the certificate",
 			},
 			"has_previous": {
-				Type:        schema.TypeString,
+				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Has Previous",
 			},

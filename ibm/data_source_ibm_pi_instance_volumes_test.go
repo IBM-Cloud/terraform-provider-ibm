@@ -34,10 +34,10 @@ func TestAccIBMPIVolumesDataSource_basic(t *testing.T) {
 }
 
 func testAccCheckIBMPIVolumesDataSourceConfig(name string) string {
-	return testAccCheckIBMPIVolumeConfig(name) + fmt.Sprintf(`
+	return fmt.Sprintf(`
 data "ibm_pi_instance_volumes" "testacc_ds_volumes" {
-    pi_instance_name = ibm_pi_volume.power_volume.pi_volume_name
+    pi_instance_name = "%s"
     pi_cloud_instance_id = "%s"
-}`, pi_cloud_instance_id)
+}`, pi_instance_name, pi_cloud_instance_id)
 
 }

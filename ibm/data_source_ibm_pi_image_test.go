@@ -34,14 +34,9 @@ func TestAccIBMPIImageDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMPIImageDataSourceConfig() string {
 	return fmt.Sprintf(`
-	resource "ibm_pi_image" "power_image" {
-		pi_image_name       = "7200-04-01"
-		pi_image_id         = "f31da27a-b634-45e5-913a-3f4d964e5a02"
-		pi_cloud_instance_id = "%[1]s"
-	  }
 	data "ibm_pi_image" "testacc_ds_image" {
-		pi_image_name = ibm_pi_image.power_image.image_id
-		pi_cloud_instance_id = "%[1]s"
-	}`, pi_cloud_instance_id)
+		pi_image_name = "%s"
+		pi_cloud_instance_id = "%s"
+	}`, pi_image, pi_cloud_instance_id)
 
 }

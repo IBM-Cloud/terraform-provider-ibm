@@ -18,6 +18,7 @@ import (
 )
 
 func TestAccIBMServiceInstanceDataSource_basic(t *testing.T) {
+	t.Skip()
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	serviceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 

@@ -226,7 +226,7 @@ func testAccCheckIBMNetworkVlanConfigWithVM(hostname, domain string) (config str
 		resource "ibm_compute_vm_instance" "vm" {
 			hostname = "%s"
 			domain = "%s"
-			os_reference_code = "DEBIAN_8_64"
+			os_reference_code = "DEBIAN_9_64"
 			datacenter = "lon02"
 			network_speed = 10
 			hourly_billing = true

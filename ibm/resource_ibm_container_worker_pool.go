@@ -252,7 +252,6 @@ func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}
 	d.Set("labels", IgnoreSystemLabels(workerPool.Labels))
 	d.Set("zones", flattenZones(workerPool.Zones))
 	d.Set("cluster", cluster)
-	d.Set("region", workerPool.Region)
 	if strings.Contains(machineType, "encrypted") {
 		d.Set("disk_encryption", true)
 	} else {

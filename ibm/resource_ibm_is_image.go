@@ -132,7 +132,7 @@ func resourceIBMISImage() *schema.Resource {
 			},
 
 			isImageFile: {
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Details for the stored image file",
 			},
@@ -537,9 +537,9 @@ func classicImgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	// d.Set(isImageArchitecure, image.Architecture)
 	d.Set(isImageMinimumProvisionedSize, *image.MinimumProvisionedSize)
 	d.Set(isImageName, *image.Name)
-	d.Set(isImageOperatingSystem, *image.OperatingSystem)
+	d.Set(isImageOperatingSystem, *image.OperatingSystem.Name)
 	// d.Set(isImageFormat, image.Format)
-	d.Set(isImageFile, *image.File)
+	d.Set(isImageFile, *image.File.Size)
 	d.Set(isImageHref, *image.Href)
 	d.Set(isImageStatus, *image.Status)
 	d.Set(isImageVisibility, *image.Visibility)
@@ -591,9 +591,9 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	// d.Set(isImageArchitecure, image.Architecture)
 	d.Set(isImageMinimumProvisionedSize, *image.MinimumProvisionedSize)
 	d.Set(isImageName, *image.Name)
-	d.Set(isImageOperatingSystem, *image.OperatingSystem)
+	d.Set(isImageOperatingSystem, *image.OperatingSystem.Name)
 	// d.Set(isImageFormat, image.Format)
-	d.Set(isImageFile, *image.File)
+	d.Set(isImageFile, *image.File.Size)
 	d.Set(isImageHref, *image.Href)
 	d.Set(isImageStatus, *image.Status)
 	d.Set(isImageVisibility, *image.Visibility)

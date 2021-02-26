@@ -359,7 +359,7 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 	d.Set("worker_pool_name", workerPool.PoolName)
 	d.Set("flavor", workerPool.Flavor)
 	d.Set("worker_count", workerPool.WorkerCount)
-	d.Set("provider", workerPool.Provider)
+	// d.Set("provider", workerPool.Provider)
 	d.Set("labels", IgnoreSystemLabels(workerPool.Labels))
 	d.Set("zones", zones)
 	d.Set("resource_group_id", cls.ResourceGroupID)

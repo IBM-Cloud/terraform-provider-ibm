@@ -359,9 +359,9 @@ func resourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("Error Getting InstanceGroup: %s\n%s", err, response)
 	}
 	d.Set("name", *instanceGroup.Name)
-	d.Set("instance_template", *instanceGroup.InstanceTemplate)
+	d.Set("instance_template", *instanceGroup.InstanceTemplate.ID)
 	d.Set("instances", *instanceGroup.MembershipCount)
-	d.Set("resource_group", *instanceGroup.ResourceGroup)
+	d.Set("resource_group", *instanceGroup.ResourceGroup.ID)
 	if instanceGroup.ApplicationPort != nil {
 		d.Set("application_port", *instanceGroup.ApplicationPort)
 	}
@@ -372,7 +372,7 @@ func resourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) er
 		subnets = append(subnets, string(*(instanceGroup.Subnets[i].ID)))
 	}
 	if instanceGroup.LoadBalancerPool != nil {
-		d.Set("load_balancer_pool", *instanceGroup.LoadBalancerPool)
+		d.Set("load_balancer_pool", *instanceGroup.LoadBalancerPool.ID)
 	}
 	d.Set("subnets", subnets)
 	managers := make([]string, 0)

@@ -122,7 +122,7 @@ func testAccCheckIBMStorageEvaultConfigBasic(hostname, domain string) string {
 resource "ibm_compute_vm_instance" "evaultvm1" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -145,7 +145,7 @@ func testAccCheckIBMStorageEvaultConfigUpdate(hostname, domain string) string {
   resource "ibm_compute_vm_instance" "evaultvm1" {
 	  hostname = "%s"
 	  domain = "%s"
-	  os_reference_code = "DEBIAN_8_64"
+	  os_reference_code = "DEBIAN_9_64"
 	  datacenter = "dal05"
 	  network_speed = 100
 	  hourly_billing = true
@@ -168,7 +168,7 @@ func testAccCheckIBMStorageEvaultConfigImport(hostname, domain string) string {
 	resource "ibm_compute_vm_instance" "evaultvm1" {
 		hostname = "%s"
 		domain = "%s"
-		os_reference_code = "DEBIAN_8_64"
+		os_reference_code = "DEBIAN_9_64"
 		datacenter = "dal05"
 		network_speed = 100
 		hourly_billing = false

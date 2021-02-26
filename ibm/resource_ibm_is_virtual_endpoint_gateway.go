@@ -305,7 +305,6 @@ func resourceIBMisVirtualEndpointGatewayRead(d *schema.ResourceData, meta interf
 		return err
 	}
 	d.Set(isVirtualEndpointGatewayName, result.Name)
-	d.Set(isVirtualEndpointGatewayCreatedAt, result.CreatedAt)
 	d.Set(isVirtualEndpointGatewayHealthState, result.HealthState)
 	d.Set(isVirtualEndpointGatewayCreatedAt, result.CreatedAt.String())
 	d.Set(isVirtualEndpointGatewayLifecycleState, result.LifecycleState)

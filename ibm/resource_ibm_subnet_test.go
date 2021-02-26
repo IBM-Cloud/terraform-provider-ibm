@@ -175,7 +175,7 @@ const testAccCheckIBMSubnetConfigBasic = `
 resource "ibm_compute_vm_instance" "subnetvm1" {
     hostname = "subnetvm1"
     domain = "example.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "wdc04"
     network_speed = 100
     hourly_billing = true
@@ -232,7 +232,7 @@ const testAccCheckIBMSubnetConfigNotesUpdate = `
 resource "ibm_compute_vm_instance" "subnetvm1" {
     hostname = "subnetvm1"
     domain = "example.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "wdc04"
     network_speed = 100
     hourly_billing = true
@@ -289,7 +289,7 @@ const testAccCheckIBMSubnetConfigWithTag = `
 resource "ibm_compute_vm_instance" "subnetvm1" {
     hostname = "subnetvm1"
     domain = "example.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "wdc04"
     network_speed = 100
     hourly_billing = true
@@ -316,7 +316,7 @@ const testAccCheckIBMSubnetConfigWithUpdatedTag = `
 resource "ibm_compute_vm_instance" "subnetvm1" {
     hostname = "subnetvm1"
     domain = "example.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "wdc04"
     network_speed = 100
     hourly_billing = true

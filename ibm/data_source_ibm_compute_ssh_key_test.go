@@ -36,7 +36,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_compute_ssh_key.testacc_ds_ssh_key", "public_key", publicKey),
 					resource.TestCheckResourceAttr("data.ibm_compute_ssh_key.testacc_ds_ssh_key", "notes", notes),
-					resource.TestMatchResourceAttr("data.ibm_compute_ssh_key.testacc_ds_ssh_key", "fingerprint", regexp.MustCompile("^[0-9a-f]{2}:")),
+					resource.TestMatchResourceAttr("data.ibm_compute_ssh_key.testacc_ds_ssh_key", "fingerprint", regexp.MustCompile("^[SHA256]")),
 				),
 			},
 		},

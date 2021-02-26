@@ -67,7 +67,7 @@ func TestAccIBMEventStreamsTopicDataSourceBasic(t *testing.T) {
 func testAccCheckIBMEventStreamsTopicDataSourceConfigBasic(instancecName, topicName string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "my_group" {
-		name = "Default"
+		name = "default"
 	  }
 	data "ibm_resource_instance" "es_instance" {
 		resource_group_id = data.ibm_resource_group.my_group.id

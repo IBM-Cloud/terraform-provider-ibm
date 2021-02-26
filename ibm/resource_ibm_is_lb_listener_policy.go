@@ -872,7 +872,7 @@ func resourceIBMISLBListenerPolicyUpdate(d *schema.ResourceData, meta interface{
 		}
 	}
 
-	return resourceIBMISLBListenerRead(d, meta)
+	return resourceIBMISLBListenerPolicyRead(d, meta)
 }
 
 func classicLbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, listenerID, ID string) error {

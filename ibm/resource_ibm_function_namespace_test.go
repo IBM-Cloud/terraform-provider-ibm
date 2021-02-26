@@ -23,7 +23,7 @@ import (
 func TestAccFunctionNamespace_Basic(t *testing.T) {
 	var instance string
 	name := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
-	resourceGroupName := "Default"
+	resourceGroupName := "default"
 	updateName := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -55,7 +55,7 @@ func TestAccFunctionNamespace_Basic(t *testing.T) {
 func TestAccFunctionNamespace_Import(t *testing.T) {
 	var instance string
 	name := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
-	resourceGroupName := "Default"
+	resourceGroupName := "default"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
