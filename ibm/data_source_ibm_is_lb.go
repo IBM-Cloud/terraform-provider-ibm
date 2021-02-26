@@ -104,8 +104,7 @@ func dataSourceIBMISLB() *schema.Resource {
 
 			isLBLogging: {
 				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
+				Computed:    true,
 				Description: "Logging of Load Balancer",
 			},
 
@@ -386,7 +385,9 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 		if *lb.Name == name {
 			d.SetId(*lb.ID)
 			d.Set(isLBName, *lb.Name)
-			d.Set(isLBLogging, *lb.Logging.Datapath.Active)
+			if lb.Logging != nil && lb.Logging.Datapath != nil {
+				d.Set(isLBLogging, *lb.Logging.Datapath.Active)
+			}
 			if *lb.IsPublic {
 				d.Set(isLBType, "public")
 			} else {
