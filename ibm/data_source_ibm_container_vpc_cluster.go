@@ -391,12 +391,19 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 	}
 	apikeyConfig, err := apikeyAPI.GetApiKeyInfo(clusterID, v1targetEnv)
 	if err != nil {
-
 		return err
 	}
-	d.Set("api_key_id", apikeyConfig.ID)
-	d.Set("api_key_owner_name", apikeyConfig.Name)
-	d.Set("api_key_owner_email", apikeyConfig.Email)
+	if &apikeyConfig != nil {
+		if &apikeyConfig.Name != nil {
+			d.Set("api_key_id", apikeyConfig.ID)
+		}
+		if &apikeyConfig.ID != nil {
+			d.Set("api_key_owner_name", apikeyConfig.Name)
+		}
+		if &apikeyConfig.Email != nil {
+			d.Set("api_key_owner_email", apikeyConfig.Email)
+		}
+	}
 	d.Set(ResourceControllerURL, controller+"/kubernetes/clusters")
 	d.Set(ResourceName, cls.Name)
 	d.Set(ResourceCRN, cls.CRN)
