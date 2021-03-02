@@ -418,6 +418,7 @@ func resourceIBMContainerAddonsHash(v interface{}) int {
 	var buf bytes.Buffer
 	a := v.(map[string]interface{})
 	buf.WriteString(fmt.Sprintf("%s-", a["name"].(string)))
+	buf.WriteString(fmt.Sprintf("%s-", a["version"].(string)))
 
 	return String(buf.String())
 }
