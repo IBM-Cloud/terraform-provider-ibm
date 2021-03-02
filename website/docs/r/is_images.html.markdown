@@ -44,6 +44,7 @@ The following attributes are exported:
 * `id` - The unique identifier of the image.
 * `architecture` - The architecture which image is based on
 * `crn` - The CRN for an image
+* `checksum` - The SHA256 checksum of this image
 * `file` - The file
 * `format` - The format of an image
 * `resourceGroup` - The resource group which image is belonging to
