@@ -16,12 +16,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
-	"github.com/IBM-Cloud/bluemix-go/models"
-
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 const (
@@ -82,11 +82,11 @@ func resourceIBMCISInstance() *schema.Resource {
 			},
 
 			"resource_group_id": {
-				Description:      "The resource group id",
-				Optional:         true,
-				ForceNew:         true,
-				Type:             schema.TypeString,
-				DiffSuppressFunc: applyOnce,
+				Description: "The resource group id",
+				Optional:    true,
+				ForceNew:    true,
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 
 			"parameters": {

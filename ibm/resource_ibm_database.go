@@ -94,6 +94,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "The id of the resource group in which the Database instance is present",
 			},
 
