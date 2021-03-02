@@ -31,6 +31,7 @@ const (
 	isImageEncryptedDataKey = "encrypted_data_key"
 	isImageEncryptionKey    = "encryption_key"
 	isImageEncryption       = "encryption"
+	isResourceCheckSum      = "checksum"
 
 	isImageProvisioning     = "provisioning"
 	isImageProvisioningDone = "done"
@@ -156,6 +157,12 @@ func resourceIBMISImage() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The crn of the resource",
+			},
+
+			isResourceCheckSum: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The SHA256 checksum of the resource",
 			},
 
 			ResourceStatus: {
@@ -597,6 +604,9 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	if image.EncryptionKey != nil {
 		d.Set(isImageEncryptionKey, *image.EncryptionKey.CRN)
+	}
+	if image.File != nil && image.File.Checksums != nil {
+		d.Set(isResourceCheckSum, *image.File.Checksums.Sha256)
 	}
 	tags, err := GetTagsUsingCRN(meta, *image.CRN)
 	if err != nil {
