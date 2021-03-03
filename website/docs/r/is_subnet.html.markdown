@@ -64,6 +64,7 @@ The following arguments are supported:
 * `zone` - (Required, Forces new resource, string) The subnet zone name.
 * `routing_table` - (Optional, string) The routing table identifier that is associated with the subnet. 
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID where the Subnet to be created (This argument is supported only for Generation `2` infrastructure)
+* `tags` - (Optional, list(string)) Tags associated with the instance.
 
 ## Attribute Reference
 
@@ -73,6 +74,7 @@ The following attributes are exported:
 * `ipv6_cidr_block` - The IPv6 range of the subnet.
 * `status` - The status of the subnet.
 * `available_ipv4_address_count` - The total number of available IPv4 addresses.
+* `crn` - The CRN of subnet.
 
 ## Import
 
