@@ -1,7 +1,7 @@
 ---
+subcategory: "API Gateway"
 layout: "ibm"
 page_title: "IBM: API Gateway Endpoint Subscription"
-sidebar_current: "docs-ibm-resource-api-gateway-endpoint-subscription"
 description: |-
   Create, Update,Manage and Delete Subscription of Endpoints of a API Gateway Service Instance.
 ---
