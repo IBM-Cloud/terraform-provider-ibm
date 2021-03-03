@@ -1,7 +1,7 @@
 ---
+subcategory: "API Gateway"
 layout: "ibm"
 page_title: "IBM: API Gateway Endpoint"
-sidebar_current: "docs-ibm-resource-api-gateway-endpoint"
 description: |-
   Create, Update,Manage and Delete Endpoints.
 ---
