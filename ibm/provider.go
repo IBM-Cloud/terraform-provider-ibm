@@ -411,6 +411,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_service_policy":                             resourceIBMIAMServicePolicy(),
 			"ibm_iam_user_invite":                                resourceIBMUserInvite(),
 			"ibm_ipsec_vpn":                                      resourceIBMIPSecVPN(),
+			"ibm_is_dedicated_host":                              resourceIbmIsDedicatedHost(),
 			"ibm_is_floating_ip":                                 resourceIBMISFloatingIP(),
 			"ibm_is_flow_log":                                    resourceIBMISFlowLog(),
 			"ibm_is_instance":                                    resourceIBMISInstance(),
