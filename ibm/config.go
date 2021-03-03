@@ -932,6 +932,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 				if err == nil || !isRetryable(err) {
 					break
 				}
+				time.Sleep(c.RetryDelay)
+				log.Printf("Retrying IAM Authentication %d", count)
 				err = authenticateAPIKey(sess.BluemixSession)
 			}
 			if err != nil {
@@ -947,6 +949,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 				if err == nil || !isRetryable(err) {
 					break
 				}
+				time.Sleep(c.RetryDelay)
+				log.Printf("Retrying CF Authentication %d", count)
 				err = authenticateCF(sess.BluemixSession)
 			}
 			if err != nil {
@@ -962,15 +966,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 				if err == nil || !isRetryable(err) {
 					break
 				}
+				time.Sleep(c.RetryDelay)
+				log.Printf("Retrying refresh token %d", count)
 				err = refreshToken(sess.BluemixSession)
 			}
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("Error occured while refreshing the token: %q", err)
 			}
 		}
 
 	}
-	userConfig, err := fetchUserDetails(sess.BluemixSession, c.Generation, c.RetryCount)
+	userConfig, err := fetchUserDetails(sess.BluemixSession, c.Generation, c.RetryCount, c.RetryDelay)
 	if err != nil {
 		session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
 	}
@@ -1748,7 +1754,7 @@ func authenticateCF(sess *bxsession.Session) error {
 	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
 }
 
-func fetchUserDetails(sess *bxsession.Session, generation, retries int) (*UserConfig, error) {
+func fetchUserDetails(sess *bxsession.Session, generation, retries int, retryDelay time.Duration) (*UserConfig, error) {
 	config := sess.Config
 	user := UserConfig{}
 	var bluemixToken string
@@ -1766,8 +1772,10 @@ func fetchUserDetails(sess *bxsession.Session, generation, retries int) (*UserCo
 	if err != nil && !strings.Contains(err.Error(), "key is of invalid type") {
 		if retries > 0 {
 			if config.BluemixAPIKey != "" {
+				time.Sleep(retryDelay)
+				log.Printf("Retrying authentication for user details %d", retries)
 				_ = authenticateAPIKey(sess)
-				return fetchUserDetails(sess, generation, retries-1)
+				return fetchUserDetails(sess, generation, retries-1, retryDelay)
 			}
 		}
 		return &user, err
