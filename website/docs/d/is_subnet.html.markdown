@@ -74,3 +74,5 @@ The following attributes are exported:
 * `zone` - The subnet zone name.
 * `resource_group` - The subnet Resource group.
 * `available_ipv4_address_count` - The total number of available IPv4 addresses.
+* `tags` - Tags associated with the instance.
+* `crn` - The CRN of subnet.
