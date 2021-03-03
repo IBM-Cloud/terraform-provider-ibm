@@ -524,13 +524,18 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	id := d.Id()
-	isLogging := d.Get(isLBLogging).(bool)
 	name := ""
+	isLogging := false
 	hasChanged := false
+	hasChangedLog := false
 
 	if d.HasChange(isLBName) {
 		name = d.Get(isLBName).(string)
 		hasChanged = true
+	}
+	if d.HasChange(isLBLogging) {
+		isLogging = d.Get(isLBLogging).(bool)
+		hasChangedLog = true
 	}
 	if userDetails.generation == 1 {
 		err := classicLBUpdate(d, meta, id, name, hasChanged)
@@ -538,7 +543,7 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	} else {
-		err := lbUpdate(d, meta, id, name, hasChanged, isLogging)
+		err := lbUpdate(d, meta, id, name, hasChanged, isLogging, hasChangedLog)
 		if err != nil {
 			return err
 		}
@@ -588,7 +593,7 @@ func classicLBUpdate(d *schema.ResourceData, meta interface{}, id, name string, 
 	return nil
 }
 
-func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool, isLogging bool) error {
+func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool, isLogging bool, hasChangedLog bool) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -612,7 +617,24 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
 			ID: &id,
 		}
+		loadBalancerPatchModel := &vpcv1.LoadBalancerPatch{
+			Name: &name,
+		}
+		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerPatch: %s", err)
+		}
+		updateLoadBalancerOptions.LoadBalancerPatch = loadBalancerPatch
 
+		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating vpc Load Balancer : %s\n%s", err, response)
+		}
+	}
+	if hasChangedLog {
+		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
+			ID: &id,
+		}
 		dataPath := &vpcv1.LoadBalancerLoggingDatapath{
 			Active: &isLogging,
 		}
@@ -620,7 +642,6 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 			Datapath: dataPath,
 		}
 		loadBalancerPatchModel := &vpcv1.LoadBalancerPatch{
-			Name:    &name,
 			Logging: loadBalancerLogging,
 		}
 		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
