@@ -40,6 +40,7 @@ const (
 	isLBProvisioningDone = "done"
 	isLBResourceGroup    = "resource_group"
 	isLBProfile          = "profile"
+	isLBLogging          = "logging"
 )
 
 func resourceIBMISLB() *schema.Resource {
@@ -140,6 +141,13 @@ func resourceIBMISLB() *schema.Resource {
 				Computed: true,
 			},
 
+			isLBLogging: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Logging of Load Balancer",
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -203,6 +211,8 @@ func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
 
 	name := d.Get(isLBName).(string)
 	subnets := d.Get(isLBSubnets).(*schema.Set)
+
+	isLogging := d.Get(isLBLogging).(bool)
 	// subnets := expandStringList((d.Get(isLBSubnets).(*schema.Set)).List())
 	var lbType, rg string
 	isPublic := true
@@ -224,7 +234,7 @@ func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	} else {
-		err := lbCreate(d, meta, name, lbType, rg, subnets, isPublic)
+		err := lbCreate(d, meta, name, lbType, rg, subnets, isPublic, isLogging)
 		if err != nil {
 			return err
 		}
@@ -279,16 +289,24 @@ func classicLBCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg 
 	return nil
 }
 
-func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string, subnets *schema.Set, isPublic bool) error {
+func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string, subnets *schema.Set, isPublic bool, isLogging bool) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
 
+	dataPath := &vpcv1.LoadBalancerLoggingDatapath{
+		Active: &isLogging,
+	}
+	loadBalancerLogging := &vpcv1.LoadBalancerLogging{
+		Datapath: dataPath,
+	}
 	options := &vpcv1.CreateLoadBalancerOptions{
 		IsPublic: &isPublic,
 		Name:     &name,
+		Logging:  loadBalancerLogging,
 	}
+
 	if subnets.Len() != 0 {
 		subnetobjs := make([]vpcv1.SubnetIdentityIntf, subnets.Len())
 		for i, subnet := range subnets.List() {
@@ -515,13 +533,18 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	id := d.Id()
-
 	name := ""
+	isLogging := false
 	hasChanged := false
+	hasChangedLog := false
 
 	if d.HasChange(isLBName) {
 		name = d.Get(isLBName).(string)
 		hasChanged = true
+	}
+	if d.HasChange(isLBLogging) {
+		isLogging = d.Get(isLBLogging).(bool)
+		hasChangedLog = true
 	}
 	if userDetails.generation == 1 {
 		err := classicLBUpdate(d, meta, id, name, hasChanged)
@@ -529,7 +552,7 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	} else {
-		err := lbUpdate(d, meta, id, name, hasChanged)
+		err := lbUpdate(d, meta, id, name, hasChanged, isLogging, hasChangedLog)
 		if err != nil {
 			return err
 		}
@@ -579,7 +602,7 @@ func classicLBUpdate(d *schema.ResourceData, meta interface{}, id, name string, 
 	return nil
 }
 
-func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool, isLogging bool, hasChangedLog bool) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -603,9 +626,32 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
 			ID: &id,
 		}
-
 		loadBalancerPatchModel := &vpcv1.LoadBalancerPatch{
 			Name: &name,
+		}
+		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerPatch: %s", err)
+		}
+		updateLoadBalancerOptions.LoadBalancerPatch = loadBalancerPatch
+
+		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating vpc Load Balancer : %s\n%s", err, response)
+		}
+	}
+	if hasChangedLog {
+		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
+			ID: &id,
+		}
+		dataPath := &vpcv1.LoadBalancerLoggingDatapath{
+			Active: &isLogging,
+		}
+		loadBalancerLogging := &vpcv1.LoadBalancerLogging{
+			Datapath: dataPath,
+		}
+		loadBalancerPatchModel := &vpcv1.LoadBalancerPatch{
+			Logging: loadBalancerLogging,
 		}
 		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
 		if err != nil {

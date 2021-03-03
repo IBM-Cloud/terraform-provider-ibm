@@ -51,6 +51,7 @@ The following arguments are supported:
 * `type` - (Optional, Forces new resource, string) The type of the load balancer. Default value `public`. Supported values `public` and  `private`.
 * `resource_group` - (Optional, Forces new resource, string) The resource group where the load balancer to be created.
 * `tags` - (Optional, array of strings) Tags associated with the load balancer.
+* `logging` - (Optional, bool) Enable load balancer data logs for LogDNA. You can use data logs to help troubleshoot connectivity issues.
 
 ## Attribute Reference
 
