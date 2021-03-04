@@ -1,7 +1,7 @@
 sudo: false
 language: go
 go:
-- 1.13.x
+- 1.15.x
 
 install:
 # This script is used by the Travis build to install a cookie for
@@ -10,7 +10,12 @@ install:
 # See: https://github.com/golang/go/issues/12933
 - bash scripts/gogetcookie.sh
 - go get github.com/kardianos/govendor
+- python3 -m pip install -U pip
+- pip3 install --upgrade "git+https://github.com/ibm/detect-secrets.git@master#egg=detect-secrets"
 
+before_script:
+- bin/detect_secrets.sh
+  
 script:
 - make test
 - make vet
