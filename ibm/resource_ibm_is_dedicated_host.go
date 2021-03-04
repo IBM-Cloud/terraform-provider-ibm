@@ -37,126 +37,49 @@ func resourceIbmIsDedicatedHost() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"dedicated_host_prototype": &schema.Schema{
-				Type:        schema.TypeList,
-				MinItems:    1,
-				MaxItems:    1,
-				Required:    true,
-				Description: "The dedicated host prototype object.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"instance_placement_enabled": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     true,
-							Description: "If set to true, instances can be placed on this dedicated host.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.",
-						},
-						"profile": &schema.Schema{
-							Type:        schema.TypeList,
-							MinItems:    1,
-							MaxItems:    1,
-							Required:    true,
-							Description: "The profile to use for this dedicated host.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The globally unique name for this dedicated host profile.",
-									},
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The URL for this dedicated host profile.",
-									},
-								},
-							},
-						},
-						"resource_group": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "The resource group to use. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The unique identifier for this resource group.",
-									},
-								},
-							},
-						},
-						"group": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "The dedicated host group for this dedicated host.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The unique identifier for this dedicated host group.",
-									},
-									"crn": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The CRN for this dedicated host group.",
-									},
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The URL for this dedicated host group.",
-									},
-								},
-							},
-						},
-						"zone": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "The zone this dedicated host will reside in.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The globally unique name for this zone.",
-									},
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The URL for this zone.",
-									},
-								},
-							},
-						},
-					},
-				},
+			"instance_placement_enabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "If set to true, instances can be placed on this dedicated host.",
 			},
-			"available_memory": &schema.Schema{
+			"name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.",
+			},
+			"profile": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The profile to use for this dedicated host. Globally unique name for this dedicated host profile.",
+			},
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier for the resource group to use. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.",
+			},
+			"host_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier of the dedicated host group for this dedicated host.",
+			},
+			"available_memory": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The amount of memory in gibibytes that is currently available for instances.",
 			},
-			"available_vcpu": &schema.Schema{
+			"available_vcpu": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The available VCPU for the dedicated host.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"architecture": &schema.Schema{
+						"architecture": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The VCPU architecture.",
 						},
-						"count": &schema.Schema{
+						"count": {
 							Type:        schema.TypeInt,
 							Required:    true,
 							Description: "The number of VCPUs assigned.",
@@ -164,35 +87,35 @@ func resourceIbmIsDedicatedHost() *schema.Resource {
 					},
 				},
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date and time that the dedicated host was created.",
 			},
-			"crn": &schema.Schema{
+			"crn": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The CRN for this dedicated host.",
 			},
-			"group": &schema.Schema{
+			"group": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The dedicated host group this dedicated host is in.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"crn": &schema.Schema{
+						"crn": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The CRN for this dedicated host group.",
 						},
-						"deleted": &schema.Schema{
+						"deleted": {
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
 							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"more_info": &schema.Schema{
+									"more_info": {
 										Type:        schema.TypeString,
 										Required:    true,
 										Description: "Link to documentation about deleted resources.",
@@ -200,22 +123,22 @@ func resourceIbmIsDedicatedHost() *schema.Resource {
 								},
 							},
 						},
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The URL for this dedicated host group.",
 						},
-						"id": &schema.Schema{
+						"id": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The unique identifier for this dedicated host group.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 						},
-						"resource_type": &schema.Schema{
+						"resource_type": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The type of resource referenced.",
@@ -223,35 +146,30 @@ func resourceIbmIsDedicatedHost() *schema.Resource {
 					},
 				},
 			},
-			"href": &schema.Schema{
+			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL for this dedicated host.",
 			},
-			"instance_placement_enabled": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "If set to true, instances can be placed on this dedicated host.",
-			},
-			"instances": &schema.Schema{
+			"instances": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Array of instances that are allocated to this dedicated host.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"crn": &schema.Schema{
+						"crn": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The CRN for this virtual server instance.",
 						},
-						"deleted": &schema.Schema{
+						"deleted": {
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
 							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"more_info": &schema.Schema{
+									"more_info": {
 										Type:        schema.TypeString,
 										Required:    true,
 										Description: "Link to documentation about deleted resources.",
@@ -259,17 +177,17 @@ func resourceIbmIsDedicatedHost() *schema.Resource {
 								},
 							},
 						},
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The URL for this virtual server instance.",
 						},
-						"id": &schema.Schema{
+						"id": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The unique identifier for this virtual server instance.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The user-defined name for this virtual server instance (and default system hostname).",
@@ -277,96 +195,48 @@ func resourceIbmIsDedicatedHost() *schema.Resource {
 					},
 				},
 			},
-			"lifecycle_state": &schema.Schema{
+			"lifecycle_state": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The lifecycle state of the dedicated host resource.",
 			},
-			"memory": &schema.Schema{
+			"memory": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The total amount of memory in gibibytes for this host.",
 			},
-			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.",
-			},
-			"profile": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The profile this dedicated host uses.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The URL for this dedicated host.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The globally unique name for this dedicated host profile.",
-						},
-					},
-				},
-			},
-			"provisionable": &schema.Schema{
+			"provisionable": {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Indicates whether this dedicated host is available for instance creation.",
 			},
-			"resource_group": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The resource group for this dedicated host.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The URL for this resource group.",
-						},
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The unique identifier for this resource group.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The user-defined name for this resource group.",
-						},
-					},
-				},
-			},
-			"resource_type": &schema.Schema{
+			"resource_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of resource referenced.",
 			},
-			"socket_count": &schema.Schema{
+			"socket_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The total number of sockets for this host.",
 			},
-			"state": &schema.Schema{
+			"state": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The administrative state of the dedicated host.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the dedicated host on which the unexpected property value was encountered.",
 			},
-			"supported_instance_profiles": &schema.Schema{
+			"supported_instance_profiles": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Array of instance profiles that can be used by instances placed on this dedicated host.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The URL for this virtual server instance profile.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The globally unique name for this virtual server instance profile.",
@@ -374,18 +244,18 @@ func resourceIbmIsDedicatedHost() *schema.Resource {
 					},
 				},
 			},
-			"vcpu": &schema.Schema{
+			"vcpu": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The total VCPU of the dedicated host.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"architecture": &schema.Schema{
+						"architecture": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The VCPU architecture.",
 						},
-						"count": &schema.Schema{
+						"count": {
 							Type:        schema.TypeInt,
 							Required:    true,
 							Description: "The number of VCPUs assigned.",
@@ -393,18 +263,18 @@ func resourceIbmIsDedicatedHost() *schema.Resource {
 					},
 				},
 			},
-			"zone": &schema.Schema{
+			"zone": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The zone this dedicated host resides in.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The URL for this zone.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The globally unique name for this zone.",
@@ -421,90 +291,47 @@ func resourceIbmIsDedicatedHostCreate(context context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	log.Println("in the create method ******")
 	createDedicatedHostOptions := &vpcv1.CreateDedicatedHostOptions{}
+	dedicatedHostPrototype := vpcv1.DedicatedHostPrototype{}
 
-	if dhprototypeIntf, ok := d.GetOk("dedicated_host_prototype"); ok {
-		dhprototype := dhprototypeIntf.([]interface{})
-		dedicatedHostPrototype := vpcv1.DedicatedHostPrototype{}
-		for _, resource := range dhprototype {
-			dhprototypersc := resource.(map[string]interface{})
-			dhname, ok := dhprototypersc["name"]
-			if ok {
-				namestr := dhname.(string)
-				if namestr != "" {
-					dedicatedHostPrototype.Name = &namestr
-				}
-			}
+	if dhname, ok := d.GetOk("name"); ok {
 
-			insplacementenabled, ok := dhprototypersc["instance_placement_enabled"]
-			if ok {
-				insplacementenabledbool := insplacementenabled.(bool)
-				dedicatedHostPrototype.InstancePlacementEnabled = &insplacementenabledbool
-			}
-
-			dhprofile, ok := dhprototypersc["profile"]
-			if ok {
-				dedicatedHostProfileIdentity := vpcv1.DedicatedHostProfileIdentity{}
-				profintf := dhprofile.([]interface{})
-				for _, prof := range profintf {
-					profile := prof.(map[string]interface{})
-					profname, ok := profile["name"]
-					if ok {
-						profnamestr := profname.(string)
-						if profnamestr != "" {
-							dedicatedHostProfileIdentity.Name = &profnamestr
-						}
-					}
-					profhref, ok := profile["href"]
-					if ok {
-						profhrefstr := profhref.(string)
-						if profhrefstr != "" {
-							dedicatedHostProfileIdentity.Href = &profhrefstr
-						}
-					}
-
-				}
-				dedicatedHostPrototype.Profile = &dedicatedHostProfileIdentity
-			}
-
-			dedicatedHostGroupIdentity := vpcv1.DedicatedHostGroupIdentity{}
-			dhgroup, ok := dhprototypersc["group"]
-			if ok {
-				dhgroupintf := dhgroup.([]interface{})
-				for _, grouprn := range dhgroupintf {
-					group := grouprn.(map[string]interface{})
-					groupid, ok := group["id"]
-					if ok {
-						groupidstr := groupid.(string)
-						if groupidstr != "" {
-							dedicatedHostGroupIdentity.ID = &groupidstr
-						}
-					}
-					groupcrn, ok := group["crn"]
-					if ok {
-						groupcrnstr := groupcrn.(string)
-						if groupcrnstr != "" {
-							dedicatedHostGroupIdentity.CRN = &groupcrnstr
-						}
-
-					}
-					grouphref, ok := group["href"]
-					if ok {
-						grouphrefstr := grouphref.(string)
-						if grouphrefstr != "" {
-							dedicatedHostGroupIdentity.Href = &grouphrefstr
-						}
-
-					}
-				}
-				dedicatedHostPrototype.Group = &dedicatedHostGroupIdentity
-			}
-
+		namestr := dhname.(string)
+		if namestr != "" {
+			dedicatedHostPrototype.Name = &namestr
 		}
-		createDedicatedHostOptions.SetDedicatedHostPrototype(&dedicatedHostPrototype)
-
 	}
+	if insplacementenabled, ok := d.GetOk("instance_placement_enabled"); ok {
+		insplacementenabledbool := insplacementenabled.(bool)
+		dedicatedHostPrototype.InstancePlacementEnabled = &insplacementenabledbool
+	}
+
+	if dhprofile, ok := d.GetOk("profile"); ok {
+		dhprofilename := dhprofile.(string)
+		dedicatedHostProfileIdentity := vpcv1.DedicatedHostProfileIdentity{
+			Name: &dhprofilename,
+		}
+		dedicatedHostPrototype.Profile = &dedicatedHostProfileIdentity
+	}
+
+	if dhgroup, ok := d.GetOk("host_group"); ok {
+		dhgroupid := dhgroup.(string)
+		dedicatedHostGroupIdentity := vpcv1.DedicatedHostGroupIdentity{
+			ID: &dhgroupid,
+		}
+		dedicatedHostPrototype.Group = &dedicatedHostGroupIdentity
+	}
+
+	if resgroup, ok := d.GetOk("resource_group"); ok {
+		resgroupid := resgroup.(string)
+		resourceGroupIdentity := vpcv1.ResourceGroupIdentity{
+			ID: &resgroupid,
+		}
+		dedicatedHostPrototype.ResourceGroup = &resourceGroupIdentity
+	}
+
+	createDedicatedHostOptions.SetDedicatedHostPrototype(&dedicatedHostPrototype)
 
 	//dedicatedHostPrototype := resourceIbmIsDedicatedHostMapToDedicatedHostPrototype(d.Get("dedicated_host_prototype").([]interface{})[0].(map[string]interface{}))
 	//createDedicatedHostOptions.SetDedicatedHostPrototype(&dedicatedHostPrototype)
@@ -778,50 +605,6 @@ func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	dedicatedHostPrototypeMap := map[string]interface{}{}
-
-	if dedicatedHost.InstancePlacementEnabled != nil {
-		dedicatedHostPrototypeMap["instance_placement_enabled"] = dedicatedHost.InstancePlacementEnabled
-	}
-	if dedicatedHost.Name != nil {
-		dedicatedHostPrototypeMap["name"] = dedicatedHost.Name
-	}
-	// TODO: handle Profile of type DedicatedHostProfileIdentity -- not primitive type, not list
-	if dedicatedHost.Profile != nil {
-		dedicatedHostPrototypeMap["profile"] = resourceIbmIsDedicatedHostDedicatedHostProfileReferenceToMap(*dedicatedHost.Profile)
-	}
-	if dedicatedHost.ResourceGroup != nil {
-		// TODO: handle ResourceGroup of type ResourceGroupIdentity -- not primitive type, not list
-		resgrp := []interface{}{}
-		resgroup := map[string]interface{}{}
-		resgroup["id"] = *dedicatedHost.ResourceGroup.ID
-
-		resgrp = append(resgrp, resgroup)
-		dedicatedHostPrototypeMap["resource_group"] = resgrp
-	}
-	if dedicatedHost.Group != nil {
-		// TODO: handle Group of type DedicatedHostGroupIdentity -- not primitive type, not list
-		dedicatedHostGroupReferenceMap := map[string]interface{}{}
-
-		dedicatedHostGroupReferenceMap["crn"] = *dedicatedHost.Group.CRN
-		dedicatedHostGroupReferenceMap["href"] = *dedicatedHost.Group.Href
-		dedicatedHostGroupReferenceMap["id"] = *dedicatedHost.Group.ID
-
-		dedicatedHostGroupReferenceint := []interface{}{}
-		dedicatedHostGroupReferenceint = append(dedicatedHostGroupReferenceint, dedicatedHostGroupReferenceMap)
-		dedicatedHostPrototypeMap["group"] = dedicatedHostGroupReferenceint
-	}
-	if dedicatedHost.Zone != nil {
-		// TODO: handle Zone of type ZoneIdentity -- not primitive type, not list
-		dedicatedHostPrototypeMap["zone"] = resourceIbmIsDedicatedHostZoneReferenceToMap(*dedicatedHost.Zone)
-	}
-	dedicatedHostPrototypelist := []interface{}{}
-	dedicatedHostPrototypelist = append(dedicatedHostPrototypelist, dedicatedHostPrototypeMap)
-	log.Println("dedicatedHostPrototypeMap ****", dedicatedHostPrototypelist)
-	//dedicatedHostPrototypeMap := resourceIbmIsDedicatedHostDedicatedHostToPrototypeMap(*dedicatedHost)
-	if err = d.Set("dedicated_host_prototype", dedicatedHostPrototypelist); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting dedicated_host_prototype: %s", err))
-	}
 	if err = d.Set("available_memory", intValue(dedicatedHost.AvailableMemory)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting available_memory: %s", err))
 	}
@@ -862,16 +645,16 @@ func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("name", dedicatedHost.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	profile := resourceIbmIsDedicatedHostDedicatedHostProfileReferenceToMap(*dedicatedHost.Profile)
+	//profile := resourceIbmIsDedicatedHostDedicatedHostProfileReferenceToMap(*dedicatedHost.Profile)
 
-	if err = d.Set("profile", profile); err != nil {
+	if err = d.Set("profile", *dedicatedHost.Profile.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting profile: %s", err))
 	}
 	if err = d.Set("provisionable", dedicatedHost.Provisionable); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting provisionable: %s", err))
 	}
-	resourceGroupMap := resourceIbmIsDedicatedHostResourceGroupReferenceToMap(*dedicatedHost.ResourceGroup)
-	if err = d.Set("resource_group", resourceGroupMap); err != nil {
+	//resourceGroupMap := resourceIbmIsDedicatedHostResourceGroupReferenceToMap(*dedicatedHost.ResourceGroup)
+	if err = d.Set("resource_group", *dedicatedHost.ResourceGroup.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
 	}
 	if err = d.Set("resource_type", dedicatedHost.ResourceType); err != nil {
@@ -1230,15 +1013,37 @@ func resourceIbmIsDedicatedHostUpdate(context context.Context, d *schema.Resourc
 
 	hasChange := false
 
-	if d.HasChange("dedicated_host_prototype") {
-		updateDedicatedHostOptions.SetDedicatedHostPatch(d.Get("dedicated_host_prototype.0").(map[string]interface{}))
+	dedicatedHostPrototypemap := map[string]interface{}{}
+
+	if d.HasChange("name") {
+
+		dedicatedHostPrototypemap["name"] = d.Get("name").(interface{})
 		hasChange = true
 	}
+	if d.HasChange("instance_placement_enabled") {
+
+		dedicatedHostPrototypemap["instance_placement_enabled"] = d.Get("instance_placement_enabled").(interface{})
+		hasChange = true
+	}
+	if d.HasChange("profile") {
+		dedicatedHostPrototypemap["profile"] = d.Get("profile").(interface{})
+		hasChange = true
+	}
+	if d.HasChange("resource_group") {
+		dedicatedHostPrototypemap["resource_group"] = d.Get("resource_group").(interface{})
+		hasChange = true
+	}
+	if d.HasChange("host_group") {
+		dedicatedHostPrototypemap["group"] = d.Get("host_group").(interface{})
+		hasChange = true
+	}
+	//log.Println("group final ******", dedicatedHostPrototypemap["group"].([]interface{})[0].(map[string]interface{})["id"].(string))
 
 	if hasChange {
+		updateDedicatedHostOptions.SetDedicatedHostPatch(dedicatedHostPrototypemap)
 		_, response, err := vpcClient.UpdateDedicatedHostWithContext(context, updateDedicatedHostOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateDedicatedHostWithContext failed %s\n%s", err, response)
+			log.Printf("[DEBUG] UpdateDedicatedHostWithContext fails %s\n%s", err, response)
 			return diag.FromErr(err)
 		}
 	}
@@ -1249,6 +1054,16 @@ func resourceIbmIsDedicatedHostUpdate(context context.Context, d *schema.Resourc
 func resourceIbmIsDedicatedHostDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(ClientSession).VpcV1API()
 	if err != nil {
+		return diag.FromErr(err)
+	}
+	updateDedicatedHostOptions := &vpcv1.UpdateDedicatedHostOptions{}
+	dedicatedHostPrototypeMap := map[string]interface{}{}
+	dedicatedHostPrototypeMap["instance_placement_enabled"] = core.BoolPtr(false)
+	updateDedicatedHostOptions.SetID(d.Id())
+	updateDedicatedHostOptions.SetDedicatedHostPatch(dedicatedHostPrototypeMap)
+	_, updateresponse, err := vpcClient.UpdateDedicatedHostWithContext(context, updateDedicatedHostOptions)
+	if err != nil {
+		log.Printf("[DEBUG] UpdateDedicatedHostWithContext failed %s\n%s", err, updateresponse)
 		return diag.FromErr(err)
 	}
 
