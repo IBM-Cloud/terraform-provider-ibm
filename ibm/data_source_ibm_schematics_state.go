@@ -1,80 +1,113 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
-// Licensed under the Mozilla Public License v2.0
+/**
+ * (C) Copyright IBM Corp. 2021.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ibm
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
+	"log"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/IBM/schematics-go-sdk/schematicsv1"
 )
 
-func dataSourceSchematicsState() *schema.Resource {
+func dataSourceIBMSchematicsState() *schema.Resource {
 	return &schema.Resource{
-		Read: resourceIBMSchematicsStateRead,
+		ReadContext: dataSourceIBMSchematicsStateRead,
 
 		Schema: map[string]*schema.Schema{
-			"workspace_id": {
+			"workspace_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The id of workspace",
+				Description: "The workspace ID for the workspace that you want to query.  You can run the GET /workspaces call if you need to look up the  workspace IDs in your IBM Cloud account.",
 			},
-			"template_id": {
+			"template_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The id of template",
+				Description: "The Template ID for which you want to get the values.  Use the GET /workspaces to look up the workspace IDs  or template IDs in your IBM Cloud account.",
 			},
-			"state_store": {
-				Type:     schema.TypeString,
-				Computed: true,
+			"version": &schema.Schema{
+				Type:        schema.TypeFloat,
+				Computed:    true,
 			},
-			"state_store_json": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			ResourceControllerURL: {
+			"terraform_version": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this workspace",
+			},
+			"serial": &schema.Schema{
+				Type:        schema.TypeFloat,
+				Computed:    true,
+			},
+			"lineage": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"modules": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeMap,
+				},
 			},
 		},
 	}
-
 }
 
-func resourceIBMSchematicsStateRead(d *schema.ResourceData, meta interface{}) error {
-	scClient, err := meta.(ClientSession).SchematicsAPI()
+func dataSourceIBMSchematicsStateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	schematicsClient, err := meta.(ClientSession).SchematicsV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	wrkAPI := scClient.Workspaces()
-	workspaceID := d.Get("workspace_id").(string)
-	templateID := d.Get("template_id").(string)
+	getWorkspaceTemplateStateOptions := &schematicsv1.GetWorkspaceTemplateStateOptions{}
 
-	stateStore, err := wrkAPI.GetStateStore(workspaceID, templateID)
-	if err != nil {
-		return fmt.Errorf("Error retreiving statestore: %s", err)
-	}
-	statestr := fmt.Sprintf("%v", stateStore)
-	d.SetId(fmt.Sprintf("%s/%s", workspaceID, templateID))
-	d.Set("state_store", statestr)
+	getWorkspaceTemplateStateOptions.SetWID(d.Get("workspace_id").(string))
+	getWorkspaceTemplateStateOptions.SetTID(d.Get("template_id").(string))
 
-	stateByte, err := json.MarshalIndent(stateStore, "", "")
+	templateStateStore, response, err := schematicsClient.GetWorkspaceTemplateStateWithContext(context, getWorkspaceTemplateStateOptions)
 	if err != nil {
-		return err
+		log.Printf("[DEBUG] GetWorkspaceTemplateStateWithContext failed %s\n%s", err, response)
+		return diag.FromErr(err)
 	}
 
-	stateStoreJson := string(stateByte[:])
-	d.Set("state_store_json", stateStoreJson)
-
-	controller, err := getBaseController(meta)
-	if err != nil {
-		return err
+	d.SetId(dataSourceIBMSchematicsStateID(d))
+	if err = d.Set("version", templateStateStore.Version); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
 	}
-	d.Set(ResourceControllerURL, controller+"/schematics")
+	if err = d.Set("terraform_version", templateStateStore.TerraformVersion); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting terraform_version: %s", err))
+	}
+	if err = d.Set("serial", templateStateStore.Serial); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting serial: %s", err))
+	}
+	if err = d.Set("lineage", templateStateStore.Lineage); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting lineage: %s", err))
+	}
+	if err = d.Set("modules", templateStateStore.Modules); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting modules: %s", err))
+	}
 
 	return nil
+}
 
+// dataSourceIBMSchematicsStateID returns a reasonable ID for the list.
+func dataSourceIBMSchematicsStateID(d *schema.ResourceData) string {
+	return time.Now().UTC().String()
 }
