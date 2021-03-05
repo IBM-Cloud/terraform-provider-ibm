@@ -109,8 +109,8 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 
 	query := iampapv1.SearchParams{
 		AccountID: accountID,
-		Type:      ibmUniqueID,
-		IAMID:     iampapv1.AccessPolicyType,
+		IAMID:     ibmUniqueID,
+		Type:      iampapv1.AccessPolicyType,
 	}
 
 	if v, ok := d.GetOk("sort"); ok {
