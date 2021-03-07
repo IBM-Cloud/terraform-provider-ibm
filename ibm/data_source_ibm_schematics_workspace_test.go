@@ -36,7 +36,6 @@ func TestAccIBMSchematicsWorkspaceDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "workspace_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "applied_shareddata_ids.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "catalog_ref.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "crn"),
@@ -50,14 +49,8 @@ func TestAccIBMSchematicsWorkspaceDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "shared_data.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "status"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "tags.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_data.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_ref"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_repo.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "type.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "updated_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "updated_by"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "workspace_status.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "workspace_status_msg.#"),
 				),
 			},
 		},
@@ -66,23 +59,20 @@ func TestAccIBMSchematicsWorkspaceDataSourceBasic(t *testing.T) {
 
 func TestAccIBMSchematicsWorkspaceDataSourceAllArgs(t *testing.T) {
 	workspaceResponseDescription := fmt.Sprintf("description_%d", acctest.RandIntRange(10, 100))
-	workspaceResponseLocation := fmt.Sprintf("location_%d", acctest.RandIntRange(10, 100))
+	workspaceResponseLocation := "us-east"
 	workspaceResponseName := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
-	workspaceResponseResourceGroup := fmt.Sprintf("resource_group_%d", acctest.RandIntRange(10, 100))
-	workspaceResponseTemplateRef := fmt.Sprintf("template_ref_%d", acctest.RandIntRange(10, 100))
-	workspaceResponseXGithubToken := fmt.Sprintf("x_github_token_%d", acctest.RandIntRange(10, 100))
+	workspaceResponseResourceGroup := "default"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMSchematicsWorkspaceDataSourceConfig(workspaceResponseDescription, workspaceResponseLocation, workspaceResponseName, workspaceResponseResourceGroup, workspaceResponseTemplateRef, workspaceResponseXGithubToken),
+				Config: testAccCheckIBMSchematicsWorkspaceDataSourceConfig(workspaceResponseDescription, workspaceResponseLocation, workspaceResponseName, workspaceResponseResourceGroup),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "workspace_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "applied_shareddata_ids.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "catalog_ref.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "crn"),
@@ -93,30 +83,11 @@ func TestAccIBMSchematicsWorkspaceDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "resource_group"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "runtime_data.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "runtime_data.0.engine_cmd"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "runtime_data.0.engine_name"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "runtime_data.0.engine_version"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "runtime_data.0.id"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "runtime_data.0.log_store_url"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "runtime_data.0.state_store_url"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "shared_data.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "status"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "tags.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_data.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_data.0.folder"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_data.0.has_githubtoken"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_data.0.id"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_data.0.type"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_data.0.uninstall_script_name"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_data.0.values"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_data.0.values_url"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_ref"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_repo.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "type.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "updated_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "updated_by"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "workspace_status.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "workspace_status_msg.#"),
 				),
 			},
 		},
@@ -125,36 +96,32 @@ func TestAccIBMSchematicsWorkspaceDataSourceAllArgs(t *testing.T) {
 
 func testAccCheckIBMSchematicsWorkspaceDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		 resource "ibm_schematics_workspace" "schematics_workspace" {
-		 }
- 
-		 data "ibm_schematics_workspace" "schematics_workspace" {
-			 workspace_id = "workspace_id"
-		 }
-	 `)
+		resource "ibm_schematics_workspace" "schematics_workspace" {
+			description = "tf-acc-test-schematics"
+			name = "tf-acc-test-schematics"
+			location = "us-east"
+			resource_group = "default"
+			template_type = "terraform_v0.13.5"
+		}
+
+		data "ibm_schematics_workspace" "schematics_workspace" {
+			workspace_id = ibm_schematics_workspace.schematics_workspace.id
+		}
+	`)
 }
 
-func testAccCheckIBMSchematicsWorkspaceDataSourceConfig(workspaceResponseDescription string, workspaceResponseLocation string, workspaceResponseName string, workspaceResponseResourceGroup string, workspaceResponseTemplateRef string, workspaceResponseXGithubToken string) string {
+func testAccCheckIBMSchematicsWorkspaceDataSourceConfig(workspaceResponseDescription string, workspaceResponseLocation string, workspaceResponseName string, workspaceResponseResourceGroup string) string {
 	return fmt.Sprintf(`
 		 resource "ibm_schematics_workspace" "schematics_workspace" {
-			 applied_shareddata_ids = "FIXME"
-			 catalog_ref = { example: "object" }
 			 description = "%s"
 			 location = "%s"
 			 name = "%s"
 			 resource_group = "%s"
-			 shared_data = { example: "object" }
-			 tags = "FIXME"
-			 template_data = { example: "object" }
-			 template_ref = "%s"
-			 template_repo = { example: "object" }
-			 type = "FIXME"
-			 workspace_status = { example: "object" }
-			 X-Github-token = "%s"
+			 template_type = "terraform_v0.13.5"
 		 }
  
 		 data "ibm_schematics_workspace" "schematics_workspace" {
-			 workspace_id = "workspace_id"
+			 workspace_id = ibm_schematics_workspace.schematics_workspace.id
 		 }
-	 `, workspaceResponseDescription, workspaceResponseLocation, workspaceResponseName, workspaceResponseResourceGroup, workspaceResponseTemplateRef, workspaceResponseXGithubToken)
+	 `, workspaceResponseDescription, workspaceResponseLocation, workspaceResponseName, workspaceResponseResourceGroup)
 }

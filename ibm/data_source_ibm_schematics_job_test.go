@@ -25,82 +25,24 @@ import (
 )
 
 func TestAccIBMSchematicsJobDataSourceBasic(t *testing.T) {
-	jobRefreshToken := fmt.Sprintf("refresh_token_%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMSchematicsJobDataSourceConfigBasic(jobRefreshToken),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "job_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_object"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_object_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_name"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_parameter"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_options.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "job_inputs.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "job_env_settings.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "tags.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "description"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "location"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "resource_group"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "submitted_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "submitted_by"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "start_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "end_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "duration"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "status.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "data.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "targets_ini"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "bastion.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "job_log_summary.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "log_store_url"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "state_store_url"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "results_url"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "updated_at"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIBMSchematicsJobDataSourceAllArgs(t *testing.T) {
-	jobRefreshToken := fmt.Sprintf("refresh_token_%d", acctest.RandIntRange(10, 100))
-	jobCommandObject := "workspace"
-	jobCommandObjectID := fmt.Sprintf("command_object_id_%d", acctest.RandIntRange(10, 100))
-	jobCommandName := "workspace_init_flow"
+	jobCommandObject := "action"
+	//jobCommandObjectID := fmt.Sprintf("command_object_id_%d", acctest.RandIntRange(10, 100))
+	jobCommandName := "ansible_playbook_run"
 	jobCommandParameter := fmt.Sprintf("command_parameter_%d", acctest.RandIntRange(10, 100))
-	jobLocation := "us_south"
+	jobLocation := "us-east"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMSchematicsJobDataSourceConfig(jobRefreshToken, jobCommandObject, jobCommandObjectID, jobCommandName, jobCommandParameter, jobLocation),
+				Config: testAccCheckIBMSchematicsJobDataSourceConfig(jobCommandObject, actionID, jobCommandName, jobCommandParameter, jobLocation),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "job_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_object"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_object_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_name"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_parameter"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_options.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "job_inputs.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "job_inputs.0.name"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "job_inputs.0.value"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "job_inputs.0.link"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "job_env_settings.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "job_env_settings.0.name"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "job_env_settings.0.value"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "job_env_settings.0.link"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "tags.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "location"),
@@ -109,15 +51,8 @@ func TestAccIBMSchematicsJobDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "submitted_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "start_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "end_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "duration"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "status.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "data.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "targets_ini"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "bastion.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "job_log_summary.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "log_store_url"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "state_store_url"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "results_url"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "updated_at"),
 				),
 			},
@@ -125,41 +60,18 @@ func TestAccIBMSchematicsJobDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMSchematicsJobDataSourceConfigBasic(jobRefreshToken string) string {
+func testAccCheckIBMSchematicsJobDataSourceConfig(jobCommandObject string, jobCommandObjectID, jobCommandName string, jobCommandParameter string, jobLocation string) string {
 	return fmt.Sprintf(`
 		resource "ibm_schematics_job" "schematics_job" {
-			refresh_token = "%s"
-		}
-
-		data "ibm_schematics_job" "schematics_job" {
-			job_id = "job_id"
-		}
-	`, jobRefreshToken)
-}
-
-func testAccCheckIBMSchematicsJobDataSourceConfig(jobRefreshToken string, jobCommandObject string, jobCommandObjectID string, jobCommandName string, jobCommandParameter string, jobLocation string) string {
-	return fmt.Sprintf(`
-		resource "ibm_schematics_job" "schematics_job" {
-			refresh_token = "%s"
 			command_object = "%s"
 			command_object_id = "%s"
 			command_name = "%s"
 			command_parameter = "%s"
-			command_options = "FIXME"
-			inputs = { example: "object" }
-			settings = { example: "object" }
-			tags = "FIXME"
 			location = "%s"
-			status = { example: "object" }
-			data {
-				job_type = "repo_download_job"
-			}
-			bastion = { example: "object" }
-			log_summary = { example: "object" }
 		}
 
 		data "ibm_schematics_job" "schematics_job" {
-			job_id = "job_id"
+			job_id = ibm_schematics_job.schematics_job.id
 		}
-	`, jobRefreshToken, jobCommandObject, jobCommandObjectID, jobCommandName, jobCommandParameter, jobLocation)
+	`, jobCommandObject, jobCommandObjectID, jobCommandName, jobCommandParameter, jobLocation)
 }
