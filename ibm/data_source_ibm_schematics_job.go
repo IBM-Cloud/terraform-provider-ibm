@@ -35,7 +35,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			"job_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Job Id. Use GET /jobs API to look up the Job Ids in your IBM Cloud account.",
+				Description: "Use GET jobs API to look up the Job IDs in your IBM Cloud account.",
 			},
 			"command_object": &schema.Schema{
 				Type:        schema.TypeString,
@@ -45,17 +45,12 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			"command_object_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Job command object id (workspace-id, action-id or control-id).",
+				Description: "Job command object ID (`workspace-id, action-id or control-id`).",
 			},
 			"command_name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Schematics job command name.",
-			},
-			"command_parameter": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Schematics job command parameter (playbook-name, capsule-name or flow-name).",
 			},
 			"command_options": &schema.Schema{
 				Type:        schema.TypeList,
@@ -68,7 +63,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			"job_inputs": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Job inputs used by Action.",
+				Description: "Job inputs used by an action.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -187,7 +182,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			"job_env_settings": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Environment variables used by the Job while performing Action.",
+				Description: "Environment variables used by the job while performing an action.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -319,22 +314,22 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Job name, uniquely derived from the related Action.",
+				Description: "Job name, uniquely derived from the related action.",
 			},
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Job description derived from the related Action.",
+				Description: "Job description derived from the related action.",
 			},
 			"location": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "List of workspace locations supported by IBM Cloud Schematics service.  Note, this does not limit the location of the resources provisioned using Schematics.",
+				Description: "List of action locations supported by IBM Cloud Schematics service.  **Note** this does not limit the location of the resources provisioned using Schematics.",
 			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource-group name derived from the related Action.",
+				Description: "Resource group name derived from the related action.",
 			},
 			"submitted_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -344,7 +339,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			"submitted_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Email address of user who submitted the job.",
+				Description: "E-mail address of the user who submitted the job.",
 			},
 			"start_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -359,7 +354,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			"duration": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Duration of job execution; example 40 sec.",
+				Description: "Duration of job execution, for example, `40 sec`.",
 			},
 			"status": &schema.Schema{
 				Type:        schema.TypeList,
@@ -381,32 +376,32 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 									"status_code": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Status of Jobs.",
+										Description: "Status of the jobs.",
 									},
 									"status_message": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Action Job status message - to be displayed along with the action_status_code.",
+										Description: "Action job status message to be displayed along with the `action_status_code`.",
 									},
 									"bastion_status_code": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Status of Resources.",
+										Description: "Status of the resources.",
 									},
 									"bastion_status_message": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Bastion status message - to be displayed along with the bastion_status_code;.",
+										Description: "Bastion status message to be displayed along with the `bastion_status_code`.",
 									},
 									"targets_status_code": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Status of Resources.",
+										Description: "Status of the resources.",
 									},
 									"targets_status_message": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Aggregated status message for all target resources,  to be displayed along with the targets_status_code;.",
+										Description: "Aggregated status message for all target resources, to be displayed along with the `targets_status_code`.",
 									},
 									"updated_at": &schema.Schema{
 										Type:        schema.TypeString,
@@ -428,7 +423,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						"job_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type of Job.",
+							Description: "Type of the job.",
 						},
 						"action_job_data": &schema.Schema{
 							Type:        schema.TypeList,
@@ -444,7 +439,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 									"inputs": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Input variables data used by the Action Job.",
+										Description: "Input variables data used by an action job.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": &schema.Schema{
@@ -563,7 +558,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 									"outputs": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Output variables data from the Action Job.",
+										Description: "Output variables data from an action job.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": &schema.Schema{
@@ -682,7 +677,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 									"settings": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Environment variables used by all the templates in the Action.",
+										Description: "Environment variables used by all the templates in an action.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": &schema.Schema{
@@ -812,12 +807,12 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			"targets_ini": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Inventory of host and host group for the playbook, in .ini file format.",
+				Description: "Inventory of host and host group for the playbook in `INI` file format. For example, `\"targets_ini\": \"[webserverhost]  172.22.192.6  [dbhost]  172.22.192.5\"`. For more information, about an inventory host group syntax, see [Inventory host groups](/docs/schematics?topic=schematics-schematics-cli-reference#schematics-inventory-host-grps).",
 			},
 			"bastion": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Complete Target details with user inputs and system generated data.",
+				Description: "Complete target details with the user inputs and the system generated data.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -828,7 +823,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Target type (cluster, vsi, icd, vpc).",
+							Description: "Target type (`cluster`, `vsi`, `icd`, `vpc`).",
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
@@ -843,12 +838,12 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						"credential_ref": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Override credential for each resource.  Reference to credentials values, used by all resources.",
+							Description: "Override credential for each resource.  Reference to credentials values, used by all the resources.",
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Target id.",
+							Description: "Target ID.",
 						},
 						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
@@ -858,7 +853,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						"created_by": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Email address of user who created the Targets.",
+							Description: "E-mail address of the user who created the targets.",
 						},
 						"updated_at": &schema.Schema{
 							Type:        schema.TypeString,
@@ -868,7 +863,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						"updated_by": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Email address of user who updated the Targets.",
+							Description: "E-mail address of user who updated the targets.",
 						},
 						"sys_lock": &schema.Schema{
 							Type:        schema.TypeList,
@@ -879,17 +874,17 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 									"sys_locked": &schema.Schema{
 										Type:        schema.TypeBool,
 										Computed:    true,
-										Description: "Is the Workspace locked by a Schematic action ?.",
+										Description: "Is the Workspace locked by the Schematic action ?.",
 									},
 									"sys_locked_by": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Name of the User who performed the action, that lead to the locking of the Workspace.",
+										Description: "Name of the user who performed the action, that lead to lock the Workspace.",
 									},
 									"sys_locked_at": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "When the User performed the action that lead to locking of the Workspace ?.",
+										Description: "When the user performed the action that lead to lock the Workspace ?.",
 									},
 								},
 							},
@@ -897,7 +892,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						"resource_ids": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Array of resource ids.",
+							Description: "Array of the resource IDs.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -914,7 +909,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						"job_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Workspace Id.",
+							Description: "Workspace ID.",
 						},
 						"job_type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -934,7 +929,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						"elapsed_time": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Computed:    true,
-							Description: "Job log elapsed time (log_analyzed_till - log_start_at).",
+							Description: "Job log elapsed time (`log_analyzed_till - log_start_at`).",
 						},
 						"log_errors": &schema.Schema{
 							Type:        schema.TypeList,
@@ -1112,9 +1107,6 @@ func dataSourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceD
 	}
 	if err = d.Set("command_name", job.CommandName); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting command_name: %s", err))
-	}
-	if err = d.Set("command_parameter", job.CommandParameter); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting command_parameter: %s", err))
 	}
 	if err = d.Set("command_options", job.CommandOptions); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting command_options: %s", err))

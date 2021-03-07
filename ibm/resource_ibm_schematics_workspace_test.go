@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -41,63 +40,6 @@ func TestAccIBMSchematicsWorkspaceBasic(t *testing.T) {
 					testAccCheckIBMSchematicsWorkspaceExists("ibm_schematics_workspace.schematics_workspace", conf),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMSchematicsWorkspaceConfigBasic(),
-				Check: resource.ComposeAggregateTestCheckFunc(
-				),
-			},
-		},
-	})
-}
-
-func TestAccIBMSchematicsWorkspaceAllArgs(t *testing.T) {
-	var conf schematicsv1.WorkspaceResponse
-	description := fmt.Sprintf("description_%d", acctest.RandIntRange(10, 100))
-	location := fmt.Sprintf("location_%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
-	resourceGroup := fmt.Sprintf("resource_group_%d", acctest.RandIntRange(10, 100))
-	templateRef := fmt.Sprintf("template_ref_%d", acctest.RandIntRange(10, 100))
-	xGithubToken := fmt.Sprintf("X-Github-token_%d", acctest.RandIntRange(10, 100))
-	descriptionUpdate := fmt.Sprintf("description_%d", acctest.RandIntRange(10, 100))
-	locationUpdate := fmt.Sprintf("location_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
-	resourceGroupUpdate := fmt.Sprintf("resource_group_%d", acctest.RandIntRange(10, 100))
-	templateRefUpdate := fmt.Sprintf("template_ref_%d", acctest.RandIntRange(10, 100))
-	xGithubTokenUpdate := fmt.Sprintf("X-Github-token_%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMSchematicsWorkspaceDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMSchematicsWorkspaceConfig(description, location, name, resourceGroup, templateRef, xGithubToken),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMSchematicsWorkspaceExists("ibm_schematics_workspace.schematics_workspace", conf),
-					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "description", description),
-					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "location", location),
-					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "name", name),
-					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "resource_group", resourceGroup),
-					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "template_ref", templateRef),
-					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "X-Github-token", xGithubToken),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIBMSchematicsWorkspaceConfig(descriptionUpdate, locationUpdate, nameUpdate, resourceGroupUpdate, templateRefUpdate, xGithubTokenUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "description", descriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "location", locationUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "resource_group", resourceGroupUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "template_ref", templateRefUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "X-Github-token", xGithubTokenUpdate),
-				),
-			},
-			resource.TestStep{
-				ResourceName:      "ibm_schematics_workspace.schematics_workspace",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
 		},
 	})
 }
@@ -106,30 +48,13 @@ func testAccCheckIBMSchematicsWorkspaceConfigBasic() string {
 	return fmt.Sprintf(`
 
 		resource "ibm_schematics_workspace" "schematics_workspace" {
+			description = "tf-acc-test-schematics"
+			name = "tf-acc-test-schematics"
+			location = "us-east"
+			resource_group = "default"
+			template_type = "terraform_v0.12.20"
 		}
-	`, )
-}
-
-func testAccCheckIBMSchematicsWorkspaceConfig(description string, location string, name string, resourceGroup string, templateRef string, xGithubToken string) string {
-	return fmt.Sprintf(`
-
-		resource "ibm_schematics_workspace" "schematics_workspace" {
-			applied_shareddata_ids = "FIXME"
-			catalog_ref = { example: "object" }
-			description = "%s"
-			location = "%s"
-			name = "%s"
-			resource_group = "%s"
-			shared_data = { example: "object" }
-			tags = "FIXME"
-			template_data = { example: "object" }
-			template_ref = "%s"
-			template_repo = { example: "object" }
-			type = "FIXME"
-			workspace_status = { example: "object" }
-			X-Github-token = "%s"
-		}
-	`, description, location, name, resourceGroup, templateRef, xGithubToken)
+	`)
 }
 
 func testAccCheckIBMSchematicsWorkspaceExists(n string, obj schematicsv1.WorkspaceResponse) resource.TestCheckFunc {

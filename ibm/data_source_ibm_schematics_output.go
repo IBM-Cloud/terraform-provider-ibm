@@ -17,6 +17,7 @@
 package ibm
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -30,10 +31,15 @@ func dataSourceIBMSchematicsOutput() *schema.Resource {
 		Read: dataSourceIBMSchematicsOutputRead,
 
 		Schema: map[string]*schema.Schema{
-			"workspace_id": &schema.Schema{
+			"workspace_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the workspace for which you want to retrieve output values. To find the workspace ID, use the `GET /workspaces` API.",
+			},
+			"template_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The id of template",
 			},
 			"output_values": &schema.Schema{
 				Type:        schema.TypeList,
@@ -67,6 +73,16 @@ func dataSourceIBMSchematicsOutput() *schema.Resource {
 					},
 				},
 			},
+			"output_json": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The json output in string",
+			},
+			ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this Workspace",
+			},
 		},
 	}
 }
@@ -76,6 +92,9 @@ func dataSourceIBMSchematicsOutputRead(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
+
+	workspaceID := d.Get("workspace_id").(string)
+	templateID := d.Get("template_id").(string)
 
 	getWorkspaceOutputsOptions := &schematicsv1.GetWorkspaceOutputsOptions{}
 
@@ -87,14 +106,47 @@ func dataSourceIBMSchematicsOutputRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	d.SetId(dataSourceIBMSchematicsOutputID(d))
-
 	if outputValuesList != nil {
 		err = d.Set("output_values", dataSourceOutputValuesListFlattenOutputValues(outputValuesList))
 		if err != nil {
 			return fmt.Errorf("Error setting output_values %s", err)
 		}
 	}
+
+	var outputJSON string
+	items := make(map[string]interface{})
+	found := false
+	for _, fields := range outputValuesList {
+		if *fields.ID == templateID {
+			output := fields.OutputValues
+			found = true
+			outputByte, err := json.MarshalIndent(output, "", "")
+			if err != nil {
+				return err
+			}
+			outputJSON = string(outputByte[:])
+			// items := map[string]interface{}
+			for _, value := range output {
+				for key, val := range value.(map[string]interface{}) {
+					val2 := val.(map[string]interface{})["value"]
+					items[key] = val2
+				}
+			}
+		}
+	}
+
+	if !(found) {
+		return fmt.Errorf("Error while fetching template id in workspace: %s", workspaceID)
+	}
+	d.Set("output_json", outputJSON)
+	d.SetId(fmt.Sprintf("%s/%s", workspaceID, templateID))
+
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return err
+	}
+
+	d.Set(ResourceControllerURL, controller+"/schematics")
 
 	return nil
 }

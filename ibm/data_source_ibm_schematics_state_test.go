@@ -24,15 +24,13 @@ import (
 )
 
 func TestAccIBMSchematicsStateDataSourceBasic(t *testing.T) {
-	wID := workspaceID
-	tID := templateID
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMSchematicsStateDataSourceConfigBasic(wID, tID),
+				Config: testAccCheckIBMSchematicsStateDataSourceConfigBasic(workspaceID, templateID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_state.schematics_state", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_state.schematics_state", "state_store"),
@@ -42,11 +40,11 @@ func TestAccIBMSchematicsStateDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMSchematicsStateDataSourceConfigBasic(wID string, tID string) string {
+func testAccCheckIBMSchematicsStateDataSourceConfigBasic(workspaceID string, templateID string) string {
 	return fmt.Sprintf(`
 		 data "ibm_schematics_state" "schematics_state" {
 			workspace_id = "%s"
 			 template_id = "%s"
 		 }
-	 `, wID, tID)
+	 `, workspaceID, templateID)
 }

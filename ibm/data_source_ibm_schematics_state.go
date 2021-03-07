@@ -17,7 +17,9 @@
 package ibm
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -36,35 +38,25 @@ func dataSourceIBMSchematicsState() *schema.Resource {
 			"workspace_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The workspace ID for the workspace that you want to query.  You can run the GET /workspaces call if you need to look up the  workspace IDs in your IBM Cloud account.",
+				Description: "The ID of the workspace for which you want to retrieve the Terraform statefile. To find the workspace ID, use the `GET /v1/workspaces` API.",
 			},
 			"template_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The Template ID for which you want to get the values.  Use the GET /workspaces to look up the workspace IDs  or template IDs in your IBM Cloud account.",
+				Description: "The ID of the Terraform template for which you want to retrieve the Terraform statefile. When you create a workspace, the Terraform template that your workspace points to is assigned a unique ID. To find this ID, use the `GET /v1/workspaces` API and review the `template_data.id` value.",
 			},
-			"version": &schema.Schema{
-				Type:     schema.TypeFloat,
-				Computed: true,
-			},
-			"terraform_version": &schema.Schema{
+			"state_store": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"serial": &schema.Schema{
-				Type:     schema.TypeFloat,
-				Computed: true,
-			},
-			"lineage": &schema.Schema{
+			"state_store_json": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"modules": &schema.Schema{
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeMap,
-				},
+			ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this workspace",
 			},
 		},
 	}
@@ -81,28 +73,39 @@ func dataSourceIBMSchematicsStateRead(context context.Context, d *schema.Resourc
 	getWorkspaceTemplateStateOptions.SetWID(d.Get("workspace_id").(string))
 	getWorkspaceTemplateStateOptions.SetTID(d.Get("template_id").(string))
 
-	templateStateStore, response, err := schematicsClient.GetWorkspaceTemplateStateWithContext(context, getWorkspaceTemplateStateOptions)
+	_, response, err := schematicsClient.GetWorkspaceTemplateStateWithContext(context, getWorkspaceTemplateStateOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetWorkspaceTemplateStateWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
 
 	d.SetId(dataSourceIBMSchematicsStateID(d))
-	if err = d.Set("version", templateStateStore.Version); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+
+	var stateStore map[string]interface{}
+	json.Unmarshal(response.Result.(json.RawMessage), &stateStore)
+
+	b := bytes.NewReader(response.Result.(json.RawMessage))
+
+	decoder := json.NewDecoder(b)
+	decoder.UseNumber()
+	decoder.Decode(&stateStore)
+
+	statestr := fmt.Sprintf("%v", stateStore)
+	d.Set("state_store", statestr)
+
+	stateByte, err := json.MarshalIndent(stateStore, "", "")
+	if err != nil {
+		return diag.FromErr(err)
 	}
-	if err = d.Set("terraform_version", templateStateStore.TerraformVersion); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting terraform_version: %s", err))
+
+	stateStoreJSON := string(stateByte[:])
+	d.Set("state_store_json", stateStoreJSON)
+
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return diag.FromErr(err)
 	}
-	if err = d.Set("serial", templateStateStore.Serial); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting serial: %s", err))
-	}
-	if err = d.Set("lineage", templateStateStore.Lineage); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lineage: %s", err))
-	}
-	if err = d.Set("modules", templateStateStore.Modules); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting modules: %s", err))
-	}
+	d.Set(ResourceControllerURL, controller+"/schematics")
 
 	return nil
 }

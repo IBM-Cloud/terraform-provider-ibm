@@ -35,7 +35,7 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 			"workspace_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The workspace ID for the workspace that you want to query.  You can run the GET /workspaces call if you need to look up the  workspace IDs in your IBM Cloud account.",
+				Description: "The ID of the workspace for which you want to retrieve detailed information. To find the workspace ID, use the `GET /v1/workspaces` API.",
 			},
 			"applied_shareddata_ids": &schema.Schema{
 				Type:        schema.TypeList,
@@ -48,7 +48,7 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 			"catalog_ref": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "CatalogRef -.",
+				Description: "Information about the software template that you chose from the IBM Cloud catalog. This information is returned for IBM Cloud catalog offerings only.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"dry_run": &schema.Schema{
@@ -59,37 +59,37 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 						"item_icon_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Catalog item icon url.",
+							Description: "The URL to the icon of the software template in the IBM Cloud catalog.",
 						},
 						"item_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Catalog item id.",
+							Description: "The ID of the software template that you chose to install from the IBM Cloud catalog. This software is provisioned with Schematics.",
 						},
 						"item_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Catalog item name.",
+							Description: "The name of the software that you chose to install from the IBM Cloud catalog.",
 						},
 						"item_readme_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Catalog item readme url.",
+							Description: "The URL to the readme file of the software template in the IBM Cloud catalog.",
 						},
 						"item_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Catalog item url.",
+							Description: "The URL to the software template in the IBM Cloud catalog.",
 						},
 						"launch_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Catalog item launch url.",
+							Description: "The URL to the dashboard to access your software.",
 						},
 						"offering_version": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Catalog item offering version.",
+							Description: "The version of the software template that you chose to install from the IBM Cloud catalog.",
 						},
 					},
 				},
@@ -97,12 +97,12 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace created at.",
+				Description: "The timestamp when the workspace was created.",
 			},
 			"created_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace created by.",
+				Description: "The user ID that created the workspace.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -112,7 +112,7 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace description.",
+				Description: "The description of the workspace.",
 			},
 			"id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -122,53 +122,53 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 			"last_health_check_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Last health checked at.",
+				Description: "The timestamp when the last health check was performed by Schematics.",
 			},
 			"location": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace location.",
+				Description: "The IBM Cloud location where your workspace was provisioned.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace name.",
+				Description: "The name of the workspace.",
 			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace resource group.",
+				Description: "The resource group the workspace was provisioned in.",
 			},
 			"runtime_data": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Workspace runtime data.",
+				Description: "Information about the provisioning engine, state file, and runtime logs.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"engine_cmd": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Engine command.",
+							Description: "The command that was used to apply the Terraform template or IBM Cloud catalog software template.",
 						},
 						"engine_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Engine name.",
+							Description: "The provisioning engine that was used to apply the Terraform template or IBM Cloud catalog software template.",
 						},
 						"engine_version": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Engine version.",
+							Description: "The version of the provisioning engine that was used.",
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Template id.",
+							Description: "The ID that was assigned to your Terraform template or IBM Cloud catalog software template.",
 						},
 						"log_store_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Log store url.",
+							Description: "The URL to access the logs that were created during the creation, update, or deletion of your IBM Cloud resources.",
 						},
 						"output_values": &schema.Schema{
 							Type:        schema.TypeList,
@@ -189,7 +189,7 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 						"state_store_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "State store URL.",
+							Description: "The URL where the Terraform statefile (`terraform.tfstate`) is stored. You can use the statefile to find an overview of IBM Cloud resources that were created by Schematics. Schematics uses the statefile as an inventory list to determine future create, update, or deletion actions.",
 						},
 					},
 				},
@@ -197,13 +197,13 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 			"shared_data": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "SharedTargetDataResponse -.",
+				Description: "Information that is shared across templates in IBM Cloud catalog offerings. This information is not provided when you create a workspace from your own Terraform template.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"cluster_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Target cluster id.",
+							Description: "The ID of the cluster where you want to provision the resources of all IBM Cloud catalog templates that are included in the catalog offering.",
 						},
 						"cluster_name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -213,7 +213,7 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 						"entitlement_keys": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Entitlement keys.",
+							Description: "The entitlement key that you want to use to install IBM Cloud entitled software.",
 							Elem: &schema.Schema{
 								Type: schema.TypeMap,
 							},
@@ -221,17 +221,17 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 						"namespace": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Target namespace.",
+							Description: "The Kubernetes namespace or OpenShift project where the resources of all IBM Cloud catalog templates that are included in the catalog offering are deployed into.",
 						},
 						"region": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Target region.",
+							Description: "The IBM Cloud region that you want to use for the resources of all IBM Cloud catalog templates that are included in the catalog offering.",
 						},
 						"resource_group_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Target resource group id.",
+							Description: "The ID of the resource group that you want to use for the resources of all IBM Cloud catalog templates that are included in the catalog offering.",
 						},
 					},
 				},
@@ -239,127 +239,89 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 			"status": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace status type.",
+				Description: "The status of the workspace.  **Active**: After you successfully ran your infrastructure code by applying your Terraform execution plan, the state of your workspace changes to `Active`.  **Connecting**: Schematics tries to connect to the template in your source repo. If successfully connected, the template is downloaded and metadata, such as input parameters, is extracted. After the template is downloaded, the state of the workspace changes to `Scanning`.  **Draft**: The workspace is created without a reference to a GitHub or GitLab repository.  **Failed**: If errors occur during the execution of your infrastructure code in IBM Cloud Schematics, your workspace status is set to `Failed`.  **Inactive**: The Terraform template was scanned successfully and the workspace creation is complete. You can now start running Schematics plan and apply actions to provision the IBM Cloud resources that you specified in your template. If you have an `Active` workspace and decide to remove all your resources, your workspace is set to `Inactive` after all your resources are removed.  **In progress**: When you instruct IBM Cloud Schematics to run your infrastructure code by applying your Terraform execution plan, the status of our workspace changes to `In progress`.  **Scanning**: The download of the Terraform template is complete and vulnerability scanning started. If the scan is successful, the workspace state changes to `Inactive`. If errors in your template are found, the state changes to `Template Error`.  **Stopped**: The Schematics plan, apply, or destroy action was cancelled manually.  **Template Error**: The Schematics template contains errors and cannot be processed.",
 			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Workspace tags.",
+				Description: "A list of tags that are associated with the workspace.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
-			"template_data": &schema.Schema{
+			"template_env_settings": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Workspace template data.",
+				Description: "List of environment values.",
+				Elem:        &schema.Schema{Type: schema.TypeMap},
+			},
+			"template_git_folder": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The subfolder in your GitHub or GitLab repository where your Terraform template is stored. If your template is stored in the root directory, `.` is returned.",
+			},
+			"template_init_state_file": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Init state file.",
+			},
+			"template_type": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Terraform version that was used to run your Terraform code.",
+			},
+			"template_uninstall_script_name": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Uninstall script name.",
+			},
+			"template_values": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A list of variable values that you want to apply during the Helm chart installation. The list must be provided in JSON format, such as `\"\"autoscaling:  enabled: true  minReplicas: 2\"`. The values that you define here override the default Helm chart values. This field is supported only for IBM Cloud catalog offerings that are provisioned by using the Terraform Helm provider.",
+			},
+			"template_values_metadata": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "A list of input variables that are associated with the workspace.",
+				Elem:        &schema.Schema{Type: schema.TypeMap},
+			},
+			"template_inputs": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Information about the input variables that your template uses.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"env_values": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "List of environment values.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"hidden": &schema.Schema{
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "Env variable is hidden.",
-									},
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Env variable name.",
-									},
-									"secure": &schema.Schema{
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "Env variable is secure.",
-									},
-									"value": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Value for env variable.",
-									},
-								},
-							},
-						},
-						"folder": &schema.Schema{
+						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Folder name.",
+							Description: "The description of your input variable.",
 						},
-						"has_githubtoken": &schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the variable.",
+						},
+						"secure": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Has github token.",
-						},
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Template id.",
+							Description: "If set to `true`, the value of your input variable is protected and not returned in your API response.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Template tyoe.",
+							Description: "`Terraform v0.11` supports `string`, `list`, `map` data type. For more information, about the syntax, see [Configuring input variables](https://www.terraform.io/docs/configuration-0-11/variables.html). <br> `Terraform v0.12` additionally, supports `bool`, `number` and complex data types such as `list(type)`, `map(type)`, `object({attribute name=type,..})`, `set(type)`, `tuple([type])`. For more information, about the syntax to use the complex data type, see [Configuring variables](https://www.terraform.io/docs/configuration/variables.html#type-constraints).",
 						},
-						"uninstall_script_name": &schema.Schema{
+						"use_default": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Variable uses default value; and is not over-ridden.",
+						},
+						"value": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Uninstall script name.",
-						},
-						"values": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Values.",
-						},
-						"values_metadata": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "List of values metadata.",
-							Elem: &schema.Schema{
-								Type: schema.TypeMap,
-							},
-						},
-						"values_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Values URL.",
-						},
-						"variablestore": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "VariablesResponse -.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"description": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Variable descrption.",
-									},
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Variable name.",
-									},
-									"secure": &schema.Schema{
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "Variable is secure.",
-									},
-									"type": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Variable type.",
-									},
-									"value": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Value of the Variable.",
-									},
-								},
-							},
+							Description: "Enter the value as a string for the primitive types such as `bool`, `number`, `string`, and `HCL` format for the complex variables, as you provide in a `.tfvars` file. **You need to enter escaped string of `HCL` format for the complex variable value**. For more information, about how to declare variables in a terraform configuration file and provide value to schematics, see [Providing values for the declared variables](/docs/schematics?topic=schematics-create-tf-config#declare-variable).",
 						},
 					},
 				},
@@ -369,125 +331,114 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 				Computed:    true,
 				Description: "Workspace template ref.",
 			},
-			"template_repo": &schema.Schema{
-				Type:        schema.TypeList,
+			"template_git_branch": &schema.Schema{
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "TemplateRepoResponse -.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"branch": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Repo branch.",
-						},
-						"full_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Full repo URL.",
-						},
-						"has_uploadedgitrepotar": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Has uploaded git repo tar.",
-						},
-						"release": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Repo release.",
-						},
-						"repo_sha_value": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Repo SHA value.",
-						},
-						"repo_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Repo URL.",
-						},
-						"url": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Source URL.",
-						},
-					},
-				},
+				Description: "The branch in GitHub where your Terraform template is stored.",
 			},
-			"type": &schema.Schema{
-				Type:        schema.TypeList,
+			"template_git_full_url": &schema.Schema{
+				Type:        schema.TypeString,
 				Computed:    true,
+				Description: "Full repo URL.",
+			},
+			"template_git_has_uploadedgitrepotar": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Has uploaded git repo tar.",
+			},
+			"template_git_release": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The release tag in GitHub of your Terraform template.",
+			},
+			"template_git_repo_sha_value": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Repo SHA value.",
+			},
+			"template_git_repo_url": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL to the repository where the IBM Cloud catalog software template is stored.",
+			},
+			"template_git_url": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL to the GitHub or GitLab repository where your Terraform template is stored.",
+			},
+
+			/*"template_type": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
 				Description: "List of Workspace type.",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},*/
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace updated at.",
+				Description: "The timestamp when the workspace was last updated.",
 			},
 			"updated_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace updated by.",
+				Description: "The user ID that updated the workspace.",
 			},
-			"workspace_status": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "WorkspaceStatusResponse -.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"frozen": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Frozen status.",
-						},
-						"frozen_at": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Frozen at.",
-						},
-						"frozen_by": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Frozen by.",
-						},
-						"locked": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Locked status.",
-						},
-						"locked_by": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Locked by.",
-						},
-						"locked_time": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Locked at.",
-						},
-					},
-				},
+			"is_frozen": {
+				Type:       schema.TypeBool,
+				Computed:   true,
+				Deprecated: "use frozen instead",
 			},
-			"workspace_status_msg": &schema.Schema{
-				Type:        schema.TypeList,
+			"frozen": &schema.Schema{
+				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "WorkspaceStatusMessage -.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"status_code": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Status code.",
-						},
-						"status_msg": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Status message.",
-						},
-					},
-				},
+				Description: "If set to true, the workspace is frozen and changes to the workspace are disabled.",
+			},
+			"frozen_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The timestamp when the workspace was frozen.",
+			},
+			"frozen_by": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The user ID that froze the workspace.",
+			},
+			"is_locked": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "If set to true, the workspace is locked and disabled for changes.",
+				Deprecated:  "Use locked instead",
+			},
+			"locked": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "If set to true, the workspace is locked and disabled for changes.",
+			},
+			"locked_by": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The user ID that initiated a resource-related action, such as applying or destroying resources, that locked the workspace.",
+			},
+			"locked_time": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The timestamp when the workspace was locked.",
+			},
+			"status_code": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The success or error code that was returned for the last plan, apply, or destroy action that ran against your workspace.",
+			},
+			"status_msg": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The success or error message that was returned for the last plan, apply, or destroy action that ran against your workspace.",
+			},
+			ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this workspace",
 			},
 		},
 	}
@@ -569,9 +520,31 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	}
 
 	if workspaceResponse.TemplateData != nil {
-		err = d.Set("template_data", dataSourceWorkspaceResponseFlattenTemplateData(workspaceResponse.TemplateData))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting template_data %s", err))
+		templateData := dataSourceWorkspaceResponseFlattenTemplateData(workspaceResponse.TemplateData)
+
+		if err = d.Set("template_env_settings", templateData[0]["env_values"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading env_values: %s", err))
+		}
+		if err = d.Set("template_git_folder", templateData[0]["folder"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading folder: %s", err))
+		}
+		if err = d.Set("template_init_state_file", templateData[0]["init_state_file"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading init_state_file: %s", err))
+		}
+		if err = d.Set("template_type", templateData[0]["type"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading type: %s", err))
+		}
+		if err = d.Set("template_uninstall_script_name", templateData[0]["uninstall_script_name"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading uninstall_script_name: %s", err))
+		}
+		if err = d.Set("template_values", templateData[0]["values"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading values: %s", err))
+		}
+		if err = d.Set("template_values_metadata", templateData[0]["values_metadata"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading values_metadata: %s", err))
+		}
+		if err = d.Set("template_inputs", templateData[0]["variablestore"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading variablestore: %s", err))
 		}
 	}
 	if err = d.Set("template_ref", workspaceResponse.TemplateRef); err != nil {
@@ -579,34 +552,81 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	}
 
 	if workspaceResponse.TemplateRepo != nil {
-		err = d.Set("template_repo", dataSourceWorkspaceResponseFlattenTemplateRepo(*workspaceResponse.TemplateRepo))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting template_repo %s", err))
+		templateRepoMap := dataSourceWorkspaceResponseFlattenTemplateRepo(*workspaceResponse.TemplateRepo)
+		if err = d.Set("template_git_branch", templateRepoMap[0]["branch"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading branch: %s", err))
+		}
+		if err = d.Set("template_git_release", templateRepoMap[0]["release"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading release: %s", err))
+		}
+		if err = d.Set("template_git_repo_sha_value", templateRepoMap[0]["repo_sha_value"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading repo_sha_value: %s", err))
+		}
+		if err = d.Set("template_git_repo_url", templateRepoMap[0]["repo_url"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading repo_url: %s", err))
+		}
+		if err = d.Set("template_git_url", templateRepoMap[0]["url"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading url: %s", err))
+		}
+		if err = d.Set("template_git_has_uploadedgitrepotar", templateRepoMap[0]["has_uploadedgitrepotar"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading has_uploadedgitrepotar: %s", err))
 		}
 	}
-	if err = d.Set("type", workspaceResponse.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
-	}
-	if err = d.Set("updated_at", workspaceResponse.UpdatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+	/*if err = d.Set("type", workspaceResponse.Type); err != nil {
+		return fmt.Errorf("Error setting type: %s", err)
+	}*/
+	if workspaceResponse.UpdatedAt != nil {
+		if err = d.Set("updated_at", workspaceResponse.UpdatedAt.String()); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		}
 	}
 	if err = d.Set("updated_by", workspaceResponse.UpdatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_by: %s", err))
 	}
 
 	if workspaceResponse.WorkspaceStatus != nil {
-		err = d.Set("workspace_status", dataSourceWorkspaceResponseFlattenWorkspaceStatus(*workspaceResponse.WorkspaceStatus))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting workspace_status %s", err))
+		workspaceStatusMap := dataSourceWorkspaceResponseFlattenWorkspaceStatus(*workspaceResponse.WorkspaceStatus)
+		if err = d.Set("is_frozen", workspaceStatusMap[0]["frozen"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading frozen: %s", err))
+		}
+		if err = d.Set("frozen", workspaceStatusMap[0]["frozen"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading frozen: %s", err))
+		}
+		if err = d.Set("frozen_at", workspaceStatusMap[0]["frozen_at"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading frozen_at: %s", err))
+		}
+		if err = d.Set("frozen_by", workspaceStatusMap[0]["frozen_by"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading frozen_by: %s", err))
+		}
+		if err = d.Set("is_locked", workspaceStatusMap[0]["locked"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading locked: %s", err))
+		}
+		if err = d.Set("locked", workspaceStatusMap[0]["locked"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading locked: %s", err))
+		}
+		if err = d.Set("locked_by", workspaceStatusMap[0]["locked_by"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading locked_by: %s", err))
+		}
+		if err = d.Set("locked_time", workspaceStatusMap[0]["locked_time"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading locked_time: %s", err))
 		}
 	}
 
 	if workspaceResponse.WorkspaceStatusMsg != nil {
-		err = d.Set("workspace_status_msg", dataSourceWorkspaceResponseFlattenWorkspaceStatusMsg(*workspaceResponse.WorkspaceStatusMsg))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting workspace_status_msg %s", err))
+		workspaceStatusMsgMap := dataSourceWorkspaceResponseFlattenWorkspaceStatusMsg(*workspaceResponse.WorkspaceStatusMsg)
+		if err = d.Set("status_code", workspaceStatusMsgMap[0]["status_code"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading status_code: %s", err))
+		}
+		if err = d.Set("status_msg", workspaceStatusMsgMap[0]["status_msg"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading status_msg: %s", err))
 		}
 	}
+
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	d.Set(ResourceControllerURL, controller+"/schematics")
 
 	return nil
 }
@@ -650,7 +670,6 @@ func dataSourceWorkspaceResponseCatalogRefToMap(catalogRefItem schematicsv1.Cata
 	return catalogRefMap
 }
 
-
 func dataSourceWorkspaceResponseFlattenRuntimeData(result []schematicsv1.TemplateRunTimeDataResponse) (runtimeData []map[string]interface{}) {
 	for _, runtimeDataItem := range result {
 		runtimeData = append(runtimeData, dataSourceWorkspaceResponseRuntimeDataToMap(runtimeDataItem))
@@ -690,7 +709,6 @@ func dataSourceWorkspaceResponseRuntimeDataToMap(runtimeDataItem schematicsv1.Te
 	return runtimeDataMap
 }
 
-
 func dataSourceWorkspaceResponseFlattenSharedData(result schematicsv1.SharedTargetDataResponse) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceWorkspaceResponseSharedDataToMap(result)
@@ -724,7 +742,6 @@ func dataSourceWorkspaceResponseSharedDataToMap(sharedDataItem schematicsv1.Shar
 	return sharedDataMap
 }
 
-
 func dataSourceWorkspaceResponseFlattenTemplateData(result []schematicsv1.TemplateSourceDataResponse) (templateData []map[string]interface{}) {
 	for _, templateDataItem := range result {
 		templateData = append(templateData, dataSourceWorkspaceResponseTemplateDataToMap(templateDataItem))
@@ -736,7 +753,6 @@ func dataSourceWorkspaceResponseFlattenTemplateData(result []schematicsv1.Templa
 func dataSourceWorkspaceResponseTemplateDataToMap(templateDataItem schematicsv1.TemplateSourceDataResponse) (templateDataMap map[string]interface{}) {
 	templateDataMap = map[string]interface{}{}
 
-	
 	if templateDataItem.EnvValues != nil {
 		envValuesList := []map[string]interface{}{}
 		for _, envValuesItem := range templateDataItem.EnvValues {
@@ -798,7 +814,6 @@ func dataSourceWorkspaceResponseTemplateDataEnvValuesToMap(envValuesItem schemat
 	return envValuesMap
 }
 
-
 func dataSourceWorkspaceResponseTemplateDataVariablestoreToMap(variablestoreItem schematicsv1.WorkspaceVariableResponse) (variablestoreMap map[string]interface{}) {
 	variablestoreMap = map[string]interface{}{}
 
@@ -820,8 +835,6 @@ func dataSourceWorkspaceResponseTemplateDataVariablestoreToMap(variablestoreItem
 
 	return variablestoreMap
 }
-
-
 
 func dataSourceWorkspaceResponseFlattenTemplateRepo(result schematicsv1.TemplateRepoResponse) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
@@ -859,7 +872,6 @@ func dataSourceWorkspaceResponseTemplateRepoToMap(templateRepoItem schematicsv1.
 	return templateRepoMap
 }
 
-
 func dataSourceWorkspaceResponseFlattenWorkspaceStatus(result schematicsv1.WorkspaceStatusResponse) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceWorkspaceResponseWorkspaceStatusToMap(result)
@@ -893,7 +905,6 @@ func dataSourceWorkspaceResponseWorkspaceStatusToMap(workspaceStatusItem schemat
 	return workspaceStatusMap
 }
 
-
 func dataSourceWorkspaceResponseFlattenWorkspaceStatusMsg(result schematicsv1.WorkspaceStatusMessage) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceWorkspaceResponseWorkspaceStatusMsgToMap(result)
@@ -914,4 +925,3 @@ func dataSourceWorkspaceResponseWorkspaceStatusMsgToMap(workspaceStatusMsgItem s
 
 	return workspaceStatusMsgMap
 }
-

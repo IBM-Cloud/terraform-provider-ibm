@@ -629,6 +629,7 @@ func Validator() ValidatorDict {
 				"ibm_dns_glb_pool":                     resourceIBMPrivateDNSGLBPoolValidator(),
 				"ibm_schematics_action":                resourceIBMSchematicsActionValidator(),
 				"ibm_schematics_job":                   resourceIBMSchematicsJobValidator(),
+				"ibm_schematics_workspace":             resourceIBMSchematicsWorkspaceValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),
