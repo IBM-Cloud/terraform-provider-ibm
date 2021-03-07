@@ -6,14 +6,19 @@ To add this generated code into the IBM Terraform Provider:
 
 - Add the following entries to `ResourcesMap`:
 ```
-    "ibm_is_dedicated_host": resourceIbmIsDedicatedHost(),
+    "ibm_is_dedicated_host_group": resourceIbmIsDedicatedHostGroup(),
+```
+
+- Add the following entries to `globalValidatorDict`:
+```
+    "ibm_is_dedicated_host_group": resourceIbmIsDedicatedHostGroupValidator(),
 ```
 
 ### Changes to `config.go`
 
 - Add an import for the generated Go SDK:
 ```
-    "github.com/IBM/vpc-go-sdk/vpcv1"
+    "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 ```
 
 - Add a method to the `ClientSession interface`:

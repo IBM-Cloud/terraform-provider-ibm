@@ -1,6 +1,6 @@
-// This allows is_dedicated_host data to be referenced by other resources and the terraform CLI
+// This allows is_dedicated_host_group data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
-output "ibm_is_dedicated_host" {
-  value       = ibm_is_dedicated_host.is_dedicated_host_instance
-  description = "is_dedicated_host resource instance"
+output "ibm_is_dedicated_host_group" {
+  value       = ibm_is_dedicated_host_group.is_dedicated_host_group_instance
+  description = "is_dedicated_host_group resource instance"
 }
