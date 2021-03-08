@@ -225,7 +225,7 @@ func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
 	subnets := d.Get(isLBSubnets).(*schema.Set)
 
 	var securityGroups *schema.Set
-	if sg, ok := d.GetOk(isLBType); ok {
+	if sg, ok := d.GetOk(isLBSecurityGroups); ok {
 		securityGroups = sg.(*schema.Set)
 	}
 
