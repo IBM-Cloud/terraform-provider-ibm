@@ -23,6 +23,13 @@ Run `terraform destroy` when you don't need these resources.
 
 ## VpcV1 Data sources
 
+is_dedicated_host data source:
+
+```hcl
+data "is_dedicated_host" "is_dedicated_host_instance" {
+  id = var.is_dedicated_host_id
+}
+```
 is_dedicated_hosts data source:
 
 ```hcl
@@ -56,10 +63,12 @@ data "is_dedicated_hosts" "is_dedicated_hosts_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| id | The unique identifier for this virtual server instance. | `string` | false |
 | id | The unique identifier for this dedicated host. | `string` | false |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
+| is_dedicated_host | is_dedicated_host object |
 | is_dedicated_hosts | is_dedicated_hosts object |

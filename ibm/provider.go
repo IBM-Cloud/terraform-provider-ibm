@@ -225,6 +225,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_user_profile":                   dataSourceIBMIAMUserProfile(),
 			"ibm_iam_service_id":                     dataSourceIBMIAMServiceID(),
 			"ibm_iam_service_policy":                 dataSourceIBMIAMServicePolicy(),
+			"ibm_is_dedicated_host":                  dataSourceIbmIsDedicatedHost(),
 			"ibm_is_dedicated_hosts":                 dataSourceIbmIsDedicatedHosts(),
 			"ibm_is_floating_ip":                     dataSourceIBMISFloatingIP(),
 			"ibm_is_flow_logs":                       dataSourceIBMISFlowLogs(),
