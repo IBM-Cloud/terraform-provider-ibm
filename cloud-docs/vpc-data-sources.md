@@ -31,7 +31,7 @@ Retrieve information about DedicatedHostCollection.
 
 ```
 data "ibm_is_dedicated_hosts" "is_dedicated_hosts" {
-  name = "my-host"
+  id = "1e09281b-f177-46fb-baf1-bc152b2e391a"
 }
 ```
 
@@ -42,7 +42,7 @@ Review the input parameters that you can specify for your data source. {: shortd
 
 |Name|Data type|Required/optional|Description|
 |----|-----------|-------|----------|
-|`name`|String|Optional|The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.|
+|`id`|String|Optional|The unique identifier for this dedicated host.|
 
 ### Output parameters
 {: #is_dedicated_hosts-output}

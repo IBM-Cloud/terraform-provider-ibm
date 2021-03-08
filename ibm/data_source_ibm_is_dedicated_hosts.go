@@ -25,7 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
 func dataSourceIbmIsDedicatedHosts() *schema.Resource {
@@ -33,11 +33,6 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 		ReadContext: dataSourceIbmIsDedicatedHostsRead,
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.",
-			},
 			"dedicated_hosts": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -51,7 +46,6 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 						},
 						"available_vcpu": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "The available VCPU for the dedicated host.",
 							Elem: &schema.Resource{
@@ -81,7 +75,6 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 						},
 						"group": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "The dedicated host group this dedicated host is in.",
 							Elem: &schema.Resource{
@@ -93,7 +86,6 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 									},
 									"deleted": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
 										Computed:    true,
 										Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
 										Elem: &schema.Resource{
@@ -157,7 +149,6 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 									},
 									"deleted": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
 										Computed:    true,
 										Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
 										Elem: &schema.Resource{
@@ -205,7 +196,6 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 						},
 						"profile": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "The profile this dedicated host uses.",
 							Elem: &schema.Resource{
@@ -230,7 +220,6 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 						},
 						"resource_group": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "The resource group for this dedicated host.",
 							Elem: &schema.Resource{
@@ -289,7 +278,6 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 						},
 						"vcpu": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "The total VCPU of the dedicated host.",
 							Elem: &schema.Resource{
@@ -309,7 +297,6 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 						},
 						"zone": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "The zone this dedicated host resides in.",
 							Elem: &schema.Resource{
@@ -332,7 +319,6 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 			},
 			"first": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "A link to the first page of resources.",
 				Elem: &schema.Resource{
@@ -352,7 +338,6 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 			},
 			"next": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "A link to the next page of resources. This property is present for all pagesexcept the last page.",
 				Elem: &schema.Resource{
@@ -375,7 +360,7 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 }
 
 func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(ClientSession).VpcV1()
+	vpcClient, err := meta.(ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -388,33 +373,11 @@ func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	// Use the provided filter argument and construct a new list with only the requested resource(s)
-	var matchDedicatedHosts []vpcv1.DedicatedHost
-	var name string
-	var suppliedFilter bool
-
-	if v, ok := d.GetOk("name"); ok {
-		name = v.(string)
-		suppliedFilter = true
-		for _, data := range dedicatedHostCollection.DedicatedHosts {
-			if *data.Name == name {
-				matchDedicatedHosts = append(matchDedicatedHosts, data)
-			}
-		}
-	} else {
-		matchDedicatedHosts = dedicatedHostCollection.DedicatedHosts
-	}
-	dedicatedHostCollection.DedicatedHosts = matchDedicatedHosts
-
 	if len(dedicatedHostCollection.DedicatedHosts) == 0 {
-		return diag.FromErr(fmt.Errorf("no DedicatedHosts found with name %s\nIf not specified, please specify more filters", name))
+		return nil
 	}
 
-	if suppliedFilter {
-		d.SetId(name)
-	} else {
-		d.SetId(dataSourceIbmIsDedicatedHostsID(d))
-	}
+	d.SetId(dataSourceIbmIsDedicatedHostsID(d))
 
 	if dedicatedHostCollection.DedicatedHosts != nil {
 		err = d.Set("dedicated_hosts", dataSourceDedicatedHostCollectionFlattenDedicatedHosts(dedicatedHostCollection.DedicatedHosts))
@@ -474,8 +437,8 @@ func dataSourceDedicatedHostCollectionDedicatedHostsToMap(dedicatedHostsItem vpc
 	if dedicatedHostsItem.CreatedAt != nil {
 		dedicatedHostsMap["created_at"] = dedicatedHostsItem.CreatedAt.String()
 	}
-	if dedicatedHostsItem.Crn != nil {
-		dedicatedHostsMap["crn"] = dedicatedHostsItem.Crn
+	if dedicatedHostsItem.CRN != nil {
+		dedicatedHostsMap["crn"] = dedicatedHostsItem.CRN
 	}
 	if dedicatedHostsItem.Group != nil {
 		groupList := []map[string]interface{}{}
@@ -555,7 +518,7 @@ func dataSourceDedicatedHostCollectionDedicatedHostsToMap(dedicatedHostsItem vpc
 	return dedicatedHostsMap
 }
 
-func dataSourceDedicatedHostCollectionDedicatedHostsAvailableVcpuToMap(availableVcpuItem vpcv1.VCPU) (availableVcpuMap map[string]interface{}) {
+func dataSourceDedicatedHostCollectionDedicatedHostsAvailableVcpuToMap(availableVcpuItem vpcv1.Vcpu) (availableVcpuMap map[string]interface{}) {
 	availableVcpuMap = map[string]interface{}{}
 
 	if availableVcpuItem.Architecture != nil {
@@ -571,8 +534,8 @@ func dataSourceDedicatedHostCollectionDedicatedHostsAvailableVcpuToMap(available
 func dataSourceDedicatedHostCollectionDedicatedHostsGroupToMap(groupItem vpcv1.DedicatedHostGroupReference) (groupMap map[string]interface{}) {
 	groupMap = map[string]interface{}{}
 
-	if groupItem.Crn != nil {
-		groupMap["crn"] = groupItem.Crn
+	if groupItem.CRN != nil {
+		groupMap["crn"] = groupItem.CRN
 	}
 	if groupItem.Deleted != nil {
 		deletedList := []map[string]interface{}{}
@@ -606,11 +569,21 @@ func dataSourceDedicatedHostCollectionGroupDeletedToMap(deletedItem vpcv1.Dedica
 	return deletedMap
 }
 
+func dataSourceDedicatedHostCollectionInstancesDeletedToMap(deletedItem vpcv1.InstanceReferenceDeleted) (deletedMap map[string]interface{}) {
+	deletedMap = map[string]interface{}{}
+
+	if deletedItem.MoreInfo != nil {
+		deletedMap["more_info"] = deletedItem.MoreInfo
+	}
+
+	return deletedMap
+}
+
 func dataSourceDedicatedHostCollectionDedicatedHostsInstancesToMap(instancesItem vpcv1.InstanceReference) (instancesMap map[string]interface{}) {
 	instancesMap = map[string]interface{}{}
 
-	if instancesItem.Crn != nil {
-		instancesMap["crn"] = instancesItem.Crn
+	if instancesItem.CRN != nil {
+		instancesMap["crn"] = instancesItem.CRN
 	}
 	if instancesItem.Deleted != nil {
 		deletedList := []map[string]interface{}{}
@@ -673,7 +646,7 @@ func dataSourceDedicatedHostCollectionDedicatedHostsSupportedInstanceProfilesToM
 	return supportedInstanceProfilesMap
 }
 
-func dataSourceDedicatedHostCollectionDedicatedHostsVcpuToMap(vcpuItem vpcv1.VCPU) (vcpuMap map[string]interface{}) {
+func dataSourceDedicatedHostCollectionDedicatedHostsVcpuToMap(vcpuItem vpcv1.Vcpu) (vcpuMap map[string]interface{}) {
 	vcpuMap = map[string]interface{}{}
 
 	if vcpuItem.Architecture != nil {

@@ -27,7 +27,7 @@ is_dedicated_hosts data source:
 
 ```hcl
 data "is_dedicated_hosts" "is_dedicated_hosts_instance" {
-  name = var.is_dedicated_hosts_name
+  id = var.is_dedicated_hosts_id
 }
 ```
 
@@ -56,7 +56,7 @@ data "is_dedicated_hosts" "is_dedicated_hosts_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| name | The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words. | `string` | false |
+| id | The unique identifier for this dedicated host. | `string` | false |
 
 ## Outputs
 

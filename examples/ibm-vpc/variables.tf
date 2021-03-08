@@ -4,8 +4,8 @@ variable "ibmcloud_api_key" {
 }
 
 // Data source arguments for is_dedicated_hosts
-variable "is_dedicated_hosts_name" {
-  description = "The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words."
+variable "is_dedicated_hosts_id" {
+  description = "The unique identifier for this dedicated host."
   type        = string
-  default     = "my-host"
+  default     = "1e09281b-f177-46fb-baf1-bc152b2e391a"
 }

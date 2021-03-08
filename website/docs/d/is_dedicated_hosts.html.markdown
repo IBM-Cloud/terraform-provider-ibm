@@ -14,7 +14,7 @@ Provides a read-only data source for DedicatedHostCollection. You can then refer
 
 ```hcl
 data "is_dedicated_hosts" "is_dedicated_hosts" {
-	name = "my-host"
+	id = "1e09281b-f177-46fb-baf1-bc152b2e391a"
 }
 ```
 
@@ -22,7 +22,7 @@ data "is_dedicated_hosts" "is_dedicated_hosts" {
 
 The following arguments are supported:
 
-* `name` - (Optional, string) The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.
+* `id` - (Optional, string) The unique identifier for this dedicated host.
 
 ## Attribute Reference
 
