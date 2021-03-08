@@ -23,11 +23,11 @@ import (
 
 const (
 	isVPCDefaultNetworkACL          = "default_network_acl"
-	isVPCIDefaultSecurityGroup      = "default_security_group"
+	isVPCDefaultSecurityGroup       = "default_security_group"
 	isVPCDefaultRoutingTable        = "default_routing_table"
 	isVPCName                       = "name"
 	isVPCDefaultNetworkACLName      = "default_network_acl_name"
-	isVPCIDefaultSecurityGroupName  = "default_security_group_name"
+	isVPCDefaultSecurityGroupName   = "default_security_group_name"
 	isVPCDefaultRoutingTableName    = "default_routing_table_name"
 	isVPCResourceGroup              = "resource_group"
 	isVPCStatus                     = "status"
@@ -128,11 +128,11 @@ func resourceIBMISVPC() *schema.Resource {
 				Description:  "Default Network ACL name",
 			},
 
-			isVPCIDefaultSecurityGroupName: {
+			isVPCDefaultSecurityGroupName: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCIDefaultSecurityGroupName),
+				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCDefaultSecurityGroupName),
 				Description:  "Default security group name",
 			},
 
@@ -158,7 +158,7 @@ func resourceIBMISVPC() *schema.Resource {
 				Description: "VPC status",
 			},
 
-			isVPCIDefaultSecurityGroup: {
+			isVPCDefaultSecurityGroup: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Security group associated with VPC",
@@ -387,7 +387,7 @@ func resourceIBMISVPCValidator() *ResourceValidator {
 			MaxValueLength:             63})
 	validateSchema = append(validateSchema,
 		ValidateSchema{
-			Identifier:                 isVPCIDefaultSecurityGroupName,
+			Identifier:                 isVPCDefaultSecurityGroupName,
 			ValidateFunctionIdentifier: ValidateRegexpLen,
 			Type:                       TypeString,
 			Required:                   true,
@@ -541,7 +541,7 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 	}
 	d.SetId(*vpc.ID)
 
-	if defaultSGName, ok := d.GetOk(isVPCIDefaultSecurityGroupName); ok {
+	if defaultSGName, ok := d.GetOk(isVPCDefaultSecurityGroupName); ok {
 		sgNameUpdate(sess, *vpc.DefaultSecurityGroup.ID, defaultSGName.(string))
 	}
 
@@ -651,9 +651,9 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isVPCDefaultNetworkACL, nil)
 	}
 	if vpc.DefaultSecurityGroup != nil {
-		d.Set(isVPCIDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
+		d.Set(isVPCDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
 	} else {
-		d.Set(isVPCIDefaultSecurityGroup, nil)
+		d.Set(isVPCDefaultSecurityGroup, nil)
 	}
 	tags, err := GetTagsUsingCRN(meta, *vpc.CRN)
 	if err != nil {
@@ -872,10 +872,10 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isVPCDefaultNetworkACL, nil)
 	}
 	if vpc.DefaultSecurityGroup != nil {
-		d.Set(isVPCIDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
-		d.Set(isVPCIDefaultSecurityGroupName, *vpc.DefaultSecurityGroup.Name)
+		d.Set(isVPCDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
+		d.Set(isVPCDefaultSecurityGroupName, *vpc.DefaultSecurityGroup.Name)
 	} else {
-		d.Set(isVPCIDefaultSecurityGroup, nil)
+		d.Set(isVPCDefaultSecurityGroup, nil)
 	}
 	if vpc.DefaultRoutingTable != nil {
 		d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID)
@@ -1156,9 +1156,9 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		}
 	}
 
-	if d.HasChange(isVPCIDefaultSecurityGroupName) {
-		if defaultSGName, ok := d.GetOk(isVPCIDefaultSecurityGroupName); ok {
-			sgNameUpdate(sess, d.Get(isVPCIDefaultSecurityGroup).(string), defaultSGName.(string))
+	if d.HasChange(isVPCDefaultSecurityGroupName) {
+		if defaultSGName, ok := d.GetOk(isVPCDefaultSecurityGroupName); ok {
+			sgNameUpdate(sess, d.Get(isVPCDefaultSecurityGroup).(string), defaultSGName.(string))
 		}
 	}
 	if d.HasChange(isVPCDefaultRoutingTableName) {
