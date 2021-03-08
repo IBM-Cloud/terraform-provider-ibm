@@ -82,3 +82,5 @@ The following attributes are exported:
 * `operating_status` - The operating status of this load balancer.
 * `hostname` - Fully qualified domain name assigned to this load balancer.
 * `logging` - (Optional, bool) Enable load balancer data logs for LogDNA. You can use data logs to help troubleshoot connectivity issues.
+* `security_groups` - (Optional, list) The security groups to use for this load balancer.
+* `security_groups_supported` - Indicates whether this load balancer supports security groups.

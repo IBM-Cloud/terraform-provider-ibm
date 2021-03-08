@@ -52,6 +52,8 @@ The following arguments are supported:
 * `resource_group` - (Optional, Forces new resource, string) The resource group where the load balancer to be created.
 * `tags` - (Optional, array of strings) Tags associated with the load balancer.
 * `logging` - (Optional, bool) Enable load balancer data logs for LogDNA. You can use data logs to help troubleshoot connectivity issues.
+* `security_groups` - (Optional, list) The security groups to use for this load balancer.
+
 
 ## Attribute Reference
 
@@ -63,6 +65,7 @@ The following attributes are exported:
 * `status` - The status of load balancer.
 * `operating_status` - The operating status of this load balancer.
 * `hostname` - Fully qualified domain name assigned to this load balancer.
+* `security_groups_supported` - Indicates whether this load balancer supports security groups.
 
 
 ## Import
