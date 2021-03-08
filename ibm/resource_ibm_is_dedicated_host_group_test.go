@@ -24,7 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
 func TestAccIbmIsDedicatedHostGroupBasic(t *testing.T) {
@@ -43,8 +43,7 @@ func TestAccIbmIsDedicatedHostGroupBasic(t *testing.T) {
 			},
 			resource.TestStep{
 				Config: testAccCheckIbmIsDedicatedHostGroupConfigBasic(),
-				Check: resource.ComposeAggregateTestCheckFunc(
-				),
+				Check:  resource.ComposeAggregateTestCheckFunc(),
 			},
 		},
 	})
@@ -52,12 +51,12 @@ func TestAccIbmIsDedicatedHostGroupBasic(t *testing.T) {
 
 func TestAccIbmIsDedicatedHostGroupAllArgs(t *testing.T) {
 	var conf vpcv1.DedicatedHostGroup
-	class := fmt.Sprintf("class_%d", acctest.RandIntRange(10, 100))
+	class := "beta"
 	family := "memory"
-	name := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
-	classUpdate := fmt.Sprintf("class_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("name%d", acctest.RandIntRange(10, 100))
+	classUpdate := "cx2"
 	familyUpdate := "compute"
-	nameUpdate := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("name%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -95,18 +94,21 @@ func testAccCheckIbmIsDedicatedHostGroupConfigBasic() string {
 
 		resource "ibm_is_dedicated_host_group" "is_dedicated_host_group" {
 		}
-	`, )
+	`)
 }
 
 func testAccCheckIbmIsDedicatedHostGroupConfig(class string, family string, name string) string {
 	return fmt.Sprintf(`
 
+		data "ibm_resource_group" "default" {
+			name = "Default" ///give your resource grp
+		}
 		resource "ibm_is_dedicated_host_group" "is_dedicated_host_group" {
 			class = "%s"
 			family = "%s"
 			name = "%s"
-			resource_group = { example: "object" }
-			zone = {"name":"us-south-1"}
+			resource_group = data.ibm_resource_group.default.id
+			zone = "us-south-2"
 		}
 	`, class, family, name)
 }
@@ -119,7 +121,7 @@ func testAccCheckIbmIsDedicatedHostGroupExists(n string, obj vpcv1.DedicatedHost
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		vpcClient, err := testAccProvider.Meta().(ClientSession).VpcV1()
+		vpcClient, err := testAccProvider.Meta().(ClientSession).VpcV1API()
 		if err != nil {
 			return err
 		}
@@ -139,7 +141,7 @@ func testAccCheckIbmIsDedicatedHostGroupExists(n string, obj vpcv1.DedicatedHost
 }
 
 func testAccCheckIbmIsDedicatedHostGroupDestroy(s *terraform.State) error {
-	vpcClient, err := testAccProvider.Meta().(ClientSession).VpcV1()
+	vpcClient, err := testAccProvider.Meta().(ClientSession).VpcV1API()
 	if err != nil {
 		return err
 	}

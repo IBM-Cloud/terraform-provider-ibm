@@ -21,11 +21,11 @@ variable "is_dedicated_host_group_name" {
 }
 variable "is_dedicated_host_group_resource_group" {
   description = "The resource group to use. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used."
-  type        = list(object({ example=string }))
+  type        = object({ example=string })
   default     = [ { example: "object" } ]
 }
 variable "is_dedicated_host_group_zone" {
   description = "The zone this dedicated host group will reside in."
-  type        = list(object({ example=string }))
+  type        = object({ example=string })
   default     = [ {"name":"us-south-1"} ]
 }

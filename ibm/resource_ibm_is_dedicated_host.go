@@ -20,12 +20,21 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+)
+
+const (
+	isDedicatedHostAvailable  = "available"
+	isDedicatedHostDeleting   = "deleting"
+	isDedicatedHostDeleteDone = "done"
+	isDedicatedHostFailed     = "failed"
 )
 
 func resourceIbmIsDedicatedHost() *schema.Resource {
@@ -1076,8 +1085,41 @@ func resourceIbmIsDedicatedHostDelete(context context.Context, d *schema.Resourc
 		log.Printf("[DEBUG] DeleteDedicatedHostWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
+	_, err = isWaitForDedicatedHostDelete(vpcClient, d, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	d.SetId("")
 
 	return nil
+}
+
+func isWaitForDedicatedHostDelete(instanceC *vpcv1.VpcV1, d *schema.ResourceData, id string) (interface{}, error) {
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{isDedicatedHostDeleting, isDedicatedHostAvailable},
+		Target:  []string{isDedicatedHostDeleteDone, ""},
+		Refresh: func() (interface{}, string, error) {
+			getdhoptions := &vpcv1.GetDedicatedHostOptions{
+				ID: &id,
+			}
+			dedicatedhost, response, err := instanceC.GetDedicatedHost(getdhoptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					return dedicatedhost, isDedicatedHostDeleteDone, nil
+				}
+				return nil, "", fmt.Errorf("Error Getting Dedicated Host: %s\n%s", err, response)
+			}
+			if *dedicatedhost.State == isDedicatedHostFailed {
+				return dedicatedhost, *dedicatedhost.State, fmt.Errorf("The  Dedicated Host %s failed to delete: %v", d.Id(), err)
+			}
+			return dedicatedhost, isDedicatedHostDeleting, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutDelete),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }

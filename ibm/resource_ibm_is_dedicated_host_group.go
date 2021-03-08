@@ -25,69 +25,46 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
 func resourceIbmIsDedicatedHostGroup() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIbmIsDedicatedHostGroupCreate,
-		ReadContext:     resourceIbmIsDedicatedHostGroupRead,
-		UpdateContext:   resourceIbmIsDedicatedHostGroupUpdate,
-		DeleteContext:   resourceIbmIsDedicatedHostGroupDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIbmIsDedicatedHostGroupCreate,
+		ReadContext:   resourceIbmIsDedicatedHostGroupRead,
+		UpdateContext: resourceIbmIsDedicatedHostGroupUpdate,
+		DeleteContext: resourceIbmIsDedicatedHostGroupDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"class": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "The dedicated host profile class for hosts in this group.",
 			},
 			"family": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_is_dedicated_host_group", "family"),
-				Description: "The dedicated host profile family for hosts in this group.",
+				Description:  "The dedicated host profile family for hosts in this group.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_is_dedicated_host_group", "name"),
-				Description: "The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly-selected words.",
+				Description:  "The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 			},
 			"resource_group": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
+				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The resource group to use. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The unique identifier for this resource group.",
-						},
-					},
-				},
+				ForceNew:    true,
+				Description: "The unique identifier of the resource group to use. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.",
 			},
 			"zone": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Description: "The zone this dedicated host group will reside in.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The globally unique name for this zone.",
-						},
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The URL for this zone.",
-						},
-					},
-				},
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The globally unique name of the zone this dedicated host group will reside in.",
 			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -191,6 +168,7 @@ func resourceIbmIsDedicatedHostGroupValidator() *ResourceValidator {
 			Optional:                   true,
 			AllowedValues:              "balanced, compute, memory",
 		})
+	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "name",
 			ValidateFunctionIdentifier: ValidateRegexpLen,
@@ -206,29 +184,35 @@ func resourceIbmIsDedicatedHostGroupValidator() *ResourceValidator {
 }
 
 func resourceIbmIsDedicatedHostGroupCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(ClientSession).VpcV1()
+	vpcClient, err := meta.(ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	createDedicatedHostGroupOptions := &vpcv1.CreateDedicatedHostGroupOptions{}
 
-	if _, ok := d.GetOk("class"); ok {
-		createDedicatedHostGroupOptions.SetClass(d.Get("class").(string))
+	if class, ok := d.GetOk("class"); ok {
+		createDedicatedHostGroupOptions.SetClass(class.(string))
 	}
-	if _, ok := d.GetOk("family"); ok {
-		createDedicatedHostGroupOptions.SetFamily(d.Get("family").(string))
+	if family, ok := d.GetOk("family"); ok {
+		createDedicatedHostGroupOptions.SetFamily(family.(string))
 	}
-	if _, ok := d.GetOk("name"); ok {
-		createDedicatedHostGroupOptions.SetName(d.Get("name").(string))
+	if name, ok := d.GetOk("name"); ok {
+		createDedicatedHostGroupOptions.SetName(name.(string))
 	}
-	if _, ok := d.GetOk("resource_group"); ok {
-		resourceGroup := resourceIbmIsDedicatedHostGroupMapToResourceGroupIdentity(d.Get("resource_group.0").(map[string]interface{}))
+	if resgroup, ok := d.GetOk("resource_group"); ok {
+		resgroupstr := resgroup.(string)
+		resourceGroup := vpcv1.ResourceGroupIdentity{
+			ID: &resgroupstr,
+		}
 		createDedicatedHostGroupOptions.SetResourceGroup(&resourceGroup)
 	}
-	if _, ok := d.GetOk("zone"); ok {
-		zone := resourceIbmIsDedicatedHostGroupMapToZoneIdentity(d.Get("zone.0").(map[string]interface{}))
-		createDedicatedHostGroupOptions.SetZone(&zone)
+	if zone, ok := d.GetOk("zone"); ok {
+		zonestr := zone.(string)
+		zoneidentity := vpcv1.ZoneIdentity{
+			Name: &zonestr,
+		}
+		createDedicatedHostGroupOptions.SetZone(&zoneidentity)
 	}
 
 	dedicatedHostGroup, response, err := vpcClient.CreateDedicatedHostGroupWithContext(context, createDedicatedHostGroupOptions)
@@ -290,7 +274,7 @@ func resourceIbmIsDedicatedHostGroupMapToZoneIdentityByHref(zoneIdentityByHrefMa
 }
 
 func resourceIbmIsDedicatedHostGroupRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(ClientSession).VpcV1()
+	vpcClient, err := meta.(ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -319,21 +303,21 @@ func resourceIbmIsDedicatedHostGroupRead(context context.Context, d *schema.Reso
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if dedicatedHostGroup.ResourceGroup != nil {
-		resourceGroupMap := resourceIbmIsDedicatedHostGroupResourceGroupIdentityToMap(*dedicatedHostGroup.ResourceGroup)
-		if err = d.Set("resource_group", []map[string]interface{}{resourceGroupMap}); err != nil {
+		resourceGroupID := *dedicatedHostGroup.ResourceGroup.ID
+		if err = d.Set("resource_group", resourceGroupID); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
 		}
 	}
 	if dedicatedHostGroup.Zone != nil {
-		zoneMap := resourceIbmIsDedicatedHostGroupZoneIdentityToMap(*dedicatedHostGroup.Zone)
-		if err = d.Set("zone", []map[string]interface{}{zoneMap}); err != nil {
+		zoneName := *dedicatedHostGroup.Zone.Name
+		if err = d.Set("zone", zoneName); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting zone: %s", err))
 		}
 	}
 	if err = d.Set("created_at", dedicatedHostGroup.CreatedAt.String()); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
-	if err = d.Set("crn", dedicatedHostGroup.Crn); err != nil {
+	if err = d.Set("crn", dedicatedHostGroup.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
 	dedicatedHosts := []map[string]interface{}{}
@@ -406,7 +390,7 @@ func resourceIbmIsDedicatedHostGroupZoneIdentityByHrefToMap(zoneIdentityByHref v
 func resourceIbmIsDedicatedHostGroupDedicatedHostReferenceToMap(dedicatedHostReference vpcv1.DedicatedHostReference) map[string]interface{} {
 	dedicatedHostReferenceMap := map[string]interface{}{}
 
-	dedicatedHostReferenceMap["crn"] = dedicatedHostReference.Crn
+	dedicatedHostReferenceMap["crn"] = dedicatedHostReference.CRN
 	if dedicatedHostReference.Deleted != nil {
 		DeletedMap := resourceIbmIsDedicatedHostGroupDedicatedHostReferenceDeletedToMap(*dedicatedHostReference.Deleted)
 		dedicatedHostReferenceMap["deleted"] = []map[string]interface{}{DeletedMap}
@@ -437,7 +421,7 @@ func resourceIbmIsDedicatedHostGroupInstanceProfileReferenceToMap(instanceProfil
 }
 
 func resourceIbmIsDedicatedHostGroupUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(ClientSession).VpcV1()
+	vpcClient, err := meta.(ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -448,29 +432,24 @@ func resourceIbmIsDedicatedHostGroupUpdate(context context.Context, d *schema.Re
 
 	hasChange := false
 
+	dedicatedHostGroupPatch := map[string]interface{}{}
+
 	if d.HasChange("class") {
-		updateDedicatedHostGroupOptions.SetClass(d.Get("class").(string))
+		dedicatedHostGroupPatch["class"] = d.Get("class")
+		//updateDedicatedHostGroupOptions.SetClass(d.Get("class").(string))
 		hasChange = true
 	}
 	if d.HasChange("family") {
-		updateDedicatedHostGroupOptions.SetFamily(d.Get("family").(string))
+		dedicatedHostGroupPatch["family"] = d.Get("family")
+		//updateDedicatedHostGroupOptions.SetFamily(d.Get("family").(string))
 		hasChange = true
 	}
 	if d.HasChange("name") {
-		updateDedicatedHostGroupOptions.SetName(d.Get("name").(string))
+		dedicatedHostGroupPatch["name"] = d.Get("name")
+		//updateDedicatedHostGroupOptions.SetName(d.Get("name").(string))
 		hasChange = true
 	}
-	if d.HasChange("resource_group") {
-		resourceGroup := resourceIbmIsDedicatedHostGroupMapToResourceGroupIdentity(d.Get("resource_group.0").(map[string]interface{}))
-		updateDedicatedHostGroupOptions.SetResourceGroup(&resourceGroup)
-		hasChange = true
-	}
-	if d.HasChange("zone") {
-		zone := resourceIbmIsDedicatedHostGroupMapToZoneIdentity(d.Get("zone.0").(map[string]interface{}))
-		updateDedicatedHostGroupOptions.SetZone(&zone)
-		hasChange = true
-	}
-
+	updateDedicatedHostGroupOptions.SetDedicatedHostGroupPatch(dedicatedHostGroupPatch)
 	if hasChange {
 		_, response, err := vpcClient.UpdateDedicatedHostGroupWithContext(context, updateDedicatedHostGroupOptions)
 		if err != nil {
@@ -483,7 +462,7 @@ func resourceIbmIsDedicatedHostGroupUpdate(context context.Context, d *schema.Re
 }
 
 func resourceIbmIsDedicatedHostGroupDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(ClientSession).VpcV1()
+	vpcClient, err := meta.(ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -502,3 +481,32 @@ func resourceIbmIsDedicatedHostGroupDelete(context context.Context, d *schema.Re
 
 	return nil
 }
+
+/*func isWaitForDedicatedHostGroupDelete(instanceC *vpcv1.VpcV1, d *schema.ResourceData, id string) (interface{}, error) {
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{isInstanceDeleting, isInstanceAvailable},
+		Target:  []string{isInstanceDeleteDone, ""},
+		Refresh: func() (interface{}, string, error) {
+			getdedicatedhostgroupoptions := &vpcv1.GetDedicatedHostGroupOptions{
+				ID: &id,
+			}
+			dedicatedHostGroup, response, err := instanceC.GetDedicatedHostGroup(getdedicatedhostgroupoptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					return dedicatedHostGroup, isInstanceDeleteDone, nil
+				}
+				return nil, "", fmt.Errorf("Error Getting Instance: %s\n%s", err, response)
+			}
+			if *dedicatedHostGroup.State == isInstanceFailed {
+				return dedicatedHostGroup, *dedicatedHostGroup.State, fmt.Errorf("The  instance %s failed to delete: %v", d.Id(), err)
+			}
+			return dedicatedHostGroup, isInstanceDeleting, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutDelete),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}*/
