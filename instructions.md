@@ -4,14 +4,9 @@ To add this generated code into the IBM Terraform Provider:
 
 ### Changes to `provider.go`
 
-- Add the following entries to `ResourcesMap`:
+- Add the following entries to `DataSourcesMap`:
 ```
-    "ibm_is_dedicated_host_group": resourceIbmIsDedicatedHostGroup(),
-```
-
-- Add the following entries to `globalValidatorDict`:
-```
-    "ibm_is_dedicated_host_group": resourceIbmIsDedicatedHostGroupValidator(),
+    "ibm_is_dedicated_hosts": dataSourceIbmIsDedicatedHosts(),
 ```
 
 ### Changes to `config.go`
