@@ -6,8 +6,8 @@ To add this generated code into the IBM Terraform Provider:
 
 - Add the following entries to `DataSourcesMap`:
 ```
-    "ibm_is_dedicated_host": dataSourceIbmIsDedicatedHost(),
-    "ibm_is_dedicated_hosts": dataSourceIbmIsDedicatedHosts(),
+    "ibm_is_dedicated_host_profile": dataSourceIbmIsDedicatedHostProfile(),
+    "ibm_is_dedicated_host_profiles": dataSourceIbmIsDedicatedHostProfiles(),
 ```
 
 ### Changes to `config.go`

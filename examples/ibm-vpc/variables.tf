@@ -3,16 +3,16 @@ variable "ibmcloud_api_key" {
   type        = string
 }
 
-// Data source arguments for is_dedicated_host
-variable "is_dedicated_host_id" {
-  description = "The unique identifier for this virtual server instance."
+// Data source arguments for is_dedicated_host_profile
+variable "is_dedicated_host_profile_name" {
+  description = "The globally unique name for this virtual server instance profile."
   type        = string
-  default     = "1e09281b-f177-46fb-baf1-bc152b2e391a"
+  default     = "bc1-4x16"
 }
 
-// Data source arguments for is_dedicated_hosts
-variable "is_dedicated_hosts_id" {
-  description = "The unique identifier for this dedicated host."
+// Data source arguments for is_dedicated_host_profiles
+variable "is_dedicated_host_profiles_name" {
+  description = "The globally unique name for this dedicated host profile."
   type        = string
-  default     = "1e09281b-f177-46fb-baf1-bc152b2e391a"
+  default     = "mx2-host-152x1216"
 }

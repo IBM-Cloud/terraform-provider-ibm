@@ -20,167 +20,141 @@ Before you start working with your data source, make sure to review the [require
 that you need to specify in the `provider` block of your Terraform configuration file.
 {: important}
 
-## `ibm_is_dedicated_host`
-{: #is_dedicated_host}
+## `ibm_is_dedicated_host_profile`
+{: #is_dedicated_host_profile}
 
-Retrieve information about DedicatedHost.
+Retrieve information about DedicatedHostProfile.
 {: shortdesc}
 
 ### Sample Terraform code
-{: #is_dedicated_host-sample}
+{: #is_dedicated_host_profile-sample}
 
 ```
-data "ibm_is_dedicated_host" "is_dedicated_host" {
-  id = "1e09281b-f177-46fb-baf1-bc152b2e391a"
+data "ibm_is_dedicated_host_profile" "is_dedicated_host_profile" {
+  name = "bc1-4x16"
 }
 ```
 
 ### Input parameters
-{: #is_dedicated_host-input}
+{: #is_dedicated_host_profile-input}
 
 Review the input parameters that you can specify for your data source. {: shortdesc}
 
 |Name|Data type|Required/optional|Description|
 |----|-----------|-------|----------|
-|`id`|String|Optional|The unique identifier for this virtual server instance.|
+|`name`|String|Optional|The globally unique name for this virtual server instance profile.|
 
 ### Output parameters
-{: #is_dedicated_host-output}
+{: #is_dedicated_host_profile-output}
 
 Review the output parameters that you can access after you retrieved your data source. {: shortdesc}
 
 |Name|Data type|Description|
 |----|-----------|---------|
-|`available_memory`|Integer|The amount of memory in gibibytes that is currently available for instances.|
-|`available_vcpu`|List|The available VCPU for the dedicated host. This list contains only one item.|
-|`available_vcpu.architecture`|String|The VCPU architecture.|
-|`available_vcpu.count`|Integer|The number of VCPUs assigned.|
-|`created_at`|String|The date and time that the dedicated host was created.|
-|`crn`|String|The CRN for this dedicated host.|
-|`group`|List|The dedicated host group this dedicated host is in. This list contains only one item.|
-|`group.crn`|String|The CRN for this dedicated host group.|
-|`group.deleted`|List|If present, this property indicates the referenced resource has been deleted and providessome supplementary information. This list contains only one item.|
-|`group.deleted.more_info`|String|Link to documentation about deleted resources.|
-|`group.href`|String|The URL for this dedicated host group.|
-|`group.id`|String|The unique identifier for this dedicated host group.|
-|`group.name`|String|The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly-selected words.|
-|`group.resource_type`|String|The type of resource referenced.|
+|`class`|String|The product class this dedicated host profile belongs to.|
+|`family`|String|The product family this dedicated host profile belongs toThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.|
 |`href`|String|The URL for this dedicated host.|
-|`instance_placement_enabled`|Boolean|If set to true, instances can be placed on this dedicated host.|
-|`instances`|List|Array of instances that are allocated to this dedicated host.|
-|`instances.crn`|String|The CRN for this virtual server instance.|
-|`instances.deleted`|List|If present, this property indicates the referenced resource has been deleted and providessome supplementary information. This list contains only one item.|
-|`instances.deleted.more_info`|String|Link to documentation about deleted resources.|
-|`instances.href`|String|The URL for this virtual server instance.|
-|`instances.id`|String|The unique identifier for this virtual server instance.|
-|`instances.name`|String|The user-defined name for this virtual server instance (and default system hostname).|
-|`lifecycle_state`|String|The lifecycle state of the dedicated host resource.|
-|`memory`|Integer|The total amount of memory in gibibytes for this host.|
-|`name`|String|The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.|
-|`profile`|List|The profile this dedicated host uses. This list contains only one item.|
-|`profile.href`|String|The URL for this dedicated host.|
-|`profile.name`|String|The globally unique name for this dedicated host profile.|
-|`provisionable`|Boolean|Indicates whether this dedicated host is available for instance creation.|
-|`resource_group`|List|The resource group for this dedicated host. This list contains only one item.|
-|`resource_group.href`|String|The URL for this resource group.|
-|`resource_group.id`|String|The unique identifier for this resource group.|
-|`resource_group.name`|String|The user-defined name for this resource group.|
-|`resource_type`|String|The type of resource referenced.|
-|`socket_count`|Integer|The total number of sockets for this host.|
-|`state`|String|The administrative state of the dedicated host.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the dedicated host on which the unexpected property value was encountered.|
-|`supported_instance_profiles`|List|Array of instance profiles that can be used by instances placed on this dedicated host.|
+|`memory`|List| This list contains only one item.|
+|`memory.type`|String|The type for this profile field.|
+|`memory.value`|Integer|The value for this profile field.|
+|`memory.default`|Integer|The default value for this profile field.|
+|`memory.max`|Integer|The maximum value for this profile field.|
+|`memory.min`|Integer|The minimum value for this profile field.|
+|`memory.step`|Integer|The increment step value for this profile field.|
+|`memory.values`|List|The permitted values for this profile field.|
+|`socket_count`|List| This list contains only one item.|
+|`socket_count.type`|String|The type for this profile field.|
+|`socket_count.value`|Integer|The value for this profile field.|
+|`socket_count.default`|Integer|The default value for this profile field.|
+|`socket_count.max`|Integer|The maximum value for this profile field.|
+|`socket_count.min`|Integer|The minimum value for this profile field.|
+|`socket_count.step`|Integer|The increment step value for this profile field.|
+|`socket_count.values`|List|The permitted values for this profile field.|
+|`supported_instance_profiles`|List|Array of instance profiles that can be used by instances placed on dedicated hosts with this profile.|
 |`supported_instance_profiles.href`|String|The URL for this virtual server instance profile.|
 |`supported_instance_profiles.name`|String|The globally unique name for this virtual server instance profile.|
-|`vcpu`|List|The total VCPU of the dedicated host. This list contains only one item.|
-|`vcpu.architecture`|String|The VCPU architecture.|
-|`vcpu.count`|Integer|The number of VCPUs assigned.|
-|`zone`|List|The zone this dedicated host resides in. This list contains only one item.|
-|`zone.href`|String|The URL for this zone.|
-|`zone.name`|String|The globally unique name for this zone.|
+|`vcpu_architecture`|List| This list contains only one item.|
+|`vcpu_architecture.type`|String|The type for this profile field.|
+|`vcpu_architecture.value`|String|The VCPU architecture for a dedicated host with this profile.|
+|`vcpu_count`|List| This list contains only one item.|
+|`vcpu_count.type`|String|The type for this profile field.|
+|`vcpu_count.value`|Integer|The value for this profile field.|
+|`vcpu_count.default`|Integer|The default value for this profile field.|
+|`vcpu_count.max`|Integer|The maximum value for this profile field.|
+|`vcpu_count.min`|Integer|The minimum value for this profile field.|
+|`vcpu_count.step`|Integer|The increment step value for this profile field.|
+|`vcpu_count.values`|List|The permitted values for this profile field.|
 
-## `ibm_is_dedicated_hosts`
-{: #is_dedicated_hosts}
+## `ibm_is_dedicated_host_profiles`
+{: #is_dedicated_host_profiles}
 
-Retrieve information about DedicatedHostCollection.
+Retrieve information about DedicatedHostProfileCollection.
 {: shortdesc}
 
 ### Sample Terraform code
-{: #is_dedicated_hosts-sample}
+{: #is_dedicated_host_profiles-sample}
 
 ```
-data "ibm_is_dedicated_hosts" "is_dedicated_hosts" {
-  id = "1e09281b-f177-46fb-baf1-bc152b2e391a"
+data "ibm_is_dedicated_host_profiles" "is_dedicated_host_profiles" {
+  name = "mx2-host-152x1216"
 }
 ```
 
 ### Input parameters
-{: #is_dedicated_hosts-input}
+{: #is_dedicated_host_profiles-input}
 
 Review the input parameters that you can specify for your data source. {: shortdesc}
 
 |Name|Data type|Required/optional|Description|
 |----|-----------|-------|----------|
-|`id`|String|Optional|The unique identifier for this dedicated host.|
+|`name`|String|Optional|The globally unique name for this dedicated host profile.|
 
 ### Output parameters
-{: #is_dedicated_hosts-output}
+{: #is_dedicated_host_profiles-output}
 
 Review the output parameters that you can access after you retrieved your data source. {: shortdesc}
 
 |Name|Data type|Description|
 |----|-----------|---------|
-|`dedicated_hosts`|List|Collection of dedicated hosts.|
-|`dedicated_hosts.available_memory`|Integer|The amount of memory in gibibytes that is currently available for instances.|
-|`dedicated_hosts.available_vcpu`|List|The available VCPU for the dedicated host. This list contains only one item.|
-|`dedicated_hosts.available_vcpu.architecture`|String|The VCPU architecture.|
-|`dedicated_hosts.available_vcpu.count`|Integer|The number of VCPUs assigned.|
-|`dedicated_hosts.created_at`|String|The date and time that the dedicated host was created.|
-|`dedicated_hosts.crn`|String|The CRN for this dedicated host.|
-|`dedicated_hosts.group`|List|The dedicated host group this dedicated host is in. This list contains only one item.|
-|`dedicated_hosts.group.crn`|String|The CRN for this dedicated host group.|
-|`dedicated_hosts.group.deleted`|List|If present, this property indicates the referenced resource has been deleted and providessome supplementary information. This list contains only one item.|
-|`dedicated_hosts.group.deleted.more_info`|String|Link to documentation about deleted resources.|
-|`dedicated_hosts.group.href`|String|The URL for this dedicated host group.|
-|`dedicated_hosts.group.id`|String|The unique identifier for this dedicated host group.|
-|`dedicated_hosts.group.name`|String|The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly-selected words.|
-|`dedicated_hosts.group.resource_type`|String|The type of resource referenced.|
-|`dedicated_hosts.href`|String|The URL for this dedicated host.|
-|`dedicated_hosts.id`|String|The unique identifier for this dedicated host.|
-|`dedicated_hosts.instance_placement_enabled`|Boolean|If set to true, instances can be placed on this dedicated host.|
-|`dedicated_hosts.instances`|List|Array of instances that are allocated to this dedicated host.|
-|`dedicated_hosts.instances.crn`|String|The CRN for this virtual server instance.|
-|`dedicated_hosts.instances.deleted`|List|If present, this property indicates the referenced resource has been deleted and providessome supplementary information. This list contains only one item.|
-|`dedicated_hosts.instances.deleted.more_info`|String|Link to documentation about deleted resources.|
-|`dedicated_hosts.instances.href`|String|The URL for this virtual server instance.|
-|`dedicated_hosts.instances.id`|String|The unique identifier for this virtual server instance.|
-|`dedicated_hosts.instances.name`|String|The user-defined name for this virtual server instance (and default system hostname).|
-|`dedicated_hosts.lifecycle_state`|String|The lifecycle state of the dedicated host resource.|
-|`dedicated_hosts.memory`|Integer|The total amount of memory in gibibytes for this host.|
-|`dedicated_hosts.name`|String|The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.|
-|`dedicated_hosts.profile`|List|The profile this dedicated host uses. This list contains only one item.|
-|`dedicated_hosts.profile.href`|String|The URL for this dedicated host.|
-|`dedicated_hosts.profile.name`|String|The globally unique name for this dedicated host profile.|
-|`dedicated_hosts.provisionable`|Boolean|Indicates whether this dedicated host is available for instance creation.|
-|`dedicated_hosts.resource_group`|List|The resource group for this dedicated host. This list contains only one item.|
-|`dedicated_hosts.resource_group.href`|String|The URL for this resource group.|
-|`dedicated_hosts.resource_group.id`|String|The unique identifier for this resource group.|
-|`dedicated_hosts.resource_group.name`|String|The user-defined name for this resource group.|
-|`dedicated_hosts.resource_type`|String|The type of resource referenced.|
-|`dedicated_hosts.socket_count`|Integer|The total number of sockets for this host.|
-|`dedicated_hosts.state`|String|The administrative state of the dedicated host.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the dedicated host on which the unexpected property value was encountered.|
-|`dedicated_hosts.supported_instance_profiles`|List|Array of instance profiles that can be used by instances placed on this dedicated host.|
-|`dedicated_hosts.supported_instance_profiles.href`|String|The URL for this virtual server instance profile.|
-|`dedicated_hosts.supported_instance_profiles.name`|String|The globally unique name for this virtual server instance profile.|
-|`dedicated_hosts.vcpu`|List|The total VCPU of the dedicated host. This list contains only one item.|
-|`dedicated_hosts.vcpu.architecture`|String|The VCPU architecture.|
-|`dedicated_hosts.vcpu.count`|Integer|The number of VCPUs assigned.|
-|`dedicated_hosts.zone`|List|The zone this dedicated host resides in. This list contains only one item.|
-|`dedicated_hosts.zone.href`|String|The URL for this zone.|
-|`dedicated_hosts.zone.name`|String|The globally unique name for this zone.|
 |`first`|List|A link to the first page of resources. This list contains only one item.|
 |`first.href`|String|The URL for a page of resources.|
 |`limit`|Integer|The maximum number of resources that can be returned by the request.|
 |`next`|List|A link to the next page of resources. This property is present for all pagesexcept the last page. This list contains only one item.|
 |`next.href`|String|The URL for a page of resources.|
+|`profiles`|List|Collection of dedicated host profiles.|
+|`profiles.class`|String|The product class this dedicated host profile belongs to.|
+|`profiles.family`|String|The product family this dedicated host profile belongs toThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.|
+|`profiles.href`|String|The URL for this dedicated host.|
+|`profiles.memory`|List| This list contains only one item.|
+|`profiles.memory.type`|String|The type for this profile field.|
+|`profiles.memory.value`|Integer|The value for this profile field.|
+|`profiles.memory.default`|Integer|The default value for this profile field.|
+|`profiles.memory.max`|Integer|The maximum value for this profile field.|
+|`profiles.memory.min`|Integer|The minimum value for this profile field.|
+|`profiles.memory.step`|Integer|The increment step value for this profile field.|
+|`profiles.memory.values`|List|The permitted values for this profile field.|
+|`profiles.name`|String|The globally unique name for this dedicated host profile.|
+|`profiles.socket_count`|List| This list contains only one item.|
+|`profiles.socket_count.type`|String|The type for this profile field.|
+|`profiles.socket_count.value`|Integer|The value for this profile field.|
+|`profiles.socket_count.default`|Integer|The default value for this profile field.|
+|`profiles.socket_count.max`|Integer|The maximum value for this profile field.|
+|`profiles.socket_count.min`|Integer|The minimum value for this profile field.|
+|`profiles.socket_count.step`|Integer|The increment step value for this profile field.|
+|`profiles.socket_count.values`|List|The permitted values for this profile field.|
+|`profiles.supported_instance_profiles`|List|Array of instance profiles that can be used by instances placed on dedicated hosts with this profile.|
+|`profiles.supported_instance_profiles.href`|String|The URL for this virtual server instance profile.|
+|`profiles.supported_instance_profiles.name`|String|The globally unique name for this virtual server instance profile.|
+|`profiles.vcpu_architecture`|List| This list contains only one item.|
+|`profiles.vcpu_architecture.type`|String|The type for this profile field.|
+|`profiles.vcpu_architecture.value`|String|The VCPU architecture for a dedicated host with this profile.|
+|`profiles.vcpu_count`|List| This list contains only one item.|
+|`profiles.vcpu_count.type`|String|The type for this profile field.|
+|`profiles.vcpu_count.value`|Integer|The value for this profile field.|
+|`profiles.vcpu_count.default`|Integer|The default value for this profile field.|
+|`profiles.vcpu_count.max`|Integer|The maximum value for this profile field.|
+|`profiles.vcpu_count.min`|Integer|The minimum value for this profile field.|
+|`profiles.vcpu_count.step`|Integer|The increment step value for this profile field.|
+|`profiles.vcpu_count.values`|List|The permitted values for this profile field.|
 |`total_count`|Integer|The total number of resources across all pages.|
 

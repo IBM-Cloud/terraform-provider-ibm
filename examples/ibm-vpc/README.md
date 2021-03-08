@@ -23,18 +23,18 @@ Run `terraform destroy` when you don't need these resources.
 
 ## VpcV1 Data sources
 
-is_dedicated_host data source:
+is_dedicated_host_profile data source:
 
 ```hcl
-data "is_dedicated_host" "is_dedicated_host_instance" {
-  id = var.is_dedicated_host_id
+data "is_dedicated_host_profile" "is_dedicated_host_profile_instance" {
+  name = var.is_dedicated_host_profile_name
 }
 ```
-is_dedicated_hosts data source:
+is_dedicated_host_profiles data source:
 
 ```hcl
-data "is_dedicated_hosts" "is_dedicated_hosts_instance" {
-  id = var.is_dedicated_hosts_id
+data "is_dedicated_host_profiles" "is_dedicated_host_profiles_instance" {
+  name = var.is_dedicated_host_profiles_name
 }
 ```
 
@@ -63,12 +63,12 @@ data "is_dedicated_hosts" "is_dedicated_hosts_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| id | The unique identifier for this virtual server instance. | `string` | false |
-| id | The unique identifier for this dedicated host. | `string` | false |
+| name | The globally unique name for this virtual server instance profile. | `string` | false |
+| name | The globally unique name for this dedicated host profile. | `string` | false |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| is_dedicated_host | is_dedicated_host object |
-| is_dedicated_hosts | is_dedicated_hosts object |
+| is_dedicated_host_profile | is_dedicated_host_profile object |
+| is_dedicated_host_profiles | is_dedicated_host_profiles object |
