@@ -1,19 +1,22 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
-	"strings"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 )
 
 func TestAccIBMAppDomainShared_Basic(t *testing.T) {
+	t.Skip()
 	var conf mccpv2.SharedDomainFields
 	name := fmt.Sprintf("terraform%d.com", acctest.RandIntRange(10, 100))
 
@@ -33,6 +36,7 @@ func TestAccIBMAppDomainShared_Basic(t *testing.T) {
 }
 
 func TestAccIBMAppDomainShared_With_Tags(t *testing.T) {
+	t.Skip()
 	var conf mccpv2.SharedDomainFields
 	name := fmt.Sprintf("terraform%d.com", acctest.RandIntRange(10, 100))
 

@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -5,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
 	"github.com/softlayer/softlayer-go/services"
@@ -86,7 +89,7 @@ func dataSourceIBMComputeSSHKeyRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	d.SetId(fmt.Sprintf("%d", *key.Id))
-	d.Set("name", label)
+	d.Set("label", label)
 	d.Set("public_key", strings.TrimSpace(*key.Key))
 	d.Set("fingerprint", key.Fingerprint)
 	d.Set("notes", key.Notes)

@@ -1,3 +1,27 @@
+## 1.21.1 (Mar03, 2021)
+
+FEATURES:
+
+* Support sort argument for IAM service policies and IAM user policies ([#2227](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2227))
+
+* Support default_routing_table attribute for VPC resource and datasource ([#2286](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2286))
+
+* Support logging argument for VPC load balancer ([#2228](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2228))
+
+* Add transactionID for IAM authentication error messages ([#2304](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2304))
+
+BUGFIXES
+
+* Fix the provision of instance template with boot volume ([#2205](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2205))
+
+* Fix ibm_resource_key is not tainted by change to role ([#2182](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2182))
+
+* Fix ibm_cis, ibm_database, ibm_resource_instance not tainted by change to resource groupID ([#2297](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2297))
+
+* Fix ibm_container_addons resource not detecting version change ([#2295](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2295))
+
+* Fix error when trying to use data source ibm_container_cluster for existing lite IKS ([#2300](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2300))
+
 ## 1.21.0 (Feb12, 2021)
 
 FEATURES:

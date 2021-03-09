@@ -1,10 +1,13 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -143,7 +146,8 @@ func dataSourceIBMISVPCDefaultRoutingTableGet(d *schema.ResourceData, meta inter
 	d.Set(isDefaultRoutingTableHref, *result.Href)
 	d.Set(isDefaultRoutingTableName, *result.Name)
 	d.Set(isDefaultRoutingTableResourceType, *result.ResourceType)
-	d.Set(isDefaultRoutingTableCreatedAt, *result.CreatedAt)
+	createdAt := *result.CreatedAt
+	d.Set(isDefaultRoutingTableCreatedAt, createdAt.String())
 	d.Set(isDefaultRoutingTableLifecycleState, *result.LifecycleState)
 	d.Set(isDefaultRTDirectLinkIngress, *result.RouteDirectLinkIngress)
 	d.Set(isDefaultRTTransitGatewayIngress, *result.RouteTransitGatewayIngress)

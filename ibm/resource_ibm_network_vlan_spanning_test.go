@@ -1,9 +1,12 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMNetworkVlanSpan_Basic(t *testing.T) {
@@ -11,15 +14,15 @@ func TestAccIBMNetworkVlanSpan_Basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMNetworkVlanSpanOnConfig_basic,
+			{
+				Config: testAccCheckIBMNetworkVlanSpanOnConfigBasic,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_network_vlan_spanning.test_vlan", "vlan_spanning", "on"),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMNetworkVlanSpanOffConfig_basic,
+			{
+				Config: testAccCheckIBMNetworkVlanSpanOffConfigBasic,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_network_vlan_spanning.test_vlan", "vlan_spanning", "off"),
@@ -29,11 +32,11 @@ func TestAccIBMNetworkVlanSpan_Basic(t *testing.T) {
 	})
 }
 
-const testAccCheckIBMNetworkVlanSpanOnConfig_basic = `
+const testAccCheckIBMNetworkVlanSpanOnConfigBasic = `
 resource "ibm_network_vlan_spanning" "test_vlan" {
-   "vlan_spanning" = "on"
+   vlan_spanning = "on"
 }`
-const testAccCheckIBMNetworkVlanSpanOffConfig_basic = `
+const testAccCheckIBMNetworkVlanSpanOffConfigBasic = `
 resource "ibm_network_vlan_spanning" "test_vlan" {
-   "vlan_spanning" = "off"
+   vlan_spanning = "off"
 }`

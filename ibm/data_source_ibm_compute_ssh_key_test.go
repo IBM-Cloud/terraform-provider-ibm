@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -6,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMComputeSSHKeyDataSource_basic(t *testing.T) {
@@ -27,7 +30,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_compute_ssh_key.testacc_ds_ssh_key", "public_key", publicKey),
 					resource.TestCheckResourceAttr("data.ibm_compute_ssh_key.testacc_ds_ssh_key", "notes", notes),
-					resource.TestMatchResourceAttr("data.ibm_compute_ssh_key.testacc_ds_ssh_key", "fingerprint", regexp.MustCompile("^[0-9a-f]{2}:")),
+					resource.TestMatchResourceAttr("data.ibm_compute_ssh_key.testacc_ds_ssh_key", "fingerprint", regexp.MustCompile("^[SHA256]")),
 				),
 			},
 		},

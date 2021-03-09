@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -5,14 +8,15 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 )
 
 func TestAccIBMPINetworkPortAttachbasic(t *testing.T) {
+	t.Skip()
 	name := fmt.Sprintf("tf-pi-network-port-attach-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -6,7 +9,7 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -59,6 +62,11 @@ func dataSourceIBMISImages() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The CRN for this image",
+						},
+						isImageCheckSum: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The SHA256 Checksum for this image",
 						},
 						isImageEncryptionKey: {
 							Type:        schema.TypeString,
@@ -170,6 +178,9 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 			"visibility":   *image.Visibility,
 			"os":           *image.OperatingSystem.Name,
 			"architecture": *image.OperatingSystem.Architecture,
+		}
+		if image.File != nil && image.File.Checksums != nil {
+			l[isImageCheckSum] = *image.File.Checksums.Sha256
 		}
 		if image.Encryption != nil {
 			l["encryption"] = *image.Encryption

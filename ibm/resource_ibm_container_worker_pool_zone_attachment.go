@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -7,8 +10,8 @@ import (
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceIBMContainerWorkerPoolZoneAttachment() *schema.Resource {
@@ -193,7 +196,6 @@ func resourceIBMContainerWorkerPoolZoneAttachmentRead(d *schema.ResourceData, me
 			d.Set("zone", zone.ID)
 			d.Set("cluster", cluster)
 			d.Set("worker_pool", workerPool)
-			d.Set("region", workerPoolRes.Region)
 
 			break
 		}

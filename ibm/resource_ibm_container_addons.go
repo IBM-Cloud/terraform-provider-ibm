@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -6,11 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/hashcode"
 )
 
 func resourceIBMContainerAddOns() *schema.Resource {
@@ -409,6 +413,7 @@ func resourceIBMContainerAddonsHash(v interface{}) int {
 	var buf bytes.Buffer
 	a := v.(map[string]interface{})
 	buf.WriteString(fmt.Sprintf("%s-", a["name"].(string)))
+	buf.WriteString(fmt.Sprintf("%s-", a["version"].(string)))
 
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }

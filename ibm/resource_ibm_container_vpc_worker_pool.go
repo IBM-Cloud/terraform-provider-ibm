@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -6,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -350,7 +353,7 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 	d.Set("worker_pool_name", workerPool.PoolName)
 	d.Set("flavor", workerPool.Flavor)
 	d.Set("worker_count", workerPool.WorkerCount)
-	d.Set("provider", workerPool.Provider)
+	// d.Set("provider", workerPool.Provider)
 	d.Set("labels", IgnoreSystemLabels(workerPool.Labels))
 	d.Set("zones", zones)
 	d.Set("resource_group_id", cls.ResourceGroupID)

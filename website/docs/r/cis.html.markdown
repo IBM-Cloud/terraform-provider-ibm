@@ -51,7 +51,7 @@ The following arguments are supported:
 * `name` - (Required, string) A descriptive name used to identify the CIS instance.
 * `plan` - (Required, string) The name of the plan type for Cloud Internet Services. You can retrieve the value by running the `ibmcloud catalog service internet-svcs` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 * `location` - (Required, string) Target location or environment to create the CIS instance.
-* `resource_group_id` - (Optional, string) The ID of the resource group where you want to create the service. You can retrieve the value from data source `ibm_resource_group`. If not provided creates the service in default resource group.
+* `resource_group_id` - (Optional, Forces New Resource, string) The ID of the resource group where you want to create the service. You can retrieve the value from data source `ibm_resource_group`. If not provided creates the service in default resource group.
 * `tags` - (Optional, array of strings) Tags associated with the instance.
 
 ## Attribute Reference

@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -5,27 +8,29 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMContainerALBCert_Basic(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	secretName := fmt.Sprintf("terraform-secret%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("tf-container-alb-%d", acctest.RandIntRange(10, 100))
+	secretName := fmt.Sprintf("tf-container-alb-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMContainerALBCertDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMContainerALBCertBasic(clusterName, secretName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_alb_cert.cert", "secret_name", secretName),
 					resource.TestCheckResourceAttr(
 						"ibm_container_alb_cert.cert", "cert_crn", certCRN),
+					resource.TestCheckResourceAttr(
+						"ibm_container_alb_cert.cert", "namespace", "ibm-cert-store"),
 				),
 			},
 			{
@@ -35,28 +40,15 @@ func TestAccIBMContainerALBCert_Basic(t *testing.T) {
 						"ibm_container_alb_cert.cert", "secret_name", secretName),
 					resource.TestCheckResourceAttr(
 						"ibm_container_alb_cert.cert", "cert_crn", updatedCertCRN),
+					resource.TestCheckResourceAttr(
+						"ibm_container_alb_cert.cert", "namespace", "ibm-cert-store"),
 				),
 			},
-		},
-	})
-}
-func TestAccIBMContainerALBCert_Namespace(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	secretName := fmt.Sprintf("terraform-secret%d", acctest.RandIntRange(10, 100))
-	namespaceName := "ibm-cert-store"
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMContainerALBCertDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMContainerALBCertNameSpace(clusterName, secretName, namespaceName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"ibm_container_alb_cert.cert", "secret_name", secretName),
-					resource.TestCheckResourceAttr(
-						"ibm_container_alb_cert.cert", "cert_crn", certCRN),
-				),
+			{
+				ResourceName:            "ibm_container_alb_cert.cert",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"region", "issuer_name"},
 			},
 		},
 	})
@@ -104,33 +96,15 @@ resource "ibm_container_cluster" "testacc_cluster" {
   hardware          = "shared"
   public_vlan_id    = "%s"
   private_vlan_id   = "%s"
+  wait_till       = "MasterNodeReady"
 }
 
 resource "ibm_container_alb_cert" "cert" {
   cert_crn    = "%s"
   secret_name = "%s"
   cluster_id  = ibm_container_cluster.testacc_cluster.id
+  namespace = "ibm-cert-store"
 }`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, certCRN, secretName)
-}
-
-func testAccCheckIBMContainerALBCertNameSpace(clusterName, secretName, namespaceName string) string {
-	return fmt.Sprintf(`
-resource "ibm_container_cluster" "testacc_cluster" {
-  name              = "%s"
-  datacenter        = "%s"
-  default_pool_size = 1
-  machine_type      = "%s"
-  hardware          = "shared"
-  public_vlan_id    = "%s"
-  private_vlan_id   = "%s"
-}
-
-resource "ibm_container_alb_cert" "cert" {
-  cert_crn    = "%s"
-  secret_name = "%s"
-  cluster_id  = ibm_container_cluster.testacc_cluster.id
-  namespace = "%s"
-}`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, certCRN, secretName, namespaceName)
 }
 
 func testAccCheckIBMContainerALBCertUpdate(clusterName, secretName string) string {
@@ -143,11 +117,13 @@ resource "ibm_container_cluster" "testacc_cluster" {
   hardware          = "shared"
   public_vlan_id    = "%s"
   private_vlan_id   = "%s"
+  wait_till       = "MasterNodeReady"
 }
 
 resource "ibm_container_alb_cert" "cert" {
   cert_crn    = "%s"
   secret_name = "%s"
   cluster_id  = ibm_container_cluster.testacc_cluster.id
+  namespace = "ibm-cert-store"
 }`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, updatedCertCRN, secretName)
 }

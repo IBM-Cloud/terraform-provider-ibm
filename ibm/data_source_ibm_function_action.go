@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -5,7 +8,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIBMFunctionAction() *schema.Resource {
@@ -120,7 +123,7 @@ func dataSourceIBMFunctionAction() *schema.Resource {
 }
 
 func dataSourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -130,7 +133,7 @@ func dataSourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 	namespace := d.Get("namespace").(string)
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -157,7 +160,7 @@ func dataSourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) e
 
 	d.Set("namespace", namespace)
 	d.Set("limits", flattenLimits(action.Limits))
-	d.Set("exec", flattenExec(action.Exec))
+	d.Set("exec", flattenExec(action.Exec, d))
 	d.Set("publish", action.Publish)
 	d.Set("version", action.Version)
 	d.Set("action_id", action.Name)
@@ -174,12 +177,12 @@ func dataSourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) e
 	}
 	d.Set("parameters", parameters)
 
-	targetUrl, err := action.ActionURL(wskClient.Config.Host, "/api", wskClient.Config.Version, pkgName)
+	targetURL, err := action.ActionURL(wskClient.Config.Host, "/api", wskClient.Config.Version, pkgName)
 	if err != nil {
 		log.Printf(
 			"An error occured during reading of action (%s) targetURL : %s", d.Id(), err)
 	}
-	d.Set("target_endpoint_url", targetUrl)
+	d.Set("target_endpoint_url", targetURL)
 
 	return nil
 }

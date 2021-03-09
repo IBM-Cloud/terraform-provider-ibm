@@ -1,10 +1,13 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIBMISInstanceGroup() *schema.Resource {
@@ -32,7 +35,7 @@ func dataSourceIBMISInstanceGroup() *schema.Resource {
 			},
 
 			"resource_group": {
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Resource group ID",
 			},
@@ -100,9 +103,11 @@ func dataSourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) 
 		}
 		start = GetNext(instanceGroupsCollection.Next)
 		allrecs = append(allrecs, instanceGroupsCollection.InstanceGroups...)
+
 		if start == "" {
 			break
 		}
+
 	}
 
 	for _, instanceGroup := range allrecs {
@@ -120,7 +125,7 @@ func dataSourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) 
 				subnets = append(subnets, string(*(instanceGroup.Subnets[i].ID)))
 			}
 			if instanceGroup.LoadBalancerPool != nil {
-				d.Set("load_balancer_pool", *instanceGroup.LoadBalancerPool)
+				d.Set("load_balancer_pool", *instanceGroup.LoadBalancerPool.ID)
 			}
 			d.Set("subnets", subnets)
 			managers := make([]string, 0)

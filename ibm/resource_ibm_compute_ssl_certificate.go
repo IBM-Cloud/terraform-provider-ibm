@@ -1,13 +1,15 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
 	"log"
-
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
 	"github.com/softlayer/softlayer-go/sl"
@@ -156,12 +158,16 @@ func resourceIBMComputeSSLCertificateRead(d *schema.ResourceData, meta interface
 	}
 	d.Set("common_name", *cert.CommonName)
 	d.Set("organization_name", *cert.OrganizationName)
-	d.Set("validity_begin", *cert.ValidityBegin)
+	validityBegin := *cert.ValidityBegin
+	d.Set("validity_begin", validityBegin.String())
 	d.Set("validity_days", *cert.ValidityDays)
-	d.Set("validity_end", *cert.ValidityEnd)
+	validityEnd := *cert.ValidityEnd
+	d.Set("validity_end", validityEnd.String())
 	d.Set("key_size", *cert.KeySize)
-	d.Set("create_date", *cert.CreateDate)
-	d.Set("modify_date", *cert.ModifyDate)
+	createDate := *cert.CreateDate
+	d.Set("create_date", createDate.String())
+	modifyDate := *cert.ModifyDate
+	d.Set("modify_date", modifyDate.String())
 
 	return nil
 }

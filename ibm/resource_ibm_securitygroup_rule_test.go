@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -5,11 +8,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/softlayer/softlayer-go/services"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 )
 
 func TestAccIBMSecurityGroupRule_basic(t *testing.T) {

@@ -1,6 +1,10 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -10,10 +14,10 @@ import (
 	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -40,7 +44,7 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -831,7 +835,6 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 
 	d.Set("name", cls.Name)
 	d.Set("crn", cls.CRN)
-	d.Set("disable_auto_update", cls.DisableAutoUpdate)
 	d.Set("master_status", cls.Lifecycle.MasterStatus)
 	d.Set("zones", zones)
 	if strings.HasSuffix(cls.MasterKubeVersion, "_openshift") {
@@ -849,7 +852,6 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("service_subnet", cls.ServiceSubnet)
 	d.Set("pod_subnet", cls.PodSubnet)
 	d.Set("state", cls.State)
-	d.Set("region", cls.Region)
 	d.Set("ingress_hostname", cls.Ingress.HostName)
 	d.Set("ingress_secret", cls.Ingress.SecretName)
 	d.Set("albs", flattenVpcAlbs(albs, "all"))

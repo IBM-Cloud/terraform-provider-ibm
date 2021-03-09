@@ -1,15 +1,19 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"errors"
 	"fmt"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"log"
 	"strings"
 	"testing"
+
+	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMISFlowLog_basic(t *testing.T) {
@@ -107,16 +111,9 @@ func testAccCheckIBMISFlowLogConfig(vpcname, name, flowlogname, sshname, publicK
 		region_location      = "%s"
 		storage_class        = "%s"
 	}	  
-
-	resource "ibm_iam_authorization_policy" "policy" {
-		source_service_name  = "is"
-		source_resource_type = "flow-log-collector"
-		target_service_name  = "cloud-object-storage"
-		roles                = ["Writer"]
-	  }
-
+	// Authorisation policy is required between vpc Flowlogs and Object Storage
+	
 	resource "ibm_is_flow_log" "test_flow_log" {
-		depends_on = [ibm_iam_authorization_policy.policy]
 		name    = "%s"
 		target = ibm_is_instance.testacc_instance.id
 		storage_bucket = ibm_cos_bucket.bucket2.bucket_name

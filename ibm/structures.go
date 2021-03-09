@@ -1,12 +1,18 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
+	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
+	"path"
 	"reflect"
 	"strconv"
 	"strings"
@@ -15,7 +21,7 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/apache/openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
 
@@ -746,12 +752,37 @@ func flattenLimits(in *whisk.Limits) []interface{} {
 }
 
 func expandExec(execs []interface{}) *whisk.Exec {
+	var code string
+	var document []byte
 	for _, exec := range execs {
 		e, _ := exec.(map[string]interface{})
+		code_path := e["code_path"].(string)
+		if code_path != "" {
+			ext := path.Ext(code_path)
+			if strings.ToLower(ext) == ".zip" {
+				data, err := ioutil.ReadFile(code_path)
+				if err != nil {
+					log.Println("Error reading file", err)
+					return &whisk.Exec{}
+				}
+				sEnc := b64.StdEncoding.EncodeToString([]byte(data))
+				code = sEnc
+			} else {
+				data, err := ioutil.ReadFile(code_path)
+				if err != nil {
+					log.Println("Error reading file", err)
+					return &whisk.Exec{}
+				}
+				document = data
+				code = string(document)
+			}
+		} else {
+			code = e["code"].(string)
+		}
 		obj := &whisk.Exec{
 			Image:      e["image"].(string),
 			Init:       e["init"].(string),
-			Code:       ptrToString(e["code"].(string)),
+			Code:       ptrToString(code),
 			Kind:       e["kind"].(string),
 			Main:       e["main"].(string),
 			Components: expandStringList(e["components"].([]interface{})),
@@ -762,15 +793,21 @@ func expandExec(execs []interface{}) *whisk.Exec {
 	return &whisk.Exec{}
 }
 
-func flattenExec(in *whisk.Exec) []interface{} {
+func flattenExec(in *whisk.Exec, d *schema.ResourceData) []interface{} {
+	code_data := 4194304 // length of 'code' parameter should be always <= 4MB data
 	att := make(map[string]interface{})
+	// open-whisk SDK will not return the value for code_path
+	// Hence using d.GetOk method to setback the code_path value.
+	if cPath, ok := d.GetOk("exec.0.code_path"); ok {
+		att["code_path"] = cPath.(string)
+	}
 	if in.Image != "" {
 		att["image"] = in.Image
 	}
 	if in.Init != "" {
 		att["init"] = in.Init
 	}
-	if in.Code != nil {
+	if in != nil && in.Code != nil && len(*in.Code) <= code_data {
 		att["code"] = *in.Code
 	}
 	if in.Kind != "" {

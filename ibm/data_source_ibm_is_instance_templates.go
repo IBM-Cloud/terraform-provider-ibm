@@ -1,10 +1,13 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -220,6 +223,14 @@ func dataSourceIBMISInstanceTemplates() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
+									isInstanceTemplateBootSize: {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									isInstanceTemplateBootProfile: {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
 								},
 							},
 						},
@@ -343,7 +354,7 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 				volumeAttach[isInstanceTemplateVolAttName] = *volume.Name
 				volumeAttach[isInstanceTemplateDeleteVolume] = *volume.DeleteVolumeOnInstanceDelete
 				volumeIntf := volume.Volume
-				volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext)
+				volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentVolumePrototypeInstanceContext)
 				volumeAttach[isInstanceTemplateVolAttVolume] = volumeInst.Name
 				interfacesList = append(interfacesList, volumeAttach)
 			}
@@ -353,10 +364,19 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 		if instance.BootVolumeAttachment != nil {
 			bootVolList := make([]map[string]interface{}, 0)
 			bootVol := map[string]interface{}{}
-			bootVol[isInstanceTemplatesName] = *instance.BootVolumeAttachment.Name
+
 			bootVol[isInstanceTemplatesDeleteVol] = *instance.BootVolumeAttachment.DeleteVolumeOnInstanceDelete
-			volumeIntf := instance.BootVolumeAttachment.Volume
-			bootVol[isInstanceTemplatesVol] = volumeIntf.Name
+			if instance.BootVolumeAttachment.Volume != nil {
+				volumeIntf := instance.BootVolumeAttachment.Volume
+				bootVol[isInstanceTemplatesName] = volumeIntf.Name
+				bootVol[isInstanceTemplatesVol] = volumeIntf.Name
+				bootVol[isInstanceTemplateBootSize] = volumeIntf.Capacity
+				if instance.BootVolumeAttachment.Volume.Profile != nil {
+					volProfIntf := instance.BootVolumeAttachment.Volume.Profile
+					volProfInst := volProfIntf.(*vpcv1.VolumeProfileIdentity)
+					bootVol[isInstanceTemplateBootProfile] = volProfInst.Name
+				}
+			}
 			bootVolList = append(bootVolList, bootVol)
 			template[isInstanceTemplatesBootVolumeAttachment] = bootVolList
 		}

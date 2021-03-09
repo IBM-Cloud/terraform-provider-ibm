@@ -1,10 +1,13 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIBMISInstanceGroupManager() *schema.Resource {
@@ -93,6 +96,7 @@ func dataSourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interf
 		}
 		start = GetNext(instanceGroupManagerCollections.Next)
 		allrecs = append(allrecs, instanceGroupManagerCollections.Managers...)
+
 		if start == "" {
 			break
 		}
@@ -110,9 +114,12 @@ func dataSourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interf
 			d.Set("manager_type", *instanceGroupManager.ManagerType)
 			d.Set("manager_id", *instanceGroupManager.ID)
 			policies := make([]string, 0)
-			for i := 0; i < len(instanceGroupManager.Policies); i++ {
-				policies = append(policies, string(*(instanceGroupManager.Policies[i].ID)))
+			if instanceGroupManager.Policies != nil {
+				for i := 0; i < len(instanceGroupManager.Policies); i++ {
+					policies = append(policies, string(*(instanceGroupManager.Policies[i].ID)))
+				}
 			}
+
 			d.Set("policies", policies)
 			return nil
 		}

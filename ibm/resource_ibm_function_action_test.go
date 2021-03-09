@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -7,9 +10,9 @@ import (
 	"testing"
 
 	"github.com/apache/openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
@@ -638,7 +641,7 @@ func testAccCheckFunctionActionExists(n string, obj *whisk.Action) resource.Test
 		namespace := parts[0]
 		name := parts[1]
 
-		client, err := testAccProvider.Meta().(ClientSession).FunctionClient()
+		functionNamespaceAPI, err := testAccProvider.Meta().(ClientSession).FunctionIAMNamespaceAPI()
 		if err != nil {
 			return err
 		}
@@ -647,7 +650,8 @@ func testAccCheckFunctionActionExists(n string, obj *whisk.Action) resource.Test
 		if err != nil {
 			return err
 		}
-		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
+
+		client, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 		if err != nil {
 			return err
 
@@ -664,7 +668,7 @@ func testAccCheckFunctionActionExists(n string, obj *whisk.Action) resource.Test
 }
 
 func testAccCheckFunctionActionDestroy(s *terraform.State) error {
-	client, err := testAccProvider.Meta().(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := testAccProvider.Meta().(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -686,7 +690,7 @@ func testAccCheckFunctionActionDestroy(s *terraform.State) error {
 		namespace := parts[0]
 		name := parts[1]
 
-		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
+		client, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 		if err != nil && strings.Contains(err.Error(), "is not in the list of entitled namespaces") {
 			return nil
 		}
@@ -708,7 +712,7 @@ func testAccCheckFunctionActionDestroy(s *terraform.State) error {
 func testAccCheckIAMFunctionActionNodeJS(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -734,7 +738,7 @@ func testAccCheckIAMFunctionActionNodeJSWithParams(name, namespace string) strin
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -769,7 +773,7 @@ func testAccCheckIAMFunctionActionNodeJSWithParams(name, namespace string) strin
 func testAccCheckIAMFunctionActionNodeJSZip(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -793,7 +797,7 @@ func testAccCheckIAMFunctionActionNodeJSZip(name, namespace string) string {
 func testAccCheckIAMFunctionActionPython(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -817,7 +821,7 @@ func testAccCheckIAMFunctionActionPython(name, namespace string) string {
 func testAccCheckIAMFunctionActionPythonZip(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -831,7 +835,7 @@ func testAccCheckIAMFunctionActionPythonZip(name, namespace string) string {
 		namespace = ibm_function_namespace.namespace.name
 		exec {
 		  kind = "python:3"
-		  code = base64encode("test-fixtures/pythonaction.zip")
+		  code_path = "test-fixtures/pythonaction.zip"
 		}
 	  }
 `, namespace, name)
@@ -841,7 +845,7 @@ func testAccCheckIAMFunctionActionPythonZip(name, namespace string) string {
 func testAccCheckIAMFunctionActionPHP(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -865,7 +869,7 @@ func testAccCheckIAMFunctionActionPHP(name, namespace string) string {
 func testAccCheckIAMFunctionActionPHPZip(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -878,8 +882,8 @@ func testAccCheckIAMFunctionActionPHPZip(name, namespace string) string {
 		name = "%s"
 		namespace = ibm_function_namespace.namespace.name
 		exec {
-		  kind = "php:7.1"
-		  code = base64encode("test-fixtures/phpaction.zip")
+		  kind 		= "php:7.1"
+		  code_path = "test-fixtures/phpaction.zip"
 		}
 	  }
 `, namespace, name)
@@ -889,7 +893,7 @@ func testAccCheckIAMFunctionActionPHPZip(name, namespace string) string {
 func testAccCheckIAMFunctionActionSwift(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -914,7 +918,7 @@ func testAccCheckIAMFunctionActionSwift(name, namespace string) string {
 func testAccCheckIAMFunctionActionSequence(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -938,7 +942,7 @@ func testAccCheckIAMFunctionActionSequence(name, namespace string) string {
 func testAccCheckIAMFunctionActionCreate(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -964,7 +968,7 @@ func testAccCheckIAMFunctionActionCreate(name, namespace string) string {
 func testAccCheckIAMFunctionActionUpdate(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -1005,7 +1009,7 @@ func testAccCheckIAMFunctionActionUpdate(name, namespace string) string {
 func testAccCheckIAMFunctionActionImport(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {

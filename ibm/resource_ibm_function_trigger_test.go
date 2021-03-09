@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -7,9 +10,9 @@ import (
 	"testing"
 
 	"github.com/apache/openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
@@ -231,7 +234,7 @@ func testAccCheckFunctionTriggerExists(n string, obj *whisk.Trigger) resource.Te
 		namespace := parts[0]
 		name := parts[1]
 
-		client, err := testAccProvider.Meta().(ClientSession).FunctionClient()
+		functionNamespaceAPI, err := testAccProvider.Meta().(ClientSession).FunctionIAMNamespaceAPI()
 		if err != nil {
 			return err
 		}
@@ -240,7 +243,8 @@ func testAccCheckFunctionTriggerExists(n string, obj *whisk.Trigger) resource.Te
 		if err != nil {
 			return err
 		}
-		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
+
+		client, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 		if err != nil {
 			return err
 
@@ -257,7 +261,7 @@ func testAccCheckFunctionTriggerExists(n string, obj *whisk.Trigger) resource.Te
 }
 
 func testAccCheckFunctionTriggerDestroy(s *terraform.State) error {
-	client, err := testAccProvider.Meta().(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := testAccProvider.Meta().(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -279,7 +283,7 @@ func testAccCheckFunctionTriggerDestroy(s *terraform.State) error {
 		namespace := parts[0]
 		name := parts[1]
 
-		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
+		client, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 		if err != nil && strings.Contains(err.Error(), "is not in the list of entitled namespaces") {
 			return nil
 		}
@@ -300,7 +304,7 @@ func testAccCheckFunctionTriggerDestroy(s *terraform.State) error {
 func testAccCheckIAMFunctionTriggerCreate(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -322,7 +326,7 @@ func testAccCheckIAMFunctionTriggerUpdate(name, namespace string) string {
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -363,7 +367,7 @@ func testAccCheckIAMFunctionTriggerUpdate(name, namespace string) string {
 func testAccCheckIAMFunctionTriggerFeedCreate(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -407,7 +411,7 @@ func testAccCheckIAMFunctionTriggerFeedCreate(name, namespace string) string {
 func testAccCheckIAMFunctionTriggerFeedUpdate(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -464,7 +468,7 @@ func testAccCheckIAMFunctionTriggerFeedUpdate(name, namespace string) string {
 func testAccCheckIAMFunctionTriggerImport(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {

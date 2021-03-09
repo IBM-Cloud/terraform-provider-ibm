@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -44,12 +47,12 @@ import (
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/dgrijalva/jwt-go"
 	slsession "github.com/softlayer/softlayer-go/session"
-	ns "github.ibm.com/ibmcloud/namespace-go-sdk/ibmcloudfunctionsnamespaceapiv1"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
@@ -59,6 +62,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	registryv1 "github.com/IBM-Cloud/bluemix-go/api/container/registryv1"
+	"github.com/IBM-Cloud/bluemix-go/api/functions"
 	"github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/hpcs"
@@ -83,6 +87,7 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -209,7 +214,7 @@ type ClientSession interface {
 	DirectlinkProviderV2API() (*dlProviderV2.DirectLinkProviderV2, error)
 	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
 	HpcsEndpointAPI() (hpcs.HPCSV2, error)
-	IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1, error)
+	FunctionIAMNamespaceAPI() (functions.FunctionServiceAPI, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
 	CisDNSRecordBulkClientSession() (*cisdnsbulkv1.DnsRecordBulkV1, error)
@@ -233,6 +238,8 @@ type ClientSession interface {
 	CisRangeAppClientSession() (*cisrangeappv1.RangeApplicationsV1, error)
 	CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1, error)
 	IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
+	ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error)
+	CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error)
 }
 
 type clientSession struct {
@@ -351,8 +358,8 @@ type clientSession struct {
 	transitgatewayAPI *tg.TransitGatewayApisV1
 	transitgatewayErr error
 
-	iamNamespaceAPI *ns.IbmCloudFunctionsNamespaceAPIV1
-	iamNamespaceErr error
+	functionIAMNamespaceAPI functions.FunctionServiceAPI
+	functionIAMNamespaceErr error
 
 	// CIS Zones
 	cisZonesErr      error
@@ -444,6 +451,18 @@ type clientSession struct {
 	//IAM Identity Option
 	iamIdentityErr error
 	iamIdentityAPI *iamidentity.IamIdentityV1
+
+	//Resource Manager Option
+	resourceManagerErr error
+	resourceManagerAPI *resourcemanager.ResourceManagerV2
+
+	//Catalog Management Option
+	catalogManagementClient    *catalogmanagementv1.CatalogManagementV1
+	catalogManagementClientErr error
+}
+
+func (session clientSession) CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error) {
+	return session.catalogManagementClient, session.catalogManagementClientErr
 }
 
 // BluemixAcccountAPI ...
@@ -635,8 +654,8 @@ func (sess clientSession) PrivateDNSClientSession() (*dns.DnsSvcsV1, error) {
 
 // Session to the Namespace cloud function
 
-func (sess clientSession) IAMNamespaceAPI() (*ns.IbmCloudFunctionsNamespaceAPIV1, error) {
-	return sess.iamNamespaceAPI, sess.iamNamespaceErr
+func (sess clientSession) FunctionIAMNamespaceAPI() (functions.FunctionServiceAPI, error) {
+	return sess.functionIAMNamespaceAPI, sess.functionIAMNamespaceErr
 }
 
 // CIS Zones Service
@@ -820,6 +839,11 @@ func (sess clientSession) IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
 	return sess.iamIdentityAPI, sess.iamIdentityErr
 }
 
+// ResourceMAanger Session
+func (sess clientSession) ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error) {
+	return sess.resourceManagerAPI, sess.resourceManagerErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -873,7 +897,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.dlProviderErr = errEmptyBluemixCredentials
 		session.cosConfigErr = errEmptyBluemixCredentials
 		session.transitgatewayErr = errEmptyBluemixCredentials
-		session.iamNamespaceErr = errEmptyBluemixCredentials
+		session.functionIAMNamespaceErr = errEmptyBluemixCredentials
 		session.cisDNSErr = errEmptyBluemixCredentials
 		session.cisDNSBulkErr = errEmptyBluemixCredentials
 		session.cisGLBPoolErr = errEmptyBluemixCredentials
@@ -908,6 +932,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 				if err == nil || !isRetryable(err) {
 					break
 				}
+				time.Sleep(c.RetryDelay)
+				log.Printf("Retrying IAM Authentication %d", count)
 				err = authenticateAPIKey(sess.BluemixSession)
 			}
 			if err != nil {
@@ -923,6 +949,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 				if err == nil || !isRetryable(err) {
 					break
 				}
+				time.Sleep(c.RetryDelay)
+				log.Printf("Retrying CF Authentication %d", count)
 				err = authenticateCF(sess.BluemixSession)
 			}
 			if err != nil {
@@ -938,15 +966,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 				if err == nil || !isRetryable(err) {
 					break
 				}
+				time.Sleep(c.RetryDelay)
+				log.Printf("Retrying refresh token %d", count)
 				err = refreshToken(sess.BluemixSession)
 			}
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("Error occured while refreshing the token: %q", err)
 			}
 		}
 
 	}
-	userConfig, err := fetchUserDetails(sess.BluemixSession, c.Generation, c.RetryCount)
+	userConfig, err := fetchUserDetails(sess.BluemixSession, c.Generation, c.RetryCount, c.RetryDelay)
 	if err != nil {
 		session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
 	}
@@ -1030,6 +1060,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.kmsAPI = kmsAPIclient
 
 	var authenticator core.Authenticator
+
 	if c.BluemixAPIKey != "" {
 		authenticator = &core.IamAuthenticator{
 			ApiKey: c.BluemixAPIKey,
@@ -1043,6 +1074,26 @@ func (c *Config) ClientSession() (interface{}, error) {
 		authenticator = &core.BearerTokenAuthenticator{
 			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
 		}
+	}
+
+	// Construct an "options" struct for creating the service client.
+	catalogManagementURL := "https://cm.globalcatalog.cloud.ibm.com/api/v1-beta"
+	catalogManagementClientOptions := &catalogmanagementv1.CatalogManagementV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT"}, catalogManagementURL),
+		Authenticator: authenticator,
+	}
+
+	// Construct the service client.
+	session.catalogManagementClient, err = catalogmanagementv1.NewCatalogManagementV1(catalogManagementClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.catalogManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.catalogManagementClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.catalogManagementClientErr = fmt.Errorf("Error occurred while configuring Catalog Management API service: %q", err)
 	}
 
 	vpcclassicurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
@@ -1182,6 +1233,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.certManagementAPI = certManagementAPI
 
+	namespaceFunction, err := functions.New(sess.BluemixSession)
+	if err != nil {
+		session.functionIAMNamespaceErr = fmt.Errorf("Error occured while configuring Cloud Funciton Service : %q", err)
+	}
+	session.functionIAMNamespaceAPI = namespaceFunction
+
 	apicurl := fmt.Sprintf("https://api.%s.apigw.cloud.ibm.com/controller", c.Region)
 	APIGatewayControllerAPIV1Options := &apigateway.ApiGatewayControllerApiV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_API_GATEWAY_ENDPOINT"}, apicurl),
@@ -1193,7 +1250,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.apigatewayAPI = apigatewayAPI
 
-	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, false, c.BluemixTimeout, session.bmxUserDetails.userAccount, c.Zone)
+	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, false, (c.BluemixTimeout * 10000000000), session.bmxUserDetails.userAccount, c.Zone)
 	if err != nil {
 		session.ibmpiConfigErr = err
 		return nil, err
@@ -1243,17 +1300,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.transitgatewayAPI, session.transitgatewayErr = tg.NewTransitGatewayApisV1(transitgatewayOptions)
 	if session.transitgatewayErr != nil {
 		session.transitgatewayErr = fmt.Errorf("Error occured while configuring Transit Gateway Service: %s", session.transitgatewayErr)
-	}
-
-	cfcurl := fmt.Sprintf("https://%s.functions.cloud.ibm.com/api/v1", c.Region)
-	ibmCloudFunctionsNamespaceOptions := &ns.IbmCloudFunctionsNamespaceOptions{
-		URL:           envFallBack([]string{"IBMCLOUD_NAMESPACE_API_ENDPOINT"}, cfcurl),
-		Authenticator: authenticator,
-	}
-
-	session.iamNamespaceAPI, err = ns.NewIbmCloudFunctionsNamespaceAPIV1(ibmCloudFunctionsNamespaceOptions)
-	if err != nil {
-		session.iamNamespaceErr = fmt.Errorf("Error occured while configuring IAM namespace service: %q", err)
 	}
 
 	// CIS Service instances starts here.
@@ -1585,6 +1631,19 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.iamIdentityAPI = iamIdentityClient
 
+	resourceManagerOptions := &resourcemanager.ResourceManagerV2Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_MANAGER_API_ENDPOINT"}, "https://resource-controller.cloud.ibm.com/v2"),
+	}
+	resourceManagerClient, err := resourcemanager.NewResourceManagerV2(resourceManagerOptions)
+	if err != nil {
+		session.resourceManagerErr = fmt.Errorf("Error occured while configuring Resource Manager service: %q", err)
+	}
+	if resourceManagerClient != nil {
+		resourceManagerClient.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+	session.resourceManagerAPI = resourceManagerClient
+
 	return session, nil
 }
 
@@ -1695,7 +1754,7 @@ func authenticateCF(sess *bxsession.Session) error {
 	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
 }
 
-func fetchUserDetails(sess *bxsession.Session, generation, retries int) (*UserConfig, error) {
+func fetchUserDetails(sess *bxsession.Session, generation, retries int, retryDelay time.Duration) (*UserConfig, error) {
 	config := sess.Config
 	user := UserConfig{}
 	var bluemixToken string
@@ -1713,8 +1772,10 @@ func fetchUserDetails(sess *bxsession.Session, generation, retries int) (*UserCo
 	if err != nil && !strings.Contains(err.Error(), "key is of invalid type") {
 		if retries > 0 {
 			if config.BluemixAPIKey != "" {
+				time.Sleep(retryDelay)
+				log.Printf("Retrying authentication for user details %d", retries)
 				_ = authenticateAPIKey(sess)
-				return fetchUserDetails(sess, generation, retries-1)
+				return fetchUserDetails(sess, generation, retries-1, retryDelay)
 			}
 		}
 		return &user, err

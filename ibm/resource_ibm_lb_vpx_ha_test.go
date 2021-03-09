@@ -1,9 +1,12 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMLbVpxHa_Basic(t *testing.T) {
@@ -66,7 +69,7 @@ var testAccCheckIBMLbVpxHaConfig_basic = `
 resource "ibm_compute_vm_instance" "vm1" {
     hostname = "vm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true
@@ -112,7 +115,7 @@ var testAccCheckIBMLbVpxHaWithTag = `
 resource "ibm_compute_vm_instance" "vm1" {
     hostname = "vm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true
@@ -160,7 +163,7 @@ var testAccCheckIBMLbVpxHaWithUpdatedTag = `
 resource "ibm_compute_vm_instance" "vm1" {
     hostname = "vm1"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true

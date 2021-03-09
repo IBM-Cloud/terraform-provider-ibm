@@ -1,11 +1,14 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMComputeVmInstanceDataSource_basic(t *testing.T) {
@@ -32,7 +35,7 @@ func testAccCheckIBMComputeVmInstanceDataSourceConfigBasic(hostname, domain stri
 	resource "ibm_compute_vm_instance" "tf-vg-acc-test" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true

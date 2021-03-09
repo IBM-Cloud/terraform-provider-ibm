@@ -81,4 +81,3 @@ variable "app_command" {
 variable "buildpack" {
   default = ""
 }
-

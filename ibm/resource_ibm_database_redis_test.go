@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -5,8 +8,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
@@ -110,7 +113,7 @@ func TestAccIBMDatabaseInstanceRedisImport(t *testing.T) {
 
 func TestAccIBMDatabaseInstanceRedisKP_Encrypt(t *testing.T) {
 	t.Parallel()
-	databaseResourceGroup := "Default"
+	databaseResourceGroup := "default"
 	var databaseInstanceOne string
 	rnd := fmt.Sprintf("tf-redis-%d", acctest.RandIntRange(10, 100))
 	testName := rnd

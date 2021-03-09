@@ -1,10 +1,13 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIBMISEndpointGateway() *schema.Resource {
@@ -126,7 +129,6 @@ func dataSourceIBMISEndpointGatewayRead(
 		if *result.Name == name {
 			d.SetId(*result.ID)
 			d.Set(isVirtualEndpointGatewayName, result.Name)
-			d.Set(isVirtualEndpointGatewayCreatedAt, result.CreatedAt)
 			d.Set(isVirtualEndpointGatewayHealthState, result.HealthState)
 			d.Set(isVirtualEndpointGatewayCreatedAt, result.CreatedAt.String())
 			d.Set(isVirtualEndpointGatewayLifecycleState, result.LifecycleState)

@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -12,8 +15,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/hashcode"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
 	"github.com/softlayer/softlayer-go/helpers/product"
@@ -400,7 +404,7 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 			},
 
 			"public_ipv6_subnet_id": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 
@@ -586,7 +590,7 @@ func resourceIBMBulkVMHostHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-",
 		m["hostname"].(string)))
 
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }
 
 func getNameForBlockDevice(i int) string {
@@ -1138,9 +1142,6 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("memory", *result.MaxMemory)
 	d.Set("dedicated_acct_host_only", *result.DedicatedAccountHostOnlyFlag)
 	d.Set("transient", *result.TransientGuestFlag)
-	if result.PrimaryIpAddress != nil {
-		d.Set("has_public_ip", *result.PrimaryIpAddress != "")
-	}
 	d.Set("ipv4_address", result.PrimaryIpAddress)
 	d.Set("ipv4_address_private", result.PrimaryBackendIpAddress)
 	if result.PrimaryNetworkComponent != nil && result.PrimaryNetworkComponent.PrimaryIpAddressRecord != nil {

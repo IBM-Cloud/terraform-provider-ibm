@@ -1,10 +1,13 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMPIInstanceIPDataSource_basic(t *testing.T) {
@@ -13,12 +16,10 @@ func TestAccIBMPIInstanceIPDataSource_basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMPIInstanceIPDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_pi_instance_ip.testacc_ds_instance_ip", "pi_network_name", pi_network_name),
-					resource.TestCheckResourceAttr("data.ibm_pi_instance_ip.testacc_ds_instance_ip", "pi_instance_name", pi_instance_name),
-					resource.TestCheckResourceAttr("data.ibm_pi_instance_ip.testacc_ds_instance_ip", "pi_cloud_instance_id", pi_cloud_instance_id),
+					resource.TestCheckResourceAttrSet("data.ibm_pi_instance_ip.testacc_ds_instance_ip", "id"),
 				),
 			},
 		},
@@ -27,11 +28,6 @@ func TestAccIBMPIInstanceIPDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMPIInstanceIPDataSourceConfig() string {
 	return fmt.Sprintf(`
-	resource "ibm_pi_network" "power_networks" {
-		pi_cloud_instance_id = "%[3]s"
-		pi_network_name      = "%[1]s"
-		pi_network_type      = "pub-vlan"
-	}
 data "ibm_pi_instance_ip" "testacc_ds_instance_ip" {
     pi_network_name = "%[1]s"
     pi_instance_name = "%[2]s"

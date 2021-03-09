@@ -136,7 +136,7 @@ The following arguments are supported:
 * `name` - (Required, string) A descriptive name used to identify the database instance. The name must not include spaces. 
 * `plan` - (Required, string) The name of the plan type for an IBM Cloud Database. The only currently supported value is "standard"
 * `location` - (Required, string) Any of the currently supported ICD regions. The IBM provider `location` in the provider definition also needs to be set to the same region as the target ICD region. The default provider region is `us-south`. The following regions are currently supported: `us-south`, `us-east`, `eu-gb`, `eu-de`, `au-syd`, `jp-tok`, `oslo01`.  
-* `resource_group_id` - (Optional, string) The ID of the resource group where you want to create the service. You can retrieve the value from data source `ibm_resource_group`. If not provided it creates the service in default resource group.
+* `resource_group_id` - (Optional, Forces New Resource, string) The ID of the resource group where you want to create the service. You can retrieve the value from data source `ibm_resource_group`. If not provided it creates the service in default resource group.
 * `tags` - (Optional, array of strings) Tags associated with the instance.
 * `service` - (Required, string) The ICD database type to be created. Only the following services are currently accepted: 
 `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`, `databases-for-mongodb`

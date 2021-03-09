@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -5,15 +8,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/mutexkv"
 )
 
 // This is a global MutexKV for use within this plugin.
-var ibmMutexKV = NewMutexKV()
+var ibmMutexKV = mutexkv.NewMutexKV()
 
-// Provider returns a terraform.ResourceProvider.
-func Provider() terraform.ResourceProvider {
+// Provider returns a *schema.Provider.
+func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"bluemix_api_key": {
@@ -506,8 +510,9 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dl_virtual_connection": resourceIBMDLGatewayVC(),
 			"ibm_dl_provider_gateway":   resourceIBMDLProviderGateway(),
 			//Added for Transit Gateway
-			"ibm_tg_gateway":    resourceIBMTransitGateway(),
-			"ibm_tg_connection": resourceIBMTransitGatewayConnection(),
+			"ibm_tg_gateway":           resourceIBMTransitGateway(),
+			"ibm_tg_connection":        resourceIBMTransitGatewayConnection(),
+			"ibm_cm_offering_instance": resourceIBMCmOfferingInstance(),
 		},
 
 		ConfigureFunc: providerConfigure,

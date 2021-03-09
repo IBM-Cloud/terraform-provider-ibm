@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -7,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
 )
@@ -251,7 +254,7 @@ resource "ibm_compute_autoscale_group" "sample-http-cluster-with-policy" {
         memory = 4096
         network_speed = 1000
         hourly_billing = true
-        os_reference_code = "DEBIAN_8_64"
+        os_reference_code = "DEBIAN_9_64"
         local_disk = false
         datacenter = "dal09"
     }
@@ -307,7 +310,7 @@ resource "ibm_compute_autoscale_group" "sample-http-cluster-with-policy" {
         memory = 4096
         network_speed = 1000
         hourly_billing = true
-        os_reference_code = "DEBIAN_8_64"
+        os_reference_code = "DEBIAN_9_64"
         local_disk = false
         datacenter = "dal09"
     }
@@ -355,7 +358,7 @@ resource "ibm_compute_autoscale_group" "sample-http-cluster-with-policy" {
         memory = 4096
         network_speed = 1000
         hourly_billing = true
-        os_reference_code = "DEBIAN_8_64"
+        os_reference_code = "DEBIAN_9_64"
         local_disk = false
         datacenter = "dal09"
     }
@@ -406,7 +409,7 @@ resource "ibm_compute_autoscale_group" "sample-http-cluster-with-policy" {
         memory = 4096
         network_speed = 1000
         hourly_billing = true
-        os_reference_code = "DEBIAN_8_64"
+        os_reference_code = "DEBIAN_9_64"
         local_disk = false
         datacenter = "dal09"
     }

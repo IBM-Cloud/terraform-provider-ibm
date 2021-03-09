@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -7,8 +10,8 @@ import (
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances"
 	"github.com/IBM-Cloud/power-go-client/power/models"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"log"
 	"time"

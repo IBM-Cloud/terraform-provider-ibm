@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -6,7 +9,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
 	"github.com/softlayer/softlayer-go/sl"
@@ -111,7 +114,7 @@ func resourceIBMDNSDomainRead(d *schema.ResourceData, meta interface{}) error {
 	// populate fields
 	d.Set("name", dns_domain.Name)
 	d.Set("serial", sl.Get(dns_domain.Serial, nil))
-	d.Set("update_date", sl.Get(dns_domain.UpdateDate, nil))
+	d.Set("update_date", sl.Get(dns_domain.UpdateDate.String(), nil))
 
 	// find a record with host @; that will have the current target.
 	for _, record := range dns_domain.ResourceRecords {

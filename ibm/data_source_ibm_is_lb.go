@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -7,7 +10,7 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -100,6 +103,12 @@ func dataSourceIBMISLB() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Load Balancer Host Name",
+			},
+
+			isLBLogging: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Logging of Load Balancer",
 			},
 
 			isLBListeners: {
@@ -379,6 +388,9 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 		if *lb.Name == name {
 			d.SetId(*lb.ID)
 			d.Set(isLBName, *lb.Name)
+			if lb.Logging != nil && lb.Logging.Datapath != nil {
+				d.Set(isLBLogging, *lb.Logging.Datapath.Active)
+			}
 			if *lb.IsPublic {
 				d.Set(isLBType, "public")
 			} else {

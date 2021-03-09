@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -5,8 +8,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/softlayer/softlayer-go/services"
 )
 
@@ -56,7 +59,7 @@ const testAccCheckIBMFirewallShared_basic = `
 resource "ibm_compute_vm_instance" "fwvm1" {
     hostname = "testing"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "sjc01"
     network_speed = 100
     hourly_billing = false

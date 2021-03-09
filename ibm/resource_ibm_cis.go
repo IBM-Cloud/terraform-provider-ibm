@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -7,12 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
-	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 const (
@@ -73,11 +76,11 @@ func resourceIBMCISInstance() *schema.Resource {
 			},
 
 			"resource_group_id": {
-				Description:      "The resource group id",
-				Optional:         true,
-				ForceNew:         true,
-				Type:             schema.TypeString,
-				DiffSuppressFunc: applyOnce,
+				Description: "The resource group id",
+				Optional:    true,
+				ForceNew:    true,
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 
 			"parameters": {

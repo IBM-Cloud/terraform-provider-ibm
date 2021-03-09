@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -8,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/apache/openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -147,7 +150,7 @@ func resourceIBMFuncPackageValidator() *ResourceValidator {
 }
 
 func resourceIBMFunctionPackageCreate(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -157,11 +160,12 @@ func resourceIBMFunctionPackageCreate(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 	namespace := d.Get("namespace").(string)
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return err
 
 	}
+
 	packageService := wskClient.Packages
 
 	name := d.Get("name").(string)
@@ -234,7 +238,7 @@ func resourceIBMFunctionPackageRead(d *schema.ResourceData, meta interface{}) er
 		d.SetId(fmt.Sprintf("%s:%s", namespace, packageID))
 	}
 
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -243,10 +247,10 @@ func resourceIBMFunctionPackageRead(d *schema.ResourceData, meta interface{}) er
 	if err != nil {
 		return err
 	}
-
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return err
+
 	}
 	packageService := wskClient.Packages
 
@@ -311,7 +315,7 @@ func resourceIBMFunctionPackageUpdate(d *schema.ResourceData, meta interface{}) 
 
 	namespace := parts[0]
 
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -320,10 +324,10 @@ func resourceIBMFunctionPackageUpdate(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return err
+
 	}
 
 	packageService := wskClient.Packages
@@ -383,7 +387,7 @@ func resourceIBMFunctionPackageDelete(d *schema.ResourceData, meta interface{}) 
 	namespace := parts[0]
 	packageID := parts[1]
 
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -392,10 +396,10 @@ func resourceIBMFunctionPackageDelete(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return err
+
 	}
 
 	packageService := wskClient.Packages
@@ -426,7 +430,7 @@ func resourceIBMFunctionPackageExists(d *schema.ResourceData, meta interface{}) 
 		d.SetId(fmt.Sprintf("%s:%s", namespace, packageID))
 	}
 
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return false, err
 	}
@@ -435,10 +439,10 @@ func resourceIBMFunctionPackageExists(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return false, err
 	}
-
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return false, err
+
 	}
 
 	packageService := wskClient.Packages

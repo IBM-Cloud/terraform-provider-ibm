@@ -35,6 +35,7 @@ data "ibm_iam_service_policy" "testacc_ds_service_policy" {
 The following arguments are supported:
 
 * `iam_service_id` - (Required, string) The UUID of the serviceID.
+* `sort` - (Optional, string) Single field sort query for policies.
 
 ## Attribute Reference
 

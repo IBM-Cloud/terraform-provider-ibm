@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -7,9 +10,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMISLB_basic(t *testing.T) {
@@ -41,6 +44,31 @@ func TestAccIBMISLB_basic(t *testing.T) {
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "name", name1),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISLB_logging(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMISLBDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMISLBLoggingCongig(vpcname, subnetname, ISZoneName, ISCIDR, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "logging", "true"),
 				),
 			},
 		},
@@ -207,6 +235,26 @@ func testAccCheckIBMISLBConfig(vpcname, subnetname, zone, cidr, name string) str
 	resource "ibm_is_lb" "testacc_LB" {
 		name = "%s"
 		subnets = [ibm_is_subnet.testacc_subnet.id]
+}`, vpcname, subnetname, zone, cidr, name)
+
+}
+
+func testAccCheckIBMISLBLoggingCongig(vpcname, subnetname, zone, cidr, name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+		logging = true
 }`, vpcname, subnetname, zone, cidr, name)
 
 }

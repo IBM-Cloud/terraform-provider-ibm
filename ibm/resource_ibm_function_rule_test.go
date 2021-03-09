@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -7,9 +10,9 @@ import (
 	"testing"
 
 	"github.com/apache/openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
@@ -175,7 +178,7 @@ func testAccCheckFunctionRuleExists(n string, obj *whisk.Rule) resource.TestChec
 		namespace := parts[0]
 		name := parts[1]
 
-		client, err := testAccProvider.Meta().(ClientSession).FunctionClient()
+		functionNamespaceAPI, err := testAccProvider.Meta().(ClientSession).FunctionIAMNamespaceAPI()
 		if err != nil {
 			return err
 		}
@@ -184,13 +187,14 @@ func testAccCheckFunctionRuleExists(n string, obj *whisk.Rule) resource.TestChec
 		if err != nil {
 			return err
 		}
-		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
+
+		wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 		if err != nil {
 			return err
 
 		}
 
-		rule, _, err := client.Rules.Get(name)
+		rule, _, err := wskClient.Rules.Get(name)
 		if err != nil {
 			return err
 		}
@@ -201,7 +205,7 @@ func testAccCheckFunctionRuleExists(n string, obj *whisk.Rule) resource.TestChec
 }
 
 func testAccCheckFunctionRuleDestroy(s *terraform.State) error {
-	client, err := testAccProvider.Meta().(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := testAccProvider.Meta().(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -223,7 +227,7 @@ func testAccCheckFunctionRuleDestroy(s *terraform.State) error {
 		namespace := parts[0]
 		name := parts[1]
 
-		client, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, client)
+		client, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 		if err != nil && strings.Contains(err.Error(), "is not in the list of entitled namespaces") {
 			return nil
 		}
@@ -245,7 +249,7 @@ func testAccCheckFunctionRuleDestroy(s *terraform.State) error {
 func testAccCheckIAMFunctionRuleCreate(actionName, triggerName, name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -306,7 +310,7 @@ func testAccCheckIAMFunctionRuleCreate(actionName, triggerName, name, namespace 
 func testAccCheckIAMFunctionRuleUpdate(updatedTriggerName, name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -342,7 +346,7 @@ func testAccCheckIAMFunctionRuleUpdate(updatedTriggerName, name, namespace strin
 func testAccCheckIAMFunctionRuleImport(triggerName, name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "Default"
+		name = "default"
 	}
 
 	resource "ibm_function_namespace" "namespace" {

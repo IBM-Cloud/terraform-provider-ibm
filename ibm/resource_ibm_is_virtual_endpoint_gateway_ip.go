@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -6,7 +9,7 @@ import (
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -140,7 +143,7 @@ func resourceIBMisVirtualEndpointGatewayIPRead(d *schema.ResourceData, meta inte
 	d.Set(isVirtualEndpointGatewayIPID, result.ID)
 	d.Set(isVirtualEndpointGatewayIPName, result.Name)
 	d.Set(isVirtualEndpointGatewayIPAddress, result.Address)
-	d.Set(isVirtualEndpointGatewayIPCreatedAt, result.CreatedAt)
+	d.Set(isVirtualEndpointGatewayIPCreatedAt, (result.CreatedAt).String())
 	d.Set(isVirtualEndpointGatewayIPResourceType, result.ResourceType)
 	d.Set(isVirtualEndpointGatewayIPAutoDelete, result.AutoDelete)
 	d.Set(isVirtualEndpointGatewayIPTarget,

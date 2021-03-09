@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -5,7 +8,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -154,7 +157,16 @@ func dataSourceIBMContainerVPCCluster() *schema.Resource {
 					},
 				},
 			},
-
+			"service_subnet": {
+				Type:        schema.TypeString,
+				Description: "Custom subnet CIDR to provide private IP addresses for services",
+				Computed:    true,
+			},
+			"pod_subnet": {
+				Type:        schema.TypeString,
+				Description: "Custom subnet CIDR to provide private IP addresses for pods",
+				Computed:    true,
+			},
 			"ingress_hostname": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -164,14 +176,16 @@ func dataSourceIBMContainerVPCCluster() *schema.Resource {
 				Computed:  true,
 				Sensitive: true,
 			},
-
 			"resource_group_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "ID of the resource group.",
 				Computed:    true,
 			},
-
+			"state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"public_service_endpoint": {
 				Type:     schema.TypeBool,
 				Computed: true,
@@ -219,7 +233,7 @@ func dataSourceIBMContainerVPCCluster() *schema.Resource {
 			},
 
 			"tags": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
@@ -371,12 +385,19 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 	}
 	apikeyConfig, err := apikeyAPI.GetApiKeyInfo(clusterID, v1targetEnv)
 	if err != nil {
-
 		return err
 	}
-	d.Set("api_key_id", apikeyConfig.ID)
-	d.Set("api_key_owner_name", apikeyConfig.Name)
-	d.Set("api_key_owner_email", apikeyConfig.Email)
+	if &apikeyConfig != nil {
+		if &apikeyConfig.Name != nil {
+			d.Set("api_key_id", apikeyConfig.ID)
+		}
+		if &apikeyConfig.ID != nil {
+			d.Set("api_key_owner_name", apikeyConfig.Name)
+		}
+		if &apikeyConfig.Email != nil {
+			d.Set("api_key_owner_email", apikeyConfig.Email)
+		}
+	}
 	d.Set(ResourceControllerURL, controller+"/kubernetes/clusters")
 	d.Set(ResourceName, cls.Name)
 	d.Set(ResourceCRN, cls.CRN)
