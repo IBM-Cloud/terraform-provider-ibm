@@ -42,21 +42,25 @@ func dataSourceIBMISVPC() *schema.Resource {
 
 			isVPCDefaultNetworkACLName: {
 				Type:         schema.TypeString,
-				Required:     false,
+				Optional:     true,
+				Computed:     true,
 				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCDefaultNetworkACLName),
 				Description:  "Default Network ACL name",
 			},
 
 			isVPCIDefaultSecurityGroupName: {
 				Type:         schema.TypeString,
-				Required:     false,
+				Optional:     true,
+				Computed:     true,
 				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCIDefaultSecurityGroupName),
 				Description:  "Default security group name",
 			},
 
 			isVPCDefaultRoutingTableName: {
 				Type:         schema.TypeString,
-				ValidateFunc: InvokeValidator("isVPCDefaultRoutingTableName", isVPCName),
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCDefaultRoutingTableName),
 				Description:  "Default routing table name",
 			},
 

@@ -40,6 +40,9 @@ The following arguments are supported:
 * `name` - (Required, string) The name of the VPC.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID where the VPC to be created
 * `tags` - (Optional, array of strings) Tags associated with the instance.
+* `default_network_acl_name` - (Optional, string) The name of the default network acl.
+* `default_security_group_name` - (Optional, string) The name of the default security group.
+* `default_routing_table_name` - (Optional, string) The name of the default routing table.
 
 ## Attribute Reference
 
@@ -73,6 +76,9 @@ The following attributes are exported:
     * `code` - The ICMP traffic code to allow.
     * `port_min` - The inclusive lower bound of TCP port range. 
     * `port_max` - The inclusive upper bound of TCP port range. 
+* `default_network_acl_name` - The name of the default network acl.
+* `default_security_group_name` - The name of the default security group.
+* `default_routing_table_name` - The name of the default routing table.
 
 
 ## Import

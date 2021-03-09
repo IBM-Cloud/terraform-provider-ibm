@@ -122,25 +122,25 @@ func resourceIBMISVPC() *schema.Resource {
 
 			isVPCDefaultNetworkACLName: {
 				Type:         schema.TypeString,
-				Required:     false,
-				ForceNew:     false,
+				Optional:     true,
+				Computed:     true,
 				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCDefaultNetworkACLName),
 				Description:  "Default Network ACL name",
 			},
 
 			isVPCIDefaultSecurityGroupName: {
 				Type:         schema.TypeString,
-				Required:     false,
-				ForceNew:     false,
+				Optional:     true,
+				Computed:     true,
 				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCIDefaultSecurityGroupName),
 				Description:  "Default security group name",
 			},
 
 			isVPCDefaultRoutingTableName: {
 				Type:         schema.TypeString,
-				Required:     false,
-				ForceNew:     false,
-				ValidateFunc: InvokeValidator("isVPCDefaultRoutingTableName", isVPCName),
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCDefaultRoutingTableName),
 				Description:  "Default routing table name",
 			},
 
@@ -516,28 +516,17 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 
 	defaultSGName := d.Get(isVPCIDefaultSecurityGroupName).(string)
 	if defaultSGName != "" {
-		sgUpdate(d, meta, *vpc.DefaultSecurityGroup.ID, defaultSGName, true)
+		sgNameUpdate(sess, *vpc.DefaultSecurityGroup.ID, defaultSGName)
 	}
 
 	defaultRTName := d.Get(isVPCDefaultRoutingTableName).(string)
 	if defaultRTName != "" {
-		updateVpcRoutingTableOptions := new(vpcv1.UpdateVPCRoutingTableOptions)
-		updateVpcRoutingTableOptions.VPCID = *&vpc.ID
-		updateVpcRoutingTableOptions.ID = *&vpc.DefaultRoutingTable.ID
-		routingTablePatchModel := new(vpcv1.RoutingTablePatch)
-		routingTablePatchModel.Name = &defaultRTName
-		routingTablePatchModelAsPatch, asPatchErr := routingTablePatchModel.AsPatch()
-		if asPatchErr != nil {
-			return fmt.Errorf("Error calling asPatch for RoutingTablePatchModel: %s", asPatchErr)
-		}
-		updateVpcRoutingTableOptions.RoutingTablePatch = routingTablePatchModelAsPatch
-		sess.UpdateVPCRoutingTable(updateVpcRoutingTableOptions)
-		//sess.UpdateVPCRoutingTable()
+		rtNameUpdate(sess, *vpc.ID, *vpc.DefaultRoutingTable.ID, defaultRTName)
 	}
 
 	defaultACLName := d.Get(isVPCDefaultNetworkACLName).(string)
 	if defaultACLName != "" {
-		nwaclUpdate(d, meta, *vpc.DefaultNetworkACL.ID, defaultACLName, true)
+		nwaclNameUpdate(sess, *vpc.DefaultNetworkACL.ID, defaultACLName)
 	}
 
 	log.Printf("[INFO] VPC : %s", *vpc.ID)
@@ -1371,4 +1360,58 @@ func resourceIBMVPCHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s",
 		strings.ToLower(v.(string))))
 	return hashcode.String(buf.String())
+}
+
+func nwaclNameUpdate(sess *vpcv1.VpcV1, id, name string) error {
+	updateNetworkACLOptions := &vpcv1.UpdateNetworkACLOptions{
+		ID: &id,
+	}
+	networkACLPatchModel := &vpcv1.NetworkACLPatch{
+		Name: &name,
+	}
+	networkACLPatch, err := networkACLPatchModel.AsPatch()
+	if err != nil {
+		return fmt.Errorf("Error calling asPatch for NetworkACLPatch: %s", err)
+	}
+	updateNetworkACLOptions.NetworkACLPatch = networkACLPatch
+	_, response, err := sess.UpdateNetworkACL(updateNetworkACLOptions)
+	if err != nil {
+		return fmt.Errorf("Error Updating Network ACL(%s) : %s\n%s", id, err, response)
+	}
+	return nil
+}
+
+func sgNameUpdate(sess *vpcv1.VpcV1, id, name string) error {
+	updateSecurityGroupOptions := &vpcv1.UpdateSecurityGroupOptions{
+		ID: &id,
+	}
+	securityGroupPatchModel := &vpcv1.SecurityGroupPatch{
+		Name: &name,
+	}
+	securityGroupPatch, err := securityGroupPatchModel.AsPatch()
+	if err != nil {
+		return fmt.Errorf("Error calling asPatch for SecurityGroupPatch: %s", err)
+	}
+	updateSecurityGroupOptions.SecurityGroupPatch = securityGroupPatch
+	_, response, err := sess.UpdateSecurityGroup(updateSecurityGroupOptions)
+	if err != nil {
+		return fmt.Errorf("Error Updating Security Group : %s\n%s", err, response)
+	}
+
+	return nil
+}
+
+func rtNameUpdate(sess *vpcv1.VpcV1, vpcID, id, name string) error {
+	updateVpcRoutingTableOptions := new(vpcv1.UpdateVPCRoutingTableOptions)
+	updateVpcRoutingTableOptions.VPCID = &vpcID
+	updateVpcRoutingTableOptions.ID = &id
+	routingTablePatchModel := new(vpcv1.RoutingTablePatch)
+	routingTablePatchModel.Name = &name
+	routingTablePatchModelAsPatch, asPatchErr := routingTablePatchModel.AsPatch()
+	if asPatchErr != nil {
+		return fmt.Errorf("Error calling asPatch for RoutingTablePatchModel: %s", asPatchErr)
+	}
+	updateVpcRoutingTableOptions.RoutingTablePatch = routingTablePatchModelAsPatch
+	sess.UpdateVPCRoutingTable(updateVpcRoutingTableOptions)
+	return nil
 }
