@@ -1,10 +1,13 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
 
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Data source to find all the policies for a serviceID
@@ -17,6 +20,11 @@ func dataSourceIBMIAMServicePolicy() *schema.Resource {
 				Description: "UUID of ServiceID",
 				Type:        schema.TypeString,
 				Required:    true,
+			},
+			"sort": {
+				Description: "Sort query for policies",
+				Type:        schema.TypeString,
+				Optional:    true,
 			},
 			"policies": {
 				Type:     schema.TypeList,
@@ -102,11 +110,17 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	policies, err := iampapClient.V1Policy().List(iampapv1.SearchParams{
+	query := iampapv1.SearchParams{
 		AccountID: userDetails.userAccount,
 		Type:      iampapv1.AccessPolicyType,
 		IAMID:     serviceID.IAMID,
-	})
+	}
+
+	if v, ok := d.GetOk("sort"); ok {
+		query.Sort = v.(string)
+	}
+
+	policies, err := iampapClient.V1Policy().List(query)
 	if err != nil {
 		return err
 	}

@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -5,10 +8,11 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceIBMPIKey() *schema.Resource {
@@ -40,7 +44,7 @@ func resourceIBMPIKey() *schema.Resource {
 			},
 			helpers.PIKeyDate: {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "Date info",
 			},
 
@@ -104,7 +108,7 @@ func resourceIBMPIKeyRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set(helpers.PIKeyName, sshkeydata.Name)
 	d.Set(helpers.PIKey, sshkeydata.SSHKey)
-	d.Set(helpers.PIKeyDate, sshkeydata.CreationDate)
+	d.Set(helpers.PIKeyDate, sshkeydata.CreationDate.String())
 	d.Set("key_id", sshkeydata.Name)
 	d.Set(helpers.PICloudInstanceId, powerinstanceid)
 

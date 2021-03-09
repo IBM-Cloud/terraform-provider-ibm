@@ -1,11 +1,14 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.ibm.com/ibmcloud/namespace-go-sdk/ibmcloudfunctionsnamespaceapiv1"
+	"github.com/IBM-Cloud/bluemix-go/api/functions"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -75,28 +78,28 @@ func resourceIBMFuncNamespaceValidator() *ResourceValidator {
 }
 
 func resourceIBMFunctionNamespaceCreate(d *schema.ResourceData, meta interface{}) error {
-	nsClient, err := meta.(ClientSession).IAMNamespaceAPI()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
 
-	createNamespaceOptions := &ibmcloudfunctionsnamespaceapiv1.CreateNamespaceOptions{}
+	createNamespaceOptions := functions.CreateNamespaceOptions{}
 
 	name := d.Get(funcNamespaceName).(string)
 	createNamespaceOptions.Name = &name
-	resource_group_id := d.Get(funcNamespaceResGrpId).(string)
-	createNamespaceOptions.ResourceGroupID = &resource_group_id
-	resource_plan_id := "functions-base-plan"
-	createNamespaceOptions.ResourcePlanID = &resource_plan_id
+	resourceGroupID := d.Get(funcNamespaceResGrpId).(string)
+	createNamespaceOptions.ResourceGroupID = &resourceGroupID
+	resourcePlanID := "functions-base-plan"
+	createNamespaceOptions.ResourcePlanID = &resourcePlanID
 
 	if _, ok := d.GetOk(funcNamespaceDesc); ok {
 		description := d.Get(funcNamespaceDesc).(string)
 		createNamespaceOptions.Description = &description
 	}
 
-	namespace, response, err := nsClient.CreateNamespace(createNamespaceOptions)
+	namespace, err := functionNamespaceAPI.Namespaces().CreateNamespace(createNamespaceOptions)
 	if err != nil {
-		return fmt.Errorf("Error Creating Namespace: %s\n%s", err, response)
+		return fmt.Errorf("Error Creating Namespace: %s", err)
 	}
 
 	d.SetId(*namespace.ID)
@@ -106,22 +109,20 @@ func resourceIBMFunctionNamespaceCreate(d *schema.ResourceData, meta interface{}
 }
 
 func resourceIBMFunctionNamespaceRead(d *schema.ResourceData, meta interface{}) error {
-	nsClient, err := meta.(ClientSession).IAMNamespaceAPI()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
 
-	ID := d.Id()
+	id := d.Id()
 
-	getOptions := &ibmcloudfunctionsnamespaceapiv1.GetNamespaceOptions{
-		ID: &ID,
+	getOptions := functions.GetNamespaceOptions{
+		ID: &id,
 	}
-	instance, response, err := nsClient.GetNamespace(getOptions)
+	instance, err := functionNamespaceAPI.Namespaces().GetNamespace(getOptions)
 	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
-		}
+		d.SetId("")
+		return nil
 	}
 
 	if instance.ID != nil {
@@ -146,15 +147,13 @@ func resourceIBMFunctionNamespaceRead(d *schema.ResourceData, meta interface{}) 
 }
 
 func resourceIBMFunctionNamespaceUpdate(d *schema.ResourceData, meta interface{}) error {
-	nsClient, err := meta.(ClientSession).IAMNamespaceAPI()
+	nsClient, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
 
 	ID := d.Id()
-
-	updateNamespaceOptions := &ibmcloudfunctionsnamespaceapiv1.UpdateNamespaceOptions{}
-
+	updateNamespaceOptions := functions.UpdateNamespaceOptions{}
 	if d.HasChange(funcNamespaceName) {
 		name := d.Get(funcNamespaceName).(string)
 		updateNamespaceOptions.Name = &name
@@ -166,9 +165,9 @@ func resourceIBMFunctionNamespaceUpdate(d *schema.ResourceData, meta interface{}
 	}
 
 	updateNamespaceOptions.ID = &ID
-	namespace, response, err := nsClient.UpdateNamespace(updateNamespaceOptions)
+	namespace, err := nsClient.Namespaces().UpdateNamespace(updateNamespaceOptions)
 	if err != nil {
-		return fmt.Errorf("Error Updating Namespace: %s\n%s", err, response)
+		return fmt.Errorf("Error Updating Namespace: %s", err)
 	}
 
 	log.Printf("[INFO] Updated namespace (IAM) : %s", *namespace.Name)
@@ -177,19 +176,15 @@ func resourceIBMFunctionNamespaceUpdate(d *schema.ResourceData, meta interface{}
 }
 
 func resourceIBMFunctionNamespaceDelete(d *schema.ResourceData, meta interface{}) error {
-	nsClient, err := meta.(ClientSession).IAMNamespaceAPI()
+	nsClient, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
 
 	ID := d.Id()
-
-	delOptions := &ibmcloudfunctionsnamespaceapiv1.DeleteNamespaceOptions{
-		ID: &ID,
-	}
-	response, err := nsClient.DeleteNamespace(delOptions)
-	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("Error Deleting Namespace: %s\n%s", err, response)
+	_, err = nsClient.Namespaces().DeleteNamespace(ID)
+	if err != nil {
+		return fmt.Errorf("Error Deleting Namespace: %s", err)
 	}
 
 	d.SetId("")
@@ -197,20 +192,20 @@ func resourceIBMFunctionNamespaceDelete(d *schema.ResourceData, meta interface{}
 }
 
 func resourceIBMFunctionNamespaceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	nsClient, err := meta.(ClientSession).IAMNamespaceAPI()
+	nsClient, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return false, err
 	}
 
 	ID := d.Id()
 
-	getOptions := &ibmcloudfunctionsnamespaceapiv1.GetNamespaceOptions{
+	getOptions := functions.GetNamespaceOptions{
 		ID: &ID,
 	}
-	_, response, err := nsClient.GetNamespace(getOptions)
-	if err != nil && response.StatusCode == 404 {
+	_, err = nsClient.Namespaces().GetNamespace(getOptions)
+	if err != nil {
 		d.SetId("")
-		return false, fmt.Errorf("Error Getting Namesapce (IAM): %s\n%s", err, response)
+		return false, fmt.Errorf("Error Getting Namesapce (IAM): %s", err)
 	}
 
 	return true, nil

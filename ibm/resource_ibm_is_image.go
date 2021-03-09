@@ -1,6 +1,10 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -8,9 +12,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -27,6 +31,7 @@ const (
 	isImageEncryptedDataKey = "encrypted_data_key"
 	isImageEncryptionKey    = "encryption_key"
 	isImageEncryption       = "encryption"
+	isImageCheckSum         = "checksum"
 
 	isImageProvisioning     = "provisioning"
 	isImageProvisioningDone = "done"
@@ -50,7 +55,7 @@ func resourceIBMISImage() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -123,7 +128,7 @@ func resourceIBMISImage() *schema.Resource {
 			},
 
 			isImageFile: {
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Details for the stored image file",
 			},
@@ -152,6 +157,12 @@ func resourceIBMISImage() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The crn of the resource",
+			},
+
+			isImageCheckSum: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The SHA256 checksum of this image",
 			},
 
 			ResourceStatus: {
@@ -528,9 +539,9 @@ func classicImgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	// d.Set(isImageArchitecure, image.Architecture)
 	d.Set(isImageMinimumProvisionedSize, *image.MinimumProvisionedSize)
 	d.Set(isImageName, *image.Name)
-	d.Set(isImageOperatingSystem, *image.OperatingSystem)
+	d.Set(isImageOperatingSystem, *image.OperatingSystem.Name)
 	// d.Set(isImageFormat, image.Format)
-	d.Set(isImageFile, *image.File)
+	d.Set(isImageFile, *image.File.Size)
 	d.Set(isImageHref, *image.Href)
 	d.Set(isImageStatus, *image.Status)
 	d.Set(isImageVisibility, *image.Visibility)
@@ -582,9 +593,9 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	// d.Set(isImageArchitecure, image.Architecture)
 	d.Set(isImageMinimumProvisionedSize, *image.MinimumProvisionedSize)
 	d.Set(isImageName, *image.Name)
-	d.Set(isImageOperatingSystem, *image.OperatingSystem)
+	d.Set(isImageOperatingSystem, *image.OperatingSystem.Name)
 	// d.Set(isImageFormat, image.Format)
-	d.Set(isImageFile, *image.File)
+	d.Set(isImageFile, *image.File.Size)
 	d.Set(isImageHref, *image.Href)
 	d.Set(isImageStatus, *image.Status)
 	d.Set(isImageVisibility, *image.Visibility)
@@ -593,6 +604,9 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	if image.EncryptionKey != nil {
 		d.Set(isImageEncryptionKey, *image.EncryptionKey.CRN)
+	}
+	if image.File != nil && image.File.Checksums != nil {
+		d.Set(isImageCheckSum, *image.File.Checksums.Sha256)
 	}
 	tags, err := GetTagsUsingCRN(meta, *image.CRN)
 	if err != nil {

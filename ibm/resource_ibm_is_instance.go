@@ -1,6 +1,10 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -8,9 +12,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -101,7 +105,7 @@ func resourceIBMISInstance() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -1328,23 +1332,25 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if instance.BootVolumeAttachment != nil {
 		bootVolList := make([]map[string]interface{}, 0)
 		bootVol := map[string]interface{}{}
-		bootVol[isInstanceBootName] = *instance.BootVolumeAttachment.Name
-		// getvolattoptions := &vpcclassicv1.GetVolumeAttachmentOptions{
-		// 	InstanceID: &ID,
-		// 	ID:         instance.BootVolumeAttachment.Volume.ID,
-		// }
-		// vol, _, err := instanceC.GetVolumeAttachment(getvolattoptions)
-		// if err != nil {
-		// 	return fmt.Errorf("Error while retrieving boot volume %s for instance %s: %v", getvolattoptions.ID, d.Id(), err)
-		// }
-		if instance.BootVolumeAttachment.Volume.CRN != nil {
-			bootVol[isInstanceBootEncryption] = *instance.BootVolumeAttachment.Volume.CRN
+		if instance.BootVolumeAttachment.Volume != nil {
+			bootVol[isInstanceBootName] = *instance.BootVolumeAttachment.Volume.Name
+			options := &vpcv1.GetVolumeOptions{
+				ID: instance.BootVolumeAttachment.Volume.ID,
+			}
+			vol, response, err := instanceC.GetVolume(options)
+			if err != nil {
+				log.Printf("Error Getting Boot Volume (%s): %s\n%s", id, err, response)
+			}
+			if vol != nil {
+				bootVol[isInstanceBootSize] = *vol.Capacity
+				bootVol[isInstanceBootIOPS] = *vol.Iops
+				bootVol[isInstanceBootProfile] = *vol.Profile.Name
+				if vol.EncryptionKey != nil {
+					bootVol[isInstanceBootEncryption] = *vol.EncryptionKey.CRN
+				}
+			}
 		}
-		// bootVol[isInstanceBootSize] = instance.BootVolumeAttachment.Capacity
-		// bootVol[isInstanceBootIOPS] = instance.BootVolumeAttachment.Iops
-		// bootVol[isInstanceBootProfile] = instance.BootVolumeAttachment.Name
 		bootVolList = append(bootVolList, bootVol)
-
 		d.Set(isInstanceBootVolume, bootVolList)
 	}
 	tags, err := GetTagsUsingCRN(meta, *instance.CRN)

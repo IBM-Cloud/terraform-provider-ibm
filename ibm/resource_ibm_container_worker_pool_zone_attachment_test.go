@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -5,14 +8,14 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMContainerWorkerPoolZoneAttachment_basic(t *testing.T) {
 
-	workerPoolName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	workerPoolName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -40,14 +43,18 @@ func TestAccIBMContainerWorkerPoolZoneAttachment_basic(t *testing.T) {
 						"ibm_container_worker_pool_zone_attachment.test_zone", "worker_count", "1"),
 				),
 			},
+			{
+				ResourceName:      "ibm_container_worker_pool_zone_attachment.test_zone",
+				ImportState:       true,
+				ImportStateVerify: false,
+			},
 		},
 	})
 }
 
 func TestAccIBMContainerWorkerPoolZoneAttachment_privateVlanOnly(t *testing.T) {
-
-	workerPoolName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	workerPoolName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -66,34 +73,13 @@ func TestAccIBMContainerWorkerPoolZoneAttachment_privateVlanOnly(t *testing.T) {
 	})
 }
 
-func TestAccIBMContainerWorkerPoolZoneAttachment_importBasic(t *testing.T) {
-	workerPoolName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMContainerWorkerPoolZoneAttachmentBasic(clusterName, workerPoolName),
-			},
-
-			resource.TestStep{
-				ResourceName:      "ibm_container_worker_pool_zone_attachment.test_zone",
-				ImportState:       true,
-				ImportStateVerify: false,
-			},
-		},
-	})
-}
-
 func TestAccIBMContainerWorkerPoolZoneAttachment_publicVlanOnly(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMLbaasDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config:      testAccCheckIBMContainerWorkerPoolZoneAttachmentPublicVlanOnly(),
 				ExpectError: regexp.MustCompile("must be specified if a public_vlan_id"),
 			},
@@ -112,6 +98,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   kube_version    = "%s"
+  wait_till         = "OneWorkerNodeReady"
 }
 
 resource "ibm_container_worker_pool" "test_pool" {
@@ -151,6 +138,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   private_vlan_id   = "%s"
   kube_version      = "%s"
   wait_time_minutes = 180
+  wait_till         = "MasterNodeReady"
 }
 
 resource "ibm_container_worker_pool" "test_pool" {
@@ -199,6 +187,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   kube_version    = "%s"
+  wait_till         = "OneWorkerNodeReady"
 }
 
 resource "ibm_container_worker_pool" "test_pool" {

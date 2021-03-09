@@ -1,6 +1,10 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -9,10 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	validation "github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	//	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
@@ -69,7 +73,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -85,6 +89,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "The id of the resource group in which the Database instance is present",
 			},
 

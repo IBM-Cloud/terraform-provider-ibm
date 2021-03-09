@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -8,11 +11,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"gotest.tools/assert"
+
+	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 func TestAccIBMEventStreamsTopicResourceBasic(t *testing.T) {
@@ -210,7 +214,7 @@ func testAccCheckIBMEventStreamsTopicWithExistingInstanceWithConfig(instanceName
 func getPlatformResource(instanceName string) string {
 	return fmt.Sprintf(`
 	  data "ibm_resource_group" "group" {
-		name = "Default"
+		name = "default"
 	  }
 	  data "ibm_resource_instance" "es_instance" {
 		resource_group_id = data.ibm_resource_group.group.id
@@ -222,7 +226,7 @@ func createPlatformResources(instanceName, serviceName, planID, location string,
 	if planID == "standard" || planID == "lite" {
 		return fmt.Sprintf(`
 		data "ibm_resource_group" "group" {
-		  name = "Default"
+		  name = "default"
 		}
 		resource "ibm_resource_instance" "es_instance" {
 		  name              = "%s"
@@ -235,7 +239,7 @@ func createPlatformResources(instanceName, serviceName, planID, location string,
 	// create enterprise instance
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "group" {
-		name = "Default"
+		name = "default"
 	  }
 	resource "ibm_resource_instance" "es_instance" {
 		name              = "%s"

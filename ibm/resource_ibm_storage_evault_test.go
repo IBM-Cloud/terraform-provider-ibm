@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -5,9 +8,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/softlayer/softlayer-go/services"
 )
 
@@ -113,7 +116,7 @@ func testAccCheckIBMStorageEvaultConfigBasic(hostname, domain string) string {
 resource "ibm_compute_vm_instance" "evaultvm1" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal05"
     network_speed = 100
     hourly_billing = true
@@ -136,7 +139,7 @@ func testAccCheckIBMStorageEvaultConfigUpdate(hostname, domain string) string {
   resource "ibm_compute_vm_instance" "evaultvm1" {
 	  hostname = "%s"
 	  domain = "%s"
-	  os_reference_code = "DEBIAN_8_64"
+	  os_reference_code = "DEBIAN_9_64"
 	  datacenter = "dal05"
 	  network_speed = 100
 	  hourly_billing = true
@@ -159,7 +162,7 @@ func testAccCheckIBMStorageEvaultConfigImport(hostname, domain string) string {
 	resource "ibm_compute_vm_instance" "evaultvm1" {
 		hostname = "%s"
 		domain = "%s"
-		os_reference_code = "DEBIAN_8_64"
+		os_reference_code = "DEBIAN_9_64"
 		datacenter = "dal05"
 		network_speed = 100
 		hourly_billing = false

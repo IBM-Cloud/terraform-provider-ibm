@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -7,7 +10,7 @@ import (
 	"os"
 
 	"github.com/apache/openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -179,7 +182,7 @@ func resourceIBMFuncTriggerValidator() *ResourceValidator {
 }
 
 func resourceIBMFunctionTriggerCreate(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -188,9 +191,8 @@ func resourceIBMFunctionTriggerCreate(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-
 	namespace := d.Get("namespace").(string)
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -313,7 +315,7 @@ func resourceIBMFunctionTriggerRead(d *schema.ResourceData, meta interface{}) er
 		d.SetId(fmt.Sprintf("%s:%s", namespace, triggerID))
 	}
 
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -323,7 +325,7 @@ func resourceIBMFunctionTriggerRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -368,7 +370,7 @@ func resourceIBMFunctionTriggerRead(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMFunctionTriggerUpdate(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -377,13 +379,13 @@ func resourceIBMFunctionTriggerUpdate(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-
 	parts, err := cfIdParts(d.Id())
 	if err != nil {
 		return err
 	}
+
 	namespace := parts[0]
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -436,7 +438,7 @@ func resourceIBMFunctionTriggerUpdate(d *schema.ResourceData, meta interface{}) 
 }
 
 func resourceIBMFunctionTriggerDelete(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -453,7 +455,7 @@ func resourceIBMFunctionTriggerDelete(d *schema.ResourceData, meta interface{}) 
 	namespace := parts[0]
 	triggerID := parts[1]
 
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -527,7 +529,7 @@ func resourceIBMFunctionTriggerExists(d *schema.ResourceData, meta interface{}) 
 		d.SetId(fmt.Sprintf("%s:%s", namespace, triggerID))
 	}
 
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return false, err
 	}
@@ -537,7 +539,7 @@ func resourceIBMFunctionTriggerExists(d *schema.ResourceData, meta interface{}) 
 		return false, err
 	}
 
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return false, err
 

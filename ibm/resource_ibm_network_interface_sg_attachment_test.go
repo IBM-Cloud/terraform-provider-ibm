@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -5,9 +8,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/softlayer/softlayer-go/services"
 )
 
@@ -104,7 +107,7 @@ func testAccTestAccIBMNetworkInterfaceSGAttachmentConfig(hostname string) string
 		resource "ibm_compute_vm_instance" "tfuatvm" {
 			hostname                 = "%s"
 			domain                   = "tfvmuatsg.com"
-			os_reference_code        = "DEBIAN_8_64"
+			os_reference_code        = "DEBIAN_9_64"
 			datacenter               = "wdc07"
 			network_speed            = 10
 			hourly_billing           = true

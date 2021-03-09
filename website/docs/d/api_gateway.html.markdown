@@ -1,7 +1,7 @@
 ---
+subcategory: "API Gateway"
 layout: "ibm"
 page_title: "IBM: API Gateway"
-sidebar_current: "docs-ibm-resource-api-gateway"
 description: |-
   Reads Endpoint and its subscriptions.
 ---

@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -7,7 +10,7 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIBMISVPC() *schema.Resource {
@@ -23,6 +26,12 @@ func dataSourceIBMISVPC() *schema.Resource {
 			isVPCClassicAccess: {
 				Type:     schema.TypeBool,
 				Computed: true,
+			},
+
+			isVPCDefaultRoutingTable: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default routing table associated with VPC",
 			},
 
 			isVPCName: {
@@ -536,6 +545,9 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID)
 			} else {
 				d.Set(isVPCDefaultNetworkACL, nil)
+			}
+			if vpc.DefaultRoutingTable != nil {
+				d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID)
 			}
 			if vpc.DefaultSecurityGroup != nil {
 				d.Set(isVPCIDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)

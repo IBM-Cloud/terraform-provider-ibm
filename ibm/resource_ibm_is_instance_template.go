@@ -1,11 +1,15 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -49,7 +53,7 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -224,17 +228,10 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 						},
 						isInstanceTemplateBootSize: {
 							Type:     schema.TypeInt,
-							Optional: true,
-							Computed: true,
-						},
-						isInstanceTemplateBootIOPS: {
-							Type:     schema.TypeInt,
-							Optional: true,
 							Computed: true,
 						},
 						isInstanceTemplateBootProfile: {
 							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
 						},
 						isInstanceTemplateVolumeDeleteOnInstanceDelete: {
@@ -341,24 +338,12 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			volTemplate.Name = &namestr
 		}
 
-		if volcap, ok := bootvol[isInstanceTemplateBootSize]; ok {
-			if volcapint64 := int64(volcap.(int)); volcapint64 != 0 {
-				volTemplate.Capacity = &volcapint64
-			}
-		}
-
-		if volprof, ok := bootvol[isInstanceTemplateBootProfile]; ok {
-			if volumeProfile := volprof.(string); volumeProfile != "" {
-				volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
-					Name: &volumeProfile,
-				}
-			}
-		}
-
-		if iops, ok := bootvol[isInstanceTemplateBootIOPS]; ok {
-			if bootVolIOPS := int64(iops.(int)); bootVolIOPS != 0 {
-				volTemplate.Iops = &bootVolIOPS
-			}
+		volcap := 100
+		volcapint64 := int64(volcap)
+		volprof := "general-purpose"
+		volTemplate.Capacity = &volcapint64
+		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
+			Name: &volprof,
 		}
 
 		if encryption, ok := bootvol[isInstanceTemplateBootEncryption]; ok {
@@ -646,9 +631,23 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 	if instance.BootVolumeAttachment != nil {
 		bootVolList := make([]map[string]interface{}, 0)
 		bootVol := map[string]interface{}{}
-		bootVol[isInstanceTemplateBootName] = *instance.BootVolumeAttachment.Name
-		bootVol[isInstanceTemplateVolAttVolume] = *instance.BootVolumeAttachment.Volume
 		bootVol[isInstanceTemplateDeleteVolume] = *instance.BootVolumeAttachment.DeleteVolumeOnInstanceDelete
+		if instance.BootVolumeAttachment.Volume != nil {
+			volumeIntf := instance.BootVolumeAttachment.Volume
+			bootVol[isInstanceTemplateBootName] = volumeIntf.Name
+			bootVol[isInstanceTemplateBootSize] = volumeIntf.Capacity
+			if volumeIntf.Profile != nil {
+				volProfIntf := volumeIntf.Profile
+				volProfInst := volProfIntf.(*vpcv1.VolumeProfileIdentity)
+				bootVol[isInstanceTemplateBootProfile] = volProfInst.Name
+			}
+			if volumeIntf.EncryptionKey != nil {
+				volEncryption := volumeIntf.EncryptionKey
+				volEncryptionIntf := volEncryption.(*vpcv1.EncryptionKeyIdentity)
+				bootVol[isInstanceTemplateBootEncryption] = volEncryptionIntf.CRN
+			}
+		}
+
 		bootVolList = append(bootVolList, bootVol)
 		d.Set(isInstanceTemplateBootVolume, bootVolList)
 	}

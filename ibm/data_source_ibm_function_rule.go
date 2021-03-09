@@ -1,9 +1,12 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIBMFunctionRule() *schema.Resource {
@@ -56,7 +59,7 @@ func dataSourceIBMFunctionRule() *schema.Resource {
 }
 
 func dataSourceIBMFunctionRuleRead(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -65,9 +68,8 @@ func dataSourceIBMFunctionRuleRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
-
 	namespace := d.Get("namespace").(string)
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return err
 

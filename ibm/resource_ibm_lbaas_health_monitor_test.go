@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -5,8 +8,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMLbaasHealthMonitor_Basic(t *testing.T) {
@@ -186,13 +189,13 @@ resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "desc-used for terraform uat"
   subnets     = ["%s"]
-  protocols = [{
-    "frontend_protocol" = "HTTP"
-    "frontend_port" = 80
-    "backend_protocol" = "HTTP"
-    "backend_port" = 80
-    "load_balancing_method" = "weighted_round_robin"
-  }]
+  protocols {
+    frontend_protocol = "HTTP"
+    frontend_port = 80
+    backend_protocol = "HTTP"
+    backend_port = 80
+    load_balancing_method = "weighted_round_robin"
+  }
 }
 data "ibm_lbaas" "ds_lbaas" {
     name = "${ibm_lbaas.lbaas.name}"
@@ -214,14 +217,13 @@ resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "desc-used for terraform uat"
   subnets     = ["%s"]
-  protocols = [{
-    "frontend_protocol" = "HTTP"
-    "frontend_port" = 80
-    "backend_protocol" = "HTTP"
-    "backend_port" = 80
-    "load_balancing_method" = "weighted_round_robin"
-  },
-  ]
+  protocols {
+    frontend_protocol = "HTTP"
+    frontend_port = 80
+    backend_protocol = "HTTP"
+    backend_port = 80
+    load_balancing_method = "weighted_round_robin"
+  }
 }
 data "ibm_lbaas" "ds_lbaas" {
     name = "${ibm_lbaas.lbaas.name}"
@@ -246,13 +248,13 @@ resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "desc-used for terraform uat"
   subnets     = ["%s"]
-  protocols = [{
-    "frontend_protocol" = "TCP"
-    "frontend_port" = 9443
-    "backend_protocol" = "TCP"
-    "backend_port" = 9443
-    "load_balancing_method" = "weighted_round_robin"
-  }]
+  protocols {
+    frontend_protocol = "TCP"
+    frontend_port = 9443
+    backend_protocol = "TCP"
+    backend_port = 9443
+    load_balancing_method = "weighted_round_robin"
+  }
 }
 data "ibm_lbaas" "ds_lbaas" {
     name = "${ibm_lbaas.lbaas.name}"
@@ -274,14 +276,13 @@ resource "ibm_lbaas" "lbaas" {
   name        = "%s"
   description = "desc-used for terraform uat"
   subnets     = ["%s"]
-  protocols = [
-  {
-    "frontend_protocol" = "TCP"
-    "frontend_port" = 9443
-    "backend_protocol" = "TCP"
-    "backend_port" = 9443
-    "load_balancing_method" = "weighted_round_robin"
-  }]
+  protocols {
+    frontend_protocol = "TCP"
+    frontend_port = 9443
+    backend_protocol = "TCP"
+    backend_port = 9443
+    load_balancing_method = "weighted_round_robin"
+  }
 }
 data "ibm_lbaas" "ds_lbaas" {
     name = "${ibm_lbaas.lbaas.name}"

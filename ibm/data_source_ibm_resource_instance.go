@@ -1,13 +1,15 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 func dataSourceIBMResourceInstance() *schema.Resource {
@@ -50,7 +52,7 @@ func dataSourceIBMResourceInstance() *schema.Resource {
 
 			"status": {
 				Description: "The resource instance status",
-				Type:        schema.TypeMap,
+				Type:        schema.TypeString,
 				Computed:    true,
 			},
 

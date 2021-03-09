@@ -1,22 +1,25 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMContainerClusterFeature_Basic(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("tf-cluster-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMContainerClusterFeature_basic(clusterName),
+			{
+				Config: testAccCheckIBMContainerClusterFeatureBasic(clusterName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster_feature.feature", "public_service_endpoint", "true"),
@@ -25,7 +28,7 @@ func TestAccIBMContainerClusterFeature_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMContainerClusterFeature_update(clusterName),
+				Config: testAccCheckIBMContainerClusterFeatureUpdate(clusterName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster_feature.feature", "public_service_endpoint", "false"),
@@ -37,13 +40,14 @@ func TestAccIBMContainerClusterFeature_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMContainerClusterFeature_basic(clusterName string) string {
+func testAccCheckIBMContainerClusterFeatureBasic(clusterName string) string {
 	return fmt.Sprintf(`
 resource "ibm_container_cluster" "testacc_cluster" {
   name              = "%s"
   datacenter        = "%s"
   default_pool_size = 1
   machine_type      = "%s"
+  wait_till       = "MasterNodeReady"
   hardware          = "shared"
   public_vlan_id    = "%s"
   private_vlan_id   = "%s"
@@ -61,13 +65,14 @@ resource "ibm_container_cluster_feature" "feature" {
 }`, clusterName, datacenter, machineType, publicVlanID, privateVlanID)
 }
 
-func testAccCheckIBMContainerClusterFeature_update(clusterName string) string {
+func testAccCheckIBMContainerClusterFeatureUpdate(clusterName string) string {
 	return fmt.Sprintf(`
 resource "ibm_container_cluster" "testacc_cluster" {
   name              = "%s"
   datacenter        = "%s"
   default_pool_size = 1
   machine_type      = "%s"
+  wait_till       = "MasterNodeReady"
   hardware          = "shared"
   public_vlan_id    = "%s"
   private_vlan_id   = "%s"

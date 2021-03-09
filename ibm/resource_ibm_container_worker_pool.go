@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -7,8 +10,8 @@ import (
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceIBMContainerWorkerPool() *schema.Resource {
@@ -243,7 +246,6 @@ func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}
 	d.Set("labels", IgnoreSystemLabels(workerPool.Labels))
 	d.Set("zones", flattenZones(workerPool.Zones))
 	d.Set("cluster", cluster)
-	d.Set("region", workerPool.Region)
 	if strings.Contains(machineType, "encrypted") {
 		d.Set("disk_encryption", true)
 	} else {

@@ -1,9 +1,14 @@
-package ibm
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
+package hashcode
 
 import (
 	"bytes"
 	"fmt"
 	"hash/crc32"
+
+	"github.com/hashicorp/terraform/helper/hashcode"
 )
 
 // String hashes a string to a unique hashcode.
@@ -39,5 +44,5 @@ func Strings(strings []string) string {
 		buf.WriteString(fmt.Sprintf("%s-", s))
 	}
 
-	return fmt.Sprintf("%d", String(buf.String()))
+	return fmt.Sprintf("%d", hashcode.String(buf.String()))
 }

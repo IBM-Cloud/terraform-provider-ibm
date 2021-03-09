@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -7,15 +10,15 @@ import (
 	"testing"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccIBMContainerWorkerPool_basic(t *testing.T) {
+func TestAccIBMContainerWorkerPoolBasic(t *testing.T) {
 
-	workerPoolName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	workerPoolName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -56,24 +59,7 @@ func TestAccIBMContainerWorkerPool_basic(t *testing.T) {
 						"ibm_container_worker_pool.test_pool", "hardware", "shared"),
 				),
 			},
-		},
-	})
-}
-
-func TestAccIBMContainerWorkerPool_importBasic(t *testing.T) {
-	workerPoolName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMContainerWorkerPoolDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMContainerWorkerPoolBasic(clusterName, workerPoolName),
-			},
-
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_container_worker_pool.test_pool",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -82,15 +68,15 @@ func TestAccIBMContainerWorkerPool_importBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMContainerWorkerPool_InvalidSizePerZone(t *testing.T) {
-	workerPoolName := fmt.Sprintf("terraform-%d", acctest.RandIntRange(10, 100))
-	clusterName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+func TestAccIBMContainerWorkerPoolInvalidSizePerZone(t *testing.T) {
+	workerPoolName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMContainerWorkerPoolDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config:      testAccCheckIBMContainerWorkerPoolInvalidSizePerZone(clusterName, workerPoolName),
 				ExpectError: regexp.MustCompile("must be greater than 0"),
 			},
@@ -145,6 +131,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   kube_version    = "%s"
+  wait_till         = "OneWorkerNodeReady"
 }
 
 resource "ibm_container_worker_pool" "test_pool" {
@@ -172,6 +159,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   kube_version    = "%s"
+  wait_till         = "OneWorkerNodeReady"
 }
 
 resource "ibm_container_worker_pool" "test_pool" {

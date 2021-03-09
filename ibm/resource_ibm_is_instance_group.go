@@ -1,15 +1,19 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -31,7 +35,7 @@ func resourceIBMISInstanceGroup() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -350,9 +354,9 @@ func resourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("Error Getting InstanceGroup: %s\n%s", err, response)
 	}
 	d.Set("name", *instanceGroup.Name)
-	d.Set("instance_template", *instanceGroup.InstanceTemplate)
+	d.Set("instance_template", *instanceGroup.InstanceTemplate.ID)
 	d.Set("instances", *instanceGroup.MembershipCount)
-	d.Set("resource_group", *instanceGroup.ResourceGroup)
+	d.Set("resource_group", *instanceGroup.ResourceGroup.ID)
 	if instanceGroup.ApplicationPort != nil {
 		d.Set("application_port", *instanceGroup.ApplicationPort)
 	}
@@ -363,7 +367,7 @@ func resourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) er
 		subnets = append(subnets, string(*(instanceGroup.Subnets[i].ID)))
 	}
 	if instanceGroup.LoadBalancerPool != nil {
-		d.Set("load_balancer_pool", *instanceGroup.LoadBalancerPool)
+		d.Set("load_balancer_pool", *instanceGroup.LoadBalancerPool.ID)
 	}
 	d.Set("subnets", subnets)
 	managers := make([]string, 0)

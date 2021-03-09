@@ -1,10 +1,13 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 var (
@@ -58,7 +61,7 @@ func TestAccIBMEventStreamsTopicDataSourceBasic(t *testing.T) {
 func testAccCheckIBMEventStreamsTopicDataSourceConfigBasic(instancecName, topicName string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "my_group" {
-		name = "Default"
+		name = "default"
 	  }
 	data "ibm_resource_instance" "es_instance" {
 		resource_group_id = data.ibm_resource_group.my_group.id

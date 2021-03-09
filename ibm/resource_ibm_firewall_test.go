@@ -1,11 +1,14 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMFirewall_Basic(t *testing.T) {
@@ -33,7 +36,7 @@ func testAccCheckIBMFirewall_basic(hostname string) string {
 resource "ibm_compute_vm_instance" "fwvm1" {
     hostname = "%s"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "sjc01"
     network_speed = 10
     hourly_billing = true
@@ -79,7 +82,7 @@ func testAccCheckIBMFirewall_FSA(hostname string) string {
 resource "ibm_compute_vm_instance" "fwfsavm1" {
     hostname = "%s"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "sjc01"
     network_speed = 10
     hourly_billing = true
@@ -145,7 +148,7 @@ func testAccCheckIBMFirewallTag(hostname, tag1 string) string {
 resource "ibm_compute_vm_instance" "fwvm1" {
     hostname = "%s"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "sjc01"
     network_speed = 10
     hourly_billing = true
@@ -168,7 +171,7 @@ func testAccCheckIBMFirewallUpdateTag(hostname, tag1, tag2 string) string {
 resource "ibm_compute_vm_instance" "fwvm1" {
     hostname = "%s"
     domain = "terraformuat.ibm.com"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "sjc01"
     network_speed = 10
     hourly_billing = true

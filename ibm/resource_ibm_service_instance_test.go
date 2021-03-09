@@ -1,19 +1,22 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
-	"strings"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 )
 
 func TestAccIBMServiceInstance_Basic(t *testing.T) {
+	t.Skip()
 	var conf mccpv2.ServiceInstanceFields
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	updateName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -66,6 +69,7 @@ func TestAccIBMServiceInstance_Basic(t *testing.T) {
 }
 
 func TestAccIBMServiceInstance_import(t *testing.T) {
+	t.Skip()
 	var conf mccpv2.ServiceInstanceFields
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_service_instance.service"
@@ -215,6 +219,7 @@ func testAccCheckIBMServiceInstance_newServiceType(updateName string) string {
 }
 
 func TestAccIBMServiceInstance_Discovery_Basic(t *testing.T) {
+	t.Skip()
 	var conf mccpv2.ServiceInstanceFields
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 

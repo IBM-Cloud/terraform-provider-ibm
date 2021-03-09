@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -7,14 +10,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
 )
 
 func TestAccIBMComputeMonitor_Basic(t *testing.T) {
+	t.Skip()
 	var basicMonitor datatypes.Network_Monitor_Version1_Query_Host
 
 	hostname := acctest.RandString(16)
@@ -76,6 +80,7 @@ func TestAccIBMComputeMonitor_Basic(t *testing.T) {
 }
 
 func TestAccIBMComputeMonitorWithTag(t *testing.T) {
+	t.Skip()
 	var basicMonitor datatypes.Network_Monitor_Version1_Query_Host
 
 	hostname := acctest.RandString(16)
@@ -202,7 +207,7 @@ func testAccCheckIBMComputeMonitorConfigBasic(hostname, domain, queryTypeID, res
 resource "ibm_compute_vm_instance" "vg-basic-monitor-test" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true
@@ -238,7 +243,7 @@ func testAccCheckIBMComputeMonitorWithTag(hostname, domain, queryTypeID, respons
 resource "ibm_compute_vm_instance" "vg-basic-monitor-test" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true
@@ -275,7 +280,7 @@ func testAccCheckIBMComputeMonitorWithUpdatedTag(hostname, domain, queryTypeID, 
 resource "ibm_compute_vm_instance" "vg-basic-monitor-test" {
     hostname = "%s"
     domain = "%s"
-    os_reference_code = "DEBIAN_8_64"
+    os_reference_code = "DEBIAN_9_64"
     datacenter = "dal06"
     network_speed = 10
     hourly_billing = true

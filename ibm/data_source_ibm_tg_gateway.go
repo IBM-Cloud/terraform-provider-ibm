@@ -1,10 +1,14 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
-	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"log"
+
+	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (

@@ -1,7 +1,11 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -9,16 +13,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/hashcode"
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
 	isVPCDefaultNetworkACL          = "default_network_acl"
 	isVPCIDefaultSecurityGroup      = "default_security_group"
+	isVPCDefaultRoutingTable        = "default_routing_table"
 	isVPCName                       = "name"
 	isVPCDefaultNetworkACLName      = "default_network_acl_name"
 	isVPCIDefaultSecurityGroupName  = "default_security_group_name"
@@ -68,7 +74,7 @@ func resourceIBMISVPC() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -90,6 +96,12 @@ func resourceIBMISVPC() *schema.Resource {
 				Computed:    true,
 				Deprecated:  "This field is deprecated",
 				Description: "Default network ACL",
+			},
+
+			isVPCDefaultRoutingTable: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default routing table associated with VPC",
 			},
 
 			isVPCClassicAccess: {
@@ -850,6 +862,9 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	} else {
 		d.Set(isVPCIDefaultSecurityGroup, nil)
 	}
+	if vpc.DefaultRoutingTable != nil {
+		d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID)
+	}
 	tags, err := GetTagsUsingCRN(meta, *vpc.CRN)
 	if err != nil {
 		log.Printf(
@@ -1355,5 +1370,5 @@ func resourceIBMVPCHash(v interface{}) int {
 	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf("%s",
 		strings.ToLower(v.(string))))
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }

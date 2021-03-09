@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -11,9 +14,9 @@ import (
 	token "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/token"
 	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMCosBucket_Basic(t *testing.T) {
@@ -510,14 +513,14 @@ func testAccCheckIBMCosBucket_activityTracker_monitor(cosServiceName, activitySe
 		name              = "%s"
 		resource_group_id = data.ibm_resource_group.cos_group.id
 		service           = "logdnaat"
-		plan              = "standard"
+		plan              = "7-day "
 		location          = "us-south"
 	  }
 	  resource "ibm_resource_instance" "metrics_monitor2" {
 		name              = "%s"
 		resource_group_id = data.ibm_resource_group.cos_group.id
 		service           = "sysdig-monitor"
-		plan              = "standard"
+		plan              = "graduated-tier"
 		location          = "us-south"
 	  }
 	  resource "ibm_cos_bucket" "bucket2" {
@@ -627,7 +630,7 @@ func testAccCheckIBMCosBucket_archive_updateDays(cosServiceName string, bucketNa
 	    region_location       = "%s"
 		storage_class         = "%s"
 		archive_rule {
-			rule_id             = "%s""
+			rule_id             = "%s"
 			enable              = true
 			days                = %d
 			type                = "%s"

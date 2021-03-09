@@ -1,6 +1,10 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -8,9 +12,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -45,7 +49,7 @@ func resourceIBMISVPNGateway() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -129,7 +133,11 @@ func resourceIBMISVPNGateway() *schema.Resource {
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
 			},
-
+			isVPNGatewayCreatedAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Created Time of the VPN Gateway",
+			},
 			isVPNGatewayMode: {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -516,7 +524,7 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isVPNGatewayMembers, vpcMembersIpsList)
 	}
 	if vpnGateway.CreatedAt != nil {
-		d.Set(isVPNGatewayCreatedAt, vpnGateway.CreatedAt.String())
+		d.Set(isVPNGatewayCreatedAt, (vpnGateway.CreatedAt).String())
 	}
 	return nil
 }

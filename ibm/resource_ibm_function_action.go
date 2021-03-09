@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
@@ -8,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/apache/openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -91,9 +94,16 @@ func resourceIBMFunctionAction() *schema.Resource {
 						},
 						"code": {
 							Type:          schema.TypeString,
+							Computed:      true,
 							Optional:      true,
 							Description:   "The code to execute when kind is not ‘blackbox’.",
-							ConflictsWith: []string{"exec.image", "exec.components"},
+							ConflictsWith: []string{"exec.0.image", "exec.0.components", "exec.0.code_path"},
+						},
+						"code_path": {
+							Type:          schema.TypeString,
+							Optional:      true,
+							Description:   "The code to execute when kind is not ‘blackbox’.",
+							ConflictsWith: []string{"exec.0.image", "exec.0.components", "exec.0.code"},
 						},
 						"kind": {
 							Type:        schema.TypeString,
@@ -111,7 +121,7 @@ func resourceIBMFunctionAction() *schema.Resource {
 							Optional:      true,
 							Elem:          &schema.Schema{Type: schema.TypeString},
 							Description:   "The List of fully qualified action.",
-							ConflictsWith: []string{"exec.image", "exec.code"},
+							ConflictsWith: []string{"exec.0.image", "exec.0.code", "exec.0.code_path"},
 						},
 					},
 				},
@@ -209,7 +219,7 @@ func resourceIBMFuncActionValidator() *ResourceValidator {
 }
 
 func resourceIBMFunctionActionCreate(d *schema.ResourceData, meta interface{}) error {
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -219,7 +229,7 @@ func resourceIBMFunctionActionCreate(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 	namespace := d.Get("namespace").(string)
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -292,7 +302,7 @@ func resourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) err
 		d.SetId(fmt.Sprintf("%s:%s", namespace, actionID))
 	}
 
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -301,8 +311,7 @@ func resourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
-
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -315,7 +324,7 @@ func resourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) err
 	}
 	d.Set("namespace", namespace)
 	d.Set("limits", flattenLimits(action.Limits))
-	d.Set("exec", flattenExec(action.Exec))
+	d.Set("exec", flattenExec(action.Exec, d))
 	d.Set("publish", action.Publish)
 	d.Set("version", action.Version)
 	d.Set("action_id", action.Name)
@@ -394,7 +403,7 @@ func resourceIBMFunctionActionUpdate(d *schema.ResourceData, meta interface{}) e
 	namespace := parts[0]
 	actionID := parts[1]
 
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -404,7 +413,7 @@ func resourceIBMFunctionActionUpdate(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -480,7 +489,7 @@ func resourceIBMFunctionActionDelete(d *schema.ResourceData, meta interface{}) e
 	namespace := parts[0]
 	actionID := parts[1]
 
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return err
 	}
@@ -489,8 +498,7 @@ func resourceIBMFunctionActionDelete(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return err
 	}
-
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -524,7 +532,7 @@ func resourceIBMFunctionActionExists(d *schema.ResourceData, meta interface{}) (
 		d.SetId(fmt.Sprintf("%s:%s", namespace, actionID))
 	}
 
-	wskClient, err := meta.(ClientSession).FunctionClient()
+	functionNamespaceAPI, err := meta.(ClientSession).FunctionIAMNamespaceAPI()
 	if err != nil {
 		return false, err
 	}
@@ -534,7 +542,7 @@ func resourceIBMFunctionActionExists(d *schema.ResourceData, meta interface{}) (
 		return false, err
 	}
 
-	wskClient, err = setupOpenWhiskClientConfig(namespace, bxSession.Config, wskClient)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
 	if err != nil {
 		return false, err
 

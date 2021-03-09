@@ -1,11 +1,14 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package ibm
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMIAMUserPolicyDataSource_Basic(t *testing.T) {
@@ -106,6 +109,7 @@ resource "ibm_iam_user_policy" "policy1" {
 
 data "ibm_iam_user_policy" "testacc_ds_user_policy" {
   ibm_id = ibm_iam_user_policy.policy.ibm_id
+  sort = "-id"
 }`, name, IAMUser, IAMUser)
 
 }
