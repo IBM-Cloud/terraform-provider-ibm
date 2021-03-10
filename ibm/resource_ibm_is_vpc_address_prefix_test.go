@@ -6,6 +6,7 @@ package ibm
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
@@ -41,6 +42,26 @@ func TestAccIBMISVPCAddressPrefix_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpc_address_prefix.testacc_vpc_address_prefix", "name", prefixName1),
 				),
+			},
+			{
+				Config:      testAccCheckIBMISVPCAddressPrefixConfig1(name1, prefixName1),
+				ExpectError: regexp.MustCompile(fmt.Sprintf("the request is overlapping with reserved address ranges")),
+			},
+		},
+	})
+}
+
+func TestAccIBMISVPCAddressPrefix_InvalidCidr(t *testing.T) {
+	name1 := fmt.Sprintf("tfvpcuat-%d", acctest.RandIntRange(10, 100))
+	prefixName2 := fmt.Sprintf("tfaddprename-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config:      testAccCheckIBMISVPCAddressPrefixConfig1(name1, prefixName2),
+				ExpectError: regexp.MustCompile(fmt.Sprintf("the request is overlapping with reserved address ranges")),
 			},
 		},
 	})
@@ -156,4 +177,17 @@ resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix" {
     vpc = "${ibm_is_vpc.testacc_vpc.id}"
 	cidr = "%s"
 }`, name, prefixName, ISZoneName, ISAddressPrefixCIDR)
+}
+
+func testAccCheckIBMISVPCAddressPrefixConfig1(name, prefixName string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "testacc_vpc" {
+    name = "%s"
+}
+resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix" {
+    name = "%s"
+    zone = "%s"
+    vpc = "${ibm_is_vpc.testacc_vpc.id}"
+	cidr = "127.0.0.0/8"
+}`, name, prefixName, ISZoneName)
 }

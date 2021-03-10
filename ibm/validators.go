@@ -405,6 +405,28 @@ func validateCIDRAddress() schema.SchemaValidateFunc {
 	}
 }
 
+//validateOverlappingAddress...
+func validateOverlappingAddress() schema.SchemaValidateFunc {
+	return func(v interface{}, k string) (ws []string, errors []error) {
+		nonOverlappingCIDR := map[string]bool{
+			"127.0.0.0/8":    true,
+			"161.26.0.0/16":  true,
+			"166.8.0.0/14":   true,
+			"169.254.0.0/16": true,
+			"224.0.0.0/4":    true,
+		}
+
+		address := v.(string)
+		_, found := nonOverlappingCIDR[address]
+		if found {
+			errors = append(errors, fmt.Errorf(
+				"%q the request is overlapping with reserved address ranges",
+				k))
+		}
+		return
+	}
+}
+
 //validateRemoteIP...
 func validateRemoteIP(v interface{}, k string) (ws []string, errors []error) {
 	_, err1 := validateCIDR(v, k)
@@ -1068,6 +1090,7 @@ const (
 	ValidateJSONString
 	ValidateJSONParam
 	ValidateBindedPackageName
+	ValidateOverlappingAddress
 )
 
 // ValueType -- Copied from Terraform for now. You can refer to Terraform ValueType directly.
@@ -1234,6 +1257,8 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 		return validateJSONString()
 	case ValidateBindedPackageName:
 		return validateBindedPackageName()
+	case ValidateOverlappingAddress:
+		return validateOverlappingAddress()
 
 	default:
 		return nil
