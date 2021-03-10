@@ -117,7 +117,7 @@ func resourceIBMISVPCRoutingTableRoute() *schema.Resource {
 func resourceIBMISVPCRoutingTableRouteValidator() *ResourceValidator {
 
 	validateSchema := make([]ValidateSchema, 2)
-	actionAllowedValues := "delegate, deliver, drop"
+	actionAllowedValues := "delegate, delegate_vpc, deliver, drop"
 
 	validateSchema = append(validateSchema,
 		ValidateSchema{
