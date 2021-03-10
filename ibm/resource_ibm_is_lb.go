@@ -509,16 +509,11 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.Set(isLBProfile, *lb.Profile.Name)
 		}
 	} else {
-		if lb.Logging != nil {
-			logging := lb.Logging
-			if logging.Datapath != nil {
-				active := lb.Logging.Datapath.Active
-				if active != nil {
-					d.Set(isLBLogging, *lb.Logging.Datapath.Active)
-				}
-			}
+		if lb.Logging != nil && lb.Logging.Datapath != nil && lb.Logging.Datapath.Active != nil {
+			d.Set(isLBLogging, *lb.Logging.Datapath.Active)
 		}
 	}
+
 	d.Set(isLBResourceGroup, *lb.ResourceGroup.ID)
 	d.Set(isLBHostName, *lb.Hostname)
 	tags, err := GetTagsUsingCRN(meta, *lb.CRN)
