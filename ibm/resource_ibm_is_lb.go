@@ -108,12 +108,13 @@ func resourceIBMISLB() *schema.Resource {
 			},
 
 			isLBProfile: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ForceNew:     true,
-				Description:  "The profile to use for this load balancer.",
-				ValidateFunc: InvokeValidator("ibm_is_lb", isLBProfile),
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ForceNew:      true,
+				Description:   "The profile to use for this load balancer.",
+				ValidateFunc:  InvokeValidator("ibm_is_lb", isLBProfile),
+				ConflictsWith: []string{isLBLogging},
 			},
 
 			isLBTags: {
@@ -137,10 +138,11 @@ func resourceIBMISLB() *schema.Resource {
 			},
 
 			isLBLogging: {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Logging of Load Balancer",
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Default:       false,
+				Description:   "Logging of Load Balancer",
+				ConflictsWith: []string{isLBProfile},
 			},
 
 			ResourceControllerURL: {
@@ -207,7 +209,10 @@ func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
 	name := d.Get(isLBName).(string)
 	subnets := d.Get(isLBSubnets).(*schema.Set)
 
-	isLogging := d.Get(isLBLogging).(bool)
+	var isLogging bool
+	if lbLogging, ok := d.GetOk(isLBLogging); ok {
+		isLogging = lbLogging.(bool)
+	}
 	// subnets := expandStringList((d.Get(isLBSubnets).(*schema.Set)).List())
 	var lbType, rg string
 	isPublic := true
@@ -290,16 +295,9 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		return err
 	}
 
-	dataPath := &vpcv1.LoadBalancerLoggingDatapath{
-		Active: &isLogging,
-	}
-	loadBalancerLogging := &vpcv1.LoadBalancerLogging{
-		Datapath: dataPath,
-	}
 	options := &vpcv1.CreateLoadBalancerOptions{
 		IsPublic: &isPublic,
 		Name:     &name,
-		Logging:  loadBalancerLogging,
 	}
 
 	if subnets.Len() != 0 {
@@ -324,6 +322,15 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		loadBalancerProfileIdentityModel := new(vpcv1.LoadBalancerProfileIdentityByName)
 		loadBalancerProfileIdentityModel.Name = &profile
 		options.Profile = loadBalancerProfileIdentityModel
+	} else {
+
+		dataPath := &vpcv1.LoadBalancerLoggingDatapath{
+			Active: &isLogging,
+		}
+		loadBalancerLogging := &vpcv1.LoadBalancerLogging{
+			Datapath: dataPath,
+		}
+		options.Logging = loadBalancerLogging
 	}
 
 	lb, response, err := sess.CreateLoadBalancer(options)
@@ -500,6 +507,16 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		profile := lb.Profile
 		if profile.Name != nil {
 			d.Set(isLBProfile, *lb.Profile.Name)
+		}
+	} else {
+		if lb.Logging != nil {
+			logging := lb.Logging
+			if logging.Datapath != nil {
+				active := lb.Logging.Datapath.Active
+				if active != nil {
+					d.Set(isLBLogging, *lb.Logging.Datapath.Active)
+				}
+			}
 		}
 	}
 	d.Set(isLBResourceGroup, *lb.ResourceGroup.ID)
