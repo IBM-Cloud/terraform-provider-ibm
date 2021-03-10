@@ -415,6 +415,8 @@ func Provider() *schema.Provider {
 			"ibm_container_bind_service":                         resourceIBMContainerBindService(),
 			"ibm_container_worker_pool":                          resourceIBMContainerWorkerPool(),
 			"ibm_container_worker_pool_zone_attachment":          resourceIBMContainerWorkerPoolZoneAttachment(),
+			"ibm_ob_logging":                                     resourceIBMObLogging(),
+			"ibm_ob_monitoring":                                  resourceIBMObMonitoring(),
 			"ibm_cr_namespace":                                   resourceIBMContainerRegistryNamespace(),
 			"ibm_cos_bucket":                                     resourceIBMCOS(),
 			"ibm_dns_domain":                                     resourceIBMDNSDomain(),

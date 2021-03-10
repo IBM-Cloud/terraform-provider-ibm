@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20210323131712-56edc36e39e5
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20210326111722-ed184b962226
 	github.com/IBM-Cloud/power-go-client v1.0.55
 	github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
 	github.com/IBM/go-sdk-core v1.1.0
@@ -48,7 +48,7 @@ require (
 	github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/tools v0.0.0-20210107193943-4ed967dd8eff // indirect
-	gotest.tools v2.2.0+incompatible 
+	gotest.tools v2.2.0+incompatible
 )
 
 replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => ./common/github.com/softlayer/softlayer-go
