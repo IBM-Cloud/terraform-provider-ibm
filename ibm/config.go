@@ -203,7 +203,7 @@ type ClientSession interface {
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	SchematicsAPI() (schematics.SchematicsServiceAPI, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
-	PushNotificationsV1API() (*pushservicev1.PushServiceV1, error)
+	PushServiceV1() (*pushservicev1.PushServiceV1, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
 	keyManagementAPI() (*kp.Client, error)
@@ -615,7 +615,7 @@ func (sess clientSession) APIGateway() (*apigateway.ApiGatewayControllerApiV1, e
 	return sess.apigatewayAPI, sess.apigatewayErr
 }
 
-func (sess clientSession) PushNotificationsV1API() (*pushservicev1.PushServiceV1, error) {
+func (sess clientSession) PushServiceV1() (*pushservicev1.PushServiceV1, error) {
 	return sess.pushNotificationAPI, sess.pushNotificationErr
 }
 

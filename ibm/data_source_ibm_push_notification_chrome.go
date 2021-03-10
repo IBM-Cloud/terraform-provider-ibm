@@ -1,55 +1,68 @@
 package ibm
 
 import (
+	"context"
+	"fmt"
+	"log"
+	"time"
+
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIBMPNApplicationChrome() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceApplicationChromeRead,
+		ReadContext: dataSourceApplicationChromeRead,
 
 		Schema: map[string]*schema.Schema{
-			"service_instance_guid": {
+			"application_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Instance guid of the push notifications instance",
+				Description: "Unique ID of the application using the push service.",
 			},
-			"server_key": {
+			"api_key": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Server key that provides Push Notification service authorized access to Google services that is used for Chrome Web Push.",
+				Description: "An API key that gives the push service an authorized access to Google services that is used for Chrome Web Push.",
 			},
-			"website_url": {
+			"web_site_url": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The URL of the website/web application that should be permitted to subscribe to Web Push.",
+				Description: "The URL of the WebSite / WebApp that should be permitted to subscribe to WebPush.",
 			},
 		},
 	}
 }
 
-func dataSourceApplicationChromeRead(d *schema.ResourceData, meta interface{}) error {
-	pnClient, err := meta.(ClientSession).PushNotificationsV1API()
+func dataSourceApplicationChromeRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	pushServiceClient, err := meta.(ClientSession).PushServiceV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	serviceInstanceGUID := d.Get("service_instance_guid").(string)
+	getChromeWebConfOptions := &pushservicev1.GetChromeWebConfOptions{}
 
-	result, response, err := pnClient.GetChromeWebConf(&pushservicev1.GetChromeWebConfOptions{
-		ApplicationID: &serviceInstanceGUID,
-	})
+	getChromeWebConfOptions.SetApplicationID(d.Get("application_id").(string))
 
+	chromeWebPushCredendialsModel, response, err := pushServiceClient.GetChromeWebConfWithContext(context, getChromeWebConfOptions)
 	if err != nil {
-		return err
+		log.Printf("[DEBUG] GetChromeWebConfWithContext failed %s\n%s", err, response)
+		return diag.FromErr(err)
 	}
 
-	if response.StatusCode == 200 {
-		d.SetId(serviceInstanceGUID)
-		d.Set("server_key", *result.ApiKey)
-		d.Set("website_url", *result.WebSiteURL)
+	d.SetId(dataSourceIbmPnApplicationChromeID(d))
+	if err = d.Set("api_key", chromeWebPushCredendialsModel.ApiKey); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting api_key: %s", err))
+	}
+	if err = d.Set("web_site_url", chromeWebPushCredendialsModel.WebSiteURL); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting web_site_url: %s", err))
 	}
 
 	return nil
+}
+
+// dataSourceIbmPnApplicationChromeID returns a reasonable ID for the list.
+func dataSourceIbmPnApplicationChromeID(d *schema.ResourceData) string {
+	return time.Now().UTC().String()
 }
