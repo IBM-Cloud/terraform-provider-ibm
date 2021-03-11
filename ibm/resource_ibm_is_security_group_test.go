@@ -33,6 +33,18 @@ func TestAccIBMISSecurityGroup_basic(t *testing.T) {
 					testAccCheckIBMISSecurityGroupExists("ibm_is_security_group.testacc_security_group", securityGroup),
 					resource.TestCheckResourceAttr(
 						"ibm_is_security_group.testacc_security_group", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group.testacc_security_group", "tags.#", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISsecurityGroupConfigUpdate(vpcname, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSecurityGroupExists("ibm_is_security_group.testacc_security_group", securityGroup),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group.testacc_security_group", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group.testacc_security_group", "tags.#", "1"),
 				),
 			},
 		},
@@ -127,6 +139,21 @@ resource "ibm_is_vpc" "testacc_vpc" {
 resource "ibm_is_security_group" "testacc_security_group" {
 	name = "%s"
 	vpc = "${ibm_is_vpc.testacc_vpc.id}"
+	tags = ["Tag1", "tag2"]
+}`, vpcname, name)
+
+}
+
+func testAccCheckIBMISsecurityGroupConfigUpdate(vpcname, name string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "testacc_vpc" {
+	name = "%s"
+}
+
+resource "ibm_is_security_group" "testacc_security_group" {
+	name = "%s"
+	vpc = "${ibm_is_vpc.testacc_vpc.id}"
+	tags = ["tag1"]
 }`, vpcname, name)
 
 }
