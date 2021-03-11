@@ -293,7 +293,7 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 
 	if rgrp, ok := d.GetOk(isVolumeResourceGroup); ok {
 		rg := rgrp.(string)
-		volTemplate.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+		volTemplate.ResourceGroup = &vpcv1.VolumePrototypeResourceGroup{
 			ID: &rg,
 		}
 	}
