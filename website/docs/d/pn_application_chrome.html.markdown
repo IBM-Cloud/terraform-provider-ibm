@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : pn_application_chrome"
 sidebar_current: "docs-ibm-datasource-pn-application-chrome"
 description: |-
-  Get information about chrome
+  Get configuration of platform chrome web
 ---
 
 # ibm_pn_application_chrome
