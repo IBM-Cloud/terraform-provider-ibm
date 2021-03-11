@@ -134,7 +134,6 @@ func TestAccIBMContainerClusterDiskEnc(t *testing.T) {
 }
 
 func TestAccIBMContainerClusterPrivateSubnet(t *testing.T) {
-	t.Skip()
 	clusterName := fmt.Sprintf("tf-cluster-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -159,7 +158,6 @@ func TestAccIBMContainerClusterPrivateSubnet(t *testing.T) {
 }
 
 func TestAccIBMContainerClusterPrivateAndPublicSubnet(t *testing.T) {
-	t.Skip()
 	clusterName := fmt.Sprintf("tf-cluster-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
