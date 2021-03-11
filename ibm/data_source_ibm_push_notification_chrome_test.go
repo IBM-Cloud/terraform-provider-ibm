@@ -20,7 +20,7 @@ func TestAccIBMDataSourcePNApplicationChrome_Basic(t *testing.T) {
 				Config: testAccCheckIBMDataSourcePNApplicationChrome(name, serverKey, websiteURL),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pn_application_chrome.chrome", "api_key"),
-					resource.TestCheckResourceAttrSet("data.ibm_pn_application_chrome.chrome", "website_url"),
+					resource.TestCheckResourceAttrSet("data.ibm_pn_application_chrome.chrome", "web_site_url"),
 				),
 			},
 		},
@@ -37,7 +37,7 @@ func testAccCheckIBMDataSourcePNApplicationChrome(name, serverKey, websiteURL st
 		}
 		resource "ibm_pn_application_chrome" "application_chrome" {
 			api_key            = "%s"
-			website_url           = "%s"
+			web_site_url           = "%s"
 			application_id = ibm_resource_instance.push_notification.guid
 		}
 		data "ibm_pn_application_chrome" "chrome" {

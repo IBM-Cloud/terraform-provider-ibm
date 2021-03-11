@@ -26,7 +26,7 @@ func TestAccIBMResourcePNApplicationChrome_Basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMResourcePNApplicationChromeUpdate(name, serverKey, newWebsiteURL),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_pn_application_chrome.application_chrome", "website_url", newWebsiteURL),
+					resource.TestCheckResourceAttr("ibm_pn_application_chrome.application_chrome", "web_site_url", newWebsiteURL),
 				),
 			},
 		},
@@ -42,9 +42,9 @@ func testAccCheckIBMResourcePNApplicationChromeConfig(name, serverKey, websiteUR
 		plan     = "lite"
 	}
 	resource "ibm_pn_application_chrome" "application_chrome" {
-		server_key            = "%s"
-		website_url           = "%s"
-		service_instance_guid = ibm_resource_instance.push_notification.guid
+		api_key            		= "%s"
+		web_site_url           = "%s"
+		application_id = ibm_resource_instance.push_notification.guid
 	}`, name, serverKey, websiteURL)
 }
 
@@ -57,8 +57,8 @@ func testAccCheckIBMResourcePNApplicationChromeUpdate(name, serverKey, newWebsit
 			plan     = "lite"
 		}
 		resource "ibm_pn_application_chrome" "application_chrome" {
-			server_key            = "%s"
-			website_url           = "%s"
-			service_instance_guid = ibm_resource_instance.push_notification.guid
+			api_key            		= "%s"
+			web_site_url           = "%s"
+			application_id = ibm_resource_instance.push_notification.guid
 		}`, name, serverKey, newWebsiteURL)
 }

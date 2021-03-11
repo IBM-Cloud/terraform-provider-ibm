@@ -1,7 +1,7 @@
 package ibm
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -9,50 +9,49 @@ import (
 
 func resourceIBMPNApplicationChrome() *schema.Resource {
 	return &schema.Resource{
+		Read:   resourceApplicationChromeRead,
 		Create: resourceApplicationChromeCreate,
 		Update: resourceApplicationChromeUpdate,
 		Delete: resourceApplicationChromeDelete,
-		Read:   resourceApplicationChromeRead,
 
 		Schema: map[string]*schema.Schema{
-			"service_instance_guid": {
+			"application_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Instance guid of the push notifications instance",
+				Description: "Unique ID of the application using the push service.",
 			},
-			"server_key": {
+			"api_key": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Server key that provides Push Notification service authorized access to Google services that is used for Chrome Web Push.",
+				Description: "An API key that gives the push service an authorized access to Google services that is used for Chrome Web Push.",
 			},
-			"website_url": {
+			"web_site_url": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The URL of the website/web application that should be permitted to subscribe to Web Push.",
+				Description: "The URL of the WebSite / WebApp that should be permitted to subscribe to WebPush.",
 			},
 		},
 	}
 }
 
 func resourceApplicationChromeCreate(d *schema.ResourceData, meta interface{}) error {
-	pnClient, err := meta.(ClientSession).PushNotificationsV1API()
+	pnClient, err := meta.(ClientSession).PushServiceV1()
 	if err != nil {
 		return err
 	}
 
-	serverKey := d.Get("server_key").(string)
-	websiteURL := d.Get("website_url").(string)
-	serviceInstanceGUID := d.Get("service_instance_guid").(string)
+	serverKey := d.Get("api_key").(string)
+	websiteURL := d.Get("web_site_url").(string)
+	applicationGUID := d.Get("application_id").(string)
 
-	_, _, e := pnClient.SaveChromeWebConf(&pushservicev1.SaveChromeWebConfOptions{
-		ApplicationID: &serviceInstanceGUID,
+	_, response, err := pnClient.SaveChromeWebConf(&pushservicev1.SaveChromeWebConfOptions{
+		ApplicationID: &applicationGUID,
 		ApiKey:        &serverKey,
 		WebSiteURL:    &websiteURL,
 	})
 
-	if e != nil {
-		log.Fatal(e)
-		return e
+	if err != nil {
+		return fmt.Errorf("Error configuring chrome web platform: %s with responce code  %s", err, response)
 	}
 
 	return resourceApplicationChromeRead(d, meta)
@@ -60,49 +59,50 @@ func resourceApplicationChromeCreate(d *schema.ResourceData, meta interface{}) e
 
 func resourceApplicationChromeUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	if d.HasChanges("server_key", "website_url") {
+	if d.HasChanges("api_key", "web_site_url") {
 		return resourceApplicationChromeCreate(d, meta)
 	}
 	return nil
 }
 
 func resourceApplicationChromeRead(d *schema.ResourceData, meta interface{}) error {
-	pnClient, err := meta.(ClientSession).PushNotificationsV1API()
+	pnClient, err := meta.(ClientSession).PushServiceV1()
 	if err != nil {
 		return err
 	}
 
-	serviceInstanceGUID := d.Get("service_instance_guid").(string)
+	applicationGUID := d.Get("application_id").(string)
 
 	result, response, err := pnClient.GetChromeWebConf(&pushservicev1.GetChromeWebConfOptions{
-		ApplicationID: &serviceInstanceGUID,
+		ApplicationID: &applicationGUID,
 	})
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Error fetching chrome web platform configuration: %s with responce code  %s", err, response)
 	}
 
+	d.SetId(dataSourceIbmPnApplicationChromeID(d))
+
 	if response.StatusCode == 200 {
-		d.SetId(serviceInstanceGUID)
-		d.Set("server_key", *result.ApiKey)
-		d.Set("website_url", *result.WebSiteURL)
+		d.Set("api_key", *result.ApiKey)
+		d.Set("web_site_url", *result.WebSiteURL)
 	}
 	return nil
 }
 
 func resourceApplicationChromeDelete(d *schema.ResourceData, meta interface{}) error {
-	pnClient, err := meta.(ClientSession).PushNotificationsV1API()
+	pnClient, err := meta.(ClientSession).PushServiceV1()
 	if err != nil {
 		return err
 	}
-	serviceInstanceGUID := d.Get("service_instance_guid").(string)
+	applicationGUID := d.Get("application_id").(string)
 
-	_, e := pnClient.DeleteChromeWebConf(&pushservicev1.DeleteChromeWebConfOptions{
-		ApplicationID: &serviceInstanceGUID,
+	response, e := pnClient.DeleteChromeWebConf(&pushservicev1.DeleteChromeWebConfOptions{
+		ApplicationID: &applicationGUID,
 	})
 
 	if e != nil {
-		return e
+		return fmt.Errorf("Error deleting chrome web platform configuration: %s with responce code  %s", err, response)
 	}
 
 	d.SetId("")
