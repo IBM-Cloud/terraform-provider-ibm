@@ -31,7 +31,7 @@ func testAccCheckIBMDataSourcePNApplicationChrome(name, apiKey, websiteURL strin
 	return fmt.Sprintf(`
 		resource "ibm_resource_instance" "push_notification"{
 			name     = "%s"
-			location = "jp-tok"
+			location = "us-south"
 			service  = "imfpush"
 			plan     = "lite"
 		}

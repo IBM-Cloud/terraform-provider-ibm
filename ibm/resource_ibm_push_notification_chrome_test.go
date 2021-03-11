@@ -10,7 +10,7 @@ import (
 
 func TestAccIBMResourcePNApplicationChrome_Basic(t *testing.T) {
 	name := fmt.Sprintf("terraform_PN_%d", acctest.RandIntRange(10, 100))
-	serverKey := fmt.Sprint(acctest.RandString(45))               // dummy value
+	apiKey := fmt.Sprint(acctest.RandString(45))                  // dummy value
 	websiteURL := "http://webpushnotificatons.mybluemix.net"      // dummy url
 	newWebsiteURL := "http://chromepushnotificaton.mybluemix.net" // dummy url
 	resource.Test(t, resource.TestCase{
@@ -18,13 +18,13 @@ func TestAccIBMResourcePNApplicationChrome_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMResourcePNApplicationChromeConfig(name, serverKey, websiteURL),
+				Config: testAccCheckIBMResourcePNApplicationChromeConfig(name, apiKey, websiteURL),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("ibm_pn_application_chrome.application_chrome", "id"),
 				),
 			},
 			{
-				Config: testAccCheckIBMResourcePNApplicationChromeUpdate(name, serverKey, newWebsiteURL),
+				Config: testAccCheckIBMResourcePNApplicationChromeUpdate(name, apiKey, newWebsiteURL),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_pn_application_chrome.application_chrome", "web_site_url", newWebsiteURL),
 				),
@@ -33,11 +33,11 @@ func TestAccIBMResourcePNApplicationChrome_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMResourcePNApplicationChromeConfig(name, serverKey, websiteURL string) string {
+func testAccCheckIBMResourcePNApplicationChromeConfig(name, apiKey, websiteURL string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_instance" "push_notification"{
 		name     = "%s"
-		location = "jp-tok"
+		location = "us-south"
 		service  = "imfpush"
 		plan     = "lite"
 	}
@@ -45,20 +45,20 @@ func testAccCheckIBMResourcePNApplicationChromeConfig(name, serverKey, websiteUR
 		api_key            		= "%s"
 		web_site_url           = "%s"
 		application_id = ibm_resource_instance.push_notification.guid
-	}`, name, serverKey, websiteURL)
+	}`, name, apiKey, websiteURL)
 }
 
-func testAccCheckIBMResourcePNApplicationChromeUpdate(name, serverKey, newWebsiteURL string) string {
+func testAccCheckIBMResourcePNApplicationChromeUpdate(name, apiKey, newWebsiteURL string) string {
 	return fmt.Sprintf(`
-		resource "ibm_resource_instance" "push_notification"{
-			name     = "%s"
-			location = "us-south"
-			service  = "imfpush"
-			plan     = "lite"
-		}
+	resource "ibm_resource_instance" "push_notification"{
+		name     = "%s"
+		location = "us-south"
+		service  = "imfpush"
+		plan     = "lite"
+	}
 		resource "ibm_pn_application_chrome" "application_chrome" {
 			api_key            		= "%s"
 			web_site_url           = "%s"
 			application_id = ibm_resource_instance.push_notification.guid
-		}`, name, serverKey, newWebsiteURL)
+		}`, name, apiKey, newWebsiteURL)
 }
