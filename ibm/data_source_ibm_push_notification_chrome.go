@@ -47,7 +47,7 @@ func dataSourceApplicationChromeRead(context context.Context, d *schema.Resource
 
 	chromeWebPushCredendialsModel, response, err := pushServiceClient.GetChromeWebConfWithContext(context, getChromeWebConfOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetChromeWebConfWithContext failed %s\n%s", err, response)
+		log.Printf("[DEBUG] GetChromeWebConfWithContext failed %s\n%d", err, response.StatusCode)
 		return diag.FromErr(err)
 	}
 

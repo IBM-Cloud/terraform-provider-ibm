@@ -343,8 +343,8 @@ type clientSession struct {
 
 	bluemixSessionErr error
 
-	pushNotificationErr error
-	pushNotificationAPI *pushservicev1.PushServiceV1
+	pushServiceClient    *pushservicev1.PushServiceV1
+	pushServiceClientErr error
 
 	vpcClassicErr error
 	vpcClassicAPI *vpcclassic.VpcClassicV1
@@ -615,8 +615,8 @@ func (sess clientSession) APIGateway() (*apigateway.ApiGatewayControllerApiV1, e
 	return sess.apigatewayAPI, sess.apigatewayErr
 }
 
-func (sess clientSession) PushServiceV1() (*pushservicev1.PushServiceV1, error) {
-	return sess.pushNotificationAPI, sess.pushNotificationErr
+func (session clientSession) PushServiceV1() (*pushservicev1.PushServiceV1, error) {
+	return session.pushServiceClient, session.pushServiceClientErr
 }
 
 func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
@@ -874,7 +874,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.csv2ConfigErr = errEmptyBluemixCredentials
 		session.crv1ConfigErr = errEmptyBluemixCredentials
 		session.kpErr = errEmptyBluemixCredentials
-		session.pushNotificationErr = errEmptyBluemixCredentials
+		session.pushServiceClientErr = errEmptyBluemixCredentials
 		session.kmsErr = errEmptyBluemixCredentials
 		session.stxConfigErr = errEmptyBluemixCredentials
 		session.cfConfigErr = errEmptyBluemixCredentials
@@ -1138,9 +1138,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	pnclient, err := pushservicev1.NewPushServiceV1(pushNotificationOptions)
 	if err != nil {
-		session.pushNotificationErr = fmt.Errorf("Error occured while configuring push notification service: %q", err)
+		session.pushServiceClientErr = fmt.Errorf("Error occured while configuring push notification service: %q", err)
 	}
-	session.pushNotificationAPI = pnclient
+	session.pushServiceClient = pnclient
 
 	//cosconfigurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
 	cosconfigoptions := &cosconfig.ResourceConfigurationV1Options{
