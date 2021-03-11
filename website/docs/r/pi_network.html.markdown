@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_network"
-sidebar_current: "docs-ibm-resource-pi-network"
 description: |-
   Manages networks in the IBM Power Virtual Server Cloud.
 ---

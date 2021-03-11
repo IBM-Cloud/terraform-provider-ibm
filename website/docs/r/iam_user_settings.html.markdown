@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_user_settings"
-sidebar_current: "docs-ibm-resource-iam-user-settings"
 description: |-
   Manages IBM IAM User Settings.
 ---

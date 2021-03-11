@@ -1,7 +1,7 @@
 ---
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_cloud_instance"
-sidebar_current: "docs-ibm-datasources-pi-cloud-instance"
 description: |-
   Provides data for a cloud instance  in the IBM Power Virtual Server Cloud.
 ---

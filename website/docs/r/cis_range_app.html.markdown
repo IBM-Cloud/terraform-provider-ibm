@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_range_app"
-sidebar_current: "docs-ibm-resource-cis-range-app"
 description: |-
   Provides a IBM CIS Range Application resource.
 ---

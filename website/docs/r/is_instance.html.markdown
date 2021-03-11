@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : instance"
-sidebar_current: "docs-ibm-resource-is-instance"
 description: |-
   Manages IBM IS Instance.
 ---

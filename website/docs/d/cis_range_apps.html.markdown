@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_range_apps"
-sidebar_current: "docs-ibm-datasource-cis-range-apps"
 description: |-
   Get information of IBM Cloud Internet Services Range Applicatiions.
 ---

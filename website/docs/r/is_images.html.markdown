@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM: compute_images"
-sidebar_current: "docs-ibm-resource-compute-images"
 description: |-
   Manages IBM Compute Images.
 ---

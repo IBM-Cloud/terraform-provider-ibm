@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: network_vlan_spanning"
-sidebar_current: "docs-ibm-resource-network-vlan-spanning"
 description: |-
   Configures VLAN Spanning for the IaaS account.
 ---

@@ -1,7 +1,7 @@
 ---
+subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_trigger"
-sidebar_current: "docs-ibm-datasource-functions-trigger"
 description: |-
   Get information on an IBM Cloud Functions Trigger.
 ---

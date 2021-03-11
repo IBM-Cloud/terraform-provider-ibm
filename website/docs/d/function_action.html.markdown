@@ -1,7 +1,7 @@
 ---
+subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_action"
-sidebar_current: "docs-ibm-datasource-cloud-function-action"
 description: |- 
     Get information on a IBM Cloud Functions action.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: dns_reverse_record"
-sidebar_current: "docs-ibm-resource-dns-reverse-record"
 description: |-
   Manages IBM DNS reverse records.
 ---

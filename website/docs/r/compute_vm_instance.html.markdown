@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: compute_vm_instance"
-sidebar_current: "docs-ibm-resource-compute-vm-instance"
 description: |-
   Manages IBM VM instances.
 ---

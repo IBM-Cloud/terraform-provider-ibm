@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_trigger"
-sidebar_current: "docs-ibm-resource-function-trigger"
 description: |-
   Manages IBM Cloud Functions trigger.
 ---

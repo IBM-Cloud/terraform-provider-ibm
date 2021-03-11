@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_vpc_alb"
-sidebar_current: "docs-ibm-datasource-container-vpc-alb"
 description: |-
   Get information about a Kubernetes container vpc ALB.
 ---

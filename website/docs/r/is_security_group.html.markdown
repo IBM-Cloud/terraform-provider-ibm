@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : security_group"
-sidebar_current: "docs-ibm-resource-is-security-group"
 description: |-
   Manages IBM Security Group.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : subnet network acl attachment"
-sidebar_current: "docs-ibm-resource-is-subnet-network-acl-attachment"
 description: |-
   Manages IBM Subnet Network ACL Attachment.
 ---

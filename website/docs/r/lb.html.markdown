@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lb"
-sidebar_current: "docs-ibm-resource-lb"
 description: |-
   Manages IBM Load Balancer.
 ---

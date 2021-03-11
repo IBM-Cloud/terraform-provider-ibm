@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: ibm_dns_domain"
-sidebar_current: "docs-ibm-datasource-dns-domain"
 description: |-
   Get information about an IBM DNS domain resource.
 ---

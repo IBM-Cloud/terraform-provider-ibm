@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM : Cloud Internet Services instance"
-sidebar_current: "docs-ibm-resource-cis"
 description: |-
   Manages IBM Cloud Internet Services Instance.
 ---

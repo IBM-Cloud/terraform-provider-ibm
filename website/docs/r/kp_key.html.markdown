@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Key Management Service"
 layout: "ibm"
 page_title: "IBM : kp-key"
-sidebar_current: "docs-ibm-resource-kp-key"
 description: |-
   Manages IBM Keyprotect keys.
 ---

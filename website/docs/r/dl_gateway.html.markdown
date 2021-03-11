@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_gateway"
-sidebar_current: "docs-ibm-resource-dl-gateway"
 description: |-
   Manages IBM Direct Link Gateway.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : ike_policy"
-sidebar_current: "docs-ibm-resource-is-ike-policy"
 description: |-
   Manages IBM ike policy.
 ---

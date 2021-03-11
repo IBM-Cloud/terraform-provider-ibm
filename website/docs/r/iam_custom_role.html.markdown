@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_custom_role"
-sidebar_current: "docs-ibm-resource-iam-custom-role"
 description: |-
   Manages IBM IAM Custom Role.
 ---

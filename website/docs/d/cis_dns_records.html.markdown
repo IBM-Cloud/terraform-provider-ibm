@@ -1,8 +1,7 @@
 ---
-
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM : Cloud Internet Service DNS Record"
-sidebar_current: "docs-ibm-datasource-cis-dns-records"
 description: |-
 Manages IBM Cloud Internet Service DNS Record.
 

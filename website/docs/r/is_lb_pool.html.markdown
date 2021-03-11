@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : lb_pool"
-sidebar_current: "docs-ibm-resource-is-lb-pool"
 description: |-
   Manages IBM load balancer pool.
 ---

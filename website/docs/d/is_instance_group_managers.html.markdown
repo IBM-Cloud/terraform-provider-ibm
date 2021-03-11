@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM: instance_group_managers"
-sidebar_current: "docs-ibm-resource-is-instance-group-managers"
 description: |-
   Get IBM VPC instance group managers of an instance group.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lb_vpx_vip"
-sidebar_current: "docs-ibm-resource-lb-vpx-vip"
 description: |-
   Manages IBM VPX load balancer virtual IP addresses.
 ---

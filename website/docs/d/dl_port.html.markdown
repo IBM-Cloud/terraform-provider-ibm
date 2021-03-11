@@ -1,7 +1,7 @@
 ---
+subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_port"
-sidebar_current: "docs-ibm-datasource-dl-port"
 description: |-
   Manages IBM Cloud Infrastructure Direct Link Port.
 ---

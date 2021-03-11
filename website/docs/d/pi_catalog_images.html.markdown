@@ -1,7 +1,7 @@
 ---
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_catalog_images"
-sidebar_current: "docs-ibm-datasources-pi-catalog-images"
 description: |-
   List all images available for copying into cloud instances
 ---

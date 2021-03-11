@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lbaas"
-sidebar_current: "docs-ibm-datasource-lbaas"
 description: |-
   Manages IBM Load Balancer As A Service.
 ---

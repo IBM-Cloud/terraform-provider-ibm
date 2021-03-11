@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM : resource_group"
-sidebar_current: "docs-ibm-resource-resource-group"
 description: |-
   Manages IBM Resource Group.
 ---

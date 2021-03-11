@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function-namespace"
-sidebar_current: "docs-ibm-resource-function-namespace"
 description: |-
   Manages IBM Cloud Functions namespace.
 ---
