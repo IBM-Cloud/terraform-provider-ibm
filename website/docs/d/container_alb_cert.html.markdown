@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_alb_cert"
-sidebar_current: "docs-ibm-resource-container-alb-cert"
 description: |-
   Get information about a IBM container alb cert.
 ---

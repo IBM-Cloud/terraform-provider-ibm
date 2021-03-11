@@ -1,7 +1,7 @@
 ---
+subcategory: "Event Streams"
 layout: "ibm"
 page_title: "IBM: ibm_event_streams_topic"
-sidebar_current: "docs-ibm-datasource-event-streams_topic"
 description: |-
   Get information about an IBM Event Streams topic resource.
 ---

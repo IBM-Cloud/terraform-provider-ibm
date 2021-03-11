@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : "
-sidebar_current: "docs-ibm-datasources-dns-resource-records"
 description: |-
   Manages IBM Cloud Infrastructure Private Domain Name Service Resource Records.
 ---

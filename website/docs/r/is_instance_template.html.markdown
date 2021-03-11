@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM: instance_template"
-sidebar_current: "docs-ibm-resource-is-instance-template"
 description: |-
   Manages IBM VPC instance template.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM: instance_group_manager_policy"
-sidebar_current: "docs-ibm-resource-is-instance-group-manager-policy"
 description: |-
   Manages IBM VPC instance group manager policy.
 ---

@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : security_group"
-sidebar_current: "docs-ibm-resource-is-security-group"
 description: |-
   Reads IBM Cloud Security Group.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_service_api_key"
-sidebar_current: "docs-ibm-resource-iam-service_api_key"
 description: |-
   Manages IBM IAM Service API Key.
 ---

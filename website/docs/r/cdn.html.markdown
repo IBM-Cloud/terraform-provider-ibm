@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : cdn"
-sidebar_current: "docs-ibm-resource-cdn"
 description: |-
   Manages IBM cdn.
 ---

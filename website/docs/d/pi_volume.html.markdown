@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_volume"
-sidebar_current: "docs-ibm-datasources-pi-volume"
 description: |-
   Manages a volume in the Power Virtual Server Cloud.
 ---

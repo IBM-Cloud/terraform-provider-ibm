@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : network acl"
-sidebar_current: "docs-ibm-resource-is-network-acl"
 description: |-
   Manages IBM network acl.
 ---

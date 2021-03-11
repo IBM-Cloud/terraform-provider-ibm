@@ -1,7 +1,7 @@
 ---
+subcategory: "Certificate Manager"
 layout: "ibm"
 page_title: "IBM: certificate_manager_certificate"
-sidebar_current: "docs-ibm-datasource-certificate-manager-certificate"
 description: |-
   Reads details of a certificate from a Certificate Manager Instance
 ---

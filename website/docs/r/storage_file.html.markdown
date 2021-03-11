@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: storage_file"
-sidebar_current: "docs-ibm-resource-storage-file"
 description: |-
   Manages IBM Storage File.
 ---

@@ -1,7 +1,7 @@
 ---
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_image"
-sidebar_current: "docs-ibm-datasources-pi-image"
 description: |-
   Manages an image in the Power Virtual Server Cloud.
 ---

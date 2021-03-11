@@ -1,7 +1,7 @@
 ---
+subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_routers"
-sidebar_current: "docs-ibm-datasource-dl-routers"
 description: |-
   Retrieve location specific cross connect router information. Only valid for offering_type=dedicated locations.
 ---

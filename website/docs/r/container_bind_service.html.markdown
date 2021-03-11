@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_bind_service"
-sidebar_current: "docs-ibm-resource-container-bind-service"
 description: |-
   Manages IBM container cluster.
 ---

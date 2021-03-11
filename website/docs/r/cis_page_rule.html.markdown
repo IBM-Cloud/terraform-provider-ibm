@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_page_rule"
-sidebar_current: "docs-ibm-resource-cis-page-rule"
 description: |-
   Provides a IBM CIS Page Rule resource.
 ---

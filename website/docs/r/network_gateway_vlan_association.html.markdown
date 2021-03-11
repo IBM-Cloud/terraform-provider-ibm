@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: network_gateway_vlan_association"
-sidebar_current: "docs-ibm-resource-network-gateway-vlan-association"
 description: |-
   Manages association and dis-association of VLAN to Gateway.
 ---

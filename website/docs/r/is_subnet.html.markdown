@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : subnet"
-sidebar_current: "docs-ibm-resource-is-subnet"
 description: |-
   Manages IBM subnet.
 ---

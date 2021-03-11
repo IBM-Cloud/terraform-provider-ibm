@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : vpc-route"
-sidebar_current: "docs-ibm-resource-is-vpc-route"
 description: |-
   Manages IBM IS VPC Route.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : vpc-address-prefix"
-sidebar_current: "docs-ibm-resource-is-vpc-address-prefix"
 description: |-
   Manages IBM IS VPC Address prefix.
 ---

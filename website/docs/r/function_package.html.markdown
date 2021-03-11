@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function-package"
-sidebar_current: "docs-ibm-resource-function-package"
 description: |-
   Manages IBM Cloud Functions package.
 ---

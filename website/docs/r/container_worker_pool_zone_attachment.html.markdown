@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_worker_pool_zone_attachment"
-sidebar_current: "docs-ibm-resource-container-worker-pool-zone-attachment"
 description: |-
   Manages IBM container worker pool zone attachment.
 ---

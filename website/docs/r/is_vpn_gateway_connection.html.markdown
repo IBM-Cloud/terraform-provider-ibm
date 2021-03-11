@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : VPN-gateway-connection"
-sidebar_current: "docs-ibm-resource-is-vpn-gateway-connection"
 description: |-
   Manages IBM VPN Gateway Connection
 ---

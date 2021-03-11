@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM : resource_key"
-sidebar_current: "docs-ibm-resource-resource-key"
 description: |-
   Manages IBM Resource Key.
 ---

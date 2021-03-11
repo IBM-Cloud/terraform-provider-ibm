@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_vpc_cluster"
-sidebar_current: "docs-ibm-resource-container-vpc-cluster"
 description: |-
   Manages IBM VPC container cluster.
 ---

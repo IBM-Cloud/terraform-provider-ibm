@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: storage_evault"
-sidebar_current: "docs-ibm-resource-storage-evault"
 description: |-
   Manages IBM Storage Evault.
 ---

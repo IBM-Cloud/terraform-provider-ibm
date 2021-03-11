@@ -1,7 +1,7 @@
 ---
+subcategory: "Transit Gateway"
 layout: "ibm"
 page_title: "IBM : tg_connection"
-sidebar_current: "docs-ibm-resource-tg-connection"
 description: |-
   Manages IBM Transit Gateway Connection.
 ---

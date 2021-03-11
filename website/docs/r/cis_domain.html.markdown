@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: app"
-sidebar_current: "docs-ibm-resource-cis"
 description: |-
   Assigns managmement of a DNS domain to Cloud Internet Services (CIS) 
 ---

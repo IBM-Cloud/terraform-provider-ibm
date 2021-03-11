@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lbaas"
-sidebar_current: "docs-ibm-resource-lbaas-server-instance-attachment"
 description: |-
   Attach server instances to IBM Cloud Load balancer.
 ---

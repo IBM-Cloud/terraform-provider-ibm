@@ -1,7 +1,7 @@
 ---
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_org"
-sidebar_current: "docs-ibm-datasource-org"
 description: |-
   Get information about an IBM Cloud organization.
 ---

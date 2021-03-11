@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : Image"
-sidebar_current: "docs-ibm-datasources-is-image"
 description: |-
   Manages IBM Cloud Infrastructure Images.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_origin_pool"
-sidebar_current: "docs-ibm-resource-cis-origin-pool"
 description: |-
   Provides a IBM Cloud Internet Services Origin Pool resource.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_instance"
-sidebar_current: "docs-ibm-resource-pi-instance"
 description: |-
   Manages an instance (a.k.a. VM/LPAR) in the Power Virtual Server Cloud.
 ---

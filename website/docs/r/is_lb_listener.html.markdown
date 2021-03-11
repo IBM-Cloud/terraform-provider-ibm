@@ -1,7 +1,7 @@
 ---
-layout: "ibm"
+
+subcategory: "VPC infrastructure"
 page_title: "IBM : lb_listener"
-sidebar_current: "docs-ibm-resource-is-lb-listener"
 description: |-
   Manages IBM load balancer listener.
 ---

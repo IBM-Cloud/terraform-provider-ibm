@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_tls_settings"
-sidebar_current: "docs-ibm-resource-cis-tls-settings"
 description: |-
   Provides a IBM CIS TLS Settings resource.
 ---

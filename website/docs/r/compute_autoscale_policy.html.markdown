@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : compute_autoscale_policy"
-sidebar_current: "docs-ibm-resource-compute-autoscale-policy"
 description: |-
   Manages IBM Compute Auto Scale Policy.
 ---

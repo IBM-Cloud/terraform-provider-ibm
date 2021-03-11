@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: app_route"
-sidebar_current: "docs-ibm-resource-app-route"
 description: |-
   Manages IBM Application route.
 ---

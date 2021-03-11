@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: compute_bare_metal"
-sidebar_current: "docs-ibm-resource-compute-bare-metal"
 description: |-
   Manages IBM Compute bare metal servers.
 ---

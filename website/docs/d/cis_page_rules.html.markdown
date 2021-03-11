@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_page_rules"
-sidebar_current: "docs-ibm-datasource-cis-page-rules"
 description: |-
   Get information on an IBM Cloud Internet Services Page Rules.
 ---

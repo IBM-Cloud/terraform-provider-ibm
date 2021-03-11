@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: network_private_ip"
-sidebar_current: "docs-ibm-resource-network-public-ip"
 description: |-
   Manages IBM Network Public IP.
 ---

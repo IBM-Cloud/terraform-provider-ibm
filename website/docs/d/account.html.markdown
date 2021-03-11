@@ -1,7 +1,7 @@
 ---
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_account"
-sidebar_current: "docs-ibm-datasource-account"
 description: |-
   Get information about an IBM Cloud account.
 ---

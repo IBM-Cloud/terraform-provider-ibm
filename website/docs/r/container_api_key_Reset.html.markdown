@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_api_key_reset"
-sidebar_current: "docs-ibm-resource-container-api-key-reset"
 description: |-
   Resets Kubernetes API Key.
 ---

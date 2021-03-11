@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : ipsec_policy"
-sidebar_current: "docs-ibm-resource-is-ipsec-policy"
 description: |-
   Manages IBM ipsec policy.
 ---

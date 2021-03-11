@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_addons"
-sidebar_current: "docs-ibm-resource-container-addons"
 description: |-
   Manages IBM container addons.
 ---

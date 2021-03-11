@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_service_id"
-sidebar_current: "docs-ibm-resource-iam-service-id"
 description: |-
   Manages IBM IAM ServiceID.
 ---

@@ -1,7 +1,7 @@
 ---
+subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_namespace"
-sidebar_current: "docs-ibm-datasource-function-namespace"
 description: |-
   Get information on an IBM Cloud Functions namespace.
 ---
