@@ -47,6 +47,7 @@ import (
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
@@ -240,6 +241,7 @@ type ClientSession interface {
 	IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
 	ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error)
 	CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error)
+	ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error)
 }
 
 type clientSession struct {
@@ -459,6 +461,10 @@ type clientSession struct {
 	//Catalog Management Option
 	catalogManagementClient    *catalogmanagementv1.CatalogManagementV1
 	catalogManagementClientErr error
+
+	//Resource Controller Option
+	resourceControllerErr error
+	resourceControllerAPI *resourcecontroller.ResourceControllerV2
 }
 
 func (session clientSession) CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error) {
@@ -842,6 +848,11 @@ func (sess clientSession) IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
 // ResourceMAanger Session
 func (sess clientSession) ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error) {
 	return sess.resourceManagerAPI, sess.resourceManagerErr
+}
+
+// ResourceController Session
+func (sess clientSession) ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error) {
+	return sess.resourceControllerAPI, sess.resourceControllerErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -1643,6 +1654,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 		resourceManagerClient.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 	session.resourceManagerAPI = resourceManagerClient
+
+	// resource controller API
+	resourceControllerOptions := &resourcecontroller.ResourceControllerV2Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_CONTROLLER_API_ENDPOINT"}, "https://resource-controller.cloud.ibm.com/v2"),
+	}
+	resourceControllerClient, err := resourcecontroller.NewResourceControllerV2(resourceControllerOptions)
+	if err != nil {
+		session.resourceControllerErr = fmt.Errorf("Error occured while configuring Resource Controller service: %q", err)
+	}
+	if resourceControllerClient != nil {
+		resourceControllerClient.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+	session.resourceControllerAPI = resourceControllerClient
 
 	return session, nil
 }
