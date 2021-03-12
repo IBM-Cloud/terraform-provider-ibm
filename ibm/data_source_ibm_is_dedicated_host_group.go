@@ -20,12 +20,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
 func dataSourceIbmIsDedicatedHostGroup() *schema.Resource {
@@ -33,14 +32,9 @@ func dataSourceIbmIsDedicatedHostGroup() *schema.Resource {
 		ReadContext: dataSourceIbmIsDedicatedHostGroupRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The dedicated host group identifier.",
-			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 			},
 			"class": &schema.Schema{
@@ -71,7 +65,6 @@ func dataSourceIbmIsDedicatedHostGroup() *schema.Resource {
 						},
 						"deleted": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
 							Elem: &schema.Resource{
@@ -118,29 +111,9 @@ func dataSourceIbmIsDedicatedHostGroup() *schema.Resource {
 				Description: "The URL for this dedicated host group.",
 			},
 			"resource_group": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The resource group for this dedicated host group.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for this resource group.",
-						},
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The unique identifier for this resource group.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The user-defined name for this resource group.",
-						},
-					},
-				},
+				Description: "The unique identifier of the resource group for this dedicated host group.",
 			},
 			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -167,125 +140,95 @@ func dataSourceIbmIsDedicatedHostGroup() *schema.Resource {
 				},
 			},
 			"zone": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The zone this dedicated host group resides in.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for this zone.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The globally unique name for this zone.",
-						},
-					},
-				},
+				Description: "The globally unique name of the zone this dedicated host group resides in.",
 			},
 		},
 	}
 }
 
 func dataSourceIbmIsDedicatedHostGroupRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(ClientSession).VpcV1()
+	vpcClient, err := meta.(ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	getDedicatedHostGroupOptions := &vpcv1.GetDedicatedHostGroupOptions{}
+	listDedicatedHostGroupsOptions := &vpcv1.ListDedicatedHostGroupsOptions{}
 
-	getDedicatedHostGroupOptions.SetID(d.Get("id").(string))
-
-	dedicatedHostGroup, response, err := vpcClient.GetDedicatedHostGroupWithContext(context, getDedicatedHostGroupOptions)
+	dedicatedHostGroupCollection, response, err := vpcClient.ListDedicatedHostGroupsWithContext(context, listDedicatedHostGroupsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetDedicatedHostGroupWithContext failed %s\n%s", err, response)
+		log.Printf("[DEBUG] ListDedicatedHostGroupsWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
 
-	// Use the provided filter argument and construct a new list with only the requested resource(s)
-	var matchDedicatedHosts []vpcv1.DedicatedHostReference
-	var name string
-	var suppliedFilter bool
-
-	if v, ok := d.GetOk("name"); ok {
-		name = v.(string)
-		suppliedFilter = true
-		for _, data := range dedicatedHostGroup.DedicatedHosts {
-			if *data.Name == name {
-				matchDedicatedHosts = append(matchDedicatedHosts, data)
+	if len(dedicatedHostGroupCollection.Groups) == 0 {
+		return nil
+	}
+	dedicatedHostGroup := vpcv1.DedicatedHostGroup{}
+	name := d.Get("name").(string)
+	for _, data := range dedicatedHostGroupCollection.Groups {
+		if *data.Name == name {
+			dedicatedHostGroup = data
+			d.SetId(*dedicatedHostGroup.ID)
+			if err = d.Set("class", dedicatedHostGroup.Class); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting class: %s", err))
 			}
-		}
-	} else {
-		matchDedicatedHosts = dedicatedHostGroup.DedicatedHosts
-	}
-	dedicatedHostGroup.DedicatedHosts = matchDedicatedHosts
+			if dedicatedHostGroup.CreatedAt != nil {
+				if err = d.Set("created_at", dedicatedHostGroup.CreatedAt.String()); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+				}
+			}
 
-	if len(dedicatedHostGroup.DedicatedHosts) == 0 {
-		return diag.FromErr(fmt.Errorf("no DedicatedHosts found with name %s\nIf not specified, please specify more filters", name))
-	}
+			if err = d.Set("crn", dedicatedHostGroup.CRN); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+			}
 
-	if suppliedFilter {
-		d.SetId(name)
-	} else {
-		d.SetId(dataSourceIbmIsDedicatedHostGroupID(d))
-	}
-	if err = d.Set("class", dedicatedHostGroup.Class); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting class: %s", err))
-	}
-	if err = d.Set("created_at", dedicatedHostGroup.CreatedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-	}
-	if err = d.Set("crn", dedicatedHostGroup.Crn); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
-	}
+			if dedicatedHostGroup.DedicatedHosts != nil {
+				err = d.Set("dedicated_hosts", dataSourceDedicatedHostGroupFlattenDedicatedHosts(dedicatedHostGroup.DedicatedHosts))
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting dedicated_hosts %s", err))
+				}
+			}
+			if err = d.Set("family", dedicatedHostGroup.Family); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting family: %s", err))
+			}
+			if err = d.Set("href", dedicatedHostGroup.Href); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+			}
 
-	if dedicatedHostGroup.DedicatedHosts != nil {
-		err = d.Set("dedicated_hosts", dataSourceDedicatedHostGroupFlattenDedicatedHosts(dedicatedHostGroup.DedicatedHosts))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting dedicated_hosts %s", err))
-		}
-	}
-	if err = d.Set("family", dedicatedHostGroup.Family); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting family: %s", err))
-	}
-	if err = d.Set("href", dedicatedHostGroup.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
-	}
+			if dedicatedHostGroup.ResourceGroup != nil {
+				err = d.Set("resource_group", *dedicatedHostGroup.ResourceGroup.ID)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting resource_group %s", err))
+				}
+			}
+			if err = d.Set("resource_type", dedicatedHostGroup.ResourceType); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+			}
 
-	if dedicatedHostGroup.ResourceGroup != nil {
-		err = d.Set("resource_group", dataSourceDedicatedHostGroupFlattenResourceGroup(*dedicatedHostGroup.ResourceGroup))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting resource_group %s", err))
-		}
-	}
-	if err = d.Set("resource_type", dedicatedHostGroup.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
-	}
+			if dedicatedHostGroup.SupportedInstanceProfiles != nil {
+				err = d.Set("supported_instance_profiles", dataSourceDedicatedHostGroupFlattenSupportedInstanceProfiles(dedicatedHostGroup.SupportedInstanceProfiles))
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting supported_instance_profiles %s", err))
+				}
+			}
 
-	if dedicatedHostGroup.SupportedInstanceProfiles != nil {
-		err = d.Set("supported_instance_profiles", dataSourceDedicatedHostGroupFlattenSupportedInstanceProfiles(dedicatedHostGroup.SupportedInstanceProfiles))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting supported_instance_profiles %s", err))
+			if dedicatedHostGroup.Zone != nil {
+				err = d.Set("zone", *dedicatedHostGroup.Zone.Name)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting zone %s", err))
+				}
+			}
+			return nil
 		}
 	}
-
-	if dedicatedHostGroup.Zone != nil {
-		err = d.Set("zone", dataSourceDedicatedHostGroupFlattenZone(*dedicatedHostGroup.Zone))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting zone %s", err))
-		}
-	}
-
-	return nil
+	return diag.FromErr(fmt.Errorf("No Dedicated Host Group found with name %s", name))
 }
 
 // dataSourceIbmIsDedicatedHostGroupID returns a reasonable ID for the list.
 func dataSourceIbmIsDedicatedHostGroupID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
+	return "abcd"
 }
 
 func dataSourceDedicatedHostGroupFlattenDedicatedHosts(result []vpcv1.DedicatedHostReference) (dedicatedHosts []map[string]interface{}) {
@@ -299,8 +242,8 @@ func dataSourceDedicatedHostGroupFlattenDedicatedHosts(result []vpcv1.DedicatedH
 func dataSourceDedicatedHostGroupDedicatedHostsToMap(dedicatedHostsItem vpcv1.DedicatedHostReference) (dedicatedHostsMap map[string]interface{}) {
 	dedicatedHostsMap = map[string]interface{}{}
 
-	if dedicatedHostsItem.Crn != nil {
-		dedicatedHostsMap["crn"] = dedicatedHostsItem.Crn
+	if dedicatedHostsItem.CRN != nil {
+		dedicatedHostsMap["crn"] = dedicatedHostsItem.CRN
 	}
 	if dedicatedHostsItem.Deleted != nil {
 		deletedList := []map[string]interface{}{}
@@ -334,8 +277,6 @@ func dataSourceDedicatedHostGroupDedicatedHostsDeletedToMap(deletedItem vpcv1.De
 	return deletedMap
 }
 
-
-
 func dataSourceDedicatedHostGroupFlattenResourceGroup(result vpcv1.ResourceGroupReference) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceDedicatedHostGroupResourceGroupToMap(result)
@@ -360,7 +301,6 @@ func dataSourceDedicatedHostGroupResourceGroupToMap(resourceGroupItem vpcv1.Reso
 	return resourceGroupMap
 }
 
-
 func dataSourceDedicatedHostGroupFlattenSupportedInstanceProfiles(result []vpcv1.InstanceProfileReference) (supportedInstanceProfiles []map[string]interface{}) {
 	for _, supportedInstanceProfilesItem := range result {
 		supportedInstanceProfiles = append(supportedInstanceProfiles, dataSourceDedicatedHostGroupSupportedInstanceProfilesToMap(supportedInstanceProfilesItem))
@@ -382,7 +322,6 @@ func dataSourceDedicatedHostGroupSupportedInstanceProfilesToMap(supportedInstanc
 	return supportedInstanceProfilesMap
 }
 
-
 func dataSourceDedicatedHostGroupFlattenZone(result vpcv1.ZoneReference) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceDedicatedHostGroupZoneToMap(result)
@@ -403,4 +342,3 @@ func dataSourceDedicatedHostGroupZoneToMap(zoneItem vpcv1.ZoneReference) (zoneMa
 
 	return zoneMap
 }
-

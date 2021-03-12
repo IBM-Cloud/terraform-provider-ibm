@@ -25,7 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
 func dataSourceIbmIsDedicatedHostProfile() *schema.Resource {
@@ -54,9 +54,8 @@ func dataSourceIbmIsDedicatedHostProfile() *schema.Resource {
 				Description: "The URL for this dedicated host.",
 			},
 			"memory": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Computed:    true,
+				Type:     schema.TypeList,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": &schema.Schema{
@@ -101,9 +100,8 @@ func dataSourceIbmIsDedicatedHostProfile() *schema.Resource {
 				},
 			},
 			"socket_count": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Computed:    true,
+				Type:     schema.TypeList,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": &schema.Schema{
@@ -167,9 +165,8 @@ func dataSourceIbmIsDedicatedHostProfile() *schema.Resource {
 				},
 			},
 			"vcpu_architecture": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Computed:    true,
+				Type:     schema.TypeList,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": &schema.Schema{
@@ -186,9 +183,8 @@ func dataSourceIbmIsDedicatedHostProfile() *schema.Resource {
 				},
 			},
 			"vcpu_count": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Computed:    true,
+				Type:     schema.TypeList,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": &schema.Schema{
@@ -237,92 +233,77 @@ func dataSourceIbmIsDedicatedHostProfile() *schema.Resource {
 }
 
 func dataSourceIbmIsDedicatedHostProfileRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(ClientSession).VpcV1()
+	vpcClient, err := meta.(ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	getDedicatedHostProfileOptions := &vpcv1.GetDedicatedHostProfileOptions{}
+	listDedicatedHostProfilesOptions := &vpcv1.ListDedicatedHostProfilesOptions{}
 
-	dedicatedHostProfile, response, err := vpcClient.GetDedicatedHostProfileWithContext(context, getDedicatedHostProfileOptions)
+	dedicatedHostProfileCollection, response, err := vpcClient.ListDedicatedHostProfilesWithContext(context, listDedicatedHostProfilesOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetDedicatedHostProfileWithContext failed %s\n%s", err, response)
+		log.Printf("[DEBUG] ListDedicatedHostProfilesWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
-
 	// Use the provided filter argument and construct a new list with only the requested resource(s)
-	var matchSupportedInstanceProfiles []vpcv1.InstanceProfileReference
-	var name string
-	var suppliedFilter bool
+	var dedicatedHostProfile vpcv1.DedicatedHostProfile
 
-	if v, ok := d.GetOk("name"); ok {
-		name = v.(string)
-		suppliedFilter = true
-		for _, data := range dedicatedHostProfile.SupportedInstanceProfiles {
-			if *data.Name == name {
-				matchSupportedInstanceProfiles = append(matchSupportedInstanceProfiles, data)
+	name := d.Get("name").(string)
+	for _, data := range dedicatedHostProfileCollection.Profiles {
+		if *data.Name == name {
+			dedicatedHostProfile = data
+
+			d.SetId(dataSourceIbmIsDedicatedHostProfileID(d))
+
+			if err = d.Set("class", dedicatedHostProfile.Class); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting class: %s", err))
 			}
-		}
-	} else {
-		matchSupportedInstanceProfiles = dedicatedHostProfile.SupportedInstanceProfiles
-	}
-	dedicatedHostProfile.SupportedInstanceProfiles = matchSupportedInstanceProfiles
+			if err = d.Set("family", dedicatedHostProfile.Family); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting family: %s", err))
+			}
+			if err = d.Set("href", dedicatedHostProfile.Href); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+			}
 
-	if len(dedicatedHostProfile.SupportedInstanceProfiles) == 0 {
-		return diag.FromErr(fmt.Errorf("no SupportedInstanceProfiles found with name %s\nIf not specified, please specify more filters", name))
-	}
+			if dedicatedHostProfile.Memory != nil {
+				err = d.Set("memory", dataSourceDedicatedHostProfileFlattenMemory(*dedicatedHostProfile.Memory.(*vpcv1.DedicatedHostProfileMemory)))
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting memory %s", err))
+				}
+			}
 
-	if suppliedFilter {
-		d.SetId(name)
-	} else {
-		d.SetId(dataSourceIbmIsDedicatedHostProfileID(d))
-	}
-	if err = d.Set("class", dedicatedHostProfile.Class); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting class: %s", err))
-	}
-	if err = d.Set("family", dedicatedHostProfile.Family); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting family: %s", err))
-	}
-	if err = d.Set("href", dedicatedHostProfile.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
-	}
+			if dedicatedHostProfile.SocketCount != nil {
+				err = d.Set("socket_count", dataSourceDedicatedHostProfileFlattenSocketCount(*dedicatedHostProfile.SocketCount.(*vpcv1.DedicatedHostProfileSocket)))
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting socket_count %s", err))
+				}
+			}
 
-	if dedicatedHostProfile.Memory != nil {
-		err = d.Set("memory", dataSourceDedicatedHostProfileFlattenMemory(dedicatedHostProfile.Memory))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting memory %s", err))
-		}
-	}
+			if dedicatedHostProfile.SupportedInstanceProfiles != nil {
+				err = d.Set("supported_instance_profiles", dataSourceDedicatedHostProfileFlattenSupportedInstanceProfiles(dedicatedHostProfile.SupportedInstanceProfiles))
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting supported_instance_profiles %s", err))
+				}
+			}
 
-	if dedicatedHostProfile.SocketCount != nil {
-		err = d.Set("socket_count", dataSourceDedicatedHostProfileFlattenSocketCount(dedicatedHostProfile.SocketCount))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting socket_count %s", err))
-		}
-	}
+			if dedicatedHostProfile.VcpuArchitecture != nil {
+				err = d.Set("vcpu_architecture", dataSourceDedicatedHostProfileFlattenVcpuArchitecture(*dedicatedHostProfile.VcpuArchitecture))
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting vcpu_architecture %s", err))
+				}
+			}
 
-	if dedicatedHostProfile.SupportedInstanceProfiles != nil {
-		err = d.Set("supported_instance_profiles", dataSourceDedicatedHostProfileFlattenSupportedInstanceProfiles(dedicatedHostProfile.SupportedInstanceProfiles))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting supported_instance_profiles %s", err))
-		}
-	}
+			if dedicatedHostProfile.VcpuCount != nil {
+				err = d.Set("vcpu_count", dataSourceDedicatedHostProfileFlattenVcpuCount(*dedicatedHostProfile.VcpuCount.(*vpcv1.DedicatedHostProfileVcpu)))
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting vcpu_count %s", err))
+				}
+			}
 
-	if dedicatedHostProfile.VcpuArchitecture != nil {
-		err = d.Set("vcpu_architecture", dataSourceDedicatedHostProfileFlattenVcpuArchitecture(*dedicatedHostProfile.VcpuArchitecture))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting vcpu_architecture %s", err))
+			return nil
 		}
 	}
-
-	if dedicatedHostProfile.VcpuCount != nil {
-		err = d.Set("vcpu_count", dataSourceDedicatedHostProfileFlattenVcpuCount(dedicatedHostProfile.VcpuCount))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting vcpu_count %s", err))
-		}
-	}
-
-	return nil
+	return diag.FromErr(fmt.Errorf("No Dedicated Host Profile found with name %s", name))
 }
 
 // dataSourceIbmIsDedicatedHostProfileID returns a reasonable ID for the list.
@@ -366,7 +347,6 @@ func dataSourceDedicatedHostProfileMemoryToMap(memoryItem vpcv1.DedicatedHostPro
 	return memoryMap
 }
 
-
 func dataSourceDedicatedHostProfileFlattenSocketCount(result vpcv1.DedicatedHostProfileSocket) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceDedicatedHostProfileSocketCountToMap(result)
@@ -403,7 +383,6 @@ func dataSourceDedicatedHostProfileSocketCountToMap(socketCountItem vpcv1.Dedica
 	return socketCountMap
 }
 
-
 func dataSourceDedicatedHostProfileFlattenSupportedInstanceProfiles(result []vpcv1.InstanceProfileReference) (supportedInstanceProfiles []map[string]interface{}) {
 	for _, supportedInstanceProfilesItem := range result {
 		supportedInstanceProfiles = append(supportedInstanceProfiles, dataSourceDedicatedHostProfileSupportedInstanceProfilesToMap(supportedInstanceProfilesItem))
@@ -425,8 +404,7 @@ func dataSourceDedicatedHostProfileSupportedInstanceProfilesToMap(supportedInsta
 	return supportedInstanceProfilesMap
 }
 
-
-func dataSourceDedicatedHostProfileFlattenVcpuArchitecture(result vpcv1.DedicatedHostProfileVCPUArchitecture) (finalList []map[string]interface{}) {
+func dataSourceDedicatedHostProfileFlattenVcpuArchitecture(result vpcv1.DedicatedHostProfileVcpuArchitecture) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceDedicatedHostProfileVcpuArchitectureToMap(result)
 	finalList = append(finalList, finalMap)
@@ -434,7 +412,7 @@ func dataSourceDedicatedHostProfileFlattenVcpuArchitecture(result vpcv1.Dedicate
 	return finalList
 }
 
-func dataSourceDedicatedHostProfileVcpuArchitectureToMap(vcpuArchitectureItem vpcv1.DedicatedHostProfileVCPUArchitecture) (vcpuArchitectureMap map[string]interface{}) {
+func dataSourceDedicatedHostProfileVcpuArchitectureToMap(vcpuArchitectureItem vpcv1.DedicatedHostProfileVcpuArchitecture) (vcpuArchitectureMap map[string]interface{}) {
 	vcpuArchitectureMap = map[string]interface{}{}
 
 	if vcpuArchitectureItem.Type != nil {
@@ -447,8 +425,7 @@ func dataSourceDedicatedHostProfileVcpuArchitectureToMap(vcpuArchitectureItem vp
 	return vcpuArchitectureMap
 }
 
-
-func dataSourceDedicatedHostProfileFlattenVcpuCount(result vpcv1.DedicatedHostProfileVCPU) (finalList []map[string]interface{}) {
+func dataSourceDedicatedHostProfileFlattenVcpuCount(result vpcv1.DedicatedHostProfileVcpu) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceDedicatedHostProfileVcpuCountToMap(result)
 	finalList = append(finalList, finalMap)
@@ -456,7 +433,7 @@ func dataSourceDedicatedHostProfileFlattenVcpuCount(result vpcv1.DedicatedHostPr
 	return finalList
 }
 
-func dataSourceDedicatedHostProfileVcpuCountToMap(vcpuCountItem vpcv1.DedicatedHostProfileVCPU) (vcpuCountMap map[string]interface{}) {
+func dataSourceDedicatedHostProfileVcpuCountToMap(vcpuCountItem vpcv1.DedicatedHostProfileVcpu) (vcpuCountMap map[string]interface{}) {
 	vcpuCountMap = map[string]interface{}{}
 
 	if vcpuCountItem.Type != nil {
@@ -483,4 +460,3 @@ func dataSourceDedicatedHostProfileVcpuCountToMap(vcpuCountItem vpcv1.DedicatedH
 
 	return vcpuCountMap
 }
-

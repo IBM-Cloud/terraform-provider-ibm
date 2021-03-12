@@ -40,8 +40,14 @@ func dataSourceIbmIsDedicatedHost() *schema.Resource {
 			},
 			"host_group": &schema.Schema{
 				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The unique identifier of the dedicated host group this dedicated host belongs to",
+			},
+			"resource_group": &schema.Schema{
+				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The unique name of the dedicated host group",
+				Computed:    true,
+				Description: "The unique identifier of the dedicated host group this dedicated host belongs to",
 			},
 			"available_memory": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -76,54 +82,6 @@ func dataSourceIbmIsDedicatedHost() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The CRN for this dedicated host.",
-			},
-			"group": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The dedicated host group this dedicated host is in.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"crn": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The CRN for this dedicated host group.",
-						},
-						"deleted": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"more_info": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Link to documentation about deleted resources.",
-									},
-								},
-							},
-						},
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for this dedicated host group.",
-						},
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The unique identifier for this dedicated host group.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly-selected words.",
-						},
-						"resource_type": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The type of resource referenced.",
-						},
-					},
-				},
 			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
@@ -212,30 +170,6 @@ func dataSourceIbmIsDedicatedHost() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether this dedicated host is available for instance creation.",
 			},
-			"resource_group": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The resource group for this dedicated host.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for this resource group.",
-						},
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The unique identifier for this resource group.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The user-defined name for this resource group.",
-						},
-					},
-				},
-			},
 			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -290,23 +224,9 @@ func dataSourceIbmIsDedicatedHost() *schema.Resource {
 				},
 			},
 			"zone": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The zone this dedicated host resides in.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for this zone.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The globally unique name for this zone.",
-						},
-					},
-				},
+				Description: "The globally unique name of the zone this dedicated host resides in.",
 			},
 		},
 	}
@@ -317,110 +237,132 @@ func dataSourceIbmIsDedicatedHostRead(context context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	getDedicatedHostOptions := &vpcv1.GetDedicatedHostOptions{}
-	log.Println("getDedicatedHostOptions id **********", d.Id())
-	getDedicatedHostOptions.SetID(d.Id())
-	dedicatedHost, response, err := vpcClient.GetDedicatedHostWithContext(context, getDedicatedHostOptions)
+	log.Printf("[DEBUG] ListDedicatedHostsWithContext Begins")
+	listDedicatedHostsOptions := &vpcv1.ListDedicatedHostsOptions{}
+	hostgroupid := d.Get("host_group").(string)
+	listDedicatedHostsOptions.DedicatedHostGroupID = &hostgroupid
+	log.Printf("[DEBUG] ListDedicatedHostsWithContext set host id  %s", hostgroupid)
+	if resgrpid, ok := d.GetOk("resource_group"); ok {
+		resgrpidstr := resgrpid.(string)
+		listDedicatedHostsOptions.ResourceGroupID = &resgrpidstr
+	}
+	log.Printf("[DEBUG] ListDedicatedHostsWithContext set res id")
+	dedicatedHostCollection, response, err := vpcClient.ListDedicatedHostsWithContext(context, listDedicatedHostsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetDedicatedHostWithContext failed %s\n%s", err, response)
+		log.Printf("[DEBUG] ListDedicatedHostsWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
+	log.Printf("[DEBUG] ListDedicatedHostsWithContext got collections")
+	if len(dedicatedHostCollection.DedicatedHosts) != 0 {
 
-	if err = d.Set("available_memory", dedicatedHost.AvailableMemory); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting available_memory: %s", err))
-	}
+		log.Printf("[DEBUG] ListDedicatedHostsWithContext passed null check")
+		dedicatedHost := vpcv1.DedicatedHost{}
+		name := d.Get("name").(string)
+		log.Println("Searching the data host *************", name)
+		for _, data := range dedicatedHostCollection.DedicatedHosts {
+			if *data.Name == name {
+				log.Println("found the data host *************")
+				dedicatedHost = data
+				d.SetId(*dedicatedHost.ID)
 
-	if dedicatedHost.AvailableVcpu != nil {
-		err = d.Set("available_vcpu", dataSourceDedicatedHostFlattenAvailableVcpu(*dedicatedHost.AvailableVcpu))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting available_vcpu %s", err))
+				if err = d.Set("available_memory", dedicatedHost.AvailableMemory); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting available_memory: %s", err))
+				}
+
+				if dedicatedHost.AvailableVcpu != nil {
+					err = d.Set("available_vcpu", dataSourceDedicatedHostFlattenAvailableVcpu(*dedicatedHost.AvailableVcpu))
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("Error setting available_vcpu %s", err))
+					}
+				}
+				if err = d.Set("created_at", dedicatedHost.CreatedAt.String()); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+				}
+				if err = d.Set("crn", dedicatedHost.CRN); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+				}
+
+				if dedicatedHost.Group != nil {
+					err = d.Set("host_group", *dedicatedHost.Group.ID)
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("Error setting group %s", err))
+					}
+				}
+				if err = d.Set("href", dedicatedHost.Href); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+				}
+				if err = d.Set("instance_placement_enabled", dedicatedHost.InstancePlacementEnabled); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting instance_placement_enabled: %s", err))
+				}
+
+				if dedicatedHost.Instances != nil {
+					err = d.Set("instances", dataSourceDedicatedHostFlattenInstances(dedicatedHost.Instances))
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("Error setting instances %s", err))
+					}
+				}
+				if err = d.Set("lifecycle_state", dedicatedHost.LifecycleState); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
+				}
+				if err = d.Set("memory", dedicatedHost.Memory); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting memory: %s", err))
+				}
+				if err = d.Set("name", dedicatedHost.Name); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+				}
+
+				if dedicatedHost.Profile != nil {
+					err = d.Set("profile", dataSourceDedicatedHostFlattenProfile(*dedicatedHost.Profile))
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("Error setting profile %s", err))
+					}
+				}
+				if err = d.Set("provisionable", dedicatedHost.Provisionable); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting provisionable: %s", err))
+				}
+
+				if dedicatedHost.ResourceGroup != nil {
+					err = d.Set("resource_group", *dedicatedHost.ResourceGroup.ID)
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("Error setting resource_group %s", err))
+					}
+				}
+				if err = d.Set("resource_type", dedicatedHost.ResourceType); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+				}
+				if err = d.Set("socket_count", dedicatedHost.SocketCount); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting socket_count: %s", err))
+				}
+				if err = d.Set("state", dedicatedHost.State); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+				}
+
+				if dedicatedHost.SupportedInstanceProfiles != nil {
+					err = d.Set("supported_instance_profiles", dataSourceDedicatedHostFlattenSupportedInstanceProfiles(dedicatedHost.SupportedInstanceProfiles))
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("Error setting supported_instance_profiles %s", err))
+					}
+				}
+
+				if dedicatedHost.Vcpu != nil {
+					err = d.Set("vcpu", dataSourceDedicatedHostFlattenVcpu(*dedicatedHost.Vcpu))
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("Error setting vcpu %s", err))
+					}
+				}
+
+				if dedicatedHost.Zone != nil {
+					err = d.Set("zone", *dedicatedHost.Zone.Name)
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("Error setting zone %s", err))
+					}
+				}
+
+				return nil
+			}
 		}
 	}
-	if err = d.Set("created_at", dedicatedHost.CreatedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-	}
-	if err = d.Set("crn", dedicatedHost.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
-	}
-
-	if dedicatedHost.Group != nil {
-		err = d.Set("group", dataSourceDedicatedHostFlattenGroup(*dedicatedHost.Group))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting group %s", err))
-		}
-	}
-	if err = d.Set("href", dedicatedHost.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
-	}
-	if err = d.Set("instance_placement_enabled", dedicatedHost.InstancePlacementEnabled); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting instance_placement_enabled: %s", err))
-	}
-
-	if dedicatedHost.Instances != nil {
-		err = d.Set("instances", dataSourceDedicatedHostFlattenInstances(dedicatedHost.Instances))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting instances %s", err))
-		}
-	}
-	if err = d.Set("lifecycle_state", dedicatedHost.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
-	}
-	if err = d.Set("memory", dedicatedHost.Memory); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting memory: %s", err))
-	}
-	if err = d.Set("name", dedicatedHost.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
-	}
-
-	if dedicatedHost.Profile != nil {
-		err = d.Set("profile", dataSourceDedicatedHostFlattenProfile(*dedicatedHost.Profile))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting profile %s", err))
-		}
-	}
-	if err = d.Set("provisionable", dedicatedHost.Provisionable); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting provisionable: %s", err))
-	}
-
-	if dedicatedHost.ResourceGroup != nil {
-		err = d.Set("resource_group", dataSourceDedicatedHostFlattenResourceGroup(*dedicatedHost.ResourceGroup))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting resource_group %s", err))
-		}
-	}
-	if err = d.Set("resource_type", dedicatedHost.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
-	}
-	if err = d.Set("socket_count", dedicatedHost.SocketCount); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting socket_count: %s", err))
-	}
-	if err = d.Set("state", dedicatedHost.State); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
-	}
-
-	if dedicatedHost.SupportedInstanceProfiles != nil {
-		err = d.Set("supported_instance_profiles", dataSourceDedicatedHostFlattenSupportedInstanceProfiles(dedicatedHost.SupportedInstanceProfiles))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting supported_instance_profiles %s", err))
-		}
-	}
-
-	if dedicatedHost.Vcpu != nil {
-		err = d.Set("vcpu", dataSourceDedicatedHostFlattenVcpu(*dedicatedHost.Vcpu))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting vcpu %s", err))
-		}
-	}
-
-	if dedicatedHost.Zone != nil {
-		err = d.Set("zone", dataSourceDedicatedHostFlattenZone(*dedicatedHost.Zone))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting zone %s", err))
-		}
-	}
-
-	return nil
+	return diag.FromErr(fmt.Errorf("No Dedicated Host found with name %s", name))
 }
 
 // dataSourceIbmIsDedicatedHostID returns a reasonable ID for the list.
