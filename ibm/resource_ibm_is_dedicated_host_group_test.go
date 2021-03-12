@@ -29,20 +29,22 @@ import (
 
 func TestAccIbmIsDedicatedHostGroupBasic(t *testing.T) {
 	var conf vpcv1.DedicatedHostGroup
-
+	class := "beta"
+	family := "memory"
+	name := fmt.Sprintf("name%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIbmIsDedicatedHostGroupDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmIsDedicatedHostGroupConfigBasic(),
+				Config: testAccCheckIbmIsDedicatedHostGroupConfigBasic(class, family, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsDedicatedHostGroupExists("ibm_is_dedicated_host_group.is_dedicated_host_group", conf),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmIsDedicatedHostGroupConfigBasic(),
+				Config: testAccCheckIbmIsDedicatedHostGroupConfigBasic(class, family, name),
 				Check:  resource.ComposeAggregateTestCheckFunc(),
 			},
 		},
@@ -54,8 +56,7 @@ func TestAccIbmIsDedicatedHostGroupAllArgs(t *testing.T) {
 	class := "beta"
 	family := "memory"
 	name := fmt.Sprintf("name%d", acctest.RandIntRange(10, 100))
-	classUpdate := "cx2"
-	familyUpdate := "compute"
+
 	nameUpdate := fmt.Sprintf("name%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -73,10 +74,8 @@ func TestAccIbmIsDedicatedHostGroupAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmIsDedicatedHostGroupConfig(classUpdate, familyUpdate, nameUpdate),
+				Config: testAccCheckIbmIsDedicatedHostGroupConfig(class, family, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_is_dedicated_host_group.is_dedicated_host_group", "class", classUpdate),
-					resource.TestCheckResourceAttr("ibm_is_dedicated_host_group.is_dedicated_host_group", "family", familyUpdate),
 					resource.TestCheckResourceAttr("ibm_is_dedicated_host_group.is_dedicated_host_group", "name", nameUpdate),
 				),
 			},
@@ -89,12 +88,20 @@ func TestAccIbmIsDedicatedHostGroupAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmIsDedicatedHostGroupConfigBasic() string {
+func testAccCheckIbmIsDedicatedHostGroupConfigBasic(class string, family string, name string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_is_dedicated_host_group" "is_dedicated_host_group" {
+		data "ibm_resource_group" "default" {
+			name = "Default" ///give your resource grp
 		}
-	`)
+		resource "ibm_is_dedicated_host_group" "is_dedicated_host_group" {
+			class = "%s"
+			family = "%s"
+			name = "%s"
+			resource_group = data.ibm_resource_group.default.id
+			zone = "us-south-2"
+		}
+	`, class, family, name)
 }
 
 func testAccCheckIbmIsDedicatedHostGroupConfig(class string, family string, name string) string {
