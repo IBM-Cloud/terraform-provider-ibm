@@ -20,65 +20,53 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
-func TestAccIbmIsDedicatedHostBasic(t *testing.T) {
-	var conf vpcv1.DedicatedHost
-	class := "beta"
-	family := "memory"
-	groupname := fmt.Sprintf("name%d", acctest.RandIntRange(10, 100))
-	dhname := "testdh02"
-	profile := "dh2-56x464"
-	resname := "ibm_is_dedicated_host.dedicated-host-test-01"
+func TestAccIbmIsDedicatedHostDSBasic(t *testing.T) {
+	//var conf vpcv1.DedicatedHost
+	resName := "data.ibm_is_dedicated_host.dhost"
+	name := "testdh02"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIbmIsDedicatedHostDestroy,
+		CheckDestroy: testAccCheckIbmIsDedicatedHostDSDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmIsDedicatedHostConfigBasic(class, family, groupname, profile, dhname),
+				Config: testAccCheckIbmIsDedicatedHostDSConfigBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmIsDedicatedHostExists(resname, conf),
-					resource.TestCheckResourceAttr(resname, "name", dhname),
+					resource.TestCheckResourceAttrSet(resName, "name"),
+					resource.TestCheckResourceAttrSet(resName, "zone"),
+					resource.TestCheckResourceAttrSet(resName, "host_group"),
 				),
-			},
-			resource.TestStep{
-				ResourceName:      resname,
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
-func testAccCheckIbmIsDedicatedHostConfigBasic(class string, family string, groupname string, profile string, dhname string) string {
+func testAccCheckIbmIsDedicatedHostDSConfigBasic(name string) string {
 	return fmt.Sprintf(`
 	
-	data "ibm_resource_group" "default" {
-		name = "Default" ///give your resource grp
-	}
-	resource "ibm_is_dedicated_host_group" "is_dedicated_host_group" {
-		class = "%s"
-		family = "%s"
-		name = "%s"
-		resource_group = data.ibm_resource_group.default.id
-		zone = "us-south-2"
-	}
+	data "ibm_is_dedicated_host_group" "dgroup" {
+		name = "helloworld"
+	  }
 
 	resource "ibm_is_dedicated_host" "dedicated-host-test-01" {
-		profile = "%s"
-		host_group = ibm_is_dedicated_host_group.is_dedicated_host_group.id
+		profile = "dh2-56x464"
+		host_group = data.ibm_is_dedicated_host_group.dgroup.id
 		name = "%s"
 	  }
-	`, class, family, groupname, profile, dhname)
+	data "ibm_is_dedicated_host" "dhost"{
+		name = "%s"
+		host_group = ibm_is_dedicated_host.dedicated-host-test-01.host_group
+	}
+	`, name, name)
 }
 
-func testAccCheckIbmIsDedicatedHostExists(n string, obj vpcv1.DedicatedHost) resource.TestCheckFunc {
+func testAccCheckIbmIsDedicatedHostDSExists(n string, obj vpcv1.DedicatedHost) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -105,7 +93,7 @@ func testAccCheckIbmIsDedicatedHostExists(n string, obj vpcv1.DedicatedHost) res
 	}
 }
 
-func testAccCheckIbmIsDedicatedHostDestroy(s *terraform.State) error {
+func testAccCheckIbmIsDedicatedHostDSDestroy(s *terraform.State) error {
 	vpcClient, err := testAccProvider.Meta().(ClientSession).VpcV1API()
 	if err != nil {
 		return err

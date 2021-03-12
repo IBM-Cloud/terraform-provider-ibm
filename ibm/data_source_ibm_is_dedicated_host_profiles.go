@@ -25,7 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
 func dataSourceIbmIsDedicatedHostProfiles() *schema.Resource {
@@ -40,7 +40,6 @@ func dataSourceIbmIsDedicatedHostProfiles() *schema.Resource {
 			},
 			"first": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "A link to the first page of resources.",
 				Elem: &schema.Resource{
@@ -60,7 +59,6 @@ func dataSourceIbmIsDedicatedHostProfiles() *schema.Resource {
 			},
 			"next": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "A link to the next page of resources. This property is present for all pagesexcept the last page.",
 				Elem: &schema.Resource{
@@ -95,9 +93,8 @@ func dataSourceIbmIsDedicatedHostProfiles() *schema.Resource {
 							Description: "The URL for this dedicated host.",
 						},
 						"memory": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Computed:    true,
+							Type:     schema.TypeList,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
@@ -147,9 +144,8 @@ func dataSourceIbmIsDedicatedHostProfiles() *schema.Resource {
 							Description: "The globally unique name for this dedicated host profile.",
 						},
 						"socket_count": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Computed:    true,
+							Type:     schema.TypeList,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
@@ -213,9 +209,9 @@ func dataSourceIbmIsDedicatedHostProfiles() *schema.Resource {
 							},
 						},
 						"vcpu_architecture": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Computed:    true,
+							Type: schema.TypeList,
+
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
@@ -232,9 +228,9 @@ func dataSourceIbmIsDedicatedHostProfiles() *schema.Resource {
 							},
 						},
 						"vcpu_count": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Computed:    true,
+							Type: schema.TypeList,
+
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
@@ -291,7 +287,7 @@ func dataSourceIbmIsDedicatedHostProfiles() *schema.Resource {
 }
 
 func dataSourceIbmIsDedicatedHostProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(ClientSession).VpcV1()
+	vpcClient, err := meta.(ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -304,33 +300,11 @@ func dataSourceIbmIsDedicatedHostProfilesRead(context context.Context, d *schema
 		return diag.FromErr(err)
 	}
 
-	// Use the provided filter argument and construct a new list with only the requested resource(s)
-	var matchProfiles []vpcv1.DedicatedHostProfile
-	var name string
-	var suppliedFilter bool
-
-	if v, ok := d.GetOk("name"); ok {
-		name = v.(string)
-		suppliedFilter = true
-		for _, data := range dedicatedHostProfileCollection.Profiles {
-			if *data.Name == name {
-				matchProfiles = append(matchProfiles, data)
-			}
-		}
-	} else {
-		matchProfiles = dedicatedHostProfileCollection.Profiles
-	}
-	dedicatedHostProfileCollection.Profiles = matchProfiles
-
 	if len(dedicatedHostProfileCollection.Profiles) == 0 {
-		return diag.FromErr(fmt.Errorf("no Profiles found with name %s\nIf not specified, please specify more filters", name))
+		return nil
 	}
 
-	if suppliedFilter {
-		d.SetId(name)
-	} else {
-		d.SetId(dataSourceIbmIsDedicatedHostProfilesID(d))
-	}
+	d.SetId(dataSourceIbmIsDedicatedHostProfilesID(d))
 
 	if dedicatedHostProfileCollection.First != nil {
 		err = d.Set("first", dataSourceDedicatedHostProfileCollectionFlattenFirst(*dedicatedHostProfileCollection.First))
@@ -385,7 +359,6 @@ func dataSourceDedicatedHostProfileCollectionFirstToMap(firstItem vpcv1.Dedicate
 	return firstMap
 }
 
-
 func dataSourceDedicatedHostProfileCollectionFlattenNext(result vpcv1.DedicatedHostProfileCollectionNext) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceDedicatedHostProfileCollectionNextToMap(result)
@@ -403,7 +376,6 @@ func dataSourceDedicatedHostProfileCollectionNextToMap(nextItem vpcv1.DedicatedH
 
 	return nextMap
 }
-
 
 func dataSourceDedicatedHostProfileCollectionFlattenProfiles(result []vpcv1.DedicatedHostProfile) (profiles []map[string]interface{}) {
 	for _, profilesItem := range result {
@@ -427,7 +399,7 @@ func dataSourceDedicatedHostProfileCollectionProfilesToMap(profilesItem vpcv1.De
 	}
 	if profilesItem.Memory != nil {
 		memoryList := []map[string]interface{}{}
-		memoryMap := dataSourceDedicatedHostProfileCollectionProfilesMemoryToMap(profilesItem.Memory)
+		memoryMap := dataSourceDedicatedHostProfileCollectionProfilesMemoryToMap(*profilesItem.Memory.(*vpcv1.DedicatedHostProfileMemory))
 		memoryList = append(memoryList, memoryMap)
 		profilesMap["memory"] = memoryList
 	}
@@ -436,7 +408,7 @@ func dataSourceDedicatedHostProfileCollectionProfilesToMap(profilesItem vpcv1.De
 	}
 	if profilesItem.SocketCount != nil {
 		socketCountList := []map[string]interface{}{}
-		socketCountMap := dataSourceDedicatedHostProfileCollectionProfilesSocketCountToMap(profilesItem.SocketCount)
+		socketCountMap := dataSourceDedicatedHostProfileCollectionProfilesSocketCountToMap(*profilesItem.SocketCount.(*vpcv1.DedicatedHostProfileSocket))
 		socketCountList = append(socketCountList, socketCountMap)
 		profilesMap["socket_count"] = socketCountList
 	}
@@ -455,7 +427,7 @@ func dataSourceDedicatedHostProfileCollectionProfilesToMap(profilesItem vpcv1.De
 	}
 	if profilesItem.VcpuCount != nil {
 		vcpuCountList := []map[string]interface{}{}
-		vcpuCountMap := dataSourceDedicatedHostProfileCollectionProfilesVcpuCountToMap(profilesItem.VcpuCount)
+		vcpuCountMap := dataSourceDedicatedHostProfileCollectionProfilesVcpuCountToMap(*profilesItem.VcpuCount.(*vpcv1.DedicatedHostProfileVcpu))
 		vcpuCountList = append(vcpuCountList, vcpuCountMap)
 		profilesMap["vcpu_count"] = vcpuCountList
 	}
@@ -491,7 +463,6 @@ func dataSourceDedicatedHostProfileCollectionProfilesMemoryToMap(memoryItem vpcv
 	return memoryMap
 }
 
-
 func dataSourceDedicatedHostProfileCollectionProfilesSocketCountToMap(socketCountItem vpcv1.DedicatedHostProfileSocket) (socketCountMap map[string]interface{}) {
 	socketCountMap = map[string]interface{}{}
 
@@ -520,7 +491,6 @@ func dataSourceDedicatedHostProfileCollectionProfilesSocketCountToMap(socketCoun
 	return socketCountMap
 }
 
-
 func dataSourceDedicatedHostProfileCollectionProfilesSupportedInstanceProfilesToMap(supportedInstanceProfilesItem vpcv1.InstanceProfileReference) (supportedInstanceProfilesMap map[string]interface{}) {
 	supportedInstanceProfilesMap = map[string]interface{}{}
 
@@ -534,8 +504,7 @@ func dataSourceDedicatedHostProfileCollectionProfilesSupportedInstanceProfilesTo
 	return supportedInstanceProfilesMap
 }
 
-
-func dataSourceDedicatedHostProfileCollectionProfilesVcpuArchitectureToMap(vcpuArchitectureItem vpcv1.DedicatedHostProfileVCPUArchitecture) (vcpuArchitectureMap map[string]interface{}) {
+func dataSourceDedicatedHostProfileCollectionProfilesVcpuArchitectureToMap(vcpuArchitectureItem vpcv1.DedicatedHostProfileVcpuArchitecture) (vcpuArchitectureMap map[string]interface{}) {
 	vcpuArchitectureMap = map[string]interface{}{}
 
 	if vcpuArchitectureItem.Type != nil {
@@ -548,8 +517,7 @@ func dataSourceDedicatedHostProfileCollectionProfilesVcpuArchitectureToMap(vcpuA
 	return vcpuArchitectureMap
 }
 
-
-func dataSourceDedicatedHostProfileCollectionProfilesVcpuCountToMap(vcpuCountItem vpcv1.DedicatedHostProfileVCPU) (vcpuCountMap map[string]interface{}) {
+func dataSourceDedicatedHostProfileCollectionProfilesVcpuCountToMap(vcpuCountItem vpcv1.DedicatedHostProfileVcpu) (vcpuCountMap map[string]interface{}) {
 	vcpuCountMap = map[string]interface{}{}
 
 	if vcpuCountItem.Type != nil {
@@ -576,5 +544,3 @@ func dataSourceDedicatedHostProfileCollectionProfilesVcpuCountToMap(vcpuCountIte
 
 	return vcpuCountMap
 }
-
-

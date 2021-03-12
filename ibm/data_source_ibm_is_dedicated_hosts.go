@@ -73,53 +73,10 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 							Computed:    true,
 							Description: "The CRN for this dedicated host.",
 						},
-						"group": &schema.Schema{
-							Type:        schema.TypeList,
+						"host_group": &schema.Schema{
+							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The dedicated host group this dedicated host is in.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"crn": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The CRN for this dedicated host group.",
-									},
-									"deleted": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"more_info": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "Link to documentation about deleted resources.",
-												},
-											},
-										},
-									},
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The URL for this dedicated host group.",
-									},
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The unique identifier for this dedicated host group.",
-									},
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly-selected words.",
-									},
-									"resource_type": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The type of resource referenced.",
-									},
-								},
-							},
+							Description: "The unique user-defined name of the dedicated host group this dedicated host is in.",
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
@@ -219,28 +176,9 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 							Description: "Indicates whether this dedicated host is available for instance creation.",
 						},
 						"resource_group": &schema.Schema{
-							Type:        schema.TypeList,
+							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The resource group for this dedicated host.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The URL for this resource group.",
-									},
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The unique identifier for this resource group.",
-									},
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The user-defined name for this resource group.",
-									},
-								},
-							},
+							Description: "The unique identifier of the resource group for this dedicated host.",
 						},
 						"resource_type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -296,23 +234,9 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 							},
 						},
 						"zone": &schema.Schema{
-							Type:        schema.TypeList,
+							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The zone this dedicated host resides in.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The URL for this zone.",
-									},
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The globally unique name for this zone.",
-									},
-								},
-							},
+							Description: "The globally unique name of the zone this dedicated host resides in.",
 						},
 					},
 				},
@@ -374,7 +298,7 @@ func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.Resour
 	}
 
 	if len(dedicatedHostCollection.DedicatedHosts) == 0 {
-		return nil
+		return diag.FromErr(fmt.Errorf("No Dedicated Hosts found"))
 	}
 
 	d.SetId(dataSourceIbmIsDedicatedHostsID(d))
@@ -441,10 +365,7 @@ func dataSourceDedicatedHostCollectionDedicatedHostsToMap(dedicatedHostsItem vpc
 		dedicatedHostsMap["crn"] = dedicatedHostsItem.CRN
 	}
 	if dedicatedHostsItem.Group != nil {
-		groupList := []map[string]interface{}{}
-		groupMap := dataSourceDedicatedHostCollectionDedicatedHostsGroupToMap(*dedicatedHostsItem.Group)
-		groupList = append(groupList, groupMap)
-		dedicatedHostsMap["group"] = groupList
+		dedicatedHostsMap["host_group"] = *dedicatedHostsItem.Group.ID
 	}
 	if dedicatedHostsItem.Href != nil {
 		dedicatedHostsMap["href"] = dedicatedHostsItem.Href
@@ -481,10 +402,7 @@ func dataSourceDedicatedHostCollectionDedicatedHostsToMap(dedicatedHostsItem vpc
 		dedicatedHostsMap["provisionable"] = dedicatedHostsItem.Provisionable
 	}
 	if dedicatedHostsItem.ResourceGroup != nil {
-		resourceGroupList := []map[string]interface{}{}
-		resourceGroupMap := dataSourceDedicatedHostCollectionDedicatedHostsResourceGroupToMap(*dedicatedHostsItem.ResourceGroup)
-		resourceGroupList = append(resourceGroupList, resourceGroupMap)
-		dedicatedHostsMap["resource_group"] = resourceGroupList
+		dedicatedHostsMap["resource_group"] = *dedicatedHostsItem.ResourceGroup.ID
 	}
 	if dedicatedHostsItem.ResourceType != nil {
 		dedicatedHostsMap["resource_type"] = dedicatedHostsItem.ResourceType
@@ -509,10 +427,7 @@ func dataSourceDedicatedHostCollectionDedicatedHostsToMap(dedicatedHostsItem vpc
 		dedicatedHostsMap["vcpu"] = vcpuList
 	}
 	if dedicatedHostsItem.Zone != nil {
-		zoneList := []map[string]interface{}{}
-		zoneMap := dataSourceDedicatedHostCollectionDedicatedHostsZoneToMap(*dedicatedHostsItem.Zone)
-		zoneList = append(zoneList, zoneMap)
-		dedicatedHostsMap["zone"] = zoneList
+		dedicatedHostsMap["zone"] = *dedicatedHostsItem.Zone.Name
 	}
 
 	return dedicatedHostsMap

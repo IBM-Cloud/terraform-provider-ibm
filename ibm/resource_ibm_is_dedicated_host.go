@@ -60,16 +60,20 @@ func resourceIbmIsDedicatedHost() *schema.Resource {
 			"profile": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The profile to use for this dedicated host. Globally unique name for this dedicated host profile.",
 			},
 			"resource_group": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
 				Description: "The unique identifier for the resource group to use. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.",
 			},
 			"host_group": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
+				ForceNew:    true,
 				Description: "The unique identifier of the dedicated host group for this dedicated host.",
 			},
 			"available_memory": {
@@ -105,55 +109,6 @@ func resourceIbmIsDedicatedHost() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The CRN for this dedicated host.",
-			},
-			"group": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The dedicated host group this dedicated host is in.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"crn": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The CRN for this dedicated host group.",
-						},
-						"deleted": {
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"more_info": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Link to documentation about deleted resources.",
-									},
-								},
-							},
-						},
-						"href": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The URL for this dedicated host group.",
-						},
-						"id": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The unique identifier for this dedicated host group.",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly-selected words.",
-						},
-						"resource_type": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The type of resource referenced.",
-						},
-					},
-				},
 			},
 			"href": {
 				Type:        schema.TypeString,
@@ -627,10 +582,10 @@ func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("crn", dedicatedHost.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
-	groupMap := resourceIbmIsDedicatedHostDedicatedHostGroupReferenceToMap(*dedicatedHost.Group)
-	if err = d.Set("group", groupMap); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting group: %s", err))
-	}
+	//groupMap := resourceIbmIsDedicatedHostDedicatedHostGroupReferenceToMap(*dedicatedHost.Group)
+
+	d.Set("host_group", *dedicatedHost.Group.ID)
+
 	if err = d.Set("href", dedicatedHost.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}

@@ -40,11 +40,13 @@ func resourceIbmIsDedicatedHostGroup() *schema.Resource {
 			"class": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The dedicated host profile class for hosts in this group.",
 			},
 			"family": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: InvokeValidator("ibm_is_dedicated_host_group", "family"),
 				Description:  "The dedicated host profile family for hosts in this group.",
 			},
@@ -58,6 +60,7 @@ func resourceIbmIsDedicatedHostGroup() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
+				Computed:    true,
 				Description: "The unique identifier of the resource group to use. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.",
 			},
 			"zone": &schema.Schema{
@@ -432,9 +435,7 @@ func resourceIbmIsDedicatedHostGroupUpdate(context context.Context, d *schema.Re
 
 	hasChange := false
 
-	dedicatedHostGroupPatch := map[string]interface{}{}
-
-	if d.HasChange("class") {
+	/*if d.HasChange("class") {
 		dedicatedHostGroupPatch["class"] = d.Get("class")
 		//updateDedicatedHostGroupOptions.SetClass(d.Get("class").(string))
 		hasChange = true
@@ -443,13 +444,22 @@ func resourceIbmIsDedicatedHostGroupUpdate(context context.Context, d *schema.Re
 		dedicatedHostGroupPatch["family"] = d.Get("family")
 		//updateDedicatedHostGroupOptions.SetFamily(d.Get("family").(string))
 		hasChange = true
-	}
+	}*/
 	if d.HasChange("name") {
-		dedicatedHostGroupPatch["name"] = d.Get("name")
+		groupnamestr := d.Get("name").(string)
+		dedicatedHostGroupPatchModel := vpcv1.DedicatedHostGroupPatch{
+			Name: &groupnamestr,
+		}
+		dedicatedHostGroupPatch, err := dedicatedHostGroupPatchModel.AsPatch()
+		if err != nil {
+			log.Printf("[DEBUG] Error calling asPatch for DedicatedHostGroupPatch: %s", err)
+			return diag.FromErr(err)
+		}
+		updateDedicatedHostGroupOptions.DedicatedHostGroupPatch = dedicatedHostGroupPatch
 		//updateDedicatedHostGroupOptions.SetName(d.Get("name").(string))
 		hasChange = true
 	}
-	updateDedicatedHostGroupOptions.SetDedicatedHostGroupPatch(dedicatedHostGroupPatch)
+
 	if hasChange {
 		_, response, err := vpcClient.UpdateDedicatedHostGroupWithContext(context, updateDedicatedHostGroupOptions)
 		if err != nil {
