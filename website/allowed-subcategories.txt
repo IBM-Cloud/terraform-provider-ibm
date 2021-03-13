@@ -14,7 +14,9 @@ Key Management Service
 Kubernetes Service
 Object Storage
 Power Systems
+Push Notifications
 Resource management
 Schematics
 Transit Gateway
 VPC infrastructure
+
