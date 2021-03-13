@@ -88,6 +88,7 @@ import (
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
+	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -202,6 +203,7 @@ type ClientSession interface {
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	SchematicsAPI() (schematics.SchematicsServiceAPI, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
+	PushServiceV1() (*pushservicev1.PushServiceV1, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
 	keyManagementAPI() (*kp.Client, error)
@@ -340,6 +342,9 @@ type clientSession struct {
 	pDNSErr    error
 
 	bluemixSessionErr error
+
+	pushServiceClient    *pushservicev1.PushServiceV1
+	pushServiceClientErr error
 
 	vpcClassicErr error
 	vpcClassicAPI *vpcclassic.VpcClassicV1
@@ -610,6 +615,10 @@ func (sess clientSession) APIGateway() (*apigateway.ApiGatewayControllerApiV1, e
 	return sess.apigatewayAPI, sess.apigatewayErr
 }
 
+func (session clientSession) PushServiceV1() (*pushservicev1.PushServiceV1, error) {
+	return session.pushServiceClient, session.pushServiceClientErr
+}
+
 func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
 	return sess.kpAPI, sess.kpErr
 }
@@ -865,6 +874,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.csv2ConfigErr = errEmptyBluemixCredentials
 		session.crv1ConfigErr = errEmptyBluemixCredentials
 		session.kpErr = errEmptyBluemixCredentials
+		session.pushServiceClientErr = errEmptyBluemixCredentials
 		session.kmsErr = errEmptyBluemixCredentials
 		session.stxConfigErr = errEmptyBluemixCredentials
 		session.cfConfigErr = errEmptyBluemixCredentials
@@ -1120,6 +1130,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 		vpcclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 	session.vpcAPI = vpcclient
+
+	pnurl := fmt.Sprintf("https://%s.imfpush.cloud.ibm.com/imfpush/v1", c.Region)
+	pushNotificationOptions := &pushservicev1.PushServiceV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_PUSH_API_ENDPOINT"}, pnurl),
+		Authenticator: authenticator,
+	}
+	pnclient, err := pushservicev1.NewPushServiceV1(pushNotificationOptions)
+	if err == nil {
+		// Enable retries for API calls
+		pnclient.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.pushServiceClient = pnclient
+	} else {
+		session.pushServiceClientErr = fmt.Errorf("Error occured while configuring push notification service: %q", err)
+	}
 
 	//cosconfigurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
 	cosconfigoptions := &cosconfig.ResourceConfigurationV1Options{
