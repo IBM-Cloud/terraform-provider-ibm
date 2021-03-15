@@ -68,7 +68,7 @@ The following arguments are supported:
 * `listener` - (Required, Forces new resource, string) Unique Load Balancer Listener ID
 * `policy` - (Required, Forces new resource, string) Unique Load Balancer listener policy ID
 * `condition` - (Required, string). The condition of the rule. Allowable values: [contains,equals,matches_regex].
-* `type` - (Required, string) The type of the rule.Allowable values: [header,hostname,path].
+* `type` - (Required, string) The type of the rule.Allowable values: [header,hostname,path,query,body].
 * `value` - (Required, string) Value to be matched for rule condition. Constraints: 1 ≤ length ≤ 128
 * `field` - (Optional, string) HTTP header field. This is only applicable to "header" rule type. 
 

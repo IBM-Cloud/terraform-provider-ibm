@@ -67,6 +67,44 @@ func TestAccIBMISLBListenerPolicyRule_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISLBListenerPolicyRule_type_body(t *testing.T) {
+	var ruleID string
+	vpcname := fmt.Sprintf("tflblisuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflblisuat-subnet-%d", acctest.RandIntRange(10, 100))
+	lbname := fmt.Sprintf("tflblisuat%d", acctest.RandIntRange(10, 100))
+	lblistenerpolicyname := fmt.Sprintf("tflblisuat-listener-policy-%d", acctest.RandIntRange(10, 100))
+	lblistenerpolicyRuleField1 := fmt.Sprintf("tflblipolicy-rule-field-%d", acctest.RandIntRange(10, 100))
+	lblistenerpolicyRuleValue1 := fmt.Sprintf("tflblipolicy-rule-value-%d", acctest.RandIntRange(10, 100))
+
+	priority := "1"
+	protocol := "http"
+	port := "8080"
+	action := "forward"
+	//priority2 := "2"
+	condition := "equals"
+	types := "body"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMISLBListenerPolicyRuleDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMISLBListenerPolicyRuleConfig(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port, protocol, lblistenerpolicyname, action, priority, condition, types, lblistenerpolicyRuleField1, lblistenerpolicyRuleValue1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBListenerPolicyRuleExists("ibm_is_lb_listener_policy_rule.testacc_lb_listener_policy_rule", ruleID),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", lbname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy_rule.testacc_lb_listener_policy_rule", "field", lblistenerpolicyRuleField1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy_rule.testacc_lb_listener_policy_rule", "type", types),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISLBListenerPolicyRuleDestroy(s *terraform.State) error {
 	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
