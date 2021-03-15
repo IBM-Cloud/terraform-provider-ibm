@@ -16,9 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 const (
@@ -272,74 +269,27 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-	serviceName := d.Get("service").(string)
-	plan := d.Get("plan").(string)
-	name := d.Get("name").(string)
-	location := d.Get("location").(string)
 
-	rsInst := rc.CreateResourceInstanceOptions{
-		Name: &name,
+	rsInst := rc.CreateResourceInstanceOptions{}
+
+	rsInst.SetName(d.Get("name").(string))
+	rsInst.SetTarget(d.Get("target").(string))
+	rsInst.SetResourceGroup(d.Get("resource_group").(string))
+	rsInst.SetResourcePlanID(d.Get("resource_plan_id").(string))
+	if _, ok := d.GetOk("tags"); ok {
+		rsInst.SetTags(d.Get("tags").([]string))
+	}
+	if _, ok := d.GetOk("allow_cleanup"); ok {
+		rsInst.SetAllowCleanup(d.Get("allow_cleanup").(bool))
+	}
+	if _, ok := d.GetOk("entity_lock"); ok {
+		rsInst.SetEntityLock(d.Get("entity_lock").(bool))
 	}
 
-	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
-	if err != nil {
-		return err
-	}
-	rsCatRepo := rsCatClient.ResourceCatalog()
-
-	serviceOff, err := rsCatRepo.FindByName(serviceName, true)
-	if err != nil {
-		return fmt.Errorf("Error retrieving service offering: %s", err)
-	}
-
-	if metadata, ok := serviceOff[0].Metadata.(*models.ServiceResourceMetadata); ok {
-		if !metadata.Service.RCProvisionable {
-			return fmt.Errorf("%s cannot be provisioned by resource controller", serviceName)
-		}
-	} else {
-		return fmt.Errorf("Cannot create instance of resource %s\nUse 'ibm_service_instance' if the resource is a Cloud Foundry service", serviceName)
-	}
-
-	servicePlan, err := rsCatRepo.GetServicePlanID(serviceOff[0], plan)
-	if err != nil {
-		return fmt.Errorf("Error retrieving plan: %s", err)
-	}
-	rsInst.ResourcePlanID = &servicePlan
-
-	deployments, err := rsCatRepo.ListDeployments(servicePlan)
-	if err != nil {
-		return fmt.Errorf("Error retrieving deployment for plan %s : %s", plan, err)
-	}
-	if len(deployments) == 0 {
-		return fmt.Errorf("No deployment found for service plan : %s", plan)
-	}
-	deployments, supportedLocations := filterDeployments(deployments, location)
-
-	if len(deployments) == 0 {
-		locationList := make([]string, 0, len(supportedLocations))
-		for l := range supportedLocations {
-			locationList = append(locationList, l)
-		}
-		return fmt.Errorf("No deployment found for service plan %s at location %s.\nValid location(s) are: %q.\nUse 'ibm_service_instance' if the service is a Cloud Foundry service.", plan, location, locationList)
-	}
-
-	rsInst.Target = &deployments[0].CatalogCRN
-
-	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
-		rsInst.ResourceGroup = rsGrpID.(*string)
-	} else {
-		defaultRg, err := defaultResourceGroup(meta)
-		if err != nil {
-			return err
-		}
-		rsInst.ResourceGroup = &defaultRg
-	}
 	params := map[string]interface{}{}
-
 	if serviceEndpoints, ok := d.GetOk("service_endpoints"); ok {
 		params["service-endpoints"] = serviceEndpoints.(string)
 	}
-
 	if parameters, ok := d.GetOk("parameters"); ok {
 		temp := parameters.(map[string]interface{})
 		for k, v := range temp {
@@ -364,7 +314,7 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 
 	}
 
-	rsInst.Parameters = params
+	rsInst.SetParameters(params)
 
 	instance, resp, err := rsConClient.CreateResourceInstance(&rsInst)
 	if err != nil {
@@ -620,10 +570,8 @@ func resourceIBMResourceInstanceExists(d *schema.ResourceData, meta interface{})
 
 	instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 	if err != nil {
-		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
-				return false, nil
-			}
+		if resp != nil && resp.StatusCode == 404 {
+			return false, nil
 		}
 		return false, fmt.Errorf("Error communicating with the API: %s with resp code: %s", err, resp)
 	}
@@ -647,7 +595,7 @@ func waitForResourceInstanceCreate(d *schema.ResourceData, meta interface{}) (in
 		Refresh: func() (interface{}, string, error) {
 			instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 			if err != nil {
-				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+				if resp != nil && resp.StatusCode == 404 {
 					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v", d.Id(), err)
 				}
 				return nil, "", fmt.Errorf("Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
@@ -681,7 +629,7 @@ func waitForResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 		Refresh: func() (interface{}, string, error) {
 			instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 			if err != nil {
-				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+				if resp != nil && resp.StatusCode == 404 {
 					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v", d.Id(), err)
 				}
 				return nil, "", fmt.Errorf("Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
@@ -714,7 +662,7 @@ func waitForResourceInstanceDelete(d *schema.ResourceData, meta interface{}) (in
 		Refresh: func() (interface{}, string, error) {
 			instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 			if err != nil {
-				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+				if resp != nil && resp.StatusCode == 404 {
 					return instance, rsInstanceSuccessStatus, nil
 				}
 				return nil, "", fmt.Errorf("Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
@@ -730,19 +678,4 @@ func waitForResourceInstanceDelete(d *schema.ResourceData, meta interface{}) (in
 	}
 
 	return stateConf.WaitForState()
-}
-
-func filterDeployments(deployments []models.ServiceDeployment, location string) ([]models.ServiceDeployment, map[string]bool) {
-	supportedDeployments := []models.ServiceDeployment{}
-	supportedLocations := make(map[string]bool)
-	for _, d := range deployments {
-		if d.Metadata.RCCompatible {
-			deploymentLocation := d.Metadata.Deployment.Location
-			supportedLocations[deploymentLocation] = true
-			if deploymentLocation == location {
-				supportedDeployments = append(supportedDeployments, d)
-			}
-		}
-	}
-	return supportedDeployments, supportedLocations
 }
