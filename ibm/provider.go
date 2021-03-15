@@ -470,6 +470,7 @@ func Provider() *schema.Provider {
 			"ibm_org":                                            resourceIBMOrg(),
 			"ibm_pn_application_chrome":                          resourceIBMPNApplicationChrome(),
 			"ibm_kms_key":                                        resourceIBMKmskey(),
+			"ibm_kms_key_alias":                                  resourceIBMKmskeyAlias(),
 			"ibm_kp_key":                                         resourceIBMkey(),
 			"ibm_resource_group":                                 resourceIBMResourceGroup(),
 			"ibm_resource_instance":                              resourceIBMResourceInstance(),

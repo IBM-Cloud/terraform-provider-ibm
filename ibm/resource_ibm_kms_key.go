@@ -347,7 +347,6 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 				return fmt.Errorf(
 					"Error while creating Root key with payload: %s", err)
 			}
-
 			keyCRN = stkey.CRN
 			d.SetId(keyCRN)
 
@@ -359,7 +358,6 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 			}
 			keyCRN = stkey.CRN
 			d.SetId(keyCRN)
-
 		}
 	}
 	return resourceIBMKmsKeyUpdate(d, meta)
@@ -594,6 +592,7 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	f := kp.ForceOpt{
 		Force: force,
 	}
+
 	_, err1 := kpAPI.DeleteKey(context.Background(), keyid, kp.ReturnRepresentation, f)
 	if err1 != nil {
 		return fmt.Errorf(
