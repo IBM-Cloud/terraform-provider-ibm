@@ -20,10 +20,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIbmIsDedicatedHostGroupDataSourceBasic(t *testing.T) {
@@ -34,7 +32,7 @@ func TestAccIbmIsDedicatedHostGroupDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIbmIsDedicatedHostGroupDSDestroy,
+		CheckDestroy: testAccCheckIbmIsDedicatedHostGroupDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIbmIsDedicatedHostGroupDataSourceConfigBasic(class, family, name),
@@ -66,31 +64,4 @@ func testAccCheckIbmIsDedicatedHostGroupDataSourceConfigBasic(class string, fami
 		name = ibm_is_dedicated_host_group.dhgroup.name
 	}
 	`, class, family, name)
-}
-
-func testAccCheckIbmIsDedicatedHostGroupDSDestroy(s *terraform.State) error {
-	vpcClient, err := testAccProvider.Meta().(ClientSession).VpcV1API()
-	if err != nil {
-		return err
-	}
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_dedicated_host_group" {
-			continue
-		}
-
-		getDedicatedHostGroupOptions := &vpcv1.GetDedicatedHostGroupOptions{}
-
-		getDedicatedHostGroupOptions.SetID(rs.Primary.ID)
-
-		// Try to find the key
-		_, response, err := vpcClient.GetDedicatedHostGroup(getDedicatedHostGroupOptions)
-
-		if err == nil {
-			return fmt.Errorf("DedicatedHostGroup still exists: %s", rs.Primary.ID)
-		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for DedicatedHostGroup (%s) has been destroyed: %s", rs.Primary.ID, err)
-		}
-	}
-
-	return nil
 }

@@ -13,9 +13,8 @@ Provides a read-only data source for DedicatedHostGroup. You can then reference 
 ## Example Usage
 
 ```hcl
-data "is_dedicated_host_group" "is_dedicated_host_group" {
-	id = "id"
-	name = "my-host"
+data "ibm_is_dedicated_host_group" "is_dedicated_host_group" {
+	name = "my-host-group"
 }
 ```
 
@@ -23,8 +22,7 @@ data "is_dedicated_host_group" "is_dedicated_host_group" {
 
 The following arguments are supported:
 
-* `id` - (Required, string) The dedicated host group identifier.
-* `name` - (Optional, string) The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.
+* `name` - (Required, string) The unique user-defined name for this dedicated host.
 
 ## Attribute Reference
 
@@ -32,11 +30,8 @@ The following attributes are exported:
 
 * `id` - The unique identifier of the DedicatedHostGroup.
 * `class` - The dedicated host profile class for hosts in this group.
-
 * `created_at` - The date and time that the dedicated host group was created.
-
 * `crn` - The CRN for this dedicated host group.
-
 * `dedicated_hosts` - The dedicated hosts that are in this dedicated host group. Nested `dedicated_hosts` blocks have the following structure:
 	* `crn` - The CRN for this dedicated host.
 	* `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
@@ -45,23 +40,12 @@ The following attributes are exported:
 	* `id` - The unique identifier for this dedicated host.
 	* `name` - The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.
 	* `resource_type` - The type of resource referenced.
-
 * `family` - The dedicated host profile family for hosts in this group.
-
 * `href` - The URL for this dedicated host group.
-
-* `resource_group` - The resource group for this dedicated host group. Nested `resource_group` blocks have the following structure:
-	* `href` - The URL for this resource group.
-	* `id` - The unique identifier for this resource group.
-	* `name` - The user-defined name for this resource group.
-
+* `resource_group` - The unique identifier of the resource group for this dedicated host.
 * `resource_type` - The type of resource referenced.
-
 * `supported_instance_profiles` - Array of instance profiles that can be used by instances placed on this dedicated host group. Nested `supported_instance_profiles` blocks have the following structure:
 	* `href` - The URL for this virtual server instance profile.
 	* `name` - The globally unique name for this virtual server instance profile.
-
-* `zone` - The zone this dedicated host group resides in. Nested `zone` blocks have the following structure:
-	* `href` - The URL for this zone.
-	* `name` - The globally unique name for this zone.
+* `zone` - The zone this dedicated host group resides in.
 

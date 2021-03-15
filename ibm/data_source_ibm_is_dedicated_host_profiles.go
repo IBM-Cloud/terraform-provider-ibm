@@ -33,11 +33,6 @@ func dataSourceIbmIsDedicatedHostProfiles() *schema.Resource {
 		ReadContext: dataSourceIbmIsDedicatedHostProfilesRead,
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The globally unique name for this dedicated host profile.",
-			},
 			"first": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -300,12 +295,6 @@ func dataSourceIbmIsDedicatedHostProfilesRead(context context.Context, d *schema
 		return diag.FromErr(err)
 	}
 
-	if len(dedicatedHostProfileCollection.Profiles) == 0 {
-		return nil
-	}
-
-	d.SetId(dataSourceIbmIsDedicatedHostProfilesID(d))
-
 	if dedicatedHostProfileCollection.First != nil {
 		err = d.Set("first", dataSourceDedicatedHostProfileCollectionFlattenFirst(*dedicatedHostProfileCollection.First))
 		if err != nil {
@@ -323,16 +312,20 @@ func dataSourceIbmIsDedicatedHostProfilesRead(context context.Context, d *schema
 		}
 	}
 
-	if dedicatedHostProfileCollection.Profiles != nil {
-		err = d.Set("profiles", dataSourceDedicatedHostProfileCollectionFlattenProfiles(dedicatedHostProfileCollection.Profiles))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting profiles %s", err))
+	if len(dedicatedHostProfileCollection.Profiles) != 0 {
+
+		d.SetId(dataSourceIbmIsDedicatedHostProfilesID(d))
+
+		if dedicatedHostProfileCollection.Profiles != nil {
+			err = d.Set("profiles", dataSourceDedicatedHostProfileCollectionFlattenProfiles(dedicatedHostProfileCollection.Profiles))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting profiles %s", err))
+			}
+		}
+		if err = d.Set("total_count", dedicatedHostProfileCollection.TotalCount); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
 		}
 	}
-	if err = d.Set("total_count", dedicatedHostProfileCollection.TotalCount); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
-	}
-
 	return nil
 }
 

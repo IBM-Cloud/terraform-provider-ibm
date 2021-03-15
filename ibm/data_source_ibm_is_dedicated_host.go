@@ -237,31 +237,23 @@ func dataSourceIbmIsDedicatedHostRead(context context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	log.Printf("[DEBUG] ListDedicatedHostsWithContext Begins")
 	listDedicatedHostsOptions := &vpcv1.ListDedicatedHostsOptions{}
 	hostgroupid := d.Get("host_group").(string)
 	listDedicatedHostsOptions.DedicatedHostGroupID = &hostgroupid
-	log.Printf("[DEBUG] ListDedicatedHostsWithContext set host id  %s", hostgroupid)
 	if resgrpid, ok := d.GetOk("resource_group"); ok {
 		resgrpidstr := resgrpid.(string)
 		listDedicatedHostsOptions.ResourceGroupID = &resgrpidstr
 	}
-	log.Printf("[DEBUG] ListDedicatedHostsWithContext set res id")
 	dedicatedHostCollection, response, err := vpcClient.ListDedicatedHostsWithContext(context, listDedicatedHostsOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListDedicatedHostsWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
-	log.Printf("[DEBUG] ListDedicatedHostsWithContext got collections")
+	name := d.Get("name").(string)
 	if len(dedicatedHostCollection.DedicatedHosts) != 0 {
-
-		log.Printf("[DEBUG] ListDedicatedHostsWithContext passed null check")
 		dedicatedHost := vpcv1.DedicatedHost{}
-		name := d.Get("name").(string)
-		log.Println("Searching the data host *************", name)
 		for _, data := range dedicatedHostCollection.DedicatedHosts {
 			if *data.Name == name {
-				log.Println("found the data host *************")
 				dedicatedHost = data
 				d.SetId(*dedicatedHost.ID)
 

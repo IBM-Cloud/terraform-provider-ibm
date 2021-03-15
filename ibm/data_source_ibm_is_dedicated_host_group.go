@@ -162,65 +162,66 @@ func dataSourceIbmIsDedicatedHostGroupRead(context context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	if len(dedicatedHostGroupCollection.Groups) == 0 {
-		return nil
-	}
-	dedicatedHostGroup := vpcv1.DedicatedHostGroup{}
 	name := d.Get("name").(string)
-	for _, data := range dedicatedHostGroupCollection.Groups {
-		if *data.Name == name {
-			dedicatedHostGroup = data
-			d.SetId(*dedicatedHostGroup.ID)
-			if err = d.Set("class", dedicatedHostGroup.Class); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting class: %s", err))
-			}
-			if dedicatedHostGroup.CreatedAt != nil {
-				if err = d.Set("created_at", dedicatedHostGroup.CreatedAt.String()); err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-				}
-			}
 
-			if err = d.Set("crn", dedicatedHostGroup.CRN); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
-			}
+	if len(dedicatedHostGroupCollection.Groups) != 0 {
 
-			if dedicatedHostGroup.DedicatedHosts != nil {
-				err = d.Set("dedicated_hosts", dataSourceDedicatedHostGroupFlattenDedicatedHosts(dedicatedHostGroup.DedicatedHosts))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting dedicated_hosts %s", err))
+		dedicatedHostGroup := vpcv1.DedicatedHostGroup{}
+		for _, data := range dedicatedHostGroupCollection.Groups {
+			if *data.Name == name {
+				dedicatedHostGroup = data
+				d.SetId(*dedicatedHostGroup.ID)
+				if err = d.Set("class", dedicatedHostGroup.Class); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting class: %s", err))
 				}
-			}
-			if err = d.Set("family", dedicatedHostGroup.Family); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting family: %s", err))
-			}
-			if err = d.Set("href", dedicatedHostGroup.Href); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
-			}
+				if dedicatedHostGroup.CreatedAt != nil {
+					if err = d.Set("created_at", dedicatedHostGroup.CreatedAt.String()); err != nil {
+						return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+					}
+				}
 
-			if dedicatedHostGroup.ResourceGroup != nil {
-				err = d.Set("resource_group", *dedicatedHostGroup.ResourceGroup.ID)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting resource_group %s", err))
+				if err = d.Set("crn", dedicatedHostGroup.CRN); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 				}
-			}
-			if err = d.Set("resource_type", dedicatedHostGroup.ResourceType); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
-			}
 
-			if dedicatedHostGroup.SupportedInstanceProfiles != nil {
-				err = d.Set("supported_instance_profiles", dataSourceDedicatedHostGroupFlattenSupportedInstanceProfiles(dedicatedHostGroup.SupportedInstanceProfiles))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting supported_instance_profiles %s", err))
+				if dedicatedHostGroup.DedicatedHosts != nil {
+					err = d.Set("dedicated_hosts", dataSourceDedicatedHostGroupFlattenDedicatedHosts(dedicatedHostGroup.DedicatedHosts))
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("Error setting dedicated_hosts %s", err))
+					}
 				}
-			}
+				if err = d.Set("family", dedicatedHostGroup.Family); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting family: %s", err))
+				}
+				if err = d.Set("href", dedicatedHostGroup.Href); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+				}
 
-			if dedicatedHostGroup.Zone != nil {
-				err = d.Set("zone", *dedicatedHostGroup.Zone.Name)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting zone %s", err))
+				if dedicatedHostGroup.ResourceGroup != nil {
+					err = d.Set("resource_group", *dedicatedHostGroup.ResourceGroup.ID)
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("Error setting resource_group %s", err))
+					}
 				}
+				if err = d.Set("resource_type", dedicatedHostGroup.ResourceType); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+				}
+
+				if dedicatedHostGroup.SupportedInstanceProfiles != nil {
+					err = d.Set("supported_instance_profiles", dataSourceDedicatedHostGroupFlattenSupportedInstanceProfiles(dedicatedHostGroup.SupportedInstanceProfiles))
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("Error setting supported_instance_profiles %s", err))
+					}
+				}
+
+				if dedicatedHostGroup.Zone != nil {
+					err = d.Set("zone", *dedicatedHostGroup.Zone.Name)
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("Error setting zone %s", err))
+					}
+				}
+				return nil
 			}
-			return nil
 		}
 	}
 	return diag.FromErr(fmt.Errorf("No Dedicated Host Group found with name %s", name))

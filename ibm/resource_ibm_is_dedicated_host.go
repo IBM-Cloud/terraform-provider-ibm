@@ -55,13 +55,14 @@ func resourceIbmIsDedicatedHost() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 			},
 			"profile": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The profile to use for this dedicated host. Globally unique name for this dedicated host profile.",
+				Description: "The Globally unique name of the dedicated host profile to use for this dedicated host.",
 			},
 			"resource_group": {
 				Type:        schema.TypeString,
@@ -228,23 +229,9 @@ func resourceIbmIsDedicatedHost() *schema.Resource {
 				},
 			},
 			"zone": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The zone this dedicated host resides in.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The URL for this zone.",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The globally unique name for this zone.",
-						},
-					},
-				},
+				Description: "The globally unique name of the zone this dedicated host resides in.",
 			},
 		},
 	}
@@ -255,7 +242,6 @@ func resourceIbmIsDedicatedHostCreate(context context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	log.Println("in the create method ******")
 	createDedicatedHostOptions := &vpcv1.CreateDedicatedHostOptions{}
 	dedicatedHostPrototype := vpcv1.DedicatedHostPrototype{}
 
@@ -297,8 +283,6 @@ func resourceIbmIsDedicatedHostCreate(context context.Context, d *schema.Resourc
 
 	createDedicatedHostOptions.SetDedicatedHostPrototype(&dedicatedHostPrototype)
 
-	//dedicatedHostPrototype := resourceIbmIsDedicatedHostMapToDedicatedHostPrototype(d.Get("dedicated_host_prototype").([]interface{})[0].(map[string]interface{}))
-	//createDedicatedHostOptions.SetDedicatedHostPrototype(&dedicatedHostPrototype)
 	dedicatedHost, response, err := vpcClient.CreateDedicatedHostWithContext(context, createDedicatedHostOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateDedicatedHostWithContext failed %s\n%s", err, response)
@@ -308,245 +292,6 @@ func resourceIbmIsDedicatedHostCreate(context context.Context, d *schema.Resourc
 	d.SetId(*dedicatedHost.ID)
 
 	return resourceIbmIsDedicatedHostRead(context, d, meta)
-}
-
-func resourceIbmIsDedicatedHostMapToDedicatedHostPrototype(dedicatedHostPrototypeMap map[string]interface{}) vpcv1.DedicatedHostPrototype {
-	dedicatedHostPrototype := vpcv1.DedicatedHostPrototype{}
-	log.Println("resourceIbmIsDedicatedHostMapToDedicatedHostPrototype  ******* ", dedicatedHostPrototypeMap)
-	if dedicatedHostPrototypeMap["instance_placement_enabled"] != nil {
-		dedicatedHostPrototype.InstancePlacementEnabled = core.BoolPtr(dedicatedHostPrototypeMap["instance_placement_enabled"].(bool))
-	}
-
-	dhName, _ := dedicatedHostPrototypeMap["name"]
-	dhNamestr := dhName.(string)
-	if dhNamestr != "" {
-		dedicatedHostPrototype.Name = core.StringPtr(dedicatedHostPrototypeMap["name"].(string))
-	}
-
-	if len(dedicatedHostPrototypeMap["profile"].([]interface{})) != 0 {
-		log.Println("dedicatedHostPrototypeMap profile ******* ", dedicatedHostPrototypeMap["profile"])
-		dedicatedHostPrototype.Profile = resourceIbmIsDedicatedHostMapToDedicatedHostProfileIdentity(dedicatedHostPrototypeMap["profile"].([]interface{})[0].(map[string]interface{}))
-	}
-	// TODO: handle Profile of type DedicatedHostProfileIdentity -- not primitive type, not list
-
-	if len(dedicatedHostPrototypeMap["resource_group"].([]interface{})) != 0 {
-		// TODO: handle ResourceGroup of type ResourceGroupIdentity -- not primitive type, not list
-		log.Println("dedicatedHostPrototypeMap resource_group ******* ", dedicatedHostPrototypeMap["resource_group"])
-		dedicatedHostPrototype.ResourceGroup = resourceIbmIsDedicatedHostMapToResourceGroupIdentity(dedicatedHostPrototypeMap["resource_group"].([]interface{})[0].(map[string]interface{}))
-	}
-	if len(dedicatedHostPrototypeMap["group"].([]interface{})) != 0 {
-		// TODO: handle Group of type DedicatedHostGroupIdentity -- not primitive type, not list
-		dedicatedHostPrototype.Group = resourceIbmIsDedicatedHostMapToDedicatedHostGroupIdentity(dedicatedHostPrototypeMap["group"].([]interface{})[0].(map[string]interface{}))
-	}
-	if len(dedicatedHostPrototypeMap["zone"].([]interface{})) != 0 {
-		// TODO: handle Zone of type ZoneIdentity -- not primitive type, not list
-		log.Printf("zone *************")
-		dedicatedHostPrototype.Zone = resourceIbmIsDedicatedHostMapToZoneIdentity(dedicatedHostPrototypeMap["zone"].([]interface{})[0].(map[string]interface{}))
-	}
-
-	return dedicatedHostPrototype
-}
-
-func resourceIbmIsDedicatedHostMapToDedicatedHostProfileIdentity(dedicatedHostProfileIdentityMap map[string]interface{}) *vpcv1.DedicatedHostProfileIdentity {
-	dedicatedHostProfileIdentity := vpcv1.DedicatedHostProfileIdentity{}
-
-	name, _ := dedicatedHostProfileIdentityMap["name"]
-	namestr := name.(string)
-	if namestr != "" {
-		dedicatedHostProfileIdentity.Name = core.StringPtr(dedicatedHostProfileIdentityMap["name"].(string))
-	}
-	href, _ := dedicatedHostProfileIdentityMap["href"]
-	hrefstr := href.(string)
-	if hrefstr != "" {
-		dedicatedHostProfileIdentity.Href = core.StringPtr(dedicatedHostProfileIdentityMap["href"].(string))
-	}
-
-	return &dedicatedHostProfileIdentity
-}
-
-func resourceIbmIsDedicatedHostMapToDedicatedHostProfileIdentityByName(dedicatedHostProfileIdentityByNameMap map[string]interface{}) vpcv1.DedicatedHostProfileIdentityByName {
-	dedicatedHostProfileIdentityByName := vpcv1.DedicatedHostProfileIdentityByName{}
-
-	dedicatedHostProfileIdentityByName.Name = core.StringPtr(dedicatedHostProfileIdentityByNameMap["name"].(string))
-
-	return dedicatedHostProfileIdentityByName
-}
-
-func resourceIbmIsDedicatedHostMapToDedicatedHostProfileIdentityByHref(dedicatedHostProfileIdentityByHrefMap map[string]interface{}) vpcv1.DedicatedHostProfileIdentityByHref {
-	dedicatedHostProfileIdentityByHref := vpcv1.DedicatedHostProfileIdentityByHref{}
-
-	dedicatedHostProfileIdentityByHref.Href = core.StringPtr(dedicatedHostProfileIdentityByHrefMap["href"].(string))
-
-	return dedicatedHostProfileIdentityByHref
-}
-
-func resourceIbmIsDedicatedHostMapToResourceGroupIdentity(resourceGroupIdentityMap map[string]interface{}) *vpcv1.ResourceGroupIdentity {
-	resourceGroupIdentity := vpcv1.ResourceGroupIdentity{}
-
-	resourcegroup, _ := resourceGroupIdentityMap["id"]
-	resourcegroupstr := resourcegroup.(string)
-	if resourcegroupstr != "" {
-		resourceGroupIdentity.ID = core.StringPtr(resourceGroupIdentityMap["id"].(string))
-	}
-
-	return &resourceGroupIdentity
-}
-
-func resourceIbmIsDedicatedHostMapToResourceGroupIdentityByID(resourceGroupIdentityByIDMap map[string]interface{}) vpcv1.ResourceGroupIdentityByID {
-	resourceGroupIdentityByID := vpcv1.ResourceGroupIdentityByID{}
-
-	resourceGroupIdentityByID.ID = core.StringPtr(resourceGroupIdentityByIDMap["id"].(string))
-
-	return resourceGroupIdentityByID
-}
-
-func resourceIbmIsDedicatedHostMapToDedicatedHostGroupIdentity(dedicatedHostGroupIdentityMap map[string]interface{}) *vpcv1.DedicatedHostGroupIdentity {
-	dedicatedHostGroupIdentity := vpcv1.DedicatedHostGroupIdentity{}
-
-	hostGroupID, _ := dedicatedHostGroupIdentityMap["id"]
-	hostGroupIDstr := hostGroupID.(string)
-	if hostGroupIDstr != "" {
-		dedicatedHostGroupIdentity.ID = core.StringPtr(dedicatedHostGroupIdentityMap["id"].(string))
-	}
-	hostGroupCRN, _ := dedicatedHostGroupIdentityMap["crn"]
-	hostGroupCRNstr := hostGroupCRN.(string)
-	if hostGroupCRNstr != "" {
-		dedicatedHostGroupIdentity.CRN = core.StringPtr(dedicatedHostGroupIdentityMap["crn"].(string))
-	}
-	hostGrouphref, _ := dedicatedHostGroupIdentityMap["href"]
-	hostGrouphrefstr := hostGrouphref.(string)
-	if hostGrouphrefstr != "" {
-		dedicatedHostGroupIdentity.Href = core.StringPtr(dedicatedHostGroupIdentityMap["href"].(string))
-	}
-
-	return &dedicatedHostGroupIdentity
-}
-
-func resourceIbmIsDedicatedHostMapToDedicatedHostGroupIdentityByID(dedicatedHostGroupIdentityByIDMap map[string]interface{}) vpcv1.DedicatedHostGroupIdentityByID {
-	dedicatedHostGroupIdentityByID := vpcv1.DedicatedHostGroupIdentityByID{}
-
-	dedicatedHostGroupIdentityByID.ID = core.StringPtr(dedicatedHostGroupIdentityByIDMap["id"].(string))
-
-	return dedicatedHostGroupIdentityByID
-}
-
-func resourceIbmIsDedicatedHostMapToDedicatedHostGroupIdentityByCRN(dedicatedHostGroupIdentityByCRNMap map[string]interface{}) vpcv1.DedicatedHostGroupIdentityByCRN {
-	dedicatedHostGroupIdentityByCRN := vpcv1.DedicatedHostGroupIdentityByCRN{}
-
-	dedicatedHostGroupIdentityByCRN.CRN = core.StringPtr(dedicatedHostGroupIdentityByCRNMap["crn"].(string))
-
-	return dedicatedHostGroupIdentityByCRN
-}
-
-func resourceIbmIsDedicatedHostMapToDedicatedHostGroupIdentityByHref(dedicatedHostGroupIdentityByHrefMap map[string]interface{}) vpcv1.DedicatedHostGroupIdentityByHref {
-	dedicatedHostGroupIdentityByHref := vpcv1.DedicatedHostGroupIdentityByHref{}
-
-	dedicatedHostGroupIdentityByHref.Href = core.StringPtr(dedicatedHostGroupIdentityByHrefMap["href"].(string))
-
-	return dedicatedHostGroupIdentityByHref
-}
-
-func resourceIbmIsDedicatedHostMapToZoneIdentity(zoneIdentityMap map[string]interface{}) *vpcv1.ZoneIdentity {
-	zoneIdentity := vpcv1.ZoneIdentity{}
-
-	zoneName, _ := zoneIdentityMap["name"]
-	zoneNameStr := zoneName.(string)
-	if zoneNameStr != "" {
-		zoneIdentity.Name = core.StringPtr(zoneIdentityMap["name"].(string))
-	}
-	zonehref, _ := zoneIdentityMap["href"]
-	zonehrefstr := zonehref.(string)
-	if zonehrefstr != "" {
-		zoneIdentity.Href = core.StringPtr(zoneIdentityMap["href"].(string))
-	}
-
-	return &zoneIdentity
-}
-
-func resourceIbmIsDedicatedHostMapToZoneIdentityByName(zoneIdentityByNameMap map[string]interface{}) vpcv1.ZoneIdentityByName {
-	zoneIdentityByName := vpcv1.ZoneIdentityByName{}
-
-	zoneIdentityByName.Name = core.StringPtr(zoneIdentityByNameMap["name"].(string))
-
-	return zoneIdentityByName
-}
-
-func resourceIbmIsDedicatedHostMapToZoneIdentityByHref(zoneIdentityByHrefMap map[string]interface{}) vpcv1.ZoneIdentityByHref {
-	zoneIdentityByHref := vpcv1.ZoneIdentityByHref{}
-
-	zoneIdentityByHref.Href = core.StringPtr(zoneIdentityByHrefMap["href"].(string))
-
-	return zoneIdentityByHref
-}
-
-func resourceIbmIsDedicatedHostMapToDedicatedHostPrototypeDedicatedHostByGroup(dedicatedHostPrototypeDedicatedHostByGroupMap map[string]interface{}) vpcv1.DedicatedHostPrototypeDedicatedHostByGroup {
-	dedicatedHostPrototypeDedicatedHostByGroup := vpcv1.DedicatedHostPrototypeDedicatedHostByGroup{}
-
-	if dedicatedHostPrototypeDedicatedHostByGroupMap["instance_placement_enabled"] != nil {
-		dedicatedHostPrototypeDedicatedHostByGroup.InstancePlacementEnabled = core.BoolPtr(dedicatedHostPrototypeDedicatedHostByGroupMap["instance_placement_enabled"].(bool))
-	}
-	if dedicatedHostPrototypeDedicatedHostByGroupMap["name"] != nil {
-		dedicatedHostPrototypeDedicatedHostByGroup.Name = core.StringPtr(dedicatedHostPrototypeDedicatedHostByGroupMap["name"].(string))
-	}
-	if len(dedicatedHostPrototypeDedicatedHostByGroupMap["profile"].([]interface{})) != 0 {
-		dedicatedHostPrototypeDedicatedHostByGroup.Profile = resourceIbmIsDedicatedHostMapToDedicatedHostProfileIdentity(dedicatedHostPrototypeDedicatedHostByGroupMap["profile"].([]interface{})[0].(map[string]interface{}))
-	}
-	// TODO: handle Profile of type DedicatedHostProfileIdentity -- not primitive type, not list
-	if len(dedicatedHostPrototypeDedicatedHostByGroupMap["resource_group"].([]interface{})) != 0 {
-		// TODO: handle ResourceGroup of type ResourceGroupIdentity -- not primitive type, not list
-		dedicatedHostPrototypeDedicatedHostByGroup.ResourceGroup = resourceIbmIsDedicatedHostMapToResourceGroupIdentity(dedicatedHostPrototypeDedicatedHostByGroupMap["resource_group"].([]interface{})[0].(map[string]interface{}))
-	}
-	// TODO: handle Group of type DedicatedHostGroupIdentity -- not primitive type, not list
-	if len(dedicatedHostPrototypeDedicatedHostByGroupMap["group"].([]interface{})) != 0 {
-		// TODO: handle Group of type DedicatedHostGroupIdentity -- not primitive type, not list
-		dedicatedHostPrototypeDedicatedHostByGroup.Group = resourceIbmIsDedicatedHostMapToDedicatedHostGroupIdentity(dedicatedHostPrototypeDedicatedHostByGroupMap["group"].([]interface{})[0].(map[string]interface{}))
-	}
-
-	return dedicatedHostPrototypeDedicatedHostByGroup
-}
-
-func resourceIbmIsDedicatedHostMapToDedicatedHostPrototypeDedicatedHostByZone(dedicatedHostPrototypeDedicatedHostByZoneMap map[string]interface{}) vpcv1.DedicatedHostPrototypeDedicatedHostByZone {
-	dedicatedHostPrototypeDedicatedHostByZone := vpcv1.DedicatedHostPrototypeDedicatedHostByZone{}
-
-	if dedicatedHostPrototypeDedicatedHostByZoneMap["instance_placement_enabled"] != nil {
-		dedicatedHostPrototypeDedicatedHostByZone.InstancePlacementEnabled = core.BoolPtr(dedicatedHostPrototypeDedicatedHostByZoneMap["instance_placement_enabled"].(bool))
-	}
-	if dedicatedHostPrototypeDedicatedHostByZoneMap["name"].(string) != "" {
-		dedicatedHostPrototypeDedicatedHostByZone.Name = core.StringPtr(dedicatedHostPrototypeDedicatedHostByZoneMap["name"].(string))
-	}
-	// TODO: handle Profile of type DedicatedHostProfileIdentity -- not primitive type, not list
-	if len(dedicatedHostPrototypeDedicatedHostByZoneMap["profile"].([]interface{})) != 0 {
-		dedicatedHostPrototypeDedicatedHostByZone.Profile = resourceIbmIsDedicatedHostMapToDedicatedHostProfileIdentity(dedicatedHostPrototypeDedicatedHostByZoneMap["profile"].([]interface{})[0].(map[string]interface{}))
-	}
-	if len(dedicatedHostPrototypeDedicatedHostByZoneMap["resource_group"].([]interface{})) != 0 {
-		// TODO: handle ResourceGroup of type ResourceGroupIdentity -- not primitive type, not list
-		dedicatedHostPrototypeDedicatedHostByZone.ResourceGroup = resourceIbmIsDedicatedHostMapToResourceGroupIdentity(dedicatedHostPrototypeDedicatedHostByZoneMap["resource_group"].([]interface{})[0].(map[string]interface{}))
-	}
-	if len(dedicatedHostPrototypeDedicatedHostByZoneMap["group"].([]interface{})) != 0 {
-		// TODO: handle Group of type DedicatedHostGroupPrototypeDedicatedHostByZoneContext -- not primitive type, not list
-		dedicatedHostPrototypeDedicatedHostByZone.Group = resourceIbmIsDedicatedHostMapToDedicatedHostGroupPrototypeDedicatedHostByZoneContext(dedicatedHostPrototypeDedicatedHostByZoneMap["group"].([]interface{})[0].(map[string]interface{}))
-	}
-	// TODO: handle Zone of type ZoneIdentity -- not primitive type, not list
-	if len(dedicatedHostPrototypeDedicatedHostByZoneMap["zone"].([]interface{})) != 0 {
-		dedicatedHostPrototypeDedicatedHostByZone.Zone = resourceIbmIsDedicatedHostMapToZoneIdentity(dedicatedHostPrototypeDedicatedHostByZoneMap["zone"].([]interface{})[0].(map[string]interface{}))
-
-	}
-
-	return dedicatedHostPrototypeDedicatedHostByZone
-}
-
-func resourceIbmIsDedicatedHostMapToDedicatedHostGroupPrototypeDedicatedHostByZoneContext(dedicatedHostGroupPrototypeDedicatedHostByZoneContextMap map[string]interface{}) *vpcv1.DedicatedHostGroupPrototypeDedicatedHostByZoneContext {
-	dedicatedHostGroupPrototypeDedicatedHostByZoneContext := vpcv1.DedicatedHostGroupPrototypeDedicatedHostByZoneContext{}
-
-	if dedicatedHostGroupPrototypeDedicatedHostByZoneContextMap["name"].(string) != "" {
-		dedicatedHostGroupPrototypeDedicatedHostByZoneContext.Name = core.StringPtr(dedicatedHostGroupPrototypeDedicatedHostByZoneContextMap["name"].(string))
-	}
-	if dedicatedHostGroupPrototypeDedicatedHostByZoneContextMap["resource_group"] != nil {
-		// TODO: handle ResourceGroup of type ResourceGroupIdentity -- not primitive type, not list
-		dedicatedHostGroupPrototypeDedicatedHostByZoneContext.ResourceGroup = resourceIbmIsDedicatedHostMapToResourceGroupIdentity(dedicatedHostGroupPrototypeDedicatedHostByZoneContextMap["resource_group"].([]interface{})[0].(map[string]interface{}))
-	}
-
-	return &dedicatedHostGroupPrototypeDedicatedHostByZoneContext
 }
 
 func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -642,185 +387,12 @@ func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("vcpu", []map[string]interface{}{vcpuMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting vcpu: %s", err))
 	}
-	zoneMap := resourceIbmIsDedicatedHostZoneReferenceToMap(*dedicatedHost.Zone)
-	if err = d.Set("zone", zoneMap); err != nil {
+
+	if err = d.Set("zone", *dedicatedHost.Zone.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting zone: %s", err))
 	}
 
 	return nil
-}
-
-func resourceIbmIsDedicatedHostDedicatedHostPrototypeToMap(dedicatedHostPrototype vpcv1.DedicatedHostPrototype) map[string]interface{} {
-	dedicatedHostPrototypeMap := map[string]interface{}{}
-
-	dedicatedHostPrototypeMap["instance_placement_enabled"] = dedicatedHostPrototype.InstancePlacementEnabled
-	dedicatedHostPrototypeMap["name"] = dedicatedHostPrototype.Name
-	ProfileMap := resourceIbmIsDedicatedHostDedicatedHostProfileIdentityToMap(*dedicatedHostPrototype.Profile.(*vpcv1.DedicatedHostProfileIdentity))
-	dedicatedHostPrototypeMap["profile"] = []map[string]interface{}{ProfileMap}
-	if dedicatedHostPrototype.ResourceGroup != nil {
-		ResourceGroupMap := resourceIbmIsDedicatedHostResourceGroupIdentityToMap(*dedicatedHostPrototype.ResourceGroup.(*vpcv1.ResourceGroupIdentity))
-		dedicatedHostPrototypeMap["resource_group"] = []map[string]interface{}{ResourceGroupMap}
-	}
-	if dedicatedHostPrototype.Group != nil {
-		GroupMap := resourceIbmIsDedicatedHostDedicatedHostGroupIdentityToMap(*dedicatedHostPrototype.Group.(*vpcv1.DedicatedHostGroupIdentity))
-		dedicatedHostPrototypeMap["group"] = []map[string]interface{}{GroupMap}
-	}
-	if dedicatedHostPrototype.Zone != nil {
-		ZoneMap := resourceIbmIsDedicatedHostZoneIdentityToMap(*dedicatedHostPrototype.Zone.(*vpcv1.ZoneIdentity))
-		dedicatedHostPrototypeMap["zone"] = []map[string]interface{}{ZoneMap}
-	}
-
-	return dedicatedHostPrototypeMap
-}
-
-func resourceIbmIsDedicatedHostDedicatedHostProfileIdentityToMap(dedicatedHostProfileIdentity vpcv1.DedicatedHostProfileIdentity) map[string]interface{} {
-	dedicatedHostProfileIdentityMap := map[string]interface{}{}
-
-	dedicatedHostProfileIdentityMap["name"] = dedicatedHostProfileIdentity.Name
-	dedicatedHostProfileIdentityMap["href"] = dedicatedHostProfileIdentity.Href
-
-	return dedicatedHostProfileIdentityMap
-}
-
-func resourceIbmIsDedicatedHostDedicatedHostProfileIdentityByNameToMap(dedicatedHostProfileIdentityByName vpcv1.DedicatedHostProfileIdentityByName) map[string]interface{} {
-	dedicatedHostProfileIdentityByNameMap := map[string]interface{}{}
-
-	dedicatedHostProfileIdentityByNameMap["name"] = dedicatedHostProfileIdentityByName.Name
-
-	return dedicatedHostProfileIdentityByNameMap
-}
-
-func resourceIbmIsDedicatedHostDedicatedHostProfileIdentityByHrefToMap(dedicatedHostProfileIdentityByHref vpcv1.DedicatedHostProfileIdentityByHref) map[string]interface{} {
-	dedicatedHostProfileIdentityByHrefMap := map[string]interface{}{}
-
-	dedicatedHostProfileIdentityByHrefMap["href"] = dedicatedHostProfileIdentityByHref.Href
-
-	return dedicatedHostProfileIdentityByHrefMap
-}
-
-func resourceIbmIsDedicatedHostResourceGroupIdentityToMap(resourceGroupIdentity vpcv1.ResourceGroupIdentity) map[string]interface{} {
-	resourceGroupIdentityMap := map[string]interface{}{}
-
-	resourceGroupIdentityMap["id"] = resourceGroupIdentity.ID
-
-	return resourceGroupIdentityMap
-}
-
-func resourceIbmIsDedicatedHostResourceGroupIdentityByIDToMap(resourceGroupIdentityByID vpcv1.ResourceGroupIdentityByID) map[string]interface{} {
-	resourceGroupIdentityByIDMap := map[string]interface{}{}
-
-	resourceGroupIdentityByIDMap["id"] = resourceGroupIdentityByID.ID
-
-	return resourceGroupIdentityByIDMap
-}
-
-func resourceIbmIsDedicatedHostDedicatedHostGroupIdentityToMap(dedicatedHostGroupIdentity vpcv1.DedicatedHostGroupIdentity) map[string]interface{} {
-	dedicatedHostGroupIdentityMap := map[string]interface{}{}
-
-	dedicatedHostGroupIdentityMap["id"] = dedicatedHostGroupIdentity.ID
-	dedicatedHostGroupIdentityMap["crn"] = dedicatedHostGroupIdentity.CRN
-	dedicatedHostGroupIdentityMap["href"] = dedicatedHostGroupIdentity.Href
-
-	return dedicatedHostGroupIdentityMap
-}
-
-func resourceIbmIsDedicatedHostDedicatedHostGroupIdentityByIDToMap(dedicatedHostGroupIdentityByID vpcv1.DedicatedHostGroupIdentityByID) map[string]interface{} {
-	dedicatedHostGroupIdentityByIDMap := map[string]interface{}{}
-
-	dedicatedHostGroupIdentityByIDMap["id"] = dedicatedHostGroupIdentityByID.ID
-
-	return dedicatedHostGroupIdentityByIDMap
-}
-
-func resourceIbmIsDedicatedHostDedicatedHostGroupIdentityByCRNToMap(dedicatedHostGroupIdentityByCRN vpcv1.DedicatedHostGroupIdentityByCRN) map[string]interface{} {
-	dedicatedHostGroupIdentityByCRNMap := map[string]interface{}{}
-
-	dedicatedHostGroupIdentityByCRNMap["crn"] = dedicatedHostGroupIdentityByCRN.CRN
-
-	return dedicatedHostGroupIdentityByCRNMap
-}
-
-func resourceIbmIsDedicatedHostDedicatedHostGroupIdentityByHrefToMap(dedicatedHostGroupIdentityByHref vpcv1.DedicatedHostGroupIdentityByHref) map[string]interface{} {
-	dedicatedHostGroupIdentityByHrefMap := map[string]interface{}{}
-
-	dedicatedHostGroupIdentityByHrefMap["href"] = dedicatedHostGroupIdentityByHref.Href
-
-	return dedicatedHostGroupIdentityByHrefMap
-}
-
-func resourceIbmIsDedicatedHostZoneIdentityToMap(zoneIdentity vpcv1.ZoneIdentity) map[string]interface{} {
-	zoneIdentityMap := map[string]interface{}{}
-
-	zoneIdentityMap["name"] = zoneIdentity.Name
-	zoneIdentityMap["href"] = zoneIdentity.Href
-
-	return zoneIdentityMap
-}
-
-func resourceIbmIsDedicatedHostZoneIdentityByNameToMap(zoneIdentityByName vpcv1.ZoneIdentityByName) map[string]interface{} {
-	zoneIdentityByNameMap := map[string]interface{}{}
-
-	zoneIdentityByNameMap["name"] = zoneIdentityByName.Name
-
-	return zoneIdentityByNameMap
-}
-
-func resourceIbmIsDedicatedHostZoneIdentityByHrefToMap(zoneIdentityByHref vpcv1.ZoneIdentityByHref) map[string]interface{} {
-	zoneIdentityByHrefMap := map[string]interface{}{}
-
-	zoneIdentityByHrefMap["href"] = zoneIdentityByHref.Href
-
-	return zoneIdentityByHrefMap
-}
-
-func resourceIbmIsDedicatedHostDedicatedHostPrototypeDedicatedHostByGroupToMap(dedicatedHostPrototypeDedicatedHostByGroup vpcv1.DedicatedHostPrototypeDedicatedHostByGroup) map[string]interface{} {
-	dedicatedHostPrototypeDedicatedHostByGroupMap := map[string]interface{}{}
-
-	dedicatedHostPrototypeDedicatedHostByGroupMap["instance_placement_enabled"] = dedicatedHostPrototypeDedicatedHostByGroup.InstancePlacementEnabled
-	dedicatedHostPrototypeDedicatedHostByGroupMap["name"] = dedicatedHostPrototypeDedicatedHostByGroup.Name
-	ProfileMap := resourceIbmIsDedicatedHostDedicatedHostProfileIdentityToMap(*dedicatedHostPrototypeDedicatedHostByGroup.Profile.(*vpcv1.DedicatedHostProfileIdentity))
-	dedicatedHostPrototypeDedicatedHostByGroupMap["profile"] = []map[string]interface{}{ProfileMap}
-	if dedicatedHostPrototypeDedicatedHostByGroup.ResourceGroup != nil {
-		ResourceGroupMap := resourceIbmIsDedicatedHostResourceGroupIdentityToMap(*dedicatedHostPrototypeDedicatedHostByGroup.ResourceGroup.(*vpcv1.ResourceGroupIdentity))
-		dedicatedHostPrototypeDedicatedHostByGroupMap["resource_group"] = []map[string]interface{}{ResourceGroupMap}
-	}
-	GroupMap := resourceIbmIsDedicatedHostDedicatedHostGroupIdentityToMap(*dedicatedHostPrototypeDedicatedHostByGroup.Group.(*vpcv1.DedicatedHostGroupIdentity))
-	dedicatedHostPrototypeDedicatedHostByGroupMap["group"] = []map[string]interface{}{GroupMap}
-
-	return dedicatedHostPrototypeDedicatedHostByGroupMap
-}
-
-func resourceIbmIsDedicatedHostDedicatedHostPrototypeDedicatedHostByZoneToMap(dedicatedHostPrototypeDedicatedHostByZone vpcv1.DedicatedHostPrototypeDedicatedHostByZone) map[string]interface{} {
-	dedicatedHostPrototypeDedicatedHostByZoneMap := map[string]interface{}{}
-
-	dedicatedHostPrototypeDedicatedHostByZoneMap["instance_placement_enabled"] = dedicatedHostPrototypeDedicatedHostByZone.InstancePlacementEnabled
-	dedicatedHostPrototypeDedicatedHostByZoneMap["name"] = dedicatedHostPrototypeDedicatedHostByZone.Name
-	ProfileMap := resourceIbmIsDedicatedHostDedicatedHostProfileIdentityToMap(*dedicatedHostPrototypeDedicatedHostByZone.Profile.(*vpcv1.DedicatedHostProfileIdentity))
-	dedicatedHostPrototypeDedicatedHostByZoneMap["profile"] = []map[string]interface{}{ProfileMap}
-	if dedicatedHostPrototypeDedicatedHostByZone.ResourceGroup != nil {
-		ResourceGroupMap := resourceIbmIsDedicatedHostResourceGroupIdentityToMap(*dedicatedHostPrototypeDedicatedHostByZone.ResourceGroup.(*vpcv1.ResourceGroupIdentity))
-		dedicatedHostPrototypeDedicatedHostByZoneMap["resource_group"] = []map[string]interface{}{ResourceGroupMap}
-	}
-	if dedicatedHostPrototypeDedicatedHostByZone.Group != nil {
-		GroupMap := resourceIbmIsDedicatedHostDedicatedHostGroupPrototypeDedicatedHostByZoneContextToMap(*dedicatedHostPrototypeDedicatedHostByZone.Group)
-		dedicatedHostPrototypeDedicatedHostByZoneMap["group"] = []map[string]interface{}{GroupMap}
-	}
-	ZoneMap := resourceIbmIsDedicatedHostZoneIdentityToMap(*dedicatedHostPrototypeDedicatedHostByZone.Zone.(*vpcv1.ZoneIdentity))
-	dedicatedHostPrototypeDedicatedHostByZoneMap["zone"] = []map[string]interface{}{ZoneMap}
-
-	return dedicatedHostPrototypeDedicatedHostByZoneMap
-}
-
-func resourceIbmIsDedicatedHostDedicatedHostGroupPrototypeDedicatedHostByZoneContextToMap(dedicatedHostGroupPrototypeDedicatedHostByZoneContext vpcv1.DedicatedHostGroupPrototypeDedicatedHostByZoneContext) map[string]interface{} {
-	dedicatedHostGroupPrototypeDedicatedHostByZoneContextMap := map[string]interface{}{}
-
-	dedicatedHostGroupPrototypeDedicatedHostByZoneContextMap["name"] = dedicatedHostGroupPrototypeDedicatedHostByZoneContext.Name
-	if dedicatedHostGroupPrototypeDedicatedHostByZoneContext.ResourceGroup != nil {
-		ResourceGroupMap := resourceIbmIsDedicatedHostResourceGroupIdentityToMap(*dedicatedHostGroupPrototypeDedicatedHostByZoneContext.ResourceGroup.(*vpcv1.ResourceGroupIdentity))
-		dedicatedHostGroupPrototypeDedicatedHostByZoneContextMap["resource_group"] = []map[string]interface{}{ResourceGroupMap}
-	}
-
-	return dedicatedHostGroupPrototypeDedicatedHostByZoneContextMap
 }
 
 func resourceIbmIsDedicatedHostVCPUToMap(vCPU vpcv1.Vcpu) map[string]interface{} {
@@ -830,63 +402,6 @@ func resourceIbmIsDedicatedHostVCPUToMap(vCPU vpcv1.Vcpu) map[string]interface{}
 	vCPUMap["count"] = intValue(vCPU.Count)
 
 	return vCPUMap
-}
-
-func resourceIbmIsDedicatedHostDedicatedHostToPrototypeMap(dedicatedHost vpcv1.DedicatedHost) []interface{} {
-	dedicatedHostPrototypeMap := map[string]interface{}{}
-
-	if dedicatedHost.InstancePlacementEnabled != nil {
-		dedicatedHostPrototypeMap["instance_placement_enabled"] = dedicatedHost.InstancePlacementEnabled
-	}
-	if dedicatedHost.Name != nil {
-		dedicatedHostPrototypeMap["name"] = dedicatedHost.Name
-	}
-	// TODO: handle Profile of type DedicatedHostProfileIdentity -- not primitive type, not list
-	if dedicatedHost.Profile != nil {
-		dedicatedHostPrototypeMap["profile"] = resourceIbmIsDedicatedHostDedicatedHostProfileReferenceToMap(*dedicatedHost.Profile)
-	}
-	if dedicatedHost.ResourceGroup != nil {
-		// TODO: handle ResourceGroup of type ResourceGroupIdentity -- not primitive type, not list
-		dedicatedHostPrototypeMap["resource_group"] = resourceIbmIsDedicatedHostResourceGroupReferenceToMap(*dedicatedHost.ResourceGroup)
-	}
-	if dedicatedHost.Group != nil {
-		// TODO: handle Group of type DedicatedHostGroupIdentity -- not primitive type, not list
-		dedicatedHostPrototypeMap["group"] = resourceIbmIsDedicatedHostDedicatedHostGroupReferenceToMap(*dedicatedHost.Group)
-	}
-	if dedicatedHost.Zone != nil {
-		// TODO: handle Zone of type ZoneIdentity -- not primitive type, not list
-		dedicatedHostPrototypeMap["zone"] = resourceIbmIsDedicatedHostZoneReferenceToMap(*dedicatedHost.Zone)
-	}
-	dedicatedHostPrototypelist := []interface{}{}
-	dedicatedHostPrototypelist = append(dedicatedHostPrototypelist, dedicatedHostPrototypeMap)
-
-	return dedicatedHostPrototypelist
-}
-func resourceIbmIsDedicatedHostDedicatedHostGroupReferenceToMap(dedicatedHostGroupReference vpcv1.DedicatedHostGroupReference) []interface{} {
-	dedicatedHostGroupReferenceMap := map[string]interface{}{}
-
-	dedicatedHostGroupReferenceMap["crn"] = dedicatedHostGroupReference.CRN
-	if dedicatedHostGroupReference.Deleted != nil {
-		DeletedMap := resourceIbmIsDedicatedHostDedicatedHostGroupReferenceDeletedToMap(*dedicatedHostGroupReference.Deleted)
-		dedicatedHostGroupReferenceMap["deleted"] = []map[string]interface{}{DeletedMap}
-	}
-	dedicatedHostGroupReferenceMap["href"] = dedicatedHostGroupReference.Href
-	dedicatedHostGroupReferenceMap["id"] = dedicatedHostGroupReference.ID
-	dedicatedHostGroupReferenceMap["name"] = dedicatedHostGroupReference.Name
-	dedicatedHostGroupReferenceMap["resource_type"] = dedicatedHostGroupReference.ResourceType
-
-	dedicatedHostGroupReferenceint := []interface{}{}
-	dedicatedHostGroupReferenceint = append(dedicatedHostGroupReferenceint, dedicatedHostGroupReferenceMap)
-
-	return dedicatedHostGroupReferenceint
-}
-
-func resourceIbmIsDedicatedHostDedicatedHostGroupReferenceDeletedToMap(dedicatedHostGroupReferenceDeleted vpcv1.DedicatedHostGroupReferenceDeleted) map[string]interface{} {
-	dedicatedHostGroupReferenceDeletedMap := map[string]interface{}{}
-
-	dedicatedHostGroupReferenceDeletedMap["more_info"] = dedicatedHostGroupReferenceDeleted.MoreInfo
-
-	return dedicatedHostGroupReferenceDeletedMap
 }
 
 func resourceIbmIsDedicatedHostInstanceReferenceToMap(instanceReference vpcv1.InstanceReference) map[string]interface{} {
@@ -912,39 +427,6 @@ func resourceIbmIsDedicatedHostInstanceReferenceDeletedToMap(instanceReferenceDe
 	return instanceReferenceDeletedMap
 }
 
-func resourceIbmIsDedicatedHostDedicatedHostProfileReferenceToMap(dedicatedHostProfileReference vpcv1.DedicatedHostProfileReference) []interface{} {
-	prof := []interface{}{}
-
-	profile := map[string]interface{}{}
-	profile["name"] = dedicatedHostProfileReference.Name
-	profile["href"] = dedicatedHostProfileReference.Href
-	prof = append(prof, profile)
-
-	return prof
-}
-
-func resourceIbmIsDedicatedHostResourceGroupReferenceToMap(resourceGroupReference vpcv1.ResourceGroupReference) []interface{} {
-
-	resgrp := []interface{}{}
-
-	resgroup := map[string]interface{}{}
-	if resourceGroupReference.ID != nil && *resourceGroupReference.ID != "" {
-		resgroup["id"] = resourceGroupReference.ID
-	}
-
-	if resourceGroupReference.Href != nil && *resourceGroupReference.Href != "" {
-		resgroup["href"] = *resourceGroupReference.Href
-	}
-
-	if resourceGroupReference.Name != nil && *resourceGroupReference.Name != "" {
-		resgroup["name"] = resourceGroupReference.Name
-	}
-
-	resgrp = append(resgrp, resgroup)
-
-	return resgrp
-}
-
 func resourceIbmIsDedicatedHostInstanceProfileReferenceToMap(instanceProfileReference vpcv1.InstanceProfileReference) map[string]interface{} {
 	instanceProfileReferenceMap := map[string]interface{}{}
 
@@ -952,17 +434,6 @@ func resourceIbmIsDedicatedHostInstanceProfileReferenceToMap(instanceProfileRefe
 	instanceProfileReferenceMap["name"] = instanceProfileReference.Name
 
 	return instanceProfileReferenceMap
-}
-
-func resourceIbmIsDedicatedHostZoneReferenceToMap(zoneReference vpcv1.ZoneReference) []interface{} {
-	zoneReferenceMap := map[string]interface{}{}
-
-	zoneReferenceMap["href"] = zoneReference.Href
-	zoneReferenceMap["name"] = zoneReference.Name
-
-	zoneReferenceint := []interface{}{}
-	zoneReferenceint = append(zoneReferenceint, zoneReferenceMap)
-	return zoneReferenceint
 }
 
 func resourceIbmIsDedicatedHostUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -1001,7 +472,6 @@ func resourceIbmIsDedicatedHostUpdate(context context.Context, d *schema.Resourc
 		dedicatedHostPrototypemap["group"] = d.Get("host_group").(interface{})
 		hasChange = true
 	}
-	//log.Println("group final ******", dedicatedHostPrototypemap["group"].([]interface{})[0].(map[string]interface{})["id"].(string))
 
 	if hasChange {
 		updateDedicatedHostOptions.SetDedicatedHostPatch(dedicatedHostPrototypemap)

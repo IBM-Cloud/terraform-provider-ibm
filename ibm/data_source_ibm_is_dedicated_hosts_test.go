@@ -22,7 +22,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
@@ -36,8 +35,9 @@ func TestAccIbmIsDedicatedHostsDSBasic(t *testing.T) {
 	profile := "dh2-56x464"
 	resName := "data.ibm_is_dedicated_hosts.dhosts"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIbmIsDedicatedHostDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIbmIsDedicatedHostConfigBasic(class, family, groupname, profile, dhname),
@@ -67,58 +67,4 @@ func testAccCheckIbmIsDedicatedHostsDSConfigBasic(class string, family string, g
 	 data "ibm_is_dedicated_hosts" "dhosts"{
 	 }
 	 `)
-}
-
-func testAccCheckIbmIsDedicatedHostsDSExists(n string, obj vpcv1.DedicatedHost) resource.TestCheckFunc {
-
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		vpcClient, err := testAccProvider.Meta().(ClientSession).VpcV1API()
-		if err != nil {
-			return err
-		}
-
-		getDedicatedHostOptions := &vpcv1.GetDedicatedHostOptions{}
-
-		getDedicatedHostOptions.SetID(rs.Primary.ID)
-
-		dedicatedHost, _, err := vpcClient.GetDedicatedHost(getDedicatedHostOptions)
-		if err != nil {
-			return err
-		}
-
-		obj = *dedicatedHost
-		return nil
-	}
-}
-
-func testAccCheckIbmIsDedicatedHostsDSDestroy(s *terraform.State) error {
-	vpcClient, err := testAccProvider.Meta().(ClientSession).VpcV1API()
-	if err != nil {
-		return err
-	}
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_dedicated_host" {
-			continue
-		}
-
-		getDedicatedHostOptions := &vpcv1.GetDedicatedHostOptions{}
-
-		getDedicatedHostOptions.SetID(rs.Primary.ID)
-
-		// Try to find the key
-		_, response, err := vpcClient.GetDedicatedHost(getDedicatedHostOptions)
-
-		if err == nil {
-			return fmt.Errorf("DedicatedHost still exists: %s", rs.Primary.ID)
-		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for DedicatedHost (%s) has been destroyed: %s", rs.Primary.ID, err)
-		}
-	}
-
-	return nil
 }

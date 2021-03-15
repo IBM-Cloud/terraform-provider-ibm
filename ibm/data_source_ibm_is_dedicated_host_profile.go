@@ -238,72 +238,67 @@ func dataSourceIbmIsDedicatedHostProfileRead(context context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	listDedicatedHostProfilesOptions := &vpcv1.ListDedicatedHostProfilesOptions{}
-
-	dedicatedHostProfileCollection, response, err := vpcClient.ListDedicatedHostProfilesWithContext(context, listDedicatedHostProfilesOptions)
+	name := d.Get("name").(string)
+	getDedicatedHostProfileOptions := &vpcv1.GetDedicatedHostProfileOptions{
+		Name: &name,
+	}
+	dedicatedHostProfile, response, err := vpcClient.GetDedicatedHostProfileWithContext(context, getDedicatedHostProfileOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListDedicatedHostProfilesWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
-	// Use the provided filter argument and construct a new list with only the requested resource(s)
-	var dedicatedHostProfile vpcv1.DedicatedHostProfile
+	if dedicatedHostProfile == nil {
+		return diag.FromErr(fmt.Errorf("No Dedicated Host Profile found with name %s", name))
+	}
+	d.SetId(dataSourceIbmIsDedicatedHostProfileID(d))
 
-	name := d.Get("name").(string)
-	for _, data := range dedicatedHostProfileCollection.Profiles {
-		if *data.Name == name {
-			dedicatedHostProfile = data
+	if err = d.Set("class", dedicatedHostProfile.Class); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting class: %s", err))
+	}
+	if err = d.Set("family", dedicatedHostProfile.Family); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting family: %s", err))
+	}
+	if err = d.Set("href", dedicatedHostProfile.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+	}
 
-			d.SetId(dataSourceIbmIsDedicatedHostProfileID(d))
-
-			if err = d.Set("class", dedicatedHostProfile.Class); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting class: %s", err))
-			}
-			if err = d.Set("family", dedicatedHostProfile.Family); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting family: %s", err))
-			}
-			if err = d.Set("href", dedicatedHostProfile.Href); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
-			}
-
-			if dedicatedHostProfile.Memory != nil {
-				err = d.Set("memory", dataSourceDedicatedHostProfileFlattenMemory(*dedicatedHostProfile.Memory.(*vpcv1.DedicatedHostProfileMemory)))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting memory %s", err))
-				}
-			}
-
-			if dedicatedHostProfile.SocketCount != nil {
-				err = d.Set("socket_count", dataSourceDedicatedHostProfileFlattenSocketCount(*dedicatedHostProfile.SocketCount.(*vpcv1.DedicatedHostProfileSocket)))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting socket_count %s", err))
-				}
-			}
-
-			if dedicatedHostProfile.SupportedInstanceProfiles != nil {
-				err = d.Set("supported_instance_profiles", dataSourceDedicatedHostProfileFlattenSupportedInstanceProfiles(dedicatedHostProfile.SupportedInstanceProfiles))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting supported_instance_profiles %s", err))
-				}
-			}
-
-			if dedicatedHostProfile.VcpuArchitecture != nil {
-				err = d.Set("vcpu_architecture", dataSourceDedicatedHostProfileFlattenVcpuArchitecture(*dedicatedHostProfile.VcpuArchitecture))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting vcpu_architecture %s", err))
-				}
-			}
-
-			if dedicatedHostProfile.VcpuCount != nil {
-				err = d.Set("vcpu_count", dataSourceDedicatedHostProfileFlattenVcpuCount(*dedicatedHostProfile.VcpuCount.(*vpcv1.DedicatedHostProfileVcpu)))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting vcpu_count %s", err))
-				}
-			}
-
-			return nil
+	if dedicatedHostProfile.Memory != nil {
+		err = d.Set("memory", dataSourceDedicatedHostProfileFlattenMemory(*dedicatedHostProfile.Memory.(*vpcv1.DedicatedHostProfileMemory)))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting memory %s", err))
 		}
 	}
-	return diag.FromErr(fmt.Errorf("No Dedicated Host Profile found with name %s", name))
+
+	if dedicatedHostProfile.SocketCount != nil {
+		err = d.Set("socket_count", dataSourceDedicatedHostProfileFlattenSocketCount(*dedicatedHostProfile.SocketCount.(*vpcv1.DedicatedHostProfileSocket)))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting socket_count %s", err))
+		}
+	}
+
+	if dedicatedHostProfile.SupportedInstanceProfiles != nil {
+		err = d.Set("supported_instance_profiles", dataSourceDedicatedHostProfileFlattenSupportedInstanceProfiles(dedicatedHostProfile.SupportedInstanceProfiles))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting supported_instance_profiles %s", err))
+		}
+	}
+
+	if dedicatedHostProfile.VcpuArchitecture != nil {
+		err = d.Set("vcpu_architecture", dataSourceDedicatedHostProfileFlattenVcpuArchitecture(*dedicatedHostProfile.VcpuArchitecture))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting vcpu_architecture %s", err))
+		}
+	}
+
+	if dedicatedHostProfile.VcpuCount != nil {
+		err = d.Set("vcpu_count", dataSourceDedicatedHostProfileFlattenVcpuCount(*dedicatedHostProfile.VcpuCount.(*vpcv1.DedicatedHostProfileVcpu)))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting vcpu_count %s", err))
+		}
+	}
+
+	return nil
+
 }
 
 // dataSourceIbmIsDedicatedHostProfileID returns a reasonable ID for the list.

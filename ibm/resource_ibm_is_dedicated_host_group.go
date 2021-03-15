@@ -53,6 +53,7 @@ func resourceIbmIsDedicatedHostGroup() *schema.Resource {
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: InvokeValidator("ibm_is_dedicated_host_group", "name"),
 				Description:  "The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 			},
@@ -435,16 +436,6 @@ func resourceIbmIsDedicatedHostGroupUpdate(context context.Context, d *schema.Re
 
 	hasChange := false
 
-	/*if d.HasChange("class") {
-		dedicatedHostGroupPatch["class"] = d.Get("class")
-		//updateDedicatedHostGroupOptions.SetClass(d.Get("class").(string))
-		hasChange = true
-	}
-	if d.HasChange("family") {
-		dedicatedHostGroupPatch["family"] = d.Get("family")
-		//updateDedicatedHostGroupOptions.SetFamily(d.Get("family").(string))
-		hasChange = true
-	}*/
 	if d.HasChange("name") {
 		groupnamestr := d.Get("name").(string)
 		dedicatedHostGroupPatchModel := vpcv1.DedicatedHostGroupPatch{
@@ -456,7 +447,6 @@ func resourceIbmIsDedicatedHostGroupUpdate(context context.Context, d *schema.Re
 			return diag.FromErr(err)
 		}
 		updateDedicatedHostGroupOptions.DedicatedHostGroupPatch = dedicatedHostGroupPatch
-		//updateDedicatedHostGroupOptions.SetName(d.Get("name").(string))
 		hasChange = true
 	}
 
@@ -476,7 +466,6 @@ func resourceIbmIsDedicatedHostGroupDelete(context context.Context, d *schema.Re
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	deleteDedicatedHostGroupOptions := &vpcv1.DeleteDedicatedHostGroupOptions{}
 
 	deleteDedicatedHostGroupOptions.SetID(d.Id())
@@ -491,32 +480,3 @@ func resourceIbmIsDedicatedHostGroupDelete(context context.Context, d *schema.Re
 
 	return nil
 }
-
-/*func isWaitForDedicatedHostGroupDelete(instanceC *vpcv1.VpcV1, d *schema.ResourceData, id string) (interface{}, error) {
-
-	stateConf := &resource.StateChangeConf{
-		Pending: []string{isInstanceDeleting, isInstanceAvailable},
-		Target:  []string{isInstanceDeleteDone, ""},
-		Refresh: func() (interface{}, string, error) {
-			getdedicatedhostgroupoptions := &vpcv1.GetDedicatedHostGroupOptions{
-				ID: &id,
-			}
-			dedicatedHostGroup, response, err := instanceC.GetDedicatedHostGroup(getdedicatedhostgroupoptions)
-			if err != nil {
-				if response != nil && response.StatusCode == 404 {
-					return dedicatedHostGroup, isInstanceDeleteDone, nil
-				}
-				return nil, "", fmt.Errorf("Error Getting Instance: %s\n%s", err, response)
-			}
-			if *dedicatedHostGroup.State == isInstanceFailed {
-				return dedicatedHostGroup, *dedicatedHostGroup.State, fmt.Errorf("The  instance %s failed to delete: %v", d.Id(), err)
-			}
-			return dedicatedHostGroup, isInstanceDeleting, nil
-		},
-		Timeout:    d.Timeout(schema.TimeoutDelete),
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}*/

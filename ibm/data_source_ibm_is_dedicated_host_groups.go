@@ -33,11 +33,6 @@ func dataSourceIbmIsDedicatedHostGroups() *schema.Resource {
 		ReadContext: dataSourceIbmIsDedicatedHostGroupsRead,
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly-selected words.",
-			},
 			"first": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -52,7 +47,26 @@ func dataSourceIbmIsDedicatedHostGroups() *schema.Resource {
 					},
 				},
 			},
-			"groups": &schema.Schema{
+			"limit": &schema.Schema{
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The maximum number of resources that can be returned by the request.",
+			},
+			"next": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "A link to the next page of resources. This property is present for all pagesexcept the last page.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for a page of resources.",
+						},
+					},
+				},
+			},
+			"host_groups": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Collection of dedicated host groups.",
@@ -178,25 +192,6 @@ func dataSourceIbmIsDedicatedHostGroups() *schema.Resource {
 					},
 				},
 			},
-			"limit": &schema.Schema{
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The maximum number of resources that can be returned by the request.",
-			},
-			"next": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "A link to the next page of resources. This property is present for all pagesexcept the last page.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for a page of resources.",
-						},
-					},
-				},
-			},
 			"total_count": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -211,7 +206,6 @@ func dataSourceIbmIsDedicatedHostGroupsRead(context context.Context, d *schema.R
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	listDedicatedHostGroupsOptions := &vpcv1.ListDedicatedHostGroupsOptions{}
 
 	dedicatedHostGroupCollection, response, err := vpcClient.ListDedicatedHostGroupsWithContext(context, listDedicatedHostGroupsOptions)
@@ -232,7 +226,7 @@ func dataSourceIbmIsDedicatedHostGroupsRead(context context.Context, d *schema.R
 		}
 
 		if dedicatedHostGroupCollection.Groups != nil {
-			err = d.Set("groups", dataSourceDedicatedHostGroupCollectionFlattenGroups(dedicatedHostGroupCollection.Groups))
+			err = d.Set("host_groups", dataSourceDedicatedHostGroupCollectionFlattenGroups(dedicatedHostGroupCollection.Groups))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("Error setting groups %s", err))
 			}
@@ -250,22 +244,14 @@ func dataSourceIbmIsDedicatedHostGroupsRead(context context.Context, d *schema.R
 		if err = d.Set("total_count", dedicatedHostGroupCollection.TotalCount); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
 		}
-		return nil
+
 	}
-	return diag.FromErr(fmt.Errorf("No Dedicated Host Group found "))
+	return nil
 }
 
 // dataSourceIbmIsDedicatedHostGroupsID returns a reasonable ID for the list.
 func dataSourceIbmIsDedicatedHostGroupsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
-}
-
-func dataSourceDedicatedHostGroupCollectionFlattenFirst(result vpcv1.DedicatedHostGroupCollectionFirst) (finalList []map[string]interface{}) {
-	finalList = []map[string]interface{}{}
-	finalMap := dataSourceDedicatedHostGroupCollectionFirstToMap(result)
-	finalList = append(finalList, finalMap)
-
-	return finalList
 }
 
 func dataSourceDedicatedHostGroupCollectionFirstToMap(firstItem vpcv1.DedicatedHostGroupCollectionFirst) (firstMap map[string]interface{}) {
@@ -415,6 +401,14 @@ func dataSourceDedicatedHostGroupCollectionGroupsZoneToMap(zoneItem vpcv1.ZoneRe
 	}
 
 	return zoneMap
+}
+
+func dataSourceDedicatedHostGroupCollectionFlattenFirst(result vpcv1.DedicatedHostGroupCollectionFirst) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceDedicatedHostGroupCollectionFirstToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
 }
 
 func dataSourceDedicatedHostGroupCollectionFlattenNext(result vpcv1.DedicatedHostGroupCollectionNext) (finalList []map[string]interface{}) {

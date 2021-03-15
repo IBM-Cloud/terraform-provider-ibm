@@ -33,6 +33,11 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 		ReadContext: dataSourceIbmIsDedicatedHostsRead,
 
 		Schema: map[string]*schema.Schema{
+			"host_group": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier of the dedicated host group this dedicated host belongs to",
+			},
 			"dedicated_hosts": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -290,6 +295,10 @@ func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.Resour
 	}
 
 	listDedicatedHostsOptions := &vpcv1.ListDedicatedHostsOptions{}
+	if hostgroupintf, ok := d.GetOk("host_group"); ok {
+		hostgroupid := hostgroupintf.(string)
+		listDedicatedHostsOptions.DedicatedHostGroupID = &hostgroupid
+	}
 
 	dedicatedHostCollection, response, err := vpcClient.ListDedicatedHostsWithContext(context, listDedicatedHostsOptions)
 	if err != nil {
@@ -297,39 +306,38 @@ func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	if len(dedicatedHostCollection.DedicatedHosts) == 0 {
-		return diag.FromErr(fmt.Errorf("No Dedicated Hosts found"))
-	}
+	if len(dedicatedHostCollection.DedicatedHosts) != 0 {
 
-	d.SetId(dataSourceIbmIsDedicatedHostsID(d))
+		d.SetId(dataSourceIbmIsDedicatedHostsID(d))
 
-	if dedicatedHostCollection.DedicatedHosts != nil {
-		err = d.Set("dedicated_hosts", dataSourceDedicatedHostCollectionFlattenDedicatedHosts(dedicatedHostCollection.DedicatedHosts))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting dedicated_hosts %s", err))
+		if dedicatedHostCollection.DedicatedHosts != nil {
+			err = d.Set("dedicated_hosts", dataSourceDedicatedHostCollectionFlattenDedicatedHosts(dedicatedHostCollection.DedicatedHosts))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting dedicated_hosts %s", err))
+			}
+		}
+
+		if dedicatedHostCollection.First != nil {
+			err = d.Set("first", dataSourceDedicatedHostCollectionFlattenFirst(*dedicatedHostCollection.First))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting first %s", err))
+			}
+		}
+		if err = d.Set("limit", dedicatedHostCollection.Limit); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
+		}
+
+		if dedicatedHostCollection.Next != nil {
+			err = d.Set("next", dataSourceDedicatedHostCollectionFlattenNext(*dedicatedHostCollection.Next))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting next %s", err))
+			}
+		}
+
+		if err = d.Set("total_count", dedicatedHostCollection.TotalCount); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
 		}
 	}
-
-	if dedicatedHostCollection.First != nil {
-		err = d.Set("first", dataSourceDedicatedHostCollectionFlattenFirst(*dedicatedHostCollection.First))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting first %s", err))
-		}
-	}
-	if err = d.Set("limit", dedicatedHostCollection.Limit); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
-	}
-
-	if dedicatedHostCollection.Next != nil {
-		err = d.Set("next", dataSourceDedicatedHostCollectionFlattenNext(*dedicatedHostCollection.Next))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting next %s", err))
-		}
-	}
-	if err = d.Set("total_count", dedicatedHostCollection.TotalCount); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
-	}
-
 	return nil
 }
 

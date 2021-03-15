@@ -65,7 +65,7 @@ func TestAccIbmIsDedicatedHostGroupAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmIsDedicatedHostGroupDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmIsDedicatedHostGroupConfig(class, family, name),
+				Config: testAccCheckIbmIsDedicatedHostGroupConfigBasic(class, family, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsDedicatedHostGroupExists("ibm_is_dedicated_host_group.is_dedicated_host_group", conf),
 					resource.TestCheckResourceAttr("ibm_is_dedicated_host_group.is_dedicated_host_group", "class", class),
@@ -74,7 +74,7 @@ func TestAccIbmIsDedicatedHostGroupAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmIsDedicatedHostGroupConfig(class, family, nameUpdate),
+				Config: testAccCheckIbmIsDedicatedHostGroupConfigBasic(class, family, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_is_dedicated_host_group.is_dedicated_host_group", "name", nameUpdate),
 				),
@@ -89,22 +89,6 @@ func TestAccIbmIsDedicatedHostGroupAllArgs(t *testing.T) {
 }
 
 func testAccCheckIbmIsDedicatedHostGroupConfigBasic(class string, family string, name string) string {
-	return fmt.Sprintf(`
-
-		data "ibm_resource_group" "default" {
-			name = "Default" ///give your resource grp
-		}
-		resource "ibm_is_dedicated_host_group" "is_dedicated_host_group" {
-			class = "%s"
-			family = "%s"
-			name = "%s"
-			resource_group = data.ibm_resource_group.default.id
-			zone = "us-south-2"
-		}
-	`, class, family, name)
-}
-
-func testAccCheckIbmIsDedicatedHostGroupConfig(class string, family string, name string) string {
 	return fmt.Sprintf(`
 
 		data "ibm_resource_group" "default" {

@@ -13,8 +13,8 @@ Provides a read-only data source for DedicatedHostCollection. You can then refer
 ## Example Usage
 
 ```hcl
-data "is_dedicated_hosts" "is_dedicated_hosts" {
-	id = "1e09281b-f177-46fb-baf1-bc152b2e391a"
+data "ibm_is_dedicated_hosts" "is_dedicated_hosts" {
+	host_group = "1e09281b-f177-46fb-baf1-bc152b2e391a"
 }
 ```
 
@@ -22,7 +22,7 @@ data "is_dedicated_hosts" "is_dedicated_hosts" {
 
 The following arguments are supported:
 
-* `id` - (Optional, string) The unique identifier for this dedicated host.
+* `host_group` - (Optional, string) The unique identifier for the dedicated host group.
 
 ## Attribute Reference
 
@@ -74,17 +74,6 @@ The following attributes are exported:
 	* `vcpu` - The total VCPU of the dedicated host. Nested `vcpu` blocks have the following structure:
 		* `architecture` - The VCPU architecture.
 		* `count` - The number of VCPUs assigned.
-	* `zone` - The zone this dedicated host resides in. Nested `zone` blocks have the following structure:
-		* `href` - The URL for this zone.
-		* `name` - The globally unique name for this zone.
-
-* `first` - A link to the first page of resources. Nested `first` blocks have the following structure:
-	* `href` - The URL for a page of resources.
-
-* `limit` - The maximum number of resources that can be returned by the request.
-
-* `next` - A link to the next page of resources. This property is present for all pagesexcept the last page. Nested `next` blocks have the following structure:
-	* `href` - The URL for a page of resources.
-
+	* `zone` - The globally unique name of the zone this dedicated host resides in.
 * `total_count` - The total number of resources across all pages.
 
