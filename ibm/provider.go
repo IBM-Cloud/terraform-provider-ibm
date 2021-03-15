@@ -569,6 +569,7 @@ func Validator() ValidatorDict {
 				"ibm_function_trigger":                 resourceIBMFuncTriggerValidator(),
 				"ibm_function_namespace":               resourceIBMFuncNamespaceValidator(),
 				"ibm_is_dedicated_host_group":          resourceIbmIsDedicatedHostGroupValidator(),
+				"ibm_is_dedicated_host":                resourceIbmIsDedicatedHostValidator(),
 				"ibm_is_flow_log":                      resourceIBMISFlowLogValidator(),
 				"ibm_is_instance_group":                resourceIBMISInstanceGroupValidator(),
 				"ibm_is_instance_group_manager":        resourceIBMISInstanceGroupManagerValidator(),

@@ -1,18 +1,5 @@
-/**
- * (C) Copyright IBM Corp. 2021.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -33,6 +20,11 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 		ReadContext: dataSourceIbmIsDedicatedHostsRead,
 
 		Schema: map[string]*schema.Schema{
+			"host_group": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier of the dedicated host group this dedicated host belongs to",
+			},
 			"dedicated_hosts": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -290,6 +282,10 @@ func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.Resour
 	}
 
 	listDedicatedHostsOptions := &vpcv1.ListDedicatedHostsOptions{}
+	if hostgroupintf, ok := d.GetOk("host_group"); ok {
+		hostgroupid := hostgroupintf.(string)
+		listDedicatedHostsOptions.DedicatedHostGroupID = &hostgroupid
+	}
 
 	dedicatedHostCollection, response, err := vpcClient.ListDedicatedHostsWithContext(context, listDedicatedHostsOptions)
 	if err != nil {
@@ -297,39 +293,38 @@ func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	if len(dedicatedHostCollection.DedicatedHosts) == 0 {
-		return diag.FromErr(fmt.Errorf("No Dedicated Hosts found"))
-	}
+	if len(dedicatedHostCollection.DedicatedHosts) != 0 {
 
-	d.SetId(dataSourceIbmIsDedicatedHostsID(d))
+		d.SetId(dataSourceIbmIsDedicatedHostsID(d))
 
-	if dedicatedHostCollection.DedicatedHosts != nil {
-		err = d.Set("dedicated_hosts", dataSourceDedicatedHostCollectionFlattenDedicatedHosts(dedicatedHostCollection.DedicatedHosts))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting dedicated_hosts %s", err))
+		if dedicatedHostCollection.DedicatedHosts != nil {
+			err = d.Set("dedicated_hosts", dataSourceDedicatedHostCollectionFlattenDedicatedHosts(dedicatedHostCollection.DedicatedHosts))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting dedicated_hosts %s", err))
+			}
+		}
+
+		if dedicatedHostCollection.First != nil {
+			err = d.Set("first", dataSourceDedicatedHostCollectionFlattenFirst(*dedicatedHostCollection.First))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting first %s", err))
+			}
+		}
+		if err = d.Set("limit", dedicatedHostCollection.Limit); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
+		}
+
+		if dedicatedHostCollection.Next != nil {
+			err = d.Set("next", dataSourceDedicatedHostCollectionFlattenNext(*dedicatedHostCollection.Next))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting next %s", err))
+			}
+		}
+
+		if err = d.Set("total_count", dedicatedHostCollection.TotalCount); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
 		}
 	}
-
-	if dedicatedHostCollection.First != nil {
-		err = d.Set("first", dataSourceDedicatedHostCollectionFlattenFirst(*dedicatedHostCollection.First))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting first %s", err))
-		}
-	}
-	if err = d.Set("limit", dedicatedHostCollection.Limit); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
-	}
-
-	if dedicatedHostCollection.Next != nil {
-		err = d.Set("next", dataSourceDedicatedHostCollectionFlattenNext(*dedicatedHostCollection.Next))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting next %s", err))
-		}
-	}
-	if err = d.Set("total_count", dedicatedHostCollection.TotalCount); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
-	}
-
 	return nil
 }
 
@@ -532,22 +527,6 @@ func dataSourceDedicatedHostCollectionDedicatedHostsProfileToMap(profileItem vpc
 	return profileMap
 }
 
-func dataSourceDedicatedHostCollectionDedicatedHostsResourceGroupToMap(resourceGroupItem vpcv1.ResourceGroupReference) (resourceGroupMap map[string]interface{}) {
-	resourceGroupMap = map[string]interface{}{}
-
-	if resourceGroupItem.Href != nil {
-		resourceGroupMap["href"] = resourceGroupItem.Href
-	}
-	if resourceGroupItem.ID != nil {
-		resourceGroupMap["id"] = resourceGroupItem.ID
-	}
-	if resourceGroupItem.Name != nil {
-		resourceGroupMap["name"] = resourceGroupItem.Name
-	}
-
-	return resourceGroupMap
-}
-
 func dataSourceDedicatedHostCollectionDedicatedHostsSupportedInstanceProfilesToMap(supportedInstanceProfilesItem vpcv1.InstanceProfileReference) (supportedInstanceProfilesMap map[string]interface{}) {
 	supportedInstanceProfilesMap = map[string]interface{}{}
 
@@ -572,19 +551,6 @@ func dataSourceDedicatedHostCollectionDedicatedHostsVcpuToMap(vcpuItem vpcv1.Vcp
 	}
 
 	return vcpuMap
-}
-
-func dataSourceDedicatedHostCollectionDedicatedHostsZoneToMap(zoneItem vpcv1.ZoneReference) (zoneMap map[string]interface{}) {
-	zoneMap = map[string]interface{}{}
-
-	if zoneItem.Href != nil {
-		zoneMap["href"] = zoneItem.Href
-	}
-	if zoneItem.Name != nil {
-		zoneMap["name"] = zoneItem.Name
-	}
-
-	return zoneMap
 }
 
 func dataSourceDedicatedHostCollectionFlattenFirst(result vpcv1.DedicatedHostCollectionFirst) (finalList []map[string]interface{}) {

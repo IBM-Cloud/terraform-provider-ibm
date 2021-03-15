@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_dedicated_host_profiles"
-sidebar_current: "docs-ibm-datasource-is-dedicated-host-profiles"
 description: |-
   Get information about DedicatedHostProfileCollection
 ---
@@ -13,30 +13,15 @@ Provides a read-only data source for DedicatedHostProfileCollection. You can the
 ## Example Usage
 
 ```hcl
-data "is_dedicated_host_profiles" "is_dedicated_host_profiles" {
-	name = "mx2-host-152x1216"
+data "ibm_is_dedicated_host_profiles" "is_dedicated_host_profiles" {
 }
 ```
-
-## Argument Reference
-
-The following arguments are supported:
-
-* `name` - (Optional, string) The globally unique name for this dedicated host profile.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
 * `id` - The unique identifier of the DedicatedHostProfileCollection.
-* `first` - A link to the first page of resources. Nested `first` blocks have the following structure:
-	* `href` - The URL for a page of resources.
-
-* `limit` - The maximum number of resources that can be returned by the request.
-
-* `next` - A link to the next page of resources. This property is present for all pagesexcept the last page. Nested `next` blocks have the following structure:
-	* `href` - The URL for a page of resources.
-
 * `profiles` - Collection of dedicated host profiles. Nested `profiles` blocks have the following structure:
 	* `class` - The product class this dedicated host profile belongs to.
 	* `family` - The product family this dedicated host profile belongs toThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.

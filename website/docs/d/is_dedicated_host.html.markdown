@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_dedicated_host"
-sidebar_current: "docs-ibm-datasource-is-dedicated-host"
 description: |-
   Get information about DedicatedHost
 ---
@@ -13,8 +13,9 @@ Provides a read-only data source for DedicatedHost. You can then reference the f
 ## Example Usage
 
 ```hcl
-data "is_dedicated_host" "is_dedicated_host" {
-	id = "1e09281b-f177-46fb-baf1-bc152b2e391a"
+data "ibm_is_dedicated_host" "is_dedicated_host" {
+	host_group = "1e09281b-f177-46fb-baf1-bc152b2e391a"
+	name = "my-dedicated-host"
 }
 ```
 
@@ -22,7 +23,9 @@ data "is_dedicated_host" "is_dedicated_host" {
 
 The following arguments are supported:
 
-* `id` - (Optional, string) The unique identifier for this virtual server instance.
+* `host_group` - (Required, string) The unique identifier of the Dedicated host group.
+* `name` - (Required, string) The unique name of this dedicated host.
+* `resource_group` - (Optional, string) The unique identifier of the resource group
 
 ## Attribute Reference
 
@@ -39,15 +42,7 @@ The following attributes are exported:
 
 * `crn` - The CRN for this dedicated host.
 
-* `group` - The dedicated host group this dedicated host is in. Nested `group` blocks have the following structure:
-	* `crn` - The CRN for this dedicated host group.
-	* `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
-		* `more_info` - Link to documentation about deleted resources.
-	* `href` - The URL for this dedicated host group.
-	* `id` - The unique identifier for this dedicated host group.
-	* `name` - The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly-selected words.
-	* `resource_type` - The type of resource referenced.
-
+* `host_group` - The unique identifier of the dedicated host group this dedicated host is in.
 * `href` - The URL for this dedicated host.
 
 * `instance_placement_enabled` - If set to true, instances can be placed on this dedicated host.
@@ -72,16 +67,12 @@ The following attributes are exported:
 
 * `provisionable` - Indicates whether this dedicated host is available for instance creation.
 
-* `resource_group` - The resource group for this dedicated host. Nested `resource_group` blocks have the following structure:
-	* `href` - The URL for this resource group.
-	* `id` - The unique identifier for this resource group.
-	* `name` - The user-defined name for this resource group.
-
+* `resource_group` - The unique identifier of the resource group.
 * `resource_type` - The type of resource referenced.
 
 * `socket_count` - The total number of sockets for this host.
 
-* `state` - The administrative state of the dedicated host.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the dedicated host on which the unexpected property value was encountered.
+* `state` - The administrative state of the dedicated host.
 
 * `supported_instance_profiles` - Array of instance profiles that can be used by instances placed on this dedicated host. Nested `supported_instance_profiles` blocks have the following structure:
 	* `href` - The URL for this virtual server instance profile.
@@ -91,7 +82,4 @@ The following attributes are exported:
 	* `architecture` - The VCPU architecture.
 	* `count` - The number of VCPUs assigned.
 
-* `zone` - The zone this dedicated host resides in. Nested `zone` blocks have the following structure:
-	* `href` - The URL for this zone.
-	* `name` - The globally unique name for this zone.
-
+* `zone` - The globally unique name of the zone this dedicated host resides in.

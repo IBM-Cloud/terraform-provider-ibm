@@ -1,18 +1,5 @@
-/**
- * (C) Copyright IBM Corp. 2021.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -47,7 +34,7 @@ func dataSourceIbmIsDedicatedHost() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The unique identifier of the dedicated host group this dedicated host belongs to",
+				Description: "The unique identifier of the resource group this dedicated host belongs to",
 			},
 			"available_memory": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -237,31 +224,23 @@ func dataSourceIbmIsDedicatedHostRead(context context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	log.Printf("[DEBUG] ListDedicatedHostsWithContext Begins")
 	listDedicatedHostsOptions := &vpcv1.ListDedicatedHostsOptions{}
 	hostgroupid := d.Get("host_group").(string)
 	listDedicatedHostsOptions.DedicatedHostGroupID = &hostgroupid
-	log.Printf("[DEBUG] ListDedicatedHostsWithContext set host id  %s", hostgroupid)
 	if resgrpid, ok := d.GetOk("resource_group"); ok {
 		resgrpidstr := resgrpid.(string)
 		listDedicatedHostsOptions.ResourceGroupID = &resgrpidstr
 	}
-	log.Printf("[DEBUG] ListDedicatedHostsWithContext set res id")
 	dedicatedHostCollection, response, err := vpcClient.ListDedicatedHostsWithContext(context, listDedicatedHostsOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListDedicatedHostsWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
-	log.Printf("[DEBUG] ListDedicatedHostsWithContext got collections")
+	name := d.Get("name").(string)
 	if len(dedicatedHostCollection.DedicatedHosts) != 0 {
-
-		log.Printf("[DEBUG] ListDedicatedHostsWithContext passed null check")
 		dedicatedHost := vpcv1.DedicatedHost{}
-		name := d.Get("name").(string)
-		log.Println("Searching the data host *************", name)
 		for _, data := range dedicatedHostCollection.DedicatedHosts {
 			if *data.Name == name {
-				log.Println("found the data host *************")
 				dedicatedHost = data
 				d.SetId(*dedicatedHost.ID)
 
@@ -501,30 +480,6 @@ func dataSourceDedicatedHostProfileToMap(profileItem vpcv1.DedicatedHostProfileR
 	return profileMap
 }
 
-func dataSourceDedicatedHostFlattenResourceGroup(result vpcv1.ResourceGroupReference) (finalList []map[string]interface{}) {
-	finalList = []map[string]interface{}{}
-	finalMap := dataSourceDedicatedHostResourceGroupToMap(result)
-	finalList = append(finalList, finalMap)
-
-	return finalList
-}
-
-func dataSourceDedicatedHostResourceGroupToMap(resourceGroupItem vpcv1.ResourceGroupReference) (resourceGroupMap map[string]interface{}) {
-	resourceGroupMap = map[string]interface{}{}
-
-	if resourceGroupItem.Href != nil {
-		resourceGroupMap["href"] = resourceGroupItem.Href
-	}
-	if resourceGroupItem.ID != nil {
-		resourceGroupMap["id"] = resourceGroupItem.ID
-	}
-	if resourceGroupItem.Name != nil {
-		resourceGroupMap["name"] = resourceGroupItem.Name
-	}
-
-	return resourceGroupMap
-}
-
 func dataSourceDedicatedHostFlattenSupportedInstanceProfiles(result []vpcv1.InstanceProfileReference) (supportedInstanceProfiles []map[string]interface{}) {
 	for _, supportedInstanceProfilesItem := range result {
 		supportedInstanceProfiles = append(supportedInstanceProfiles, dataSourceDedicatedHostSupportedInstanceProfilesToMap(supportedInstanceProfilesItem))
@@ -565,25 +520,4 @@ func dataSourceDedicatedHostVcpuToMap(vcpuItem vpcv1.Vcpu) (vcpuMap map[string]i
 	}
 
 	return vcpuMap
-}
-
-func dataSourceDedicatedHostFlattenZone(result vpcv1.ZoneReference) (finalList []map[string]interface{}) {
-	finalList = []map[string]interface{}{}
-	finalMap := dataSourceDedicatedHostZoneToMap(result)
-	finalList = append(finalList, finalMap)
-
-	return finalList
-}
-
-func dataSourceDedicatedHostZoneToMap(zoneItem vpcv1.ZoneReference) (zoneMap map[string]interface{}) {
-	zoneMap = map[string]interface{}{}
-
-	if zoneItem.Href != nil {
-		zoneMap["href"] = zoneItem.Href
-	}
-	if zoneItem.Name != nil {
-		zoneMap["name"] = zoneItem.Name
-	}
-
-	return zoneMap
 }

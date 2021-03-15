@@ -1,18 +1,5 @@
-/**
- * (C) Copyright IBM Corp. 2021.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -53,6 +40,7 @@ func resourceIbmIsDedicatedHostGroup() *schema.Resource {
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: InvokeValidator("ibm_is_dedicated_host_group", "name"),
 				Description:  "The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 			},
@@ -87,19 +75,18 @@ func resourceIbmIsDedicatedHostGroup() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"crn": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The CRN for this dedicated host.",
 						},
 						"deleted": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
+							Computed:    true,
 							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"more_info": &schema.Schema{
 										Type:        schema.TypeString,
-										Required:    true,
+										Computed:    true,
 										Description: "Link to documentation about deleted resources.",
 									},
 								},
@@ -107,22 +94,22 @@ func resourceIbmIsDedicatedHostGroup() *schema.Resource {
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The URL for this dedicated host.",
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The unique identifier for this dedicated host.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 						},
 						"resource_type": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The type of resource referenced.",
 						},
 					},
@@ -146,12 +133,12 @@ func resourceIbmIsDedicatedHostGroup() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The URL for this virtual server instance profile.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The globally unique name for this virtual server instance profile.",
 						},
 					},
@@ -245,35 +232,6 @@ func resourceIbmIsDedicatedHostGroupMapToResourceGroupIdentityByID(resourceGroup
 	resourceGroupIdentityByID.ID = core.StringPtr(resourceGroupIdentityByIDMap["id"].(string))
 
 	return resourceGroupIdentityByID
-}
-
-func resourceIbmIsDedicatedHostGroupMapToZoneIdentity(zoneIdentityMap map[string]interface{}) vpcv1.ZoneIdentity {
-	zoneIdentity := vpcv1.ZoneIdentity{}
-
-	if zoneIdentityMap["name"] != nil {
-		zoneIdentity.Name = core.StringPtr(zoneIdentityMap["name"].(string))
-	}
-	if zoneIdentityMap["href"] != nil {
-		zoneIdentity.Href = core.StringPtr(zoneIdentityMap["href"].(string))
-	}
-
-	return zoneIdentity
-}
-
-func resourceIbmIsDedicatedHostGroupMapToZoneIdentityByName(zoneIdentityByNameMap map[string]interface{}) vpcv1.ZoneIdentityByName {
-	zoneIdentityByName := vpcv1.ZoneIdentityByName{}
-
-	zoneIdentityByName.Name = core.StringPtr(zoneIdentityByNameMap["name"].(string))
-
-	return zoneIdentityByName
-}
-
-func resourceIbmIsDedicatedHostGroupMapToZoneIdentityByHref(zoneIdentityByHrefMap map[string]interface{}) vpcv1.ZoneIdentityByHref {
-	zoneIdentityByHref := vpcv1.ZoneIdentityByHref{}
-
-	zoneIdentityByHref.Href = core.StringPtr(zoneIdentityByHrefMap["href"].(string))
-
-	return zoneIdentityByHref
 }
 
 func resourceIbmIsDedicatedHostGroupRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -435,16 +393,6 @@ func resourceIbmIsDedicatedHostGroupUpdate(context context.Context, d *schema.Re
 
 	hasChange := false
 
-	/*if d.HasChange("class") {
-		dedicatedHostGroupPatch["class"] = d.Get("class")
-		//updateDedicatedHostGroupOptions.SetClass(d.Get("class").(string))
-		hasChange = true
-	}
-	if d.HasChange("family") {
-		dedicatedHostGroupPatch["family"] = d.Get("family")
-		//updateDedicatedHostGroupOptions.SetFamily(d.Get("family").(string))
-		hasChange = true
-	}*/
 	if d.HasChange("name") {
 		groupnamestr := d.Get("name").(string)
 		dedicatedHostGroupPatchModel := vpcv1.DedicatedHostGroupPatch{
@@ -456,7 +404,6 @@ func resourceIbmIsDedicatedHostGroupUpdate(context context.Context, d *schema.Re
 			return diag.FromErr(err)
 		}
 		updateDedicatedHostGroupOptions.DedicatedHostGroupPatch = dedicatedHostGroupPatch
-		//updateDedicatedHostGroupOptions.SetName(d.Get("name").(string))
 		hasChange = true
 	}
 
@@ -477,11 +424,25 @@ func resourceIbmIsDedicatedHostGroupDelete(context context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
+	getDedicatedHostGroupOptions := &vpcv1.GetDedicatedHostGroupOptions{}
+
+	getDedicatedHostGroupOptions.SetID(d.Id())
+
+	_, response, err := vpcClient.GetDedicatedHostGroupWithContext(context, getDedicatedHostGroupOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[DEBUG] GetDedicatedHostGroupWithContext failed %s\n%s", err, response)
+		return diag.FromErr(err)
+	}
+
 	deleteDedicatedHostGroupOptions := &vpcv1.DeleteDedicatedHostGroupOptions{}
 
 	deleteDedicatedHostGroupOptions.SetID(d.Id())
 
-	response, err := vpcClient.DeleteDedicatedHostGroupWithContext(context, deleteDedicatedHostGroupOptions)
+	response, err = vpcClient.DeleteDedicatedHostGroupWithContext(context, deleteDedicatedHostGroupOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteDedicatedHostGroupWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
@@ -491,32 +452,3 @@ func resourceIbmIsDedicatedHostGroupDelete(context context.Context, d *schema.Re
 
 	return nil
 }
-
-/*func isWaitForDedicatedHostGroupDelete(instanceC *vpcv1.VpcV1, d *schema.ResourceData, id string) (interface{}, error) {
-
-	stateConf := &resource.StateChangeConf{
-		Pending: []string{isInstanceDeleting, isInstanceAvailable},
-		Target:  []string{isInstanceDeleteDone, ""},
-		Refresh: func() (interface{}, string, error) {
-			getdedicatedhostgroupoptions := &vpcv1.GetDedicatedHostGroupOptions{
-				ID: &id,
-			}
-			dedicatedHostGroup, response, err := instanceC.GetDedicatedHostGroup(getdedicatedhostgroupoptions)
-			if err != nil {
-				if response != nil && response.StatusCode == 404 {
-					return dedicatedHostGroup, isInstanceDeleteDone, nil
-				}
-				return nil, "", fmt.Errorf("Error Getting Instance: %s\n%s", err, response)
-			}
-			if *dedicatedHostGroup.State == isInstanceFailed {
-				return dedicatedHostGroup, *dedicatedHostGroup.State, fmt.Errorf("The  instance %s failed to delete: %v", d.Id(), err)
-			}
-			return dedicatedHostGroup, isInstanceDeleting, nil
-		},
-		Timeout:    d.Timeout(schema.TimeoutDelete),
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}*/
