@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_dedicated_host_profile"
-sidebar_current: "docs-ibm-datasource-is-dedicated-host-profile"
 description: |-
   Get information about DedicatedHostProfile
 ---
@@ -13,8 +13,8 @@ Provides a read-only data source for DedicatedHostProfile. You can then referenc
 ## Example Usage
 
 ```hcl
-data "is_dedicated_host_profile" "is_dedicated_host_profile" {
-	name = "bc1-4x16"
+data "ibm_is_dedicated_host_profile" "is_dedicated_host_profile" {
+	name = "dh2-56x464"
 }
 ```
 
@@ -22,7 +22,7 @@ data "is_dedicated_host_profile" "is_dedicated_host_profile" {
 
 The following arguments are supported:
 
-* `name` - (Optional, string) The globally unique name for this virtual server instance profile.
+* `name` - (Required, string) The globally unique name for this virtual server instance profile.
 
 ## Attribute Reference
 
@@ -31,7 +31,7 @@ The following attributes are exported:
 * `id` - The unique identifier of the DedicatedHostProfile.
 * `class` - The product class this dedicated host profile belongs to.
 
-* `family` - The product family this dedicated host profile belongs toThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
+* `family` - The product family this dedicated host profile belongs to.
 
 * `href` - The URL for this dedicated host.
 
@@ -53,7 +53,7 @@ The following attributes are exported:
 	* `step` - The increment step value for this profile field.
 	* `values` - The permitted values for this profile field.
 
-* `supported_instance_profiles` - Array of instance profiles that can be used by instances placed on dedicated hosts with this profile. Nested `supported_instance_profiles` blocks have the following structure:
+* `supported_instance_profiles` - Array of instance profiles that can be used by instances placed on dedicated hosts with this profile Nested`supported_instance_profiles` blocks have the following structure:
 	* `href` - The URL for this virtual server instance profile.
 	* `name` - The globally unique name for this virtual server instance profile.
 

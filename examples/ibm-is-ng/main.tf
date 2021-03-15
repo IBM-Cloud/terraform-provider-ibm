@@ -292,3 +292,44 @@ data "ibm_is_volume_profile" "volprofile"{
 
 data "ibm_is_volume_profiles" "volprofiles"{
 }
+
+data "ibm_resource_group" "default" {
+name = "Default" ///give your resource grp
+}
+
+resource "ibm_is_dedicated_host_group" "dh_group01" {
+  family = "memory"
+  class = "beta"
+  zone = "us-south-1"
+  name = "my-dh-group-01"
+  resource_group = data.ibm_resource_group.default.id
+}
+data "ibm_is_dedicated_host_group" "dgroup" {
+	name = ibm_is_dedicated_host_group.dh_group01.name
+}
+resource "ibm_is_dedicated_host" "is_dedicated_host" {
+  profile = "dh2-56x464"
+  name = "my-dedicated-host-01"
+	host_group = ibm_is_dedicated_host_group.dh_group01.id
+  resource_group = data.ibm_resource_group.default.id
+}
+
+data "ibm_is_dedicated_host_groups" "dgroups" {
+}
+
+data "ibm_is_dedicated_host_profile" "ibm_is_dedicated_host_profile" {
+	name = "dh2-56x464"
+} 
+
+data "ibm_is_dedicated_host_profiles" "ibm_is_dedicated_host_profiles" {
+} 
+
+
+data "ibm_is_dedicated_hosts" "dhosts" {
+
+}
+
+data "ibm_is_dedicated_host" "dhost" {
+  name = ibm_is_dedicated_host.is_dedicated_host.name
+  host_group = data.ibm_is_dedicated_host_group.dgroup.id
+}

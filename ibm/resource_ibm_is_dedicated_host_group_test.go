@@ -1,18 +1,5 @@
-/**
- * (C) Copyright IBM Corp. 2021.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -31,7 +18,7 @@ func TestAccIbmIsDedicatedHostGroupBasic(t *testing.T) {
 	var conf vpcv1.DedicatedHostGroup
 	class := "beta"
 	family := "memory"
-	name := fmt.Sprintf("name%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfdhgroup%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -55,9 +42,9 @@ func TestAccIbmIsDedicatedHostGroupAllArgs(t *testing.T) {
 	var conf vpcv1.DedicatedHostGroup
 	class := "beta"
 	family := "memory"
-	name := fmt.Sprintf("name%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfdhgroup%d", acctest.RandIntRange(10, 100))
 
-	nameUpdate := fmt.Sprintf("name%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tfdhgroup%d", acctest.RandIntRange(10, 1000))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -65,7 +52,7 @@ func TestAccIbmIsDedicatedHostGroupAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmIsDedicatedHostGroupDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmIsDedicatedHostGroupConfig(class, family, name),
+				Config: testAccCheckIbmIsDedicatedHostGroupConfigBasic(class, family, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsDedicatedHostGroupExists("ibm_is_dedicated_host_group.is_dedicated_host_group", conf),
 					resource.TestCheckResourceAttr("ibm_is_dedicated_host_group.is_dedicated_host_group", "class", class),
@@ -74,7 +61,7 @@ func TestAccIbmIsDedicatedHostGroupAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmIsDedicatedHostGroupConfig(class, family, nameUpdate),
+				Config: testAccCheckIbmIsDedicatedHostGroupConfigBasic(class, family, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_is_dedicated_host_group.is_dedicated_host_group", "name", nameUpdate),
 				),
@@ -89,22 +76,6 @@ func TestAccIbmIsDedicatedHostGroupAllArgs(t *testing.T) {
 }
 
 func testAccCheckIbmIsDedicatedHostGroupConfigBasic(class string, family string, name string) string {
-	return fmt.Sprintf(`
-
-		data "ibm_resource_group" "default" {
-			name = "Default" ///give your resource grp
-		}
-		resource "ibm_is_dedicated_host_group" "is_dedicated_host_group" {
-			class = "%s"
-			family = "%s"
-			name = "%s"
-			resource_group = data.ibm_resource_group.default.id
-			zone = "us-south-2"
-		}
-	`, class, family, name)
-}
-
-func testAccCheckIbmIsDedicatedHostGroupConfig(class string, family string, name string) string {
 	return fmt.Sprintf(`
 
 		data "ibm_resource_group" "default" {
