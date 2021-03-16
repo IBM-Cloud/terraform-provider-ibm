@@ -259,9 +259,9 @@ func validateMaxConn(v interface{}, k string) (ws []string, errors []error) {
 
 func validateKeyLifeTime(v interface{}, k string) (ws []string, errors []error) {
 	secs := v.(int)
-	if secs < 300 || secs > 86400 {
+	if secs < 1800 || secs > 86400 {
 		errors = append(errors, fmt.Errorf(
-			"%q must be between 300 and 86400",
+			"%q must be between 1800 and 86400",
 			k))
 		return
 	}
