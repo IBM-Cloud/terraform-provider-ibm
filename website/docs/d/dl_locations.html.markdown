@@ -3,8 +3,7 @@ subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_locations"
 description: |-
-Manages IBM Cloud Infrastructure Directlink Offering Locations.
-
+  Manages IBM Cloud Infrastructure Directlink Offering Locations.
 ---
 
 # ibm_dl_locations
