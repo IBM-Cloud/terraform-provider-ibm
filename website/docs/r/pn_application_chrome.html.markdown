@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Push Notifications"
 layout: "ibm"
 page_title: "IBM : pn_application_chrome"
-subcategory: "Push Notifications"
 description: |-
   Create, Update, and Delete application settings for platform chrome web.
 ---

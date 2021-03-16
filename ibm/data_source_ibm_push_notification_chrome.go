@@ -18,7 +18,6 @@ func dataSourceIBMPNApplicationChrome() *schema.Resource {
 			"guid": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "Unique guid of the application using the push service.",
 			},
 			"server_key": {
