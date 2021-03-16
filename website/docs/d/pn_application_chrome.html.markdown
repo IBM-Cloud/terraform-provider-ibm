@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Push Notifications"
 layout: "ibm"
 page_title: "IBM : pn_application_chrome"
-subcategory: "Push Notifications"
 description: |-
   Get push notification configuration of platform chrome web
 ---

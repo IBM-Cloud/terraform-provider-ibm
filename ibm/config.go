@@ -1137,7 +1137,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		Authenticator: authenticator,
 	}
 	pnclient, err := pushservicev1.NewPushServiceV1(pushNotificationOptions)
-	if err == nil {
+	if pnclient != nil {
 		// Enable retries for API calls
 		pnclient.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.pushServiceClient = pnclient
