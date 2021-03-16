@@ -3,8 +3,7 @@ subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : Private DNS Permitted Networks"
 description: |-
-Manages IBM Cloud Infrastructure Private Domain Name Service Zones Permitted Networks.
-
+  Manages IBM Cloud Infrastructure Private Domain Name Service Zones Permitted Networks.
 ---
 
 # ibm_pdns_permitted_networks
