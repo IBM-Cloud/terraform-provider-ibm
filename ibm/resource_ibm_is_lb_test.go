@@ -27,7 +27,7 @@ func TestAccIBMISLB_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMISLBDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMISLBConfig(vpcname, subnetname, ISZoneName, ISCIDR, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
@@ -38,7 +38,7 @@ func TestAccIBMISLB_basic(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMISLBConfig(vpcname, subnetname, ISZoneName, ISCIDR, name1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
@@ -61,7 +61,7 @@ func TestAccIBMISLB_logging(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMISLBDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMISLBLoggingCongig(vpcname, subnetname, ISZoneName, ISCIDR, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
@@ -87,7 +87,7 @@ func TestAccIBMISLB_basic_network(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMISLBDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMISLBNetworkConfig(vpcname, subnetname, ISZoneName, ISCIDR, nlbName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_NLB", lb),
@@ -98,7 +98,7 @@ func TestAccIBMISLB_basic_network(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMISLBNetworkConfig(vpcname, subnetname, ISZoneName, ISCIDR, nlbName1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_NLB", lb),
@@ -122,7 +122,7 @@ func TestAccIBMISLB_basic_private(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMISLBDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMISLBConfigPrivate(vpcname, subnetname, ISZoneName, ISCIDR, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
@@ -131,7 +131,7 @@ func TestAccIBMISLB_basic_private(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMISLBConfigPrivate(vpcname, subnetname, ISZoneName, ISCIDR, name1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
@@ -225,7 +225,7 @@ func testAccCheckIBMISLBConfig(vpcname, subnetname, zone, cidr, name string) str
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
-	
+
 	resource "ibm_is_subnet" "testacc_subnet" {
 		name = "%s"
 		vpc = ibm_is_vpc.testacc_vpc.id
@@ -244,7 +244,7 @@ func testAccCheckIBMISLBLoggingCongig(vpcname, subnetname, zone, cidr, name stri
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
-	
+
 	resource "ibm_is_subnet" "testacc_subnet" {
 		name = "%s"
 		vpc = ibm_is_vpc.testacc_vpc.id
@@ -261,7 +261,6 @@ func testAccCheckIBMISLBLoggingCongig(vpcname, subnetname, zone, cidr, name stri
 
 func testAccCheckIBMISLBNetworkConfig(vpcname, subnetname, zone, cidr, nlbName string) string {
 	return fmt.Sprintf(`
-
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
@@ -284,7 +283,7 @@ func testAccCheckIBMISLBConfigPrivate(vpcname, subnetname, zone, cidr, name stri
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
-	
+
 	resource "ibm_is_subnet" "testacc_subnet" {
 		name = "%s"
 		vpc = ibm_is_vpc.testacc_vpc.id
