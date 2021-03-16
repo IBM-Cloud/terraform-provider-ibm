@@ -32,11 +32,11 @@ resource "ibm_is_ike_policy" "example" {
 The following arguments are supported:
 
 * `name` - (Required, string) Name of the IKE policy.
-* `authentication_algorithm` - (Required, string)  The authentication algorithm. Enumeration type: md5, sha1, sha256.
+* `authentication_algorithm` - (Required, string)  The authentication algorithm. Enumeration type: md5, sha1, sha256, sha512.
 * `encryption_algorithm` - (Required, string) The encryption algorithm. Enumeration type: triple_des, aes128, aes256.
-* `dh_group` - (Required, int) The Diffie-Hellman group. Enumeration type: 2, 5, 14.
+* `dh_group` - (Required, int) The Diffie-Hellman group. Enumeration type: 2, 5, 14, 19.
 * `ike_version` - (Optional,int) The IKE protocol version. Enumeration type: 1, 2.
-* `key_lifetime` - (Optional, int) The key lifetime in seconds. Maximum: 86400, Minimum: 300. Default is 28800.
+* `key_lifetime` - (Optional, int) The key lifetime in seconds. Maximum: 86400, Minimum: 1800. Default is 28800.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID where the ike policy to be created.
 
 ## Attribute Reference
