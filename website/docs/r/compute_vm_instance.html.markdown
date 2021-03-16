@@ -179,10 +179,6 @@ ibm_is_instance provides the following [Timeouts](https://www.terraform.io/docs/
 * `update` - (Default 90 minutes) Used to Wait for upgrade transactions to finish.
 * `delete` - (Default 90 minutes) Used to Wait for no active transactions.
 
-
-```
-
-
 ## Argument Reference
 
 The following arguments are supported:
