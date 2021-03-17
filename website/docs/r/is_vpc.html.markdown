@@ -41,6 +41,9 @@ The following arguments are supported:
 * `name` - (Required, string) The name of the VPC.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID where the VPC to be created
 * `tags` - (Optional, array of strings) Tags associated with the instance.
+* `default_network_acl_name` - (Optional, string) The name of the default network acl.
+* `default_security_group_name` - (Optional, string) The name of the default security group.
+* `default_routing_table_name` - (Optional, string) The name of the default routing table.
 
 ## Attribute Reference
 

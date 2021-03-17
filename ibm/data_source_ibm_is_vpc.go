@@ -40,6 +40,24 @@ func dataSourceIBMISVPC() *schema.Resource {
 				ValidateFunc: InvokeDataSourceValidator("ibm_is_subnet", isVPCName),
 			},
 
+			isVPCDefaultNetworkACLName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default Network ACL name",
+			},
+
+			isVPCIDefaultSecurityGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default security group name",
+			},
+
+			isVPCDefaultRoutingTableName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default routing table name",
+			},
+
 			isVPCResourceGroup: {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -521,6 +539,9 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
 			d.Set(isVPCStatus, *vpc.Status)
 			d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID)
+			d.Set(isVPCDefaultNetworkACLName, *vpc.DefaultNetworkACL.Name)
+			d.Set(isVPCDefaultRoutingTableName, *vpc.DefaultRoutingTable.Name)
+			d.Set(isVPCIDefaultSecurityGroupName, *vpc.DefaultSecurityGroup.Name)
 			if vpc.DefaultNetworkACL != nil {
 				d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID)
 			} else {
