@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : network acl"
-sidebar_current: "docs-ibm-resource-is-network-acl"
 description: |-
   Manages IBM network acl.
 ---
@@ -144,6 +145,7 @@ Nested `rules` blocks have the following structure:
 		* `port_min` - (Optional, int) The lowest port in the range of ports to be matched; if unspecified, 1 is used.
 		* `source_port_max` - (Optional, int) The highest port in the range of ports to be matched; if unspecified, 65535 is used.
 		* `source_port_min` - (Optional, int) The lowest port in the range of ports to be matched; if unspecified, 1 is used.
+* `tags` - (Optional, list(string)) Tags associated with the network ACL.
 		
 
 ## Attribute Reference
@@ -156,6 +158,7 @@ Nested `rules` blocks have the following structure:
 	* `id` - The rule id.
 	* `ip_version` - The IP version of the rule.
 	* `subnets` - The subnets for the ACL rule.
+* `crn` - The CRN of the network ACL.
 
 ## Import
 

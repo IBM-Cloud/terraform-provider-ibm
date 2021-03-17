@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_tenant"
-sidebar_current: "docs-ibm-datasources-pi-tenant"
 description: |-
   Manages a tenant in the IBM Power Virtual Server Cloud.
 ---

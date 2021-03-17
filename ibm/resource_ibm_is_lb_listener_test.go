@@ -44,6 +44,8 @@ func TestAccIBMISLBListener_basic(t *testing.T) {
 						"ibm_is_lb_listener.testacc_lb_listener", "port", port1),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_listener.testacc_lb_listener", "protocol", protocol1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener.testacc_lb_listener", "accept_proxy_protocol", "true"),
 				),
 			},
 
@@ -57,6 +59,8 @@ func TestAccIBMISLBListener_basic(t *testing.T) {
 						"ibm_is_lb_listener.testacc_lb_listener", "protocol", protocol2),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_listener.testacc_lb_listener", "connection_limit", connLimit),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener.testacc_lb_listener", "accept_proxy_protocol", "false"),
 				),
 			},
 		},
@@ -186,6 +190,7 @@ func testAccCheckIBMISLBListenerConfig(vpcname, subnetname, zone, cidr, lbname, 
 		lb = "${ibm_is_lb.testacc_LB.id}"
 		port = %s
 		protocol = "%s"
+		accept_proxy_protocol = true
 }`, vpcname, subnetname, zone, cidr, lbname, port, protocol)
 
 }
@@ -212,6 +217,7 @@ func testAccCheckIBMISLBListenerConfigUpdate(vpcname, subnetname, zone, cidr, lb
 		port = %s
 		protocol = "%s"
 		connection_limit = %s
+		accept_proxy_protocol = false
 }`, vpcname, subnetname, zone, cidr, lbname, port, protocol, connLimit)
 
 }

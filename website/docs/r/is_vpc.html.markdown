@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : vpc"
-sidebar_current: "docs-ibm-resource-is-vpc"
 description: |-
   Manages IBM virtual private cloud.
 ---

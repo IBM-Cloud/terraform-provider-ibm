@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_service_key"
-sidebar_current: "docs-ibm-datasource-service-key"
 description: |-
   Get information about a service key from IBM Cloud.
 ---

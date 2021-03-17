@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Object Storage"
 layout: "ibm"
 page_title: "IBM : Cloud Object Storage Bucket"
-sidebar_current: "docs-ibm-resource-cos-bucket"
 description: |-
   Manages IBM CloudObject Storage Bucket.
 ---

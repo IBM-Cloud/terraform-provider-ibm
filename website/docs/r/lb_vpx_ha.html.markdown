@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lb_vpx_ha"
-sidebar_current: "docs-ibm-resource-lb-vpx-ha"
 description: |-
   Configure a high availability pair with two NetScaler VPX devices
 ---

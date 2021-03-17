@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM: ibm_security_group"
-sidebar_current: "docs-ibm-datasource-security-group"
 description: |-
   Get information about an IBM Security Group.
 ---

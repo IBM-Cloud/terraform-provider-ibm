@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_waf_package"
-sidebar_current: "docs-ibm-resource-cis-waf-package"
 description: |-
   Provides a IBM CIS WAF Package resource.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_is_virtual_endpoint_gateway"
-sidebar_current: "docs-ibm-resource-is-virtual-endpoint-gateway"
 description: |-
   Manages IBM Virtual endpoint gateway
 ---

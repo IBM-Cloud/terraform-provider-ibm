@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_waf_rule"
-sidebar_current: "docs-ibm-resource-cis-waf-rule"
 description: |-
   Provides a IBM CIS WAF Rule Settings resource.
 ---

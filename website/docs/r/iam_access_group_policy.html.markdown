@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_access_group_policy"
-sidebar_current: "docs-ibm-resource-iam-access-group-policy"
 description: |-
   Manages IBM IAM Access Group Policy.
 ---

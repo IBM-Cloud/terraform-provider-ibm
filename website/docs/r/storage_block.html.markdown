@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: storage_block"
-sidebar_current: "docs-ibm-resource-storage-block"
 description: |-
   Manages IBM Storage Block.
 ---

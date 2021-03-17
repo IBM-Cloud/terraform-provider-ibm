@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: ibm_dns_secondary"
-sidebar_current: "docs-ibm-datasource-dns-secondary"
 description: |-
   Get information about an IBM DNS secondary resource.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_instance_ip"
-sidebar_current: "docs-ibm-datasources-pi-instance_ip"
 description: |-
   Obtains the information about the ip address for a specific subnet on an instance.
 ---

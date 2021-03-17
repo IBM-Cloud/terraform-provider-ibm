@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : security_group_network_interface_attachment"
-sidebar_current: "docs-ibm-resource-is-security-group-network-interface-attachment"
 description: |-
   Manages IBM Security Group Network Interface Attachment.
 ---

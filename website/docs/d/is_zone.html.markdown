@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : zone"
-sidebar_current: "docs-ibm-datasources-is-zone"
 description: |-
   Manages IBM Cloud Zone.
 ---

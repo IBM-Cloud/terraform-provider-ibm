@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : dns_glb_monitor"
-sidebar_current: "docs-ibm-resource-dns-glb-monitor"
 description: |-
   Manages IBM Private DNS GLB monitor.
 ---

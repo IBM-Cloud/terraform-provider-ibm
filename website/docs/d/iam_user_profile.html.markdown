@@ -1,7 +1,7 @@
 ---
+subcategory: "Identity & Access (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_user_profile"
-sidebar_current: "docs-ibm-datasource-iam-user-profile"
 description: |-
   Manages IBM IAM user settings & profle.
 ---

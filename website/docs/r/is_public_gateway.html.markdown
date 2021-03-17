@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : public_gateway"
-sidebar_current: "docs-ibm-resource-is-public-gateway"
 description: |-
   Manages IBM Public Gateway.
 ---

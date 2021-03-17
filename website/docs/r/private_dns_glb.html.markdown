@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : ibm_dns_glb"
-sidebar_current: "docs-ibm-resource-dns-glb"
 description: |-
   Manages IBM Private DNS global load balancer.
 ---

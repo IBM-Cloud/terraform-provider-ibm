@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_addons"
-sidebar_current: "docs-ibm-data-source-container-addons"
 description: |-
   Reads all enabled IBM  container addons.
 ---

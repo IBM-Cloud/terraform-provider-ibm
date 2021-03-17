@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: cis_waf_group"
-sidebar_current: "docs-ibm-resource-cis-waf-group"
 description: |-
   Provides an IBM Cloud Internet Services WAF Rule Group resource.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_access_group_dynamic_rule"
-sidebar_current: "docs-ibm-resource-iam-access-group-dynamic-rule"
 description: |-
   Manages Dynamic Rule for IBM IAM Access Group.
 ---

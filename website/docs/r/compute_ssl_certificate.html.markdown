@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : compute_ssl_certificate"
-sidebar_current: "docs-ibm-resource-compute-ssl-certificate"
 description: |-
   Manages IBM Compute SSL Certificate.
 ---

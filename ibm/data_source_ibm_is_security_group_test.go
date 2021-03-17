@@ -26,6 +26,7 @@ func TestAccIBMISSecurityGroupDatasource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(dataSourceName, "vpc"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "rules.#"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "tags.#"),
 				),
 			},
 		},
@@ -40,6 +41,7 @@ func testAccCheckIBMISSgRuleConfig(vpcname, sgname string) string {
 	  
 	  resource "ibm_is_security_group" "testacc_security_group" {
 		name = "%s"
+		tags = ["sgtag1" , "sgTag2"]
 		vpc  = ibm_is_vpc.testacc_vpc.id
 	  }
 	  

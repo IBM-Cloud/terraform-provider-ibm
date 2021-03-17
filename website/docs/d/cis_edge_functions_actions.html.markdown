@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_edge_functions_actions"
-sidebar_current: "docs-ibm-cis-edge-functions-actions"
 description: |-
   Get information on an IBM Cloud Internet Services Edge Function Actions.
 ---

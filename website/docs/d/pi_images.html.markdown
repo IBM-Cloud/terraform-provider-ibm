@@ -1,7 +1,7 @@
 ---
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_images"
-sidebar_current: "docs-ibm-datasources-pi-images"
 description: |-
   List all of the images for the respective cloud instance that are imported  from catalog by the user
 ---

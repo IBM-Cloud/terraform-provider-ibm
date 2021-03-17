@@ -4,11 +4,15 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"os"
 	"reflect"
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -17,6 +21,8 @@ const (
 	isSecurityGroupVPC           = "vpc"
 	isSecurityGroupRules         = "rules"
 	isSecurityGroupResourceGroup = "resource_group"
+	isSecurityGroupTags          = "tags"
+	isSecurityGroupCRN           = "crn"
 )
 
 func resourceIBMISSecurityGroup() *schema.Resource {
@@ -28,6 +34,12 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 		Delete:   resourceIBMISSecurityGroupDelete,
 		Exists:   resourceIBMISSecurityGroupExists,
 		Importer: &schema.ResourceImporter{},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 
@@ -43,6 +55,21 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 				Required:    true,
 				Description: "Security group's resource group id",
 				ForceNew:    true,
+			},
+
+			isSecurityGroupTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of tags",
+			},
+
+			isSecurityGroupCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
 			},
 
 			isSecurityGroupRules: {
@@ -153,6 +180,14 @@ func classicSgCreate(d *schema.ResourceData, meta interface{}, vpc string) error
 		return fmt.Errorf("Error while creating Security Group %s\n%s", err, response)
 	}
 	d.SetId(*sg.ID)
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isSecurityGroupTags); ok || v != "" {
+		oldList, newList := d.GetChange(isSecurityGroupTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *sg.CRN)
+		if err != nil {
+			log.Printf("Error while creating Security Group tags %s\n%s", *sg.ID, err)
+		}
+	}
 	return nil
 }
 
@@ -182,6 +217,15 @@ func sgCreate(d *schema.ResourceData, meta interface{}, vpc string) error {
 		return fmt.Errorf("Error while creating Security Group %s\n%s", err, response)
 	}
 	d.SetId(*sg.ID)
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isSecurityGroupTags); ok || v != "" {
+		oldList, newList := d.GetChange(isSecurityGroupTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *sg.CRN)
+		if err != nil {
+			log.Printf(
+				"Error while creating Security Group tags : %s\n%s", *sg.ID, err)
+		}
+	}
 	return nil
 }
 
@@ -221,6 +265,13 @@ func classicSgGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("Error getting Security Group : %s\n%s", err, response)
 	}
+	tags, err := GetTagsUsingCRN(meta, *group.CRN)
+	if err != nil {
+		log.Printf(
+			"Error getting Security Group tags : %s\n%s", d.Id(), err)
+	}
+	d.Set(isSecurityGroupTags, tags)
+	d.Set(isSecurityGroupCRN, *group.CRN)
 	d.Set(isSecurityGroupName, *group.Name)
 	d.Set(isSecurityGroupVPC, *group.VPC.ID)
 	rules := make([]map[string]interface{}, 0)
@@ -351,6 +402,13 @@ func sgGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("Error getting Security Group : %s\n%s", err, response)
 	}
+	tags, err := GetTagsUsingCRN(meta, *group.CRN)
+	if err != nil {
+		log.Printf(
+			"Error getting Security Group tags : %s\n%s", d.Id(), err)
+	}
+	d.Set(isSecurityGroupTags, tags)
+	d.Set(isSecurityGroupCRN, *group.CRN)
 	d.Set(isSecurityGroupName, *group.Name)
 	d.Set(isSecurityGroupVPC, *group.VPC.ID)
 	rules := make([]map[string]interface{}, 0)
@@ -465,6 +523,15 @@ func resourceIBMISSecurityGroupUpdate(d *schema.ResourceData, meta interface{}) 
 	id := d.Id()
 	name := ""
 	hasChanged := false
+
+	if d.HasChange(isSecurityGroupTags) {
+		oldList, newList := d.GetChange(isSecurityGroupTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, d.Get(isSecurityGroupCRN).(string))
+		if err != nil {
+			log.Printf(
+				"Error Updating Security Group tags: %s\n%s", d.Id(), err)
+		}
+	}
 
 	if d.HasChange(isSecurityGroupName) {
 		name = d.Get(isSecurityGroupName).(string)
