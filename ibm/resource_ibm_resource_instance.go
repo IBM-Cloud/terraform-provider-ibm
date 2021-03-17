@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"context"
+	//"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	gc "github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -270,12 +272,96 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	rsInst := rc.CreateResourceInstanceOptions{}
+	serviceName := d.Get("service").(string)
+	plan := d.Get("plan").(string)
+	name := d.Get("name").(string)
+	location := d.Get("location").(string)
 
-	rsInst.SetName(d.Get("name").(string))
-	rsInst.SetTarget(d.Get("target").(string))
-	rsInst.SetResourceGroup(d.Get("resource_group").(string))
-	rsInst.SetResourcePlanID(d.Get("resource_plan_id").(string))
+	service, err := gc.NewGlobalCatalogV1UsingExternalConfig(
+		&gc.GlobalCatalogV1Options{},
+	)
+	if err != nil {
+		return fmt.Errorf("Create globalcatalog service error: %s", err)
+	}
+	listCatalogEntriesOptions := service.NewListCatalogEntriesOptions()
+	include := "true"
+	listCatalogEntriesOptions.Include = &include
+	newServiceName := serviceName + " rc:true"
+	listCatalogEntriesOptions.Q = &newServiceName
+	catalogEntry, response, err := service.ListCatalogEntries(listCatalogEntriesOptions)
+	if err != nil {
+		return fmt.Errorf("List catalog entries error: %s", err)
+	}
+
+	serviceId := *catalogEntry.Resources[0].ID
+
+	fmt.Println("Resp code:", response.StatusCode)
+	fmt.Println("Entry:", *catalogEntry.ResourceCount)
+	fmt.Println("Resources:", *catalogEntry.Resources[0].ID)
+
+	//Start to get servicePlanID
+	servicePlanID := plan
+	getChildObjectsOptions := service.NewGetChildObjectsOptions(
+		serviceId,
+		"*",
+	)
+
+	planResult, response, err := service.GetChildObjects(getChildObjectsOptions)
+	if err != nil {
+		return fmt.Errorf("GetChildObjects for servicePlanID error: %s", err)
+	}
+
+	fmt.Println(len(planResult.Resources))
+
+	resources := planResult.Resources
+	for _, v := range resources {
+		if *v.Name == plan {
+			servicePlanID = *v.ID
+			fmt.Println("The plan id:", servicePlanID)
+			break
+		}
+	}
+
+	// Start to get deployment to set catalog_crn
+	catalogCRN := ""
+	getChildObjectsOptions = service.NewGetChildObjectsOptions(
+		servicePlanID,
+		"*",
+	)
+
+	deploymentResult, response, err := service.GetChildObjects(getChildObjectsOptions)
+	if err != nil {
+		return fmt.Errorf("GetChildObjects for deployment error: %s", err)
+	}
+
+	fmt.Println(len(deploymentResult.Resources))
+
+	resources = deploymentResult.Resources
+	for _, v := range resources {
+		fmt.Println("HHH", *v.Name, *v.ID, *v.Metadata.Deployment.Location, *v.CatalogCRN)
+
+		if *v.Metadata.Deployment.Location == location {
+			catalogCRN = *v.CatalogCRN
+			fmt.Println("The catalogCRN:", catalogCRN)
+			break
+		}
+	}
+
+	rsInst := rc.CreateResourceInstanceOptions{
+		Name:           &name,
+		Target:         &catalogCRN,
+		ResourcePlanID: &servicePlanID,
+	}
+
+	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
+		rsInst.ResourceGroup = rsGrpID.(*string)
+	} else {
+		defaultRg, err := defaultResourceGroup(meta)
+		if err != nil {
+			return err
+		}
+		rsInst.ResourceGroup = &defaultRg
+	}
 	if _, ok := d.GetOk("tags"); ok {
 		rsInst.SetTags(d.Get("tags").([]string))
 	}
@@ -318,7 +404,7 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 
 	instance, resp, err := rsConClient.CreateResourceInstance(&rsInst)
 	if err != nil {
-		return fmt.Errorf("Error creating resource instance: %s with resp code: %s", err, resp)
+		return fmt.Errorf("Error when creating resource instance: %s with resp code: %s, NAME->%s, LOCATION->%s, GROUP_ID->%s, PLAN_ID->%s", err, resp, *rsInst.Name, *rsInst.Target, *rsInst.ResourceGroup, *rsInst.ResourcePlanID)
 	}
 
 	d.SetId(*instance.ID)
