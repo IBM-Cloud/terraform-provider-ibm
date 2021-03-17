@@ -159,7 +159,7 @@ func resourceIBMISVPCRoutingTableRouteCreate(d *schema.ResourceData, meta interf
 		Address: core.StringPtr(nextHop),
 	}
 
-	createVpcRoutingTableRouteOptions := sess.NewCreateVPCRoutingTableRouteOptions(vpcID, tableID, destination, nh, z)
+	createVpcRoutingTableRouteOptions := sess.NewCreateVPCRoutingTableRouteOptions(vpcID, tableID, destination, z)
 	createVpcRoutingTableRouteOptions.SetZone(z)
 	createVpcRoutingTableRouteOptions.SetDestination(destination)
 	createVpcRoutingTableRouteOptions.SetNextHop(nh)
