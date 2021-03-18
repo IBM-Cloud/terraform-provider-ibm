@@ -46,8 +46,12 @@ import (
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
+	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
+	globalcatalogv1 "github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
+	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -87,8 +91,6 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
-	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
-	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -242,6 +244,8 @@ type ClientSession interface {
 	IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
 	ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error)
 	CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error)
+	ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error)
+	GlobalCatalogV1API() (*globalcatalogv1.GlobalCatalogV1, error)
 }
 
 type clientSession struct {
@@ -464,6 +468,14 @@ type clientSession struct {
 	//Catalog Management Option
 	catalogManagementClient    *catalogmanagementv1.CatalogManagementV1
 	catalogManagementClientErr error
+
+	//Resource Controller Option
+	resourceControllerErr error
+	resourceControllerAPI *resourcecontroller.ResourceControllerV2
+
+	//Resource Controller Option
+	globalCatalogErr error
+	globalCatalogAPI *globalcatalogv1.GlobalCatalogV1
 }
 
 func (session clientSession) CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error) {
@@ -851,6 +863,16 @@ func (sess clientSession) IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
 // ResourceMAanger Session
 func (sess clientSession) ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error) {
 	return sess.resourceManagerAPI, sess.resourceManagerErr
+}
+
+// ResourceController Session
+func (sess clientSession) ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error) {
+	return sess.resourceControllerAPI, sess.resourceControllerErr
+}
+
+// ResourceController Session
+func (sess clientSession) GlobalCatalogV1API() (*globalcatalogv1.GlobalCatalogV1, error) {
+	return sess.globalCatalogAPI, sess.globalCatalogErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -1657,7 +1679,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	resourceManagerOptions := &resourcemanager.ResourceManagerV2Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_MANAGER_API_ENDPOINT"}, "https://resource-controller.cloud.ibm.com/v2"),
+		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_MANAGER_API_ENDPOINT"}, resourcemanager.DefaultServiceURL),
 	}
 	resourceManagerClient, err := resourcemanager.NewResourceManagerV2(resourceManagerOptions)
 	if err != nil {
@@ -1667,6 +1689,34 @@ func (c *Config) ClientSession() (interface{}, error) {
 		resourceManagerClient.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 	session.resourceManagerAPI = resourceManagerClient
+
+	// resource controller API
+	resourceControllerOptions := &resourcecontroller.ResourceControllerV2Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_CONTROLLER_API_ENDPOINT"}, resourcecontroller.DefaultServiceURL),
+	}
+	resourceControllerClient, err := resourcecontroller.NewResourceControllerV2(resourceControllerOptions)
+	if err != nil {
+		session.resourceControllerErr = fmt.Errorf("Error occured while configuring Resource Controller service: %q", err)
+	}
+	if resourceControllerClient != nil {
+		resourceControllerClient.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+	session.resourceControllerAPI = resourceControllerClient
+
+	// global catalog API
+	globalCatalogOptions := &globalcatalogv1.GlobalCatalogV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_CATALOG_API_ENDPOINT"}, globalcatalogv1.DefaultServiceURL),
+	}
+	globalCatalogClient, err := globalcatalogv1.NewGlobalCatalogV1(globalCatalogOptions)
+	if err != nil {
+		session.globalCatalogErr = fmt.Errorf("Error occured while configuring Resource Controller service: %q", err)
+	}
+	if globalCatalogClient != nil {
+		globalCatalogClient.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+	session.globalCatalogAPI = globalCatalogClient
 
 	return session, nil
 }
