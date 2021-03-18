@@ -5,13 +5,12 @@
 #
 # This line indicates we will use the hook from ibm/detect-secrets to run scan during committing phase.
 # Whitewater/whitewater-detect-secrets would sync code to ibm/detect-secrets upon merge.
-repos:
 - repo: https://github.com/ibm/detect-secrets
   # If you desire to use a specific version of detect-secrets, you can replace `master` with other git revisions such as branch, tag or commit sha.
   # You are encouraged to use static refs such as tags, instead of branch name
   #
   # Running "pre-commit autoupdate" would automatically updates rev to latest tag
-  rev: 0.13.1+ibm.30.dss
+  rev: master
   hooks:
     - id: detect-secrets # pragma: whitelist secret
       # Add options for detect-secrets-hook binary. You can run `detect-secrets-hook --help` to list out all possible options.
