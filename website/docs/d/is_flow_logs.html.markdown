@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_flow_logs"
-sidebar_current: "docs-ibm-datasources-is-flow-logs"
 description: |-
   Manages IBM Cloud Infrastructure Flow Logs.
 ---

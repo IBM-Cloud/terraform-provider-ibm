@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Certificate Manager"
 layout: "ibm"
 page_title: "IBM: certificate_manager_import"
-sidebar_current: "docs-ibm-resource-certificate-manager-import"
 description: |-
   Imports and Manages Imported Certificate.
 ---

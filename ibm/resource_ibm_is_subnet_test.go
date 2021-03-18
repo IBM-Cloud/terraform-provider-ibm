@@ -37,6 +37,8 @@ func TestAccIBMISSubnet_basic(t *testing.T) {
 						"ibm_is_subnet.testacc_subnet", "zone", ISZoneName),
 					resource.TestCheckResourceAttr(
 						"ibm_is_subnet.testacc_subnet", "ipv4_cidr_block", ISCIDR),
+					resource.TestCheckResourceAttr(
+						"ibm_is_subnet.testacc_subnet", "tags.#", "2"),
 				),
 			},
 			{
@@ -51,6 +53,8 @@ func TestAccIBMISSubnet_basic(t *testing.T) {
 						"ibm_is_subnet.testacc_subnet", "ipv4_cidr_block", ISCIDR),
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_subnet.testacc_subnet", "public_gateway"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_subnet.testacc_subnet", "tags.#", "1"),
 				),
 			},
 		},
@@ -146,6 +150,7 @@ func testAccCheckIBMISSubnetConfig(vpcname, name, zone, cidr string) string {
 		vpc = ibm_is_vpc.testacc_vpc.id
 		zone = "%s"
 		ipv4_cidr_block = "%s"
+		tags = ["Tag1", "tag2"]
 	}`, vpcname, name, zone, cidr)
 }
 
@@ -167,5 +172,6 @@ func testAccCheckIBMISSubnetConfigUpdate(vpcname, name, zone, cidr, gwname strin
 		zone = "%s"
 		ipv4_cidr_block = "%s"
 		public_gateway = ibm_is_public_gateway.testacc_gw.id
+		tags = ["tag1"]
 	}`, vpcname, gwname, zone, name, zone, cidr)
 }

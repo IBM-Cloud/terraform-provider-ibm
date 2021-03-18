@@ -50,6 +50,8 @@ func TestNetworkACLGen2(t *testing.T) {
 						"ibm_is_network_acl.isExampleACL", "name", "is-example-acl"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_network_acl.isExampleACL", "rules.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.isExampleACL", "tags.#", "2"),
 				),
 			},
 		},
@@ -133,8 +135,13 @@ func testAccCheckIBMISNetworkACLExists(n, nwACL string) resource.TestCheckFunc {
 
 func testAccCheckIBMISNetworkACLConfig() string {
 	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "tf-nwacl-vpc"
+	  }
+
 	resource "ibm_is_network_acl" "isExampleACL" {
 		name = "is-example-acl"
+		vpc  = ibm_is_vpc.testacc_vpc.id
 		rules {
 		  name        = "outbound"
 		  action      = "allow"
@@ -175,6 +182,7 @@ func testAccCheckIBMISNetworkACLConfig1() string {
 
 	resource "ibm_is_network_acl" "isExampleACL" {
 		name = "is-example-acl"
+		tags = ["Tag1", "tag2"]
 		vpc  = ibm_is_vpc.testacc_vpc.id
 		rules {
 		  name        = "outbound"

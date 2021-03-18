@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : compute_provisioning_hook"
-sidebar_current: "docs-ibm-resource-compute-provisioning-hook"
 description: |-
   Manages IBM Compute Provisioning Hook.
 ---

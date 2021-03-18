@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : vlan"
-sidebar_current: "docs-ibm-resource-network-vlan"
 description: |-
   Manages IBM Network VLAN.
 ---

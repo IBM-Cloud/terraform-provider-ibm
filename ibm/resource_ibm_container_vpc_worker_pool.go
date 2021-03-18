@@ -110,6 +110,11 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 				DiffSuppressFunc: applyOnce,
 				Description:      "Entitlement option reduces additional OCP Licence cost in Openshift Clusters",
 			},
+			ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Resource Controller URL",
+			},
 		},
 	}
 }

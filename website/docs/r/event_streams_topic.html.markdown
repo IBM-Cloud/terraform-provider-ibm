@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Event Streams"
 layout: "ibm"
 page_title: "IBM: event_streams_topic"
-sidebar_current: "docs-ibm-resource-event-streams-topics"
 description: |-
   Manages IBM Event Streams topics.
 ---

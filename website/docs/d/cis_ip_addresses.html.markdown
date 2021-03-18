@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_ip_addresses"
-sidebar_current: "docs-ibm-datasource-cis-ip-addresses"
 description: |-
   List the IP addresses used by name servers by Cloud Internet Services. Required for setting whitelist addresses for internet facing application ports.
 ---

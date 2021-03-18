@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_cluster"
-sidebar_current: "docs-ibm-resource-container-cluster"
 description: |-
   Manages IBM container cluster.
 ---

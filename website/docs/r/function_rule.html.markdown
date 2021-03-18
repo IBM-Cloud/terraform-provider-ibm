@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_rule"
-sidebar_current: "docs-ibm-resource-function-rule"
 description: |-
   Manages IBM Cloud Functions rule.
 ---

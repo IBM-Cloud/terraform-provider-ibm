@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_certificates"
-sidebar_current: "docs-ibm-datasource-cis-certificates"
 description: |-
   Get information on IBM Cloud Internet Services Certificates.
 ---

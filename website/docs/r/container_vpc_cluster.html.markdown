@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_vpc_cluster"
-sidebar_current: "docs-ibm-resource-container-vpc-cluster"
 description: |-
   Manages IBM VPC container cluster.
 ---
@@ -115,7 +116,7 @@ The following arguments are supported:
 * `zones` - (Required, set) A nested block describing the zones of this VPC cluster. Nested zones blocks have the following structure:
   * `subnet-id` - (Required, string) The VPC subnet to assign the cluster. 
   * `name` - (Required, string) Name of the zone.
-* `disable_public_service_endpoint` - (Optional,Bool) Disable the public service endpoint to prevent public access to the master. Default Value 'true'.
+* `disable_public_service_endpoint` - (Optional,Bool) Disable the public service endpoint to prevent public access to the master. Default Value 'false'.
 * `kube_version` - (Optional,String) Specify the Kubernetes version, including at least the major.minor version. If you do not include this flag, the default version is used. To see available versions, run 'ibmcloud ks versions'.
 * `update_all_workers` - (Optional, bool)  Set to `true` if you want to update workers kube version.
 * `wait_for_worker_update` - (Optional, bool) Set to `true` to wait for kube version of woker nodes to update during the wokrer node kube version update.

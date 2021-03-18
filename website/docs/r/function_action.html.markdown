@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_action"
-sidebar_current: "docs-ibm-resource-function-action"
 description: |-
   Manages IBM Cloud Functions actions.
 ---

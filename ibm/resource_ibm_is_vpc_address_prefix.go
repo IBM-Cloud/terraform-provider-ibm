@@ -92,6 +92,13 @@ func resourceIBMISAddressPrefixValidator() *ResourceValidator {
 			Type:                       TypeString,
 			ForceNew:                   true,
 			Required:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCAddressPrefixCIDR,
+			ValidateFunctionIdentifier: ValidateOverlappingAddress,
+			Type:                       TypeString,
+			ForceNew:                   true,
+			Required:                   true})
 
 	ibmISAddressPrefixResourceValidator := ResourceValidator{ResourceName: "ibm_is_address_prefix", Schema: validateSchema}
 	return &ibmISAddressPrefixResourceValidator

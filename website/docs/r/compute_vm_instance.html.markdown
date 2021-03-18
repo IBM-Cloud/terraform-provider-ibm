@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: compute_vm_instance"
-sidebar_current: "docs-ibm-resource-compute-vm-instance"
 description: |-
   Manages IBM VM instances.
 ---
@@ -158,10 +159,25 @@ resource "ibm_compute_vm_instance" "terraform-retry" {
       private_vlan_id = 1234567
     },
   ]
+
+  //User can configure timeouts
+  timeouts {
+    create = "20m"
+    update = "20m"
+    delete = "20m"
+  }
 }
 
-```
 
+```  
+
+## Timeouts
+
+ibm_is_instance provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 90 minutes) Used to Wait for virtual guest creation.
+* `update` - (Default 90 minutes) Used to Wait for upgrade transactions to finish.
+* `delete` - (Default 90 minutes) Used to Wait for no active transactions.
 
 ## Argument Reference
 
@@ -230,7 +246,7 @@ This attribute can't be updated. This is provided so that you can apply security
 * `ipv6_enabled` - (Optional, Forces new resource, boolean) The primary public IPv6 address. The default value is `false`.
 * `ipv6_static_enabled` - (Optional, boolean) The public static IPv6 address block of `/64`. The default value is `false`.
 *  `secondary_ip_count` - (Optional, Forces new resource, integer) Specifies secondary public IPv4 addresses. Accepted values are `4` and `8`.
-*  `wait_time_minutes` - (Optional, integer) The duration, expressed in minutes, to wait for the VM instance to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. The default value is `90`.
+*  `wait_time_minutes` - (Optional, integer) (DEPRECATED) Field is deprecated. Use Timeouts block to wait for the VM instance to become available, or while waiting for no active transactions before proceeding with an update or deletion. The default value is `90`
 * `public_bandwidth_limited` - (Optional, Forces new resource, int). Allowed public network traffic(GB) per month. It can be greater than 0 when the server is a monthly based server. Defaults to the smallest available capacity for the public bandwidth are used.  
     **NOTE**: Conflicts with `private_network_only` and `public_bandwidth_unlimited`.
 * `public_bandwidth_unlimited` - (Optional, Forces new resource, boolean). Allowed unlimited public network traffic(GB) per month for a monthly based server. The `network_speed` should be 100 Mbps. Default value: `false`.  

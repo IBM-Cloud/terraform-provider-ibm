@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM: ibm_resource_key"
-sidebar_current: "docs-ibm-datasource-resource-key"
 description: |-
   Get information about a resource key from IBM Cloud.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : object_storage_account"
-sidebar_current: "docs-ibm-resource-object-storage-account"
 description: |-
   Manages IBM Object Storage Account.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM : resource_instance"
-sidebar_current: "docs-ibm-resource-resource-instance"
 description: |-
   Manages IBM Resource Instance.
 ---

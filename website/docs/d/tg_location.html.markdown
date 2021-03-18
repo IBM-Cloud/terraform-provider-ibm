@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Transit Gateway"
 layout: "ibm"
 page_title: "IBM : tg_location"
-sidebar_current: "docs-ibm-datasource-tg-location"
 description: |-
   Manages IBM Cloud Infrastructure Transit Location.
 ---

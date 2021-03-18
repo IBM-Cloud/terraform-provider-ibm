@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lb_vpx_service"
-sidebar_current: "docs-ibm-resource-lb-vpx-service"
 description: |-
   Manages IBM VPX load balancer services
 ---

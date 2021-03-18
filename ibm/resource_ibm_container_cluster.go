@@ -641,10 +641,6 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	if v, ok := d.GetOkExists("public_service_endpoint"); ok {
 		params.PublicEndpointEnabled = v.(bool)
 	}
-	var timeoutStage string
-	if v, ok := d.GetOk("wait_till"); ok {
-		timeoutStage = v.(string)
-	}
 
 	targetEnv, err := getClusterTargetHeader(d, meta)
 	if err != nil {
@@ -656,15 +652,12 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	d.SetId(cls.ID)
-	switch strings.ToLower(timeoutStage) {
 
-	case strings.ToLower(masterNodeReady):
-		_, err = waitForClusterMasterAvailable(d, meta)
-		if err != nil {
-			return err
-		}
-
-	case strings.ToLower(oneWorkerNodeReady):
+	_, err = waitForClusterMasterAvailable(d, meta)
+	if err != nil {
+		return err
+	}
+	if d.Get("wait_till").(string) == oneWorkerNodeReady {
 		_, err = waitForClusterOneWorkerAvailable(d, meta)
 		if err != nil {
 			return err

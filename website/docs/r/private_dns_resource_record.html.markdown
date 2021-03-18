@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : dns_resource_record"
-sidebar_current: "docs-ibm-resource-dns-resource-record"
 description: |-
   Manages IBM Private DNS Resource Records.
 ---

@@ -1,7 +1,7 @@
 ---
+subcategory: "Identity & Access (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_roles"
-sidebar_current: "docs-ibm-datasource-iam-roles"
 description: |-
   Manages IBM IAM Roles.
 ---

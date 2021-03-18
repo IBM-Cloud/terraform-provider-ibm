@@ -1,9 +1,9 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_healthchecks"
-sidebar_current: "docs-ibm-datasources-cis-healthchecks"
 description: |-
-Manages IBM Cloud Internet Services Health Check/Monitor resource.
+  Manages IBM Cloud Internet Services Health Check/Monitor resource.
 ---
 
 # ibm_cis_healthchecks

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM : Space"
-sidebar_current: "docs-ibm-resource-space"
 description: |-
   Manages IBM Space.
 ---

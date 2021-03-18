@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM : service_instance"
-sidebar_current: "docs-ibm-resource-service-instance"
 description: |-
   Manages IBM Service Instance.
 ---

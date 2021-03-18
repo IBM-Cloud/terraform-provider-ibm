@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_is_virtual_endpoint_gateways"
-sidebar_current: "docs-ibm-datasource-is-virtual_endpoint_gateways"
 description: |-
   Manages IBM Cloud Infrastructure virtual endpoint gateways .
 ---

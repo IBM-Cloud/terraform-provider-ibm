@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : dns_glb_pool"
-sidebar_current: "docs-ibm-resource-dns-glb-pool"
 description: |-
   Manages IBM Private DNS glb pool.
 ---

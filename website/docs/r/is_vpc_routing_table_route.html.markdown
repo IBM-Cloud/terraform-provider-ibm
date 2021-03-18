@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : vpc-routing-tables-route"
-sidebar_current: "docs-ibm-resource-is-vpc-routing-tables-route"
 description: |-
   Manages IBM IS VPC Routing tables.
 ---

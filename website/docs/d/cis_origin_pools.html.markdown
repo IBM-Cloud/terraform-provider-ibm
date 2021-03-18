@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_origin_pools"
-sidebar_current: "docs-ibm-datasource-cis-origin-pools"
 description: |-
   Provides a IBM Cloud Internet Services Global Load Balancer Origin Pool resource.
 ---

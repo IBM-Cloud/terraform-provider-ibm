@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lbaas_health_monitor"
-sidebar_current: "docs-ibm-resource-lbaas-health-monitor"
 description: |-
   Manages health monitors of a IBM Load balancer as a service.
 ---

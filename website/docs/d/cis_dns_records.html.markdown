@@ -1,14 +1,12 @@
 ---
-
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM : Cloud Internet Service DNS Record"
-sidebar_current: "docs-ibm-datasource-cis-dns-records"
 description: |-
-Manages IBM Cloud Internet Service DNS Record.
-
+  Manages IBM Cloud Internet Service DNS Record.
 ---
 
-# ibm_network_cis_dns_record
+# ibm_cis_dns_record
 
 Import the details of an existing IBM Cloud Internet Service domain name service record as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 

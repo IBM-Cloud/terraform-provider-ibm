@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : Default Routing Table"
-sidebar_current: "docs-ibm-datasources-is-vpc-default-routing-table"
 description: |-
   Get Information about IBM VPC Default Routing Table.
 ---

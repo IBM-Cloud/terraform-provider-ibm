@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_dns_records_import"
-sidebar_current: "docs-ibm-resource-cis-dns-records-import"
 description: |-
   Provides a IBM CIS DNS Records Import resource.
 ---

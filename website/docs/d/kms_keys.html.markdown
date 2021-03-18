@@ -1,7 +1,7 @@
 ---
+subcategory: "Key Management Service"
 layout: "ibm"
 page_title: "IBM : kms-keys"
-sidebar_current: "docs-ibm-datasource-kms-keys"
 description: |-
   Manages IBM hs-crypto or key-protect keys.
 ---

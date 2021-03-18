@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : volume"
-sidebar_current: "docs-ibm-datasource-is-volume"
 description: |-
   Manages IBM Volume.
 ---

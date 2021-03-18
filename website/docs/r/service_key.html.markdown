@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM : service_key"
-sidebar_current: "docs-ibm-resource-service-key"
 description: |-
   Manages IBM Service Key.
 ---

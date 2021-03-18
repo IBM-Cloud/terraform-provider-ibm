@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_virtual_connection"
-sidebar_current: "docs-ibm-resource-dl-virtual-connection"
 description: |-
   Manages IBM Direct Link Gateway Virtual Connection.
 ---

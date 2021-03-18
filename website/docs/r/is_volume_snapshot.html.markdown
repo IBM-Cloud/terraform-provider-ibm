@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : volume_snapshot"
-sidebar_current: "docs-ibm-resource-is-volume-snapshot"
 description: |-
   Manages IBM Volume Snapshot.
 ---

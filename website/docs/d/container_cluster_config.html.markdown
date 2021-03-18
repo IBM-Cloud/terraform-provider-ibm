@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: ibm_container_cluster_config"
-sidebar_current: "docs-ibm-datasource-container-cluster-config"
 description: |-
   Get the cluster configuration for Kubernetes on IBM Cloud.
 ---

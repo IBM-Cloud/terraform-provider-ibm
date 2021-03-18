@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_vpc_cluster_Worker"
-sidebar_current: "docs-ibm-data-source-container-vpc-cluster-Worker"
 description: |-
   Manages IBM VPC container cluster worker.
 ---

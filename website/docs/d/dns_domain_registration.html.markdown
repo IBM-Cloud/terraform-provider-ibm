@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: ibm_dns_domain_registration"
-sidebar_current: "docs-ibm-datasource-dns-domain-registration"
 description: |-
   Get resource identifier for IBM DNS domain registration.
 ---

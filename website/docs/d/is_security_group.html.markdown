@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : security_group"
-sidebar_current: "docs-ibm-resource-is-security-group"
 description: |-
   Reads IBM Cloud Security Group.
 ---
@@ -87,6 +87,8 @@ The following attributes are exported:
   * `port_max` - The inclusive upper bound of TCP/UDP port range.
   * `port_min` - The inclusive lower bound of TCP/UDP port range.
   * `protocol` - The type of the protocol all, icmp, tcp, udp.
+* `tags` - Tags associated with the security group.
+* `crn` - The CRN of the security group.
   
 
 
