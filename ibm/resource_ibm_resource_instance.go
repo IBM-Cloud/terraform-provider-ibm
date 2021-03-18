@@ -5,7 +5,6 @@ package ibm
 
 import (
 	"context"
-	//"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -283,6 +282,8 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return fmt.Errorf("Create globalcatalog service error: %s", err)
 	}
+
+	// Start to get the service id by the service name
 	listCatalogEntriesOptions := service.NewListCatalogEntriesOptions()
 	include := "true"
 	listCatalogEntriesOptions.Include = &include
@@ -290,16 +291,12 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 	listCatalogEntriesOptions.Q = &newServiceName
 	catalogEntry, response, err := service.ListCatalogEntries(listCatalogEntriesOptions)
 	if err != nil {
-		return fmt.Errorf("List catalog entries error: %s", err)
+		return fmt.Errorf("List catalog entries error: %s with resp code: %s", err, response)
 	}
 
 	serviceId := *catalogEntry.Resources[0].ID
 
-	fmt.Println("Resp code:", response.StatusCode)
-	fmt.Println("Entry:", *catalogEntry.ResourceCount)
-	fmt.Println("Resources:", *catalogEntry.Resources[0].ID)
-
-	//Start to get servicePlanID
+	//Start to get the service plan id by the service id and plan name
 	servicePlanID := plan
 	getChildObjectsOptions := service.NewGetChildObjectsOptions(
 		serviceId,
@@ -308,21 +305,19 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 
 	planResult, response, err := service.GetChildObjects(getChildObjectsOptions)
 	if err != nil {
-		return fmt.Errorf("GetChildObjects for servicePlanID error: %s", err)
+		return fmt.Errorf("GetChildObjects for servicePlanID error: %s with resp code: %s", err, response)
 	}
-
-	fmt.Println(len(planResult.Resources))
 
 	resources := planResult.Resources
 	for _, v := range resources {
 		if *v.Name == plan {
 			servicePlanID = *v.ID
-			fmt.Println("The plan id:", servicePlanID)
 			break
 		}
 	}
 
-	// Start to get deployment to set catalog_crn
+	// Start to get deployment by the service plan id
+	// And filter the deployment by location to get catalog_crn
 	catalogCRN := ""
 	getChildObjectsOptions = service.NewGetChildObjectsOptions(
 		servicePlanID,
@@ -334,15 +329,10 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("GetChildObjects for deployment error: %s", err)
 	}
 
-	fmt.Println(len(deploymentResult.Resources))
-
 	resources = deploymentResult.Resources
 	for _, v := range resources {
-		fmt.Println("HHH", *v.Name, *v.ID, *v.Metadata.Deployment.Location, *v.CatalogCRN)
-
 		if *v.Metadata.Deployment.Location == location {
 			catalogCRN = *v.CatalogCRN
-			fmt.Println("The catalogCRN:", catalogCRN)
 			break
 		}
 	}
@@ -353,6 +343,7 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		ResourcePlanID: &servicePlanID,
 	}
 
+	// Start to get other options of CreateResourceInstanceOptions
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
 		rsInst.ResourceGroup = rsGrpID.(*string)
 	} else {
@@ -402,9 +393,13 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 
 	rsInst.SetParameters(params)
 
+	//Start to create resource instance
 	instance, resp, err := rsConClient.CreateResourceInstance(&rsInst)
 	if err != nil {
-		return fmt.Errorf("Error when creating resource instance: %s with resp code: %s, NAME->%s, LOCATION->%s, GROUP_ID->%s, PLAN_ID->%s", err, resp, *rsInst.Name, *rsInst.Target, *rsInst.ResourceGroup, *rsInst.ResourcePlanID)
+		log.Printf(
+			"Error when creating resource instance: %s, Instance info  NAME->%s, LOCATION->%s, GROUP_ID->%s, PLAN_ID->%s",
+			err, *rsInst.Name, *rsInst.Target, *rsInst.ResourceGroup, *rsInst.ResourcePlanID)
+		return fmt.Errorf("Error when creating resource instance: %s with resp code: %s", err, resp)
 	}
 
 	d.SetId(*instance.ID)
