@@ -13,7 +13,6 @@ import (
 	"os"
 	"strings"
 	"time"
-
 	// Added code for the Power Colo Offering
 
 	apigateway "github.com/IBM/apigateway-go-sdk"
@@ -46,10 +45,12 @@ import (
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
+	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
+	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -89,8 +90,6 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
-	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
-	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 )
 
 // RetryAPIDelay - retry api delay

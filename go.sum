@@ -53,8 +53,6 @@ github.com/IBM/go-sdk-core/v4 v4.9.0/go.mod h1:DbQ+3pFoIjxGGTEiA9zQ2V0cemMNmFMkL
 github.com/IBM/go-sdk-core/v4 v4.10.0 h1:aLoKusSFVsxMJeKHf8csj9tBWt4Y50kVvfxoKh6scN0=
 github.com/IBM/go-sdk-core/v4 v4.10.0/go.mod h1:0uz2ca0MZ2DwsBRGl9Jp3EaCTqxmKZTdvV/CkCB7JnI=
 github.com/IBM/go-sdk-core/v5 v5.0.0/go.mod h1:vyNdbFujJtdTj9HbihtvKwwS3k/GKSKpOx9ZIQ6MWDY=
-github.com/IBM/go-sdk-core/v5 v5.0.3 h1:HFXtleIqo3sbGWXdYeDqSnaQKWoHXFfJHaW450yjcUQ=
-github.com/IBM/go-sdk-core/v5 v5.0.3/go.mod h1:vyNdbFujJtdTj9HbihtvKwwS3k/GKSKpOx9ZIQ6MWDY=
 github.com/IBM/go-sdk-core/v5 v5.1.0/go.mod h1:vyNdbFujJtdTj9HbihtvKwwS3k/GKSKpOx9ZIQ6MWDY=
 github.com/IBM/go-sdk-core/v5 v5.2.0 h1:fVqzyAh9AiEOOcKZHVClmaH78qiYdxcUArP/27yo/l8=
 github.com/IBM/go-sdk-core/v5 v5.2.0/go.mod h1:vyNdbFujJtdTj9HbihtvKwwS3k/GKSKpOx9ZIQ6MWDY=
@@ -72,10 +70,6 @@ github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:N
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5/go.mod h1:b07XHUVh0XYnQE9s2mqgjYST1h9buaQNqN4EcKhOsX0=
 github.com/IBM/secrets-manager-go-sdk v0.1.19 h1:0GPs5EoTaWNsjo4QPj64GNxlWfN8VHJy4RDFLqddSe8=
 github.com/IBM/secrets-manager-go-sdk v0.1.19/go.mod h1:eO3dBhzPrHkkt+yPex/jB2xD6qHZxBko+Aw+0tfqHeA=
-github.com/IBM/vpc-go-sdk v0.4.0 h1:2oljC8YvsXCURQLj+dJqjbykhfhbKd/ka5WndN8HQ6I=
-github.com/IBM/vpc-go-sdk v0.4.0/go.mod h1:QlPyV8sf1K4Si7CgEyAbmDonabnhJ7tC4owcjrTz3Ys=
-github.com/IBM/vpc-go-sdk v0.4.2 h1:4BlaQqrDuAbsjGjKgfdJoniXcCHL+1837R40AQt9Fy8=
-github.com/IBM/vpc-go-sdk v0.4.2/go.mod h1:QlPyV8sf1K4Si7CgEyAbmDonabnhJ7tC4owcjrTz3Ys=
 github.com/IBM/vpc-go-sdk v1.0.0 h1:YsCFKFu/DNryaidUOpH7/Y9J0RtWZl4aP1cve/cfh2A=
 github.com/IBM/vpc-go-sdk v1.0.0/go.mod h1:bhd7r482lV30UJz46r2oRgYGawGEo+TuS41ZLIY65y0=
 github.com/PuerkitoBio/purell v1.1.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
@@ -529,7 +523,6 @@ github.com/pierrec/lz4 v2.5.2+incompatible h1:WCjObylUIOlKy/+7Abdn34TLIkXiA4UWUM
 github.com/pierrec/lz4 v2.5.2+incompatible/go.mod h1:pdkljMzZIN41W+lC3N2tnIh5sFi+IEE17M5jbnwPHcY=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
-github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
@@ -925,7 +918,6 @@ gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
-gotest.tools v2.2.0+incompatible h1:VsBPFP1AI068pPrMxtb/S8Zkgf9xEmTLJjfM+P5UIEo=
 gotest.tools v2.2.0+incompatible/go.mod h1:DsYFclhRJ6vuDpmuTbkuFWG+y2sxOXAzmJt81HFBacw=
 honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 honnef.co/go/tools v0.0.0-20190106161140-3f1c8253044a/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=

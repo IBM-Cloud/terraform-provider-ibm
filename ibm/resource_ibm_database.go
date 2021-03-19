@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,7 +21,6 @@ import (
 
 	//	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 )
@@ -206,7 +206,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_database", "tag")},
 				Set:      resourceIBMVPCHash,
 			},
 			"point_in_time_recovery_deployment_id": {
@@ -662,6 +662,23 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 		},
 	}
 }
+func resourceIBMICDValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "tag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
+	ibmICDResourceValidator := ResourceValidator{ResourceName: "ibm_database", Schema: validateSchema}
+	return &ibmICDResourceValidator
+}
 
 type Params struct {
 	Version             string `json:"version,omitempty"`
@@ -680,7 +697,7 @@ type Params struct {
 
 // Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "database......."
 func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -690,8 +707,8 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	name := d.Get("name").(string)
 	location := d.Get("location").(string)
 
-	rsInst := controller.CreateServiceInstanceRequest{
-		Name: name,
+	rsInst := rc.CreateResourceInstanceOptions{
+		Name: &name,
 	}
 
 	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
@@ -709,7 +726,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return fmt.Errorf("Error retrieving plan: %s", err)
 	}
-	rsInst.ServicePlanID = servicePlan
+	rsInst.ResourcePlanID = &servicePlan
 
 	deployments, err := rsCatRepo.ListDeployments(servicePlan)
 	if err != nil {
@@ -727,17 +744,18 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 		}
 		return fmt.Errorf("No deployment found for service plan %s at location %s.\nValid location(s) are: %q.", plan, location, locationList)
 	}
-
-	rsInst.TargetCrn = deployments[0].CatalogCRN
+	catalogCRN := deployments[0].CatalogCRN
+	rsInst.Target = &catalogCRN
 
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
-		rsInst.ResourceGroupID = rsGrpID.(string)
+		rgID := rsGrpID.(string)
+		rsInst.ResourceGroup = &rgID
 	} else {
 		defaultRg, err := defaultResourceGroup(meta)
 		if err != nil {
 			return err
 		}
-		rsInst.ResourceGroupID = defaultRg
+		rsInst.ResourceGroup = &defaultRg
 	}
 
 	params := Params{}
@@ -782,33 +800,33 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	//paramString := string(parameters[:])
 	rsInst.Parameters = raw
 
-	instance, err := rsConClient.ResourceServiceInstance().CreateInstance(rsInst)
+	instance, response, err := rsConClient.CreateResourceInstance(&rsInst)
 	if err != nil {
-		return fmt.Errorf("Error creating database instance: %s", err)
+		return fmt.Errorf("Error creating database instance: %s %s", err, response)
 	}
 
 	// Moved d.SetId(instance.ID) to after waiting for resource to finish creation. Otherwise Terraform initates depedent tasks too early.
 	// Original flow had SetId here as its required as input to waitForDatabaseInstanceCreate
 
-	_, err = waitForDatabaseInstanceCreate(d, meta, instance.ID)
+	_, err = waitForDatabaseInstanceCreate(d, meta, *instance.ID)
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for create database instance (%s) to complete: %s", d.Id(), err)
 	}
 
-	d.SetId(instance.ID)
+	d.SetId(*instance.ID)
 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk("tags"); ok || v != "" {
 		oldList, newList := d.GetChange("tags")
-		err = UpdateTagsUsingCRN(oldList, newList, meta, instance.Crn.String())
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of ibm database (%s) tags: %s", d.Id(), err)
 		}
 	}
 
-	icdId := EscapeUrlParm(instance.ID)
+	icdId := EscapeUrlParm(*instance.ID)
 	icdClient, err := meta.(ClientSession).ICDAPI()
 	if err != nil {
 		return fmt.Errorf("Error getting database client settings: %s", err)
@@ -940,14 +958,17 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
 
 	instanceID := d.Id()
 	connectionEndpoint := "public"
-	instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+	rsInst := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+	instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 	if err != nil {
 		if strings.Contains(err.Error(), "Object not found") ||
 			strings.Contains(err.Error(), "status code: 404") {
@@ -955,25 +976,30 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error retrieving resource instance: %s", err)
+		return fmt.Errorf("Error retrieving resource instance: %s %s", err, response)
 	}
-	if strings.Contains(instance.State, "removed") {
+	if strings.Contains(*instance.State, "removed") {
 		log.Printf("[WARN] Removing instance from TF state because it's now in removed state")
 		d.SetId("")
 		return nil
 	}
 
-	tags, err := GetTagsUsingCRN(meta, instance.Crn.String())
+	tags, err := GetTagsUsingCRN(meta, *instance.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of ibm database tags (%s) tags: %s", d.Id(), err)
 	}
 	d.Set("tags", tags)
-	d.Set("name", instance.Name)
-	d.Set("status", instance.State)
-	d.Set("resource_group_id", instance.ResourceGroupID)
-	d.Set("location", instance.RegionID)
-	d.Set("guid", instance.Guid)
+	d.Set("name", *instance.Name)
+	d.Set("status", *instance.State)
+	d.Set("resource_group_id", *instance.ResourceGroupID)
+	if instance.CRN != nil {
+		location := strings.Split(*instance.CRN, ":")
+		if len(location) > 5 {
+			d.Set("location", location[5])
+		}
+	}
+	d.Set("guid", *instance.GUID)
 
 	if instance.Parameters != nil {
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
@@ -985,16 +1011,16 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 
 	}
 
-	d.Set(ResourceName, instance.Name)
-	d.Set(ResourceCRN, instance.Crn.String())
-	d.Set(ResourceStatus, instance.State)
-	d.Set(ResourceGroupName, instance.ResourceGroupName)
+	d.Set(ResourceName, *instance.Name)
+	d.Set(ResourceCRN, *instance.CRN)
+	d.Set(ResourceStatus, *instance.State)
+	d.Set(ResourceGroupName, *instance.ResourceGroupCRN)
 
 	rcontroller, err := getBaseController(meta)
 	if err != nil {
 		return err
 	}
-	d.Set(ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(instance.Crn.String()))
+	d.Set(ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(*instance.CRN))
 
 	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
 	if err != nil {
@@ -1002,14 +1028,14 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	rsCatRepo := rsCatClient.ResourceCatalog()
 
-	serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)
+	serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
 	if err != nil {
 		return fmt.Errorf("Error retrieving service offering: %s", err)
 	}
 
 	d.Set("service", serviceOff)
 
-	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ServicePlanID)
+	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
 	if err != nil {
 		return fmt.Errorf("Error retrieving plan: %s", err)
 	}
@@ -1074,16 +1100,19 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
 
 	instanceID := d.Id()
-	updateReq := controller.UpdateServiceInstanceRequest{}
+	updateReq := rc.UpdateResourceInstanceOptions{
+		ID: &instanceID,
+	}
 	update := false
 	if d.HasChange("name") {
-		updateReq.Name = d.Get("name").(string)
+		name := d.Get("name").(string)
+		updateReq.Name = &name
 		update = true
 	}
 	if d.HasChange("service_endpoints") {
@@ -1097,9 +1126,9 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 	}
 
 	if update {
-		_, err = rsConClient.ResourceServiceInstance().UpdateInstance(instanceID, updateReq)
+		_, response, err := rsConClient.UpdateResourceInstance(&updateReq)
 		if err != nil {
-			return fmt.Errorf("Error updating resource instance: %s", err)
+			return fmt.Errorf("Error updating resource instance: %s %s", err, response)
 		}
 
 		_, err = waitForDatabaseInstanceUpdate(d, meta)
@@ -1429,13 +1458,17 @@ func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint st
 }
 
 func resourceIBMDatabaseInstanceDelete(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
 	id := d.Id()
-
-	err = rsConClient.ResourceServiceInstance().DeleteInstance(id, true)
+	recursive := true
+	deleteReq := rc.DeleteResourceInstanceOptions{
+		Recursive: &recursive,
+		ID:        &id,
+	}
+	response, err := rsConClient.DeleteResourceInstance(&deleteReq)
 	if err != nil {
 		// If prior delete occurs, instance is not immediately deleted, but remains in "removed" state"
 		// RC 410 with "Gone" returned as error
@@ -1444,7 +1477,7 @@ func resourceIBMDatabaseInstanceDelete(d *schema.ResourceData, meta interface{})
 			log.Printf("[WARN] Resource instance already deleted %s\n ", err)
 			err = nil
 		} else {
-			return fmt.Errorf("Error deleting resource instance: %s", err)
+			return fmt.Errorf("Error deleting resource instance: %s %s ", err, response)
 		}
 	}
 
@@ -1459,31 +1492,34 @@ func resourceIBMDatabaseInstanceDelete(d *schema.ResourceData, meta interface{})
 	return nil
 }
 func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
 	instanceID := d.Id()
-	instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+	rsInst := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+	instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("Error communicating with the API: %s %s", err, response)
 	}
-	if strings.Contains(instance.State, "removed") {
+	if strings.Contains(*instance.State, "removed") {
 		log.Printf("[WARN] Removing instance from state because it's in removed state")
 		d.SetId("")
 		return false, nil
 	}
 
-	return instance.ID == instanceID, nil
+	return *instance.ID == instanceID, nil
 }
 
 func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, instanceID string) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -1492,17 +1528,20 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus, databaseInstanceProvisioningStatus},
 		Target:  []string{databaseInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
-			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+			rsInst := rc.GetResourceInstanceOptions{
+				ID: &instanceID,
+			}
+			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v", d.Id(), err)
+					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v %s", d.Id(), err, response)
 				}
 				return nil, "", err
 			}
-			if instance.State == databaseInstanceFailStatus {
-				return instance, instance.State, fmt.Errorf("The resource instance %s failed: %v", d.Id(), err)
+			if *instance.State == databaseInstanceFailStatus {
+				return *instance, *instance.State, fmt.Errorf("The resource instance %s failed: %v %s", d.Id(), err, response)
 			}
-			return instance, instance.State, nil
+			return *instance, *instance.State, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
@@ -1513,7 +1552,7 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 }
 
 func waitForDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -1523,17 +1562,20 @@ func waitForDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus},
 		Target:  []string{databaseInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
-			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+			rsInst := rc.GetResourceInstanceOptions{
+				ID: &instanceID,
+			}
+			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v", d.Id(), err)
+					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v %s", d.Id(), err, response)
 				}
 				return nil, "", err
 			}
-			if instance.State == databaseInstanceFailStatus {
-				return instance, instance.State, fmt.Errorf("The resource instance %s failed: %v", d.Id(), err)
+			if *instance.State == databaseInstanceFailStatus {
+				return *instance, *instance.State, fmt.Errorf("The resource instance %s failed: %v %s", d.Id(), err, response)
 			}
-			return instance, instance.State, nil
+			return *instance, *instance.State, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutUpdate),
 		Delay:      10 * time.Second,
@@ -1577,7 +1619,7 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 }
 
 func waitForDatabaseInstanceDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -1586,17 +1628,20 @@ func waitForDatabaseInstanceDelete(d *schema.ResourceData, meta interface{}) (in
 		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus, databaseInstanceSuccessStatus},
 		Target:  []string{databaseInstanceRemovedStatus, databaseInstanceReclamation},
 		Refresh: func() (interface{}, string, error) {
-			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+			rsInst := rc.GetResourceInstanceOptions{
+				ID: &instanceID,
+			}
+			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 					return instance, databaseInstanceSuccessStatus, nil
 				}
 				return nil, "", err
 			}
-			if instance.State == databaseInstanceFailStatus {
-				return instance, instance.State, fmt.Errorf("The resource instance %s failed to delete: %v", d.Id(), err)
+			if *instance.State == databaseInstanceFailStatus {
+				return instance, *instance.State, fmt.Errorf("The resource instance %s failed to delete: %v %s", d.Id(), err, response)
 			}
-			return instance, instance.State, nil
+			return *instance, *instance.State, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      10 * time.Second,
