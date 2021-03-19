@@ -56,7 +56,7 @@ resource "ibm_is_vpc_routing_table_route" "test_custom_route1" {
   routing_table = ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table.routing_table
   name = "%s"
   zone = "%s"
-  next_hop = "%s"
+  next_hop_address = "%s"
   destination = ibm_is_subnet.test_cr_subnet1.ipv4_cidr_block
 }
 
@@ -64,6 +64,6 @@ data "ibm_is_vpc_routing_table_routes" "routes_test" {
 	vpc = ibm_is_vpc.testacc_vpc.id
 	routing_table = ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table.routing_table
   }
-  
+
 `, name, rtName, subnetName, ISZoneName, ISCIDR, routeName, ISZoneName, ISRouteNextHop)
 }

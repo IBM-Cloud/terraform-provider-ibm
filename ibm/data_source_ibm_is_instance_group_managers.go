@@ -101,7 +101,7 @@ func dataSourceIBMISInstanceGroupManagersRead(d *schema.ResourceData, meta inter
 
 	// Support for pagination
 	start := ""
-	allrecs := []vpcv1.InstanceGroupManager{}
+	allrecs := []vpcv1.InstanceGroupManagerIntf{}
 
 	for {
 		listInstanceGroupManagerOptions := vpcv1.ListInstanceGroupManagersOptions{
@@ -122,7 +122,8 @@ func dataSourceIBMISInstanceGroupManagersRead(d *schema.ResourceData, meta inter
 	}
 
 	instanceGroupMnagers := make([]map[string]interface{}, 0)
-	for _, instanceGroupManager := range allrecs {
+	for _, instanceGroupManagerIntf := range allrecs {
+		instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
 		manager := map[string]interface{}{
 			"id":                   fmt.Sprintf("%s/%s", instanceGroupID, *instanceGroupManager.ID),
 			"manager_id":           *instanceGroupManager.ID,

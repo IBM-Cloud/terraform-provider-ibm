@@ -3,12 +3,12 @@ resource "ibm_is_vpc" "vpc1" {
 }
 
 resource "ibm_is_vpc_route" "route1" {
-  name        = "route1"
-  vpc         = ibm_is_vpc.vpc1.id
-  zone        = var.zone1
-  destination = "192.168.4.0/24"
-  next_hop    = "10.240.0.4"
-  depends_on  = [ibm_is_subnet.subnet1]
+  name             = "route1"
+  vpc              = ibm_is_vpc.vpc1.id
+  zone             = var.zone1
+  destination      = "192.168.4.0/24"
+  next_hop_address = "10.240.0.4"
+  depends_on       = [ibm_is_subnet.subnet1]
 }
 
 resource "ibm_is_subnet" "subnet1" {
@@ -83,15 +83,15 @@ resource "ibm_is_instance" "instance1" {
     subnet = ibm_is_subnet.subnet1.id
   }
 
-  vpc       = ibm_is_vpc.vpc1.id
-  zone      = var.zone1
-  keys      = [ibm_is_ssh_key.sshkey.id]
+  vpc  = ibm_is_vpc.vpc1.id
+  zone = var.zone1
+  keys = [ibm_is_ssh_key.sshkey.id]
 }
 
 data "ibm_is_instance" "ds_instance" {
-  name = ibm_is_instance.instance1.name
+  name        = ibm_is_instance.instance1.name
   private_key = file("~/.ssh/id_rsa")
-  passphrase = ""
+  passphrase  = ""
 }
 
 resource "ibm_is_floating_ip" "floatingip1" {
@@ -186,9 +186,9 @@ resource "ibm_is_instance" "instance2" {
     subnet = ibm_is_subnet.subnet2.id
   }
 
-  vpc       = ibm_is_vpc.vpc2.id
-  zone      = var.zone2
-  keys      = [ibm_is_ssh_key.sshkey.id]
+  vpc  = ibm_is_vpc.vpc2.id
+  zone = var.zone2
+  keys = [ibm_is_ssh_key.sshkey.id]
 }
 
 resource "ibm_is_floating_ip" "floatingip2" {
@@ -286,9 +286,9 @@ data "ibm_is_vpc" "vpc1" {
   name = ibm_is_vpc.vpc1.name
 }
 
-data "ibm_is_volume_profile" "volprofile"{
+data "ibm_is_volume_profile" "volprofile" {
   name = "general-purpose"
 }
 
-data "ibm_is_volume_profiles" "volprofiles"{
+data "ibm_is_volume_profiles" "volprofiles" {
 }

@@ -6,10 +6,11 @@ package ibm
 import (
 	"errors"
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"testing"
 )
 
 func TestAccIBMISVPCRoutingTableRoute_basic(t *testing.T) {
@@ -135,7 +136,7 @@ resource "ibm_is_vpc_routing_table_route" "test_custom_route1" {
   routing_table = ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table.routing_table
   name = "%s"
   zone = "%s"
-  next_hop = "%s"
+  next_hop_address = "%s"
   destination = ibm_is_subnet.test_cr_subnet1.ipv4_cidr_block
 }
 `, name, rtName, subnetName, ISZoneName, ISCIDR, routeName, ISZoneName, ISRouteNextHop)

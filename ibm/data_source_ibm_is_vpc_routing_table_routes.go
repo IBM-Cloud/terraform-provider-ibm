@@ -12,18 +12,19 @@ import (
 )
 
 const (
-	isRoutingTableRouteID             = "route_id"
-	isRoutingTableRouteHref           = "href"
-	isRoutingTableRouteName           = "name"
-	isRoutingTableRouteCreatedAt      = "created_at"
-	isRoutingTableRouteLifecycleState = "lifecycle_state"
-	isRoutingTableRouteAction         = "action"
-	isRoutingTableRouteDestination    = "destination"
-	isRoutingTableRouteNexthop        = "nexthop"
-	isRoutingTableRouteZoneName       = "zone"
-	isRoutingTableRouteVpcID          = "vpc"
-	isRouteTableID                    = "routing_table"
-	isRoutingTableRoutes              = "routes"
+	isRoutingTableRouteID                   = "route_id"
+	isRoutingTableRouteHref                 = "href"
+	isRoutingTableRouteName                 = "name"
+	isRoutingTableRouteCreatedAt            = "created_at"
+	isRoutingTableRouteLifecycleState       = "lifecycle_state"
+	isRoutingTableRouteAction               = "action"
+	isRoutingTableRouteDestination          = "destination"
+	isRoutingTableRouteNexthopAddress       = "next_hop_address"
+	isRoutingTableRouteNexthopVPNConnection = "next_hop_vpn_connection"
+	isRoutingTableRouteZoneName             = "zone"
+	isRoutingTableRouteVpcID                = "vpc"
+	isRouteTableID                          = "routing_table"
+	isRoutingTableRoutes                    = "routes"
 )
 
 func dataSourceIBMISVPCRoutingTableRoutes() *schema.Resource {
@@ -81,10 +82,15 @@ func dataSourceIBMISVPCRoutingTableRoutes() *schema.Resource {
 							Computed:    true,
 							Description: "Routing Table Route Destination",
 						},
-						isRoutingTableRouteNexthop: {
+						isRoutingTableRouteNexthopAddress: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Routing Table Route Nexthop Address",
+						},
+						isRoutingTableRouteNexthopVPNConnection: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Routing Table Route Nexthop VPN Connection",
 						},
 						isRoutingTableRouteZoneName: {
 							Type:        schema.TypeString,
@@ -153,7 +159,10 @@ func dataSourceIBMISVPCRoutingTableRoutesList(d *schema.ResourceData, meta inter
 		if instance.NextHop != nil {
 			nexthop := *instance.NextHop.(*vpcv1.RouteNextHop)
 			if nexthop.Address != nil {
-				route[isRoutingTableRouteNexthop] = *nexthop.Address
+				route[isRoutingTableRouteNexthopAddress] = *nexthop.Address
+			}
+			if nexthop.ID != nil {
+				route[isRoutingTableRouteNexthopVPNConnection] = *nexthop.ID
 			}
 		}
 

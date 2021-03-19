@@ -15,12 +15,13 @@ import (
 )
 
 const (
-	rID          = "route_id"
-	rDestination = "destination"
-	rAction      = "action"
-	rNextHop     = "next_hop"
-	rName        = "name"
-	rZone        = "zone"
+	rID                     = "route_id"
+	rDestination            = "destination"
+	rAction                 = "action"
+	rNextHopAddress         = "next_hop_address"
+	rName                   = "name"
+	rZone                   = "zone"
+	rNextHopVPNConnectionID = "next_hop_vpn_connection"
 )
 
 func resourceIBMISVPCRoutingTableRoute() *schema.Resource {
@@ -63,11 +64,17 @@ func resourceIBMISVPCRoutingTableRoute() *schema.Resource {
 				ForceNew:    true,
 				Description: "The zone to apply the route to. Traffic from subnets in this zone will be subject to this route.",
 			},
-			rNextHop: {
+			rNextHopAddress: {
 				Type:        schema.TypeString,
-				Required:    true,
 				ForceNew:    true,
-				Description: "If action is deliver, the next hop that packets will be delivered to. For other action values, its address will be 0.0.0.0.",
+				Optional:    true,
+				Description: "The IP address of the next hop to which to route packets. If action is deliver, the next hop that packets will be delivered to. For other action values, its address will be 0.0.0.0.",
+			},
+			rNextHopVPNConnectionID: {
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "VPC route next hop VPN connection ID. If action is deliver, the next hop that packets will be delivered to. For other action values, its address will be 0.0.0.0.",
 			},
 			rAction: {
 				Type:         schema.TypeString,
@@ -154,15 +161,27 @@ func resourceIBMISVPCRoutingTableRouteCreate(d *schema.ResourceData, meta interf
 	z := &vpcv1.ZoneIdentityByName{
 		Name: core.StringPtr(zone),
 	}
-	nextHop := d.Get(rNextHop).(string)
-	nh := &vpcv1.RouteNextHopPrototypeRouteNextHopIP{
-		Address: core.StringPtr(nextHop),
-	}
 
-	createVpcRoutingTableRouteOptions := sess.NewCreateVPCRoutingTableRouteOptions(vpcID, tableID, destination, nh, z)
+	createVpcRoutingTableRouteOptions := sess.NewCreateVPCRoutingTableRouteOptions(vpcID, tableID, destination, z)
 	createVpcRoutingTableRouteOptions.SetZone(z)
 	createVpcRoutingTableRouteOptions.SetDestination(destination)
-	createVpcRoutingTableRouteOptions.SetNextHop(nh)
+
+	address, connection := "", ""
+	if add, ok := d.GetOk(rNextHopAddress); ok {
+		address = add.(string)
+		nh := &vpcv1.RouteNextHopPrototypeRouteNextHopIP{
+			Address: core.StringPtr(address),
+		}
+		createVpcRoutingTableRouteOptions.SetNextHop(nh)
+	}
+
+	if conn, ok := d.GetOk(rNextHopVPNConnectionID); ok {
+		connection = conn.(string)
+		nhConnectionID := &vpcv1.RouteNextHopPrototypeVPNGatewayConnectionIdentity{
+			ID: core.StringPtr(connection),
+		}
+		createVpcRoutingTableRouteOptions.SetNextHop(nhConnectionID)
+	}
 
 	if action, ok := d.GetOk(rAction); ok {
 		routeAction := action.(string)
@@ -205,13 +224,17 @@ func resourceIBMISVPCRoutingTableRouteRead(d *schema.ResourceData, meta interfac
 	d.Set(rID, *route.ID)
 	d.Set(rName, *route.Name)
 	d.Set(rDestination, *route.Destination)
+
 	if route.NextHop != nil {
 		nexthop := route.NextHop.(*vpcv1.RouteNextHop)
-		//route[isRoutingTableRouteNexthop] = *nexthop.Address
-		//nh := response.NextHop.(map[string]interface{})
-		//nh := *response.NextHop.(vpcv1.RouteNextHopPrototype)
-		d.Set(rNextHop, *nexthop.Address)
+		if nexthop.Address != nil {
+			d.Set(rNextHopAddress, *nexthop.Address)
+		}
+		if nexthop.ID != nil {
+			d.Set(rNextHopVPNConnectionID, *nexthop.ID)
+		}
 	}
+
 	if route.Zone != nil {
 		d.Set(rZone, *route.Zone.Name)
 	}
