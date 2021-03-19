@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	gc "github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -694,40 +695,61 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 		Name: &name,
 	}
 
-	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
+	rsCatClient, err := meta.(ClientSession).GlobalCatalogV1API()
 	if err != nil {
 		return err
 	}
-	rsCatRepo := rsCatClient.ResourceCatalog()
 
-	serviceOff, err := rsCatRepo.FindByName(serviceName, true)
+	include := "*"
+	// var serviceID string
+	var servicePlanID string
+	var catalogCRN string
+
+	// catalogEntriesOption := gc.ListCatalogEntriesOptions{
+	// 	Q:       &serviceName,
+	// 	Include: &include,
+	// }
+	// _, response, err := rsCatClient.ListCatalogEntries(&catalogEntriesOption)
+	// if err != nil {
+	// 	return fmt.Errorf("Error retrieving database service offering: %s %s", err, response)
+	// }
+	// if serviceOff != nil && len(serviceOff.Resources) > 0 {
+	// 	serviceID = *serviceOff.Resources[0].ID
+	// }
+	getChildObjectsOptions := gc.GetChildObjectsOptions{
+		ID:   &serviceName,
+		Kind: &include,
+	}
+	planResult, response, err := rsCatClient.GetChildObjects(&getChildObjectsOptions)
 	if err != nil {
-		return fmt.Errorf("Error retrieving database service offering: %s", err)
+		return fmt.Errorf("Error retrieving plan from GetChildObjects %s %s", err, response)
 	}
-
-	servicePlan, err := rsCatRepo.GetServicePlanID(serviceOff[0], plan)
-	if err != nil {
-		return fmt.Errorf("Error retrieving plan: %s", err)
-	}
-	rsInst.ResourcePlanID = &servicePlan
-
-	deployments, err := rsCatRepo.ListDeployments(servicePlan)
-	if err != nil {
-		return fmt.Errorf("Error retrieving deployment for plan %s : %s", plan, err)
-	}
-	if len(deployments) == 0 {
-		return fmt.Errorf("No deployment found for service plan : %s", plan)
-	}
-	deployments, supportedLocations := filterDatabaseDeployments(deployments, location)
-
-	if len(deployments) == 0 {
-		locationList := make([]string, 0, len(supportedLocations))
-		for l := range supportedLocations {
-			locationList = append(locationList, l)
+	if planResult != nil && len(planResult.Resources) > 0 {
+		for _, v := range planResult.Resources {
+			if *v.Name == plan {
+				servicePlanID = *v.ID
+				break
+			}
 		}
-		return fmt.Errorf("No deployment found for service plan %s at location %s.\nValid location(s) are: %q.", plan, location, locationList)
 	}
-	catalogCRN := deployments[0].CatalogCRN
+	rsInst.ResourcePlanID = &servicePlanID
+
+	getChildObjectsOptions = gc.GetChildObjectsOptions{
+		ID:   &servicePlanID,
+		Kind: &include,
+	}
+	deployments, response, err := rsCatClient.GetChildObjects(&getChildObjectsOptions)
+	if err != nil {
+		return fmt.Errorf("Error retrieving deployment for plan from GetChildObjects: %s : %s", err, response)
+	}
+	if deployments != nil && len(deployments.Resources) > 0 {
+		for _, d := range deployments.Resources {
+			if *d.Metadata.Deployment.Location == location {
+				catalogCRN = *d.CatalogCRN
+				break
+			}
+		}
+	}
 	rsInst.Target = &catalogCRN
 
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
@@ -976,7 +998,11 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("name", *instance.Name)
 	d.Set("status", *instance.State)
 	d.Set("resource_group_id", *instance.ResourceGroupID)
-	d.Set("location", *instance.ResourceGroupCRN)
+	var deployedLocation string
+	if instance.CRN != nil && len(strings.Split(*instance.CRN, ":")) > 5 {
+		deployedLocation = strings.Split(*instance.CRN, ":")[5]
+		d.Set("location", deployedLocation)
+	}
 	d.Set("guid", *instance.GUID)
 
 	if instance.Parameters != nil {
@@ -1000,24 +1026,40 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	d.Set(ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(*instance.CRN))
 
-	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
+	rsCatClient, err := meta.(ClientSession).GlobalCatalogV1API()
 	if err != nil {
 		return err
 	}
-	rsCatRepo := rsCatClient.ResourceCatalog()
-
-	serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
+	include := "*"
+	var servicePlanName string
+	catalogEntryOptions := gc.GetCatalogEntryOptions{
+		ID: instance.ResourceID,
+	}
+	serviceResult, response, err := rsCatClient.GetCatalogEntry(&catalogEntryOptions)
 	if err != nil {
-		return fmt.Errorf("Error retrieving service offering: %s", err)
+		return fmt.Errorf("Error retrieving service offering: %s %s", err, response)
+	}
+	if serviceResult != nil {
+		d.Set("service", *serviceResult.Name)
 	}
 
-	d.Set("service", serviceOff)
-
-	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
-	if err != nil {
-		return fmt.Errorf("Error retrieving plan: %s", err)
+	getChildObjectsOptions := gc.GetChildObjectsOptions{
+		ID:   instance.ResourceID,
+		Kind: &include,
 	}
-	d.Set("plan", servicePlan)
+	planResult, response, err := rsCatClient.GetChildObjects(&getChildObjectsOptions)
+	if err != nil {
+		return fmt.Errorf("Error retrieving plan from GetChildObjects %s %s", err, response)
+	}
+	if planResult != nil && len(planResult.Resources) > 0 {
+		for _, v := range planResult.Resources {
+			if *v.ID == *instance.ResourcePlanID {
+				servicePlanName = *v.Name
+				break
+			}
+		}
+	}
+	d.Set("plan", servicePlanName)
 
 	icdClient, err := meta.(ClientSession).ICDAPI()
 	if err != nil {
@@ -1046,7 +1088,7 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 
 	autoSclaingGroup, err := icdClient.AutoScaling().GetAutoScaling(icdId, "member")
 	if err != nil {
-		return fmt.Errorf("Error getting database groups: %s", err)
+		return fmt.Errorf("Error getting database autoscaling groups: %s", err)
 	}
 	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
 
