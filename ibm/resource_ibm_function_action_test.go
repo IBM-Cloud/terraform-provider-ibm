@@ -712,7 +712,7 @@ func testAccCheckFunctionActionDestroy(s *terraform.State) error {
 func testAccCheckIAMFunctionActionNodeJS(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -738,7 +738,7 @@ func testAccCheckIAMFunctionActionNodeJSWithParams(name, namespace string) strin
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -773,7 +773,7 @@ func testAccCheckIAMFunctionActionNodeJSWithParams(name, namespace string) strin
 func testAccCheckIAMFunctionActionNodeJSZip(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -797,7 +797,7 @@ func testAccCheckIAMFunctionActionNodeJSZip(name, namespace string) string {
 func testAccCheckIAMFunctionActionPython(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -821,7 +821,7 @@ func testAccCheckIAMFunctionActionPython(name, namespace string) string {
 func testAccCheckIAMFunctionActionPythonZip(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -845,7 +845,7 @@ func testAccCheckIAMFunctionActionPythonZip(name, namespace string) string {
 func testAccCheckIAMFunctionActionPHP(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -869,7 +869,7 @@ func testAccCheckIAMFunctionActionPHP(name, namespace string) string {
 func testAccCheckIAMFunctionActionPHPZip(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -893,7 +893,7 @@ func testAccCheckIAMFunctionActionPHPZip(name, namespace string) string {
 func testAccCheckIAMFunctionActionSwift(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -918,7 +918,7 @@ func testAccCheckIAMFunctionActionSwift(name, namespace string) string {
 func testAccCheckIAMFunctionActionSequence(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -942,7 +942,7 @@ func testAccCheckIAMFunctionActionSequence(name, namespace string) string {
 func testAccCheckIAMFunctionActionCreate(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -968,7 +968,7 @@ func testAccCheckIAMFunctionActionCreate(name, namespace string) string {
 func testAccCheckIAMFunctionActionUpdate(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -1009,7 +1009,7 @@ func testAccCheckIAMFunctionActionUpdate(name, namespace string) string {
 func testAccCheckIAMFunctionActionImport(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {

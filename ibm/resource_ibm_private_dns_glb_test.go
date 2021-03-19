@@ -70,7 +70,7 @@ func TestAccIBMPrivateDNSGlboadBalancerImport(t *testing.T) {
 func testAccCheckIBMPrivateDNSGlbLoadBalancerBasic(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "default"
+		is_default=true
 	  }
 
 	  resource "ibm_resource_instance" "test-pdns-instance" {
@@ -125,7 +125,7 @@ func testAccCheckIBMPrivateDNSGlbLoadBalancerBasic(name string) string {
 func testAccCheckIBMPrivateDNSGlbUpdateLoadBalancerBasic(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "default"
+		is_default=true
 	  }
 
 	  resource "ibm_resource_instance" "test-pdns-instance" {

@@ -102,7 +102,7 @@ resource "ibm_iam_service_policy" "policy" {
 }
 
 data "ibm_resource_group" "group" {
-  name = "default"
+  is_default=true
 }
 
 resource "ibm_iam_service_policy" "policy1" {

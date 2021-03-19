@@ -94,7 +94,7 @@ func testAccCheckIBMISFlowLogConfig(vpcname, name, flowlogname, sshname, publicK
 	  }
 
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 	  
 	resource "ibm_resource_instance" "instance2" {

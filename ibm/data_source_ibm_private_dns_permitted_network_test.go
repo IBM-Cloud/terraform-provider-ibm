@@ -36,7 +36,7 @@ func testAccCheckIBMpDNSPermittedNetworksDataSourceConfig(riname, vpcname, zonen
 	// status filter defaults to empty
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "test-pdns-instance" {

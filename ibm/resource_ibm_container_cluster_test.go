@@ -235,7 +235,7 @@ func testAccCheckIBMContainerClusterKmsEnable(clusterName, kmsInstanceName, root
 	return fmt.Sprintf(`
 	
 	data "ibm_resource_group" "testacc_ds_resource_group" {
-		name = "default"
+		is_default=true
 	}
 	resource "ibm_resource_instance" "kms_instance" {
 		name              = "%s"

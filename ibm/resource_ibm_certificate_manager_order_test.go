@@ -115,7 +115,7 @@ func testAccCheckIBMCertificateManagerOrder_basic(cmsName, orderName string) str
 		plan                = "free"
 	}
 	data "ibm_resource_group" "web_group" {
-		name = "default"
+		is_default=true
 	}
 	data "ibm_cis" "instance" {
 		name              = "Terraform-Test-CIS"
@@ -147,7 +147,7 @@ func testAccCheckIBMCertificateManagerOrder_Update(cmsName, updatedName string) 
 		plan                = "free"
 	}
 	data "ibm_resource_group" "web_group" {
-		name = "default"
+		is_default=true
 	}
 	data "ibm_cis" "instance" {
 		name              = "Terraform-Test-CIS"
