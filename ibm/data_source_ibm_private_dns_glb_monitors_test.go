@@ -40,7 +40,7 @@ func testAccCheckIBMPrivateDNSGlbMonitordDataSConfig(vpcname, riname, zonename, 
 	// status filter defaults to empty
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "default"
+		is_default=true
 	}
 
     resource "ibm_is_vpc" "test-pdns-vpc" {

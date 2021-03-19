@@ -75,7 +75,7 @@ func TestAccIBMPrivateDNSGlbMonitorImport(t *testing.T) {
 func testAccCheckIBMPrivateDNSGlbMonitorBasic(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "default"
+		is_default=true
     }
 
     resource "ibm_is_vpc" "test-pdns-vpc" {
@@ -134,7 +134,7 @@ func testAccCheckIBMPrivateDNSGlbMonitorBasic(name string) string {
 func testAccCheckIBMPrivateDNSGlbUpdateMonitorBasic(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "default"
+		is_default=true
     }
 
     resource "ibm_is_vpc" "test-pdns-vpc" {
