@@ -12,11 +12,12 @@ import (
 	"strings"
 	"time"
 
-	gc "github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 const (
@@ -131,6 +132,30 @@ func resourceIBMResourceInstance() *schema.Resource {
 				Computed:    true,
 			},
 
+			"plan_history": {
+				Description: "The plan history of the instance.",
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"resource_plan_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"start_date": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+
+			"account_id": {
+				Description: "An alpha-numeric value identifying the account ID.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+
 			"resource_group_crn": {
 				Description: "The long ID (full CRN) of the resource group",
 				Type:        schema.TypeString,
@@ -161,7 +186,25 @@ func resourceIBMResourceInstance() *schema.Resource {
 				Computed:    true,
 			},
 
+			"type": {
+				Description: "The type of the instance, e.g. service_instance.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+
+			"sub_type": {
+				Description: "The sub-type of instance, e.g. cfaas .",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+
 			"allow_cleanup": {
+				Description: "A boolean that dictates if the resource instance should be deleted (cleaned up) during the processing of a region instance delete call.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
+
+			"locked": {
 				Description: "A boolean that dictates if the resource instance should be deleted (cleaned up) during the processing of a region instance delete call.",
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -227,6 +270,30 @@ func resourceIBMResourceInstance() *schema.Resource {
 				Computed:    true,
 			},
 
+			"scheduled_reclaim_at": {
+				Type:        schema.TypeString,
+				Description: "The date when the instance was scheduled for reclamation.",
+				Computed:    true,
+			},
+
+			"scheduled_reclaim_by": {
+				Type:        schema.TypeString,
+				Description: "The subject who initiated the instance reclamation.",
+				Computed:    true,
+			},
+
+			"restored_at": {
+				Type:        schema.TypeString,
+				Description: "The date when the instance under reclamation was restored.",
+				Computed:    true,
+			},
+
+			"restored_by": {
+				Type:        schema.TypeString,
+				Description: "The subject who restored the instance back from reclamation.",
+				Computed:    true,
+			},
+
 			ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -276,74 +343,54 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 	name := d.Get("name").(string)
 	location := d.Get("location").(string)
 
-	service, err := gc.NewGlobalCatalogV1UsingExternalConfig(
-		&gc.GlobalCatalogV1Options{},
-	)
-	if err != nil {
-		return fmt.Errorf("Create globalcatalog service error: %s", err)
-	}
-
-	// Start to get the service id by the service name
-	listCatalogEntriesOptions := service.NewListCatalogEntriesOptions()
-	include := "true"
-	listCatalogEntriesOptions.Include = &include
-	newServiceName := serviceName + " rc:true"
-	listCatalogEntriesOptions.Q = &newServiceName
-	catalogEntry, response, err := service.ListCatalogEntries(listCatalogEntriesOptions)
-	if err != nil {
-		return fmt.Errorf("List catalog entries error: %s with resp code: %s", err, response)
-	}
-
-	serviceId := *catalogEntry.Resources[0].ID
-
-	//Start to get the service plan id by the service id and plan name
-	servicePlanID := plan
-	getChildObjectsOptions := service.NewGetChildObjectsOptions(
-		serviceId,
-		"*",
-	)
-
-	planResult, response, err := service.GetChildObjects(getChildObjectsOptions)
-	if err != nil {
-		return fmt.Errorf("GetChildObjects for servicePlanID error: %s with resp code: %s", err, response)
-	}
-
-	resources := planResult.Resources
-	for _, v := range resources {
-		if *v.Name == plan {
-			servicePlanID = *v.ID
-			break
-		}
-	}
-
-	// Start to get deployment by the service plan id
-	// And filter the deployment by location to get catalog_crn
-	catalogCRN := ""
-	getChildObjectsOptions = service.NewGetChildObjectsOptions(
-		servicePlanID,
-		"*",
-	)
-
-	deploymentResult, response, err := service.GetChildObjects(getChildObjectsOptions)
-	if err != nil {
-		return fmt.Errorf("GetChildObjects for deployment error: %s", err)
-	}
-
-	resources = deploymentResult.Resources
-	for _, v := range resources {
-		if *v.Metadata.Deployment.Location == location {
-			catalogCRN = *v.CatalogCRN
-			break
-		}
-	}
-
 	rsInst := rc.CreateResourceInstanceOptions{
-		Name:           &name,
-		Target:         &catalogCRN,
-		ResourcePlanID: &servicePlanID,
+		Name: &name,
 	}
 
-	// Start to get other options of CreateResourceInstanceOptions
+	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
+	if err != nil {
+		return err
+	}
+	rsCatRepo := rsCatClient.ResourceCatalog()
+
+	serviceOff, err := rsCatRepo.FindByName(serviceName, true)
+	if err != nil {
+		return fmt.Errorf("Error retrieving service offering: %s", err)
+	}
+
+	if metadata, ok := serviceOff[0].Metadata.(*models.ServiceResourceMetadata); ok {
+		if !metadata.Service.RCProvisionable {
+			return fmt.Errorf("%s cannot be provisioned by resource controller", serviceName)
+		}
+	} else {
+		return fmt.Errorf("Cannot create instance of resource %s\nUse 'ibm_service_instance' if the resource is a Cloud Foundry service", serviceName)
+	}
+
+	servicePlan, err := rsCatRepo.GetServicePlanID(serviceOff[0], plan)
+	if err != nil {
+		return fmt.Errorf("Error retrieving plan: %s", err)
+	}
+	rsInst.ResourcePlanID = &servicePlan
+
+	deployments, err := rsCatRepo.ListDeployments(servicePlan)
+	if err != nil {
+		return fmt.Errorf("Error retrieving deployment for plan %s : %s", plan, err)
+	}
+	if len(deployments) == 0 {
+		return fmt.Errorf("No deployment found for service plan : %s", plan)
+	}
+	deployments, supportedLocations := filterDeployments(deployments, location)
+
+	if len(deployments) == 0 {
+		locationList := make([]string, 0, len(supportedLocations))
+		for l := range supportedLocations {
+			locationList = append(locationList, l)
+		}
+		return fmt.Errorf("No deployment found for service plan %s at location %s.\nValid location(s) are: %q.\nUse 'ibm_service_instance' if the service is a Cloud Foundry service.", plan, location, locationList)
+	}
+
+	rsInst.Target = &deployments[0].CatalogCRN
+
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
 		rsInst.ResourceGroup = rsGrpID.(*string)
 	} else {
@@ -353,6 +400,7 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		}
 		rsInst.ResourceGroup = &defaultRg
 	}
+
 	if _, ok := d.GetOk("tags"); ok {
 		rsInst.SetTags(d.Get("tags").([]string))
 	}
@@ -364,9 +412,11 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	params := map[string]interface{}{}
+
 	if serviceEndpoints, ok := d.GetOk("service_endpoints"); ok {
 		params["service-endpoints"] = serviceEndpoints.(string)
 	}
+
 	if parameters, ok := d.GetOk("parameters"); ok {
 		temp := parameters.(map[string]interface{})
 		for k, v := range temp {
@@ -391,7 +441,7 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 
 	}
 
-	rsInst.SetParameters(params)
+	rsInst.Parameters = params
 
 	//Start to create resource instance
 	instance, resp, err := rsConClient.CreateResourceInstance(&rsInst)
@@ -759,4 +809,19 @@ func waitForResourceInstanceDelete(d *schema.ResourceData, meta interface{}) (in
 	}
 
 	return stateConf.WaitForState()
+}
+
+func filterDeployments(deployments []models.ServiceDeployment, location string) ([]models.ServiceDeployment, map[string]bool) {
+	supportedDeployments := []models.ServiceDeployment{}
+	supportedLocations := make(map[string]bool)
+	for _, d := range deployments {
+		if d.Metadata.RCCompatible {
+			deploymentLocation := d.Metadata.Deployment.Location
+			supportedLocations[deploymentLocation] = true
+			if deploymentLocation == location {
+				supportedDeployments = append(supportedDeployments, d)
+			}
+		}
+	}
+	return supportedDeployments, supportedLocations
 }
