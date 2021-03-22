@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: ibm_container_cluster_versions"
-sidebar_current: "docs-ibm-datasource-container-cluster-versions"
 description: |-
   List supported kubernetes versions on IBM Cloud.
 ---

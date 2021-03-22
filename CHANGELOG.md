@@ -1,3 +1,32 @@
+## 1.21.2 (Mar15, 2021)
+
+PROVIDER:
+* Updgrade Terraform SDK to v2
+
+FEATURES:
+
+* Support checksum argument for VPC Images ([#2227](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2161))
+
+* Support iam_id argument cross Account iam_service_policy ([#2331](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2331))
+
+* Support tags argument for VPC subnet ([#2321](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2332))
+
+* Support tags argument for VPC network acl ([#2343](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2343))
+
+* Add resource schema timeouts for classic infrastructure compute VM ([#2291](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2291))
+
+* Support accept_proxy_protocol argument for vpc loadbalancer listener ([#2325](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2325))
+
+
+BUGFIXES
+
+* Fix logging not supported for VPC Network Loadbalancer ([#2332](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2332))
+
+* Fix addons not being enabled post-cluster creation ([#2346](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2346))
+
+* Fix ibm_iam_user_policy data source produces no results ([#2312](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2312))
+
+
 ## 1.21.1 (Mar03, 2021)
 
 FEATURES:

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: Org"
-sidebar_current: "docs-ibm-resource-org"
 description: |-
   Manages IBM Organization.
 ---

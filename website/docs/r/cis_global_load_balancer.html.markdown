@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: cis_global_load_balancer"
-sidebar_current: "docs-ibm-resource-cis-global-load-balancer"
 description: |-
   Provides an IBM Cloud Internet Services Global Load Balancer resource.
 ---

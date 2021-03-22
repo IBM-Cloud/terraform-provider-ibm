@@ -5,11 +5,15 @@ package ibm
 
 import (
 	"container/list"
+	"context"
 	"fmt"
 	"log"
+	"os"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -39,6 +43,8 @@ const (
 	isNetworkACLRuleSourcePortMin = "source_port_min"
 	isNetworkACLVPC               = "vpc"
 	isNetworkACLResourceGroup     = "resource_group"
+	isNetworkACLTags              = "tags"
+	isNetworkACLCRN               = "crn"
 )
 
 func resourceIBMISNetworkACL() *schema.Resource {
@@ -54,6 +60,12 @@ func resourceIBMISNetworkACL() *schema.Resource {
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 			isNetworkACLName: {
@@ -75,6 +87,20 @@ func resourceIBMISNetworkACL() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "Resource group ID for the network ACL",
+			},
+			isNetworkACLTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of tags",
+			},
+
+			isNetworkACLCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
 			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
@@ -464,6 +490,15 @@ func nwaclCreate(d *schema.ResourceData, meta interface{}, name string) error {
 	if err != nil {
 		return err
 	}
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isNetworkACLTags); ok || v != "" {
+		oldList, newList := d.GetChange(isNetworkACLTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *nwacl.CRN)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource network acl (%s) tags: %s", d.Id(), err)
+		}
+	}
 	return nil
 }
 
@@ -619,7 +654,13 @@ func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isNetworkACLResourceGroup, *nwacl.ResourceGroup.ID)
 		d.Set(ResourceGroupName, *nwacl.ResourceGroup.Name)
 	}
-
+	tags, err := GetTagsUsingCRN(meta, *nwacl.CRN)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource network acl (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isNetworkACLTags, tags)
+	d.Set(isNetworkACLCRN, *nwacl.CRN)
 	rules := make([]interface{}, 0)
 	if len(nwacl.Rules) > 0 {
 		for _, rulex := range nwacl.Rules {
@@ -804,6 +845,14 @@ func nwaclUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 		_, response, err := sess.UpdateNetworkACL(updateNetworkACLOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating Network ACL(%s) : %s\n%s", id, err, response)
+		}
+	}
+	if d.HasChange(isNetworkACLTags) {
+		oldList, newList := d.GetChange(isNetworkACLTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, d.Get(isNetworkACLCRN).(string))
+		if err != nil {
+			log.Printf(
+				"Error on update of resource network acl (%s) tags: %s", d.Id(), err)
 		}
 	}
 	if d.HasChange(isNetworkACLRules) {

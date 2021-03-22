@@ -1,7 +1,7 @@
 ---
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_app_domain_private"
-sidebar_current: "docs-ibm-datasource-app-domian-private"
 description: |-
   Get information about an IBM Cloud domain private.
 ---

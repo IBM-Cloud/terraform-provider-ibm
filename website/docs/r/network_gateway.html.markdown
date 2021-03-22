@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: ibm_network_gateway"
-sidebar_current: "docs-ibm-resource-network-gateway"
 description: |-
   Manages IBM Network Gateway.
 ---

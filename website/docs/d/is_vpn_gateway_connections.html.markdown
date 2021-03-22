@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : "
-sidebar_current: "docs-ibm-datasources-is-vpn-gateway-connections"
 description: |-
   Manages IBM vpn gateway connections.
 ---

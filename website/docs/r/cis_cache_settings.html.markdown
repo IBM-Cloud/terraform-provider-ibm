@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_cache_settings"
-sidebar_current: "docs-ibm-resource-cis-cache-settings"
 description: |-
   Provides a IBM CIS Cache Settings resource.
 ---

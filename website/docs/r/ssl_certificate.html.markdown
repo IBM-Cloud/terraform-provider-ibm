@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : ssl_certificate"
-sidebar_current: "docs-ibm-resource-ssl-certificate"
 description: |-
   Order New IBM SSL Certificate.
 ---

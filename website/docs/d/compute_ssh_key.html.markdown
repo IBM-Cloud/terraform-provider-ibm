@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: ibm_compute_ssh_key"
-sidebar_current: "docs-ibm-datasource-compute-ssh-key"
 description: |-
   Get information about an IBM Compute SSH key.
 ---

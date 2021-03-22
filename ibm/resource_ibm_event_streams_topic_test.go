@@ -214,7 +214,7 @@ func testAccCheckIBMEventStreamsTopicWithExistingInstanceWithConfig(instanceName
 func getPlatformResource(instanceName string) string {
 	return fmt.Sprintf(`
 	  data "ibm_resource_group" "group" {
-		name = "default"
+		is_default=true
 	  }
 	  data "ibm_resource_instance" "es_instance" {
 		resource_group_id = data.ibm_resource_group.group.id
@@ -226,7 +226,7 @@ func createPlatformResources(instanceName, serviceName, planID, location string,
 	if planID == "standard" || planID == "lite" {
 		return fmt.Sprintf(`
 		data "ibm_resource_group" "group" {
-		  name = "default"
+		  is_default=true
 		}
 		resource "ibm_resource_instance" "es_instance" {
 		  name              = "%s"
@@ -239,7 +239,7 @@ func createPlatformResources(instanceName, serviceName, planID, location string,
 	// create enterprise instance
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "group" {
-		name = "default"
+		is_default=true
 	  }
 	resource "ibm_resource_instance" "es_instance" {
 		name              = "%s"

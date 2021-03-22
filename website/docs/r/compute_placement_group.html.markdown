@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : compute_placement_group"
-sidebar_current: "docs-ibm-resource-compute-placement-group"
 description: |-
   Manages IBM Compute Placement Group.
 ---

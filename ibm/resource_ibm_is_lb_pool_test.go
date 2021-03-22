@@ -24,6 +24,7 @@ func TestAccIBMISLBPool_basic(t *testing.T) {
 	poolName1 := fmt.Sprintf("tflbpoolu%d", acctest.RandIntRange(10, 100))
 	alg1 := "round_robin"
 	protocol1 := "http"
+	proxyProtocol1 := "disabled"
 	delay1 := "45"
 	retries1 := "5"
 	timeout1 := "15"
@@ -31,6 +32,7 @@ func TestAccIBMISLBPool_basic(t *testing.T) {
 
 	alg2 := "least_connections"
 	protocol2 := "tcp"
+	proxyProtocol2 := "v2"
 	delay2 := "60"
 	retries2 := "3"
 	timeout2 := "30"
@@ -54,6 +56,8 @@ func TestAccIBMISLBPool_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_pool.testacc_lb_pool", "protocol", protocol1),
 					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "proxy_protocol", proxyProtocol1),
+					resource.TestCheckResourceAttr(
 						"ibm_is_lb_pool.testacc_lb_pool", "health_delay", delay1),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_pool.testacc_lb_pool", "health_retries", retries1),
@@ -75,6 +79,8 @@ func TestAccIBMISLBPool_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_pool.testacc_lb_pool", "protocol", protocol2),
 					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "proxy_protocol", proxyProtocol1),
+					resource.TestCheckResourceAttr(
 						"ibm_is_lb_pool.testacc_lb_pool", "health_delay", delay2),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_pool.testacc_lb_pool", "health_retries", retries2),
@@ -82,6 +88,30 @@ func TestAccIBMISLBPool_basic(t *testing.T) {
 						"ibm_is_lb_pool.testacc_lb_pool", "health_timeout", timeout2),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_pool.testacc_lb_pool", "health_type", healthType2),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMISLBPoolConfigWithProxy(vpcname, subnetname, ISZoneName, ISCIDR, name, poolName, alg1, protocol1, proxyProtocol2, delay1, retries1, timeout1, healthType1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "name", poolName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "algorithm", alg1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "protocol", protocol1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "proxy_protocol", proxyProtocol2),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_delay", delay1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_retries", retries1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_timeout", timeout1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_type", healthType1),
 				),
 			},
 		},
@@ -96,6 +126,7 @@ func TestAccIBMISLBPool_port(t *testing.T) {
 	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
 	alg1 := "round_robin"
 	protocol1 := "http"
+	proxyProtocol1 := "disabled"
 	delay1 := "45"
 	retries1 := "5"
 	timeout1 := "15"
@@ -119,6 +150,8 @@ func TestAccIBMISLBPool_port(t *testing.T) {
 						"ibm_is_lb_pool.testacc_lb_pool", "algorithm", alg1),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_pool.testacc_lb_pool", "protocol", protocol1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "proxy_protocol", proxyProtocol1),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_pool.testacc_lb_pool", "health_delay", delay1),
 					resource.TestCheckResourceAttr(
@@ -241,7 +274,7 @@ func testAccCheckIBMISLBPoolConfig(vpcname, subnetname, zone, cidr, name, poolNa
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
-	
+
 	resource "ibm_is_subnet" "testacc_subnet" {
 		name = "%s"
 		vpc = "${ibm_is_vpc.testacc_vpc.id}"
@@ -271,7 +304,7 @@ func testAccCheckIBMISLBPoolPortConfig(vpcname, subnetname, zone, cidr, name, po
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
-	
+
 	resource "ibm_is_subnet" "testacc_subnet" {
 		name = "%s"
 		vpc = "${ibm_is_vpc.testacc_vpc.id}"
@@ -293,5 +326,36 @@ func testAccCheckIBMISLBPoolPortConfig(vpcname, subnetname, zone, cidr, name, po
 		health_type = "%s"
 		health_monitor_port = %s
 }`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, port)
+
+}
+
+func testAccCheckIBMISLBPoolConfigWithProxy(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, proxyProtocol, delay, retries, timeout, healthType string) string {
+	return fmt.Sprintf(`
+
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+	}
+	resource "ibm_is_lb_pool" "testacc_lb_pool" {
+		name = "%s"
+		lb = "${ibm_is_lb.testacc_LB.id}"
+		algorithm = "%s"
+		protocol = "%s"
+		proxy_protocol = "%s"
+		health_delay= %s
+		health_retries = %s
+		health_timeout = %s
+		health_type = "%s"
+}`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, proxyProtocol, delay, retries, timeout, healthType)
 
 }

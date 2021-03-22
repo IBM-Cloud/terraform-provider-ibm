@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_alb"
-sidebar_current: "docs-ibm-resource-container-alb"
 description: |-
   Manages IBM container alb.
 ---

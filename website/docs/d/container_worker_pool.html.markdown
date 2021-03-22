@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_worker_pool"
-sidebar_current: "docs-ibm-data-source-container-worker_pool"
 description: |-
   Manages IBM container worker pool.
 ---

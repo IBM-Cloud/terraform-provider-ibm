@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : dns_permitted_network"
-sidebar_current: "docs-ibm-resource-dns-permitted-network"
 description: |-
   Manages IBM Private DNS Permitted Network.
 ---

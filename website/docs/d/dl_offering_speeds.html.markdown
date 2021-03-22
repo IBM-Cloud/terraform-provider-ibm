@@ -1,7 +1,7 @@
 ---
+subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_offering_speeds"
-sidebar_current: "docs-ibm-datasource-dl-offering-speeds"
 description: |-
   Manages IBM Cloud Infrastructure Direct Link Offering Speeds.
 ---

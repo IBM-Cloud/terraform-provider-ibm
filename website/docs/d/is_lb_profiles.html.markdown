@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_lb_profiles"
-sidebar_current: "docs-ibm-datasources-is-lb-profiles"
 description: |-
   Manages IBM Cloud Infrastructure load balancer profiles.
 ---

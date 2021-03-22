@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_service_policy"
-sidebar_current: "docs-ibm-resource-iam-service-policy"
 description: |-
   Manages IBM IAM Service Policy.
 ---

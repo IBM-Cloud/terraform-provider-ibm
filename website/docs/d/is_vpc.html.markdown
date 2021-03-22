@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : vpc"
-sidebar_current: "docs-ibm-datasources-is-vpc"
 description: |-
   Manages IBM virtual private cloud.
 ---
@@ -64,3 +64,6 @@ The following attributes are exported:
     * `code` - The ICMP traffic code to allow.
     * `port_min` - The inclusive lower bound of TCP port range. 
     * `port_max` - The inclusive upper bound of TCP port range. 
+* `default_network_acl_name` - The name of the default network acl.
+* `default_security_group_name` - The name of the default security group.
+* `default_routing_table_name` - The name of the default routing table.

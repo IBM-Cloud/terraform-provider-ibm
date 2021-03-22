@@ -1,7 +1,7 @@
 ---
+subcategory: "Object Storage"
 layout: "ibm"
 page_title: "IBM : Cloud Object Storage Bucket"
-sidebar_current: "docs-ibm-datasource-cos-bucket"
 description: |-
   Get information about IBM CloudObject Storage Bucket.
 ---

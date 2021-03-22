@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : Instance"
-sidebar_current: "docs-ibm-datasources-is-instance"
 description: |-
   Manages IBM Cloud virtual server instance.
 ---

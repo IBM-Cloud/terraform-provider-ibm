@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : compute_dedicated_host"
-sidebar_current: "docs-ibm-resource-compute-dedicated-host"
 description: |-
   Manages IBM Dedicated Host.
 ---

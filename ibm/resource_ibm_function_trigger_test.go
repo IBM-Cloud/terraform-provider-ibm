@@ -304,7 +304,7 @@ func testAccCheckFunctionTriggerDestroy(s *terraform.State) error {
 func testAccCheckIAMFunctionTriggerCreate(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -326,7 +326,7 @@ func testAccCheckIAMFunctionTriggerUpdate(name, namespace string) string {
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -367,7 +367,7 @@ func testAccCheckIAMFunctionTriggerUpdate(name, namespace string) string {
 func testAccCheckIAMFunctionTriggerFeedCreate(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -411,7 +411,7 @@ func testAccCheckIAMFunctionTriggerFeedCreate(name, namespace string) string {
 func testAccCheckIAMFunctionTriggerFeedUpdate(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -468,7 +468,7 @@ func testAccCheckIAMFunctionTriggerFeedUpdate(name, namespace string) string {
 func testAccCheckIAMFunctionTriggerImport(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {

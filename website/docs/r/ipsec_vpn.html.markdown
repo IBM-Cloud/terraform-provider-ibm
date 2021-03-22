@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : ipsec_vpn"
-sidebar_current: "docs-ibm-resource-ipsec-vpn"
 description: |-
   Manages IBM IPSec VPN.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM: ibm_resource_group"
-sidebar_current: "docs-ibm-datasource-reosurce-group"
 description: |-
   Get information about an IBM resource Group.
 ---

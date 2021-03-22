@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM : Cloud Internet Services Domain"
-sidebar_current: "docs-ibm-datasource-cis-domain"
 description: |-
   Get information on an IBM Cloud Internet Services Domain.
 ---

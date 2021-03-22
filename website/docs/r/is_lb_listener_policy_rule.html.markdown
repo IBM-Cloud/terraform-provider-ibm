@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : lb_listener_policy_rule"
-sidebar_current: "docs-ibm-resource-is-lb-listener_policy_rule"
 description: |-
   Manages IBM VPC load balancer listener policy rule.
 ---

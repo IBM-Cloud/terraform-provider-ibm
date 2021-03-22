@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : floating_ip"
-sidebar_current: "docs-ibm-resource-is-floating-ip"
 description: |-
   Manages IBM Floating IP.
 ---
