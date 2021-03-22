@@ -1,18 +1,5 @@
-/**
- * (C) Copyright IBM Corp. 2021.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -202,13 +189,11 @@ func resourceIBMSchematicsAction() *schema.Resource {
 						},
 						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Targets creation time.",
 						},
 						"created_by": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "E-mail address of the user who created the targets.",
 						},
@@ -735,7 +720,6 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			},
 			"state": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
 				Computed:    true,
 				Description: "Computed state of an action.",
 				Elem: &schema.Resource{
@@ -907,15 +891,21 @@ func resourceIBMSchematicsActionCreate(context context.Context, d *schema.Resour
 		createActionOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
 	}
 	if _, ok := d.GetOk("user_state"); ok {
-		userState := resourceIBMSchematicsActionMapToUserState(d.Get("user_state.0").(map[string]interface{}))
-		createActionOptions.SetUserState(&userState)
+		userStateAttr := d.Get("user_state").([]interface{})
+		if len(userStateAttr) > 0 {
+			userState := resourceIBMSchematicsActionMapToUserState(d.Get("user_state.0").(map[string]interface{}))
+			createActionOptions.SetUserState(&userState)
+		}
 	}
 	if _, ok := d.GetOk("source_readme_url"); ok {
 		createActionOptions.SetSourceReadmeURL(d.Get("source_readme_url").(string))
 	}
 	if _, ok := d.GetOk("source"); ok {
-		source := resourceIBMSchematicsActionMapToExternalSource(d.Get("source.0").(map[string]interface{}))
-		createActionOptions.SetSource(&source)
+		sourceAttr := d.Get("source").([]interface{})
+		if len(sourceAttr) > 0 {
+			source := resourceIBMSchematicsActionMapToExternalSource(d.Get("source.0").(map[string]interface{}))
+			createActionOptions.SetSource(&source)
+		}
 	}
 	if _, ok := d.GetOk("source_type"); ok {
 		createActionOptions.SetSourceType(d.Get("source_type").(string))
@@ -924,8 +914,11 @@ func resourceIBMSchematicsActionCreate(context context.Context, d *schema.Resour
 		createActionOptions.SetCommandParameter(d.Get("command_parameter").(string))
 	}
 	if _, ok := d.GetOk("bastion"); ok {
-		bastion := resourceIBMSchematicsActionMapToTargetResourceset(d.Get("bastion.0").(map[string]interface{}))
-		createActionOptions.SetBastion(&bastion)
+		bastionAttr := d.Get("bastion").([]interface{})
+		if len(bastionAttr) > 0 {
+			bastion := resourceIBMSchematicsActionMapToTargetResourceset(d.Get("bastion.0").(map[string]interface{}))
+			createActionOptions.SetBastion(&bastion)
+		}
 	}
 	if _, ok := d.GetOk("targets_ini"); ok {
 		createActionOptions.SetTargetsIni(d.Get("targets_ini").(string))
@@ -970,12 +963,18 @@ func resourceIBMSchematicsActionCreate(context context.Context, d *schema.Resour
 		createActionOptions.SetTriggerRecordID(d.Get("trigger_record_id").(string))
 	}
 	if _, ok := d.GetOk("state"); ok {
-		state := resourceIBMSchematicsActionMapToActionState(d.Get("state.0").(map[string]interface{}))
-		createActionOptions.SetState(&state)
+		stateAttr := d.Get("state").([]interface{})
+		if len(stateAttr) > 0 {
+			state := resourceIBMSchematicsActionMapToActionState(d.Get("state.0").(map[string]interface{}))
+			createActionOptions.SetState(&state)
+		}
 	}
 	if _, ok := d.GetOk("sys_lock"); ok {
-		sysLock := resourceIBMSchematicsActionMapToSystemLock(d.Get("sys_lock.0").(map[string]interface{}))
-		createActionOptions.SetSysLock(&sysLock)
+		sysLockAttr := d.Get("sys_lock").([]interface{})
+		if len(sysLockAttr) > 0 {
+			sysLock := resourceIBMSchematicsActionMapToSystemLock(d.Get("sys_lock.0").(map[string]interface{}))
+			createActionOptions.SetSysLock(&sysLock)
+		}
 	}
 	if _, ok := d.GetOk("x_github_token"); ok {
 		createActionOptions.SetXGithubToken(d.Get("x_github_token").(string))
@@ -1547,18 +1546,24 @@ func resourceIBMSchematicsActionUpdate(context context.Context, d *schema.Resour
 		hasChange = true
 	}
 	if d.HasChange("user_state") {
-		userState := resourceIBMSchematicsActionMapToUserState(d.Get("user_state.0").(map[string]interface{}))
-		updateActionOptions.SetUserState(&userState)
-		hasChange = true
+		userStateAttr := d.Get("user_state").([]interface{})
+		if len(userStateAttr) > 0 {
+			userState := resourceIBMSchematicsActionMapToUserState(d.Get("user_state.0").(map[string]interface{}))
+			updateActionOptions.SetUserState(&userState)
+			hasChange = true
+		}
 	}
 	if d.HasChange("source_readme_url") {
 		updateActionOptions.SetSourceReadmeURL(d.Get("source_readme_url").(string))
 		hasChange = true
 	}
 	if d.HasChange("source") {
-		source := resourceIBMSchematicsActionMapToExternalSource(d.Get("source.0").(map[string]interface{}))
-		updateActionOptions.SetSource(&source)
-		hasChange = true
+		sourceAttr := d.Get("source").([]interface{})
+		if len(sourceAttr) > 0 {
+			source := resourceIBMSchematicsActionMapToExternalSource(d.Get("source.0").(map[string]interface{}))
+			updateActionOptions.SetSource(&source)
+			hasChange = true
+		}
 	}
 	if d.HasChange("source_type") {
 		updateActionOptions.SetSourceType(d.Get("source_type").(string))
@@ -1569,9 +1574,12 @@ func resourceIBMSchematicsActionUpdate(context context.Context, d *schema.Resour
 		hasChange = true
 	}
 	if d.HasChange("bastion") {
-		bastion := resourceIBMSchematicsActionMapToTargetResourceset(d.Get("bastion.0").(map[string]interface{}))
-		updateActionOptions.SetBastion(&bastion)
-		hasChange = true
+		bastionAttr := d.Get("bastion").([]interface{})
+		if len(bastionAttr) > 0 {
+			bastion := resourceIBMSchematicsActionMapToTargetResourceset(d.Get("bastion.0").(map[string]interface{}))
+			updateActionOptions.SetBastion(&bastion)
+			hasChange = true
+		}
 	}
 	if d.HasChange("targets_ini") {
 		updateActionOptions.SetTargetsIni(d.Get("targets_ini").(string))
@@ -1622,14 +1630,20 @@ func resourceIBMSchematicsActionUpdate(context context.Context, d *schema.Resour
 		hasChange = true
 	}
 	if d.HasChange("state") {
-		state := resourceIBMSchematicsActionMapToActionState(d.Get("state.0").(map[string]interface{}))
-		updateActionOptions.SetState(&state)
-		hasChange = true
+		stateAttr := d.Get("state").([]interface{})
+		if len(stateAttr) > 0 {
+			state := resourceIBMSchematicsActionMapToActionState(d.Get("state.0").(map[string]interface{}))
+			updateActionOptions.SetState(&state)
+			hasChange = true
+		}
 	}
 	if d.HasChange("sys_lock") {
-		sysLock := resourceIBMSchematicsActionMapToSystemLock(d.Get("sys_lock.0").(map[string]interface{}))
-		updateActionOptions.SetSysLock(&sysLock)
-		hasChange = true
+		sysLockAttr := d.Get("sys_lock").([]interface{})
+		if len(sysLockAttr) > 0 {
+			sysLock := resourceIBMSchematicsActionMapToSystemLock(d.Get("sys_lock.0").(map[string]interface{}))
+			updateActionOptions.SetSysLock(&sysLock)
+			hasChange = true
+		}
 	}
 
 	if hasChange {

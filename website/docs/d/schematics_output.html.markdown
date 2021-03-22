@@ -5,18 +5,19 @@ layout: "ibm"
 page_title: "IBM : ibm_schematics_output"
 sidebar_current: "docs-ibm-datasource-schematics-output"
 description: |-
-  Get information about schematics_output
+  Get information about ibm_schematics_output
 ---
 
 # ibm\_schematics_output
 
-Provides a read-only data source for schematics_output. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for ibm_schematics_output. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "schematics_output" "schematics_output" {
+data "ibm_schematics_output" "schematics_output" {
 	workspace_id = "workspace_id"
+  template_id = "template_id"
 }
 ```
 

@@ -1,18 +1,5 @@
-/**
- * (C) Copyright IBM Corp. 2021.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -74,12 +61,12 @@ func resourceIBMSchematicsJob() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "Name of the variable.",
 						},
 						"value": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "Value for the variable or reference to the value.",
 						},
 						"metadata": &schema.Schema{
@@ -90,7 +77,7 @@ func resourceIBMSchematicsJob() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Required:    true,
 										Description: "Type of the variable.",
 									},
 									"aliases": &schema.Schema{
@@ -190,12 +177,12 @@ func resourceIBMSchematicsJob() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "Name of the variable.",
 						},
 						"value": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "Value for the variable or reference to the value.",
 						},
 						"metadata": &schema.Schema{
@@ -206,7 +193,7 @@ func resourceIBMSchematicsJob() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Required:    true,
 										Description: "Type of the variable.",
 									},
 									"aliases": &schema.Schema{
@@ -312,7 +299,6 @@ func resourceIBMSchematicsJob() *schema.Resource {
 			},
 			"status": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
 				Computed:    true,
 				Description: "Job Status.",
 				Elem: &schema.Resource{
@@ -1170,20 +1156,32 @@ func resourceIBMSchematicsJobCreate(context context.Context, d *schema.ResourceD
 		createJobOptions.SetLocation(d.Get("location").(string))
 	}
 	if _, ok := d.GetOk("status"); ok {
-		status := resourceIBMSchematicsJobMapToJobStatus(d.Get("status.0").(map[string]interface{}))
-		createJobOptions.SetStatus(&status)
+		statusAttr := d.Get("status").([]interface{})
+		if len(statusAttr) > 0 {
+			status := resourceIBMSchematicsJobMapToJobStatus(d.Get("status.0").(map[string]interface{}))
+			createJobOptions.SetStatus(&status)
+		}
 	}
 	if _, ok := d.GetOk("data"); ok {
-		data := resourceIBMSchematicsJobMapToJobData(d.Get("data.0").(map[string]interface{}))
-		createJobOptions.SetData(&data)
+		dataAttr := d.Get("data").([]interface{})
+		if len(dataAttr) > 0 {
+			data := resourceIBMSchematicsJobMapToJobData(d.Get("data.0").(map[string]interface{}))
+			createJobOptions.SetData(&data)
+		}
 	}
 	if _, ok := d.GetOk("bastion"); ok {
-		bastion := resourceIBMSchematicsJobMapToTargetResourceset(d.Get("bastion.0").(map[string]interface{}))
-		createJobOptions.SetBastion(&bastion)
+		bastionAttr := d.Get("bastion").([]interface{})
+		if len(bastionAttr) > 0 {
+			bastion := resourceIBMSchematicsJobMapToTargetResourceset(d.Get("bastion.0").(map[string]interface{}))
+			createJobOptions.SetBastion(&bastion)
+		}
 	}
 	if _, ok := d.GetOk("job_log_summary"); ok {
-		logSummary := resourceIBMSchematicsJobMapToJobLogSummary(d.Get("job_log_summary.0").(map[string]interface{}))
-		createJobOptions.SetLogSummary(&logSummary)
+		jobLogSummaryAttr := d.Get("job_log_summary").([]interface{})
+		if len(jobLogSummaryAttr) > 0 {
+			logSummary := resourceIBMSchematicsJobMapToJobLogSummary(d.Get("job_log_summary.0").(map[string]interface{}))
+			createJobOptions.SetLogSummary(&logSummary)
+		}
 	}
 
 	job, response, err := schematicsClient.CreateJobWithContext(context, createJobOptions)
@@ -1984,20 +1982,32 @@ func resourceIBMSchematicsJobUpdate(context context.Context, d *schema.ResourceD
 		replaceJobOptions.SetLocation(d.Get("location").(string))
 	}
 	if _, ok := d.GetOk("status"); ok {
-		status := resourceIBMSchematicsJobMapToJobStatus(d.Get("status.0").(map[string]interface{}))
-		replaceJobOptions.SetStatus(&status)
+		statusAttr := d.Get("status").([]interface{})
+		if len(statusAttr) > 0 {
+			status := resourceIBMSchematicsJobMapToJobStatus(d.Get("status.0").(map[string]interface{}))
+			replaceJobOptions.SetStatus(&status)
+		}
 	}
 	if _, ok := d.GetOk("data"); ok {
-		data := resourceIBMSchematicsJobMapToJobData(d.Get("data.0").(map[string]interface{}))
-		replaceJobOptions.SetData(&data)
+		dataAttr := d.Get("data").([]interface{})
+		if len(dataAttr) > 0 {
+			data := resourceIBMSchematicsJobMapToJobData(d.Get("data.0").(map[string]interface{}))
+			replaceJobOptions.SetData(&data)
+		}
 	}
 	if _, ok := d.GetOk("bastion"); ok {
-		bastion := resourceIBMSchematicsJobMapToTargetResourceset(d.Get("bastion.0").(map[string]interface{}))
-		replaceJobOptions.SetBastion(&bastion)
+		bastionAttr := d.Get("bastion").([]interface{})
+		if len(bastionAttr) > 0 {
+			bastion := resourceIBMSchematicsJobMapToTargetResourceset(d.Get("bastion.0").(map[string]interface{}))
+			replaceJobOptions.SetBastion(&bastion)
+		}
 	}
 	if _, ok := d.GetOk("job_log_summary"); ok {
-		logSummary := resourceIBMSchematicsJobMapToJobLogSummary(d.Get("job_log_summary.0").(map[string]interface{}))
-		replaceJobOptions.SetLogSummary(&logSummary)
+		jobLogSummaryAttr := d.Get("job_log_summary").([]interface{})
+		if len(jobLogSummaryAttr) > 0 {
+			logSummary := resourceIBMSchematicsJobMapToJobLogSummary(d.Get("job_log_summary.0").(map[string]interface{}))
+			replaceJobOptions.SetLogSummary(&logSummary)
+		}
 	}
 
 	_, response, err := schematicsClient.ReplaceJobWithContext(context, replaceJobOptions)
