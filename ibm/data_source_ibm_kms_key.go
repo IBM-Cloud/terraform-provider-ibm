@@ -57,6 +57,11 @@ func dataSourceIBMKMSkey() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"key_ring_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The key ring id of the key to be fetched",
+						},
 						"crn": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -146,7 +151,6 @@ func dataSourceIBMKMSkey() *schema.Resource {
 			},
 		},
 	}
-
 }
 
 func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
@@ -244,6 +248,7 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 			keyInstance["crn"] = key.CRN
 			keyInstance["standard_key"] = key.Extractable
 			keyInstance["aliases"] = key.Aliases
+			keyInstance["key_ring_id"] = key.KeyRingID
 			policies, err := api.GetPolicies(context.Background(), key.ID)
 			if err != nil {
 				return fmt.Errorf("Failed to read policies: %s", err)
@@ -273,6 +278,7 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 		keyInstance["crn"] = key.CRN
 		keyInstance["standard_key"] = key.Extractable
 		keyInstance["aliases"] = key.Aliases
+		keyInstance["key_ring_id"] = key.KeyRingID
 		policies, err := api.GetPolicies(context.Background(), key.ID)
 		if err != nil {
 			return fmt.Errorf("Failed to read policies: %s", err)

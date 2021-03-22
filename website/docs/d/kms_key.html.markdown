@@ -50,6 +50,7 @@ The following attributes are exported:
   * `name` - The name for the key.
   * `aliases` - List of all the alias associated with the keys.
   * `id` - The unique identifier for this key
+  * `key_ring_id` - The key ring id for the key.
   * `crn` - The crn of the key.
   * `standard_key` - This flag is true in case of standard key, else false for root key.
   * `policy` - The policies associated with the key.
