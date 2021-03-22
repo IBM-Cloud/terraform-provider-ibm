@@ -65,6 +65,11 @@ func dataSourceIBMKMSkeys() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"key_ring_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The key ring id of the key to be fetched",
+						},
 						"standard_key": {
 							Type:     schema.TypeBool,
 							Computed: true,
@@ -220,6 +225,7 @@ func dataSourceIBMKMSKeysRead(d *schema.ResourceData, meta interface{}) error {
 			keyInstance["crn"] = key.CRN
 			keyInstance["standard_key"] = key.Extractable
 			keyInstance["aliases"] = key.Aliases
+			keyInstance["key_ring_id"] = key.KeyRingID
 			keyMap = append(keyMap, keyInstance)
 			d.Set("keys", keyMap)
 
@@ -259,6 +265,8 @@ func dataSourceIBMKMSKeysRead(d *schema.ResourceData, meta interface{}) error {
 			keyInstance["name"] = key.Name
 			keyInstance["crn"] = key.CRN
 			keyInstance["standard_key"] = key.Extractable
+			keyInstance["aliases"] = key.Aliases
+			keyInstance["key_ring_id"] = key.KeyRingID
 			keyMap = append(keyMap, keyInstance)
 
 		}

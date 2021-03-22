@@ -36,6 +36,13 @@ func resourceIBMKmskey() *schema.Resource {
 				ForceNew:    true,
 				Description: "Key protect or hpcs instance GUID",
 			},
+			"key_ring_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     "default",
+				Description: "Key Ring for the Key",
+			},
 			"key_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -297,6 +304,9 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Invalid or unsupported service Instance")
 	}
 	kpAPI.Config.InstanceID = instanceID
+
+	kpAPI.Config.KeyRing = d.Get("key_ring_id").(string)
+
 	name := d.Get("key_name").(string)
 	standardKey := d.Get("standard_key").(bool)
 
@@ -440,6 +450,7 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("endpoint_type", endpointType)
 	d.Set("type", instanceType)
 	d.Set("force_delete", d.Get("force_delete").(bool))
+	d.Set("key_ring_id", key.KeyRingID)
 	if key.Expiration != nil {
 		expiration := key.Expiration
 		d.Set("expiration_date", expiration.Format(time.RFC3339))

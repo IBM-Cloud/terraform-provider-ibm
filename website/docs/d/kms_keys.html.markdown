@@ -41,6 +41,7 @@ The following attributes are exported:
 * `keys` - List of all Keys in the IBM hs-crypto or Key-protect instance.
   * `name` - The name for the key.
   * `aliases` - List of all the alias associated with the keys.
+  * `key_ring_id` - The key ring id for the key.
   * `id` - The unique identifier for this key
   * `crn` - The crn of the key.
   * `standard_key` - This flag is true in case of standard key, else false for root key.
