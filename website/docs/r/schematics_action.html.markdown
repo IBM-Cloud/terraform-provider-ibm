@@ -1,6 +1,7 @@
 ---
+subcategory: "Schematics"
 layout: "ibm"
-page_title: "IBM : schematics_action"
+page_title: "IBM : ibm_schematics_action"
 sidebar_current: "docs-ibm-resource-schematics-action"
 description: |-
   Manages schematics_action.
@@ -8,14 +9,16 @@ description: |-
 
 # ibm\_schematics_action
 
-Provides a resource for schematics_action. This allows schematics_action to be created, updated and deleted.
+Provides a resource for ibm_schematics_action. This allows ibm_schematics_action to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "schematics_action" "schematics_action" {
-  name = "Stop Action"
-  description = "This Action can be used to Stop the targets."
+resource "ibm_schematics_action" "schematics_action" {
+  name = "<action_name>"
+  description = "<action_description>"
+  location = "us-east"
+  resource_group = "default"
 }
 ```
 

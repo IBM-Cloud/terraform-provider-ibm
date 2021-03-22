@@ -1,18 +1,5 @@
-/**
- * (C) Copyright IBM Corp. 2021.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -209,7 +196,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"template_type": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "The Terraform version that you want to use to run your Terraform code. Enter `terraform_v0.12` to use Terraform version 0.12, and `terraform_v0.11` to use Terraform version 0.11. If no value is specified, the Terraform config files are run with Terraform version 0.11. Make sure that your Terraform config files are compatible with the Terraform version that you select.",
+				Description:  "The Terraform version that you want to use to run your Terraform code. Enter `terraform_v0.12` to use Terraform version 0.12, and `terraform_v0.11` to use Terraform version 0.11. Make sure that your Terraform config files are compatible with the Terraform version that you select.",
 				ValidateFunc: InvokeValidator("ibm_schematics_workspace", schematicsWorkspaceTemplateType),
 			},
 			"template_uninstall_script_name": &schema.Schema{
@@ -242,7 +229,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "The name of the variable.",
 						},
 						"secure": &schema.Schema{
@@ -252,7 +239,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "`Terraform v0.11` supports `string`, `list`, `map` data type. For more information, about the syntax, see [Configuring input variables](https://www.terraform.io/docs/configuration-0-11/variables.html). <br> `Terraform v0.12` additionally, supports `bool`, `number` and complex data types such as `list(type)`, `map(type)`, `object({attribute name=type,..})`, `set(type)`, `tuple([type])`. For more information, about the syntax to use the complex data type, see [Configuring variables](https://www.terraform.io/docs/configuration/variables.html#type-constraints).",
 						},
 						"use_default": &schema.Schema{
@@ -262,7 +249,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						},
 						"value": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "Enter the value as a string for the primitive types such as `bool`, `number`, `string`, and `HCL` format for the complex variables, as you provide in a `.tfvars` file. **You need to enter escaped string of `HCL` format for the complex variable value**. For more information, about how to declare variables in a terraform configuration file and provide value to schematics, see [Providing values for the declared variables](/docs/schematics?topic=schematics-create-tf-config#declare-variable).",
 						},
 					},
@@ -495,8 +482,11 @@ func resourceIBMSchematicsWorkspaceCreate(context context.Context, d *schema.Res
 		createWorkspaceOptions.SetAppliedShareddataIds(expandStringList(d.Get("applied_shareddata_ids").([]interface{})))
 	}
 	if _, ok := d.GetOk("catalog_ref"); ok {
-		catalogRef := resourceIBMSchematicsWorkspaceMapToCatalogRef(d.Get("catalog_ref.0").(map[string]interface{}))
-		createWorkspaceOptions.SetCatalogRef(&catalogRef)
+		catalogRefAttr := d.Get("catalog_ref").([]interface{})
+		if len(catalogRefAttr) > 0 {
+			catalogRef := resourceIBMSchematicsWorkspaceMapToCatalogRef(d.Get("catalog_ref.0").(map[string]interface{}))
+			createWorkspaceOptions.SetCatalogRef(&catalogRef)
+		}
 	}
 	if _, ok := d.GetOk("description"); ok {
 		createWorkspaceOptions.SetDescription(d.Get("description").(string))
@@ -511,8 +501,11 @@ func resourceIBMSchematicsWorkspaceCreate(context context.Context, d *schema.Res
 		createWorkspaceOptions.SetResourceGroup(d.Get("resource_group").(string))
 	}
 	if _, ok := d.GetOk("shared_data"); ok {
-		sharedData := resourceIBMSchematicsWorkspaceMapToSharedTargetData(d.Get("shared_data.0").(map[string]interface{}))
-		createWorkspaceOptions.SetSharedData(&sharedData)
+		sharedDataAttr := d.Get("shared_data").([]interface{})
+		if len(sharedDataAttr) > 0 {
+			sharedData := resourceIBMSchematicsWorkspaceMapToSharedTargetData(d.Get("shared_data.0").(map[string]interface{}))
+			createWorkspaceOptions.SetSharedData(&sharedData)
+		}
 	}
 	if _, ok := d.GetOk("tags"); ok {
 		createWorkspaceOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
@@ -1337,9 +1330,12 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 	hasChange := false
 
 	if d.HasChange("catalog_ref") {
-		catalogRef := resourceIBMSchematicsWorkspaceMapToCatalogRef(d.Get("catalog_ref.0").(map[string]interface{}))
-		updateWorkspaceOptions.SetCatalogRef(&catalogRef)
-		hasChange = true
+		catalogRefAttr := d.Get("catalog_ref").([]interface{})
+		if len(catalogRefAttr) > 0 {
+			catalogRef := resourceIBMSchematicsWorkspaceMapToCatalogRef(d.Get("catalog_ref.0").(map[string]interface{}))
+			updateWorkspaceOptions.SetCatalogRef(&catalogRef)
+			hasChange = true
+		}
 	}
 	if d.HasChange("description") {
 		updateWorkspaceOptions.SetDescription(d.Get("description").(string))
@@ -1350,9 +1346,12 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 		hasChange = true
 	}
 	if d.HasChange("shared_data") {
-		sharedData := resourceIBMSchematicsWorkspaceMapToSharedTargetData(d.Get("shared_data.0").(map[string]interface{}))
-		updateWorkspaceOptions.SetSharedData(&sharedData)
-		hasChange = true
+		sharedDataAttr := d.Get("shared_data").([]interface{})
+		if len(sharedDataAttr) > 0 {
+			sharedData := resourceIBMSchematicsWorkspaceMapToSharedTargetData(d.Get("shared_data.0").(map[string]interface{}))
+			updateWorkspaceOptions.SetSharedData(&sharedData)
+			hasChange = true
+		}
 	}
 	if d.HasChange("tags") {
 		updateWorkspaceOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))

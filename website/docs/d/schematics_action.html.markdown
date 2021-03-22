@@ -1,19 +1,20 @@
 ---
+subcategory: "Schematics"
 layout: "ibm"
-page_title: "IBM : schematics_action"
+page_title: "IBM : ibm_schematics_action"
 sidebar_current: "docs-ibm-datasource-schematics-action"
 description: |-
-  Get information about schematics_action
+  Get information about ibm_schematics_action
 ---
 
 # ibm\_schematics_action
 
-Provides a read-only data source for schematics_action. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for ibm_schematics_action. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "schematics_action" "schematics_action" {
+data "ibm_schematics_action" "schematics_action" {
 	action_id = "action_id"
 }
 ```

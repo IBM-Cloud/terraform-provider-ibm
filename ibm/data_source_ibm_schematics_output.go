@@ -1,18 +1,5 @@
-/**
- * (C) Copyright IBM Corp. 2021.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -38,40 +25,12 @@ func dataSourceIBMSchematicsOutput() *schema.Resource {
 			},
 			"template_id": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "The id of template",
 			},
-			"output_values": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "OutputValues -.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"folder": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Output variable name.",
-						},
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Output variable id.",
-						},
-						"output_values": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "List of Output values.",
-							Elem: &schema.Schema{
-								Type: schema.TypeMap,
-							},
-						},
-						"value_type": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Output variable type.",
-						},
-					},
-				},
+			"output_values": {
+				Type:     schema.TypeMap,
+				Computed: true,
 			},
 			"output_json": {
 				Type:        schema.TypeString,
@@ -106,13 +65,6 @@ func dataSourceIBMSchematicsOutputRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	if outputValuesList != nil {
-		err = d.Set("output_values", dataSourceOutputValuesListFlattenOutputValues(outputValuesList))
-		if err != nil {
-			return fmt.Errorf("Error setting output_values %s", err)
-		}
-	}
-
 	var outputJSON string
 	items := make(map[string]interface{})
 	found := false
@@ -140,6 +92,7 @@ func dataSourceIBMSchematicsOutputRead(d *schema.ResourceData, meta interface{})
 	}
 	d.Set("output_json", outputJSON)
 	d.SetId(fmt.Sprintf("%s/%s", workspaceID, templateID))
+	d.Set("output_values", Flatten(items))
 
 	controller, err := getBaseController(meta)
 	if err != nil {
@@ -156,9 +109,9 @@ func dataSourceIBMSchematicsOutputID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceOutputValuesListFlattenOutputValues(result []schematicsv1.OutputValuesItem) (outputValues []interface{}) {
+func dataSourceOutputValuesListFlattenOutputValues(result []schematicsv1.OutputValuesItem) (outputValues interface{}) {
 	for _, outputValuesItem := range result {
-		outputValues = append(outputValues, dataSourceOutputValuesListOutputValuesToMap(outputValuesItem))
+		outputValues = dataSourceOutputValuesListOutputValuesToMap(outputValuesItem)
 	}
 
 	return outputValues

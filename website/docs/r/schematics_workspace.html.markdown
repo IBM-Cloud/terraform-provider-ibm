@@ -1,6 +1,7 @@
 ---
+subcategory: "Schematics"
 layout: "ibm"
-page_title: "IBM : schematics_workspace"
+page_title: "IBM : ibm_schematics_workspace"
 sidebar_current: "docs-ibm-resource-schematics-workspace"
 description: |-
   Manages schematics_workspace.
@@ -8,12 +9,17 @@ description: |-
 
 # ibm\_schematics_workspace
 
-Provides a resource for schematics_workspace. This allows schematics_workspace to be created, updated and deleted.
+Provides a resource for ibm_schematics_workspace. This allows ibm_schematics_workspace to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "schematics_workspace" "schematics_workspace" {
+resource "ibm_schematics_workspace" "schematics_workspace" {
+  name = "<workspace_name>"
+  description = "<workspace_description>"
+  location = "us-east"
+  resource_group = "default"
+  template_type = "terraform_v0.13.5"
 }
 ```
 
@@ -87,3 +93,6 @@ The following attributes are exported:
 * `updated_at` - The timestamp when the workspace was last updated.
 * `updated_by` - The user ID that updated the workspace.
 * `workspace_status_msg` - Information about the last action that ran against the workspace.
+
+## Note
+*  Please note that this resource can be only used to perform Create, Read, Update and Delete operations of schematics workspace. Other schematics operations such as `Plan` and `Apply` which are available via IBM Cloud Schematics Console are currently not supported.

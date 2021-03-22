@@ -1151,9 +1151,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct the service client.
 	schematicsClient, err := schematicsv1.NewSchematicsV1(schematicsClientOptions)
 	// Enable retries for API calls
-	schematicsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-	if err != nil {
-		session.schematicsClientErr = fmt.Errorf("Error occurred while configuring Schematics Service API service: %q", err)
+	if schematicsClient != nil && schematicsClient.Service != nil {
+		schematicsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		if err != nil {
+			session.schematicsClientErr = fmt.Errorf("Error occurred while configuring Schematics Service API service: %q", err)
+		}
 	}
 	session.schematicsClient = schematicsClient
 

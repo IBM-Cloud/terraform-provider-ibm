@@ -1,19 +1,20 @@
 ---
+subcategory: "Schematics"
 layout: "ibm"
-page_title: "IBM : schematics_job"
+page_title: "IBM : ibm_schematics_job"
 sidebar_current: "docs-ibm-datasource-schematics-job"
 description: |-
-  Get information about schematics_job
+  Get information about ibm_schematics_job
 ---
 
 # ibm\_schematics_job
 
-Provides a read-only data source for schematics_job. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for ibm_schematics_job. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "schematics_job" "schematics_job" {
+data "ibm_schematics_job" "schematics_job" {
 	job_id = "job_id"
 }
 ```

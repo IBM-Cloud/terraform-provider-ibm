@@ -1,18 +1,5 @@
-/**
- * (C) Copyright IBM Corp. 2021.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -60,6 +47,7 @@ func TestAccIBMSchematicsWorkspaceDataSourceBasic(t *testing.T) {
 func TestAccIBMSchematicsWorkspaceDataSourceAllArgs(t *testing.T) {
 	workspaceResponseDescription := fmt.Sprintf("description_%d", acctest.RandIntRange(10, 100))
 	workspaceResponseLocation := "us-east"
+	workspaceTemplateType := "terraform_v0.13.5"
 	workspaceResponseName := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
 	workspaceResponseResourceGroup := "default"
 
@@ -76,12 +64,12 @@ func TestAccIBMSchematicsWorkspaceDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "crn"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "description"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "id"),
+					resource.TestCheckResourceAttr("data.ibm_schematics_workspace.schematics_workspace", "description", workspaceResponseDescription),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "last_health_check_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "location"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "resource_group"),
+					resource.TestCheckResourceAttr("data.ibm_schematics_workspace.schematics_workspace", "name", workspaceResponseName),
+					resource.TestCheckResourceAttr("data.ibm_schematics_workspace.schematics_workspace", "template_type", workspaceTemplateType),
+					resource.TestCheckResourceAttr("data.ibm_schematics_workspace.schematics_workspace", "resource_group", workspaceResponseResourceGroup),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "runtime_data.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "shared_data.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "status"),

@@ -1,6 +1,7 @@
 ---
+subcategory: "Schematics"
 layout: "ibm"
-page_title: "IBM : schematics_job"
+page_title: "IBM : ibm_schematics_job"
 sidebar_current: "docs-ibm-resource-schematics-job"
 description: |-
   Manages schematics_job.
@@ -8,12 +9,17 @@ description: |-
 
 # ibm\_schematics_job
 
-Provides a resource for schematics_job. This allows schematics_job to be created, updated and deleted.
+Provides a resource for ibm_schematics_job. This allows ibm_schematics_job to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "schematics_job" "schematics_job" {
+resource "ibm_schematics_job" "schematics_job" {
+  command_object = "action"
+  command_object_id = "<action_id>"
+  command_name = "ansible_playbook_run | ansible_playbook_check"
+  command_parameter = "<yml_file_name>"
+  location = "us-east"
 }
 ```
 
