@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_certificate_upload"
-sidebar_current: "docs-ibm-resource-cis-certificate-upload"
 description: |-
   Provides a IBM CIS Certificate Upload resource.
 ---

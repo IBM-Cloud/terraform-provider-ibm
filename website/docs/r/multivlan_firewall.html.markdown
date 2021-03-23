@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : multivlan_firewall"
-sidebar_current: "docs-ibm-resource-firewall-multivlan"
 description: |-
   Manages IBM Multi Vlan Firewall.
 ---

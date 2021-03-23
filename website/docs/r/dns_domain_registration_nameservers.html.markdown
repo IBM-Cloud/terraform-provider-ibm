@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: dns_domain_registration_nameservers"
-sidebar_current: "docs-ibm-resource-dns-domain-registration-nameservers"
 description: |-
   Manages the nameservers on IBM DNS domain registrations.
 ---

@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -20,9 +14,9 @@ import (
 	token "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/token"
 	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMCosBucket_Basic(t *testing.T) {
@@ -455,7 +449,7 @@ func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regio
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "group" {
-		name = "default"
+		is_default=true
 	}
 	  
 	resource "ibm_resource_instance" "instance" {
@@ -481,7 +475,7 @@ func testAccCheckIBMCosBucket_updateWithSameName(serviceName string, bucketName 
 
 	return fmt.Sprintf(`	
 	data "ibm_resource_group" "group" {
-		name = "default"
+		is_default=true
 	}
 	  
 	resource "ibm_resource_instance" "instance" {
@@ -506,7 +500,7 @@ func testAccCheckIBMCosBucket_activityTracker_monitor(cosServiceName, activitySe
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	  }
 	  resource "ibm_resource_instance" "instance2" {
 		name              = "%s"
@@ -551,7 +545,7 @@ func testAccCheckIBMCosBucket_update_activityTracker_monitor(cosServiceName, act
 
 	return fmt.Sprintf(`	
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 	  
 	resource "ibm_resource_instance" "instance2" {
@@ -590,7 +584,7 @@ func testAccCheckIBMCosBucket_archive(cosServiceName string, bucketName string, 
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -620,7 +614,7 @@ func testAccCheckIBMCosBucket_archive_updateDays(cosServiceName string, bucketNa
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -649,7 +643,7 @@ func testAccCheckIBMCosBucket_update_archive(cosServiceName string, bucketName s
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -673,7 +667,7 @@ func testAccCheckIBMCosBucket_expire(cosServiceName string, bucketName string, r
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -703,7 +697,7 @@ func testAccCheckIBMCosBucket_expire_updateDays(cosServiceName string, bucketNam
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -733,7 +727,7 @@ func testAccCheckIBMCosBucket_update_expire(cosServiceName string, bucketName st
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -757,7 +751,7 @@ func testAccCheckIBMCosBucket_archive_expire(cosServiceName string, bucketName s
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -792,7 +786,7 @@ func testAccCheckIBMCosBucket_archive_expire_updateDays(cosServiceName string, b
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -828,7 +822,7 @@ func testAccCheckIBMCosBucket_update_archive_expire(cosServiceName string, bucke
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {

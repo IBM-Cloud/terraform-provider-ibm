@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_domain_settings"
-sidebar_current: "docs-ibm-resource-cis-domain-settings"
 description: |-
   Provides a resource which customizes IBM Cloud Internet Services domain settings.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_firewall"
-sidebar_current: "docs-ibm-resource-cis-firewall"
 description: |-
   Provides a IBM CIS Firewall resource.
 ---

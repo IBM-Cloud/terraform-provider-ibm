@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_rate_limit"
-sidebar_current: "docs-ibm-cis-rate-limit"
 description: |-
   Provides a IBM CIS Rate Limit resource.
 ---

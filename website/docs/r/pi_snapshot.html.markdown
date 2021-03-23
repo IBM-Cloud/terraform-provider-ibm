@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_snapshot"
-sidebar_current: "docs-ibm-resource-pi-snapshot"
 description: |-
   Manages Snapshots in the Power Virtual Server Cloud.
 ---

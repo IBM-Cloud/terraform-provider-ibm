@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_vpc_worker_pool"
-sidebar_current: "docs-ibm-resource-container-vpc-worker-pool"
 description: |-
   Manages IBM container vpc worker pool.
 ---

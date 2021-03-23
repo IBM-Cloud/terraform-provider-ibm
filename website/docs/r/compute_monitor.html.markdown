@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: compute_monitor"
-sidebar_current: "docs-ibm-resource-compute-monitor"
 description: |-
   Manages IBM Compute monitor resources.
 ---

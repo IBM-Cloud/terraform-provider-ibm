@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_edge_functions_triggers"
-sidebar_current: "docs-ibm-cis-edge-functions-triggers"
 description: |-
   Provides a IBM CIS Edge Functions Action resource.
 ---

@@ -1,7 +1,7 @@
 ---
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: app"
-sidebar_current: "docs-ibm-datasource-app"
 description: |-
   Get information about an IBM Application.
 ---

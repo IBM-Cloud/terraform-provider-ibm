@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -16,9 +10,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMISSubnet_basic(t *testing.T) {
@@ -43,6 +37,8 @@ func TestAccIBMISSubnet_basic(t *testing.T) {
 						"ibm_is_subnet.testacc_subnet", "zone", ISZoneName),
 					resource.TestCheckResourceAttr(
 						"ibm_is_subnet.testacc_subnet", "ipv4_cidr_block", ISCIDR),
+					resource.TestCheckResourceAttr(
+						"ibm_is_subnet.testacc_subnet", "tags.#", "2"),
 				),
 			},
 			{
@@ -57,6 +53,8 @@ func TestAccIBMISSubnet_basic(t *testing.T) {
 						"ibm_is_subnet.testacc_subnet", "ipv4_cidr_block", ISCIDR),
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_subnet.testacc_subnet", "public_gateway"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_subnet.testacc_subnet", "tags.#", "1"),
 				),
 			},
 		},
@@ -152,6 +150,7 @@ func testAccCheckIBMISSubnetConfig(vpcname, name, zone, cidr string) string {
 		vpc = ibm_is_vpc.testacc_vpc.id
 		zone = "%s"
 		ipv4_cidr_block = "%s"
+		tags = ["Tag1", "tag2"]
 	}`, vpcname, name, zone, cidr)
 }
 
@@ -173,5 +172,6 @@ func testAccCheckIBMISSubnetConfigUpdate(vpcname, name, zone, cidr, gwname strin
 		zone = "%s"
 		ipv4_cidr_block = "%s"
 		public_gateway = ibm_is_public_gateway.testacc_gw.id
+		tags = ["tag1"]
 	}`, vpcname, gwname, zone, name, zone, cidr)
 }

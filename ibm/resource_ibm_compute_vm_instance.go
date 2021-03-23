@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -21,8 +15,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/hashcode"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
 	"github.com/softlayer/softlayer-go/helpers/product"
@@ -73,6 +68,12 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 		Delete:   resourceIBMComputeVmInstanceDelete,
 		Exists:   resourceIBMComputeVmInstanceExists,
 		Importer: &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(90 * time.Minute),
+			Delete: schema.DefaultTimeout(90 * time.Minute),
+			Update: schema.DefaultTimeout(90 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"hostname": {
@@ -206,6 +207,7 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 			"flavor_key_name": {
 				Type:          schema.TypeString,
 				Optional:      true,
+				Computed:      true,
 				Description:   "Flavor key name used to provision vm.",
 				ConflictsWith: []string{"cores", "memory"},
 			},
@@ -501,9 +503,10 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Set:      schema.HashString,
 			},
 			"wait_time_minutes": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  90,
+				Type:       schema.TypeInt,
+				Optional:   true,
+				Deprecated: "This field is deprecated. Use timeouts block instead",
+				Default:    90,
 			},
 			// Monthly only
 			// Limited BandWidth
@@ -595,7 +598,7 @@ func resourceIBMBulkVMHostHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-",
 		m["hostname"].(string)))
 
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }
 
 func getNameForBlockDevice(i int) string {
@@ -1439,7 +1442,7 @@ func resourceIBMComputeVmInstanceUpdate(d *schema.ResourceData, meta interface{}
 			return err
 		}
 		// Wait for upgrade transactions to finish
-		_, err = WaitForNoActiveTransactions(id, d, meta)
+		_, err = WaitForNoActiveTransactions(id, d, d.Timeout(schema.TimeoutUpdate), meta)
 		if err != nil {
 			return err
 		}
@@ -1496,7 +1499,7 @@ func resourceIBMComputeVmInstanceDelete(d *schema.ResourceData, meta interface{}
 			return fmt.Errorf("Not a valid ID, must be an integer: %s", err)
 		}
 
-		_, err = WaitForNoActiveTransactions(id, d, meta)
+		_, err = WaitForNoActiveTransactions(id, d, d.Timeout(schema.TimeoutDelete), meta)
 
 		if err != nil {
 			return fmt.Errorf("Error deleting virtual guest, couldn't wait for zero active transactions: %s", err)
@@ -1625,7 +1628,7 @@ func WaitForUpgradeTransactionsToAppear(d *schema.ResourceData, meta interface{}
 }
 
 // WaitForNoActiveTransactions Wait for no active transactions
-func WaitForNoActiveTransactions(id int, d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func WaitForNoActiveTransactions(id int, d *schema.ResourceData, timeout time.Duration, meta interface{}) (interface{}, error) {
 	log.Printf("Waiting for server (%s) to have zero active transactions", d.Id())
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"retry", activeTransaction},
@@ -1635,16 +1638,16 @@ func WaitForNoActiveTransactions(id int, d *schema.ResourceData, meta interface{
 			transactions, err := service.Id(id).GetActiveTransactions()
 			if err != nil {
 				if apiErr, ok := err.(sl.Error); ok && apiErr.StatusCode == 404 {
-					return nil, "", fmt.Errorf("Couldn't get active transactions: %s", err)
+					return nil, "", nil
 				}
-				return false, "retry", nil
+				return false, "retry", fmt.Errorf("Couldn't get active transactions: %s", err)
 			}
 			if len(transactions) == 0 {
 				return transactions, idleTransaction, nil
 			}
 			return transactions, activeTransaction, nil
 		},
-		Timeout:    time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
+		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -1660,7 +1663,7 @@ func WaitForVirtualGuestAvailable(id int, d *schema.ResourceData, meta interface
 		Pending:    []string{"retry", virtualGuestProvisioning},
 		Target:     []string{virtualGuestAvailable},
 		Refresh:    virtualGuestStateRefreshFunc(sess, id, d),
-		Timeout:    time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
+		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}

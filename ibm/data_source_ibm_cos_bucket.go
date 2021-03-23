@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -21,7 +15,7 @@ import (
 	token "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/token"
 	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var bucketTypes = []string{"single_site_location", "region_location", "cross_region_location"}

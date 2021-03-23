@@ -1,20 +1,15 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
 import (
+	"log"
 	"reflect"
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -30,6 +25,8 @@ const (
 	isSgRulePortMin   = "port_min"
 	isSgRuleProtocol  = "protocol"
 	isSgVPC           = "vpc"
+	isSgTags          = "tags"
+	isSgCRN           = "crn"
 )
 
 func dataSourceIBMISSecurityGroup() *schema.Resource {
@@ -134,6 +131,20 @@ func dataSourceIBMISSecurityGroup() *schema.Resource {
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
 			},
+
+			isSgTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of tags",
+			},
+
+			isSgCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
 		},
 	}
 }
@@ -175,7 +186,13 @@ func classicSecurityGroupGet(d *schema.ResourceData, meta interface{}, name stri
 
 			d.Set(isSgName, *group.Name)
 			d.Set(isSgVPC, *group.VPC.ID)
-
+			d.Set(isSgCRN, *group.CRN)
+			tags, err := GetTagsUsingCRN(meta, *group.CRN)
+			if err != nil {
+				log.Printf(
+					"An error occured during reading of security group (%s) tags : %s", *group.ID, err)
+			}
+			d.Set(isSgTags, tags)
 			rules := make([]map[string]interface{}, 0)
 			for _, sgrule := range group.Rules {
 				switch reflect.TypeOf(sgrule).String() {
@@ -322,7 +339,13 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 
 			d.Set(isSgName, *group.Name)
 			d.Set(isSgVPC, *group.VPC.ID)
-
+			d.Set(isSgCRN, *group.CRN)
+			tags, err := GetTagsUsingCRN(meta, *group.CRN)
+			if err != nil {
+				log.Printf(
+					"An error occured during reading of security group (%s) tags : %s", *group.ID, err)
+			}
+			d.Set(isSgTags, tags)
 			rules := make([]map[string]interface{}, 0)
 			for _, sgrule := range group.Rules {
 				switch reflect.TypeOf(sgrule).String() {

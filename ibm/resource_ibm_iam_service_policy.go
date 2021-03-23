@@ -1,18 +1,13 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
@@ -30,12 +25,19 @@ func resourceIBMIAMServicePolicy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"iam_service_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "UUID of ServiceID",
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"iam_service_id", "iam_id"},
+				Description:  "UUID of ServiceID",
+				ForceNew:     true,
 			},
-
+			"iam_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"iam_service_id", "iam_id"},
+				Description:  "IAM ID of ServiceID",
+				ForceNew:     true,
+			},
 			"roles": {
 				Type:        schema.TypeList,
 				Required:    true,
@@ -121,11 +123,24 @@ func resourceIBMIAMServicePolicy() *schema.Resource {
 }
 
 func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{}) error {
-	iamClient, err := meta.(ClientSession).IAMAPI()
-	if err != nil {
-		return err
+
+	var iamID string
+	if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
+		serviceIDUUID := v.(string)
+
+		iamClient, err := meta.(ClientSession).IAMAPI()
+		if err != nil {
+			return err
+		}
+		serviceID, err := iamClient.ServiceIds().Get(serviceIDUUID)
+		if err != nil {
+			return err
+		}
+		iamID = serviceID.IAMID
 	}
-	serviceIDUUID := d.Get("iam_service_id").(string)
+	if v, ok := d.GetOk("iam_id"); ok && v != nil {
+		iamID = v.(string)
+	}
 
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
@@ -138,17 +153,6 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-
-	serviceID, err := iamClient.ServiceIds().Get(serviceIDUUID)
-	if err != nil {
-		return err
-	}
-
-	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
-	if err != nil {
-		return err
-	}
-
 	policy.Resources[0].SetAccountID(userDetails.userAccount)
 
 	policy.Subjects = []iampapv1.Subject{
@@ -156,7 +160,7 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 			Attributes: []iampapv1.Attribute{
 				{
 					Name:  "iam_id",
-					Value: serviceID.IAMID,
+					Value: iamID,
 				},
 			},
 		},
@@ -164,13 +168,22 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 
 	policy.Type = iampapv1.AccessPolicyType
 
+	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	if err != nil {
+		return err
+	}
 	servicePolicy, err := iampapClient.V1Policy().Create(policy)
 
 	if err != nil {
 		return fmt.Errorf("Error creating servicePolicy: %s", err)
 	}
-
-	d.SetId(fmt.Sprintf("%s/%s", serviceIDUUID, servicePolicy.ID))
+	if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
+		serviceIDUUID := v.(string)
+		d.SetId(fmt.Sprintf("%s/%s", serviceIDUUID, servicePolicy.ID))
+	} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
+		iamID := v.(string)
+		d.SetId(fmt.Sprintf("%s/%s", iamID, servicePolicy.ID))
+	}
 
 	return resourceIBMIAMServicePolicyRead(d, meta)
 }
@@ -193,8 +206,12 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return fmt.Errorf("Error retrieving servicePolicy: %s", err)
 	}
+	if strings.HasPrefix(serviceIDUUID, "iam-") {
+		d.Set("iam_id", serviceIDUUID)
+	} else {
+		d.Set("iam_service_id", serviceIDUUID)
+	}
 
-	d.Set("iam_service_id", serviceIDUUID)
 	roles := make([]string, len(servicePolicy.Roles))
 	for i, role := range servicePolicy.Roles {
 		roles[i] = role.Name
@@ -218,27 +235,34 @@ func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{})
 
 	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("account_management") {
 
-		iamClient, err := meta.(ClientSession).IAMAPI()
-		if err != nil {
-			return err
-		}
 		parts, err := idParts(d.Id())
 		if err != nil {
 			return err
 		}
-		serviceIDUUID := parts[0]
 		servicePolicyID := parts[1]
+
+		var iamID string
+		if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
+			serviceIDUUID := v.(string)
+
+			iamClient, err := meta.(ClientSession).IAMAPI()
+			if err != nil {
+				return err
+			}
+			serviceID, err := iamClient.ServiceIds().Get(serviceIDUUID)
+			if err != nil {
+				return err
+			}
+			iamID = serviceID.IAMID
+		}
+		if v, ok := d.GetOk("iam_id"); ok && v != nil {
+			iamID = v.(string)
+		}
 
 		userDetails, err := meta.(ClientSession).BluemixUserDetails()
 		if err != nil {
 			return err
 		}
-
-		serviceID, err := iamClient.ServiceIds().Get(serviceIDUUID)
-		if err != nil {
-			return err
-		}
-
 		var policy iampapv1.Policy
 
 		policy, err = generateAccountPolicyV2(d, meta)
@@ -253,7 +277,7 @@ func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{})
 				Attributes: []iampapv1.Attribute{
 					{
 						Name:  "iam_id",
-						Value: serviceID.IAMID,
+						Value: iamID,
 					},
 				},
 			},

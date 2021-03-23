@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Transit Gateway"
 layout: "ibm"
 page_title: "IBM : tg_gateways"
-sidebar_current: "docs-ibm-datasource-tg-gateways"
 description: |-
   Manages IBM Cloud Infrastructure Transit Gateway.
 ---

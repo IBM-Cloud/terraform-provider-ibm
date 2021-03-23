@@ -1,7 +1,7 @@
 ---
-layout: "ibm"
+
+subcategory: "VPC infrastructure"
 page_title: "IBM : lb_listener"
-sidebar_current: "docs-ibm-resource-is-lb-listener"
 description: |-
   Manages IBM load balancer listener.
 ---
@@ -65,6 +65,7 @@ The following arguments are supported:
 * `default_pool` - (Optional, string) The load balancer pool unique identifier.
 * `certificate_instance` - (Optional, string) CRN of the certificate instance.
 * `connection_limit` - (Optional, int) The connection limit of the listener. Valid range  1 to 15000. Network load balancer does not support `connection_limit` argument.
+* `accept_proxy_protocol` - (Optional, boolean) If true, listener will forward PROXY protocol information. Supported by load balancers in the application family otherwise false. Default: false.
 
 ## Attribute Reference
 

@@ -1,13 +1,7 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
-package ibm
+package mutexkv
 
 import (
 	"log"
@@ -28,7 +22,7 @@ type MutexKV struct {
 	store map[string]*sync.Mutex
 }
 
-// Locks the mutex for the given key. Caller is responsible for calling Unlock
+// Lock the mutex for the given key. Caller is responsible for calling Unlock
 // for the same key
 //
 // Deprecated: This will be removed in v2 without replacement. If you need
@@ -61,7 +55,7 @@ func (m *MutexKV) get(key string) *sync.Mutex {
 	return mutex
 }
 
-// Returns a properly initalized MutexKV
+// NewMutexKV Returns a properly initalized MutexKV
 //
 // Deprecated: This will be removed in v2 without replacement. If you need
 // its functionality, you can copy it or reference the v1 package.

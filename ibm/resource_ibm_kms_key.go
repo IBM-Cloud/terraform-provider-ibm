@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -19,7 +13,7 @@ import (
 	"time"
 
 	kp "github.com/IBM/keyprotect-go-client"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceIBMKmskey() *schema.Resource {
@@ -353,7 +347,6 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 				return fmt.Errorf(
 					"Error while creating Root key with payload: %s", err)
 			}
-
 			keyCRN = stkey.CRN
 			d.SetId(keyCRN)
 
@@ -365,7 +358,6 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 			}
 			keyCRN = stkey.CRN
 			d.SetId(keyCRN)
-
 		}
 	}
 	return resourceIBMKmsKeyUpdate(d, meta)
@@ -600,6 +592,7 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	f := kp.ForceOpt{
 		Force: force,
 	}
+
 	_, err1 := kpAPI.DeleteKey(context.Background(), keyid, kp.ReturnRepresentation, f)
 	if err1 != nil {
 		return fmt.Errorf(

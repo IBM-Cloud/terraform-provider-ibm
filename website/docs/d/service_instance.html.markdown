@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_service_instance"
-sidebar_current: "docs-ibm-datasource-service-instance"
 description: |-
   Get information about a service instance from IBM Cloud.
 ---

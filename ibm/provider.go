@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -14,15 +8,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/mutexkv"
 )
 
 // This is a global MutexKV for use within this plugin.
-var ibmMutexKV = NewMutexKV()
+var ibmMutexKV = mutexkv.NewMutexKV()
 
-// Provider returns a terraform.ResourceProvider.
-func Provider() terraform.ResourceProvider {
+// Provider returns a *schema.Provider.
+func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"bluemix_api_key": {
@@ -255,6 +250,8 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_ssh_key":                         dataSourceIBMISSSHKey(),
 			"ibm_is_subnet":                          dataSourceIBMISSubnet(),
 			"ibm_is_subnets":                         dataSourceIBMISSubnets(),
+			"ibm_is_subnet_reserved_ip":              dataSourceIBMISReservedIP(),
+			"ibm_is_subnet_reserved_ips":             dataSourceIBMISReservedIPs(),
 			"ibm_is_security_group":                  dataSourceIBMISSecurityGroup(),
 			"ibm_is_volume":                          dataSourceIBMISVolume(),
 			"ibm_is_volume_profile":                  dataSourceIBMISVolumeProfile(),
@@ -273,6 +270,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_org_quota":                          dataSourceIBMOrgQuota(),
 			"ibm_kp_key":                             dataSourceIBMkey(),
 			"ibm_kms_keys":                           dataSourceIBMKMSkeys(),
+			"ibm_pn_application_chrome":              dataSourceIBMPNApplicationChrome(),
 			"ibm_kms_key":                            dataSourceIBMKMSkey(),
 			"ibm_resource_quota":                     dataSourceIBMResourceQuota(),
 			"ibm_resource_group":                     dataSourceIBMResourceGroup(),
@@ -439,6 +437,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_security_group_rule":                         resourceIBMISSecurityGroupRule(),
 			"ibm_is_security_group_network_interface_attachment": resourceIBMISSecurityGroupNetworkInterfaceAttachment(),
 			"ibm_is_subnet":                                      resourceIBMISSubnet(),
+			"ibm_is_subnet_reserved_ip":                          resourceIBMISReservedIP(),
 			"ibm_is_subnet_network_acl_attachment":               resourceIBMISSubnetNetworkACLAttachment(),
 			"ibm_is_ssh_key":                                     resourceIBMISSSHKey(),
 			"ibm_is_volume":                                      resourceIBMISVolume(),
@@ -469,7 +468,9 @@ func Provider() terraform.ResourceProvider {
 			"ibm_network_vlan_spanning":                          resourceIBMNetworkVlanSpan(),
 			"ibm_object_storage_account":                         resourceIBMObjectStorageAccount(),
 			"ibm_org":                                            resourceIBMOrg(),
+			"ibm_pn_application_chrome":                          resourceIBMPNApplicationChrome(),
 			"ibm_kms_key":                                        resourceIBMKmskey(),
+			"ibm_kms_key_alias":                                  resourceIBMKmskeyAlias(),
 			"ibm_kp_key":                                         resourceIBMkey(),
 			"ibm_resource_group":                                 resourceIBMResourceGroup(),
 			"ibm_resource_instance":                              resourceIBMResourceInstance(),
@@ -515,8 +516,9 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dl_virtual_connection": resourceIBMDLGatewayVC(),
 			"ibm_dl_provider_gateway":   resourceIBMDLProviderGateway(),
 			//Added for Transit Gateway
-			"ibm_tg_gateway":    resourceIBMTransitGateway(),
-			"ibm_tg_connection": resourceIBMTransitGatewayConnection(),
+			"ibm_tg_gateway":           resourceIBMTransitGateway(),
+			"ibm_tg_connection":        resourceIBMTransitGatewayConnection(),
+			"ibm_cm_offering_instance": resourceIBMCmOfferingInstance(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -579,6 +581,7 @@ func Validator() ValidatorDict {
 				"ibm_is_security_group":                resourceIBMISSecurityGroupValidator(),
 				"ibm_is_ssh_key":                       resourceIBMISSHKeyValidator(),
 				"ibm_is_subnet":                        resourceIBMISSubnetValidator(),
+				"ibm_is_subnet_reserved_ip":            resourceIBMISSubnetReservedIPValidator(),
 				"ibm_is_volume":                        resourceIBMISVolumeValidator(),
 				"ibm_is_address_prefix":                resourceIBMISAddressPrefixValidator(),
 				"ibm_is_route":                         resourceIBMISRouteValidator(),

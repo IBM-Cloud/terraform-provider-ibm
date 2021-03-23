@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_waf_groups"
-sidebar_current: "docs-ibm-datasource-cis-waf-groups"
 description: |-
   List the WAF Rule Groups in Cloud Internet Services.
 ---

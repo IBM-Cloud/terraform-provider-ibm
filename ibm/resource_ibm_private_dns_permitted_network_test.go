@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -14,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMPrivateDNSPermittedNetwork_Basic(t *testing.T) {
@@ -67,7 +61,7 @@ func TestAccIBMPrivateDNSPermittedNetworkImport(t *testing.T) {
 func testAccCheckIBMPrivateDNSPermittedNetworkBasic(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "default"
+		is_default=true
 	}
 	resource "ibm_is_vpc" "test-pdns-permitted-network" {
 		name = "test-pdns-permitted-network"

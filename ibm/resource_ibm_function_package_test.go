@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -16,9 +10,9 @@ import (
 	"testing"
 
 	"github.com/apache/openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
@@ -536,7 +530,7 @@ func testAccCheckIAMFunctionPackageCreate(name string, namespace string) string 
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -566,7 +560,7 @@ func testAccCheckIAMFunctionPackageNameUpdate(updatedName string, namespace stri
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -594,7 +588,7 @@ func testAccCheckIAMFunctionPackageWithAnnotations(name string, namespace string
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -676,7 +670,7 @@ func testAccCheckIAMFunctionPackageWithAnnotationsUpdate(name string, namespace 
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -724,7 +718,7 @@ func testAccCheckIAMFunctionPackageWithParameters(name string, namespace string)
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -828,7 +822,7 @@ func testAccCheckIAMFunctionPackageWithParametersUpdate(name string, namespace s
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -900,7 +894,7 @@ func testAccCheckIAMFunctionPackageImport(name string, namespace string) string 
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -932,7 +926,7 @@ func testAccCheckIAMFunctionPackageUpdatePublish(name string, namespace string) 
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -1002,7 +996,7 @@ func testAccCheckIAMFunctionPackageBindCreate(name, namespace, bind string) stri
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -1035,7 +1029,7 @@ func testAccCheckIAMFunctionPackageNameBindUpdate(updatedName, namespace, bind s
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -1064,7 +1058,7 @@ func testAccCheckIAMFunctionPackageBindWithAnnotations(name, namespace, bind str
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -1148,7 +1142,7 @@ func testAccCheckIAMFunctionPackageBindWithAnnotationsUpdate(name, namespace, bi
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -1200,7 +1194,7 @@ func testAccCheckIAMFunctionPackageBindWithParameters(name, namespace, bind stri
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -1296,7 +1290,7 @@ func testAccCheckIAMFunctionPackageBindWithParametersUpdate(name, namespace, bin
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -1368,7 +1362,7 @@ func testAccCheckIAMFunctionPackageBindUpdatePublish(name, namespace, bind strin
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {

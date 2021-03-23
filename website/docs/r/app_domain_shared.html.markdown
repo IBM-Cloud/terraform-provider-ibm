@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: app_domain_shared"
-sidebar_current: "docs-ibm-resource-app-domain-shared"
 description: |-
   Manages IBM Shared Domain.
 ---

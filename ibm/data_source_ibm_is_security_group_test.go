@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -13,8 +7,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMISSecurityGroupDatasource_basic(t *testing.T) {
@@ -32,6 +26,7 @@ func TestAccIBMISSecurityGroupDatasource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(dataSourceName, "vpc"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "rules.#"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "tags.#"),
 				),
 			},
 		},
@@ -46,6 +41,7 @@ func testAccCheckIBMISSgRuleConfig(vpcname, sgname string) string {
 	  
 	  resource "ibm_is_security_group" "testacc_security_group" {
 		name = "%s"
+		tags = ["sgtag1" , "sgTag2"]
 		vpc  = ibm_is_vpc.testacc_vpc.id
 	  }
 	  

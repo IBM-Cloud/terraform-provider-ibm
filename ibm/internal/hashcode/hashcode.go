@@ -1,18 +1,14 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
-package ibm
+package hashcode
 
 import (
 	"bytes"
 	"fmt"
 	"hash/crc32"
+
+	"github.com/hashicorp/terraform/helper/hashcode"
 )
 
 // String hashes a string to a unique hashcode.
@@ -48,5 +44,5 @@ func Strings(strings []string) string {
 		buf.WriteString(fmt.Sprintf("%s-", s))
 	}
 
-	return fmt.Sprintf("%d", String(buf.String()))
+	return fmt.Sprintf("%d", hashcode.String(buf.String()))
 }

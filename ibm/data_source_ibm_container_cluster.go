@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -13,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIBMContainerCluster() *schema.Resource {
@@ -406,7 +400,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	}
 
 	albs, err := albsAPI.ListClusterALBs(name, targetEnv)
-	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") {
+	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") && !strings.Contains(err.Error(), "The specified cluster is a free cluster.") {
 		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", name, err)
 	}
 

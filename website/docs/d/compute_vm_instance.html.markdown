@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: ibm_vm_instance"
-sidebar_current: "docs-ibm-datasource-compute-vm_instance"
 description: |-
   Get information on a IBM Compute VM Instance resource
 ---

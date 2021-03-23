@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Schematics"
 layout: "ibm"
 page_title: "IBM: ibm_schematics_workspace"
-sidebar_current: "docs-ibm-schematics-workspace"
 description: |-
   Get information about the terraform State store values of a specific template in a Schematics Workspace .
 ---

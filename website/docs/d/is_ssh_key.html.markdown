@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : SSH Key"
-sidebar_current: "docs-ibm-datasources-is-ssh-key"
 description: |-
   Manages IBM SSH Key.
 ---

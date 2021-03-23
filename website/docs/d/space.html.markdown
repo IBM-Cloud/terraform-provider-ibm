@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_space"
-sidebar_current: "docs-ibm-datasource-space"
 description: |-
   Get information about an IBM Cloud space.
 ---

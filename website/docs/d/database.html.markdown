@@ -1,7 +1,7 @@
 ---
+subcategory: "Cloud Databases"
 layout: "ibm"
 page_title: "IBM : Cloud Databases instance"
-sidebar_current: "docs-ibm-datasource-database"
 description: |-
   Get information on an IBM Cloud Database Instance.
 ---

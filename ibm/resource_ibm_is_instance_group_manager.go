@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -13,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceIBMISInstanceGroupManager() *schema.Resource {
@@ -202,7 +196,8 @@ func resourceIBMISInstanceGroupManagerCreate(d *schema.ResourceData, meta interf
 		InstanceGroupID:               &instanceGroupID,
 		InstanceGroupManagerPrototype: &instanceGroupManagerPrototype,
 	}
-	instanceGroupManager, response, err := sess.CreateInstanceGroupManager(&createInstanceGroupManagerOptions)
+	instanceGroupManagerIntf, response, err := sess.CreateInstanceGroupManager(&createInstanceGroupManagerOptions)
+	instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
 	if err != nil || instanceGroupManager == nil {
 		return fmt.Errorf("Error creating InstanceGroup manager: %s\n%s", err, response)
 	}
@@ -297,7 +292,8 @@ func resourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interfac
 		ID:              &instanceGroupManagerID,
 		InstanceGroupID: &instanceGroupID,
 	}
-	instanceGroupManager, response, err := sess.GetInstanceGroupManager(&getInstanceGroupManagerOptions)
+	instanceGroupManagerIntf, response, err := sess.GetInstanceGroupManager(&getInstanceGroupManagerOptions)
+	instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
 	if err != nil || instanceGroupManager == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")

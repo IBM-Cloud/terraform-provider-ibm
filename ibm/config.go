@@ -1668,7 +1668,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	resourceManagerOptions := &resourcemanager.ResourceManagerV2Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_MANAGER_API_ENDPOINT"}, "https://resource-controller.cloud.ibm.com/v2"),
+		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_MANAGER_API_ENDPOINT"}, resourcemanager.DefaultServiceURL),
 	}
 	resourceManagerClient, err := resourcemanager.NewResourceManagerV2(resourceManagerOptions)
 	if err != nil {

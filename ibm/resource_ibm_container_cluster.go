@@ -1,25 +1,20 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
@@ -68,7 +63,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -646,10 +641,6 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	if v, ok := d.GetOkExists("public_service_endpoint"); ok {
 		params.PublicEndpointEnabled = v.(bool)
 	}
-	var timeoutStage string
-	if v, ok := d.GetOk("wait_till"); ok {
-		timeoutStage = v.(string)
-	}
 
 	targetEnv, err := getClusterTargetHeader(d, meta)
 	if err != nil {
@@ -661,15 +652,12 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	d.SetId(cls.ID)
-	switch strings.ToLower(timeoutStage) {
 
-	case strings.ToLower(masterNodeReady):
-		_, err = waitForClusterMasterAvailable(d, meta)
-		if err != nil {
-			return err
-		}
-
-	case strings.ToLower(oneWorkerNodeReady):
+	_, err = waitForClusterMasterAvailable(d, meta)
+	if err != nil {
+		return err
+	}
+	if d.Get("wait_till").(string) == oneWorkerNodeReady {
 		_, err = waitForClusterOneWorkerAvailable(d, meta)
 		if err != nil {
 			return err

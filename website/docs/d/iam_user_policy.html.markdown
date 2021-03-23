@@ -1,7 +1,7 @@
 ---
+subcategory: "Identity & Access (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_user_policy"
-sidebar_current: "docs-ibm-datasource-iam-user-policy"
 description: |-
   Manages IBM IAM User Policy.
 ---

@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : Routing Table Routes"
-sidebar_current: "docs-ibm-datasources-is-vpc-routing-table-routes"
 description: |-
   Get information about IBM VPC Routing Table Routes.
 ---

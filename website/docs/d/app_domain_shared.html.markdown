@@ -1,7 +1,7 @@
 ---
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_app_domain_shared"
-sidebar_current: "docs-ibm-datasource-app-domain-shared"
 description: |-
   Get information about an IBM Cloud shared domain.
 ---

@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -17,8 +11,8 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -32,6 +26,7 @@ const (
 	isLBListenerDeleting            = "deleting"
 	isLBListenerDeleted             = "done"
 	isLBListenerProvisioning        = "provisioning"
+	isLBListenerAcceptProxyProtocol = "accept_proxy_protocol"
 	isLBListenerProvisioningDone    = "done"
 	isLBListenerID                  = "listener_id"
 )
@@ -78,6 +73,13 @@ func resourceIBMISLBListener() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "certificate instance for the Loadbalancer",
+			},
+
+			isLBListenerAcceptProxyProtocol: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Listener will forward proxy protocol",
 			},
 
 			isLBListenerConnectionLimit: {
@@ -158,7 +160,7 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 	lbID := d.Get(isLBListenerLBID).(string)
 	port := int64(d.Get(isLBListenerPort).(int))
 	protocol := d.Get(isLBListenerProtocol).(string)
-
+	acceptProxyProtocol := d.Get(isLBListenerAcceptProxyProtocol).(bool)
 	var defPool, certificateCRN string
 	if pool, ok := d.GetOk(isLBListenerDefaultPool); ok {
 		lbPool, err := getPoolId(pool.(string))
@@ -188,7 +190,7 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 			return err
 		}
 	} else {
-		err := lbListenerCreate(d, meta, lbID, protocol, defPool, certificateCRN, port, connLimit)
+		err := lbListenerCreate(d, meta, lbID, protocol, defPool, certificateCRN, port, connLimit, acceptProxyProtocol)
 		if err != nil {
 			return err
 		}
@@ -245,15 +247,16 @@ func classicLBListenerCreate(d *schema.ResourceData, meta interface{}, lbID, pro
 	return nil
 }
 
-func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN string, port, connLimit int64) error {
+func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN string, port, connLimit int64, acceptProxyProtocol bool) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
 	options := &vpcv1.CreateLoadBalancerListenerOptions{
-		LoadBalancerID: &lbID,
-		Port:           &port,
-		Protocol:       &protocol,
+		LoadBalancerID:      &lbID,
+		Port:                &port,
+		Protocol:            &protocol,
+		AcceptProxyProtocol: &acceptProxyProtocol,
 	}
 	if defPool != "" {
 		options.DefaultPool = &vpcv1.LoadBalancerPoolIdentity{
@@ -455,6 +458,7 @@ func lbListenerGet(d *schema.ResourceData, meta interface{}, lbID, lbListenerID 
 	d.Set(isLBListenerLBID, lbID)
 	d.Set(isLBListenerPort, *lbListener.Port)
 	d.Set(isLBListenerProtocol, *lbListener.Protocol)
+	d.Set(isLBListenerAcceptProxyProtocol, *lbListener.AcceptProxyProtocol)
 	d.Set(isLBListenerID, lbListenerID)
 	if lbListener.DefaultPool != nil {
 		d.Set(isLBListenerDefaultPool, *lbListener.DefaultPool.ID)
@@ -636,6 +640,12 @@ func lbListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListener
 	if d.HasChange(isLBListenerProtocol) {
 		protocol = d.Get(isLBListenerProtocol).(string)
 		loadBalancerListenerPatchModel.Protocol = &protocol
+		hasChanged = true
+	}
+
+	if d.HasChange(isLBListenerAcceptProxyProtocol) {
+		acceptProxyProtocol := d.Get(isLBListenerAcceptProxyProtocol).(bool)
+		loadBalancerListenerPatchModel.AcceptProxyProtocol = &acceptProxyProtocol
 		hasChanged = true
 	}
 

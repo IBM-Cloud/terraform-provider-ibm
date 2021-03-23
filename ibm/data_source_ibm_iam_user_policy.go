@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -13,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Data source to find all the policies for a user in a particular account
@@ -115,8 +109,8 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 
 	query := iampapv1.SearchParams{
 		AccountID: accountID,
-		Type:      ibmUniqueID,
-		IAMID:     iampapv1.AccessPolicyType,
+		IAMID:     ibmUniqueID,
+		Type:      iampapv1.AccessPolicyType,
 	}
 
 	if v, ok := d.GetOk("sort"); ok {

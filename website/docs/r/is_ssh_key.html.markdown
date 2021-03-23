@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : ssh_key"
-sidebar_current: "docs-ibm-resource-is-ssh-key"
 description: |-
   Manages IBM ssh key.
 ---

@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -16,7 +10,7 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -91,6 +85,20 @@ func dataSourceIBMISLB() *schema.Resource {
 				Description: "Load Balancer subnets list",
 			},
 
+			isLBSecurityGroups: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "Load Balancer securitygroups list",
+			},
+
+			isLBSecurityGroupsSupported: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Security Group Supported for this Load Balancer",
+			},
+
 			isLBTags: {
 				Type:        schema.TypeSet,
 				Computed:    true,
@@ -109,6 +117,12 @@ func dataSourceIBMISLB() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Load Balancer Host Name",
+			},
+
+			isLBLogging: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Logging of Load Balancer",
 			},
 
 			isLBListeners: {
@@ -388,6 +402,9 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 		if *lb.Name == name {
 			d.SetId(*lb.ID)
 			d.Set(isLBName, *lb.Name)
+			if lb.Logging != nil && lb.Logging.Datapath != nil {
+				d.Set(isLBLogging, *lb.Logging.Datapath.Active)
+			}
 			if *lb.IsPublic {
 				d.Set(isLBType, "public")
 			} else {
@@ -425,6 +442,20 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				}
 				d.Set(isLBSubnets, subnetList)
 			}
+
+			d.Set(isLBSecurityGroupsSupported, false)
+			if lb.SecurityGroups != nil {
+				securitygroupList := make([]string, 0)
+				for _, securityGroup := range lb.SecurityGroups {
+					if securityGroup.ID != nil {
+						securityGroupID := *securityGroup.ID
+						securitygroupList = append(securitygroupList, securityGroupID)
+					}
+				}
+				d.Set(isLBSecurityGroups, securitygroupList)
+				d.Set(isLBSecurityGroupsSupported, true)
+			}
+
 			if lb.Listeners != nil {
 				listenerList := make([]string, 0)
 				for _, listener := range lb.Listeners {

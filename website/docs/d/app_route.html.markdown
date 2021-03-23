@@ -1,7 +1,7 @@
 ---
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_app_route"
-sidebar_current: "docs-ibm-datasource-app-route"
 description: |-
   Get information about an IBM Cloud route.
 ---

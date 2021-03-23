@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -16,7 +10,7 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIBMISVPC() *schema.Resource {
@@ -44,6 +38,24 @@ func dataSourceIBMISVPC() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: InvokeDataSourceValidator("ibm_is_subnet", isVPCName),
+			},
+
+			isVPCDefaultNetworkACLName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default Network ACL name",
+			},
+
+			isVPCIDefaultSecurityGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default security group name",
+			},
+
+			isVPCDefaultRoutingTableName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default routing table name",
 			},
 
 			isVPCResourceGroup: {
@@ -527,6 +539,9 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
 			d.Set(isVPCStatus, *vpc.Status)
 			d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID)
+			d.Set(isVPCDefaultNetworkACLName, *vpc.DefaultNetworkACL.Name)
+			d.Set(isVPCDefaultRoutingTableName, *vpc.DefaultRoutingTable.Name)
+			d.Set(isVPCIDefaultSecurityGroupName, *vpc.DefaultSecurityGroup.Name)
 			if vpc.DefaultNetworkACL != nil {
 				d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID)
 			} else {

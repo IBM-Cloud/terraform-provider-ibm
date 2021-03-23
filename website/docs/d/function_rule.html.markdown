@@ -1,7 +1,7 @@
 ---
+subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_rule"
-sidebar_current: "docs-ibm-datasource-functions-rule"
 description: |-
   Get information about an IBM Cloud Functions Rule.
 ---

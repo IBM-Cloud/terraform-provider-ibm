@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -16,9 +10,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMISLBListenerPolicyRule_basic(t *testing.T) {
@@ -46,7 +40,7 @@ func TestAccIBMISLBListenerPolicyRule_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMISLBListenerPolicyRuleDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMISLBListenerPolicyRuleConfig(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port, protocol, lblistenerpolicyname, action, priority, condition, types, lblistenerpolicyRuleField1, lblistenerpolicyRuleValue1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBListenerPolicyRuleExists("ibm_is_lb_listener_policy_rule.testacc_lb_listener_policy_rule", ruleID),
@@ -59,7 +53,7 @@ func TestAccIBMISLBListenerPolicyRule_basic(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMISLBListenerPolicyRuleConfigUpdate(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port, protocol, lblistenerpolicyname, priority, condition, types, lblistenerpolicyRuleField2, lblistenerpolicyRuleValue2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBListenerPolicyRuleExists("ibm_is_lb_listener_policy_rule.testacc_lb_listener_policy_rule", ruleID),
@@ -214,7 +208,6 @@ func testAccCheckIBMISLBListenerPolicyRuleExists(n string, ruleID string) resour
 
 func testAccCheckIBMISLBListenerPolicyRuleConfig(vpcname, subnetname, zone, cidr, lbname, port, protocol, lblistenerpolicyname, action, priority, condition, types, field, value string) string {
 	return fmt.Sprintf(`
-
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
@@ -272,7 +265,6 @@ func testAccCheckIBMISLBListenerPolicyRuleConfig(vpcname, subnetname, zone, cidr
 
 func testAccCheckIBMISLBListenerPolicyRuleConfigUpdate(vpcname, subnetname, zone, cidr, lbname, port, protocol, lblistenerpolicyname, priority, condition, types, field, value string) string {
 	return fmt.Sprintf(`
-
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}

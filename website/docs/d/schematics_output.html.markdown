@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Schematics"
 layout: "ibm"
 page_title: "IBM: ibm_schematics_output"
-sidebar_current: "docs-ibm-schematics-output"
 description: |-
   Get information about the terraform output values of a specific template in a Schematics Workspace .
 ---

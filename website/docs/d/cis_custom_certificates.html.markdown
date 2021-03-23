@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 certificate_title: "IBM: ibm_cis_custom_certificates"
-sidebar_current: "docs-ibm-datasource-cis-custom-certificates"
 description: |-
   Get information on an IBM Cloud Internet Services Custom Certificates resource.
 ---

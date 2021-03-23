@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -14,7 +8,7 @@ import (
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIBMISInstanceGroupManagers() *schema.Resource {
@@ -107,7 +101,7 @@ func dataSourceIBMISInstanceGroupManagersRead(d *schema.ResourceData, meta inter
 
 	// Support for pagination
 	start := ""
-	allrecs := []vpcv1.InstanceGroupManager{}
+	allrecs := []vpcv1.InstanceGroupManagerIntf{}
 
 	for {
 		listInstanceGroupManagerOptions := vpcv1.ListInstanceGroupManagersOptions{
@@ -128,7 +122,8 @@ func dataSourceIBMISInstanceGroupManagersRead(d *schema.ResourceData, meta inter
 	}
 
 	instanceGroupMnagers := make([]map[string]interface{}, 0)
-	for _, instanceGroupManager := range allrecs {
+	for _, instanceGroupManagerIntf := range allrecs {
+		instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
 		manager := map[string]interface{}{
 			"id":                   fmt.Sprintf("%s/%s", instanceGroupID, *instanceGroupManager.ID),
 			"manager_id":           *instanceGroupManager.ID,

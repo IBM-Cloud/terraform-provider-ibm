@@ -1,15 +1,10 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -17,29 +12,32 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
-	isLBName             = "name"
-	isLBStatus           = "status"
-	isLBTags             = "tags"
-	isLBType             = "type"
-	isLBSubnets          = "subnets"
-	isLBHostName         = "hostname"
-	isLBPublicIPs        = "public_ips"
-	isLBPrivateIPs       = "private_ips"
-	isLBListeners        = "listeners"
-	isLBPools            = "pools"
-	isLBOperatingStatus  = "operating_status"
-	isLBDeleting         = "deleting"
-	isLBDeleted          = "done"
-	isLBProvisioning     = "provisioning"
-	isLBProvisioningDone = "done"
-	isLBResourceGroup    = "resource_group"
-	isLBProfile          = "profile"
+	isLBName                    = "name"
+	isLBStatus                  = "status"
+	isLBTags                    = "tags"
+	isLBType                    = "type"
+	isLBSubnets                 = "subnets"
+	isLBHostName                = "hostname"
+	isLBPublicIPs               = "public_ips"
+	isLBPrivateIPs              = "private_ips"
+	isLBListeners               = "listeners"
+	isLBPools                   = "pools"
+	isLBOperatingStatus         = "operating_status"
+	isLBDeleting                = "deleting"
+	isLBDeleted                 = "done"
+	isLBProvisioning            = "provisioning"
+	isLBProvisioningDone        = "done"
+	isLBResourceGroup           = "resource_group"
+	isLBProfile                 = "profile"
+	isLBLogging                 = "logging"
+	isLBSecurityGroups          = "security_groups"
+	isLBSecurityGroupsSupported = "security_group_supported"
 )
 
 func resourceIBMISLB() *schema.Resource {
@@ -57,7 +55,7 @@ func resourceIBMISLB() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -111,13 +109,30 @@ func resourceIBMISLB() *schema.Resource {
 				Description: "Load Balancer subnets list",
 			},
 
+			isLBSecurityGroups: {
+				Type:          schema.TypeSet,
+				ForceNew:      false,
+				Optional:      true,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Set:           schema.HashString,
+				Description:   "Load Balancer securitygroups list",
+				ConflictsWith: []string{isLBProfile},
+			},
+
+			isLBSecurityGroupsSupported: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Security Group Supported for this Load Balancer",
+			},
+
 			isLBProfile: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ForceNew:     true,
-				Description:  "The profile to use for this load balancer.",
-				ValidateFunc: InvokeValidator("ibm_is_lb", isLBProfile),
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ForceNew:      true,
+				Description:   "The profile to use for this load balancer.",
+				ValidateFunc:  InvokeValidator("ibm_is_lb", isLBProfile),
+				ConflictsWith: []string{isLBLogging},
 			},
 
 			isLBTags: {
@@ -138,6 +153,14 @@ func resourceIBMISLB() *schema.Resource {
 			isLBHostName: {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+
+			isLBLogging: {
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Default:       false,
+				Description:   "Logging of Load Balancer",
+				ConflictsWith: []string{isLBProfile},
 			},
 
 			ResourceControllerURL: {
@@ -203,6 +226,17 @@ func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
 
 	name := d.Get(isLBName).(string)
 	subnets := d.Get(isLBSubnets).(*schema.Set)
+
+	var isLogging bool
+	if lbLogging, ok := d.GetOk(isLBLogging); ok {
+		isLogging = lbLogging.(bool)
+	}
+
+	var securityGroups *schema.Set
+	if sg, ok := d.GetOk(isLBSecurityGroups); ok {
+		securityGroups = sg.(*schema.Set)
+	}
+
 	// subnets := expandStringList((d.Get(isLBSubnets).(*schema.Set)).List())
 	var lbType, rg string
 	isPublic := true
@@ -224,7 +258,7 @@ func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	} else {
-		err := lbCreate(d, meta, name, lbType, rg, subnets, isPublic)
+		err := lbCreate(d, meta, name, lbType, rg, subnets, isPublic, isLogging, securityGroups)
 		if err != nil {
 			return err
 		}
@@ -279,7 +313,7 @@ func classicLBCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg 
 	return nil
 }
 
-func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string, subnets *schema.Set, isPublic bool) error {
+func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string, subnets *schema.Set, isPublic bool, isLogging bool, securityGroups *schema.Set) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -289,6 +323,7 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		IsPublic: &isPublic,
 		Name:     &name,
 	}
+
 	if subnets.Len() != 0 {
 		subnetobjs := make([]vpcv1.SubnetIdentityIntf, subnets.Len())
 		for i, subnet := range subnets.List() {
@@ -299,6 +334,18 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		}
 		options.Subnets = subnetobjs
 	}
+
+	if securityGroups.Len() != 0 {
+		securityGroupobjs := make([]vpcv1.SecurityGroupIdentityIntf, securityGroups.Len())
+		for i, securityGroup := range securityGroups.List() {
+			securityGroupstr := securityGroup.(string)
+			securityGroupobjs[i] = &vpcv1.SecurityGroupIdentity{
+				ID: &securityGroupstr,
+			}
+		}
+		options.SecurityGroups = securityGroupobjs
+	}
+
 	if rg != "" {
 		options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
 			ID: &rg,
@@ -311,6 +358,15 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		loadBalancerProfileIdentityModel := new(vpcv1.LoadBalancerProfileIdentityByName)
 		loadBalancerProfileIdentityModel.Name = &profile
 		options.Profile = loadBalancerProfileIdentityModel
+	} else {
+
+		dataPath := &vpcv1.LoadBalancerLoggingDatapath{
+			Active: &isLogging,
+		}
+		loadBalancerLogging := &vpcv1.LoadBalancerLogging{
+			Datapath: dataPath,
+		}
+		options.Logging = loadBalancerLogging
 	}
 
 	lb, response, err := sess.CreateLoadBalancer(options)
@@ -483,12 +539,31 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		d.Set(isLBSubnets, subnetList)
 	}
+
+	d.Set(isLBSecurityGroupsSupported, false)
+	if lb.SecurityGroups != nil {
+		securitygroupList := make([]string, 0)
+		for _, SecurityGroup := range lb.SecurityGroups {
+			if SecurityGroup.ID != nil {
+				securityGroupID := *SecurityGroup.ID
+				securitygroupList = append(securitygroupList, securityGroupID)
+			}
+		}
+		d.Set(isLBSecurityGroups, securitygroupList)
+		d.Set(isLBSecurityGroupsSupported, true)
+	}
+
 	if lb.Profile != nil {
 		profile := lb.Profile
 		if profile.Name != nil {
 			d.Set(isLBProfile, *lb.Profile.Name)
 		}
+	} else {
+		if lb.Logging != nil && lb.Logging.Datapath != nil && lb.Logging.Datapath.Active != nil {
+			d.Set(isLBLogging, *lb.Logging.Datapath.Active)
+		}
 	}
+
 	d.Set(isLBResourceGroup, *lb.ResourceGroup.ID)
 	d.Set(isLBHostName, *lb.Hostname)
 	tags, err := GetTagsUsingCRN(meta, *lb.CRN)
@@ -515,13 +590,18 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	id := d.Id()
-
 	name := ""
+	isLogging := false
 	hasChanged := false
+	hasChangedLog := false
 
 	if d.HasChange(isLBName) {
 		name = d.Get(isLBName).(string)
 		hasChanged = true
+	}
+	if d.HasChange(isLBLogging) {
+		isLogging = d.Get(isLBLogging).(bool)
+		hasChangedLog = true
 	}
 	if userDetails.generation == 1 {
 		err := classicLBUpdate(d, meta, id, name, hasChanged)
@@ -529,7 +609,7 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	} else {
-		err := lbUpdate(d, meta, id, name, hasChanged)
+		err := lbUpdate(d, meta, id, name, hasChanged, isLogging, hasChangedLog)
 		if err != nil {
 			return err
 		}
@@ -579,7 +659,7 @@ func classicLBUpdate(d *schema.ResourceData, meta interface{}, id, name string, 
 	return nil
 }
 
-func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool, isLogging bool, hasChangedLog bool) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -603,9 +683,32 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
 			ID: &id,
 		}
-
 		loadBalancerPatchModel := &vpcv1.LoadBalancerPatch{
 			Name: &name,
+		}
+		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for LoadBalancerPatch: %s", err)
+		}
+		updateLoadBalancerOptions.LoadBalancerPatch = loadBalancerPatch
+
+		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
+		if err != nil {
+			return fmt.Errorf("Error Updating vpc Load Balancer : %s\n%s", err, response)
+		}
+	}
+	if hasChangedLog {
+		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
+			ID: &id,
+		}
+		dataPath := &vpcv1.LoadBalancerLoggingDatapath{
+			Active: &isLogging,
+		}
+		loadBalancerLogging := &vpcv1.LoadBalancerLogging{
+			Datapath: dataPath,
+		}
+		loadBalancerPatchModel := &vpcv1.LoadBalancerPatch{
+			Logging: loadBalancerLogging,
 		}
 		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
 		if err != nil {

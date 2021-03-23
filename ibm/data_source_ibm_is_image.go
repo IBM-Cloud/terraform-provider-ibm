@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -14,7 +8,7 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIBMISImage() *schema.Resource {
@@ -56,6 +50,11 @@ func dataSourceIBMISImage() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The CRN for this image",
+			},
+			isImageCheckSum: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The SHA256 Checksum for this image",
 			},
 			isImageEncryptionKey: {
 				Type:        schema.TypeString,
@@ -174,6 +173,9 @@ func imageGet(d *schema.ResourceData, meta interface{}, name, visibility string)
 			}
 			if image.EncryptionKey != nil {
 				d.Set("encryption_key", *image.EncryptionKey.CRN)
+			}
+			if image.File != nil && image.File.Checksums != nil {
+				d.Set(isImageCheckSum, *image.File.Checksums.Sha256)
 			}
 			return nil
 		}

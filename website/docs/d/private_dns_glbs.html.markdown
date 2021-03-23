@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : ibm_dns_glbs"
-sidebar_current: "docs-ibm-datasources-dns-glbs"
 description: |-
   Manages IBM Cloud Infrastructure Private Domain Name Service Global load balancers.
 ---

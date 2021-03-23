@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lb_service"
-sidebar_current: "docs-ibm-resource-lb-service"
 description: |-
   Manages IBM local load balancer service.
 ---

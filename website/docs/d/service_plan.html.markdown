@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_service_plan"
-sidebar_current: "docs-ibm-datasource-service-plan"
 description: |-
   Get information about a service plan from IBM Cloud.
 ---

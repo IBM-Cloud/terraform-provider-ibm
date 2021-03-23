@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: ibm_container_cluster_worker"
-sidebar_current: "docs-ibm-datasource-container-cluster-worker"
 description: |-
   Get information about a worker node that is attached to a Kubernetes cluster on IBM Cloud.
 ---

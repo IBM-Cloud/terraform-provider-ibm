@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -16,7 +10,7 @@ import (
 	"strings"
 
 	kp "github.com/IBM/keyprotect-go-client"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIBMKMSkeys() *schema.Resource {
@@ -30,9 +24,16 @@ func dataSourceIBMKMSkeys() *schema.Resource {
 				Description: "Key protect or hpcs instance GUID",
 			},
 			"key_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The name of the key to be fetched",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "The name of the key to be fetched",
+				ConflictsWith: []string{"alias"},
+			},
+			"alias": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "The name of the key to be fetched",
+				ConflictsWith: []string{"key_name"},
 			},
 			"endpoint_type": {
 				Type:         schema.TypeString,
@@ -47,6 +48,11 @@ func dataSourceIBMKMSkeys() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"aliases": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
 						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -200,46 +206,66 @@ func dataSourceIBMKMSKeysRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	api.Config.InstanceID = instanceID
-	keys, err := api.GetKeys(context.Background(), 100, 0)
-	if err != nil {
-		return fmt.Errorf(
-			"Get Keys failed with error: %s", err)
-	}
-	retreivedKeys := keys.Keys
-	if len(retreivedKeys) == 0 {
-		return fmt.Errorf("No keys in instance  %s", instanceID)
-	}
-	var keyName string
-	var matchKeys []kp.Key
-	if v, ok := d.GetOk("key_name"); ok {
-		keyName = v.(string)
-		for _, keyData := range retreivedKeys {
-			if keyData.Name == keyName {
-				matchKeys = append(matchKeys, keyData)
-			}
+	if v, ok := d.GetOk("alias"); ok {
+		aliasName := v.(string)
+		key, err := api.GetKey(context.Background(), aliasName)
+		if err != nil {
+			return fmt.Errorf(
+				"Get Keys failed with error: %s", err)
+		} else {
+			keyMap := make([]map[string]interface{}, 0, 1)
+			keyInstance := make(map[string]interface{})
+			keyInstance["id"] = key.ID
+			keyInstance["name"] = key.Name
+			keyInstance["crn"] = key.CRN
+			keyInstance["standard_key"] = key.Extractable
+			keyInstance["aliases"] = key.Aliases
+			keyMap = append(keyMap, keyInstance)
+			d.Set("keys", keyMap)
+
 		}
 	} else {
-		matchKeys = retreivedKeys
-	}
+		keys, err := api.GetKeys(context.Background(), 100, 0)
+		if err != nil {
+			return fmt.Errorf(
+				"Get Keys failed with error: %s", err)
+		}
+		retreivedKeys := keys.Keys
+		if len(retreivedKeys) == 0 {
+			return fmt.Errorf("No keys in instance  %s", instanceID)
+		}
+		var keyName string
+		var matchKeys []kp.Key
+		if v, ok := d.GetOk("key_name"); ok {
+			keyName = v.(string)
+			for _, keyData := range retreivedKeys {
+				if keyData.Name == keyName {
+					matchKeys = append(matchKeys, keyData)
+				}
+			}
+		} else {
+			matchKeys = retreivedKeys
+		}
 
-	if len(matchKeys) == 0 {
-		return fmt.Errorf("No keys with name %s in instance  %s", keyName, instanceID)
-	}
+		if len(matchKeys) == 0 {
+			return fmt.Errorf("No keys with name %s in instance  %s", keyName, instanceID)
+		}
 
-	keyMap := make([]map[string]interface{}, 0, len(matchKeys))
+		keyMap := make([]map[string]interface{}, 0, len(matchKeys))
 
-	for _, key := range matchKeys {
-		keyInstance := make(map[string]interface{})
-		keyInstance["id"] = key.ID
-		keyInstance["name"] = key.Name
-		keyInstance["crn"] = key.CRN
-		keyInstance["standard_key"] = key.Extractable
-		keyMap = append(keyMap, keyInstance)
+		for _, key := range matchKeys {
+			keyInstance := make(map[string]interface{})
+			keyInstance["id"] = key.ID
+			keyInstance["name"] = key.Name
+			keyInstance["crn"] = key.CRN
+			keyInstance["standard_key"] = key.Extractable
+			keyMap = append(keyMap, keyInstance)
 
+		}
+		d.Set("keys", keyMap)
 	}
 
 	d.SetId(instanceID)
-	d.Set("keys", keyMap)
 	d.Set("instance_id", instanceID)
 
 	return nil

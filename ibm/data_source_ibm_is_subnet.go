@@ -1,20 +1,15 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIBMISSubnet() *schema.Resource {
@@ -56,6 +51,20 @@ func dataSourceIBMISSubnet() *schema.Resource {
 				Optional:     true,
 				ExactlyOneOf: []string{isSubnetName, "identifier"},
 				ValidateFunc: InvokeDataSourceValidator("ibm_is_subnet", isSubnetName),
+			},
+
+			isSubnetTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of tags",
+			},
+
+			isSubnetCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
 			},
 
 			isSubnetNetworkACL: {
@@ -210,6 +219,13 @@ func classicSubnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
+	tags, err := GetTagsUsingCRN(meta, *subnet.CRN)
+	if err != nil {
+		log.Printf(
+			"An error occured during reading of subnet (%s) tags : %s", d.Id(), err)
+	}
+	d.Set(isSubnetTags, tags)
+	d.Set(isSubnetCRN, *subnet.CRN)
 	d.Set(ResourceControllerURL, controller+"/vpc/network/subnets")
 	d.Set(ResourceName, *subnet.Name)
 	d.Set(ResourceCRN, *subnet.CRN)
@@ -273,6 +289,13 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
+	tags, err := GetTagsUsingCRN(meta, *subnet.CRN)
+	if err != nil {
+		log.Printf(
+			"An error occured during reading of subnet (%s) tags : %s", d.Id(), err)
+	}
+	d.Set(isSubnetTags, tags)
+	d.Set(isSubnetCRN, *subnet.CRN)
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/subnets")
 	d.Set(ResourceName, *subnet.Name)
 	d.Set(ResourceCRN, *subnet.CRN)

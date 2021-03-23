@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -17,7 +11,7 @@ import (
 
 	"github.com/IBM/go-sdk-core/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -123,7 +117,7 @@ func resourceIBMISVPCRoutingTableRoute() *schema.Resource {
 func resourceIBMISVPCRoutingTableRouteValidator() *ResourceValidator {
 
 	validateSchema := make([]ValidateSchema, 2)
-	actionAllowedValues := "delegate, deliver, drop"
+	actionAllowedValues := "delegate, delegate_vpc, deliver, drop"
 
 	validateSchema = append(validateSchema,
 		ValidateSchema{
@@ -165,7 +159,7 @@ func resourceIBMISVPCRoutingTableRouteCreate(d *schema.ResourceData, meta interf
 		Address: core.StringPtr(nextHop),
 	}
 
-	createVpcRoutingTableRouteOptions := sess.NewCreateVPCRoutingTableRouteOptions(vpcID, tableID, destination, nh, z)
+	createVpcRoutingTableRouteOptions := sess.NewCreateVPCRoutingTableRouteOptions(vpcID, tableID, destination, z)
 	createVpcRoutingTableRouteOptions.SetZone(z)
 	createVpcRoutingTableRouteOptions.SetDestination(destination)
 	createVpcRoutingTableRouteOptions.SetNextHop(nh)

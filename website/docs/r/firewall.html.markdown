@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : firewall"
-sidebar_current: "docs-ibm-resource-firewall"
 description: |-
   Manages rules for IBM Firewall.
 ---
