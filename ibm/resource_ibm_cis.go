@@ -7,13 +7,14 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 )
@@ -93,7 +94,7 @@ func resourceIBMCISInstance() *schema.Resource {
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_cis", "tag")},
 				Set:      schema.HashString,
 			},
 
@@ -134,9 +135,28 @@ func resourceIBMCISInstance() *schema.Resource {
 	}
 }
 
+func resourceIBMCISValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "tag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
+	ibmCISResourceValidator := ResourceValidator{ResourceName: "ibm_cis", Schema: validateSchema}
+	return &ibmCISResourceValidator
+}
+
 // Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "internet-svcs"
 func resourceIBMCISInstanceCreate(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -145,8 +165,8 @@ func resourceIBMCISInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	name := d.Get("name").(string)
 	location := d.Get("location").(string)
 
-	rsInst := controller.CreateServiceInstanceRequest{
-		Name: name,
+	rsInst := rc.CreateResourceInstanceOptions{
+		Name: &name,
 	}
 
 	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
@@ -164,7 +184,7 @@ func resourceIBMCISInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return fmt.Errorf("Error retrieving plan: %s", err)
 	}
-	rsInst.ServicePlanID = servicePlan
+	rsInst.ResourcePlanID = &servicePlan
 
 	deployments, err := rsCatRepo.ListDeployments(servicePlan)
 	if err != nil {
@@ -183,53 +203,63 @@ func resourceIBMCISInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("No deployment found for service plan %s at location %s.\nValid location(s) are: %q.", plan, location, locationList)
 	}
 
-	rsInst.TargetCrn = deployments[0].CatalogCRN
+	rsInst.Target = &deployments[0].CatalogCRN
 
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
-		rsInst.ResourceGroupID = rsGrpID.(string)
+		rg := rsGrpID.(string)
+		rsInst.ResourceGroup = &rg
 	} else {
 		defaultRg, err := defaultResourceGroup(meta)
 		if err != nil {
 			return err
 		}
-		rsInst.ResourceGroupID = defaultRg
+		rsInst.ResourceGroup = &defaultRg
 	}
 
 	if parameters, ok := d.GetOk("parameters"); ok {
 		rsInst.Parameters = parameters.(map[string]interface{})
 	}
 
-	if _, ok := d.GetOk("tags"); ok {
-		rsInst.Tags = getServiceTags(d)
-	}
-
-	instance, err := rsConClient.ResourceServiceInstance().CreateInstance(rsInst)
+	instance, response, err := rsConClient.CreateResourceInstance(&rsInst)
 	if err != nil {
-		return fmt.Errorf("Error creating resource instance: %s", err)
+		return fmt.Errorf("Error creating resource instance: %s %s", err, response)
+	}
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk("tags"); ok || v != "" {
+		oldList, newList := d.GetChange("tags")
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		if err != nil {
+			log.Printf(
+				"Error on create of ibm database (%s) tags: %s", d.Id(), err)
+		}
 	}
 
 	// Moved d.SetId(instance.ID) to after waiting for resource to finish creation. Otherwise Terraform initates depedent tasks too early.
 	// Original flow had SetId here as its required as input to waitForCISInstanceCreate
 
-	_, err = waitForCISInstanceCreate(d, meta, instance.ID)
+	_, err = waitForCISInstanceCreate(d, meta, *instance.ID)
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for create resource instance (%s) to be succeeded: %s", d.Id(), err)
 	}
 
-	d.SetId(instance.ID)
+	d.SetId(*instance.ID)
 
 	return resourceIBMCISInstanceRead(d, meta)
 }
 
 func resourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
 
 	instanceID := d.Id()
-	instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+	rsInst := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+	instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 	if err != nil {
 		if strings.Contains(err.Error(), "Object not found") ||
 			strings.Contains(err.Error(), "status code: 404") {
@@ -237,21 +267,30 @@ func resourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) error 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error retrieving resource instance: %s", err)
+		return fmt.Errorf("Error retrieving resource instance: %s %s", err, response)
 	}
-	if strings.Contains(instance.State, "removed") {
+	if strings.Contains(*instance.State, "removed") {
 		log.Printf("[WARN] Removing instance from TF state because it's now in removed state")
 		d.SetId("")
 		return nil
 	}
-
-	d.Set("tags", instance.Tags)
-	d.Set("name", instance.Name)
-	d.Set("status", instance.State)
-	d.Set("resource_group_id", instance.ResourceGroupID)
+	tags, err := GetTagsUsingCRN(meta, *instance.CRN)
+	if err != nil {
+		log.Printf(
+			"Error on get of ibm cis tags (%s) tags: %s", d.Id(), err)
+	}
+	d.Set("tags", tags)
+	d.Set("name", *instance.Name)
+	d.Set("status", *instance.State)
+	d.Set("resource_group_id", *instance.ResourceGroupID)
 	d.Set("parameters", Flatten(instance.Parameters))
-	d.Set("location", instance.RegionID)
-	d.Set("guid", instance.Guid)
+	if instance.CRN != nil {
+		location := strings.Split(*instance.CRN, ":")
+		if len(location) > 5 {
+			d.Set("location", location[5])
+		}
+	}
+	d.Set("guid", *instance.GUID)
 
 	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
 	if err != nil {
@@ -261,37 +300,41 @@ func resourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 	d.Set("service", "internet-svcs")
 
-	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ServicePlanID)
+	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
 	if err != nil {
 		return fmt.Errorf("Error retrieving plan: %s", err)
 	}
 	d.Set("plan", servicePlan)
 
-	d.Set(ResourceName, instance.Name)
-	d.Set(ResourceCRN, instance.Crn.String())
-	d.Set(ResourceStatus, instance.State)
-	d.Set(ResourceGroupName, instance.ResourceGroupName)
+	d.Set(ResourceName, *instance.Name)
+	d.Set(ResourceCRN, *instance.CRN)
+	d.Set(ResourceStatus, *instance.State)
+	d.Set(ResourceGroupName, *instance.ResourceGroupCRN)
 
 	rcontroller, err := getBaseController(meta)
 	if err != nil {
 		return err
 	}
-	d.Set(ResourceControllerURL, rcontroller+"/internet-svcs/"+url.QueryEscape(instance.Crn.String()))
+	d.Set(ResourceControllerURL, rcontroller+"/internet-svcs/"+url.QueryEscape(*instance.CRN))
 
 	return nil
 }
 
 func resourceIBMCISInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
 
 	instanceID := d.Id()
 
-	updateReq := controller.UpdateServiceInstanceRequest{}
+	updateReq := rc.UpdateResourceInstanceOptions{
+		ID: &instanceID,
+	}
 	if d.HasChange("name") {
-		updateReq.Name = d.Get("name").(string)
+		name := d.Get("name").(string)
+		updateReq.Name = &name
 	}
 
 	if d.HasChange("plan") {
@@ -313,18 +356,22 @@ func resourceIBMCISInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 			return fmt.Errorf("Error retrieving plan: %s", err)
 		}
 
-		updateReq.ServicePlanID = servicePlan
+		updateReq.ResourcePlanID = &servicePlan
 
 	}
 
 	if d.HasChange("tags") {
-		tags := getServiceTags(d)
-		updateReq.Tags = tags
+		oldList, newList := d.GetChange("tags")
+		err = UpdateTagsUsingCRN(oldList, newList, meta, instanceID)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource instance (%s) tags: %s", d.Id(), err)
+		}
 	}
 
-	_, err = rsConClient.ResourceServiceInstance().UpdateInstance(instanceID, updateReq)
+	_, response, err := rsConClient.UpdateResourceInstance(&updateReq)
 	if err != nil {
-		return fmt.Errorf("Error updating resource instance: %s", err)
+		return fmt.Errorf("Error updating resource instance: %s %s", err, response)
 	}
 
 	_, err = waitForCISInstanceUpdate(d, meta)
@@ -337,22 +384,27 @@ func resourceIBMCISInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceIBMCISInstanceDelete(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
 	id := d.Id()
-
-	err = rsConClient.ResourceServiceInstance().DeleteInstance(id, true)
+	recursive := true
+	deleteReq := rc.DeleteResourceInstanceOptions{
+		ID:        &id,
+		Recursive: &recursive,
+	}
+	response, err := rsConClient.DeleteResourceInstance(&deleteReq)
 	if err != nil {
 		// If prior delete occurs, instance is not immediately deleted, but remains in "removed" state"
 		// RC 410 with "Gone" returned as error
 		if strings.Contains(err.Error(), "Gone") ||
 			strings.Contains(err.Error(), "status code: 410") {
-			log.Printf("[WARN] Resource instance already deleted %s\n ", err)
+			log.Printf("[WARN] Resource instance already deleted %s\n %s", err, response)
 			err = nil
 		} else {
-			return fmt.Errorf("Error deleting resource instance: %s", err)
+			return fmt.Errorf("Error deleting resource instance: %s %s", err, response)
 		}
 	}
 
@@ -367,31 +419,36 @@ func resourceIBMCISInstanceDelete(d *schema.ResourceData, meta interface{}) erro
 	return nil
 }
 func resourceIBMCISInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
 	instanceID := d.Id()
-	instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+	rsInst := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+	instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("Error communicating with the API: %s %s", err, response)
 	}
-	if strings.Contains(instance.State, "removed") {
+	if strings.Contains(*instance.State, "removed") {
 		log.Printf("[WARN] Removing instance from state because it's in removed state")
 		d.SetId("")
 		return false, nil
 	}
 
-	return instance.ID == instanceID, nil
+	return *instance.ID == instanceID, nil
 }
 
 func waitForCISInstanceCreate(d *schema.ResourceData, meta interface{}, instanceID string) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -401,17 +458,20 @@ func waitForCISInstanceCreate(d *schema.ResourceData, meta interface{}, instance
 		Pending: []string{cisInstanceProgressStatus, cisInstanceInactiveStatus, cisInstanceProvisioningStatus},
 		Target:  []string{cisInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
-			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+			rsInst := rc.GetResourceInstanceOptions{
+				ID: &instanceID,
+			}
+			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v", d.Id(), err)
+					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v %s", d.Id(), err, response)
 				}
 				return nil, "", err
 			}
-			if instance.State == cisInstanceFailStatus {
-				return instance, instance.State, fmt.Errorf("The resource instance %s failed: %v", d.Id(), err)
+			if *instance.State == cisInstanceFailStatus {
+				return instance, *instance.State, fmt.Errorf("The resource instance %s failed: %v %s", d.Id(), err, response)
 			}
-			return instance, instance.State, nil
+			return instance, *instance.State, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
@@ -422,7 +482,8 @@ func waitForCISInstanceCreate(d *schema.ResourceData, meta interface{}, instance
 }
 
 func waitForCISInstanceUpdate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -432,17 +493,20 @@ func waitForCISInstanceUpdate(d *schema.ResourceData, meta interface{}) (interfa
 		Pending: []string{cisInstanceProgressStatus, cisInstanceInactiveStatus},
 		Target:  []string{cisInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
-			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+			rsInst := rc.GetResourceInstanceOptions{
+				ID: &instanceID,
+			}
+			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v", d.Id(), err)
+					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v %s", d.Id(), err, response)
 				}
 				return nil, "", err
 			}
-			if instance.State == cisInstanceFailStatus {
-				return instance, instance.State, fmt.Errorf("The resource instance %s failed: %v", d.Id(), err)
+			if *instance.State == cisInstanceFailStatus {
+				return instance, *instance.State, fmt.Errorf("The resource instance %s failed: %v %s", d.Id(), err, response)
 			}
-			return instance, instance.State, nil
+			return instance, *instance.State, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutUpdate),
 		Delay:      10 * time.Second,
@@ -453,7 +517,8 @@ func waitForCISInstanceUpdate(d *schema.ResourceData, meta interface{}) (interfa
 }
 
 func waitForCISInstanceDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -462,17 +527,20 @@ func waitForCISInstanceDelete(d *schema.ResourceData, meta interface{}) (interfa
 		Pending: []string{cisInstanceProgressStatus, cisInstanceInactiveStatus, cisInstanceSuccessStatus},
 		Target:  []string{cisInstanceRemovedStatus, cisInstanceReclamation},
 		Refresh: func() (interface{}, string, error) {
-			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+			rsInst := rc.GetResourceInstanceOptions{
+				ID: &instanceID,
+			}
+			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 					return instance, cisInstanceSuccessStatus, nil
 				}
 				return nil, "", err
 			}
-			if instance.State == cisInstanceFailStatus {
-				return instance, instance.State, fmt.Errorf("The resource instance %s failed to delete: %v", d.Id(), err)
+			if *instance.State == cisInstanceFailStatus {
+				return instance, *instance.State, fmt.Errorf("The resource instance %s failed to delete: %v %s", d.Id(), err, response)
 			}
-			return instance, instance.State, nil
+			return instance, *instance.State, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      10 * time.Second,
