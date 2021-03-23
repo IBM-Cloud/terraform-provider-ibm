@@ -180,6 +180,7 @@ func Provider() *schema.Provider {
 			"ibm_cis_firewall":                       dataIBMCISFirewallsRecord(),
 			"ibm_cis_waf_packages":                   dataSourceIBMCISWAFPackages(),
 			"ibm_cis_range_apps":                     dataSourceIBMCISRangeApps(),
+			"ibm_cis_cache_settings":                 dataSourceIBMCISCacheSetting(),
 			"ibm_cis_custom_certificates":            dataSourceIBMCISCustomCertificates(),
 			"ibm_cis_rate_limit":                     dataSourceIBMCISRateLimit(),
 			"ibm_cis_ip_addresses":                   dataSourceIBMCISIP(),
