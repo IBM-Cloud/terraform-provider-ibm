@@ -230,7 +230,7 @@ func resourceIBMCISInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
 		if err != nil {
 			log.Printf(
-				"Error on create of ibm database (%s) tags: %s", d.Id(), err)
+				"Error on create of ibm cis (%s) tags: %s", d.Id(), err)
 		}
 	}
 
@@ -365,7 +365,7 @@ func resourceIBMCISInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		err = UpdateTagsUsingCRN(oldList, newList, meta, instanceID)
 		if err != nil {
 			log.Printf(
-				"Error on update of resource instance (%s) tags: %s", d.Id(), err)
+				"Error on update of CIS (%s) tags: %s", d.Id(), err)
 		}
 	}
 
