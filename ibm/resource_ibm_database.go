@@ -987,7 +987,7 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	tags, err := GetTagsUsingCRN(meta, *instance.CRN)
 	if err != nil {
 		log.Printf(
-			"Error on get of ibm database tags (%s) tags: %s", d.Id(), err)
+			"Error on get of ibm Database tags (%s) tags: %s", d.Id(), err)
 	}
 	d.Set("tags", tags)
 	d.Set("name", *instance.Name)
@@ -1145,7 +1145,7 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 		err = UpdateTagsUsingCRN(oldList, newList, meta, instanceID)
 		if err != nil {
 			log.Printf(
-				"Error on update of resource instance (%s) tags: %s", d.Id(), err)
+				"Error on update of Database (%s) tags: %s", d.Id(), err)
 		}
 	}
 
