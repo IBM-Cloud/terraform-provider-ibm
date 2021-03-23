@@ -10,6 +10,7 @@ package ibm
 
 import (
 	"log"
+	"time"
 
 	"github.com/IBM/go-sdk-core/v4/core"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -25,10 +26,9 @@ func dataSourceIBMCISCacheSetting() *schema.Resource {
 				Required:    true,
 			},
 			cisDomainID: {
-				Type:             schema.TypeString,
-				Description:      "Associated CIS domain",
-				Required:         true,
-				DiffSuppressFunc: suppressDomainIDDiff,
+				Type:        schema.TypeString,
+				Description: "Associated CIS domain",
+				Required:    true,
 			},
 			cisCacheSettingsCachingLevel: {
 				Type:        schema.TypeList,
@@ -314,8 +314,11 @@ func dataSourceCISCacheSettingsRead(d *schema.ResourceData, meta interface{}) er
 		d.Set(cisCacheSettingsQueryStringSort, queryStringSorts)
 		log.Println("$$$$$$$$$$$$$$$$ query Setting$$$$$", d)
 	}
-	d.SetId(dataSourceIBMCISCertificatesID(d))
+	d.SetId(dataSourceIBMCISCacheSettingID(d))
 	d.Set(cisID, crn)
 	d.Set(cisDomainID, zoneID)
 	return nil
+}
+func dataSourceIBMCISCacheSettingID(d *schema.ResourceData) string {
+	return time.Now().UTC().String()
 }
