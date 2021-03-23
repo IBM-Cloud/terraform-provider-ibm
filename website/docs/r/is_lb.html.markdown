@@ -53,7 +53,7 @@ The following arguments are supported:
 * `resource_group` - (Optional, Forces new resource, string) The resource group where the load balancer to be created.
 * `tags` - (Optional, array of strings) Tags associated with the load balancer.
 * `logging` - (Optional, bool) Enable or disable datapath logging for this load balancer. If unspecified, datapath logging is disabled. This is applicable only for application load balancer. One of: false, true.
-* `security_groups` - (Optional, list) The security groups to use for this load balancer.
+* `security_groups` - (Optional, list) The security groups to use for this load balancer.This is applicable only for application load balancer.
 
 ## Attribute Reference
 

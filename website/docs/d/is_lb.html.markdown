@@ -82,6 +82,6 @@ The following attributes are exported:
 * `operating_status` - The operating status of this load balancer.
 * `hostname` - Fully qualified domain name assigned to this load balancer.
 * `logging` - (Optional, bool) Enable or disable datapath logging for this load balancer. If unspecified, datapath logging is disabled. This is applicable only for application load balancer. One of: false, true.
-* `security_groups` - (Optional, list) The security groups to use for this load balancer.
+* `security_groups` - (Optional, list) The security groups to use for this load balancer.This is applicable only for application load balancer.
 * `security_groups_supported` - Indicates whether this load balancer supports security groups.
 
