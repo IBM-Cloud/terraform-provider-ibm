@@ -401,16 +401,6 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		rsInst.ResourceGroup = &defaultRg
 	}
 
-	if _, ok := d.GetOk("tags"); ok {
-		rsInst.SetTags(d.Get("tags").([]string))
-	}
-	if _, ok := d.GetOk("allow_cleanup"); ok {
-		rsInst.SetAllowCleanup(d.Get("allow_cleanup").(bool))
-	}
-	if _, ok := d.GetOk("entity_lock"); ok {
-		rsInst.SetEntityLock(d.Get("entity_lock").(bool))
-	}
-
 	params := map[string]interface{}{}
 
 	if serviceEndpoints, ok := d.GetOk("service_endpoints"); ok {
@@ -498,7 +488,12 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("name", instance.Name)
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
-	//d.Set("location", instance.RegionID)
+	if instance.CRN != nil {
+		location := strings.Split(*instance.CRN, ":")
+		if len(location) > 5 {
+			d.Set("location", location[5])
+		}
+	}
 	d.Set("crn", instance.CRN)
 	d.Set("dashboard_url", instance.DashboardURL)
 
@@ -670,8 +665,10 @@ func resourceIBMResourceInstanceDelete(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	id := d.Id()
+	recursive := true
 	resourceInstanceDelete := rc.DeleteResourceInstanceOptions{
-		ID: &id,
+		ID:        &id,
+		Recursive: &recursive,
 	}
 
 	resp, error := rsConClient.DeleteResourceInstance(&resourceInstanceDelete)
