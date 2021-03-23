@@ -56,6 +56,8 @@ github.com/ChrisTrenkamp/goxpath v0.0.0-20170922090931-c385f95c6022/go.mod h1:nu
 github.com/ChrisTrenkamp/goxpath v0.0.0-20190607011252-c5096ec8773d/go.mod h1:nuWgzSkT5PnyOd+272uUmV0dnAnAn42Mk7PiQC5VzN4=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20210303071938-97b749ed40f4 h1:gKn7kT5PMeOTZ/5TqMCBGRzv1xiweiQ/fp/gKATMX44=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20210303071938-97b749ed40f4/go.mod h1:kqTYO0mts71aa8PVwviaKlCKYud/NbEkFIqU8aHH3/g=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20210323131712-56edc36e39e5 h1:uqbLg/gIcybvknFVuS8UFt5+8jcA+uUC+785pJEoqmg=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20210323131712-56edc36e39e5/go.mod h1:kqTYO0mts71aa8PVwviaKlCKYud/NbEkFIqU8aHH3/g=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
 github.com/IBM-Cloud/power-go-client v1.0.55 h1:XoRU8FWYY8NUKau1nkErkf2FHAUbFEbbXtbLTvaGp9c=
 github.com/IBM-Cloud/power-go-client v1.0.55/go.mod h1:I4r5tCrA8mV5GFqGAJG4/Tn+/JpR+XLnDCLLNVKJxuI=
@@ -91,10 +93,10 @@ github.com/IBM/platform-services-go-sdk v0.17.17 h1:VXiC6C7h0AsYcsuVVQWKzBhEZ6mM
 github.com/IBM/platform-services-go-sdk v0.17.17/go.mod h1:MSg7VY5MecPRSClxTAD9kLlSIOur4vTjpbJZW9NCMDA=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:NPUhkoOCRuv3OFWt19PmwjXGGTKlvmbuPg9fUrBUNe4=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5/go.mod h1:b07XHUVh0XYnQE9s2mqgjYST1h9buaQNqN4EcKhOsX0=
-github.com/IBM/secrets-manager-go-sdk v0.1.19 h1:0GPs5EoTaWNsjo4QPj64GNxlWfN8VHJy4RDFLqddSe8=
-github.com/IBM/secrets-manager-go-sdk v0.1.19/go.mod h1:eO3dBhzPrHkkt+yPex/jB2xD6qHZxBko+Aw+0tfqHeA=
 github.com/IBM/schematics-go-sdk v0.0.2 h1:IFdM73VL3xwf/KaTh1IY99hkiTfFRYg5F1JNj69FOEg=
 github.com/IBM/schematics-go-sdk v0.0.2/go.mod h1:ymN1+3uEaWNT0RthwHzExxMiN0AnTh6W3piSY8canjs=
+github.com/IBM/secrets-manager-go-sdk v0.1.19 h1:0GPs5EoTaWNsjo4QPj64GNxlWfN8VHJy4RDFLqddSe8=
+github.com/IBM/secrets-manager-go-sdk v0.1.19/go.mod h1:eO3dBhzPrHkkt+yPex/jB2xD6qHZxBko+Aw+0tfqHeA=
 github.com/IBM/vpc-go-sdk v1.0.0 h1:YsCFKFu/DNryaidUOpH7/Y9J0RtWZl4aP1cve/cfh2A=
 github.com/IBM/vpc-go-sdk v1.0.0/go.mod h1:bhd7r482lV30UJz46r2oRgYGawGEo+TuS41ZLIY65y0=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=

@@ -468,7 +468,7 @@ func testAccCheckFunctionPackageExists(n string, obj *whisk.Package) resource.Te
 		if err != nil {
 			return err
 		}
-		client, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+		client, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 		if err != nil {
 			return err
 
@@ -507,7 +507,7 @@ func testAccCheckFunctionPackageDestroy(s *terraform.State) error {
 		namespace := parts[0]
 		name := parts[1]
 
-		wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+		wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 		if err != nil && strings.Contains(err.Error(), "is not in the list of entitled namespaces") {
 			return nil
 		}
