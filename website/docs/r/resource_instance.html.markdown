@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM : resource_instance"
-sidebar_current: "docs-ibm-resource-resource-instance"
 description: |-
   Manages IBM Resource Instance.
 ---
@@ -65,4 +66,29 @@ The following attributes are exported:
 * `guid`- Guid of the resource instance.
 * `dashboard_url`- The dashboard url of the new resource instance.
 * `extensions` - The extended metadata as a map associated with the resource instance.
+* `plan_history` - The plan history of the instance.
+* `account_id` - An alpha-numeric value identifying the account ID.
+* `resource_group_crn` - The long ID (full CRN) of the resource group.
+* `resource_id` - The unique ID of the offering. This value is provided by and stored in the global catalog.
+* `resource_plan_id` - The unique ID of the plan associated with the offering. This value is provided by and stored in the global catalog.
+* `target_crn` - The full deployment CRN as defined in the global catalog. The Cloud Resource Name (CRN) of the deployment location where the instance is provisioned.
+* `state` - The current state of the instance. For example, if the instance is deleted, it will return removed.
+* `type` - The type of the instance, e.g. service_instance.
+* `sub_type` - The sub-type of instance, e.g. cfaas .
+* `allow_cleanup` - A boolean that dictates if the resource instance should be deleted (cleaned up) during the processing of a region instance delete call.
+* `locked` - A boolean that dictates if the resource instance should be deleted (cleaned up) during the processing of a region instance delete call.
+* `last_operation` - The status of the last operation requested on the instance.
+* `resource_aliases_url` - The relative path to the resource aliases for the instance.
+* `resource_bindings_url` - The relative path to the resource bindings for the instance.
+* `resource_keys_url` - The relative path to the resource keys for the instance.
+* `created_at` - The date when the instance was created.
+* `created_by` - The subject who created the instance.
+* `update_at` - The date when the instance was last updated.
+* `update_by` - The subject who updated the instance.
+* `deleted_at` - The date when the instance was deleted.
+* `deleted_by` - The subject who deleted the instance.
+* `scheduled_reclaim_at` - The date when the instance was scheduled for reclamation.
+* `scheduled_reclaim_by` - The subject who initiated the instance reclamation.
+* `restored_at` - The date when the instance under reclamation was restored.
+* `restored_by` - The subject who restored the instance back from reclamation.
 

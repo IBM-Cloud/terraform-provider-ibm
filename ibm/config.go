@@ -1,11 +1,5 @@
-/* IBM Confidential
-*  Object Code Only Source Materials
-*  5747-SM3
-*  (c) Copyright IBM Corp. 2017,2021
-*
-*  The source code for this program is not published or otherwise divested
-*  of its trade secrets, irrespective of what has been deposited with the
-*  U.S. Copyright Office. */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -53,6 +47,7 @@ import (
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
@@ -93,6 +88,8 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
+	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -207,6 +204,7 @@ type ClientSession interface {
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	SchematicsAPI() (schematics.SchematicsServiceAPI, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
+	PushServiceV1() (*pushservicev1.PushServiceV1, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
 	keyManagementAPI() (*kp.Client, error)
@@ -244,6 +242,8 @@ type ClientSession interface {
 	CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1, error)
 	IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
 	ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error)
+	CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error)
+	ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error)
 }
 
 type clientSession struct {
@@ -344,6 +344,9 @@ type clientSession struct {
 	pDNSErr    error
 
 	bluemixSessionErr error
+
+	pushServiceClient    *pushservicev1.PushServiceV1
+	pushServiceClientErr error
 
 	vpcClassicErr error
 	vpcClassicAPI *vpcclassic.VpcClassicV1
@@ -455,9 +458,22 @@ type clientSession struct {
 	//IAM Identity Option
 	iamIdentityErr error
 	iamIdentityAPI *iamidentity.IamIdentityV1
+
 	//Resource Manager Option
 	resourceManagerErr error
 	resourceManagerAPI *resourcemanager.ResourceManagerV2
+
+	//Catalog Management Option
+	catalogManagementClient    *catalogmanagementv1.CatalogManagementV1
+	catalogManagementClientErr error
+
+	//Resource Controller Option
+	resourceControllerErr error
+	resourceControllerAPI *resourcecontroller.ResourceControllerV2
+}
+
+func (session clientSession) CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error) {
+	return session.catalogManagementClient, session.catalogManagementClientErr
 }
 
 // BluemixAcccountAPI ...
@@ -603,6 +619,10 @@ func (sess clientSession) CertificateManagerAPI() (certificatemanager.Certificat
 //apigatewayAPI provides API Gateway APIs
 func (sess clientSession) APIGateway() (*apigateway.ApiGatewayControllerApiV1, error) {
 	return sess.apigatewayAPI, sess.apigatewayErr
+}
+
+func (session clientSession) PushServiceV1() (*pushservicev1.PushServiceV1, error) {
+	return session.pushServiceClient, session.pushServiceClientErr
 }
 
 func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
@@ -839,6 +859,11 @@ func (sess clientSession) ResourceManagerV2API() (*resourcemanager.ResourceManag
 	return sess.resourceManagerAPI, sess.resourceManagerErr
 }
 
+// ResourceController Session
+func (sess clientSession) ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error) {
+	return sess.resourceControllerAPI, sess.resourceControllerErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -860,6 +885,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.csv2ConfigErr = errEmptyBluemixCredentials
 		session.crv1ConfigErr = errEmptyBluemixCredentials
 		session.kpErr = errEmptyBluemixCredentials
+		session.pushServiceClientErr = errEmptyBluemixCredentials
 		session.kmsErr = errEmptyBluemixCredentials
 		session.stxConfigErr = errEmptyBluemixCredentials
 		session.cfConfigErr = errEmptyBluemixCredentials
@@ -927,6 +953,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 				if err == nil || !isRetryable(err) {
 					break
 				}
+				time.Sleep(c.RetryDelay)
+				log.Printf("Retrying IAM Authentication %d", count)
 				err = authenticateAPIKey(sess.BluemixSession)
 			}
 			if err != nil {
@@ -942,6 +970,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 				if err == nil || !isRetryable(err) {
 					break
 				}
+				time.Sleep(c.RetryDelay)
+				log.Printf("Retrying CF Authentication %d", count)
 				err = authenticateCF(sess.BluemixSession)
 			}
 			if err != nil {
@@ -957,15 +987,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 				if err == nil || !isRetryable(err) {
 					break
 				}
+				time.Sleep(c.RetryDelay)
+				log.Printf("Retrying refresh token %d", count)
 				err = refreshToken(sess.BluemixSession)
 			}
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("Error occured while refreshing the token: %q", err)
 			}
 		}
 
 	}
-	userConfig, err := fetchUserDetails(sess.BluemixSession, c.Generation, c.RetryCount)
+	userConfig, err := fetchUserDetails(sess.BluemixSession, c.Generation, c.RetryCount, c.RetryDelay)
 	if err != nil {
 		session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
 	}
@@ -1049,6 +1081,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.kmsAPI = kmsAPIclient
 
 	var authenticator core.Authenticator
+
 	if c.BluemixAPIKey != "" {
 		authenticator = &core.IamAuthenticator{
 			ApiKey: c.BluemixAPIKey,
@@ -1062,6 +1095,26 @@ func (c *Config) ClientSession() (interface{}, error) {
 		authenticator = &core.BearerTokenAuthenticator{
 			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
 		}
+	}
+
+	// Construct an "options" struct for creating the service client.
+	catalogManagementURL := "https://cm.globalcatalog.cloud.ibm.com/api/v1-beta"
+	catalogManagementClientOptions := &catalogmanagementv1.CatalogManagementV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT"}, catalogManagementURL),
+		Authenticator: authenticator,
+	}
+
+	// Construct the service client.
+	session.catalogManagementClient, err = catalogmanagementv1.NewCatalogManagementV1(catalogManagementClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.catalogManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.catalogManagementClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.catalogManagementClientErr = fmt.Errorf("Error occurred while configuring Catalog Management API service: %q", err)
 	}
 
 	vpcclassicurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
@@ -1088,6 +1141,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 		vpcclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 	session.vpcAPI = vpcclient
+
+	pnurl := fmt.Sprintf("https://%s.imfpush.cloud.ibm.com/imfpush/v1", c.Region)
+	pushNotificationOptions := &pushservicev1.PushServiceV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_PUSH_API_ENDPOINT"}, pnurl),
+		Authenticator: authenticator,
+	}
+	pnclient, err := pushservicev1.NewPushServiceV1(pushNotificationOptions)
+	if pnclient != nil {
+		// Enable retries for API calls
+		pnclient.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.pushServiceClient = pnclient
+	} else {
+		session.pushServiceClientErr = fmt.Errorf("Error occured while configuring push notification service: %q", err)
+	}
 
 	//cosconfigurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
 	cosconfigoptions := &cosconfig.ResourceConfigurationV1Options{
@@ -1612,6 +1679,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.resourceManagerAPI = resourceManagerClient
 
+	// resource controller API
+	resourceControllerOptions := &resourcecontroller.ResourceControllerV2Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_CONTROLLER_API_ENDPOINT"}, resourcecontroller.DefaultServiceURL),
+	}
+	resourceControllerClient, err := resourcecontroller.NewResourceControllerV2(resourceControllerOptions)
+	if err != nil {
+		session.resourceControllerErr = fmt.Errorf("Error occured while configuring Resource Controller service: %q", err)
+	}
+	if resourceControllerClient != nil {
+		resourceControllerClient.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+	session.resourceControllerAPI = resourceControllerClient
+
 	return session, nil
 }
 
@@ -1722,7 +1803,7 @@ func authenticateCF(sess *bxsession.Session) error {
 	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
 }
 
-func fetchUserDetails(sess *bxsession.Session, generation, retries int) (*UserConfig, error) {
+func fetchUserDetails(sess *bxsession.Session, generation, retries int, retryDelay time.Duration) (*UserConfig, error) {
 	config := sess.Config
 	user := UserConfig{}
 	var bluemixToken string
@@ -1740,8 +1821,10 @@ func fetchUserDetails(sess *bxsession.Session, generation, retries int) (*UserCo
 	if err != nil && !strings.Contains(err.Error(), "key is of invalid type") {
 		if retries > 0 {
 			if config.BluemixAPIKey != "" {
+				time.Sleep(retryDelay)
+				log.Printf("Retrying authentication for user details %d", retries)
 				_ = authenticateAPIKey(sess)
-				return fetchUserDetails(sess, generation, retries-1)
+				return fetchUserDetails(sess, generation, retries-1, retryDelay)
 			}
 		}
 		return &user, err
