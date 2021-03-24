@@ -295,9 +295,14 @@ func Provider() *schema.Provider {
 			"ibm_service_key":                        dataSourceIBMServiceKey(),
 			"ibm_service_plan":                       dataSourceIBMServicePlan(),
 			"ibm_space":                              dataSourceIBMSpace(),
-			"ibm_schematics_workspace":               dataSourceSchematicsWorkspace(),
-			"ibm_schematics_output":                  dataSourceSchematicsOut(),
-			"ibm_schematics_state":                   dataSourceSchematicsState(),
+
+			// Added for Schematics
+			"ibm_schematics_workspace": dataSourceIBMSchematicsWorkspace(),
+			"ibm_schematics_output":    dataSourceIBMSchematicsOutput(),
+			"ibm_schematics_state":     dataSourceIBMSchematicsState(),
+			"ibm_schematics_action":    dataSourceIBMSchematicsAction(),
+			"ibm_schematics_job":       dataSourceIBMSchematicsJob(),
+
 			// Added for Power Resources
 
 			"ibm_pi_key":                dataSourceIBMPIKey(),
@@ -540,6 +545,11 @@ func Provider() *schema.Provider {
 			"ibm_tg_gateway":           resourceIBMTransitGateway(),
 			"ibm_tg_connection":        resourceIBMTransitGatewayConnection(),
 			"ibm_cm_offering_instance": resourceIBMCmOfferingInstance(),
+
+			//Added for Schematics
+			"ibm_schematics_workspace": resourceIBMSchematicsWorkspace(),
+			"ibm_schematics_action":    resourceIBMSchematicsAction(),
+			"ibm_schematics_job":       resourceIBMSchematicsJob(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -617,6 +627,8 @@ func Validator() ValidatorDict {
 				"ibm_kms_key_rings":                    resourceIBMKeyRingValidator(),
 				"ibm_dns_glb_monitor":                  resourceIBMPrivateDNSGLBMonitorValidator(),
 				"ibm_dns_glb_pool":                     resourceIBMPrivateDNSGLBPoolValidator(),
+				"ibm_schematics_action":                resourceIBMSchematicsActionValidator(),
+				"ibm_schematics_job":                   resourceIBMSchematicsJobValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),

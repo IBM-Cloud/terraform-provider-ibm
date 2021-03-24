@@ -44,24 +44,24 @@ func dataSourceIBMSchematicsState() *schema.Resource {
 				Description: "The Template ID for which you want to get the values.  Use the GET /workspaces to look up the workspace IDs  or template IDs in your IBM Cloud account.",
 			},
 			"version": &schema.Schema{
-				Type:        schema.TypeFloat,
-				Computed:    true,
+				Type:     schema.TypeFloat,
+				Computed: true,
 			},
 			"terraform_version": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"serial": &schema.Schema{
-				Type:        schema.TypeFloat,
-				Computed:    true,
+				Type:     schema.TypeFloat,
+				Computed: true,
 			},
 			"lineage": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"modules": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
+				Type:     schema.TypeList,
+				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
 				},

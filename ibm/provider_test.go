@@ -60,6 +60,8 @@ var ISRouteDestination string
 var ISRouteNextHop string
 var workspaceID string
 var templateID string
+var actionID string
+var jobID string
 var imageName string
 var functionNamespace string
 var hpcsInstanceID string
@@ -407,17 +409,26 @@ func init() {
 		pi_instance_name = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_PVM_INSTANCE_ID for testing pi_instance_name resource else it is set to default value 'terraform-test-power'")
 	}
-	workspaceID = os.Getenv("WORKSPACE_ID")
+	workspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
 	if workspaceID == "" {
-		workspaceID = "outwork-2737f163-b966-44"
-		fmt.Println("[INFO] Set the environment variable WORKSPACE_ID for testing data_source_ibm_schematics_state_test else it is set to default value")
+		workspaceID = "us-south.workspace.tf-acc-test-schematics-state-test.392cd99f"
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_WORKSPACE_ID for testing schematics resources else it is set to default value")
 	}
-	templateID = os.Getenv("TEMPLATE_ID")
+	templateID = os.Getenv("SCHEMATICS_TEMPLATE_ID")
 	if templateID == "" {
-		templateID = "653f60a4-f64f-41"
-		fmt.Println("[INFO] Set the environment variable TEMPLATE_ID for testing data_source_ibm_schematics_state_test else it is set to default value")
+		templateID = "c8d52331-056f-40"
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_TEMPLATE_ID for testing schematics resources else it is set to default value")
 	}
-
+	actionID = os.Getenv("SCHEMATICS_ACTION_ID")
+	if actionID == "" {
+		actionID = "us-east.ACTION.action_pm.a4ffeec3"
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_ACTION_ID for testing schematics resources else it is set to default value")
+	}
+	jobID = os.Getenv("SCHEMATICS_JOB_ID")
+	if actionID == "" {
+		actionID = "us-east.ACTION.action_pm.a4ffeec3"
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_JOB_ID for testing schematics resources else it is set to default value")
+	}
 	// Added for resource image testing
 	image_cos_url = os.Getenv("IMAGE_COS_URL")
 	if image_cos_url == "" {

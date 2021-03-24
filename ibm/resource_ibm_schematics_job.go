@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -30,11 +31,11 @@ import (
 
 func resourceIBMSchematicsJob() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIBMSchematicsJobCreate,
-		ReadContext:     resourceIBMSchematicsJobRead,
-		UpdateContext:   resourceIBMSchematicsJobUpdate,
-		DeleteContext:   resourceIBMSchematicsJobDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMSchematicsJobCreate,
+		ReadContext:   resourceIBMSchematicsJobRead,
+		UpdateContext: resourceIBMSchematicsJobUpdate,
+		DeleteContext: resourceIBMSchematicsJobDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"refresh_token": &schema.Schema{
@@ -43,10 +44,10 @@ func resourceIBMSchematicsJob() *schema.Resource {
 				Description: "The IAM refresh token associated with the IBM Cloud account.",
 			},
 			"command_object": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_schematics_job", "command_object"),
-				Description: "Name of the Schematics automation resource.",
+				Description:  "Name of the Schematics automation resource.",
 			},
 			"command_object_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -54,10 +55,10 @@ func resourceIBMSchematicsJob() *schema.Resource {
 				Description: "Job command object id (workspace-id, action-id or control-id).",
 			},
 			"command_name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_schematics_job", "command_name"),
-				Description: "Schematics job command name.",
+				Description:  "Schematics job command name.",
 			},
 			"command_parameter": &schema.Schema{
 				Type:        schema.TypeString,
@@ -88,7 +89,6 @@ func resourceIBMSchematicsJob() *schema.Resource {
 						},
 						"metadata": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Optional:    true,
 							Description: "User editable metadata for the variables.",
 							Elem: &schema.Resource{
@@ -205,7 +205,6 @@ func resourceIBMSchematicsJob() *schema.Resource {
 						},
 						"metadata": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Optional:    true,
 							Description: "User editable metadata for the variables.",
 							Elem: &schema.Resource{
@@ -311,21 +310,19 @@ func resourceIBMSchematicsJob() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"location": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_schematics_job", "location"),
-				Description: "List of workspace locations supported by IBM Cloud Schematics service.  Note, this does not limit the location of the resources provisioned using Schematics.",
+				Description:  "List of workspace locations supported by IBM Cloud Schematics service.  Note, this does not limit the location of the resources provisioned using Schematics.",
 			},
 			"status": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Optional:    true,
 				Description: "Job Status.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"action_job_status": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Optional:    true,
 							Description: "Action Job Status.",
 							Elem: &schema.Resource{
@@ -378,7 +375,6 @@ func resourceIBMSchematicsJob() *schema.Resource {
 			},
 			"data": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Optional:    true,
 				Description: "Job data.",
 				Elem: &schema.Resource{
@@ -390,7 +386,6 @@ func resourceIBMSchematicsJob() *schema.Resource {
 						},
 						"action_job_data": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Optional:    true,
 							Description: "Action Job data.",
 							Elem: &schema.Resource{
@@ -418,7 +413,6 @@ func resourceIBMSchematicsJob() *schema.Resource {
 												},
 												"metadata": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
 													Optional:    true,
 													Description: "User editable metadata for the variables.",
 													Elem: &schema.Resource{
@@ -535,7 +529,6 @@ func resourceIBMSchematicsJob() *schema.Resource {
 												},
 												"metadata": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
 													Optional:    true,
 													Description: "User editable metadata for the variables.",
 													Elem: &schema.Resource{
@@ -652,7 +645,6 @@ func resourceIBMSchematicsJob() *schema.Resource {
 												},
 												"metadata": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
 													Optional:    true,
 													Description: "User editable metadata for the variables.",
 													Elem: &schema.Resource{
@@ -764,7 +756,6 @@ func resourceIBMSchematicsJob() *schema.Resource {
 			},
 			"bastion": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Optional:    true,
 				Description: "Complete Target details with user inputs and system generated data.",
 				Elem: &schema.Resource{
@@ -826,7 +817,6 @@ func resourceIBMSchematicsJob() *schema.Resource {
 						},
 						"sys_lock": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Optional:    true,
 							Computed:    true,
 							Description: "System lock status.",
@@ -862,7 +852,6 @@ func resourceIBMSchematicsJob() *schema.Resource {
 			},
 			"job_log_summary": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Optional:    true,
 				Description: "Job log summary record.",
 				Elem: &schema.Resource{
@@ -923,7 +912,6 @@ func resourceIBMSchematicsJob() *schema.Resource {
 						},
 						"repo_download_job": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Optional:    true,
 							Description: "Repo download Job log summary.",
 							Elem: &schema.Resource{
@@ -963,7 +951,6 @@ func resourceIBMSchematicsJob() *schema.Resource {
 						},
 						"action_job": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Optional:    true,
 							Description: "Flow Job log summary.",
 							Elem: &schema.Resource{
@@ -988,7 +975,6 @@ func resourceIBMSchematicsJob() *schema.Resource {
 									},
 									"recap": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
 										Optional:    true,
 										Description: "Recap records.",
 										Elem: &schema.Resource{
@@ -1111,14 +1097,14 @@ func resourceIBMSchematicsJobValidator() *ResourceValidator {
 			Type:                       TypeString,
 			Optional:                   true,
 			AllowedValues:              "action, workspace",
-		})
+		},
 		ValidateSchema{
 			Identifier:                 "command_name",
 			ValidateFunctionIdentifier: ValidateAllowedStringValue,
 			Type:                       TypeString,
 			Optional:                   true,
 			AllowedValues:              "ansible_playbook_check, ansible_playbook_run, helm_install, helm_list, helm_show, opa_evaluate, terraform_init, terrform_apply, terrform_destroy, terrform_plan, terrform_refresh, terrform_show, terrform_taint, workspace_apply_flow, workspace_custom_flow, workspace_destroy_flow, workspace_init_flow, workspace_plan_flow, workspace_refresh_flow, workspace_show_flow",
-		})
+		},
 		ValidateSchema{
 			Identifier:                 "location",
 			ValidateFunctionIdentifier: ValidateAllowedStringValue,
@@ -1174,7 +1160,7 @@ func resourceIBMSchematicsJobCreate(context context.Context, d *schema.ResourceD
 		createJobOptions.SetSettings(settings)
 	}
 	if _, ok := d.GetOk("tags"); ok {
-		createJobOptions.SetTags(d.Get("tags").([]string))
+		createJobOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
 	}
 	if _, ok := d.GetOk("location"); ok {
 		createJobOptions.SetLocation(d.Get("location").(string))
@@ -1217,7 +1203,8 @@ func resourceIBMSchematicsJobMapToVariableData(variableDataMap map[string]interf
 		variableData.Value = core.StringPtr(variableDataMap["value"].(string))
 	}
 	if variableDataMap["metadata"] != nil {
-		// TODO: handle Metadata of type VariableMetadata -- not primitive type, not list
+		variableMetaData := resourceIBMSchematicsJobMapToVariableMetadata(variableDataMap["metadata"].(map[string]interface{}))
+		variableData.Metadata = &variableMetaData
 	}
 	if variableDataMap["link"] != nil {
 		variableData.Link = core.StringPtr(variableDataMap["link"].(string))
@@ -1293,7 +1280,8 @@ func resourceIBMSchematicsJobMapToJobStatus(jobStatusMap map[string]interface{})
 	jobStatus := schematicsv1.JobStatus{}
 
 	if jobStatusMap["action_job_status"] != nil {
-		// TODO: handle ActionJobStatus of type JobStatusAction -- not primitive type, not list
+		actionJobStatus := resourceIBMSchematicsJobMapToJobStatusAction(jobStatusMap["action_job_status"].([]interface{})[0].(map[string]interface{}))
+		jobStatus.ActionJobStatus = &actionJobStatus
 	}
 
 	return jobStatus
@@ -1324,7 +1312,10 @@ func resourceIBMSchematicsJobMapToJobStatusAction(jobStatusActionMap map[string]
 		jobStatusAction.TargetsStatusMessage = core.StringPtr(jobStatusActionMap["targets_status_message"].(string))
 	}
 	if jobStatusActionMap["updated_at"] != nil {
-	
+		updatedAt, err := strfmt.ParseDateTime(jobStatusActionMap["updated_at"].(string))
+		if err != nil {
+			jobStatusAction.UpdatedAt = &updatedAt
+		}
 	}
 
 	return jobStatusAction
@@ -1335,7 +1326,8 @@ func resourceIBMSchematicsJobMapToJobData(jobDataMap map[string]interface{}) sch
 
 	jobData.JobType = core.StringPtr(jobDataMap["job_type"].(string))
 	if jobDataMap["action_job_data"] != nil {
-		// TODO: handle ActionJobData of type JobDataAction -- not primitive type, not list
+		actionJobData := resourceIBMSchematicsJobMapToJobDataAction(jobDataMap["action_job_data"].([]interface{})[0].(map[string]interface{}))
+		jobData.ActionJobData = &actionJobData
 	}
 
 	return jobData
@@ -1372,7 +1364,7 @@ func resourceIBMSchematicsJobMapToJobDataAction(jobDataActionMap map[string]inte
 		jobDataAction.Settings = settings
 	}
 	if jobDataActionMap["updated_at"] != nil {
-	
+
 	}
 
 	return jobDataAction
@@ -1400,19 +1392,20 @@ func resourceIBMSchematicsJobMapToTargetResourceset(targetResourcesetMap map[str
 		targetResourceset.ID = core.StringPtr(targetResourcesetMap["id"].(string))
 	}
 	if targetResourcesetMap["created_at"] != nil {
-	
+
 	}
 	if targetResourcesetMap["created_by"] != nil {
 		targetResourceset.CreatedBy = core.StringPtr(targetResourcesetMap["created_by"].(string))
 	}
 	if targetResourcesetMap["updated_at"] != nil {
-	
+
 	}
 	if targetResourcesetMap["updated_by"] != nil {
 		targetResourceset.UpdatedBy = core.StringPtr(targetResourcesetMap["updated_by"].(string))
 	}
 	if targetResourcesetMap["sys_lock"] != nil {
-		// TODO: handle SysLock of type SystemLock -- not primitive type, not list
+		sysLock := resourceIBMSchematicsJobMapToSystemLock(targetResourcesetMap["sys_lock"].(map[string]interface{}))
+		targetResourceset.SysLock = &sysLock
 	}
 	if targetResourcesetMap["resource_ids"] != nil {
 		resourceIds := []string{}
@@ -1435,7 +1428,7 @@ func resourceIBMSchematicsJobMapToSystemLock(systemLockMap map[string]interface{
 		systemLock.SysLockedBy = core.StringPtr(systemLockMap["sys_locked_by"].(string))
 	}
 	if systemLockMap["sys_locked_at"] != nil {
-	
+
 	}
 
 	return systemLock
@@ -1451,10 +1444,10 @@ func resourceIBMSchematicsJobMapToJobLogSummary(jobLogSummaryMap map[string]inte
 		jobLogSummary.JobType = core.StringPtr(jobLogSummaryMap["job_type"].(string))
 	}
 	if jobLogSummaryMap["log_start_at"] != nil {
-	
+
 	}
 	if jobLogSummaryMap["log_analyzed_till"] != nil {
-	
+
 	}
 	if jobLogSummaryMap["elapsed_time"] != nil {
 		jobLogSummary.ElapsedTime = core.Float64Ptr(jobLogSummaryMap["elapsed_time"].(float64))
@@ -1468,10 +1461,12 @@ func resourceIBMSchematicsJobMapToJobLogSummary(jobLogSummaryMap map[string]inte
 		jobLogSummary.LogErrors = logErrors
 	}
 	if jobLogSummaryMap["repo_download_job"] != nil {
-		// TODO: handle RepoDownloadJob of type JobLogSummaryRepoDownloadJob -- not primitive type, not list
+		repoDownloadJob := resourceIBMSchematicsJobMapToJobLogSummaryRepoDownloadJob(jobLogSummaryMap["repo_download_job"].([]interface{})[0].(map[string]interface{}))
+		jobLogSummary.RepoDownloadJob = &repoDownloadJob
 	}
 	if jobLogSummaryMap["action_job"] != nil {
-		// TODO: handle ActionJob of type JobLogSummaryActionJob -- not primitive type, not list
+		actionJob := resourceIBMSchematicsJobMapToJobLogSummaryActionJob(jobLogSummaryMap["action_job"].([]interface{})[0].(map[string]interface{}))
+		jobLogSummary.ActionJob = &actionJob
 	}
 
 	return jobLogSummary
@@ -1528,7 +1523,8 @@ func resourceIBMSchematicsJobMapToJobLogSummaryActionJob(jobLogSummaryActionJobM
 		jobLogSummaryActionJob.PlayCount = core.Float64Ptr(jobLogSummaryActionJobMap["play_count"].(float64))
 	}
 	if jobLogSummaryActionJobMap["recap"] != nil {
-		// TODO: handle Recap of type JobLogSummaryActionJobRecap -- not primitive type, not list
+		recap := resourceIBMSchematicsJobMapToJobLogSummaryActionJobRecap(jobLogSummaryActionJobMap["recap"].([]interface{})[0].(map[string]interface{}))
+		jobLogSummaryActionJob.Recap = &recap
 	}
 
 	return jobLogSummaryActionJob
@@ -1950,7 +1946,7 @@ func resourceIBMSchematicsJobUpdate(context context.Context, d *schema.ResourceD
 		replaceJobOptions.SetCommandParameter(d.Get("command_parameter").(string))
 	}
 	if _, ok := d.GetOk("command_options"); ok {
-		replaceJobOptions.SetCommandOptions(d.Get("command_options").([]string))
+		replaceJobOptions.SetCommandOptions(expandStringList(d.Get("command_options").([]interface{})))
 	}
 	if _, ok := d.GetOk("job_inputs"); ok {
 		var inputs []schematicsv1.VariableData
@@ -1971,7 +1967,7 @@ func resourceIBMSchematicsJobUpdate(context context.Context, d *schema.ResourceD
 		replaceJobOptions.SetSettings(settings)
 	}
 	if _, ok := d.GetOk("tags"); ok {
-		replaceJobOptions.SetTags(d.Get("tags").([]string))
+		replaceJobOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
 	}
 	if _, ok := d.GetOk("location"); ok {
 		replaceJobOptions.SetLocation(d.Get("location").(string))
