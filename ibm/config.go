@@ -163,7 +163,8 @@ type Config struct {
 	PowerServiceInstance string
 
 	// Zone
-	Zone string
+	Zone       string
+	Visibility string
 }
 
 //Session stores the information required for communication with the SoftLayer and Bluemix API
@@ -872,6 +873,8 @@ func (session clientSession) SecretsManagerV1() (*secretsmanagerv1.SecretsManage
 	return session.secretsManagerClient, session.secretsManagerClientErr
 }
 
+var cloudEndpoint = "cloud.ibm.com"
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1063,7 +1066,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.hpcsEndpointAPI = hpcsAPI
 
-	kpurl := fmt.Sprintf("https://%s.kms.cloud.ibm.com", c.Region)
+	kpurl := contructEndpoint(fmt.Sprintf("%s.kms", c.Region), cloudEndpoint)
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		kpurl = contructEndpoint(fmt.Sprintf("private.%s.kms", c.Region), cloudEndpoint)
+	}
 	options := kp.ClientConfig{
 		BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kpurl),
 		Authorization: sess.BluemixSession.Config.IAMAccessToken,
@@ -1076,7 +1082,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.kpAPI = kpAPIclient
 
-	kmsurl := fmt.Sprintf("https://%s.kms.cloud.ibm.com", c.Region)
+	kmsurl := contructEndpoint(fmt.Sprintf("%s.kms", c.Region), cloudEndpoint)
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		kmsurl = contructEndpoint(fmt.Sprintf("private.%s.kms", c.Region), cloudEndpoint)
+	}
 	kmsOptions := kp.ClientConfig{
 		BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
 		Authorization: sess.BluemixSession.Config.IAMAccessToken,
@@ -1108,6 +1117,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct an "options" struct for creating the service client.
 	catalogManagementURL := "https://cm.globalcatalog.cloud.ibm.com/api/v1-beta"
+	if c.Visibility == "private" {
+		session.catalogManagementClientErr = fmt.Errorf("Catalog Management resource doesnot support private endpoints")
+	}
 	catalogManagementClientOptions := &catalogmanagementv1.CatalogManagementV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT"}, catalogManagementURL),
 		Authenticator: authenticator,
@@ -1126,7 +1138,19 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.catalogManagementClientErr = fmt.Errorf("Error occurred while configuring Catalog Management API service: %q", err)
 	}
 
-	vpcclassicurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
+	vpcclassicurl := contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+	if c.Visibility == "private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			vpcclassicurl = contructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+		}
+		session.vpcClassicErr = fmt.Errorf("VPC Classic supports private endpoints only in us-south and us-east")
+	}
+	if c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			vpcclassicurl = contructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+		}
+		vpcclassicurl = contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+	}
 	vpcclassicoptions := &vpcclassic.VpcClassicV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_IS_API_ENDPOINT"}, vpcclassicurl),
 		Authenticator: authenticator,
@@ -1137,7 +1161,19 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.vpcClassicAPI = vpcclassicclient
 
-	vpcurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
+	vpcurl := contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+	if c.Visibility == "private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			vpcurl = contructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+		}
+		session.vpcErr = fmt.Errorf("VPC supports private endpoints only in us-south and us-east")
+	}
+	if c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			vpcurl = contructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+		}
+		vpcurl = contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+	}
 	vpcoptions := &vpc.VpcV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
 		Authenticator: authenticator,
@@ -1152,6 +1188,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.vpcAPI = vpcclient
 
 	pnurl := fmt.Sprintf("https://%s.imfpush.cloud.ibm.com/imfpush/v1", c.Region)
+	if c.Visibility == "private" {
+		session.vpcErr = fmt.Errorf("Push API doesnot support private endpoints")
+	}
 	pushNotificationOptions := &pushservicev1.PushServiceV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_PUSH_API_ENDPOINT"}, pnurl),
 		Authenticator: authenticator,
@@ -1283,7 +1322,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.functionIAMNamespaceAPI = namespaceFunction
 
-	apicurl := fmt.Sprintf("https://api.%s.apigw.cloud.ibm.com/controller", c.Region)
+	apicurl := contructEndpoint(fmt.Sprintf("api.%s.apigw", c.Region), fmt.Sprintf("%s/controller", cloudEndpoint))
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		apicurl = contructEndpoint(fmt.Sprintf("api.private.%s.apigw", c.Region), fmt.Sprintf("%s/controller", cloudEndpoint))
+	}
 	APIGatewayControllerAPIV1Options := &apigateway.ApiGatewayControllerApiV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_API_GATEWAY_ENDPOINT"}, apicurl),
 		Authenticator: &core.NoAuthAuthenticator{},
@@ -1302,8 +1344,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	session.ibmpiSession = ibmpisession
 
+	pdnsURL := dns.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		pdnsURL = contructEndpoint("api.private.dns-svcs", fmt.Sprintf("%s/v1", cloudEndpoint))
+	}
 	dnsOptions := &dns.DnsSvcsV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_PRIVATE_DNS_API_ENDPOINT"}, "https://api.dns-svcs.cloud.ibm.com/v1"),
+		URL:           envFallBack([]string{"IBMCLOUD_PRIVATE_DNS_API_ENDPOINT"}, pdnsURL),
 		Authenticator: authenticator,
 	}
 
@@ -1313,8 +1359,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	ver := time.Now().Format("2006-01-02")
 
+	dlURL := dl.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		dlURL = contructEndpoint("private.directlink", fmt.Sprintf("%s/v1", cloudEndpoint))
+	}
 	directlinkOptions := &dl.DirectLinkV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_DL_API_ENDPOINT"}, "https://directlink.cloud.ibm.com/v1"),
+		URL:           envFallBack([]string{"IBMCLOUD_DL_API_ENDPOINT"}, dlURL),
 		Authenticator: authenticator,
 		Version:       &ver,
 	}
@@ -1325,8 +1375,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	//Direct link provider
+	dlproviderURL := dlProviderV2.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		dlproviderURL = contructEndpoint("private.directlink", fmt.Sprintf("%s/provider/v2", cloudEndpoint))
+	}
 	directLinkProviderV2Options := &dlProviderV2.DirectLinkProviderV2Options{
-		URL:           envFallBack([]string{"IBMCLOUD_DL_PROVIDER_API_ENDPOINT"}, "https://directlink.cloud.ibm.com/provider/v2"),
+		URL:           envFallBack([]string{"IBMCLOUD_DL_PROVIDER_API_ENDPOINT"}, dlproviderURL),
 		Authenticator: authenticator,
 		Version:       &ver,
 	}
@@ -1335,8 +1389,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.dlProviderErr != nil {
 		session.dlProviderErr = fmt.Errorf("Error occured while configuring Direct Link Provider Service: %s", session.dlProviderErr)
 	}
+	tgURL := tg.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		tgURL = contructEndpoint("private.transit", fmt.Sprintf("%s/v1", cloudEndpoint))
+	}
 	transitgatewayOptions := &tg.TransitGatewayApisV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_TG_API_ENDPOINT"}, "https://transit.cloud.ibm.com/v1"),
+		URL:           envFallBack([]string{"IBMCLOUD_TG_API_ENDPOINT"}, tgURL),
 		Authenticator: authenticator,
 		Version:       CreateVersionDate(),
 	}
@@ -1347,7 +1405,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// CIS Service instances starts here.
-	cisEndPoint := envFallBack([]string{"IBMCLOUD_CIS_API_ENDPOINT"}, "https://api.cis.cloud.ibm.com")
+	cisURL := contructEndpoint("api.cis", cloudEndpoint)
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		cisURL = contructEndpoint("api.private.cis", cloudEndpoint)
+	}
+	cisEndPoint := envFallBack([]string{"IBMCLOUD_CIS_API_ENDPOINT"}, cisURL)
 
 	// IBM Network CIS Zones service
 	cisZonesV1Opt := &ciszonesv1.ZonesV1Options{
@@ -1665,9 +1727,16 @@ func (c *Config) ClientSession() (interface{}, error) {
 			session.cisWAFRuleErr)
 	}
 	// iamIdenityURL := fmt.Sprintf("https://%s.iam.cloud.ibm.com/v1", c.Region)
+	iamURL := iamidentity.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			iamURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+		}
+		iamURL = contructEndpoint("private.iam", cloudEndpoint)
+	}
 	iamIdentityOptions := &iamidentity.IamIdentityV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, "https://iam.cloud.ibm.com"),
+		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL),
 	}
 	iamIdentityClient, err := iamidentity.NewIamIdentityV1(iamIdentityOptions)
 	if err != nil {
@@ -1675,9 +1744,23 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.iamIdentityAPI = iamIdentityClient
 
+	rmURL := resourcemanager.DefaultServiceURL
+	if c.Visibility == "private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			rmURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s/v2", cloudEndpoint))
+		}
+		fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
+		rmURL = contructEndpoint("private.resource-controller", fmt.Sprintf("%s/v2", cloudEndpoint))
+	}
+	if c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			rmURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s/v2", cloudEndpoint))
+		}
+		rmURL = resourcemanager.DefaultServiceURL
+	}
 	resourceManagerOptions := &resourcemanager.ResourceManagerV2Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_MANAGER_API_ENDPOINT"}, resourcemanager.DefaultServiceURL),
+		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_MANAGER_API_ENDPOINT"}, rmURL),
 	}
 	resourceManagerClient, err := resourcemanager.NewResourceManagerV2(resourceManagerOptions)
 	if err != nil {
@@ -1689,9 +1772,23 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.resourceManagerAPI = resourceManagerClient
 
 	// resource controller API
+	rcURL := resourcecontroller.DefaultServiceURL
+	if c.Visibility == "private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			rcURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), cloudEndpoint)
+		}
+		fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
+		rcURL = contructEndpoint("private.resource-controller", cloudEndpoint)
+	}
+	if c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			rcURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), cloudEndpoint)
+		}
+		rcURL = resourcecontroller.DefaultServiceURL
+	}
 	resourceControllerOptions := &resourcecontroller.ResourceControllerV2Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_CONTROLLER_API_ENDPOINT"}, resourcecontroller.DefaultServiceURL),
+		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_CONTROLLER_API_ENDPOINT"}, rcURL),
 	}
 	resourceControllerClient, err := resourcecontroller.NewResourceControllerV2(resourceControllerOptions)
 	if err != nil {
@@ -1891,11 +1988,7 @@ func refreshToken(sess *bxsession.Session) error {
 func envFallBack(envs []string, defaultValue string) string {
 	for _, k := range envs {
 		if v := os.Getenv(k); v != "" {
-			if strings.Contains(v, "https://") {
-				return v
-			} else {
-				return fmt.Sprintf("https://%s/v1", v)
-			}
+			return v
 		}
 	}
 	return defaultValue
@@ -1935,4 +2028,9 @@ func isRetryable(err error) bool {
 	}
 
 	return false
+}
+
+func contructEndpoint(subdomain, domain string) string {
+	endpoint := fmt.Sprintf("https://%s.%s", subdomain, domain)
+	return endpoint
 }
