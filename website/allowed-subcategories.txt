@@ -19,4 +19,5 @@ Resource management
 Schematics
 Transit Gateway
 VPC infrastructure
+Secrets Manager
 

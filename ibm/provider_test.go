@@ -63,6 +63,9 @@ var templateID string
 var imageName string
 var functionNamespace string
 var hpcsInstanceID string
+var secretsManagerInstanceID string
+var secretsManagerSecretType string
+var secretsManagerSecretID string
 
 // For Power Colo
 
@@ -461,6 +464,25 @@ func init() {
 		hpcsInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
 		fmt.Println("[INFO] Set the environment variable HPCS_INSTANCE_ID for testing data_source_ibm_kms_key_test else it is set to default value")
 	}
+
+	secretsManagerInstanceID = os.Getenv("SECRETS_MANAGER_INSTANCE_ID")
+	if secretsManagerInstanceID == "" {
+		// secretsManagerInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_INSTANCE_ID for testing data_source_ibm_secrets_manager_secrets_test else tests will fail if this is not set correctly")
+	}
+
+	secretsManagerSecretType = os.Getenv("SECRETS_MANAGER_SECRET_TYPE")
+	if secretsManagerSecretType == "" {
+		secretsManagerSecretType = "username_password"
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SECRET_TYPE for testing data_source_ibm_secrets_manager_secrets_test, else it is set to default value. For data_source_ibm_secrets_manager_secret_test, tests will fail if this is not set correctly")
+	}
+
+	secretsManagerSecretID = os.Getenv("SECRETS_MANAGER_SECRET_ID")
+	if secretsManagerSecretID == "" {
+		// secretsManagerSecretID = "644f4a69-0d17-198f-3b58-23f2746c706d"
+		fmt.Println("[WARN] Set the environment variable SECRETS_MANAGER_SECRET_ID for testing data_source_ibm_secrets_manager_secret_test else tests will fail if this is not set correctly")
+	}
+
 	tg_cross_network_account_id = os.Getenv("IBM_TG_CROSS_ACCOUNT_ID")
 	if tg_cross_network_account_id == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_ACCOUNT_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
