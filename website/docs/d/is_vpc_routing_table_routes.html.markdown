@@ -51,6 +51,5 @@ The following attributes are exported:
   * `created_at` - The date and time that the route was created.
   * `action` - The action to perform with a packet matching the route.
   * `destination` - The destination of the route.
-  * `next_hop` - The next_hop address of the route.
-  * `next_hop_vpn_connection` - The vpn connection for next hop.
+  * `nexthop` - The next hop address of the route.
   * `zone` - The zone name of the route.

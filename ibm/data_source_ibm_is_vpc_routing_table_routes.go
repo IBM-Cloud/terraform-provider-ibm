@@ -19,7 +19,7 @@ const (
 	isRoutingTableRouteLifecycleState = "lifecycle_state"
 	isRoutingTableRouteAction         = "action"
 	isRoutingTableRouteDestination    = "destination"
-	isRoutingTableRouteNexthop        = "next_hop"
+	isRoutingTableRouteNexthop        = "nexthop"
 	isRoutingTableRouteZoneName       = "zone"
 	isRoutingTableRouteVpcID          = "vpc"
 	isRouteTableID                    = "routing_table"
