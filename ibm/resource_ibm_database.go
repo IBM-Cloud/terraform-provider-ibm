@@ -14,7 +14,6 @@ import (
 	"time"
 
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -60,23 +59,19 @@ type CsEntry struct {
 
 func resourceIBMDatabaseInstance() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMDatabaseInstanceCreate,
-		Read:     resourceIBMDatabaseInstanceRead,
-		Update:   resourceIBMDatabaseInstanceUpdate,
-		Delete:   resourceIBMDatabaseInstanceDelete,
-		Exists:   resourceIBMDatabaseInstanceExists,
-		Importer: &schema.ResourceImporter{},
+		Create:        resourceIBMDatabaseInstanceCreate,
+		Read:          resourceIBMDatabaseInstanceRead,
+		Update:        resourceIBMDatabaseInstanceUpdate,
+		Delete:        resourceIBMDatabaseInstanceDelete,
+		Exists:        resourceIBMDatabaseInstanceExists,
+		CustomizeDiff: resourceIBMDatabaseInstanceDiff,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
-			Update: schema.DefaultTimeout(20 * time.Minute),
+			Update: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
-		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return resourceTagsCustomizeDiff(diff)
-			},
-		),
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -147,24 +142,60 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				ForceNew:    true,
 			},
 			"members_memory_allocation_mb": {
-				Description: "Memory allocation required for cluster",
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				//ValidateFunc: validation.IntBetween(2048, 114688),
+				Description:   "Memory allocation required for cluster",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"node_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count"},
 			},
 			"members_disk_allocation_mb": {
-				Description: "Disk allocation required for cluster",
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				//ValidateFunc: validation.IntBetween(2048, 1048576),
+				Description:   "Disk allocation required for cluster",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"node_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count"},
 			},
 			"members_cpu_allocation_count": {
-				Description: "CPU allocation required for cluster",
+				Description:   "CPU allocation required for cluster",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"node_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count"},
+			},
+			"node_count": {
+				Description:   "Total number of nodes in the cluster",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count"},
+			},
+			"node_memory_allocation_mb": {
+				Description: "Memory allocation per node",
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
+
+				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count"},
+			},
+			"node_disk_allocation_mb": {
+				Description:   "Disk allocation per node",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count"},
+			},
+			"node_cpu_allocation_count": {
+				Description:   "CPU allocation per node",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count"},
+			},
+			"plan_validation": {
+				Description: "For elasticsearch and postgres perform database parameter validation during the plan phase. Otherwise, database parameter validation happens in apply phase.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
 			},
 			"service_endpoints": {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
@@ -695,6 +726,188 @@ type Params struct {
 	PITRTimeStamp       string `json:"point_in_time_recovery_time,omitempty"`
 }
 
+func getDatabaseServiceDefaults(service string, meta interface{}) (*icdv4.Group, error) {
+	icdClient, err := meta.(ClientSession).ICDAPI()
+	if err != nil {
+		return nil, fmt.Errorf("Error getting database client settings: %s", err)
+	}
+
+	var dbType string
+	if strings.HasPrefix(service, "messages-for-") {
+		dbType = service[len("messages-for-"):]
+	} else {
+		dbType = service[len("databases-for-"):]
+	}
+
+	groupDefaults, err := icdClient.Groups().GetDefaultGroups(dbType)
+	if err != nil {
+		return nil, fmt.Errorf("ICD API is down for plan validation, set plan_validation=false")
+	}
+	return &groupDefaults.Groups[0], nil
+}
+
+func getInitialNodeCount(d *schema.ResourceData, meta interface{}) (int, error) {
+	service := d.Get("service").(string)
+	planPhase := d.Get("plan_validation").(bool)
+	if planPhase {
+		groupDefaults, err := getDatabaseServiceDefaults(service, meta)
+		if err != nil {
+			return 0, err
+		}
+		return groupDefaults.Members.MinimumCount, nil
+	} else {
+		if service == "databases-for-elasticsearch" {
+			return 3, nil
+		}
+		return 2, nil
+	}
+}
+
+type GroupLimit struct {
+	Units        string
+	Allocation   int
+	Minimum      int
+	Maximum      int
+	StepSize     int
+	IsAdjustable bool
+	CanScaleDown bool
+}
+
+func checkGroupValue(name string, limits GroupLimit, divider int, diff *schema.ResourceDiff) error {
+	if diff.HasChange(name) {
+		oldSetting, newSetting := diff.GetChange(name)
+		old := oldSetting.(int)
+		new := newSetting.(int)
+
+		if new < limits.Minimum/divider || new > limits.Maximum/divider || new%(limits.StepSize/divider) != 0 {
+			return fmt.Errorf("%s must be >= %d and <= %d in increments of %d", name, limits.Minimum/divider, limits.Maximum/divider/divider, limits.StepSize/divider)
+		}
+		if old != new && !limits.IsAdjustable {
+			return fmt.Errorf("%s can not change value after create", name)
+		}
+		if new < old && !limits.CanScaleDown {
+			return fmt.Errorf("%s can not scale down from %d to %d", name, old, new)
+		}
+		return nil
+	}
+	return nil
+}
+
+type CountLimit struct {
+	Units           string
+	AllocationCount int
+	MinimumCount    int
+	MaximumCount    int
+	StepSizeCount   int
+	IsAdjustable    bool
+	CanScaleDown    bool
+}
+
+func checkCountValue(name string, limits CountLimit, divider int, diff *schema.ResourceDiff) error {
+	groupLimit := GroupLimit{
+		Units:        limits.Units,
+		Allocation:   limits.AllocationCount,
+		Minimum:      limits.MinimumCount,
+		Maximum:      limits.MaximumCount,
+		StepSize:     limits.StepSizeCount,
+		IsAdjustable: limits.IsAdjustable,
+		CanScaleDown: limits.CanScaleDown,
+	}
+	return checkGroupValue(name, groupLimit, divider, diff)
+}
+
+type MbLimit struct {
+	Units        string
+	AllocationMb int
+	MinimumMb    int
+	MaximumMb    int
+	StepSizeMb   int
+	IsAdjustable bool
+	CanScaleDown bool
+}
+
+func checkMbValue(name string, limits MbLimit, divider int, diff *schema.ResourceDiff) error {
+	groupLimit := GroupLimit{
+		Units:        limits.Units,
+		Allocation:   limits.AllocationMb,
+		Minimum:      limits.MinimumMb,
+		Maximum:      limits.MaximumMb,
+		StepSize:     limits.StepSizeMb,
+		IsAdjustable: limits.IsAdjustable,
+		CanScaleDown: limits.CanScaleDown,
+	}
+	return checkGroupValue(name, groupLimit, divider, diff)
+}
+
+func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+
+	err := resourceTagsCustomizeDiff(diff)
+	if err != nil {
+		return err
+	}
+
+	service := diff.Get("service").(string)
+	if service == "databases-for-postgresql" || service == "databases-for-elasticsearch" {
+		planPhase := diff.Get("plan_validation").(bool)
+
+		if planPhase {
+
+			groupDefaults, err := getDatabaseServiceDefaults(service, meta)
+			if err != nil {
+				return err
+			}
+
+			err = checkMbValue("members_memory_allocation_mb", MbLimit(groupDefaults.Memory), 1, diff)
+			if err != nil {
+				return err
+			}
+
+			err = checkMbValue("members_disk_allocation_mb", MbLimit(groupDefaults.Disk), 1, diff)
+			if err != nil {
+				return err
+			}
+
+			err = checkCountValue("members_cpu_allocation_count", CountLimit(groupDefaults.Cpu), 1, diff)
+			if err != nil {
+				return err
+			}
+
+			err = checkCountValue("node_count", CountLimit(groupDefaults.Members), 1, diff)
+			if err != nil {
+				return err
+			}
+
+			var divider = groupDefaults.Members.MinimumCount
+			err = checkMbValue("node_memory_allocation_mb", MbLimit(groupDefaults.Memory), divider, diff)
+			if err != nil {
+				return err
+			}
+
+			err = checkMbValue("node_disk_allocation_mb", MbLimit(groupDefaults.Disk), divider, diff)
+			if err != nil {
+				return err
+			}
+
+			if diff.HasChange("node_cpu_allocation_count") {
+				err = checkCountValue("node_cpu_allocation_count", CountLimit(groupDefaults.Cpu), divider, diff)
+				if err != nil {
+					return err
+				}
+			} else if diff.HasChange("node_count") {
+				_, newSetting := diff.GetChange("node_count")
+				min := groupDefaults.Cpu.MinimumCount / divider
+				if newSetting != min {
+					return fmt.Errorf("node_cpu_allocation_count must be set when node_count is greater then the minimum %d", min)
+				}
+			}
+		}
+	} else if diff.HasChange("node_count") || diff.HasChange("node_memory_allocation_mb") || diff.HasChange("node_disk_allocation_mb") || diff.HasChange("node_cpu_allocation_count") {
+		return fmt.Errorf("node_count, node_memory_allocation_mb, node_disk_allocation_mb, node_cpu_allocation_count only supported for postgresql and elasticsearch")
+	}
+
+	return nil
+}
+
 // Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "database......."
 func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
@@ -758,15 +971,29 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 		rsInst.ResourceGroup = &defaultRg
 	}
 
+	initialNodeCount, err := getInitialNodeCount(d, meta)
+	if err != nil {
+		return err
+	}
+
 	params := Params{}
 	if memory, ok := d.GetOk("members_memory_allocation_mb"); ok {
 		params.Memory = memory.(int)
 	}
+	if memory, ok := d.GetOk("node_memory_allocation_mb"); ok {
+		params.Memory = memory.(int) * initialNodeCount
+	}
 	if disk, ok := d.GetOk("members_disk_allocation_mb"); ok {
 		params.Disk = disk.(int)
 	}
+	if disk, ok := d.GetOk("node_disk_allocation_mb"); ok {
+		params.Disk = disk.(int) * initialNodeCount
+	}
 	if cpu, ok := d.GetOk("members_cpu_allocation_count"); ok {
 		params.CPU = cpu.(int)
+	}
+	if cpu, ok := d.GetOk("node_cpu_allocation_count"); ok {
+		params.CPU = cpu.(int) * initialNodeCount
 	}
 	if version, ok := d.GetOk("version"); ok {
 		params.Version = version.(string)
@@ -816,6 +1043,19 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 
 	d.SetId(*instance.ID)
 
+	if node_count, ok := d.GetOk("node_count"); ok {
+		if initialNodeCount != node_count {
+			icdClient, err := meta.(ClientSession).ICDAPI()
+			if err != nil {
+				return fmt.Errorf("Error getting database client settings: %s", err)
+			}
+
+			err = horizontalScale(d, meta, icdClient)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk("tags"); ok || v != "" {
 		oldList, newList := d.GetChange("tags")
@@ -1062,9 +1302,16 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("Error getting database groups: %s", err)
 	}
 	d.Set("groups", flattenIcdGroups(groupList))
+	d.Set("node_count", groupList.Groups[0].Members.AllocationCount)
+
 	d.Set("members_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb)
+	d.Set("node_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb/groupList.Groups[0].Members.AllocationCount)
+
 	d.Set("members_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb)
+	d.Set("node_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb/groupList.Groups[0].Members.AllocationCount)
+
 	d.Set("members_cpu_allocation_count", groupList.Groups[0].Cpu.AllocationCount)
+	d.Set("node_cpu_allocation_count", groupList.Groups[0].Cpu.AllocationCount/groupList.Groups[0].Members.AllocationCount)
 
 	autoSclaingGroup, err := icdClient.AutoScaling().GetAutoScaling(icdId, "member")
 	if err != nil {
@@ -1155,11 +1402,24 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 	}
 	icdId := EscapeUrlParm(instanceID)
 
-	if d.HasChange("members_memory_allocation_mb") || d.HasChange("members_disk_allocation_mb") || d.HasChange("members_cpu_allocation_count") {
+	if d.HasChange("node_count") {
+		err = horizontalScale(d, meta, icdClient)
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("members_memory_allocation_mb") || d.HasChange("members_disk_allocation_mb") || d.HasChange("members_cpu_allocation_count") || d.HasChange("node_memory_allocation_mb") || d.HasChange("node_disk_allocation_mb") || d.HasChange("node_cpu_allocation_count") {
 		params := icdv4.GroupReq{}
 		if d.HasChange("members_memory_allocation_mb") {
 			memory := d.Get("members_memory_allocation_mb").(int)
 			memoryReq := icdv4.MemoryReq{AllocationMb: memory}
+			params.GroupBdy.Memory = &memoryReq
+		}
+		if d.HasChange("node_memory_allocation_mb") || d.HasChange("node_count") {
+			memory := d.Get("node_memory_allocation_mb").(int)
+			count := d.Get("node_count").(int)
+			memoryReq := icdv4.MemoryReq{AllocationMb: memory * count}
 			params.GroupBdy.Memory = &memoryReq
 		}
 		if d.HasChange("members_disk_allocation_mb") {
@@ -1167,10 +1427,22 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 			diskReq := icdv4.DiskReq{AllocationMb: disk}
 			params.GroupBdy.Disk = &diskReq
 		}
+		if d.HasChange("node_disk_allocation_mb") || d.HasChange("node_count") {
+			disk := d.Get("node_disk_allocation_mb").(int)
+			count := d.Get("node_count").(int)
+			diskReq := icdv4.DiskReq{AllocationMb: disk * count}
+			params.GroupBdy.Disk = &diskReq
+		}
 		if d.HasChange("members_cpu_allocation_count") {
 			cpu := d.Get("members_cpu_allocation_count").(int)
 			cpuReq := icdv4.CpuReq{AllocationCount: cpu}
 			params.GroupBdy.Cpu = &cpuReq
+		}
+		if d.HasChange("node_cpu_allocation_mb") || d.HasChange("node_count") {
+			cpu := d.Get("node_cpu_allocation_count").(int)
+			count := d.Get("node_count").(int)
+			CpuReq := icdv4.CpuReq{AllocationCount: cpu * count}
+			params.GroupBdy.Cpu = &CpuReq
 		}
 		task, err := icdClient.Groups().UpdateGroup(icdId, "member", params)
 		if err != nil {
@@ -1181,8 +1453,8 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf(
 				"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
 		}
-
 	}
+
 	if d.HasChange("auto_scaling.0.cpu") {
 		cpuRecord := d.Get("auto_scaling.0.cpu")
 		params := icdv4.AutoscalingSetGroup{}
@@ -1393,6 +1665,37 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 	}
 
 	return resourceIBMDatabaseInstanceRead(d, meta)
+}
+
+func horizontalScale(d *schema.ResourceData, meta interface{}, icdClient icdv4.ICDServiceAPI) error {
+	params := icdv4.GroupReq{}
+
+	icdId := EscapeUrlParm(d.Id())
+
+	members := d.Get("node_count").(int)
+	membersReq := icdv4.MembersReq{AllocationCount: members}
+	params.GroupBdy.Members = &membersReq
+
+	//task, err := icdClient.Groups().UpdateGroup(icdId, "member", params)
+	_, err := icdClient.Groups().UpdateGroup(icdId, "member", params)
+
+	if err != nil {
+		return fmt.Errorf("Error updating database scaling group: %s", err)
+	}
+
+	//_, err = waitForDatabaseTaskCompleteDuration(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
+	//if err != nil {
+	//	return fmt.Errorf(
+	//		"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
+	//}
+
+	_, err = waitForDatabaseInstanceUpdate(d, meta)
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for database (%s) horizontal scale to complete: %s", d.Id(), err)
+	}
+
+	return nil
 }
 
 func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint string, meta interface{}) (CsEntry, error) {
@@ -1613,7 +1916,6 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 			if innerTask.Status == "completed" || innerTask.Status == "" {
 				return true, nil
 			}
-
 		}
 	}
 }
