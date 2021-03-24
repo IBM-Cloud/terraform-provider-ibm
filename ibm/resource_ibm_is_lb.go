@@ -111,7 +111,8 @@ func resourceIBMISLB() *schema.Resource {
 
 			isLBSecurityGroups: {
 				Type:          schema.TypeSet,
-				ForceNew:      false,
+				Computed:      true,
+				ForceNew:      true,
 				Optional:      true,
 				Elem:          &schema.Schema{Type: schema.TypeString},
 				Set:           schema.HashString,
@@ -335,7 +336,7 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		options.Subnets = subnetobjs
 	}
 
-	if securityGroups.Len() != 0 {
+	if securityGroups != nil && securityGroups.Len() != 0 {
 		securityGroupobjs := make([]vpcv1.SecurityGroupIdentityIntf, securityGroups.Len())
 		for i, securityGroup := range securityGroups.List() {
 			securityGroupstr := securityGroup.(string)
