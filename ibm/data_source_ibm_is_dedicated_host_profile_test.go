@@ -11,16 +11,16 @@ import (
 )
 
 func TestAccIbmIsDedicatedHostProfileDataSourceBasic(t *testing.T) {
-	profile := "dh2-56x464"
+
 	resName := "data.ibm_is_dedicated_host_profile.dhprofile"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmIsDedicatedHostProfileDataSourceConfigBasic(profile),
+				Config: testAccCheckIbmIsDedicatedHostProfileDataSourceConfigBasic(dedicatedHostProfileName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resName, "name", profile),
+					resource.TestCheckResourceAttr(resName, "name", dedicatedHostProfileName),
 					resource.TestCheckResourceAttrSet(resName, "class"),
 					resource.TestCheckResourceAttrSet(resName, "family"),
 				),
