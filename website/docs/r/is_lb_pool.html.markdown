@@ -70,8 +70,7 @@ The following arguments are supported:
 * `health_type` - (Required, string) The pool protocol. Enumeration type: http, https, tcp
 * `health_monitor_url` - (Optional, string) The health check url. This option is applicable only to http type of --health-type
 * `health_monitor_port` - (Optional, int) The health check port number
-* `session_persistence_type` - (Optional, string) The session persistence type, Enumeration type: source_ip, http_cookie, app_cookie
-* `session_persistence_cookie_name` - (Optional, string) Session persistence cookie name. This option is applicable only to --session-persistence-type
+* `session_persistence_type` - (Optional, string) The session persistence type, Enumeration type: source_ip
 * `proxy_protocol` - (Otpional, string) The PROXY protocol setting for this pool. Supported by load balancers in the application family otherwise disabled. Valid values: disabled, v1, v2.
 
 ## Attribute Reference
