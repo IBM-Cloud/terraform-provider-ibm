@@ -163,6 +163,8 @@ func Provider() *schema.Provider {
 			"ibm_app_domain_private":                 dataSourceIBMAppDomainPrivate(),
 			"ibm_app_domain_shared":                  dataSourceIBMAppDomainShared(),
 			"ibm_app_route":                          dataSourceIBMAppRoute(),
+			"ibm_atracker_targets":                   dataSourceIBMAtrackerTargets(),
+			"ibm_atracker_routes":                    dataSourceIBMAtrackerRoutes(),
 			"ibm_function_action":                    dataSourceIBMFunctionAction(),
 			"ibm_function_package":                   dataSourceIBMFunctionPackage(),
 			"ibm_function_rule":                      dataSourceIBMFunctionRule(),
@@ -344,6 +346,8 @@ func Provider() *schema.Provider {
 			"ibm_app_domain_private":                             resourceIBMAppDomainPrivate(),
 			"ibm_app_domain_shared":                              resourceIBMAppDomainShared(),
 			"ibm_app_route":                                      resourceIBMAppRoute(),
+			"ibm_atracker_target":                                resourceIBMAtrackerTarget(),
+			"ibm_atracker_route":                                 resourceIBMAtrackerRoute(),
 			"ibm_function_action":                                resourceIBMFunctionAction(),
 			"ibm_function_package":                               resourceIBMFunctionPackage(),
 			"ibm_function_rule":                                  resourceIBMFunctionRule(),
@@ -543,6 +547,7 @@ func Validator() ValidatorDict {
 	initOnce.Do(func() {
 		globalValidatorDict = ValidatorDict{
 			ResourceValidatorDictionary: map[string]*ResourceValidator{
+				"ibm_atracker_target":        resourceIBMAtrackerTargetValidator(),
 				"ibm_iam_custom_role":        resourceIBMIAMCustomRoleValidator(),
 				"ibm_cis_healthcheck":        resourceIBMCISHealthCheckValidator(),
 				"ibm_cis_rate_limit":         resourceIBMCISRateLimitValidator(),

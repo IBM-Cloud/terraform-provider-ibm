@@ -46,6 +46,7 @@ import (
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
+	"github.com/IBM/platform-services-go-sdk/atrackerv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
@@ -181,6 +182,7 @@ type ClientSession interface {
 	BluemixAcccountAPI() (accountv2.AccountServiceAPI, error)
 	BluemixAcccountv1API() (accountv1.AccountServiceAPI, error)
 	BluemixUserDetails() (*UserConfig, error)
+	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	ContainerAPI() (containerv1.ContainerServiceAPI, error)
 	VpcContainerAPI() (containerv2.ContainerServiceAPI, error)
 	ContainerRegistryAPI() (registryv1.RegistryServiceAPI, error)
@@ -257,6 +259,9 @@ type clientSession struct {
 
 	accountV1ConfigErr     error
 	bmxAccountv1ServiceAPI accountv1.AccountServiceAPI
+
+	atrackerClient    *atrackerv1.AtrackerV1
+	atrackerClientErr error
 
 	bmxUserDetails  *UserConfig
 	bmxUserFetchErr error
@@ -494,6 +499,10 @@ func (sess clientSession) BluemixSession() (*bxsession.Session, error) {
 // BluemixUserDetails ...
 func (sess clientSession) BluemixUserDetails() (*UserConfig, error) {
 	return sess.bmxUserDetails, sess.bmxUserFetchErr
+}
+
+func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
+	return session.atrackerClient, session.atrackerClientErr
 }
 
 // ContainerAPI provides Container Service APIs ...
@@ -1095,6 +1104,29 @@ func (c *Config) ClientSession() (interface{}, error) {
 		authenticator = &core.BearerTokenAuthenticator{
 			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
 		}
+	}
+
+	// Construct an "options" struct for creating the service client.
+	atrackerClientURL, err := atrackerv1.GetServiceURLForRegion(c.Region)
+	if err != nil {
+		atrackerClientURL = atrackerv1.DefaultServiceURL
+	}
+	atrackerClientOptions := &atrackerv1.AtrackerV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_ATRACKER_API_ENDPOINT"}, atrackerClientURL),
+	}
+
+	// Construct the service client.
+	session.atrackerClient, err = atrackerv1.NewAtrackerV1(atrackerClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.atrackerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.atrackerClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.atrackerClientErr = fmt.Errorf("Error occurred while configuring Activity Tracking API service: %q", err)
 	}
 
 	// Construct an "options" struct for creating the service client.
