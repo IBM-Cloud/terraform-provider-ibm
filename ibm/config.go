@@ -1107,7 +1107,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct an "options" struct for creating the service client.
-	atrackerClientURL, err := atrackerv1.GetServiceURLForRegion(c.Region)
+	atrackerClientURL, err := atrackerv1.GetServiceURLForRegion("private." + c.Region)
 	if err != nil {
 		atrackerClientURL = atrackerv1.DefaultServiceURL
 	}

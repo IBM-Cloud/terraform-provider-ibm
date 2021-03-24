@@ -165,6 +165,10 @@ func resourceIBMAtrackerTargetRead(context context.Context, d *schema.ResourceDa
 		return diag.FromErr(fmt.Errorf("Error setting target_type: %s", err))
 	}
 	cosEndpointMap := resourceIBMAtrackerTargetCosEndpointToMap(*target.CosEndpoint)
+	// This line is a workaround for api_key, which comes back as "REDACTED" from the service.
+	// This causes havok in the tests (in legacy testing framework) so we store the original
+	// api_key value into the state.  This is the least bad solution I could come up with.
+	cosEndpointMap["api_key"] = d.Get("cos_endpoint.0.api_key")
 	if err = d.Set("cos_endpoint", []map[string]interface{}{cosEndpointMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting cos_endpoint: %s", err))
 	}

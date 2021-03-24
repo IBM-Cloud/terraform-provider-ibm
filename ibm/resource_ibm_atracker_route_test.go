@@ -67,7 +67,7 @@ func testAccCheckIBMAtrackerRouteConfigBasic(name string, receiveGlobalEvents st
 			name = "%s"
 			receive_global_events = %s
 			rules {
-				target_ids = [ "c3af557f-fb0e-4476-85c3-0889e7fe7bc4" ]
+				target_ids = [ ibm_atracker_target.atracker_target.id ]
 			}
 		}
 	`, name, receiveGlobalEvents)
