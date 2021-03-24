@@ -12,11 +12,9 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam"
-
 	token "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/token"
 	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -386,7 +384,7 @@ func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
 			s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 		}
 		iamAccessToken := rsConClient.Config.IAMAccessToken
-		if iamAccessToken != "" {
+		if iamAccessToken != "" && apiKey == "" {
 			initFunc := func() (*token.Token, error) {
 				return &token.Token{
 					AccessToken:  rsConClient.Config.IAMAccessToken,
@@ -551,7 +549,7 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
-	if iamAccessToken != "" {
+	if iamAccessToken != "" && apiKey == "" {
 		initFunc := func() (*token.Token, error) {
 			return &token.Token{
 				AccessToken:  rsConClient.Config.IAMAccessToken,
@@ -737,7 +735,7 @@ func resourceIBMCOSCreate(d *schema.ResourceData, meta interface{}) error {
 		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
-	if iamAccessToken != "" {
+	if iamAccessToken != "" && apiKey == "" {
 		initFunc := func() (*token.Token, error) {
 			return &token.Token{
 				AccessToken:  rsConClient.Config.IAMAccessToken,
@@ -804,7 +802,7 @@ func resourceIBMCOSDelete(d *schema.ResourceData, meta interface{}) error {
 		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
-	if iamAccessToken != "" {
+	if iamAccessToken != "" && apiKey == "" {
 		initFunc := func() (*token.Token, error) {
 			return &token.Token{
 				AccessToken:  rsConClient.Config.IAMAccessToken,
@@ -887,7 +885,7 @@ func resourceIBMCOSExists(d *schema.ResourceData, meta interface{}) (bool, error
 		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
-	if iamAccessToken != "" {
+	if iamAccessToken != "" && apiKey == "" {
 		initFunc := func() (*token.Token, error) {
 			return &token.Token{
 				AccessToken:  rsConClient.Config.IAMAccessToken,
@@ -917,64 +915,13 @@ func resourceIBMCOSExists(d *schema.ResourceData, meta interface{}) (bool, error
 
 func selectCosApi(apiType string, bLocation string) (string, string) {
 	if apiType == "crl" {
-		switch bLocation {
-		case "eu":
-			return "s3.eu.cloud-object-storage.appdomain.cloud", "s3.private.eu.cloud-object-storage.appdomain.cloud"
-		case "ap":
-			return "s3.ap.cloud-object-storage.appdomain.cloud", "s3.private.ap.cloud-object-storage.appdomain.cloud"
-		case "us":
-			return "s3.us.cloud-object-storage.appdomain.cloud", "s3.private.us.cloud-object-storage.appdomain.cloud"
-		}
+		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation)
 	}
 	if apiType == "rl" {
-		switch bLocation {
-		case "au-syd":
-			return "s3.au-syd.cloud-object-storage.appdomain.cloud", "s3.private.au-syd.cloud-object-storage.appdomain.cloud"
-		case "eu-de":
-			return "s3.eu-de.cloud-object-storage.appdomain.cloud", "s3.private.eu-de.cloud-object-storage.appdomain.cloud"
-		case "eu-gb":
-			return "s3.eu-gb.cloud-object-storage.appdomain.cloud", "s3.private.eu-gb.cloud-object-storage.appdomain.cloud"
-		case "jp-tok":
-			return "s3.jp-tok.cloud-object-storage.appdomain.cloud", "s3.private.jp-tok.cloud-object-storage.appdomain.cloud"
-		case "jp-osa":
-			return "s3.jp-osa.cloud-object-storage.appdomain.cloud", "s3.private.jp-osa.cloud-object-storage.appdomain.cloud"
-		case "us-east":
-			return "s3.us-east.cloud-object-storage.appdomain.cloud", "s3.private.us-east.cloud-object-storage.appdomain.cloud"
-		case "us-south":
-			return "s3.us-south.cloud-object-storage.appdomain.cloud", "s3.private.us-south.cloud-object-storage.appdomain.cloud"
-		}
+		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation)
 	}
 	if apiType == "ssl" {
-		switch bLocation {
-		case "ams03":
-			return "s3.ams03.cloud-object-storage.appdomain.cloud", "s3.private.ams03.cloud-object-storage.appdomain.cloud"
-		case "che01":
-			return "s3.che01.cloud-object-storage.appdomain.cloud", "s3.private.che01.cloud-object-storage.appdomain.cloud"
-		case "hkg02":
-			return "s3.hkg02.cloud-object-storage.appdomain.cloud", "s3.private.hkg02.cloud-object-storage.appdomain.cloud"
-		case "mel01":
-			return "s3.mel01.cloud-object-storage.appdomain.cloud", "s3.private.mel01.cloud-object-storage.appdomain.cloud"
-		case "mex01":
-			return "s3.mex01.cloud-object-storage.appdomain.cloud", "s3.private.mex01.cloud-object-storage.appdomain.cloud"
-		case "mil01":
-			return "s3.mil01.cloud-object-storage.appdomain.cloud", "s3.private.mil01.cloud-object-storage.appdomain.cloud"
-		case "mon01":
-			return "s3.mon01.cloud-object-storage.appdomain.cloud", "s3.private.mon01.cloud-object-storage.appdomain.cloud"
-		case "osl01":
-			return "s3.osl01.cloud-object-storage.appdomain.cloud", "s3.private.osl01.cloud-object-storage.appdomain.cloud"
-		case "par01":
-			return "s3.par01.cloud-object-storage.appdomain.cloud", "s3.private.par01.cloud-object-storage.appdomain.cloud"
-		case "sjc04":
-			return "s3.sjc04.cloud-object-storage.appdomain.cloud", "s3.private.sjc04.cloud-object-storage.appdomain.cloud"
-		case "sao01":
-			return "s3.sao01.cloud-object-storage.appdomain.cloud", "s3.private.sao01.cloud-object-storage.appdomain.cloud"
-		case "seo01":
-			return "s3.seo01.cloud-object-storage.appdomain.cloud", "s3.private.seo01.cloud-object-storage.appdomain.cloud"
-		case "sng01":
-			return "s3.sng01.cloud-object-storage.appdomain.cloud", "s3.private.sng01.cloud-object-storage.appdomain.cloud"
-		case "tor01":
-			return "s3.tor01.cloud-object-storage.appdomain.cloud", "s3.private.tor01.cloud-object-storage.appdomain.cloud"
-		}
+		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation)
 	}
 	return "", ""
 }

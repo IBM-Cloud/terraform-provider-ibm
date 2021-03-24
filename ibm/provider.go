@@ -154,6 +154,13 @@ func Provider() *schema.Provider {
 				Description: "IAM Authentication refresh token",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_IAM_REFRESH_TOKEN", "IBMCLOUD_IAM_REFRESH_TOKEN"}, nil),
 			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "public-and-private"}),
+				Description:  "Visibility of the provider if it is private or public.",
+				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_VISIBILITY", "IBMCLOUD_VISIBILITY"}, "public"),
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -673,6 +680,10 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if tm, ok := d.GetOk("ibmcloud_timeout"); ok {
 		bluemixTimeout = tm.(int)
 	}
+	var visibility string
+	if v, ok := d.GetOk("visibility"); ok {
+		visibility = v.(string)
+	}
 
 	resourceGrp := d.Get("resource_group").(string)
 	region := d.Get("region").(string)
@@ -708,6 +719,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		IAMToken:             iamToken,
 		IAMRefreshToken:      iamRefreshToken,
 		Zone:                 zone,
+		Visibility:           visibility,
 		//PowerServiceInstance: powerServiceInstance,
 	}
 

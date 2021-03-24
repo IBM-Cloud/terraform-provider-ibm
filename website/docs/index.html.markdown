@@ -51,6 +51,19 @@ resource "ibm_is_vpc" "testacc_vpc" {
   name = "test-vpc"
 }
 ```
+Visiblity support:
+```hcl
+# Configure the IBM Provider
+
+provider "ibm" {
+  visibility = "private"
+}
+
+# Create a VPC
+resource "ibm_is_vpc" "testacc_vpc" {
+  name = "test-vpc"
+}
+```
 ## Example Usage of Resources:
 
 ```hcl
@@ -225,6 +238,12 @@ The following arguments are supported in the `provider` block:
 * `generation` - (Optional) The generation of Virtual Private Cloud. It can also be sourced from the `IC_GENERATION` (higher precedence) or `IBMCLOUD_GENERATION` environment variable. Default value: `2`. `1` for VPC Classic and `2` for VPC NextGen.
 
 * `zone` - (optional) The IBM Cloud zone for a region. You can also source it from the `IC_ZONE` (higher precedence) or `IBMCLOUD_ZONE` environment variable. This value is required for power resources if the region supports multi-zone. For region `eu-de` it supports two zones `eu-de-1` and `eu-de-2`. Set the region and zone for the Power Virtual Server.
+
+* `visibility` -(Optional) IBM Cloud Visibility. It can also be sourced from the `IC_VISIBILITY` (higher precedence) or `IBMCLOUD_VISIBILITY` environment variable. Default value: `public`. Allowble values are `public`, `private`, `public-and-private`.
+  * If visibility is set to `public` it will first access regional public endpoints. If not, it will fallback to global public endpoint.
+  * If visibility is set to `private` it will first access regional private endpoints. If not, it will fallback to global private endpoint. To work with private endpoints one must have VRF enabled in his account.
+  * If visibility is set to `public-and-private` it will first access regional private endpoints. If not, it ll fallback to global private endpoint. If service doesn't support regional or global private endpoints it will return public endpoint.
+
 
 ***Note***
 The CloudFoundry endpoint has been updated in this release of IBM Cloud Terraform provider v0.17.4.  If you are using an earlier version of IBM Cloud Terraform provider, export the `IBMCLOUD_UAA_ENDPOINT` to the new authentication endpoint, as illustrated below
