@@ -49,6 +49,7 @@ import (
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -244,6 +245,7 @@ type ClientSession interface {
 	ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error)
 	CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error)
 	ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error)
+	SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error)
 }
 
 type clientSession struct {
@@ -468,8 +470,10 @@ type clientSession struct {
 	catalogManagementClientErr error
 
 	//Resource Controller Option
-	resourceControllerErr error
-	resourceControllerAPI *resourcecontroller.ResourceControllerV2
+	resourceControllerErr   error
+	resourceControllerAPI   *resourcecontroller.ResourceControllerV2
+	secretsManagerClient    *secretsmanagerv1.SecretsManagerV1
+	secretsManagerClientErr error
 }
 
 func (session clientSession) CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error) {
@@ -864,6 +868,11 @@ func (sess clientSession) ResourceControllerV2API() (*resourcecontroller.Resourc
 	return sess.resourceControllerAPI, sess.resourceControllerErr
 }
 
+// SecretsManager Session
+func (session clientSession) SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error) {
+	return session.secretsManagerClient, session.secretsManagerClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -942,6 +951,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisRangeAppErr = errEmptyBluemixCredentials
 		session.cisWAFRuleErr = errEmptyBluemixCredentials
 		session.iamIdentityErr = errEmptyBluemixCredentials
+		session.secretsManagerClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1302,12 +1312,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.pDNSErr != nil {
 		session.pDNSErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", session.pDNSErr)
 	}
-	version := time.Now().Format("2006-01-02")
+	ver := time.Now().Format("2006-01-02")
 
 	directlinkOptions := &dl.DirectLinkV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_DL_API_ENDPOINT"}, "https://directlink.cloud.ibm.com/v1"),
 		Authenticator: authenticator,
-		Version:       &version,
+		Version:       &ver,
 	}
 
 	session.directlinkAPI, session.directlinkErr = dl.NewDirectLinkV1(directlinkOptions)
@@ -1319,7 +1329,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	directLinkProviderV2Options := &dlProviderV2.DirectLinkProviderV2Options{
 		URL:           envFallBack([]string{"IBMCLOUD_DL_PROVIDER_API_ENDPOINT"}, "https://directlink.cloud.ibm.com/provider/v2"),
 		Authenticator: authenticator,
-		Version:       &version,
+		Version:       &ver,
 	}
 
 	session.dlProviderAPI, session.dlProviderErr = dlProviderV2.NewDirectLinkProviderV2(directLinkProviderV2Options)
@@ -1692,6 +1702,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 		resourceControllerClient.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 	session.resourceControllerAPI = resourceControllerClient
+	// var authenticator2 *core.BearerTokenAuthenticator
+	// Construct an "options" struct for creating the service client.
+	secretsManagerClientOptions := &secretsmanagerv1.SecretsManagerV1Options{
+		Authenticator: authenticator,
+	}
+
+	/// Construct the service client.
+	session.secretsManagerClient, err = secretsmanagerv1.NewSecretsManagerV1(secretsManagerClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.secretsManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.secretsManagerClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.secretsManagerClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Secrets Manager API service: %q", err)
+	}
 
 	return session, nil
 }

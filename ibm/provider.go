@@ -335,6 +335,10 @@ func Provider() *schema.Provider {
 			"ibm_tg_gateways":  dataSourceIBMTransitGateways(),
 			"ibm_tg_locations": dataSourceIBMTransitGatewaysLocations(),
 			"ibm_tg_location":  dataSourceIBMTransitGatewaysLocation(),
+
+			//Added for Secrets Manager
+			"ibm_secrets_manager_secrets": dataSourceIBMSecretsManagerSecrets(),
+			"ibm_secrets_manager_secret":  dataSourceIBMSecretsManagerSecret(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -607,11 +611,13 @@ func Validator() ValidatorDict {
 				"ibm_dns_glb_pool":                     resourceIBMPrivateDNSGLBPoolValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
-				"ibm_is_subnet":          dataSourceIBMISSubnetValidator(),
-				"ibm_dl_offering_speeds": datasourceIBMDLOfferingSpeedsValidator(),
-				"ibm_dl_routers":         datasourceIBMDLRoutersValidator(),
-				"ibm_is_vpc":             dataSourceIBMISVpcValidator(),
-				"ibm_is_volume":          dataSourceIBMISVolumeValidator(),
+				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),
+				"ibm_dl_offering_speeds":      datasourceIBMDLOfferingSpeedsValidator(),
+				"ibm_dl_routers":              datasourceIBMDLRoutersValidator(),
+				"ibm_is_vpc":                  dataSourceIBMISVpcValidator(),
+				"ibm_is_volume":               dataSourceIBMISVolumeValidator(),
+				"ibm_secrets_manager_secret":  datasourceIBMSecretsManagerSecretValidator(),
+				"ibm_secrets_manager_secrets": datasourceIBMSecretsManagerSecretsValidator(),
 			},
 		}
 	})
