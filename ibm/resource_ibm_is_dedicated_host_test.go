@@ -47,7 +47,7 @@ func testAccCheckIbmIsDedicatedHostConfigBasic(class string, family string, grou
 	return fmt.Sprintf(`
 	
 	data "ibm_resource_group" "default" {
-		name = "Default" ///give your resource grp
+		is_default=true
 	}
 	resource "ibm_is_dedicated_host_group" "is_dedicated_host_group" {
 		class = "%s"
