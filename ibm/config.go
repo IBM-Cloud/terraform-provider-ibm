@@ -58,6 +58,7 @@ import (
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/dgrijalva/jwt-go"
 	slsession "github.com/softlayer/softlayer-go/session"
+	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
@@ -248,6 +249,7 @@ type ClientSession interface {
 	ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error)
 	SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error)
 	SchematicsV1() (*schematicsv1.SchematicsV1, error)
+	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
 }
 
 type clientSession struct {
@@ -480,6 +482,10 @@ type clientSession struct {
 	// Schematics service options
 	schematicsClient    *schematicsv1.SchematicsV1
 	schematicsClientErr error
+
+	//Satellite service
+	satelliteClient    *kubernetesserviceapiv1.KubernetesServiceApiV1
+	satelliteClientErr error
 }
 
 func (session clientSession) CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error) {
@@ -880,6 +886,11 @@ func (session clientSession) SecretsManagerV1() (*secretsmanagerv1.SecretsManage
 }
 
 var cloudEndpoint = "cloud.ibm.com"
+
+// Session to the Satellite client
+func (sess clientSession) SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error) {
+	return sess.satelliteClient, sess.satelliteClientErr
+}
 
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
@@ -1958,6 +1969,23 @@ func (c *Config) ClientSession() (interface{}, error) {
 	} else {
 		session.secretsManagerClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Secrets Manager API service: %q", err)
 	}
+
+	containerEndpoint := kubernetesserviceapiv1.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		containerEndpoint = contructEndpoint(fmt.Sprintf("private.%s.containers", c.Region), fmt.Sprintf("%s/global", cloudEndpoint))
+	}
+
+	kubernetesServiceV1Options := &kubernetesserviceapiv1.KubernetesServiceApiV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_SATELLITE_API_ENDPOINT"}, containerEndpoint),
+		Authenticator: authenticator,
+	}
+
+	session.satelliteClient, err = kubernetesserviceapiv1.NewKubernetesServiceApiV1(kubernetesServiceV1Options)
+	if err != nil {
+		session.satelliteClientErr = fmt.Errorf("Error occured while configuring satellite client: %q", err)
+	}
+	// Enable retries for API calls
+	session.satelliteClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 
 	return session, nil
 }

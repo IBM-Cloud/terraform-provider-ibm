@@ -1,7 +1,3 @@
-provider "ibm" {
-  region = var.ibm_region
-}
-
 
 terraform {
   required_providers {

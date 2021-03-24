@@ -352,6 +352,10 @@ func Provider() *schema.Provider {
 			//Added for Secrets Manager
 			"ibm_secrets_manager_secrets": dataSourceIBMSecretsManagerSecrets(),
 			"ibm_secrets_manager_secret":  dataSourceIBMSecretsManagerSecret(),
+
+			//Added for Satellite
+			"ibm_satellite_location":           dataSourceIBMSatelliteLocation(),
+			"ibm_satellite_attach_host_script": dataSourceIBMSatelliteAttachHostScript(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -551,6 +555,10 @@ func Provider() *schema.Provider {
 			"ibm_schematics_workspace": resourceIBMSchematicsWorkspace(),
 			"ibm_schematics_action":    resourceIBMSchematicsAction(),
 			"ibm_schematics_job":       resourceIBMSchematicsJob(),
+
+			//satellite  resources
+			"ibm_satellite_location": resourceIBMSatelliteLocation(),
+			"ibm_satellite_host":     resourceIBMSatelliteHost(),
 		},
 
 		ConfigureFunc: providerConfigure,
