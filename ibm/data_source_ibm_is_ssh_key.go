@@ -34,6 +34,12 @@ func dataSourceIBMISSSHKey() *schema.Resource {
 				Description: "The ssh key Fingerprint",
 			},
 
+			isKeyPublicKey: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "SSH Public key data",
+			},
+
 			isKeyLength: {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -126,6 +132,9 @@ func classicKeyGetByName(d *schema.ResourceData, meta interface{}, name string) 
 			if key.ResourceGroup != nil {
 				d.Set(ResourceGroupName, *key.ResourceGroup.ID)
 			}
+			if key.PublicKey != nil {
+				d.Set(isKeyPublicKey, *key.PublicKey)
+			}
 			return nil
 		}
 	}
@@ -158,6 +167,9 @@ func keyGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			d.Set(ResourceCRN, *key.CRN)
 			if key.ResourceGroup != nil {
 				d.Set(ResourceGroupName, *key.ResourceGroup.ID)
+			}
+			if key.PublicKey != nil {
+				d.Set(isKeyPublicKey, *key.PublicKey)
 			}
 			return nil
 		}
