@@ -57,7 +57,7 @@ The following attributes are exported:
 
 ## Import
 
-ibm_container_alb_cert can be imported using cluster_id, secret_name eg
+ibm_container_alb_cert can be imported using cluster_id, secret_name, namespace eg
 
 ```
-$ terraform import ibm_container_alb_cert.example 166179849c9a469581f28939874d0c82/mysecret
+$ terraform import ibm_container_alb_cert.example 166179849c9a469581f28939874d0c82/mysecret/ibm-cert-store
