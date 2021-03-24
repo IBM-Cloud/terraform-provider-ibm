@@ -18,7 +18,7 @@ const (
 	rID                     = "route_id"
 	rDestination            = "destination"
 	rAction                 = "action"
-	rNextHopAddress         = "next_hop_address"
+	rNextHopAddress         = "next_hop"
 	rName                   = "name"
 	rZone                   = "zone"
 	rNextHopVPNConnectionID = "next_hop_vpn_connection"

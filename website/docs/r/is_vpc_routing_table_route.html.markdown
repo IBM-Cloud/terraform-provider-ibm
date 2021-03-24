@@ -22,7 +22,7 @@ resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" 
   name = "custom-route-2"
   destination = "192.168.4.0/24"
   action = "deliver"
-  next_hop_address    = "10.0.0.4"
+  next_hop    = "10.0.0.4"
 }
 
 ```
@@ -37,7 +37,7 @@ The following arguments are supported:
 * `action` - (Optional,string) The action to perform with a packet matching the route.
 * `zone` - (Required, Forces new resource, string) Name of the zone.
 * `destination` - (Required, Forces new resource, string) The destination of the route.
-* `next_hop_address` - (Optional, Forces new resource, string) The next hop of the route.
+* `next_hop` - (Optional, Forces new resource, string) The next hop of the route.
  **NOTE**: Conflicts with `next_hop_vpn_connection`
 * `next_hop_vpn_connection` - (Optional, Forces new resource, string) The next hop to vpn connection gateway.
 
