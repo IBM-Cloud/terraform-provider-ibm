@@ -115,7 +115,7 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "connectionstrings"},
+					"wait_time_minutes", "connectionstrings", "plan_validation"},
 			},
 		},
 	})
