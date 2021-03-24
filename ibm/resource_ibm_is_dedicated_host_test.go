@@ -20,7 +20,7 @@ func TestAccIbmIsDedicatedHostBasic(t *testing.T) {
 	family := "memory"
 	groupname := fmt.Sprintf("tfdhost%d", acctest.RandIntRange(10, 100))
 	dhname := "testdh02"
-	profile := "dh2-56x464"
+
 	resname := "ibm_is_dedicated_host.dedicated-host-test-01"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -28,7 +28,7 @@ func TestAccIbmIsDedicatedHostBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmIsDedicatedHostDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmIsDedicatedHostConfigBasic(class, family, groupname, profile, dhname),
+				Config: testAccCheckIbmIsDedicatedHostConfigBasic(class, family, groupname, dedicatedHostProfileName, dhname),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsDedicatedHostExists(resname, conf),
 					resource.TestCheckResourceAttr(resname, "name", dhname),

@@ -24,7 +24,7 @@ func TestAccIbmIsDedicatedHostDSBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmIsDedicatedHostDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmIsDedicatedHostDSConfigBasic(class, family, grpname, name),
+				Config: testAccCheckIbmIsDedicatedHostDSConfigBasic(class, family, grpname, dedicatedHostProfileName, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resName, "name"),
 					resource.TestCheckResourceAttrSet(resName, "zone"),
@@ -35,7 +35,7 @@ func TestAccIbmIsDedicatedHostDSBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmIsDedicatedHostDSConfigBasic(class, family, grpname, name string) string {
+func testAccCheckIbmIsDedicatedHostDSConfigBasic(class, family, grpname, profile, name string) string {
 	return fmt.Sprintf(`
 	
 	data "ibm_resource_group" "default" {
@@ -53,7 +53,7 @@ func testAccCheckIbmIsDedicatedHostDSConfigBasic(class, family, grpname, name st
 	}
 
 	resource "ibm_is_dedicated_host" "dedicated-host-test-01" {
-		profile = "dh2-56x464"
+		profile = "%s"
 		host_group = data.ibm_is_dedicated_host_group.dgroup.id
 		name = "%s"
 	  }
@@ -61,5 +61,5 @@ func testAccCheckIbmIsDedicatedHostDSConfigBasic(class, family, grpname, name st
 		name = "%s"
 		host_group = ibm_is_dedicated_host.dedicated-host-test-01.host_group
 	}
-	`, class, family, grpname, name, name)
+	`, class, family, grpname, profile, name, name)
 }
