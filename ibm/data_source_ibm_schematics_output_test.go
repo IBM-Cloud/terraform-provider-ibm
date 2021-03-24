@@ -1,5 +1,18 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
-// Licensed under the Mozilla Public License v2.0
+/**
+ * (C) Copyright IBM Corp. 2021.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ibm
 
@@ -10,33 +23,28 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMSchematicsOutputDataSource_basic(t *testing.T) {
+func TestAccIBMSchematicsOutputDataSourceBasic(t *testing.T) {
+	wID := workspaceID
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMSchematicsOutputDataSourceConfig(workspaceID, templateID),
+			resource.TestStep{
+				Config: testAccCheckIBMSchematicsOutputDataSourceConfigBasic(wID),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_schematics_output.test", "workspace_id", workspaceID),
+					resource.TestCheckResourceAttrSet("data.ibm_schematics_output.schematics_output", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_schematics_output.schematics_output", "output_values.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMSchematicsOutputDataSourceConfig(WorkspaceID, templateID string) string {
+func testAccCheckIBMSchematicsOutputDataSourceConfigBasic(wID string) string {
 	return fmt.Sprintf(`
-	data "ibm_schematics_workspace" "test" {
-		workspace_id = "%s"
-	}
-	data "ibm_schematics_output" "test" {
-		workspace_id = data.ibm_schematics_workspace.test.workspace_id
-		template_id = data.ibm_schematics_workspace.test.template_id.0
-	}
-	output "output_values" {
-		value = data.ibm_schematics_output.test.output_values
-	}
-`, WorkspaceID)
+		  data "ibm_schematics_output" "schematics_output" {
+			workspace_id = "%s"
+		  }
+	  `, wID)
 }

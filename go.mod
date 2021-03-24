@@ -19,6 +19,7 @@ require (
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/secrets-manager-go-sdk v0.1.19
 	github.com/IBM/vpc-go-sdk v1.0.0
+	github.com/IBM/schematics-go-sdk v0.0.2
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.27.2
 	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32 // indirect
@@ -28,6 +29,7 @@ require (
 	github.com/dchest/safefile v0.0.0-20151022103144-855e8d98f185 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ghodss/yaml v1.0.0
+	github.com/go-openapi/strfmt v0.20.0
 	github.com/go-openapi/validate v0.20.1 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect

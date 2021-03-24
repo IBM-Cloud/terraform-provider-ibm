@@ -90,6 +90,7 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -203,7 +204,6 @@ type ClientSession interface {
 	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
-	SchematicsAPI() (schematics.SchematicsServiceAPI, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
 	PushServiceV1() (*pushservicev1.PushServiceV1, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
@@ -246,6 +246,7 @@ type ClientSession interface {
 	CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error)
 	ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error)
 	SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error)
+	SchematicsV1() (*schematicsv1.SchematicsV1, error)
 }
 
 type clientSession struct {
@@ -474,6 +475,10 @@ type clientSession struct {
 	resourceControllerAPI   *resourcecontroller.ResourceControllerV2
 	secretsManagerClient    *secretsmanagerv1.SecretsManagerV1
 	secretsManagerClientErr error
+
+	// Schematics service options
+	schematicsClient    *schematicsv1.SchematicsV1
+	schematicsClientErr error
 }
 
 func (session clientSession) CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error) {
@@ -516,8 +521,8 @@ func (sess clientSession) ContainerRegistryAPI() (registryv1.RegistryServiceAPI,
 }
 
 // SchematicsAPI provides schematics Service APIs ...
-func (sess clientSession) SchematicsAPI() (schematics.SchematicsServiceAPI, error) {
-	return sess.stxServiceAPI, sess.stxConfigErr
+func (sess clientSession) SchematicsV1() (*schematicsv1.SchematicsV1, error) {
+	return sess.schematicsClient, sess.schematicsClientErr
 }
 
 // CisAPI provides Cloud Internet Services APIs ...
@@ -1138,6 +1143,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.catalogManagementClientErr = fmt.Errorf("Error occurred while configuring Catalog Management API service: %q", err)
 	}
 
+	schematicsClientOptions := &schematicsv1.SchematicsV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_SCHEMATICS_ENDPOINT"}, "https://schematics.cloud.ibm.com"),
+	}
+
+	// Construct the service client.
+	schematicsClient, err := schematicsv1.NewSchematicsV1(schematicsClientOptions)
+	// Enable retries for API calls
+	schematicsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	if err != nil {
+		session.schematicsClientErr = fmt.Errorf("Error occurred while configuring Schematics Service API service: %q", err)
+	}
+	session.schematicsClient = schematicsClient
+
 	vpcclassicurl := contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
@@ -1214,12 +1233,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cosConfigErr = fmt.Errorf("Error occured while configuring COS config service: %q", err)
 	}
 	session.cosConfigAPI = cosconfigclient
-
-	schematicService, err := schematics.New(sess.BluemixSession)
-	if err != nil {
-		session.stxConfigErr = fmt.Errorf("Error occured while fetching schematics Configuration: %q", err)
-	}
-	session.stxServiceAPI = schematicService
 
 	cisAPI, err := cisv1.New(sess.BluemixSession)
 	if err != nil {

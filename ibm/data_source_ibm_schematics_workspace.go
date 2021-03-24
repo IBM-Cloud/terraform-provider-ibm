@@ -47,7 +47,6 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 			},
 			"catalog_ref": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "CatalogRef -.",
 				Elem: &schema.Resource{
@@ -197,7 +196,6 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 			},
 			"shared_data": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "SharedTargetDataResponse -.",
 				Elem: &schema.Resource{
@@ -373,7 +371,6 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 			},
 			"template_repo": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "TemplateRepoResponse -.",
 				Elem: &schema.Resource{
@@ -436,7 +433,6 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 			},
 			"workspace_status": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "WorkspaceStatusResponse -.",
 				Elem: &schema.Resource{
@@ -476,7 +472,6 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 			},
 			"workspace_status_msg": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "WorkspaceStatusMessage -.",
 				Elem: &schema.Resource{
@@ -525,13 +520,13 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 			return diag.FromErr(fmt.Errorf("Error setting catalog_ref %s", err))
 		}
 	}
-	if err = d.Set("created_at", workspaceResponse.CreatedAt); err != nil {
+	if err = d.Set("created_at", workspaceResponse.CreatedAt.String()); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("created_by", workspaceResponse.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("crn", workspaceResponse.CRN); err != nil {
+	if err = d.Set("crn", workspaceResponse.Crn); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
 	if err = d.Set("description", workspaceResponse.Description); err != nil {
@@ -540,7 +535,7 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	if err = d.Set("id", workspaceResponse.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
 	}
-	if err = d.Set("last_health_check_at", workspaceResponse.LastHealthCheckAt); err != nil {
+	if err = d.Set("last_health_check_at", workspaceResponse.LastHealthCheckAt.String()); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting last_health_check_at: %s", err))
 	}
 	if err = d.Set("location", workspaceResponse.Location); err != nil {
@@ -592,7 +587,7 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	if err = d.Set("type", workspaceResponse.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 	}
-	if err = d.Set("updated_at", workspaceResponse.UpdatedAt); err != nil {
+	if err = d.Set("updated_at", workspaceResponse.UpdatedAt.String()); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("updated_by", workspaceResponse.UpdatedBy); err != nil {
