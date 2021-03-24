@@ -22,7 +22,20 @@ resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" 
   name = "custom-route-2"
   destination = "192.168.4.0/24"
   action = "deliver"
-  next_hop    = "10.0.0.4"
+  next_hop = "10.0.0.4"
+}
+
+```
+
+```hcl
+resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" {
+  vpc = ""
+  routing_table = ""
+  zone = "us-south-1"
+  name = "custom-route-2"
+  destination = "192.168.4.0/24"
+  action = "deliver"
+  next_hop = vpnConnectinID
 }
 
 ```
@@ -34,12 +47,10 @@ The following arguments are supported:
 * `name` - (Optional, string) The user-defined name for this route. If unspecified, the name will be a hyphenated list of randomly-selected words. Names must be unique within the VPC routing table the route resides in.
 * `vpc` - (Required, Forces new resource, string) The vpc id.
 * `routing_table` - (Required, Forces new resource, string) The routing table identifier
-* `action` - (Optional,string) The action to perform with a packet matching the route.
+* `action` - (Optional,string) The action to perform with a packet matching the route `delegate`, `delegate_vpc`, `deliver`, `drop`.
 * `zone` - (Required, Forces new resource, string) Name of the zone.
 * `destination` - (Required, Forces new resource, string) The destination of the route.
-* `next_hop` - (Optional, Forces new resource, string) The next hop of the route.
- **NOTE**: Conflicts with `next_hop_vpn_connection`
-* `next_hop_vpn_connection` - (Optional, Forces new resource, string) The next hop to vpn connection gateway.
+* `next_hop` - (Required, Forces new resource, string) The next hop of the route. Accepts IP address or a VPN Connection ID. For `action` other than `deliver`, it must be specified as 0.0.0.0.
 
 ## Attribute Reference
 
