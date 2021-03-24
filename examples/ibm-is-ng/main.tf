@@ -7,7 +7,7 @@ resource "ibm_is_vpc_route" "route1" {
   vpc              = ibm_is_vpc.vpc1.id
   zone             = var.zone1
   destination      = "192.168.4.0/24"
-  next_hop_address = "10.240.0.4"
+  next_hop = "10.240.0.4"
   depends_on       = [ibm_is_subnet.subnet1]
 }
 
