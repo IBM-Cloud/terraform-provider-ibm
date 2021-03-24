@@ -10,11 +10,12 @@ require (
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.3.1
 	github.com/IBM/go-sdk-core/v4 v4.10.0
+	github.com/IBM/go-sdk-core/v5 v5.2.0
 	github.com/IBM/ibm-cos-sdk-go v1.3.1
 	github.com/IBM/ibm-cos-sdk-go-config v1.0.1
-	github.com/IBM/keyprotect-go-client v0.5.2
+	github.com/IBM/keyprotect-go-client v0.7.0
 	github.com/IBM/networking-go-sdk v0.12.1
-	github.com/IBM/platform-services-go-sdk v0.17.13
+	github.com/IBM/platform-services-go-sdk v0.17.17
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/vpc-go-sdk v1.0.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
@@ -28,12 +29,12 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/validate v0.20.1 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/hashicorp/go-version v1.2.1
 	github.com/hashicorp/hil v0.0.0-20200423225030-a18a1cd20038 // indirect
-	github.com/hashicorp/terraform v0.12.28
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.4.4
 	github.com/hokaccha/go-prettyjson v0.0.0-20170213120834-e6b9231a2b1c // indirect
 	github.com/kardianos/govendor v1.0.9 // indirect

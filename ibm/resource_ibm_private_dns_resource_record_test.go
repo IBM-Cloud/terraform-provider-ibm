@@ -72,7 +72,7 @@ func TestAccIBMPrivateDNSResourceRecordImport(t *testing.T) {
 func testAccCheckIBMPrivateDNSResourceRecordBasic(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_is_vpc" "test_pdns_vpc" {
@@ -178,7 +178,7 @@ func testAccCheckIBMPrivateDNSResourceRecordBasic(name string) string {
 func testAccCheckIBMPrivateDNSResourceRecordUpdate(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_is_vpc" "test_pdns_vpc" {

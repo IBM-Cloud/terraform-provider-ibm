@@ -24,9 +24,16 @@ func dataSourceIBMKMSkeys() *schema.Resource {
 				Description: "Key protect or hpcs instance GUID",
 			},
 			"key_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The name of the key to be fetched",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "The name of the key to be fetched",
+				ConflictsWith: []string{"alias"},
+			},
+			"alias": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "The name of the key to be fetched",
+				ConflictsWith: []string{"key_name"},
 			},
 			"endpoint_type": {
 				Type:         schema.TypeString,
@@ -41,6 +48,11 @@ func dataSourceIBMKMSkeys() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"aliases": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
 						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -52,6 +64,11 @@ func dataSourceIBMKMSkeys() *schema.Resource {
 						"id": {
 							Type:     schema.TypeString,
 							Computed: true,
+						},
+						"key_ring_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The key ring id of the key to be fetched",
 						},
 						"standard_key": {
 							Type:     schema.TypeBool,
@@ -194,46 +211,69 @@ func dataSourceIBMKMSKeysRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	api.Config.InstanceID = instanceID
-	keys, err := api.GetKeys(context.Background(), 100, 0)
-	if err != nil {
-		return fmt.Errorf(
-			"Get Keys failed with error: %s", err)
-	}
-	retreivedKeys := keys.Keys
-	if len(retreivedKeys) == 0 {
-		return fmt.Errorf("No keys in instance  %s", instanceID)
-	}
-	var keyName string
-	var matchKeys []kp.Key
-	if v, ok := d.GetOk("key_name"); ok {
-		keyName = v.(string)
-		for _, keyData := range retreivedKeys {
-			if keyData.Name == keyName {
-				matchKeys = append(matchKeys, keyData)
-			}
+	if v, ok := d.GetOk("alias"); ok {
+		aliasName := v.(string)
+		key, err := api.GetKey(context.Background(), aliasName)
+		if err != nil {
+			return fmt.Errorf(
+				"Get Keys failed with error: %s", err)
+		} else {
+			keyMap := make([]map[string]interface{}, 0, 1)
+			keyInstance := make(map[string]interface{})
+			keyInstance["id"] = key.ID
+			keyInstance["name"] = key.Name
+			keyInstance["crn"] = key.CRN
+			keyInstance["standard_key"] = key.Extractable
+			keyInstance["aliases"] = key.Aliases
+			keyInstance["key_ring_id"] = key.KeyRingID
+			keyMap = append(keyMap, keyInstance)
+			d.Set("keys", keyMap)
+
 		}
 	} else {
-		matchKeys = retreivedKeys
-	}
+		keys, err := api.GetKeys(context.Background(), 100, 0)
+		if err != nil {
+			return fmt.Errorf(
+				"Get Keys failed with error: %s", err)
+		}
+		retreivedKeys := keys.Keys
+		if len(retreivedKeys) == 0 {
+			return fmt.Errorf("No keys in instance  %s", instanceID)
+		}
+		var keyName string
+		var matchKeys []kp.Key
+		if v, ok := d.GetOk("key_name"); ok {
+			keyName = v.(string)
+			for _, keyData := range retreivedKeys {
+				if keyData.Name == keyName {
+					matchKeys = append(matchKeys, keyData)
+				}
+			}
+		} else {
+			matchKeys = retreivedKeys
+		}
 
-	if len(matchKeys) == 0 {
-		return fmt.Errorf("No keys with name %s in instance  %s", keyName, instanceID)
-	}
+		if len(matchKeys) == 0 {
+			return fmt.Errorf("No keys with name %s in instance  %s", keyName, instanceID)
+		}
 
-	keyMap := make([]map[string]interface{}, 0, len(matchKeys))
+		keyMap := make([]map[string]interface{}, 0, len(matchKeys))
 
-	for _, key := range matchKeys {
-		keyInstance := make(map[string]interface{})
-		keyInstance["id"] = key.ID
-		keyInstance["name"] = key.Name
-		keyInstance["crn"] = key.CRN
-		keyInstance["standard_key"] = key.Extractable
-		keyMap = append(keyMap, keyInstance)
+		for _, key := range matchKeys {
+			keyInstance := make(map[string]interface{})
+			keyInstance["id"] = key.ID
+			keyInstance["name"] = key.Name
+			keyInstance["crn"] = key.CRN
+			keyInstance["standard_key"] = key.Extractable
+			keyInstance["aliases"] = key.Aliases
+			keyInstance["key_ring_id"] = key.KeyRingID
+			keyMap = append(keyMap, keyInstance)
 
+		}
+		d.Set("keys", keyMap)
 	}
 
 	d.SetId(instanceID)
-	d.Set("keys", keyMap)
 	d.Set("instance_id", instanceID)
 
 	return nil
