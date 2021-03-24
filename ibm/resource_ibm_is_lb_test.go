@@ -50,7 +50,7 @@ func TestAccIBMISLB_basic(t *testing.T) {
 	})
 }
 
-func TestAccIBMISLB_logging(t *testing.T) {
+func TestAccIBMISLB_basic_logging(t *testing.T) {
 	var lb string
 	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
@@ -75,7 +75,7 @@ func TestAccIBMISLB_logging(t *testing.T) {
 	})
 }
 
-func TestAccIBMISLB_securityGroups(t *testing.T) {
+func TestAccIBMISLB_basic_securityGroups(t *testing.T) {
 	var lb string
 	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
