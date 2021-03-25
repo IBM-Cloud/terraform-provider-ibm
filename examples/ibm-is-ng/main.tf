@@ -282,6 +282,13 @@ resource "ibm_is_public_gateway" "publicgateway1" {
   zone = var.zone1
 }
 
+data "ibm_is_public_gateway" "testacc_dspgw"{
+  name = ibm_is_public_gateway.publicgateway1.name
+}
+
+data "ibm_is_public_gateways" "publicgateways"{
+}
+
 data "ibm_is_vpc" "vpc1" {
   name = ibm_is_vpc.vpc1.name
 }
