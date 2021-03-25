@@ -60,6 +60,8 @@ const (
 	isInstanceGpuMemory               = "memory"
 	isInstanceGpuModel                = "model"
 	isInstanceMemory                  = "memory"
+	isInstanceDisks                   = "disks"
+	isInstanceDedicatedHost           = "dedicated_host"
 	isInstanceStatus                  = "status"
 
 	isEnableCleanDelete        = "wait_before_delete"
@@ -450,6 +452,50 @@ func resourceIBMISInstance() *schema.Resource {
 				Description: "Define timeout to force the instances to start/stop in minutes.",
 				Type:        schema.TypeInt,
 				Optional:    true,
+			},
+			isInstanceDisks: &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Collection of the instance's disks.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"created_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time that the disk was created.",
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this instance disk.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this instance disk.",
+						},
+						"interface_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined name for this disk.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+						"size": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The size of the disk in GB (gigabytes).",
+						},
+					},
+				},
 			},
 		},
 	}
@@ -1380,6 +1426,17 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if instance.ResourceGroup != nil {
 		d.Set(isInstanceResourceGroup, *instance.ResourceGroup.ID)
 		d.Set(ResourceGroupName, *instance.ResourceGroup.Name)
+	}
+
+	if instance.Disks != nil {
+		disks := []map[string]interface{}{}
+		for _, disksItem := range instance.Disks {
+			disksItemMap := resourceIbmIsInstanceInstanceDiskToMap(disksItem)
+			disks = append(disks, disksItemMap)
+		}
+		if err = d.Set(isInstanceDisks, disks); err != nil {
+			return fmt.Errorf("Error setting disks: %s", err)
+		}
 	}
 	return nil
 }
@@ -2454,4 +2511,18 @@ func isWaitForInstanceVolumeDetached(instanceC *vpcv1.VpcV1, d *schema.ResourceD
 	}
 
 	return stateConf.WaitForState()
+}
+
+func resourceIbmIsInstanceInstanceDiskToMap(instanceDisk vpcv1.InstanceDisk) map[string]interface{} {
+	instanceDiskMap := map[string]interface{}{}
+
+	instanceDiskMap["created_at"] = instanceDisk.CreatedAt.String()
+	instanceDiskMap["href"] = instanceDisk.Href
+	instanceDiskMap["id"] = instanceDisk.ID
+	instanceDiskMap["interface_type"] = instanceDisk.InterfaceType
+	instanceDiskMap["name"] = instanceDisk.Name
+	instanceDiskMap["resource_type"] = instanceDisk.ResourceType
+	instanceDiskMap["size"] = intValue(instanceDisk.Size)
+
+	return instanceDiskMap
 }
