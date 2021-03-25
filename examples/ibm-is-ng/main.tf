@@ -333,3 +333,21 @@ data "ibm_is_dedicated_host" "dhost" {
   name = ibm_is_dedicated_host.is_dedicated_host.name
   host_group = data.ibm_is_dedicated_host_group.dgroup.id
 }
+
+resource "ibm_is_instance_disk_management" "disks"{
+  instance = ibm_is_instance.instance1.id 
+  disks {
+    name = "mydisk01"
+    id = ibm_is_instance.instance1.disks.0.id
+  }
+}
+
+data "ibm_is_instance_disks" "disk1" {
+  instance = ibm_is_instance.instance1.id
+
+}
+
+data "ibm_is_instance_disk" "disk1" {
+  instance = ibm_is_instance.instance1.id
+  disk = data.ibm_is_instance_disks.disk1.disks.0.id
+}
