@@ -112,7 +112,6 @@ func resourceIBMISLB() *schema.Resource {
 			isLBSecurityGroups: {
 				Type:          schema.TypeSet,
 				Computed:      true,
-				ForceNew:      true,
 				Optional:      true,
 				Elem:          &schema.Schema{Type: schema.TypeString},
 				Set:           schema.HashString,
@@ -595,6 +594,8 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 	isLogging := false
 	hasChanged := false
 	hasChangedLog := false
+	var remove, add []string
+	hasChangedSecurityGroups := false
 
 	if d.HasChange(isLBName) {
 		name = d.Get(isLBName).(string)
@@ -604,13 +605,22 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 		isLogging = d.Get(isLBLogging).(bool)
 		hasChangedLog = true
 	}
+	if d.HasChange(isLBSecurityGroups) {
+		o, n := d.GetChange(isLBSecurityGroups)
+		oSecurityGroups := o.(*schema.Set)
+		nSecurityGroups := n.(*schema.Set)
+		remove = expandStringList(oSecurityGroups.Difference(nSecurityGroups).List())
+		add = expandStringList(nSecurityGroups.Difference(oSecurityGroups).List())
+		hasChangedSecurityGroups = true
+	}
+
 	if userDetails.generation == 1 {
 		err := classicLBUpdate(d, meta, id, name, hasChanged)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := lbUpdate(d, meta, id, name, hasChanged, isLogging, hasChangedLog)
+		err := lbUpdate(d, meta, id, name, hasChanged, isLogging, hasChangedLog, hasChangedSecurityGroups, remove, add)
 		if err != nil {
 			return err
 		}
@@ -660,7 +670,7 @@ func classicLBUpdate(d *schema.ResourceData, meta interface{}, id, name string, 
 	return nil
 }
 
-func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool, isLogging bool, hasChangedLog bool) error {
+func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool, isLogging bool, hasChangedLog bool, hasChangedSecurityGroups bool, remove, add []string) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -720,6 +730,40 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating vpc Load Balancer : %s\n%s", err, response)
+		}
+	}
+
+	if hasChangedSecurityGroups {
+		if len(add) > 0 {
+			for _, d := range add {
+				createSecurityGroupTargetBindingOptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{}
+				createSecurityGroupTargetBindingOptions.SecurityGroupID = &d
+				createSecurityGroupTargetBindingOptions.ID = &id
+				_, response, err := sess.CreateSecurityGroupTargetBinding(createSecurityGroupTargetBindingOptions)
+				if err != nil {
+					return fmt.Errorf("Error while creating Security Group Target Binding %s\n%s", err, response)
+				}
+			}
+		}
+		if len(remove) > 0 {
+			for _, d := range remove {
+				getSecurityGroupTargetOptions := &vpcv1.GetSecurityGroupTargetOptions{
+					SecurityGroupID: &d,
+					ID:              &id,
+				}
+				_, response, err := sess.GetSecurityGroupTarget(getSecurityGroupTargetOptions)
+				if err != nil {
+					if response != nil && response.StatusCode == 404 {
+						return nil
+					}
+					return fmt.Errorf("Error Getting Security Group Target for this load balancer (%s): %s\n%s", d, err, response)
+				}
+				deleteSecurityGroupTargetBindingOptions := sess.NewDeleteSecurityGroupTargetBindingOptions(d, id)
+				response, err = sess.DeleteSecurityGroupTargetBinding(deleteSecurityGroupTargetBindingOptions)
+				if err != nil {
+					return fmt.Errorf("Error Deleting Security Group Target for this load balancer : %s\n%s", err, response)
+				}
+			}
 		}
 	}
 	return nil
