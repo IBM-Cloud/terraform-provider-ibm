@@ -261,6 +261,7 @@ func Provider() *schema.Provider {
 			"ibm_is_lb_profiles":                     dataSourceIBMISLbProfiles(),
 			"ibm_is_lbs":                             dataSourceIBMISLBS(),
 			"ibm_is_public_gateway":                  dataSourceIBMISPublicGateway(),
+			"ibm_is_public_gateways":                 dataSourceIBMISPublicGateways(),
 			"ibm_is_region":                          dataSourceIBMISRegion(),
 			"ibm_is_ssh_key":                         dataSourceIBMISSSHKey(),
 			"ibm_is_subnet":                          dataSourceIBMISSubnet(),
