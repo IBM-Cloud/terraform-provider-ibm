@@ -43,13 +43,12 @@ require (
 	github.com/kardianos/govendor v1.0.9 // indirect
 	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/gox v1.0.1 // indirect
 	github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/tools v0.0.0-20210107193943-4ed967dd8eff // indirect
-	gotest.tools v2.2.0+incompatible
+	gotest.tools v2.2.0+incompatible 
 )
 
 replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => ./common/github.com/softlayer/softlayer-go
