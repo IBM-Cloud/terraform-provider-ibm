@@ -392,7 +392,8 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 	rsInst.Target = &deployments[0].CatalogCRN
 
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
-		rsInst.ResourceGroup = rsGrpID.(*string)
+		rg := rsGrpID.(string)
+		rsInst.ResourceGroup = &rg
 	} else {
 		defaultRg, err := defaultResourceGroup(meta)
 		if err != nil {
