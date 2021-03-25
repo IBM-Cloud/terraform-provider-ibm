@@ -10,34 +10,28 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMSchematicsStateDataSource_basic(t *testing.T) {
+func TestAccIBMSchematicsStateDataSourceBasic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMSchematicsStateDataSourceConfig(workspaceID, templateID),
+			resource.TestStep{
+				Config: testAccCheckIBMSchematicsStateDataSourceConfigBasic(workspaceID, templateID),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_schematics_state.test", "workspace_id", workspaceID),
+					resource.TestCheckResourceAttrSet("data.ibm_schematics_state.schematics_state", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_schematics_state.schematics_state", "state_store"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMSchematicsStateDataSourceConfig(WorkspaceID, templateID string) string {
+func testAccCheckIBMSchematicsStateDataSourceConfigBasic(workspaceID string, templateID string) string {
 	return fmt.Sprintf(`
-	data "ibm_schematics_workspace" "test" {
-		workspace_id = "%s"
-	}
-	data "ibm_schematics_state" "test" {
-		workspace_id = data.ibm_schematics_workspace.test.workspace_id
-		template_id = data.ibm_schematics_workspace.test.template_id.0
-	}
-	  
-	output "state_store_values" {
-		value = data.ibm_schematics_state.test.state_store
-	}
-`, WorkspaceID)
+		 data "ibm_schematics_state" "schematics_state" {
+			workspace_id = "%s"
+			 template_id = "%s"
+		 }
+	 `, workspaceID, templateID)
 }
