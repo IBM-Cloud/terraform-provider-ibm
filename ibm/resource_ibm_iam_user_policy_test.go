@@ -1,19 +1,18 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
-
 package ibm
 
 import (
 	"fmt"
 	"regexp"
-	"strings"
 	"testing"
 
+	"strings"
+
+	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 )
 
 func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {

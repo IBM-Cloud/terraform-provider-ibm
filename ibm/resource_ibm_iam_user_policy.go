@@ -6,7 +6,9 @@ package ibm
 import (
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
@@ -159,6 +161,29 @@ func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) er
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", userEmail, userPolicy.ID))
+
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
+		_, err = iampapClient.V1Policy().Get(userPolicy.ID)
+
+		if err != nil {
+			if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+				if apiErr.StatusCode() == 404 {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+		}
+		return nil
+	})
+
+	if isResourceTimeoutError(err) {
+		_, err = iampapClient.V1Policy().Get(userPolicy.ID)
+	}
+	if err != nil {
+		return fmt.Errorf("error fetching user policy: %w", err)
+	}
+
 	return resourceIBMIAMUserPolicyRead(d, meta)
 }
 
