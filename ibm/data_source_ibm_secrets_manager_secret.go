@@ -37,6 +37,13 @@ func dataSourceIBMSecretsManagerSecret() *schema.Resource {
 				Required:    true,
 				Description: "The v4 UUID that uniquely identifies the secret.",
 			},
+			"endpoint_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: InvokeDataSourceValidator("ibm_secrets_manager_secret", "endpoint_type"),
+				Description:  "Endpoint Type. 'public' or 'private'",
+				Default:      "public",
+			},
 			"metadata": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -214,6 +221,7 @@ func datasourceIBMSecretsManagerSecretValidator() *ResourceValidator {
 
 	validateSchema := make([]ValidateSchema, 1)
 	secretType := "arbitrary, iam_credentials, username_password"
+	endpointType := "public, private"
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "secret_type",
@@ -221,6 +229,13 @@ func datasourceIBMSecretsManagerSecretValidator() *ResourceValidator {
 			Type:                       TypeString,
 			Required:                   true,
 			AllowedValues:              secretType})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "endpoint_type",
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Optional:                   true,
+			AllowedValues:              endpointType})
 
 	ibmSecretsManagerSecretdatasourceValidator := ResourceValidator{ResourceName: "ibm_secrets_manager_secret", Schema: validateSchema}
 	return &ibmSecretsManagerSecretdatasourceValidator
@@ -243,6 +258,7 @@ func dataSourceIBMSecretsManagerSecretRead(context context.Context, d *schema.Re
 	}
 
 	instanceID := d.Get("instance_id").(string)
+	endpointType := d.Get("endpoint_type").(string)
 	var smEndpointURL string
 
 	rContollerAPI := rContollerClient.ResourceServiceInstanceV2()
@@ -256,7 +272,11 @@ func dataSourceIBMSecretsManagerSecretRead(context context.Context, d *schema.Re
 	crnData := strings.Split(instanceCRN, ":")
 
 	if crnData[4] == "secrets-manager" {
-		smEndpointURL = "https://" + instanceID + "." + region + ".secrets-manager.appdomain.cloud"
+		if endpointType == "private" {
+			smEndpointURL = "https://" + instanceID + "private" + "." + region + ".secrets-manager.appdomain.cloud"
+		} else {
+			smEndpointURL = "https://" + instanceID + "." + region + ".secrets-manager.appdomain.cloud"
+		}
 		secretsManagerClient.Service.Options.URL = smEndpointURL
 	} else {
 		return diag.FromErr(fmt.Errorf("Invalid or unsupported service Instance"))

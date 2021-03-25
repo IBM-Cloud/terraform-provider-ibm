@@ -27,6 +27,7 @@ The following arguments are supported:
 * `instance_id` - (Required, string) The Secrets Manager Instance GUID.
 * `secret_type` - (Required, string) The secret type. Supported options include: arbitrary, iam_credentials, username_password.
 * `secret_id` - (Required, string) The v4 UUID that uniquely identifies the secret.
+* `endpoint_type` - (Optional, string) The type of the endpoint to be used for fetching secret. Supported options include: `public`, `private`. Default is `public`.
 
 ## Attribute Reference
 
