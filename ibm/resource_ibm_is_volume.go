@@ -18,20 +18,22 @@ import (
 )
 
 const (
-	isVolumeName             = "name"
-	isVolumeProfileName      = "profile"
-	isVolumeZone             = "zone"
-	isVolumeEncryptionKey    = "encryption_key"
-	isVolumeCapacity         = "capacity"
-	isVolumeIops             = "iops"
-	isVolumeCrn              = "crn"
-	isVolumeTags             = "tags"
-	isVolumeStatus           = "status"
-	isVolumeDeleting         = "deleting"
-	isVolumeDeleted          = "done"
-	isVolumeProvisioning     = "provisioning"
-	isVolumeProvisioningDone = "done"
-	isVolumeResourceGroup    = "resource_group"
+	isVolumeName               = "name"
+	isVolumeProfileName        = "profile"
+	isVolumeZone               = "zone"
+	isVolumeEncryptionKey      = "encryption_key"
+	isVolumeCapacity           = "capacity"
+	isVolumeIops               = "iops"
+	isVolumeCrn                = "crn"
+	isVolumeTags               = "tags"
+	isVolumeStatus             = "status"
+	isVolumeDeleting           = "deleting"
+	isVolumeDeleted            = "done"
+	isVolumeProvisioning       = "provisioning"
+	isVolumeProvisioningDone   = "done"
+	isVolumeResourceGroup      = "resource_group"
+	isVolumeSourceSnapshot     = "source_snapshot"
+	isVolumeDeleteAllSnapshots = "delete_all_snapshots"
 )
 
 func resourceIBMISVolume() *schema.Resource {
@@ -116,7 +118,16 @@ func resourceIBMISVolume() *schema.Resource {
 				Computed:    true,
 				Description: "Volume status",
 			},
-
+			isVolumeSourceSnapshot: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Identifier of the snapshot from which this volume was cloned",
+			},
+			isVolumeDeleteAllSnapshots: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Deletes all snapshots created from this volume",
+			},
 			isVolumeTags: {
 				Type:        schema.TypeSet,
 				Optional:    true,
