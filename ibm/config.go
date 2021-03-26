@@ -1227,7 +1227,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	pnurl := fmt.Sprintf("https://%s.imfpush.cloud.ibm.com/imfpush/v1", c.Region)
 	if c.Visibility == "private" {
-		session.vpcErr = fmt.Errorf("Push API doesnot support private endpoints")
+		session.pushServiceClientErr = fmt.Errorf("Push Service API doesnot support private endpoints")
 	}
 	pushNotificationOptions := &pushservicev1.PushServiceV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_PUSH_API_ENDPOINT"}, pnurl),
@@ -1452,8 +1452,29 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// CIS Service instances starts here.
 	cisURL := contructEndpoint("api.cis", cloudEndpoint)
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		cisURL = contructEndpoint("api.private.cis", cloudEndpoint)
+	if c.Visibility == "private" {
+		// cisURL = contructEndpoint("api.private.cis", cloudEndpoint)
+		session.cisZonesErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisDNSBulkErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisGLBPoolErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisGLBErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisGLBHealthCheckErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisIPErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisRLErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisPageRuleErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisEdgeFunctionErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisSSLErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisWAFPackageErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisDomainSettingsErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisRoutingErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisWAFGroupErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisCacheErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisCustomPageErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisAccessRuleErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisUARuleErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisLockdownErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisRangeAppErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisWAFRuleErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 	}
 	cisEndPoint := envFallBack([]string{"IBMCLOUD_CIS_API_ENDPOINT"}, cisURL)
 
