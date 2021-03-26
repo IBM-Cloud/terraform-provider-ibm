@@ -754,7 +754,7 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 				_, response, err := sess.GetSecurityGroupTarget(getSecurityGroupTargetOptions)
 				if err != nil {
 					if response != nil && response.StatusCode == 404 {
-						return nil
+						continue
 					}
 					return fmt.Errorf("Error Getting Security Group Target for this load balancer (%s): %s\n%s", d, err, response)
 				}
