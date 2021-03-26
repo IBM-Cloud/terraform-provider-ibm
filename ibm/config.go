@@ -1867,7 +1867,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			rmURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s/v2", cloudEndpoint))
 		} else {
 			fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
-			rmURL = contructEndpoint("private.resource-controller", fmt.Sprintf("%s/v2", cloudEndpoint))
+			rmURL = contructEndpoint("private.us-south.resource-controller", fmt.Sprintf("%s/v2", cloudEndpoint))
 		}
 	}
 	if c.Visibility == "public-and-private" {
@@ -1897,7 +1897,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			rcURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), cloudEndpoint)
 		} else {
 			fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
-			rcURL = contructEndpoint("private.resource-controller", cloudEndpoint)
+			rcURL = contructEndpoint("private.us-south.resource-controller", cloudEndpoint)
 		}
 	}
 	if c.Visibility == "public-and-private" {
