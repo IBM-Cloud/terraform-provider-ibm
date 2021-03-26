@@ -204,7 +204,7 @@ func dataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 	d.Set(ResourceControllerURL, rcontroller+"/services/")
 
-	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ServicePlanID)
+	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ResourcePlanID)
 	if err != nil {
 		return fmt.Errorf("Error retrieving plan: %s", err)
 	}

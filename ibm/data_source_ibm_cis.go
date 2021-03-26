@@ -173,7 +173,7 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 
 	d.Set("service", serviceOff)
 
-	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ServicePlanID)
+	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ResourcePlanID)
 	if err != nil {
 		return fmt.Errorf("Error retrieving plan: %s", err)
 	}
