@@ -8,7 +8,7 @@ Direct Link Gateway
 DNS Services
 Event Streams
 Functions
-Identity & Access (IAM)
+Identity & Access Management (IAM)
 Internet services
 Key Management Service
 Kubernetes Service
