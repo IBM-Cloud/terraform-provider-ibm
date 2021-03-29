@@ -19,7 +19,7 @@ resource "ibm_function_action" "action" {
   namespace = "function-namespace-name
 
   exec {
-    kind = "nodejs:6"
+    kind = "nodejs:10"
     code = file("test-fixtures/hellonode.js")
   }
 }

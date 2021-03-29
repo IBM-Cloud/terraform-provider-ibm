@@ -33,7 +33,6 @@ module "satellite-location" {
   location          = var.location
   managed_from      = var.managed_from
   location_zones    = var.location_zones
-  location_tags     = var.location_tags
   ibmcloud_api_key  = var.ibmcloud_api_key
   ibm_region        = var.ibm_region
   resource_group    = var.resource_group

@@ -20,4 +20,5 @@ Schematics
 Transit Gateway
 VPC infrastructure
 Secrets Manager
+Satellite
 

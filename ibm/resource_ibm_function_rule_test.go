@@ -19,11 +19,11 @@ import (
 
 func TestAccCFFunctionRule_Basic(t *testing.T) {
 	var conf whisk.Rule
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_rule_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
-	actionName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	triggerName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	updatedTriggerName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	actionName := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
+	triggerName := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
+	updatedTriggerName := fmt.Sprintf("terraform_update_trigger_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -60,11 +60,11 @@ func TestAccCFFunctionRule_Basic(t *testing.T) {
 
 func TestAccIAMFunctionRule_Basic(t *testing.T) {
 	var conf whisk.Rule
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_rule_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
-	actionName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	triggerName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	updatedTriggerName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	actionName := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
+	triggerName := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
+	updatedTriggerName := fmt.Sprintf("terraform_update_trigger_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -101,8 +101,8 @@ func TestAccIAMFunctionRule_Basic(t *testing.T) {
 
 func TestAccCFFunctionRule_Import(t *testing.T) {
 	var conf whisk.Rule
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	triggeName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_rule_%d", acctest.RandIntRange(10, 100))
+	triggeName := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 
 	resource.Test(t, resource.TestCase{
@@ -133,8 +133,8 @@ func TestAccCFFunctionRule_Import(t *testing.T) {
 
 func TestAccIAMFunctionRule_Import(t *testing.T) {
 	var conf whisk.Rule
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	triggeName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_rule_%d", acctest.RandIntRange(10, 100))
+	triggeName := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -262,7 +262,7 @@ func testAccCheckIAMFunctionRuleCreate(actionName, triggerName, name, namespace 
 		name      = "%s"
 		namespace = ibm_function_namespace.namespace.name
 		exec {
-		  kind = "nodejs:6"
+		  kind = "nodejs:10"
 		  code = file("test-fixtures/hellonode.js")
 		}
 	  }
@@ -413,7 +413,7 @@ func testAccCheckCFFunctionRuleCreate(actionName, triggerName, name, namespace s
 		name      = "%s"
 		namespace = "%s"
 		exec {
-		  kind = "nodejs:6"
+		  kind = "nodejs:10"
 		  code = file("test-fixtures/hellonode.js")
 		}
 	  }

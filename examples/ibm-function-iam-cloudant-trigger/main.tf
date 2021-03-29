@@ -106,7 +106,7 @@ resource "ibm_function_action" "action" {
   namespace = var.namespace
 
   exec {
-    kind = "nodejs:6"
+    kind = "nodejs:10"
     code = file("hello.js")
   }
 }
