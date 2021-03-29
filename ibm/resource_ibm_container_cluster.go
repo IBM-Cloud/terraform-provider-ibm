@@ -1145,8 +1145,10 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		if len(rem) > 0 {
 			return fmt.Errorf("Subnet(s) %v cannot be deleted", rem)
 		}
-
-		subnets, err := subnetAPI.List(targetEnv)
+		metro := d.Get("datacenter").(string)
+		//from datacenter retrive the metro for filtering the subnets
+		metro = metro[0:3]
+		subnets, err := subnetAPI.List(targetEnv, metro)
 		if err != nil {
 			return err
 		}
