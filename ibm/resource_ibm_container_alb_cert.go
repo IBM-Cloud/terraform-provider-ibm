@@ -33,7 +33,7 @@ func resourceIBMContainerALBCert() *schema.Resource {
 			"cert_crn": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    false,
+				ForceNew:    true,
 				Description: "Certificate CRN id",
 			},
 			"cluster_id": {
