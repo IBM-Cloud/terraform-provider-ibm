@@ -612,7 +612,7 @@ func validateActionName(v interface{}, k string) (ws []string, errors []error) {
 
 func validateActionKind(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
-	kindList := []string{"php:7.1", "nodejs:8", "swift:3", "nodejs", "blackbox", "java", "sequence", "nodejs:6", "python:3", "python", "python:2", "swift", "swift:3.1.1"}
+	kindList := []string{"php:7.3", "nodejs:8", "swift:3", "nodejs", "blackbox", "java", "sequence", "nodejs:10", "python:3", "python", "python:2", "swift", "swift:4.2"}
 	if !stringInSlice(value, kindList) {
 		errors = append(errors, fmt.Errorf(
 			"%q (%q) Invalid kind is provided.Supported list of kinds of actions are (%q)", k, value, kindList))

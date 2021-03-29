@@ -19,7 +19,7 @@ import (
 
 func TestAccIAMFunctionTrigger_Basic(t *testing.T) {
 	var conf whisk.Trigger
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -53,7 +53,7 @@ func TestAccIAMFunctionTrigger_Basic(t *testing.T) {
 
 func TestAccIAMFunctionTrigger_Feed_Basic(t *testing.T) {
 	var conf whisk.Trigger
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -89,7 +89,7 @@ func TestAccIAMFunctionTrigger_Feed_Basic(t *testing.T) {
 
 func TestAccIAMFunctionTrigger_Import(t *testing.T) {
 	var conf whisk.Trigger
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -119,7 +119,7 @@ func TestAccIAMFunctionTrigger_Import(t *testing.T) {
 
 func TestAccCFFunctionTrigger_Basic(t *testing.T) {
 	var conf whisk.Trigger
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 
 	resource.Test(t, resource.TestCase{
@@ -154,7 +154,7 @@ func TestAccCFFunctionTrigger_Basic(t *testing.T) {
 
 func TestAccCFFunctionTrigger_Feed_Basic(t *testing.T) {
 	var conf whisk.Trigger
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -190,7 +190,7 @@ func TestAccCFFunctionTrigger_Feed_Basic(t *testing.T) {
 
 func TestAccCFFunctionTrigger_Import(t *testing.T) {
 	var conf whisk.Trigger
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

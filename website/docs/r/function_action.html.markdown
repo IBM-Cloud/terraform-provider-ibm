@@ -22,7 +22,7 @@ resource "ibm_function_action" "nodehello" {
   namespace = "function-namespace-name"
 
   exec {
-    kind = "nodejs:6"
+    kind = "nodejs:10"
     code = file("hellonode.js")
   }
 }
@@ -36,7 +36,7 @@ resource "ibm_function_action" "nodehellowithparameter" {
   namespace = "function-namespace-name"
   
   exec {
-    kind = "nodejs:6"
+    kind = "nodejs:10"
     code = file("hellonodewithparameter.js")
   }
 
@@ -62,7 +62,7 @@ resource "ibm_function_action" "nodezip" {
   namespace = "function-namespace-name"
 
   exec {
-    kind      = "nodejs:6"
+    kind      = "nodejs:10"
     code_path = "nodeaction.zip"
   }
 }
