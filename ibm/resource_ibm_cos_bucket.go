@@ -74,10 +74,10 @@ func resourceIBMCOS() *schema.Resource {
 				Description: "CRN of resource instance",
 			},
 			"key_protect": {
-				Type:             schema.TypeString,
-				DiffSuppressFunc: applyOnce,
-				Optional:         true,
-				Description:      "CRN of the key you want to use data at rest encryption",
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "CRN of the key you want to use data at rest encryption",
 			},
 			"single_site_location": {
 				Type:          schema.TypeString,
