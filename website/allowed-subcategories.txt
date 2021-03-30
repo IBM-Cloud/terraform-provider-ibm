@@ -16,9 +16,11 @@ Object Storage
 Power Systems
 Push Notifications
 Resource management
+Satellite
 Schematics
+Secrets Manager
 Transit Gateway
 VPC infrastructure
-Secrets Manager
-Satellite
+
+
 
