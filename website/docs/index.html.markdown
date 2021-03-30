@@ -239,10 +239,11 @@ The following arguments are supported in the `provider` block:
 
 * `zone` - (optional) The IBM Cloud zone for a region. You can also source it from the `IC_ZONE` (higher precedence) or `IBMCLOUD_ZONE` environment variable. This value is required for power resources if the region supports multi-zone. For region `eu-de` it supports two zones `eu-de-1` and `eu-de-2`. Set the region and zone for the Power Virtual Server.
 
-* `visibility` -(Optional) IBM Cloud Visibility. It can also be sourced from the `IC_VISIBILITY` (higher precedence) or `IBMCLOUD_VISIBILITY` environment variable. Default value: `public`. Allowble values are `public`, `private`, `public-and-private`.
-  * If visibility is set to `public` it will first access regional public endpoints. If not, it will fallback to global public endpoint.
-  * If visibility is set to `private` it will first access regional private endpoints. If not, it will fallback to global private endpoint. To work with private endpoints one must have VRF enabled in his account.
-  * If visibility is set to `public-and-private` it will first access regional private endpoints. If not, it ll fallback to global private endpoint. If service doesn't support regional or global private endpoints it will return public endpoint.
+* `visibility` - (Optional) The visibility to IBM Cloud endpoint - `public`, `private`, `public-and-private`. Default value: `public`. Allowable values are `public`, `private`, `public-and-private`.
+    * If visibility is set to `public`, use the regional public endpoint or global public endpoint. The regional public endpoints has higher precedence.
+    * If visibility is set to `private`, use the regional private endpoint or global private endpoint. The regional private endpoint is given higher precedence.  In order to use the private endpoint from an IBM Cloud resource (such as, a classic VM instance), one must have VRF-enabled account.  If the Cloud service does not support private endpoint, the terraform resource or datasource will log an error.
+    * If visibility is set to `public-and-private`, use regional private endpoints or global private endpoint. If service doesn't support regional or global private endpoints it will use the regional or global public endpoint.
+    * This can also be sourced from the `IC_VISIBILITY` (higher precedence) or `IBMCLOUD_VISIBILITY` environment variable.
 
 
 ***Note***
