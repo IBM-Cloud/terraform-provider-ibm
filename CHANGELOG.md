@@ -1,3 +1,110 @@
+## 1.22.0 (Mar30, 2021)
+
+FEATURES:
+
+* Support VPC dedicated hosts
+    - **Resources**
+        - ibm_is_dedicated_host
+		- ibm_is_dedicated_host_group
+    - **DataSources**
+        - ibm_is_dedicated_host
+		- ibm_is_dedicated_hosts
+		- ibm_is_dedicated_host_profile
+		- ibm_is_dedicated_host_profiles
+		- ibm_is_dedicated_host_group
+		- ibm_is_dedicated_host_groups
+* Support VPC reserved IP
+     - **Resources**
+        - ibm_is_subnet_reserved_ip
+     - **DataSources**
+        - ibm_is_subnet_reserved_ip
+        - ibm_is_subnet_reserved_ips
+* Support Push Notification chrome web
+    - **Resources**
+        - ibm_pn_application_chrome
+    - **DataSources**
+        - ibm_pn_application_chrome
+        
+* Support Key Management Alias and Rings
+    - **Resources**
+        - ibm_kms_key_alias
+        - ibm_kms_key_rings
+    - **DataSources**
+        - ibm_kms_key_rings
+
+* Support for reading secrets from IBM Cloud Secrets Manager
+    - **DataSources**
+        - ibm_secrets_manager_secrets
+        - ibm_secrets_manager_secret
+
+* Support Schematics
+    - **Resources**
+        - ibm_schematics_workspace
+        - ibm_schematics_action
+        - ibm_schematics_job
+    - **DataSources**
+        - ibm_schematics_action
+        - ibm_schematics_job
+
+* Support Observability
+     - **Resources**
+        - ibm_ob_logging
+        - ibm_ob_monitoring
+
+* Support for Satellite 
+    - **Resources**
+        - ibm_satellite_location
+        - ibm_satellite_host
+    - **DataSources**
+        - ibm_satellite_location
+        - ibm_satellite_attach_host_script
+
+* Support for CIS Cache setting
+    - **Datasource**
+        - ibm_cis_cache_settings
+
+PROVIDER
+
+* Support `visibility` argument to control the visibility to IBM Cloud endpoint.
+
+* `generation` argument is depreated. By default the provider targets to IBM Cloud VPC Infrastructure.
+
+
+ENHANCEMENTS
+
+* Support added DH group 19 and sha 512 for IKE and IPSec Policy([#2361](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2361))
+
+* Support `delegate_vpc` action for VPC routing table ([#2355](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2355))
+
+* Support tags for IBM Cloud VPC security group ([#2353](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2353))
+
+* Support for renaming of default Network ACL, Security Group and Routing Table ([#2216](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2353))
+
+* Support for allow control of Security Groups on Load Balancer ([#2324](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2324))
+
+* Support recover the public key from an SSH key in IBM Cloud VPC ([#2388](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2388))
+
+* Support ibm_is_vpc_routing_table_route to accept a VPN connection ID as next_hop ([#2270](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2270))
+
+* Support to provision classic Infrastructure Virtual instance using quoteID ([#2433](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2433))
+
+* Support `serve_stale_content` for CIS Cache settings ([#2219](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2219))
+
+* Support filtering of subnets based on metro for IKS kubernetes Cluster ([#2403](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2403))
+
+* Support `alias` argument to filter the keys in ibm_kms_key and ibm_kms_keys datasources and aliases attribute ([#2293](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2293))
+
+* Support `key_ring_id` in ibm_kms_key resource and datasources ([#2378](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2378))
+
+BUGFIXES
+
+* Fix increase in panics while refreshing resources for cos_bucket ([#2373](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2373))
+
+* Fix Cloud Function action runtimes version ([#2424](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2424))
+
+* Fix COS buckets allow modifying key_protect after creation, but they should not ([#2310](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2310))
+
+
 ## 1.21.2 (Mar15, 2021)
 
 PROVIDER:
