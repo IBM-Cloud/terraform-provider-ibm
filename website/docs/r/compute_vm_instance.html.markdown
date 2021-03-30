@@ -278,7 +278,7 @@ This attribute can't be updated. This is provided so that you can apply security
     * `private_vlan_id` - (Optional, Forces new resource, string) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).   
     **NOTE**: Conflicts with `datacenter`, `private_vlan_id`, `public_vlan_id`, `placement_group_name` and `placement_group_id`.
 
-  * `quote_id` - (Optional, Forces new resource, string) When you define `quote_id`, Terraform uses specifications in the quote to create a virtual server. You can find the quote ID in the [IBM Cloud portal](https://cloud.ibm.com/billing/quotes).
+* `quote_id` - (Optional, Forces new resource, string) When you define `quote_id`, Terraform uses specifications in the quote to create a virtual server. You can find the quote ID in the [IBM Cloud portal](https://cloud.ibm.com/billing/quotes).
 
 
 
