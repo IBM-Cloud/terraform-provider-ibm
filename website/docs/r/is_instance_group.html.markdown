@@ -15,10 +15,6 @@ Create, update or delete a instance group on VPC
 
 In the following example, you can create a instance group on VPC gen-2 infrastructure.
 ```hcl
-provider "ibm" {
-  generation = 2
-}
-
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2test"
 }

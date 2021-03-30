@@ -1,7 +1,3 @@
-provider "ibm" {
-  generation = 1
-}
-
 resource "ibm_resource_instance" "cos_instance" {
   name     = var.service_instance_name
   service  = "cloud-object-storage"

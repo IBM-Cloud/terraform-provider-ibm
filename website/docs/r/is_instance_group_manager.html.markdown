@@ -16,10 +16,6 @@ Create, Update or delete a instance group manager on of an instance group
 In the following example, you can create a instance group manager.
 
 ```hcl
-provider "ibm" {
-  generation = 2
-}
-
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2test"
 }
