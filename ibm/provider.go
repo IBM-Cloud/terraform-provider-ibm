@@ -140,8 +140,8 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "Generation of Virtual Private Cloud. Default is 2",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_GENERATION", "IBMCLOUD_GENERATION"}, nil),
-				Deprecated:  "The generation field is deprecated and will be removed after couple of releases",
+				//DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_GENERATION", "IBMCLOUD_GENERATION"}, nil),
+				Deprecated: "The generation field is deprecated and will be removed after couple of releases",
 			},
 			"iam_token": {
 				Type:        schema.TypeString,
