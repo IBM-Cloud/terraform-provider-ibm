@@ -437,6 +437,7 @@ func Provider() *schema.Provider {
 			"ibm_firewall":                                       resourceIBMFirewall(),
 			"ibm_firewall_policy":                                resourceIBMFirewallPolicy(),
 			"ibm_iam_access_group":                               resourceIBMIAMAccessGroup(),
+			"ibm_iam_account_settings":                           resourceIbmIamAccountSettings(),
 			"ibm_iam_custom_role":                                resourceIBMIAMCustomRole(),
 			"ibm_iam_access_group_dynamic_rule":                  resourceIBMIAMDynamicRule(),
 			"ibm_iam_access_group_members":                       resourceIBMIAMAccessGroupMembers(),

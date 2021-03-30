@@ -47,6 +47,7 @@ import (
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
+	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
@@ -181,6 +182,7 @@ type Session struct {
 
 // ClientSession ...
 type ClientSession interface {
+	IamIdentityV1() (*iamidentityv1.IamIdentityV1, error)
 	BluemixSession() (*bxsession.Session, error)
 	BluemixAcccountAPI() (accountv2.AccountServiceAPI, error)
 	BluemixAcccountv1API() (accountv1.AccountServiceAPI, error)
@@ -254,6 +256,9 @@ type ClientSession interface {
 
 type clientSession struct {
 	session *Session
+
+	iamIdentityClient    *iamidentityv1.IamIdentityV1
+	iamIdentityClientErr error
 
 	apigatewayErr error
 	apigatewayAPI *apigateway.ApiGatewayControllerApiV1
@@ -486,6 +491,10 @@ type clientSession struct {
 	//Satellite service
 	satelliteClient    *kubernetesserviceapiv1.KubernetesServiceApiV1
 	satelliteClientErr error
+}
+
+func (session clientSession) IamIdentityV1() (*iamidentityv1.IamIdentityV1, error) {
+	return session.iamIdentityClient, session.iamIdentityClientErr
 }
 
 func (session clientSession) CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error) {
@@ -1179,6 +1188,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 	}
 	session.schematicsClient = schematicsClient
+
+	// Construct an "options" struct for creating the service client.
+	iamIdentityClientOptions := &iamidentityv1.IamIdentityV1Options{
+		Authenticator: authenticator,
+	}
+
+	// Construct the service client.
+	session.iamIdentityClient, err = iamidentityv1.NewIamIdentityV1(iamIdentityClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.iamIdentityClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.iamIdentityClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.iamIdentityClientErr = fmt.Errorf("Error occurred while configuring IAM Identity Services API service: %q", err)
+	}
 
 	vpcclassicurl := contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
 	if c.Visibility == "private" {
