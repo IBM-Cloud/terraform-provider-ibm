@@ -11,35 +11,10 @@ description: |-
 
 Create or delete a Kubernetes VPC cluster.
 
-**NOTE**:
-Configuration of an ibm_container_vpc_cluster resource requires that the `generation` parameter is set for the IBM provider either in the `provider.tf or export as an environment variable IC_GENERATION. If not set the default value for generation will be 2.
-
-## Example Usage
-
-In the following example, you can create a Gen-1 VPC cluster with a default worker pool with one worker:
-
-```hcl
-provider "ibm" {
-  generation = 1
-}
-resource "ibm_container_vpc_cluster" "cluster" {
-  name              = "my_vpc_cluster"
-  vpc_id            = "6015365a-9d93-4bb4-8248-79ae0db2dc21"
-  flavor            = "c2.2x4"
-  worker_count      = "1"
-  resource_group_id = data.ibm_resource_group.resource_group.id
-  zones {
-    subnet_id = "015ffb8b-efb1-4c03-8757-29335a07493h"
-    name      = "us-south-1"
-  }
-}
 ```
 
 In the following example, you can create a Gen-2 VPC cluster with a default worker pool with one worker:
 ```hcl
-provider "ibm" {
-  generation = 2
-}
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = "my_vpc_cluster"
   vpc_id            = "r006-abb7c7ea-aadf-41bd-94c5-b8521736fadf"
@@ -56,10 +31,6 @@ resource "ibm_container_vpc_cluster" "cluster" {
 
 Create the Openshift Cluster with default worker Pool entitlement with one worker node:
 ```hcl
-provider "ibm" {
-  generation = 2
-}
-
 resource "ibm_resource_instance" "cos_instance" {
   name     = "my_cos_instance"
   service  = "cloud-object-storage"

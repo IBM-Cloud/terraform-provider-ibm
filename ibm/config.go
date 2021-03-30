@@ -1026,7 +1026,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 
 	}
-	userConfig, err := fetchUserDetails(sess.BluemixSession, c.Generation, c.RetryCount, c.RetryDelay)
+	userConfig, err := fetchUserDetails(sess.BluemixSession, c.RetryCount, c.RetryDelay)
 	if err != nil {
 		session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
 	}
@@ -2097,7 +2097,7 @@ func authenticateCF(sess *bxsession.Session) error {
 	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
 }
 
-func fetchUserDetails(sess *bxsession.Session, generation, retries int, retryDelay time.Duration) (*UserConfig, error) {
+func fetchUserDetails(sess *bxsession.Session, retries int, retryDelay time.Duration) (*UserConfig, error) {
 	config := sess.Config
 	user := UserConfig{}
 	var bluemixToken string
@@ -2118,7 +2118,7 @@ func fetchUserDetails(sess *bxsession.Session, generation, retries int, retryDel
 				time.Sleep(retryDelay)
 				log.Printf("Retrying authentication for user details %d", retries)
 				_ = authenticateAPIKey(sess)
-				return fetchUserDetails(sess, generation, retries-1, retryDelay)
+				return fetchUserDetails(sess, retries-1, retryDelay)
 			}
 		}
 		return &user, err
@@ -2137,7 +2137,7 @@ func fetchUserDetails(sess *bxsession.Session, generation, retries int, retryDel
 	}
 	user.cloudType = "public"
 
-	user.generation = generation
+	user.generation = 2
 	return &user, nil
 }
 

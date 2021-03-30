@@ -235,7 +235,7 @@ The following arguments are supported in the `provider` block:
 
 * `riaas_endpoint` - (deprected, Optional) The next generation infrastructure service API endpoint . It can also be sourced from the `RIAAS_ENDPOINT`. Default value: `us-south.iaas.cloud.ibm.com`. 
 
-* `generation` - (Optional) The generation of Virtual Private Cloud. It can also be sourced from the `IC_GENERATION` (higher precedence) or `IBMCLOUD_GENERATION` environment variable. Default value: `2`. `1` for VPC Classic and `2` for VPC NextGen.
+* `generation` - (deprected, Optional) The generation is deprecated by default the provider targets to the IBM Cloud VPC infrastructure.
 
 * `zone` - (optional) The IBM Cloud zone for a region. You can also source it from the `IC_ZONE` (higher precedence) or `IBMCLOUD_ZONE` environment variable. This value is required for power resources if the region supports multi-zone. For region `eu-de` it supports two zones `eu-de-1` and `eu-de-2`. Set the region and zone for the Power Virtual Server.
 
