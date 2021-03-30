@@ -9,11 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/utils"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -467,6 +468,20 @@ func resourceIBMUserInvite() *schema.Resource {
 		},
 	}
 }
+func split(arr []string, limit int) []interface{} {
+	var arrs []interface{}
+	var batch []string
+	for i := 0; i < len(arr); i += limit {
+		if i+limit <= len(arr) {
+			batch = arr[i : i+limit]
+		} else {
+			batch = arr[i:]
+		}
+
+		arrs = append(arrs, batch)
+	}
+	return arrs
+}
 
 func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 	userManagement, err := meta.(ClientSession).UserManagementAPI()
@@ -474,62 +489,68 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	client := userManagement.UserInvite()
-
 	usersSet := d.Get("users").(*schema.Set)
-	usersList := flattenUsersSet(usersSet)
-	users := make([]v2.User, 0)
-	for _, user := range usersList {
-		users = append(users, v2.User{Email: user, AccountRole: MEMBER})
-	}
-	if len(users) == 0 {
-		return fmt.Errorf("Users email not provided")
-	}
-	var accessGroups = make([]string, 0)
-	if data, ok := d.GetOk("access_groups"); ok {
-		for _, accessGroup := range data.([]interface{}) {
-			accessGroups = append(accessGroups, fmt.Sprintf("%v", accessGroup))
-		}
-	}
+	userList := flattenUsersSet(usersSet)
+	userSplitLists := split(userList, 100)
 
-	var accessPolicies []v2.UserPolicy
-	if accessPolicyData, ok := d.GetOk("iam_policy"); ok {
-		accessPolicies, err = getPolicies(d, meta, accessPolicyData.([]interface{}))
+	for _, v := range userSplitLists {
+		usersList := v.([]string)
+		users := make([]v2.User, 0)
+		for _, user := range usersList {
+			users = append(users, v2.User{Email: user, AccountRole: MEMBER})
+		}
+		if len(users) == 0 {
+			return fmt.Errorf("Users email not provided")
+		}
+		var accessGroups = make([]string, 0)
+		if data, ok := d.GetOk("access_groups"); ok {
+			for _, accessGroup := range data.([]interface{}) {
+				accessGroups = append(accessGroups, fmt.Sprintf("%v", accessGroup))
+			}
+		}
+
+		var accessPolicies []v2.UserPolicy
+		if accessPolicyData, ok := d.GetOk("iam_policy"); ok {
+			accessPolicies, err = getPolicies(d, meta, accessPolicyData.([]interface{}))
+			if err != nil {
+				log.Println("IAM Acess policy: ", err.Error())
+				return err
+			}
+		}
+
+		inviteUserPayload := v2.UserInvite{}
+		log.Println(inviteUserPayload)
+		inviteUserPayload.Users = users
+		if len(accessGroups) != 0 {
+			inviteUserPayload.AccessGroup = accessGroups
+		}
+		if len(accessPolicies) != 0 {
+			inviteUserPayload.IAMPolicy = accessPolicies
+		}
+
+		if infraPermissions := getInfraPermissions(d, meta); len(infraPermissions) != 0 {
+			inviteUserPayload.InfrastructureRoles = &v2.InfraPermissions{Permissions: infraPermissions}
+		}
+		orgRoles, err := getCloudFoundryRoles(d, meta, usersList)
 		if err != nil {
-			log.Println("IAM Acess policy: ", err.Error())
 			return err
 		}
+		if len(orgRoles) != 0 {
+			inviteUserPayload.OrganizationRoles = orgRoles
+		}
+
+		accountID, err := getAccountID(d, meta)
+		if err != nil {
+			return err
+		}
+
+		_, InviteUserError := client.InviteUsers(accountID, inviteUserPayload)
+		if InviteUserError != nil {
+			return InviteUserError
+		}
+
 	}
 
-	inviteUserPayload := v2.UserInvite{}
-	log.Println(inviteUserPayload)
-	inviteUserPayload.Users = users
-	if len(accessGroups) != 0 {
-		inviteUserPayload.AccessGroup = accessGroups
-	}
-	if len(accessPolicies) != 0 {
-		inviteUserPayload.IAMPolicy = accessPolicies
-	}
-
-	if infraPermissions := getInfraPermissions(d, meta); len(infraPermissions) != 0 {
-		inviteUserPayload.InfrastructureRoles = &v2.InfraPermissions{Permissions: infraPermissions}
-	}
-	orgRoles, err := getCloudFoundryRoles(d, meta)
-	if err != nil {
-		return err
-	}
-	if len(orgRoles) != 0 {
-		inviteUserPayload.OrganizationRoles = orgRoles
-	}
-
-	accountID, err := getAccountID(d, meta)
-	if err != nil {
-		return err
-	}
-
-	_, InviteUserError := client.InviteUsers(accountID, inviteUserPayload)
-	if InviteUserError != nil {
-		return InviteUserError
-	}
 	d.SetId(time.Now().UTC().String())
 	return resourceIBMIAMUpdateUserProfile(d, meta)
 }
@@ -676,54 +697,58 @@ func resourceIBMIAMUpdateUserProfile(d *schema.ResourceData, meta interface{}) e
 
 		//Update the added users
 		if len(added) > 0 {
-			users := make([]v2.User, 0)
-			for _, user := range added {
-				users = append(users, v2.User{Email: user, AccountRole: MEMBER})
-			}
-			if len(users) == 0 {
-				return fmt.Errorf("Users email not provided")
-			}
+			userSplitLists := split(added, 100)
+			for _, v := range userSplitLists {
+				usersList := v.([]string)
+				users := make([]v2.User, 0)
+				for _, user := range usersList {
+					users = append(users, v2.User{Email: user, AccountRole: MEMBER})
+				}
+				if len(users) == 0 {
+					return fmt.Errorf("Users email not provided")
+				}
 
-			var accessPolicies []v2.UserPolicy
-			if accessPolicyData, ok := d.GetOk("iam_policy"); ok {
-				accessPolicies, err = getPolicies(d, meta, accessPolicyData.([]interface{}))
+				var accessPolicies []v2.UserPolicy
+				if accessPolicyData, ok := d.GetOk("iam_policy"); ok {
+					accessPolicies, err = getPolicies(d, meta, accessPolicyData.([]interface{}))
+					if err != nil {
+						log.Println("IAM Acess policy: ", err.Error())
+						return err
+					}
+				}
+
+				var accessGroups = make([]string, 0)
+				if data, ok := d.GetOk("access_groups"); ok {
+					for _, accessGroup := range data.([]interface{}) {
+						accessGroups = append(accessGroups, fmt.Sprintf("%v", accessGroup))
+					}
+				}
+
+				infraPermissions := getInfraPermissions(d, meta)
+				orgRoles, err := getCloudFoundryRoles(d, meta, usersList)
 				if err != nil {
-					log.Println("IAM Acess policy: ", err.Error())
 					return err
 				}
-			}
 
-			var accessGroups = make([]string, 0)
-			if data, ok := d.GetOk("access_groups"); ok {
-				for _, accessGroup := range data.([]interface{}) {
-					accessGroups = append(accessGroups, fmt.Sprintf("%v", accessGroup))
+				inviteUserPayload := v2.UserInvite{}
+
+				inviteUserPayload.Users = users
+				if len(accessGroups) != 0 {
+					inviteUserPayload.AccessGroup = accessGroups
 				}
-			}
-
-			infraPermissions := getInfraPermissions(d, meta)
-			orgRoles, err := getCloudFoundryRoles(d, meta)
-			if err != nil {
-				return err
-			}
-
-			inviteUserPayload := v2.UserInvite{}
-
-			inviteUserPayload.Users = users
-			if len(accessGroups) != 0 {
-				inviteUserPayload.AccessGroup = accessGroups
-			}
-			if len(accessPolicies) != 0 {
-				inviteUserPayload.IAMPolicy = accessPolicies
-			}
-			if len(infraPermissions) != 0 {
-				inviteUserPayload.InfrastructureRoles = &v2.InfraPermissions{Permissions: infraPermissions}
-			}
-			if len(orgRoles) != 0 {
-				inviteUserPayload.OrganizationRoles = orgRoles
-			}
-			_, InviteUserError := Client.InviteUsers(accountID, inviteUserPayload)
-			if InviteUserError != nil {
-				return InviteUserError
+				if len(accessPolicies) != 0 {
+					inviteUserPayload.IAMPolicy = accessPolicies
+				}
+				if len(infraPermissions) != 0 {
+					inviteUserPayload.InfrastructureRoles = &v2.InfraPermissions{Permissions: infraPermissions}
+				}
+				if len(orgRoles) != 0 {
+					inviteUserPayload.OrganizationRoles = orgRoles
+				}
+				_, InviteUserError := Client.InviteUsers(accountID, inviteUserPayload)
+				if InviteUserError != nil {
+					return InviteUserError
+				}
 			}
 		}
 
@@ -977,15 +1002,13 @@ func getPolicies(d *schema.ResourceData, meta interface{}, policies []interface{
 }
 
 // getCloudFoundryRoles ...
-func getCloudFoundryRoles(d *schema.ResourceData, meta interface{}) ([]v2.OrgRole, error) {
+func getCloudFoundryRoles(d *schema.ResourceData, meta interface{}, usersList []string) ([]v2.OrgRole, error) {
 	cloudFoundryRoles := make([]v2.OrgRole, 0)
 	if data, ok := d.GetOk("cloud_foundry_roles"); ok {
 		sess, err := meta.(ClientSession).BluemixSession()
 		if err != nil {
 			return nil, err
 		}
-		usersSet := d.Get("users").(*schema.Set)
-		usersList := flattenUsersSet(usersSet)
 		for _, d := range data.([]interface{}) {
 			orgRole := v2.OrgRole{}
 			role := d.(map[string]interface{})
