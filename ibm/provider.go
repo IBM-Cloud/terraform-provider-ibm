@@ -8,9 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/mutexkv"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // This is a global MutexKV for use within this plugin.
@@ -357,6 +356,12 @@ func Provider() *schema.Provider {
 			//Added for Satellite
 			"ibm_satellite_location":           dataSourceIBMSatelliteLocation(),
 			"ibm_satellite_attach_host_script": dataSourceIBMSatelliteAttachHostScript(),
+
+			// Catalog related resources
+			"ibm_cm_catalog":           dataSourceIBMCmCatalog(),
+			"ibm_cm_offering":          dataSourceIBMCmOffering(),
+			"ibm_cm_version":           dataSourceIBMCmVersion(),
+			"ibm_cm_offering_instance": dataSourceIBMCmOfferingInstance(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -550,9 +555,14 @@ func Provider() *schema.Provider {
 			"ibm_dl_virtual_connection": resourceIBMDLGatewayVC(),
 			"ibm_dl_provider_gateway":   resourceIBMDLProviderGateway(),
 			//Added for Transit Gateway
-			"ibm_tg_gateway":           resourceIBMTransitGateway(),
-			"ibm_tg_connection":        resourceIBMTransitGatewayConnection(),
+			"ibm_tg_gateway":    resourceIBMTransitGateway(),
+			"ibm_tg_connection": resourceIBMTransitGatewayConnection(),
+
+			//Catalog related resources
 			"ibm_cm_offering_instance": resourceIBMCmOfferingInstance(),
+			"ibm_cm_catalog":           resourceIBMCmCatalog(),
+			"ibm_cm_offering":          resourceIBMCmOffering(),
+			"ibm_cm_version":           resourceIBMCmVersion(),
 
 			//Added for Schematics
 			"ibm_schematics_workspace": resourceIBMSchematicsWorkspace(),

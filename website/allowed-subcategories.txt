@@ -1,4 +1,5 @@
 API Gateway
+Catalog Management
 Certificate Manager
 Classic infrastructure
 Cloud Databases
@@ -21,6 +22,3 @@ Schematics
 Secrets Manager
 Transit Gateway
 VPC infrastructure
-
-
-
