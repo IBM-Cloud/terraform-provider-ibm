@@ -171,6 +171,26 @@ resource "ibm_compute_vm_instance" "terraform-retry" {
 
 ```  
 
+### Example of a quote based ordering
+```hcl
+resource "ibm_compute_vm_instance" "vm1" {
+  # Mandatory fields
+  hostname             = "terraformquote"
+  domain               = "IBM.cloud"
+  quote_id             = "2877000"
+
+  # Optional fields
+  os_reference_code    = "DEBIAN_9_64"
+  datacenter           = "dal06"
+  network_speed        = 100
+  hourly_billing       = false
+  private_network_only = false
+  flavor_key_name      = "B1_2X8X100"
+  local_disk           = true
+}
+
+```
+
 ## Timeouts
 
 ibm_is_instance provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
@@ -257,6 +277,8 @@ This attribute can't be updated. This is provided so that you can apply security
     * `public_vlan_id` - (Optional, string) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
     * `private_vlan_id` - (Optional, Forces new resource, string) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).   
     **NOTE**: Conflicts with `datacenter`, `private_vlan_id`, `public_vlan_id`, `placement_group_name` and `placement_group_id`.
+
+  * `quote_id` - (Optional, Forces new resource, string) When you define `quote_id`, Terraform uses specifications in the quote to create a virtual server. You can find the quote ID in the [IBM Cloud portal](https://cloud.ibm.com/billing/quotes).
 
 
 
