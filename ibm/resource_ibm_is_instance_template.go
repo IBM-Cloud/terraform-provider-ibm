@@ -369,10 +369,10 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 	// Handle volume attachments
 	if volsintf, ok := d.GetOk(isInstanceTemplateVolumeAttachments); ok {
 		vols := volsintf.([]interface{})
-		var intfs []vpcv1.VolumeAttachmentPrototypeInstanceContext
+		var intfs []vpcv1.VolumeAttachmentPrototype
 		for _, resource := range vols {
 			vol := resource.(map[string]interface{})
-			volInterface := &vpcv1.VolumeAttachmentPrototypeInstanceContext{}
+			volInterface := &vpcv1.VolumeAttachmentPrototype{}
 			deleteVol, _ := vol[isInstanceTemplateVolumeDeleteOnInstanceDelete]
 			deleteVolBool := deleteVol.(bool)
 			volInterface.DeleteVolumeOnInstanceDelete = &deleteVolBool
@@ -381,7 +381,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			volInterface.Name = &namestr
 			volintf, _ := vol["volume"]
 			volintfstr := volintf.(string)
-			volInterface.Volume = &vpcv1.VolumeAttachmentVolumePrototypeInstanceContext{
+			volInterface.Volume = &vpcv1.VolumeAttachmentPrototypeVolume{
 				ID: &volintfstr,
 			}
 			intfs = append(intfs, *volInterface)
@@ -429,7 +429,9 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 
 		if IPAddress, ok := primnic[isInstanceTemplateNicPrimaryIpv4Address]; ok {
 			if PrimaryIpv4Address := IPAddress.(string); PrimaryIpv4Address != "" {
-				primnicobj.PrimaryIpv4Address = &PrimaryIpv4Address
+				primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototype{
+					Address: &PrimaryIpv4Address,
+				}
 			}
 		}
 	}
@@ -473,7 +475,9 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			}
 			if IPAddress, ok := nic[isInstanceTemplateNicPrimaryIpv4Address]; ok {
 				if PrimaryIpv4Address := IPAddress.(string); PrimaryIpv4Address != "" {
-					nwInterface.PrimaryIpv4Address = &PrimaryIpv4Address
+					nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototype{
+						Address: &PrimaryIpv4Address,
+					}
 				}
 			}
 			intfs = append(intfs, *nwInterface)
@@ -546,8 +550,10 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 		primaryNicList := make([]map[string]interface{}, 0)
 		currentPrimNic := map[string]interface{}{}
 		currentPrimNic[isInstanceTemplateNicName] = *instance.PrimaryNetworkInterface.Name
-		if instance.PrimaryNetworkInterface.PrimaryIpv4Address != nil {
-			currentPrimNic[isInstanceTemplateNicPrimaryIpv4Address] = *instance.PrimaryNetworkInterface.PrimaryIpv4Address
+		if instance.PrimaryNetworkInterface.PrimaryIP != nil {
+			ipIntf := instance.PrimaryNetworkInterface.PrimaryIP
+			ipAdd := ipIntf.(*vpcv1.NetworkInterfaceIPPrototype)
+			currentPrimNic[isInstanceTemplateNicPrimaryIpv4Address] = *ipAdd.Address
 		}
 		subInf := instance.PrimaryNetworkInterface.Subnet
 		subnetIdentity := subInf.(*vpcv1.SubnetIdentity)
@@ -573,8 +579,10 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 		for _, intfc := range instance.NetworkInterfaces {
 			currentNic := map[string]interface{}{}
 			currentNic[isInstanceTemplateNicName] = *intfc.Name
-			if intfc.PrimaryIpv4Address != nil {
-				currentNic[isInstanceTemplateNicPrimaryIpv4Address] = *intfc.PrimaryIpv4Address
+			if intfc.PrimaryIP != nil {
+				ipIntf := intfc.PrimaryIP
+				ipAdd := ipIntf.(*vpcv1.NetworkInterfaceIPPrototype)
+				currentNic[isInstanceTemplateNicPrimaryIpv4Address] = *ipAdd.Address
 			}
 			if intfc.AllowIPSpoofing != nil {
 				currentNic[isInstanceTemplateNicAllowIPSpoofing] = *intfc.AllowIPSpoofing
@@ -616,7 +624,7 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			volumeAttach[isInstanceTemplateDeleteVolume] = *volume.DeleteVolumeOnInstanceDelete
 			volumeID := map[string]interface{}{}
 			volumeIntf := volume.Volume
-			volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentVolumePrototypeInstanceContext)
+			volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentPrototypeVolume)
 			if volumeInst.Name != nil {
 				volumeID["name"] = *volumeInst.Name
 			}

@@ -315,7 +315,7 @@ func sgnicGet(d *schema.ResourceData, meta interface{}, sgID, nicID string) erro
 	d.Set(isSGNICAInstanceNwInterfaceID, *instanceNic.ID)
 	d.Set(isSGNICAName, *instanceNic.Name)
 	d.Set(isSGNICAPortSpeed, *instanceNic.PortSpeed)
-	d.Set(isSGNICAPrimaryIPV4Address, *instanceNic.PrimaryIpv4Address)
+	d.Set(isSGNICAPrimaryIPV4Address, *instanceNic.PrimaryIP.Address)
 	d.Set(isSGNICAStatus, *instanceNic.Status)
 	d.Set(isSGNICAType, *instanceNic.Type)
 	if instanceNic.Subnet != nil {

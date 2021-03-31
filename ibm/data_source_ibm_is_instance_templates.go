@@ -282,8 +282,10 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			interfaceList := make([]map[string]interface{}, 0)
 			currentPrimNic := map[string]interface{}{}
 			currentPrimNic[isInstanceTemplateNicName] = *instance.PrimaryNetworkInterface.Name
-			if instance.PrimaryNetworkInterface.PrimaryIpv4Address != nil {
-				currentPrimNic[isInstanceTemplateNicPrimaryIpv4Address] = *instance.PrimaryNetworkInterface.PrimaryIpv4Address
+			if instance.PrimaryNetworkInterface.PrimaryIP != nil {
+				ipIntf := instance.PrimaryNetworkInterface.PrimaryIP
+				ipAdd := ipIntf.(*vpcv1.NetworkInterfaceIPPrototype)
+				currentPrimNic[isInstanceTemplateNicPrimaryIpv4Address] = *ipAdd.Address
 			}
 			subInf := instance.PrimaryNetworkInterface.Subnet
 			subnetIdentity := subInf.(*vpcv1.SubnetIdentity)
@@ -307,8 +309,10 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			for _, intfc := range instance.NetworkInterfaces {
 				currentNic := map[string]interface{}{}
 				currentNic[isInstanceTemplateNicName] = *intfc.Name
-				if intfc.PrimaryIpv4Address != nil {
-					currentNic[isInstanceTemplateNicPrimaryIpv4Address] = *intfc.PrimaryIpv4Address
+				if intfc.PrimaryIP != nil {
+					ipIntf := intfc.PrimaryIP
+					ipAdd := ipIntf.(*vpcv1.NetworkInterfaceIPPrototype)
+					currentNic[isInstanceTemplateNicPrimaryIpv4Address] = *ipAdd.Address
 				}
 				//currentNic[isInstanceTemplateNicAllowIpSpoofing] = intfc.AllowIpSpoofing
 				subInf := intfc.Subnet
@@ -354,7 +358,7 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 				volumeAttach[isInstanceTemplateVolAttName] = *volume.Name
 				volumeAttach[isInstanceTemplateDeleteVolume] = *volume.DeleteVolumeOnInstanceDelete
 				volumeIntf := volume.Volume
-				volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentVolumePrototypeInstanceContext)
+				volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentPrototypeVolume)
 				volumeAttach[isInstanceTemplateVolAttVolume] = volumeInst.Name
 				interfacesList = append(interfacesList, volumeAttach)
 			}
