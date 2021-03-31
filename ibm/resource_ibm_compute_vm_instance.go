@@ -1872,6 +1872,31 @@ func placeOrder(d *schema.ResourceData, meta interface{}, name string, publicVla
 			template.VirtualGuests,
 			options[0],
 		)
+		// Get configured ssh_keys
+		sshKeySet := d.Get("ssh_key_ids").(*schema.Set)
+		sshKeys := sshKeySet.List()
+		sshKeyLen := len(sshKeys)
+		if sshKeyLen > 0 {
+			template.SshKeys = make([]datatypes.Container_Product_Order_SshKeys, 0, sshKeyLen)
+			for _, sshKey := range sshKeys {
+				sshKeyA := make([]int, 1)
+				sshKeyA[0] = sshKey.(int)
+				template.SshKeys = append(template.SshKeys, datatypes.Container_Product_Order_SshKeys{
+					SshKeyIds: sshKeyA,
+				})
+			}
+		}
+		if rawImageTemplateId, ok := d.GetOk("image_template_id"); ok {
+			imageTemplateId := rawImageTemplateId.(int)
+			template.ImageTemplateId = sl.Int(imageTemplateId)
+		}
+
+		if postInstallURI, ok := d.GetOk("post_install_script_uri"); ok {
+			postInstallURIA := make([]string, 1)
+			postInstallURIA[0] = postInstallURI.(string)
+			template.ProvisionScripts = postInstallURIA
+		}
+
 		guestOrders = append(guestOrders, template)
 	} else {
 		for i := 0; i < len(options); i++ {
