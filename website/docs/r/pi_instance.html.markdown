@@ -60,7 +60,7 @@ The following arguments are supported:
 * `pi_processors` - (Required, float) The number of vCPUs to assign to the VM (as visibile within the guest operating system).
 * `pi_proc_type` - (Required, string) The type of processor mode in which the VM will run (shared/dedicated/capped).
 * `pi_memory` - (Required, float) The amount of memory (GB) to assign to the VM.
-* `pi_sys_type` - (Required, string) The type of system on which to create the VM (s922/e880/e980/any).
+* `pi_sys_type` - (Required, string) The type of system on which to create the VM (s922/e880/e980).
 * `pi_volume_ids` - (Optional, list(string)) The list of volume IDs to attach to the VM at creation time.
 * `pi_network_ids` - (Required, list(string)) The list of network IDs assigned to the VM.
 * `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
