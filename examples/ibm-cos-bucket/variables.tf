@@ -41,3 +41,15 @@ variable "expire_days" {
 variable "expire_prefix" {
   default = ""
 }
+
+variable "default_retention" {
+  default = "0"
+}
+
+variable "minimum_retention" {
+  default = "0"
+}
+
+variable "maximum_retention" {
+  default = "1"
+}
