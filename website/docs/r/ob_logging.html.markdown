@@ -36,9 +36,9 @@ resource "ibm_container_cluster" "testacc_cluster" {
 }
 
 resource "ibm_resource_instance" "instance" {
-  name     = "TestMonitoring"
-  service  = "sysdig-monitor"
-  plan     = "graduated-tier"
+  name     = "TestLogging"
+  service  = "logdna"
+  plan     = "7-day"
   location = "us-south"
 }
 
@@ -48,7 +48,7 @@ resource "ibm_resource_key" "resourceKey" {
   role                 = "Manager"
 }
 
-resource "ibm_ob_monitoring" "test2" {
+resource "ibm_ob_logging" "test2" {
   depends_on  = [ibm_resource_key.resourceKey]
   cluster     = ibm_container_cluster.testacc_cluster.id
   instance_id = ibm_resource_instance.instance.guid
@@ -70,7 +70,7 @@ The following arguments are supported:
 
 * `cluster` - (Required, string) The name or id of the cluster. 
 * `instance_id` - (Required, string) The guid of the montoing instance.
-* `sysdig_access_key` - (Optional, string) The LogDNA ingestion key that you want to use for your configuration
+* `logdna_ingestion_key` - (Optional, string) The LogDNA ingestion key that you want to use for your configuration
 * `private_endpoint` - (Optional, string) Add this option to connect to your logging service instance through the private service endpoint.
 
 
@@ -78,7 +78,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the logging instance attach to cluster. The id is composed of \<cluster_name_id\>/\< monitoring_instance_id\>
+* `id` - The unique identifier of the logging instance attach to cluster. The id is composed of \<cluster_name_id\>/\< logging_instance_id\>
 * `instance_name` - Name of the logging instance
 * `agent_key` - LogDNA agent key
 * `agent_namespace` - LogDNA agent namespace
