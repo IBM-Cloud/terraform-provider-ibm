@@ -577,6 +577,7 @@ func Validator() ValidatorDict {
 	initOnce.Do(func() {
 		globalValidatorDict = ValidatorDict{
 			ResourceValidatorDictionary: map[string]*ResourceValidator{
+				"ibm_iam_account_settings":             resourceIBMIAMAccountSettingsValidator(),
 				"ibm_iam_custom_role":                  resourceIBMIAMCustomRoleValidator(),
 				"ibm_cis_healthcheck":                  resourceIBMCISHealthCheckValidator(),
 				"ibm_cis_rate_limit":                   resourceIBMCISRateLimitValidator(),
