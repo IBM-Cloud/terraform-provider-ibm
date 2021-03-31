@@ -121,3 +121,7 @@ data "ibm_cos_bucket" "standard-ams03" {
 | expire_ruleid | Unique identifier for the rule. | `string` | no
 | expire_days | Specifies the number of days when the specific expire rule action takes effect. | `int` | yes
 | expire_prefix | Specifies a prefix filter to apply to only a subset of objects with names that match the prefix. | `string` | no
+| default | Specifies a default retention period to apply in all objects in the bucket. | `int` | yes
+| maximum | Specifies maximum duration of time an object can be kept unmodified in the bucket. | `int` | yes
+| minimum | Specifies minimum duration of time an object must be kept unmodified in the bucket. | `int` | yes
+| permanent | Specifies a permanent retention status either enable or disable for a bucket. | `bool` | no

@@ -56,4 +56,10 @@ resource "ibm_cos_bucket" "lifecycle_rule_cos" {
     days    = var.expire_days
     prefix  = var.expire_prefix
   }
+  retention_rule {
+    default = var.default_retention
+    maximum = var.maximum_retention
+    minimum = var.minimum_retention
+    permanent = false
+  }
 }
