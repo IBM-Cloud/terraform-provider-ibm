@@ -1,18 +1,5 @@
-/**
- * (C) Copyright IBM Corp. 2021.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright IBM Corp. 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -25,6 +12,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+)
+
+const (
+	accountSettings         = "ibm_iam_account_settings"
+	restrictCreateServiceId = "restrict_create_service_id"
+	restrictCreateApiKey    = "restrict_create_platform_apikey"
+	mfa                     = "mfa"
 )
 
 func resourceIbmIamAccountSettings() *schema.Resource {
@@ -107,16 +101,18 @@ func resourceIbmIamAccountSettings() *schema.Resource {
 				},
 			},
 			"restrict_create_service_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Defines whether or not creating a Service Id is access controlled. Valid values:  * RESTRICTED - to apply access control  * NOT_RESTRICTED - to remove access control  * NOT_SET - to 'unset' a previous set value.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: InvokeValidator(accountSettings, restrictCreateServiceId),
+				Description:  "Defines whether or not creating a Service Id is access controlled. Valid values:  * RESTRICTED - to apply access control  * NOT_RESTRICTED - to remove access control  * NOT_SET - to 'unset' a previous set value.",
 			},
 			"restrict_create_platform_apikey": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Defines whether or not creating platform API keys is access controlled. Valid values:  * RESTRICTED - to apply access control  * NOT_RESTRICTED - to remove access control  * NOT_SET - to 'unset' a previous set value.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: InvokeValidator(accountSettings, restrictCreateApiKey),
+				Description:  "Defines whether or not creating platform API keys is access controlled. Valid values:  * RESTRICTED - to apply access control  * NOT_RESTRICTED - to remove access control  * NOT_SET - to 'unset' a previous set value.",
 			},
 			"allowed_ip_addresses": &schema.Schema{
 				Type:        schema.TypeString,
@@ -131,20 +127,20 @@ func resourceIbmIamAccountSettings() *schema.Resource {
 				Description: "Version of the account settings.",
 			},
 			"mfa": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Defines the MFA trait for the account. Valid values:  * NONE - No MFA trait set  * TOTP - For all non-federated IBMId users  * TOTP4ALL - For all users  * LEVEL1 - Email-based MFA for all users  * LEVEL2 - TOTP-based MFA for all users  * LEVEL3 - U2F MFA for all users.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: InvokeValidator(accountSettings, mfa),
+				Description:  "Defines the MFA trait for the account. Valid values:  * NONE - No MFA trait set  * TOTP - For all non-federated IBMId users  * TOTP4ALL - For all users  * LEVEL1 - Email-based MFA for all users  * LEVEL2 - TOTP-based MFA for all users  * LEVEL3 - U2F MFA for all users.",
 			},
 			"if_match": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Version of the account settings to be updated. Specify the version that you retrieved as entity_tag (ETag header) when reading the account. This value helps identifying parallel usage of this API. Pass * to indicate to update any version available. This might result in stale updates.",
-				Default:     "*",
 			},
 			"history": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Computed:    true,
 				Description: "History of the Account Settings.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -198,6 +194,38 @@ func resourceIbmIamAccountSettings() *schema.Resource {
 	}
 }
 
+func resourceIBMIAMAccountSettingsValidator() *ResourceValidator {
+	validateSchema := make([]ValidateSchema, 1)
+
+	restrict_values := "RESTRICTED, NOT_RESTRICTED, NOT_SET"
+	mfa_values := "NONE, TOTP, TOTP4ALL, LEVEL1, LEVEL2, LEVEL3"
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 restrictCreateServiceId,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              restrict_values})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 restrictCreateApiKey,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              restrict_values})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 mfa,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              mfa_values})
+
+	ibmIAMAccountSettingsValidator := ResourceValidator{ResourceName: "ibm_iam_account_settings", Schema: validateSchema}
+	return &ibmIAMAccountSettingsValidator
+}
+
 func resourceIbmIamAccountSettingsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IamIdentityV1()
 	if err != nil {
@@ -221,7 +249,7 @@ func resourceIbmIamAccountSettingsCreate(context context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *getAccountSettingsOptions.AccountID, *accountSettingsResponse.AccountID))
+	d.SetId(fmt.Sprintf("%s", *accountSettingsResponse.AccountID))
 
 	return resourceIbmIamAccountSettingsUpdate(context, d, meta)
 }
@@ -234,13 +262,7 @@ func resourceIbmIamAccountSettingsRead(context context.Context, d *schema.Resour
 
 	getAccountSettingsOptions := &iamidentityv1.GetAccountSettingsOptions{}
 
-	parts, err := idParts(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	getAccountSettingsOptions.SetAccountID(parts[0])
-	getAccountSettingsOptions.SetAccountID(parts[1])
+	getAccountSettingsOptions.SetAccountID(d.Id())
 	getAccountSettingsOptions.SetIncludeHistory(d.Get("include_history").(bool))
 
 	accountSettingsResponse, response, err := iamIdentityClient.GetAccountSettingsWithContext(context, getAccountSettingsOptions)
@@ -333,16 +355,16 @@ func resourceIbmIamAccountSettingsUpdate(context context.Context, d *schema.Reso
 
 	updateAccountSettingsOptions := &iamidentityv1.UpdateAccountSettingsOptions{}
 
-	parts, err := idParts(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	updateAccountSettingsOptions.SetAccountID(parts[0])
-	updateAccountSettingsOptions.SetAccountID(parts[1])
+	updateAccountSettingsOptions.SetAccountID(d.Id())
 	updateAccountSettingsOptions.SetIfMatch(d.Get("if_match").(string))
 
 	hasChange := false
+
+	if d.HasChange("allowed_ip_addresses") {
+		allowed_ip_addresses_str := d.Get("allowed_ip_addresses").(string)
+		updateAccountSettingsOptions.SetAllowedIPAddresses(allowed_ip_addresses_str)
+		hasChange = true
+	}
 
 	if d.HasChange("restrict_create_service_id") {
 		restrict_create_service_id_str := d.Get("restrict_create_service_id").(string)
