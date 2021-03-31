@@ -16,8 +16,8 @@ import (
 
 func TestAccIbmIsDedicatedHostBasic(t *testing.T) {
 	var conf vpcv1.DedicatedHost
-	class := "beta"
-	family := "memory"
+	class := "bx2d"
+	family := "balanced"
 	groupname := fmt.Sprintf("tfdhost%d", acctest.RandIntRange(10, 100))
 	dhname := "testdh02"
 
@@ -54,7 +54,7 @@ func testAccCheckIbmIsDedicatedHostConfigBasic(class string, family string, grou
 		family = "%s"
 		name = "%s"
 		resource_group = data.ibm_resource_group.default.id
-		zone = "us-south-2"
+		zone = "us-south-1"
 	}
 
 	resource "ibm_is_dedicated_host" "dedicated-host-test-01" {

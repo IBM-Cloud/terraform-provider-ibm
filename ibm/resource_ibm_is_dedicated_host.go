@@ -510,7 +510,7 @@ func resourceIbmIsDedicatedHostDelete(context context.Context, d *schema.Resourc
 
 	getDedicatedHostOptions.SetID(d.Id())
 
-	_, response, err := vpcClient.GetDedicatedHostWithContext(context, getDedicatedHostOptions)
+	dedicatedHost, response, err := vpcClient.GetDedicatedHostWithContext(context, getDedicatedHostOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -520,17 +520,18 @@ func resourceIbmIsDedicatedHostDelete(context context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	updateDedicatedHostOptions := &vpcv1.UpdateDedicatedHostOptions{}
-	dedicatedHostPrototypeMap := map[string]interface{}{}
-	dedicatedHostPrototypeMap["instance_placement_enabled"] = core.BoolPtr(false)
-	updateDedicatedHostOptions.SetID(d.Id())
-	updateDedicatedHostOptions.SetDedicatedHostPatch(dedicatedHostPrototypeMap)
-	_, updateresponse, err := vpcClient.UpdateDedicatedHostWithContext(context, updateDedicatedHostOptions)
-	if err != nil {
-		log.Printf("[DEBUG] UpdateDedicatedHostWithContext failed %s\n%s", err, updateresponse)
-		return diag.FromErr(err)
+	if *dedicatedHost.LifecycleState != isDedicatedHostSuspended && *dedicatedHost.LifecycleState != isDedicatedHostFailed {
+		updateDedicatedHostOptions := &vpcv1.UpdateDedicatedHostOptions{}
+		dedicatedHostPrototypeMap := map[string]interface{}{}
+		dedicatedHostPrototypeMap["instance_placement_enabled"] = core.BoolPtr(false)
+		updateDedicatedHostOptions.SetID(d.Id())
+		updateDedicatedHostOptions.SetDedicatedHostPatch(dedicatedHostPrototypeMap)
+		_, updateresponse, err := vpcClient.UpdateDedicatedHostWithContext(context, updateDedicatedHostOptions)
+		if err != nil {
+			log.Printf("[DEBUG] Failed disabling instance placement %s\n%s", err, updateresponse)
+			return diag.FromErr(err)
+		}
 	}
-
 	deleteDedicatedHostOptions := &vpcv1.DeleteDedicatedHostOptions{}
 
 	deleteDedicatedHostOptions.SetID(d.Id())
@@ -608,7 +609,7 @@ func isDedicatedHostRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.Res
 
 		if *dhost.LifecycleState == isDedicatedHostSuspended || *dhost.LifecycleState == isDedicatedHostFailed {
 
-			return dhost, *dhost.LifecycleState, fmt.Errorf("status of dedicated host is %s : %s\n%s", *dhost.LifecycleState, err, response)
+			return dhost, *dhost.LifecycleState, fmt.Errorf("status of dedicated host is %s : \n%s", *dhost.LifecycleState, response)
 
 		}
 		return dhost, *dhost.LifecycleState, nil

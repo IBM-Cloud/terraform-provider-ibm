@@ -351,8 +351,8 @@ func init() {
 
 	dedicatedHostProfileName = os.Getenv("IS_DEDICATED_HOST_PROFILE")
 	if dedicatedHostProfileName == "" {
-		dedicatedHostProfileName = "cx2-host-152x304" // for next gen infrastructure
-		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_PROFILE for testing ibm_is_instance resource else it is set to default value 'cx2-host-152x304'")
+		dedicatedHostProfileName = "bx2d-host-152x608" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_PROFILE for testing ibm_is_instance resource else it is set to default value 'bx2d-host-152x608'")
 	}
 
 	volumeProfileName = os.Getenv("IS_VOLUME_PROFILE")
