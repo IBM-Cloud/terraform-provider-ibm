@@ -1,7 +1,7 @@
 ---
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_account_settings"
-sidebar_current: "docs-ibm-resource-iam-account-settings"
 description: |-
   Manages iam_account_settings.
 ---
@@ -24,7 +24,7 @@ resource "ibm_iam_account_settings" "iam_account_settings_instance" {
 The following arguments are supported:
 
 * `include_history` - (Optional, boolean) Defines if the entity history is included in the response.
-* `if_match` - (Required, string) Version of the account settings to be updated, Pass * to indicate to update any version available. This might result in stale updates.
+* `if_match` - (Optional, string) Version of the account settings to be updated, if no value is supplied then the default value `*` will be used to indicate to update any version available. This might result in stale updates.
 * `restrict_create_service_id` - (Optional, string) Defines whether or not creating a Service Id is access controlled.
 * `restrict_create_platform_apikey` - (Optional, string) Defines whether or not creating platform API keys is access controlled.
 * `allowed_ip_addresses` - (Optional, string) Defines the IP addresses and subnets from which IAM tokens can be created for the account. Value should be a comma separated string.* 
@@ -45,3 +45,4 @@ The following attributes are exported:
 * `session_expiration_in_seconds` - Defines the session expiration in seconds for the account.
 * `session_invalidation_in_seconds` - Defines the period of time in seconds in which a session will be invalidated due to inactivity.
 * `account_id` - Unique Id of the account.
+* `id` - Unique Id of the account settings instance

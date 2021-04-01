@@ -19,13 +19,21 @@ $ terraform apply
 Run `terraform destroy` when you don't need these resources.
 
 
-## IamIdentityV1 resources
+## IAM Account Setting Resource
 
 Account Setting Resource:
 
 ```hcl
 resource "iam_account_settings" "iam_account_settings_instance" {
   include_history = var.iam_account_settings_include_history
+}
+```
+
+##  IAM Account Setting Data Source
+Lists all Policies of a particular IBM ID user.
+
+```hcl
+data "ibm_iam_account_settings" "iam_account_settings_source" {
 }
 ```
 
@@ -47,7 +55,7 @@ resource "iam_account_settings" "iam_account_settings_instance" {
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | include_history | Defines if the entity history is included in the response. | `bool` | false |
-| if_match | Version of the account settings to be updated, Pass * to indicate to update any version available. This might result in stale updates. Defaults to '*' | `string` | false |
+| if_match | Version of the account settings to be updated, if no value is supplied then the default value `*` will be used to indicate to update any version available. This might result in stale updates. | `string` | false |
 | restrict_create_service_id | Defines whether or not creating a Service Id is access controlled. | `string` | false |
 | restrict_create_platform_apikey | Defines whether or not creating platform API keys is access controlled. | `string` | false |
 | allowed_ip_addresses | Defines the IP addresses and subnets from which IAM tokens can be created for the account. | `string` | false |

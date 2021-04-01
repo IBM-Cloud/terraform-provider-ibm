@@ -36,70 +36,6 @@ func resourceIbmIamAccountSettings() *schema.Resource {
 				Default:     false,
 				Description: "Defines if the entity history is included in the response.",
 			},
-			"context": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Context with key properties for problem determination.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"transaction_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The transaction ID of the inbound REST request.",
-						},
-						"operation": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The operation of the inbound REST request.",
-						},
-						"user_agent": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The user agent of the inbound REST request.",
-						},
-						"url": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The URL of that cluster.",
-						},
-						"instance_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The instance ID of the server instance processing the request.",
-						},
-						"thread_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The thread ID of the server instance processing the request.",
-						},
-						"host": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The host of the server instance processing the request.",
-						},
-						"start_time": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The start time of the request.",
-						},
-						"end_time": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The finish time of the request.",
-						},
-						"elapsed_time": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The elapsed time in msec.",
-						},
-						"cluster_name": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The cluster name.",
-						},
-					},
-				},
-			},
 			"restrict_create_service_id": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -135,7 +71,8 @@ func resourceIbmIamAccountSettings() *schema.Resource {
 			},
 			"if_match": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				Default:     "*",
 				Description: "Version of the account settings to be updated. Specify the version that you retrieved as entity_tag (ETag header) when reading the account. This value helps identifying parallel usage of this API. Pass * to indicate to update any version available. This might result in stale updates.",
 			},
 			"history": &schema.Schema{
@@ -227,7 +164,7 @@ func resourceIBMIAMAccountSettingsValidator() *ResourceValidator {
 }
 
 func resourceIbmIamAccountSettingsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamIdentityClient, err := meta.(ClientSession).IamIdentityV1()
+	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -243,9 +180,9 @@ func resourceIbmIamAccountSettingsCreate(context context.Context, d *schema.Reso
 		getAccountSettingsOptions.SetIncludeHistory(d.Get("include_history").(bool))
 	}
 
-	accountSettingsResponse, response, err := iamIdentityClient.GetAccountSettingsWithContext(context, getAccountSettingsOptions)
+	accountSettingsResponse, response, err := iamIdentityClient.GetAccountSettings(getAccountSettingsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetAccountSettingsWithContext failed %s\n%s", err, response)
+		log.Printf("[DEBUG] GetAccountSettings failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
 
@@ -255,7 +192,7 @@ func resourceIbmIamAccountSettingsCreate(context context.Context, d *schema.Reso
 }
 
 func resourceIbmIamAccountSettingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamIdentityClient, err := meta.(ClientSession).IamIdentityV1()
+	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -265,22 +202,16 @@ func resourceIbmIamAccountSettingsRead(context context.Context, d *schema.Resour
 	getAccountSettingsOptions.SetAccountID(d.Id())
 	getAccountSettingsOptions.SetIncludeHistory(d.Get("include_history").(bool))
 
-	accountSettingsResponse, response, err := iamIdentityClient.GetAccountSettingsWithContext(context, getAccountSettingsOptions)
+	accountSettingsResponse, response, err := iamIdentityClient.GetAccountSettings(getAccountSettingsOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetAccountSettingsWithContext failed %s\n%s", err, response)
+		log.Printf("[DEBUG] GetAccountSettings failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
 
-	if accountSettingsResponse.Context != nil {
-		contextMap := resourceIbmIamAccountSettingsResponseContextToMap(*accountSettingsResponse.Context)
-		if err = d.Set("context", []map[string]interface{}{contextMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting context: %s", err))
-		}
-	}
 	if err = d.Set("restrict_create_service_id", accountSettingsResponse.RestrictCreateServiceID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting restrict_create_service_id: %s", err))
 	}
@@ -316,24 +247,6 @@ func resourceIbmIamAccountSettingsRead(context context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceIbmIamAccountSettingsResponseContextToMap(responseContext iamidentityv1.ResponseContext) map[string]interface{} {
-	responseContextMap := map[string]interface{}{}
-
-	responseContextMap["transaction_id"] = responseContext.TransactionID
-	responseContextMap["operation"] = responseContext.Operation
-	responseContextMap["user_agent"] = responseContext.UserAgent
-	responseContextMap["url"] = responseContext.URL
-	responseContextMap["instance_id"] = responseContext.InstanceID
-	responseContextMap["thread_id"] = responseContext.ThreadID
-	responseContextMap["host"] = responseContext.Host
-	responseContextMap["start_time"] = responseContext.StartTime
-	responseContextMap["end_time"] = responseContext.EndTime
-	responseContextMap["elapsed_time"] = responseContext.ElapsedTime
-	responseContextMap["cluster_name"] = responseContext.ClusterName
-
-	return responseContextMap
-}
-
 func resourceIbmIamAccountSettingsEnityHistoryRecordToMap(enityHistoryRecord iamidentityv1.EnityHistoryRecord) map[string]interface{} {
 	enityHistoryRecordMap := map[string]interface{}{}
 
@@ -348,7 +261,7 @@ func resourceIbmIamAccountSettingsEnityHistoryRecordToMap(enityHistoryRecord iam
 }
 
 func resourceIbmIamAccountSettingsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamIdentityClient, err := meta.(ClientSession).IamIdentityV1()
+	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -397,9 +310,9 @@ func resourceIbmIamAccountSettingsUpdate(context context.Context, d *schema.Reso
 	}
 
 	if hasChange {
-		_, response, err := iamIdentityClient.UpdateAccountSettingsWithContext(context, updateAccountSettingsOptions)
+		_, response, err := iamIdentityClient.UpdateAccountSettings(updateAccountSettingsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateAccountSettingsWithContext failed %s\n%s", err, response)
+			log.Printf("[DEBUG] UpdateAccountSettings failed %s\n%s", err, response)
 			return diag.FromErr(err)
 		}
 	}

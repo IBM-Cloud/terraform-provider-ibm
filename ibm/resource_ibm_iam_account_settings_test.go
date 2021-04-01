@@ -13,25 +13,31 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
+var (
+	restrict_create_service_id      = "NOT_SET"
+	restrict_create_platform_apikey = "NOT_SET"
+	entity_tag                      = "*"
+	mfa_trait                       = "NONE"
+	session_expiration_in_seconds   = "NOT_SET"
+	session_invalidation_in_seconds = "NOT_SET"
+)
+
 func TestAccIbmIamAccountSettingsBasic(t *testing.T) {
 	var conf iamidentityv1.AccountSettingsResponse
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
-		//CheckDestroy: testAccCheckIbmIamAccountSettingsDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				ExpectNonEmptyPlan: true,
-				Config:             testAccCheckIbmIamAccountSettingsConfigBasic(),
+				Config: testAccCheckIbmIamAccountSettingsConfigBasic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIamAccountSettingsExists("ibm_iam_account_settings.iam_account_settings", conf),
 				),
 			},
 			resource.TestStep{
-				ExpectNonEmptyPlan: true,
-				Config:             testAccCheckIbmIamAccountSettingsConfigBasic(),
-				Check:              resource.ComposeAggregateTestCheckFunc(),
+				Config: testAccCheckIbmIamAccountSettingsConfigBasic(),
+				Check:  resource.ComposeAggregateTestCheckFunc(),
 			},
 		},
 	})
@@ -45,28 +51,46 @@ func TestAccIbmIamAccountSettingsAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
-		//CheckDestroy: testAccCheckIbmIamAccountSettingsDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				ExpectNonEmptyPlan: true,
-				Config:             testAccCheckIbmIamAccountSettingsConfig(includeHistory),
+				Config: testAccCheckIbmIamAccountSettingsConfig(includeHistory),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIamAccountSettingsExists("ibm_iam_account_settings.iam_account_settings", conf),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "include_history", includeHistory),
 				),
 			},
 			resource.TestStep{
-				ExpectNonEmptyPlan: true,
-				Config:             testAccCheckIbmIamAccountSettingsConfig(includeHistoryUpdate),
+				Config: testAccCheckIbmIamAccountSettingsConfig(includeHistoryUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "include_history", includeHistoryUpdate),
 				),
 			},
 			resource.TestStep{
-				ExpectNonEmptyPlan: true,
-				ResourceName:       "ibm_iam_account_settings.iam_account_settings",
-				ImportState:        true,
-				ImportStateVerify:  false,
+				ResourceName:      "ibm_iam_account_settings.iam_account_settings",
+				ImportState:       true,
+				ImportStateVerify: false,
+			},
+		},
+	})
+}
+
+func TestAccIbmIamAccountSettingsUpdate(t *testing.T) {
+	var conf iamidentityv1.AccountSettingsResponse
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmIamAccountSettingsUpdateConfig(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIamAccountSettingsExists("ibm_iam_account_settings.iam_account_settings", conf),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "restrict_create_service_id", restrict_create_service_id),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "restrict_create_platform_apikey", restrict_create_platform_apikey),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "mfa", mfa_trait),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "session_expiration_in_seconds", session_expiration_in_seconds),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "session_invalidation_in_seconds", session_invalidation_in_seconds),
+				),
 			},
 		},
 	})
@@ -89,6 +113,27 @@ func testAccCheckIbmIamAccountSettingsConfig(includeHistory string) string {
 	`, includeHistory)
 }
 
+func testAccCheckIbmIamAccountSettingsUpdateConfig() string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_account_settings" "iam_account_settings" {
+			restrict_create_service_id = "%s"
+			restrict_create_platform_apikey = "%s"
+			if_match = "%s"
+			mfa = "%s"
+			session_expiration_in_seconds = "%s"
+			session_invalidation_in_seconds = "%s"
+		}
+	`,
+		restrict_create_service_id,
+		restrict_create_platform_apikey,
+		entity_tag,
+		mfa_trait,
+		session_expiration_in_seconds,
+		session_invalidation_in_seconds,
+	)
+}
+
 func testAccCheckIbmIamAccountSettingsExists(n string, obj iamidentityv1.AccountSettingsResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
@@ -97,27 +142,23 @@ func testAccCheckIbmIamAccountSettingsExists(n string, obj iamidentityv1.Account
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		iamIdentityClient, err := testAccProvider.Meta().(ClientSession).IamIdentityV1()
+		iamIdentityClient, err := testAccProvider.Meta().(ClientSession).IAMIdentityV1API()
 		if err != nil {
 			return err
 		}
 
 		getAccountSettingsOptions := &iamidentityv1.GetAccountSettingsOptions{}
-
-		parts, err := idParts(rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		getAccountSettingsOptions.SetAccountID(parts[0])
-		getAccountSettingsOptions.SetAccountID(parts[1])
+		getAccountSettingsOptions.SetAccountID(rs.Primary.ID)
 
 		accountSettingsResponse, _, err := iamIdentityClient.GetAccountSettings(getAccountSettingsOptions)
 		if err != nil {
 			return err
 		}
 
+		entity_tag = *accountSettingsResponse.EntityTag
+
 		obj = *accountSettingsResponse
+
 		return nil
 	}
 }
