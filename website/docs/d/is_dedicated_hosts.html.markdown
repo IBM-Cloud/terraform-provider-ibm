@@ -36,14 +36,7 @@ The following attributes are exported:
 		* `count` - The number of VCPUs assigned.
 	* `created_at` - The date and time that the dedicated host was created.
 	* `crn` - The CRN for this dedicated host.
-	* `group` - The dedicated host group this dedicated host is in. Nested `group` blocks have the following structure:
-		* `crn` - The CRN for this dedicated host group.
-		* `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
-			* `more_info` - Link to documentation about deleted resources.
-		* `href` - The URL for this dedicated host group.
-		* `id` - The unique identifier for this dedicated host group.
-		* `name` - The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly-selected words.
-		* `resource_type` - The type of resource referenced.
+	* `host_group` - The unique identifier of the dedicated host group this dedicated host is in.
 	* `href` - The URL for this dedicated host.
 	* `id` - The unique identifier for this dedicated host.
 	* `instance_placement_enabled` - If set to true, instances can be placed on this dedicated host.
