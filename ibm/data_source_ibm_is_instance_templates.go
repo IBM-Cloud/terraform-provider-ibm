@@ -282,10 +282,8 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			interfaceList := make([]map[string]interface{}, 0)
 			currentPrimNic := map[string]interface{}{}
 			currentPrimNic[isInstanceTemplateNicName] = *instance.PrimaryNetworkInterface.Name
-			if instance.PrimaryNetworkInterface.PrimaryIP != nil {
-				ipIntf := instance.PrimaryNetworkInterface.PrimaryIP
-				ipAdd := ipIntf.(*vpcv1.NetworkInterfaceIPPrototype)
-				currentPrimNic[isInstanceTemplateNicPrimaryIpv4Address] = *ipAdd.Address
+			if instance.PrimaryNetworkInterface.PrimaryIpv4Address != nil {
+				currentPrimNic[isInstanceTemplateNicPrimaryIpv4Address] = *instance.PrimaryNetworkInterface.PrimaryIpv4Address
 			}
 			subInf := instance.PrimaryNetworkInterface.Subnet
 			subnetIdentity := subInf.(*vpcv1.SubnetIdentity)
@@ -309,10 +307,8 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			for _, intfc := range instance.NetworkInterfaces {
 				currentNic := map[string]interface{}{}
 				currentNic[isInstanceTemplateNicName] = *intfc.Name
-				if intfc.PrimaryIP != nil {
-					ipIntf := intfc.PrimaryIP
-					ipAdd := ipIntf.(*vpcv1.NetworkInterfaceIPPrototype)
-					currentNic[isInstanceTemplateNicPrimaryIpv4Address] = *ipAdd.Address
+				if intfc.PrimaryIpv4Address != nil {
+					currentNic[isInstanceTemplateNicPrimaryIpv4Address] = *intfc.PrimaryIpv4Address
 				}
 				//currentNic[isInstanceTemplateNicAllowIpSpoofing] = intfc.AllowIpSpoofing
 				subInf := intfc.Subnet
