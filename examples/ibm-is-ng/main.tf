@@ -333,3 +333,16 @@ data "ibm_is_dedicated_host" "dhost" {
   name = ibm_is_dedicated_host.is_dedicated_host.name
   host_group = data.ibm_is_dedicated_host_group.dgroup.id
 }
+
+resource "ibm_is_snapshot" "r_snapshot" {
+name = "my-snapshot"
+source_volume = ibm_is_instance.instance1.volume_attachments[0].volume_id
+}
+
+data "ibm_is_snapshot" "ds_snapshot" {
+	name = "my-snapshot"
+}
+
+data "ibm_is_snapshots" "ds_snapshots" {
+
+}
