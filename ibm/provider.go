@@ -225,6 +225,7 @@ func Provider() *schema.Provider {
 			"ibm_dns_secondary":                      dataSourceIBMDNSSecondary(),
 			"ibm_event_streams_topic":                dataSourceIBMEventStreamsTopic(),
 			"ibm_iam_access_group":                   dataSourceIBMIAMAccessGroup(),
+			"ibm_iam_account_settings":               dataSourceIBMIAMAccountSettings(),
 			"ibm_iam_auth_token":                     dataSourceIBMIAMAuthToken(),
 			"ibm_iam_role_actions":                   datasourceIBMIAMRoleAction(),
 			"ibm_iam_users":                          dataSourceIBMIAMUsers(),
