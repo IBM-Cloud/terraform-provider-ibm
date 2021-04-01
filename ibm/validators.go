@@ -108,6 +108,18 @@ func validateAllowedIntValue(is []int) schema.SchemaValidateFunc {
 	}
 }
 
+func validateAllowedEnterpriseNameValue() schema.SchemaValidateFunc {
+	return func(v interface{}, k string) (ws []string, errors []error) {
+		value := v.(string)
+
+		if len(value) < 3 || len(value) > 60 {
+			errors = append(errors, fmt.Errorf(
+				"%q must contain a valid string value with length between 3 and 60", value))
+		}
+		return
+
+	}
+}
 func validateRoutePath(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
 	//Somehow API allows this
