@@ -93,7 +93,8 @@ var image_operating_system string
 var tg_cross_network_account_id string
 var tg_cross_network_id string
 
-//
+//Enterprise Management
+var account_to_be_imported string
 
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
@@ -502,6 +503,10 @@ func init() {
 	if tg_cross_network_id == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_NETWORK_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
 	}
+	account_to_be_imported = os.Getenv("ACCOUNT_TO_BE_IMPORTED")
+	if account_to_be_imported == "" {
+		fmt.Println("[INFO] Set the environment variable ACCOUNT_TO_BE_IMPORTED for testing import enterprise account resource else  tests will fail if this is not set correctly")
+	}
 
 }
 
@@ -537,6 +542,22 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
+func testAccPreCheckEnterprise(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+
+}
+
+func testAccPreCheckEnterpriseAccountImport(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+	if account_to_be_imported == "" {
+		t.Fatal("ACCOUNT_TO_BE_IMPORTED must be set for acceptance tests")
+	}
+
+}
 func testAccPreCheckCis(t *testing.T) {
 	testAccPreCheck(t)
 	if cisInstance == "" {

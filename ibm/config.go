@@ -93,6 +93,7 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -246,6 +247,7 @@ type ClientSession interface {
 	IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
 	ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error)
 	CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error)
+	EnterpriseManagementV1() (*enterprisemanagementv1.EnterpriseManagementV1, error)
 	ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error)
 	SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error)
 	SchematicsV1() (*schematicsv1.SchematicsV1, error)
@@ -314,6 +316,9 @@ type clientSession struct {
 
 	userManagementErr error
 	userManagementAPI usermanagementv2.UserManagementAPI
+
+	enterprise    *enterprisemanagementv1.EnterpriseManagementV1
+	enterpriseErr error
 
 	icdConfigErr  error
 	icdServiceAPI icdv4.ICDServiceAPI
@@ -472,6 +477,9 @@ type clientSession struct {
 	//Catalog Management Option
 	catalogManagementClient    *catalogmanagementv1.CatalogManagementV1
 	catalogManagementClientErr error
+
+	enterpriseManagementClient    *enterprisemanagementv1.EnterpriseManagementV1
+	enterpriseManagementClientErr error
 
 	//Resource Controller Option
 	resourceControllerErr   error
@@ -873,6 +881,10 @@ func (sess clientSession) IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
 // ResourceMAanger Session
 func (sess clientSession) ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error) {
 	return sess.resourceManagerAPI, sess.resourceManagerErr
+}
+
+func (session clientSession) EnterpriseManagementV1() (*enterprisemanagementv1.EnterpriseManagementV1, error) {
+	return session.enterpriseManagementClient, session.enterpriseManagementClientErr
 }
 
 // ResourceController Session
@@ -1921,6 +1933,35 @@ func (c *Config) ClientSession() (interface{}, error) {
 		resourceManagerClient.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 	session.resourceManagerAPI = resourceManagerClient
+
+	enterpriseURL := enterprisemanagementv1.DefaultServiceURL
+	if c.Visibility == "private" {
+		if c.Region == "us-south" || c.Region == "us-east" || c.Region == "eu-fr" {
+			enterpriseURL = contructEndpoint(fmt.Sprintf("private.%s.enterprise", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+		} else {
+			fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
+			enterpriseURL = contructEndpoint("private.us-south.enterprise", fmt.Sprintf("%s/v1", cloudEndpoint))
+		}
+	}
+	if c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" || c.Region == "eu-fr" {
+			enterpriseURL = contructEndpoint(fmt.Sprintf("private.%s.enterprise", c.Region),
+				fmt.Sprintf("%s/v1", cloudEndpoint))
+		} else {
+			enterpriseURL = enterprisemanagementv1.DefaultServiceURL
+		}
+	}
+	enterpriseManagementClientOptions := &enterprisemanagementv1.EnterpriseManagementV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_ENTERPRISE_API_ENDPOINT"}, enterpriseURL),
+	}
+	enterpriseManagementClient, err := enterprisemanagementv1.NewEnterpriseManagementV1(enterpriseManagementClientOptions)
+	if err == nil {
+		enterpriseManagementClient.EnableRetries(c.RetryCount, c.RetryDelay)
+	} else {
+		session.enterpriseManagementClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Enterprise Management API service: %q", err)
+	}
+	session.enterpriseManagementClient = enterpriseManagementClient
 
 	// resource controller API
 	rcURL := resourcecontroller.DefaultServiceURL
