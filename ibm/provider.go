@@ -349,6 +349,11 @@ func Provider() *schema.Provider {
 			"ibm_tg_locations": dataSourceIBMTransitGatewaysLocations(),
 			"ibm_tg_location":  dataSourceIBMTransitGatewaysLocation(),
 
+			//Added for BSS Enterprise
+			"ibm_enterprises":               dataSourceIbmEnterprises(),
+			"ibm_enterprise_account_groups": dataSourceIbmEnterpriseAccountGroups(),
+			"ibm_enterprise_accounts":       dataSourceIbmEnterpriseAccounts(),
+
 			//Added for Secrets Manager
 			"ibm_secrets_manager_secrets": dataSourceIBMSecretsManagerSecrets(),
 			"ibm_secrets_manager_secret":  dataSourceIBMSecretsManagerSecret(),
@@ -563,6 +568,11 @@ func Provider() *schema.Provider {
 			"ibm_cm_catalog":           resourceIBMCmCatalog(),
 			"ibm_cm_offering":          resourceIBMCmOffering(),
 			"ibm_cm_version":           resourceIBMCmVersion(),
+
+			//Added for enterprise
+			"ibm_enterprise":               resourceIbmEnterprise(),
+			"ibm_enterprise_account_group": resourceIbmEnterpriseAccountGroup(),
+			"ibm_enterprise_account":       resourceIbmEnterpriseAccount(),
 
 			//Added for Schematics
 			"ibm_schematics_workspace": resourceIBMSchematicsWorkspace(),
