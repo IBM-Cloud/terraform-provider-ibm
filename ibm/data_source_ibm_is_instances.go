@@ -507,7 +507,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			currentPrimNic := map[string]interface{}{}
 			currentPrimNic["id"] = *instance.PrimaryNetworkInterface.ID
 			currentPrimNic[isInstanceNicName] = *instance.PrimaryNetworkInterface.Name
-			currentPrimNic[isInstanceNicPrimaryIpv4Address] = *instance.PrimaryNetworkInterface.PrimaryIP.Address
+			currentPrimNic[isInstanceNicPrimaryIpv4Address] = *instance.PrimaryNetworkInterface.PrimaryIpv4Address
 			getnicoptions := &vpcv1.GetInstanceNetworkInterfaceOptions{
 				InstanceID: &id,
 				ID:         instance.PrimaryNetworkInterface.ID,
@@ -536,7 +536,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 					currentNic := map[string]interface{}{}
 					currentNic["id"] = *intfc.ID
 					currentNic[isInstanceNicName] = *intfc.Name
-					currentNic[isInstanceNicPrimaryIpv4Address] = *intfc.PrimaryIP.Address
+					currentNic[isInstanceNicPrimaryIpv4Address] = *intfc.PrimaryIpv4Address
 					getnicoptions := &vpcv1.GetInstanceNetworkInterfaceOptions{
 						InstanceID: &id,
 						ID:         intfc.ID,
