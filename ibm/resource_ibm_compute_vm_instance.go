@@ -670,7 +670,7 @@ func expandSecurityGroupBindings(securityGroupsList []interface{}) ([]datatypes.
 	return sgBindings, nil
 }
 
-func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interface{}, datacenter string, publicVlanID, privateVlanID int) ([]datatypes.Virtual_Guest, error) {
+func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interface{}, datacenter string, publicVlanID, privateVlanID, quote_id int) ([]datatypes.Virtual_Guest, error) {
 
 	dc := datatypes.Location{
 		Name: sl.String(datacenter),
@@ -794,24 +794,28 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 			opts.TransientGuestFlag = sl.Bool(transientFlag.(bool))
 		}
 
-		if imgID, ok := d.GetOk("image_id"); ok {
-			imageID := imgID.(int)
-			service := services.
-				GetVirtualGuestBlockDeviceTemplateGroupService(meta.(ClientSession).SoftLayerSession())
+		if quote_id == 0 {
 
-			image, err := service.
-				Mask("id,globalIdentifier").Id(imageID).
-				GetObject()
-			if err != nil {
-				return vms, fmt.Errorf("Error looking up image %d: %s", imageID, err)
-			} else if image.GlobalIdentifier == nil {
-				return vms, fmt.Errorf(
-					"Image template %d does not have a global identifier", imageID)
+			if imgID, ok := d.GetOk("image_id"); ok {
+				imageID := imgID.(int)
+				service := services.
+					GetVirtualGuestBlockDeviceTemplateGroupService(meta.(ClientSession).SoftLayerSession())
+
+				image, err := service.
+					Mask("id,globalIdentifier").Id(imageID).
+					GetObject()
+				if err != nil {
+					return vms, fmt.Errorf("Error looking up image %d: %s", imageID, err)
+				} else if image.GlobalIdentifier == nil {
+					return vms, fmt.Errorf(
+						"Image template %d does not have a global identifier", imageID)
+				}
+
+				opts.BlockDeviceTemplateGroup = &datatypes.Virtual_Guest_Block_Device_Template_Group{
+					GlobalIdentifier: image.GlobalIdentifier,
+				}
 			}
 
-			opts.BlockDeviceTemplateGroup = &datatypes.Virtual_Guest_Block_Device_Template_Group{
-				GlobalIdentifier: image.GlobalIdentifier,
-			}
 		}
 
 		if operatingSystemReferenceCode, ok := d.GetOk("os_reference_code"); ok {
@@ -901,16 +905,19 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 			}
 		}
 
-		// Get configured ssh_keys
-		sshKeySet := d.Get("ssh_key_ids").(*schema.Set)
-		sshKeys := sshKeySet.List()
-		sshKeyLen := len(sshKeys)
-		if sshKeyLen > 0 {
-			opts.SshKeys = make([]datatypes.Security_Ssh_Key, 0, sshKeyLen)
-			for _, sshKey := range sshKeys {
-				opts.SshKeys = append(opts.SshKeys, datatypes.Security_Ssh_Key{
-					Id: sl.Int(sshKey.(int)),
-				})
+		if quote_id == 0 {
+
+			// Get configured ssh_keys
+			sshKeySet := d.Get("ssh_key_ids").(*schema.Set)
+			sshKeys := sshKeySet.List()
+			sshKeyLen := len(sshKeys)
+			if sshKeyLen > 0 {
+				opts.SshKeys = make([]datatypes.Security_Ssh_Key, 0, sshKeyLen)
+				for _, sshKey := range sshKeys {
+					opts.SshKeys = append(opts.SshKeys, datatypes.Security_Ssh_Key{
+						Id: sl.Int(sshKey.(int)),
+					})
+				}
 			}
 		}
 
@@ -1851,7 +1858,7 @@ func placeOrder(d *schema.ResourceData, meta interface{}, name string, publicVla
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetVirtualGuestService(sess)
 
-	options, err := getVirtualGuestTemplateFromResourceData(d, meta, name, publicVlanID, privateVlanID)
+	options, err := getVirtualGuestTemplateFromResourceData(d, meta, name, publicVlanID, privateVlanID, quote_id)
 	if err != nil {
 		return datatypes.Container_Product_Order_Receipt{}, err
 	}
@@ -1877,16 +1884,17 @@ func placeOrder(d *schema.ResourceData, meta interface{}, name string, publicVla
 		sshKeys := sshKeySet.List()
 		sshKeyLen := len(sshKeys)
 		if sshKeyLen > 0 {
+			sshKeyA := make([]int, sshKeyLen)
 			template.SshKeys = make([]datatypes.Container_Product_Order_SshKeys, 0, sshKeyLen)
-			for _, sshKey := range sshKeys {
-				sshKeyA := make([]int, 1)
-				sshKeyA[0] = sshKey.(int)
-				template.SshKeys = append(template.SshKeys, datatypes.Container_Product_Order_SshKeys{
-					SshKeyIds: sshKeyA,
-				})
+			for i, sshKey := range sshKeys {
+				sshKeyA[i] = sshKey.(int)
+
 			}
+			template.SshKeys = append(template.SshKeys, datatypes.Container_Product_Order_SshKeys{
+				SshKeyIds: sshKeyA,
+			})
 		}
-		if rawImageTemplateId, ok := d.GetOk("image_template_id"); ok {
+		if rawImageTemplateId, ok := d.GetOk("image_id"); ok {
 			imageTemplateId := rawImageTemplateId.(int)
 			template.ImageTemplateId = sl.Int(imageTemplateId)
 		}
