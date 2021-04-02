@@ -1,3 +1,38 @@
+## 1.23.0 (Apr02, 2021)
+FEATURES:
+* Support Catalog Management
+    - **Resources**
+        - ibm_cm_offering_instance
+        - ibm_cm_catalog
+        - ibm_cm_offering
+        - ibm_cm_version
+    - **DataSources**
+        - ibm_cm_catalog
+        - ibm_cm_offering
+	    - ibm_cm_version
+		- ibm_cm_offering_instance
+* Support IAM Account Management
+    - **Resources**
+        - ibm_iam_account_settings
+    - **DataSources**
+    	- ibm_iam_account_settings
+
+* Support Enterprise Management
+    - **Resources**
+        - ibm_enterprise
+        - ibm_enterprise_account_group
+        - ibm_enterprise_account
+    - **DataSources**
+    	- ibm_enterprises
+        - ibm_enterprise_account_groups
+        - ibm_enterprise_accounts
+
+BUGFIXES
+* Fix the provision of classic Infrastructure VM to apply sshkeys, imageid and script ([#2448](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2448))
+* Fix documentation updates ([#2443](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2443))
+* Fix Dedicated host with status 'failed' throws error during destroy ([#2443](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2446))
+* Fix while creating a DL Connect gateway do not wait for gateway to be provisioned for few providers ([#2458](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2458))
+
 ## 1.22.1 (Apr01, 2021)
 
 BUGFIXES
