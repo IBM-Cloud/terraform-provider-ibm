@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : load balancer"
-sidebar_current: "docs-ibm-data-source-is-lbs"
 description: |-
   Manages IBM load balancer.
 ---

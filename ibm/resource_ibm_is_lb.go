@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -11,30 +12,32 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
-	isLBName             = "name"
-	isLBStatus           = "status"
-	isLBTags             = "tags"
-	isLBType             = "type"
-	isLBSubnets          = "subnets"
-	isLBHostName         = "hostname"
-	isLBPublicIPs        = "public_ips"
-	isLBPrivateIPs       = "private_ips"
-	isLBListeners        = "listeners"
-	isLBPools            = "pools"
-	isLBOperatingStatus  = "operating_status"
-	isLBDeleting         = "deleting"
-	isLBDeleted          = "done"
-	isLBProvisioning     = "provisioning"
-	isLBProvisioningDone = "done"
-	isLBResourceGroup    = "resource_group"
-	isLBProfile          = "profile"
-	isLBLogging          = "logging"
+	isLBName                    = "name"
+	isLBStatus                  = "status"
+	isLBTags                    = "tags"
+	isLBType                    = "type"
+	isLBSubnets                 = "subnets"
+	isLBHostName                = "hostname"
+	isLBPublicIPs               = "public_ips"
+	isLBPrivateIPs              = "private_ips"
+	isLBListeners               = "listeners"
+	isLBPools                   = "pools"
+	isLBOperatingStatus         = "operating_status"
+	isLBDeleting                = "deleting"
+	isLBDeleted                 = "done"
+	isLBProvisioning            = "provisioning"
+	isLBProvisioningDone        = "done"
+	isLBResourceGroup           = "resource_group"
+	isLBProfile                 = "profile"
+	isLBLogging                 = "logging"
+	isLBSecurityGroups          = "security_groups"
+	isLBSecurityGroupsSupported = "security_group_supported"
 )
 
 func resourceIBMISLB() *schema.Resource {
@@ -52,7 +55,7 @@ func resourceIBMISLB() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -106,13 +109,30 @@ func resourceIBMISLB() *schema.Resource {
 				Description: "Load Balancer subnets list",
 			},
 
+			isLBSecurityGroups: {
+				Type:          schema.TypeSet,
+				Computed:      true,
+				Optional:      true,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Set:           schema.HashString,
+				Description:   "Load Balancer securitygroups list",
+				ConflictsWith: []string{isLBProfile},
+			},
+
+			isLBSecurityGroupsSupported: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Security Group Supported for this Load Balancer",
+			},
+
 			isLBProfile: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ForceNew:     true,
-				Description:  "The profile to use for this load balancer.",
-				ValidateFunc: InvokeValidator("ibm_is_lb", isLBProfile),
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ForceNew:      true,
+				Description:   "The profile to use for this load balancer.",
+				ValidateFunc:  InvokeValidator("ibm_is_lb", isLBProfile),
+				ConflictsWith: []string{isLBLogging},
 			},
 
 			isLBTags: {
@@ -136,10 +156,11 @@ func resourceIBMISLB() *schema.Resource {
 			},
 
 			isLBLogging: {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Logging of Load Balancer",
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Default:       false,
+				Description:   "Logging of Load Balancer",
+				ConflictsWith: []string{isLBProfile},
 			},
 
 			ResourceControllerURL: {
@@ -206,7 +227,16 @@ func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
 	name := d.Get(isLBName).(string)
 	subnets := d.Get(isLBSubnets).(*schema.Set)
 
-	isLogging := d.Get(isLBLogging).(bool)
+	var isLogging bool
+	if lbLogging, ok := d.GetOk(isLBLogging); ok {
+		isLogging = lbLogging.(bool)
+	}
+
+	var securityGroups *schema.Set
+	if sg, ok := d.GetOk(isLBSecurityGroups); ok {
+		securityGroups = sg.(*schema.Set)
+	}
+
 	// subnets := expandStringList((d.Get(isLBSubnets).(*schema.Set)).List())
 	var lbType, rg string
 	isPublic := true
@@ -228,7 +258,7 @@ func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	} else {
-		err := lbCreate(d, meta, name, lbType, rg, subnets, isPublic, isLogging)
+		err := lbCreate(d, meta, name, lbType, rg, subnets, isPublic, isLogging, securityGroups)
 		if err != nil {
 			return err
 		}
@@ -283,22 +313,15 @@ func classicLBCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg 
 	return nil
 }
 
-func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string, subnets *schema.Set, isPublic bool, isLogging bool) error {
+func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string, subnets *schema.Set, isPublic bool, isLogging bool, securityGroups *schema.Set) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
 
-	dataPath := &vpcv1.LoadBalancerLoggingDatapath{
-		Active: &isLogging,
-	}
-	loadBalancerLogging := &vpcv1.LoadBalancerLogging{
-		Datapath: dataPath,
-	}
 	options := &vpcv1.CreateLoadBalancerOptions{
 		IsPublic: &isPublic,
 		Name:     &name,
-		Logging:  loadBalancerLogging,
 	}
 
 	if subnets.Len() != 0 {
@@ -311,6 +334,18 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		}
 		options.Subnets = subnetobjs
 	}
+
+	if securityGroups != nil && securityGroups.Len() != 0 {
+		securityGroupobjs := make([]vpcv1.SecurityGroupIdentityIntf, securityGroups.Len())
+		for i, securityGroup := range securityGroups.List() {
+			securityGroupstr := securityGroup.(string)
+			securityGroupobjs[i] = &vpcv1.SecurityGroupIdentity{
+				ID: &securityGroupstr,
+			}
+		}
+		options.SecurityGroups = securityGroupobjs
+	}
+
 	if rg != "" {
 		options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
 			ID: &rg,
@@ -323,6 +358,15 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		loadBalancerProfileIdentityModel := new(vpcv1.LoadBalancerProfileIdentityByName)
 		loadBalancerProfileIdentityModel.Name = &profile
 		options.Profile = loadBalancerProfileIdentityModel
+	} else {
+
+		dataPath := &vpcv1.LoadBalancerLoggingDatapath{
+			Active: &isLogging,
+		}
+		loadBalancerLogging := &vpcv1.LoadBalancerLogging{
+			Datapath: dataPath,
+		}
+		options.Logging = loadBalancerLogging
 	}
 
 	lb, response, err := sess.CreateLoadBalancer(options)
@@ -495,12 +539,31 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		d.Set(isLBSubnets, subnetList)
 	}
+
+	d.Set(isLBSecurityGroupsSupported, false)
+	if lb.SecurityGroups != nil {
+		securitygroupList := make([]string, 0)
+		for _, SecurityGroup := range lb.SecurityGroups {
+			if SecurityGroup.ID != nil {
+				securityGroupID := *SecurityGroup.ID
+				securitygroupList = append(securitygroupList, securityGroupID)
+			}
+		}
+		d.Set(isLBSecurityGroups, securitygroupList)
+		d.Set(isLBSecurityGroupsSupported, true)
+	}
+
 	if lb.Profile != nil {
 		profile := lb.Profile
 		if profile.Name != nil {
 			d.Set(isLBProfile, *lb.Profile.Name)
 		}
+	} else {
+		if lb.Logging != nil && lb.Logging.Datapath != nil && lb.Logging.Datapath.Active != nil {
+			d.Set(isLBLogging, *lb.Logging.Datapath.Active)
+		}
 	}
+
 	d.Set(isLBResourceGroup, *lb.ResourceGroup.ID)
 	d.Set(isLBHostName, *lb.Hostname)
 	tags, err := GetTagsUsingCRN(meta, *lb.CRN)
@@ -531,6 +594,8 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 	isLogging := false
 	hasChanged := false
 	hasChangedLog := false
+	var remove, add []string
+	hasChangedSecurityGroups := false
 
 	if d.HasChange(isLBName) {
 		name = d.Get(isLBName).(string)
@@ -540,13 +605,22 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 		isLogging = d.Get(isLBLogging).(bool)
 		hasChangedLog = true
 	}
+	if d.HasChange(isLBSecurityGroups) {
+		o, n := d.GetChange(isLBSecurityGroups)
+		oSecurityGroups := o.(*schema.Set)
+		nSecurityGroups := n.(*schema.Set)
+		remove = expandStringList(oSecurityGroups.Difference(nSecurityGroups).List())
+		add = expandStringList(nSecurityGroups.Difference(oSecurityGroups).List())
+		hasChangedSecurityGroups = true
+	}
+
 	if userDetails.generation == 1 {
 		err := classicLBUpdate(d, meta, id, name, hasChanged)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := lbUpdate(d, meta, id, name, hasChanged, isLogging, hasChangedLog)
+		err := lbUpdate(d, meta, id, name, hasChanged, isLogging, hasChangedLog, hasChangedSecurityGroups, remove, add)
 		if err != nil {
 			return err
 		}
@@ -596,7 +670,7 @@ func classicLBUpdate(d *schema.ResourceData, meta interface{}, id, name string, 
 	return nil
 }
 
-func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool, isLogging bool, hasChangedLog bool) error {
+func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool, isLogging bool, hasChangedLog bool, hasChangedSecurityGroups bool, remove, add []string) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -656,6 +730,40 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
 		if err != nil {
 			return fmt.Errorf("Error Updating vpc Load Balancer : %s\n%s", err, response)
+		}
+	}
+
+	if hasChangedSecurityGroups {
+		if len(add) > 0 {
+			for _, d := range add {
+				createSecurityGroupTargetBindingOptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{}
+				createSecurityGroupTargetBindingOptions.SecurityGroupID = &d
+				createSecurityGroupTargetBindingOptions.ID = &id
+				_, response, err := sess.CreateSecurityGroupTargetBinding(createSecurityGroupTargetBindingOptions)
+				if err != nil {
+					return fmt.Errorf("Error while creating Security Group Target Binding %s\n%s", err, response)
+				}
+			}
+		}
+		if len(remove) > 0 {
+			for _, d := range remove {
+				getSecurityGroupTargetOptions := &vpcv1.GetSecurityGroupTargetOptions{
+					SecurityGroupID: &d,
+					ID:              &id,
+				}
+				_, response, err := sess.GetSecurityGroupTarget(getSecurityGroupTargetOptions)
+				if err != nil {
+					if response != nil && response.StatusCode == 404 {
+						continue
+					}
+					return fmt.Errorf("Error Getting Security Group Target for this load balancer (%s): %s\n%s", d, err, response)
+				}
+				deleteSecurityGroupTargetBindingOptions := sess.NewDeleteSecurityGroupTargetBindingOptions(d, id)
+				response, err = sess.DeleteSecurityGroupTargetBinding(deleteSecurityGroupTargetBindingOptions)
+				if err != nil {
+					return fmt.Errorf("Error Deleting Security Group Target for this load balancer : %s\n%s", err, response)
+				}
+			}
 		}
 	}
 	return nil

@@ -10,8 +10,8 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -28,6 +28,7 @@ const (
 	isLBPoolSessPersistenceType       = "session_persistence_type"
 	isLBPoolSessPersistenceCookieName = "session_persistence_cookie_name"
 	isLBPoolProvisioningStatus        = "provisioning_status"
+	isLBPoolProxyProtocol             = "proxy_protocol"
 	isLBPoolActive                    = "active"
 	isLBPoolCreatePending             = "create_pending"
 	isLBPoolUpdatePending             = "update_pending"
@@ -140,6 +141,14 @@ func resourceIBMISLBPool() *schema.Resource {
 				Description: "Status of the LB Pool",
 			},
 
+			isLBPoolProxyProtocol: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: InvokeValidator("ibm_is_lb_pool", isLBPoolProxyProtocol),
+				Description:  "PROXY protocol setting for this pool",
+			},
+
 			isLBPool: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -161,6 +170,7 @@ func resourceIBMISLBPoolValidator() *ResourceValidator {
 	algorithm := "round_robin, weighted_round_robin, least_connections"
 	protocol := "http, tcp, https"
 	persistanceType := "source_ip"
+	proxyProtocol := "disabled, v1, v2"
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isLBPoolName,
@@ -193,6 +203,13 @@ func resourceIBMISLBPoolValidator() *ResourceValidator {
 			AllowedValues:              protocol})
 	validateSchema = append(validateSchema,
 		ValidateSchema{
+			Identifier:                 isLBPoolProxyProtocol,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              proxyProtocol})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
 			Identifier:                 isLBPoolSessPersistenceType,
 			ValidateFunctionIdentifier: ValidateAllowedStringValue,
 			Type:                       TypeString,
@@ -219,7 +236,7 @@ func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
 	healthTimeOut := int64(d.Get(isLBPoolHealthTimeout).(int))
 	healthType := d.Get(isLBPoolHealthType).(string)
 
-	var spType, cName, healthMonitorURL string
+	var spType, cName, healthMonitorURL, pProtocol string
 	var healthMonitorPort int64
 	if pt, ok := d.GetOk(isLBPoolSessPersistenceType); ok {
 		spType = pt.(string)
@@ -227,6 +244,9 @@ func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if cn, ok := d.GetOk(isLBPoolSessPersistenceCookieName); ok {
 		cName = cn.(string)
+	}
+	if pp, ok := d.GetOk(isLBPoolProxyProtocol); ok {
+		pProtocol = pp.(string)
 	}
 
 	if hmu, ok := d.GetOk(isLBPoolHealthMonitorURL); ok {
@@ -246,7 +266,7 @@ func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	} else {
-		err := lbPoolCreate(d, meta, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL, healthDelay, maxRetries, healthTimeOut, healthMonitorPort)
+		err := lbPoolCreate(d, meta, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL, pProtocol, healthDelay, maxRetries, healthTimeOut, healthMonitorPort)
 		if err != nil {
 			return err
 		}
@@ -312,7 +332,7 @@ func classicLBPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, a
 	return nil
 }
 
-func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL string, healthDelay, maxRetries, healthTimeOut, healthMonitorPort int64) error {
+func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL, pProtocol string, healthDelay, maxRetries, healthTimeOut, healthMonitorPort int64) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -346,6 +366,9 @@ func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorith
 		options.SessionPersistence = &vpcv1.LoadBalancerPoolSessionPersistencePrototype{
 			Type: &spType,
 		}
+	}
+	if pProtocol != "" {
+		options.ProxyProtocol = &pProtocol
 	}
 	lbPool, response, err := sess.CreateLoadBalancerPool(options)
 	if err != nil {
@@ -489,6 +512,7 @@ func lbPoolGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) 
 		// d.Set(isLBPoolSessPersistenceCookieName, *lbPool.SessionPersistence.CookieName)
 	}
 	d.Set(isLBPoolProvisioningStatus, *lbPool.ProvisioningStatus)
+	d.Set(isLBPoolProxyProtocol, *lbPool.ProxyProtocol)
 	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
 		ID: &lbID,
 	}
@@ -671,6 +695,12 @@ func lbPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 			Type: &sesspersistancetype,
 		}
 		loadBalancerPoolPatchModel.SessionPersistence = sessionPersistence
+		hasChanged = true
+	}
+
+	if d.HasChange(isLBPoolProxyProtocol) {
+		proxyProtocol := d.Get(isLBPoolProxyProtocol).(string)
+		loadBalancerPoolPatchModel.ProxyProtocol = &proxyProtocol
 		hasChanged = true
 	}
 

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM: ibm_resource_instance"
-sidebar_current: "docs-ibm-datasource-resource-instance"
 description: |-
   Get information about a resource instance from IBM Cloud.
 ---

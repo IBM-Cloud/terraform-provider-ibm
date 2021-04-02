@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_public_network"
-sidebar_current: "docs-ibm-datasources-pi-public-network"
 description: |-
   Manages a public network in the IBM Power Virtual Server Cloud.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM : resource_key"
-sidebar_current: "docs-ibm-resource-resource-key"
 description: |-
   Manages IBM Resource Key.
 ---
@@ -117,3 +118,18 @@ The following attributes are exported:
 * `id` - The unique identifier of the new resource key.
 * `credentials` - The credentials associated with the key.
 * `status` - Status of resource key.
+* `guid` - This GUID is a unique internal identifier managed by the resource controller that corresponds to the key.
+* `crn` - The full Cloud Resource Name (CRN) associated with the key.
+* `url` - When you created a new key, a relative URL path is created identifying the location of the key.
+* `account_id` - An alpha-numeric value identifying the account ID.
+* `resource_group_id` - The short ID of the resource group.
+* `source_crn` - The CRN of resource instance or alias associated to the key.
+* `state` - The state of the key.
+* `iam_compatible` - Specifies whether the key’s credentials support IAM.
+* `resource_instance_url` - The relative path to the resource.
+* `created_at` - The date when the key was created.
+* `updated_at` - The date when the key was last updated.
+* `deleted_at` - The date when the key was deleted.
+* `created_by` - The subject who created the key.
+* `updated_by` - The subject who updated the key.
+* `deleted_by` - The subject who deleted the key.

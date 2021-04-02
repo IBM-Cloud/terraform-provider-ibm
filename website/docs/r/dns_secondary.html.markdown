@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: dns_secondary"
-sidebar_current: "docs-ibm-resource-dns-secondary"
 description: |-
   Manages IBM DNS Secondary Zone.
 ---

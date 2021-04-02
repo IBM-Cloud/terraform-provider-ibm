@@ -28,10 +28,6 @@ Run `terraform destroy` when you don't need these resources.
 Create a VPC Instance group with autoscale feature:
 
 ```hcl
-provider "ibm" {
-  generation = 2
-}
-
 resource "ibm_is_vpc" "vpc2" {
   name = var.vpc_name
 }

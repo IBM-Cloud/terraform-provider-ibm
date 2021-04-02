@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : lb_pool"
-sidebar_current: "docs-ibm-resource-is-lb-pool"
 description: |-
   Manages IBM load balancer pool.
 ---
@@ -25,6 +26,7 @@ resource "ibm_is_lb_pool" "testacc_pool" {
   health_retries = 5
   health_timeout = 30
   health_type    = "http"
+  proxy_protocol = "v1"
 }
 
 ```
@@ -41,6 +43,7 @@ resource "ibm_is_lb_pool" "testacc_pool" {
   health_retries = 5
   health_timeout = 30
   health_type    = "https"
+  proxy_protocol = "v1"
 }
 
 ```
@@ -67,8 +70,8 @@ The following arguments are supported:
 * `health_type` - (Required, string) The pool protocol. Enumeration type: http, https, tcp
 * `health_monitor_url` - (Optional, string) The health check url. This option is applicable only to http type of --health-type
 * `health_monitor_port` - (Optional, int) The health check port number
-* `session_persistence_type` - (Optional, string) The session persistence type, Enumeration type: source_ip, http_cookie, app_cookie
-* `session_persistence_cookie_name` - (Optional, string) Session persistence cookie name. This option is applicable only to --session-persistence-type
+* `session_persistence_type` - (Optional, string) The session persistence type, Enumeration type: source_ip
+* `proxy_protocol` - (Otpional, string) The PROXY protocol setting for this pool. Supported by load balancers in the application family otherwise disabled. Valid values: disabled, v1, v2.
 
 ## Attribute Reference
 
@@ -77,7 +80,7 @@ The following attributes are exported:
 * `id` - The unique identifier of the load balancer pool.The id is composed of \<lb_id\>/\<pool_id\>.
 * `provisioning_status` - The status of load balancer pool.
 * `pool_id`  - Id of the load balancer Pool
-* `related_crn` - The crn of the load balancer resource. 
+* `related_crn` - The crn of the load balancer resource.
 
 ## Import
 

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM: instance_group_manager"
-sidebar_current: "docs-ibm-resource-is-instance-group-manager"
 description: |-
   Manages IBM VPC instance group manager.
 ---
@@ -15,10 +16,6 @@ Create, Update or delete a instance group manager on of an instance group
 In the following example, you can create a instance group manager.
 
 ```hcl
-provider "ibm" {
-  generation = 2
-}
-
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2test"
 }

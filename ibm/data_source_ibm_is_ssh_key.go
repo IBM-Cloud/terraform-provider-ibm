@@ -8,7 +8,7 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIBMISSSHKey() *schema.Resource {
@@ -32,6 +32,12 @@ func dataSourceIBMISSSHKey() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The ssh key Fingerprint",
+			},
+
+			isKeyPublicKey: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "SSH Public key data",
 			},
 
 			isKeyLength: {
@@ -126,6 +132,9 @@ func classicKeyGetByName(d *schema.ResourceData, meta interface{}, name string) 
 			if key.ResourceGroup != nil {
 				d.Set(ResourceGroupName, *key.ResourceGroup.ID)
 			}
+			if key.PublicKey != nil {
+				d.Set(isKeyPublicKey, *key.PublicKey)
+			}
 			return nil
 		}
 	}
@@ -158,6 +167,9 @@ func keyGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			d.Set(ResourceCRN, *key.CRN)
 			if key.ResourceGroup != nil {
 				d.Set(ResourceGroupName, *key.ResourceGroup.ID)
+			}
+			if key.PublicKey != nil {
+				d.Set(isKeyPublicKey, *key.PublicKey)
 			}
 			return nil
 		}

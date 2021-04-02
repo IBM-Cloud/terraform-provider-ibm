@@ -1,7 +1,7 @@
 ---
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_org_quota"
-sidebar_current: "docs-ibm-datasource-org-quota"
 description: |-
   Get information about an IBM Cloud organization quota.
 ---

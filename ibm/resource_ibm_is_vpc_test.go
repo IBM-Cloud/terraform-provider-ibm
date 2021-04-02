@@ -10,9 +10,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMISVPC_basic(t *testing.T) {
@@ -32,6 +32,12 @@ func TestAccIBMISVPC_basic(t *testing.T) {
 					testAccCheckIBMISVPCExists("ibm_is_vpc.testacc_vpc", vpc),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpc.testacc_vpc", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc", "default_network_acl_name", "dnwacln"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc", "default_security_group_name", "dsgn"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc", "default_routing_table_name", "drtn"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpc.testacc_vpc", "tags.#", "2"),
 				),
@@ -168,6 +174,9 @@ func testAccCheckIBMISVPCConfig(name string) string {
 	return fmt.Sprintf(`
 resource "ibm_is_vpc" "testacc_vpc" {
 	name = "%s"
+	default_network_acl_name = "dnwacln"
+    default_security_group_name = "dsgn"
+    default_routing_table_name = "drtn"
 	tags = ["Tag1", "tag2"]
 }`, name)
 

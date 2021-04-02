@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMISVPCDatasource_basic(t *testing.T) {
@@ -29,6 +29,9 @@ func TestAccIBMISVPCDatasource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_vpc.ds_vpc", "tags.#", "1"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "cse_source_addresses.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "default_network_acl_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "default_security_group_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "default_routing_table_name"),
 				),
 			},
 		},

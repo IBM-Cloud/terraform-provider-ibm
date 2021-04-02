@@ -9,11 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/hashcode"
 )
 
 func resourceIBMContainerAddOns() *schema.Resource {
@@ -124,14 +125,18 @@ func resourceIBMContainerAddOnsCreate(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 	cluster := d.Get("cluster").(string)
+	existingAddons, err := addOnAPI.GetAddons(cluster, targetEnv)
+	if err != nil {
+		fmt.Println("[ WARN ] Error getting Addons.")
+	}
 
-	payload, err := expandAddOns(d)
+	payload, err := expandAddOns(d, existingAddons)
 	if err != nil {
 		return fmt.Errorf("Error in getting addons from expandAddOns %s", err)
 	}
 	payload.Enable = true
 	_, err = addOnAPI.ConfigureAddons(cluster, &payload, targetEnv)
-	if err != nil && !strings.Contains(err.Error(), "Request failed with status code: 409") {
+	if err != nil {
 		return err
 	}
 	_, err = waitForContainerAddOns(d, meta, cluster, schema.TimeoutCreate)
@@ -143,18 +148,41 @@ func resourceIBMContainerAddOnsCreate(d *schema.ResourceData, meta interface{}) 
 
 	return resourceIBMContainerAddOnsRead(d, meta)
 }
-func expandAddOns(d *schema.ResourceData) (addOns v1.ConfigureAddOns, err error) {
+func expandAddOns(d *schema.ResourceData, existingAddons []v1.AddOn) (addOns v1.ConfigureAddOns, err error) {
 	addOnSet := d.Get("addons").(*schema.Set).List()
-	for _, aoSet := range addOnSet {
-		ao, _ := aoSet.(map[string]interface{})
-		addOn := v1.AddOn{
-			Name: ao["name"].(string),
+	if existingAddons == nil || len(existingAddons) < 1 {
+		for _, aoSet := range addOnSet {
+			ao, _ := aoSet.(map[string]interface{})
+			addOn := v1.AddOn{
+				Name: ao["name"].(string),
+			}
+			if ao["version"] != nil {
+				addOn.Version = ao["version"].(string)
+			}
+			addOns.AddonsList = append(addOns.AddonsList, addOn)
 		}
-		if ao["version"] != nil {
-			addOn.Version = ao["version"].(string)
-		}
-		addOns.AddonsList = append(addOns.AddonsList, addOn)
 	}
+	if existingAddons != nil && len(existingAddons) > 0 {
+		for _, aoSet := range addOnSet {
+			ao, _ := aoSet.(map[string]interface{})
+			exist := false
+			for _, existAddon := range existingAddons {
+				if existAddon.Name == ao["name"].(string) {
+					exist = true
+				}
+			}
+			if !exist {
+				addOn := v1.AddOn{
+					Name: ao["name"].(string),
+				}
+				if ao["version"] != nil {
+					addOn.Version = ao["version"].(string)
+				}
+				addOns.AddonsList = append(addOns.AddonsList, addOn)
+			}
+		}
+	}
+
 	return addOns, nil
 }
 func resourceIBMContainerAddOnsRead(d *schema.ResourceData, meta interface{}) error {
@@ -259,7 +287,7 @@ func resourceIBMContainerAddOnsUpdate(d *schema.ResourceData, meta interface{}) 
 					updateList.AddonsList = append(updateList.AddonsList, update)
 					updateList.Update = true
 					_, err = addOnAPI.ConfigureAddons(cluster, &updateList, targetEnv)
-					if err != nil && !strings.Contains(err.Error(), "Request failed with status code: 409") {
+					if err != nil {
 						return err
 					}
 					_, err = waitForContainerAddOns(d, meta, cluster, schema.TimeoutUpdate)
@@ -290,7 +318,7 @@ func resourceIBMContainerAddOnsUpdate(d *schema.ResourceData, meta interface{}) 
 			}
 			addOnParams.Enable = true
 			_, err = addOnAPI.ConfigureAddons(cluster, &addOnParams, targetEnv)
-			if err != nil && !strings.Contains(err.Error(), "Request failed with status code: 409") {
+			if err != nil {
 				return err
 			}
 			_, err = waitForContainerAddOns(d, meta, cluster, schema.TimeoutCreate)
@@ -333,7 +361,7 @@ func resourceIBMContainerAddOnsDelete(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 	cluster := d.Id()
-	payload, err := expandAddOns(d)
+	payload, err := expandAddOns(d, nil)
 	if err != nil {
 		return fmt.Errorf("Error in getting addons from expandAddOns %s", err)
 	}
@@ -414,5 +442,5 @@ func resourceIBMContainerAddonsHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-", a["name"].(string)))
 	buf.WriteString(fmt.Sprintf("%s-", a["version"].(string)))
 
-	return String(buf.String())
+	return hashcode.String(buf.String())
 }

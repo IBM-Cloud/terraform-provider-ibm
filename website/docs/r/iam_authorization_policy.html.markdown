@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_authorization_policy"
-sidebar_current: "docs-ibm-resource-iam-authorization-policy"
 description: |-
   Manages IBM IAM Service Authorizations.
 ---

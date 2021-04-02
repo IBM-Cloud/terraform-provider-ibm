@@ -8,7 +8,7 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -89,6 +89,13 @@ func resourceIBMISAddressPrefixValidator() *ResourceValidator {
 		ValidateSchema{
 			Identifier:                 isVPCRouteDestinationCIDR,
 			ValidateFunctionIdentifier: ValidateCIDRAddress,
+			Type:                       TypeString,
+			ForceNew:                   true,
+			Required:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCAddressPrefixCIDR,
+			ValidateFunctionIdentifier: ValidateOverlappingAddress,
 			Type:                       TypeString,
 			ForceNew:                   true,
 			Required:                   true})

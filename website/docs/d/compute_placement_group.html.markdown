@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_compute_placement_group"
-sidebar_current: "docs-ibm-datasource-compute-placement-group"
 description: |-
   Get information on a IBM Compute Placement Group resources
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Cloud Databases"
 layout: "ibm"
 page_title: "IBM : Cloud Database instance"
-sidebar_current: "docs-ibm-resource-database"
 description: |-
   Manages IBM Cloud Database Instance.
 ---

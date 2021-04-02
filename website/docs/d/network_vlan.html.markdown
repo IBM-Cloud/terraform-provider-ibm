@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_network_vlan"
-sidebar_current: "docs-ibm-datasource-network-vlan"
 description: |-
   Get information on a IBM Network VLAN.
 ---

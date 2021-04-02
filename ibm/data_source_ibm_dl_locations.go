@@ -6,7 +6,7 @@ package ibm
 import (
 	"fmt"
 	"github.com/IBM/networking-go-sdk/directlinkv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"time"
 )
 

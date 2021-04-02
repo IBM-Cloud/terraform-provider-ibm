@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -11,9 +12,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -30,6 +31,7 @@ const (
 	isImageEncryptedDataKey = "encrypted_data_key"
 	isImageEncryptionKey    = "encryption_key"
 	isImageEncryption       = "encryption"
+	isImageCheckSum         = "checksum"
 
 	isImageProvisioning     = "provisioning"
 	isImageProvisioningDone = "done"
@@ -53,7 +55,7 @@ func resourceIBMISImage() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -155,6 +157,12 @@ func resourceIBMISImage() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The crn of the resource",
+			},
+
+			isImageCheckSum: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The SHA256 checksum of this image",
 			},
 
 			ResourceStatus: {
@@ -596,6 +604,9 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	if image.EncryptionKey != nil {
 		d.Set(isImageEncryptionKey, *image.EncryptionKey.CRN)
+	}
+	if image.File != nil && image.File.Checksums != nil {
+		d.Set(isImageCheckSum, *image.File.Checksums.Sha256)
 	}
 	tags, err := GetTagsUsingCRN(meta, *image.CRN)
 	if err != nil {

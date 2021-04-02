@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM: security_group_rule"
-sidebar_current: "docs-ibm-resource-security-group-rule"
 description: |-
   Manages IBM Security Group Rules
 ---

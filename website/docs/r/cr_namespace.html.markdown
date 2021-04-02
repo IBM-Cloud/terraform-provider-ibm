@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Container Registry"
 layout: "ibm"
 page_title: "IBM: cr_namespace"
-sidebar_current: "docs-ibm-resource-cr-namespace"
 description: |-
   Manages IBM Container Registry Namespace.
 ---

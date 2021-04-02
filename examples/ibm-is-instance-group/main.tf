@@ -1,7 +1,3 @@
-provider "ibm" {
-  generation = 2
-}
-
 resource "ibm_is_vpc" "vpc2" {
   name = var.vpc_name
 }

@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMPrivateDNSZone_Basic(t *testing.T) {
@@ -63,7 +63,7 @@ func TestAccIBMPrivateDNSZoneImport(t *testing.T) {
 func testAccCheckIBMPrivateDNSZoneBasic(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "default"
+		is_default=true
 	}
 	resource "ibm_resource_instance" "test-pdns-zone-instance" {
 		name = "test-pdns-zone-instance"

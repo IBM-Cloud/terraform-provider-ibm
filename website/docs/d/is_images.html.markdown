@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : Images"
-sidebar_current: "docs-ibm-datasources-is-images"
 description: |-
   Manages IBM Cloud Infrastructure Images.
 ---
@@ -28,6 +28,7 @@ The following attributes are exported:
   * `name` - The name for this image.
   * `id` - The unique identifier for this image.
   * `crn` - The CRN for this image.
+  * `checksum` - The SHA256 Checksum for this image
   * `os` - The name of the operating system.
   * `status` - The status of this image.
   * `architecture` - The architecture for this image.

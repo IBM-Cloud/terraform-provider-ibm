@@ -1,7 +1,7 @@
 ---
+subcategory: "Container Registry"
 layout: "ibm"
 page_title: "IBM: cr_namespaces"
-sidebar_current: "docs-ibm-datasource-cr-namespaces"
 description: |-
   Reads IBM Container Registry Namespaces.
 ---

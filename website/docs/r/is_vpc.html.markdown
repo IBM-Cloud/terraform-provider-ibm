@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : vpc"
-sidebar_current: "docs-ibm-resource-is-vpc"
 description: |-
   Manages IBM virtual private cloud.
 ---
@@ -40,6 +41,9 @@ The following arguments are supported:
 * `name` - (Required, string) The name of the VPC.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID where the VPC to be created
 * `tags` - (Optional, array of strings) Tags associated with the instance.
+* `default_network_acl_name` - (Optional, string) The name of the default network acl.
+* `default_security_group_name` - (Optional, string) The name of the default security group.
+* `default_routing_table_name` - (Optional, string) The name of the default routing table.
 
 ## Attribute Reference
 
@@ -47,9 +51,6 @@ The following attributes are exported:
 
 * `id` - The unique identifier of the VPC.
 * `crn` - The CRN of VPC.
-* `default_security_group` - The unique identifier of the VPC default security group.
-* `default_routing_table` - The unique identifier of the VPC default routing table.
-* `default_network_acl` - The unique identifier of the VPC default Network ACL.
 * `status` - The status of VPC.
 * `cse_source_addresses` - A list describing the cloud service endpoint source ip adresses and zones. The nested cse_source_addresses block have the following structure:
   * `address` - Ip Address of the cloud service endpoint.

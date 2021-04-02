@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_access_group"
-sidebar_current: "docs-ibm-resource-iam-access-group"
 description: |-
   Manages IBM IAM Access Group.
 ---

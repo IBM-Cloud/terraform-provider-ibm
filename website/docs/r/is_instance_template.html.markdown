@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM: instance_template"
-sidebar_current: "docs-ibm-resource-is-instance-template"
 description: |-
   Manages IBM VPC instance template.
 ---
@@ -14,10 +15,6 @@ Create, Update or delete an instance template on VPC
 
 In the following example, you can create a instance template VPC gen-2 infrastructure.
 ```hcl
-provider "ibm" {
-  generation = 2
-}
-
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2test"
 }

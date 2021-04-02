@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : SSH Key"
-sidebar_current: "docs-ibm-datasources-is-ssh-key"
 description: |-
   Manages IBM SSH Key.
 ---
@@ -35,3 +35,4 @@ The following attributes are exported:
 * `fingerprint` -  The SHA256 fingerprint of the public key.
 * `length` - The length of this key.
 * `type` - The cryptosystem used by this key.
+* `public_key` - SSH Public key data.

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : compute_user"
-sidebar_current: "docs-ibm-resource-compute-user"
 description: |-
   Manages IBM user accounts.
 ---

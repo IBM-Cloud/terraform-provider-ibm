@@ -7,11 +7,10 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/controllerv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
-
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceIBMCISInstance() *schema.Resource {
@@ -93,14 +92,14 @@ func dataSourceIBMCISInstance() *schema.Resource {
 }
 
 func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerAPIV2()
 	if err != nil {
 		return err
 	}
-	rsAPI := rsConClient.ResourceServiceInstance()
+	rsAPI := rsConClient.ResourceServiceInstanceV2()
 	name := d.Get("name").(string)
 
-	rsInstQuery := controller.ServiceInstanceQuery{
+	rsInstQuery := controllerv2.ServiceInstanceQuery{
 		Name: name,
 	}
 
@@ -130,13 +129,13 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 		rsInstQuery.ServiceID = serviceOff[0].ID
 	}
 
-	var instances []models.ServiceInstance
+	var instances []models.ServiceInstanceV2
 
 	instances, err = rsAPI.ListInstances(rsInstQuery)
 	if err != nil {
 		return err
 	}
-	var filteredInstances []models.ServiceInstance
+	var filteredInstances []models.ServiceInstanceV2
 	var location string
 
 	if loc, ok := d.GetOk("location"); ok {
@@ -154,7 +153,7 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
 	}
 
-	var instance models.ServiceInstance
+	var instance models.ServiceInstanceV2
 
 	if len(filteredInstances) > 1 {
 		return fmt.Errorf(
@@ -174,7 +173,7 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 
 	d.Set("service", serviceOff)
 
-	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ServicePlanID)
+	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ResourcePlanID)
 	if err != nil {
 		return fmt.Errorf("Error retrieving plan: %s", err)
 	}

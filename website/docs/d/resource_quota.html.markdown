@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM: ibm_resource_quota"
-sidebar_current: "docs-ibm-datasource-resource-quota"
 description: |-
   Get information about an IBM Cloud resource quota.
 ---

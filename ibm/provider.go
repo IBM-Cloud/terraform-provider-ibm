@@ -8,15 +8,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/mutexkv"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // This is a global MutexKV for use within this plugin.
-var ibmMutexKV = NewMutexKV()
+var ibmMutexKV = mutexkv.NewMutexKV()
 
-// Provider returns a terraform.ResourceProvider.
-func Provider() terraform.ResourceProvider {
+// Provider returns a *schema.Provider.
+func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"bluemix_api_key": {
@@ -139,7 +139,8 @@ func Provider() terraform.ResourceProvider {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "Generation of Virtual Private Cloud. Default is 2",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_GENERATION", "IBMCLOUD_GENERATION"}, 2),
+				//DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_GENERATION", "IBMCLOUD_GENERATION"}, nil),
+				Deprecated: "The generation field is deprecated and will be removed after couple of releases",
 			},
 			"iam_token": {
 				Type:        schema.TypeString,
@@ -152,6 +153,13 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				Description: "IAM Authentication refresh token",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_IAM_REFRESH_TOKEN", "IBMCLOUD_IAM_REFRESH_TOKEN"}, nil),
+			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "public-and-private"}),
+				Description:  "Visibility of the provider if it is private or public.",
+				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_VISIBILITY", "IBMCLOUD_VISIBILITY"}, "public"),
 			},
 		},
 
@@ -177,6 +185,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_cis_healthchecks":                   dataSourceIBMCISHealthChecks(),
 			"ibm_cis_domain":                         dataSourceIBMCISDomain(),
 			"ibm_cis_firewall":                       dataIBMCISFirewallsRecord(),
+			"ibm_cis_cache_settings":                 dataSourceIBMCISCacheSetting(),
 			"ibm_cis_waf_packages":                   dataSourceIBMCISWAFPackages(),
 			"ibm_cis_range_apps":                     dataSourceIBMCISRangeApps(),
 			"ibm_cis_custom_certificates":            dataSourceIBMCISCustomCertificates(),
@@ -216,6 +225,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dns_secondary":                      dataSourceIBMDNSSecondary(),
 			"ibm_event_streams_topic":                dataSourceIBMEventStreamsTopic(),
 			"ibm_iam_access_group":                   dataSourceIBMIAMAccessGroup(),
+			"ibm_iam_account_settings":               dataSourceIBMIAMAccountSettings(),
 			"ibm_iam_auth_token":                     dataSourceIBMIAMAuthToken(),
 			"ibm_iam_role_actions":                   datasourceIBMIAMRoleAction(),
 			"ibm_iam_users":                          dataSourceIBMIAMUsers(),
@@ -224,6 +234,12 @@ func Provider() terraform.ResourceProvider {
 			"ibm_iam_user_profile":                   dataSourceIBMIAMUserProfile(),
 			"ibm_iam_service_id":                     dataSourceIBMIAMServiceID(),
 			"ibm_iam_service_policy":                 dataSourceIBMIAMServicePolicy(),
+			"ibm_is_dedicated_host":                  dataSourceIbmIsDedicatedHost(),
+			"ibm_is_dedicated_hosts":                 dataSourceIbmIsDedicatedHosts(),
+			"ibm_is_dedicated_host_profile":          dataSourceIbmIsDedicatedHostProfile(),
+			"ibm_is_dedicated_host_profiles":         dataSourceIbmIsDedicatedHostProfiles(),
+			"ibm_is_dedicated_host_group":            dataSourceIbmIsDedicatedHostGroup(),
+			"ibm_is_dedicated_host_groups":           dataSourceIbmIsDedicatedHostGroups(),
 			"ibm_is_floating_ip":                     dataSourceIBMISFloatingIP(),
 			"ibm_is_flow_logs":                       dataSourceIBMISFlowLogs(),
 			"ibm_is_image":                           dataSourceIBMISImage(),
@@ -249,6 +265,8 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_ssh_key":                         dataSourceIBMISSSHKey(),
 			"ibm_is_subnet":                          dataSourceIBMISSubnet(),
 			"ibm_is_subnets":                         dataSourceIBMISSubnets(),
+			"ibm_is_subnet_reserved_ip":              dataSourceIBMISReservedIP(),
+			"ibm_is_subnet_reserved_ips":             dataSourceIBMISReservedIPs(),
 			"ibm_is_security_group":                  dataSourceIBMISSecurityGroup(),
 			"ibm_is_volume":                          dataSourceIBMISVolume(),
 			"ibm_is_volume_profile":                  dataSourceIBMISVolumeProfile(),
@@ -266,7 +284,9 @@ func Provider() terraform.ResourceProvider {
 			"ibm_org":                                dataSourceIBMOrg(),
 			"ibm_org_quota":                          dataSourceIBMOrgQuota(),
 			"ibm_kp_key":                             dataSourceIBMkey(),
+			"ibm_kms_key_rings":                      dataSourceIBMKMSkeyRings(),
 			"ibm_kms_keys":                           dataSourceIBMKMSkeys(),
+			"ibm_pn_application_chrome":              dataSourceIBMPNApplicationChrome(),
 			"ibm_kms_key":                            dataSourceIBMKMSkey(),
 			"ibm_resource_quota":                     dataSourceIBMResourceQuota(),
 			"ibm_resource_group":                     dataSourceIBMResourceGroup(),
@@ -277,9 +297,14 @@ func Provider() terraform.ResourceProvider {
 			"ibm_service_key":                        dataSourceIBMServiceKey(),
 			"ibm_service_plan":                       dataSourceIBMServicePlan(),
 			"ibm_space":                              dataSourceIBMSpace(),
-			"ibm_schematics_workspace":               dataSourceSchematicsWorkspace(),
-			"ibm_schematics_output":                  dataSourceSchematicsOut(),
-			"ibm_schematics_state":                   dataSourceSchematicsState(),
+
+			// Added for Schematics
+			"ibm_schematics_workspace": dataSourceIBMSchematicsWorkspace(),
+			"ibm_schematics_output":    dataSourceIBMSchematicsOutput(),
+			"ibm_schematics_state":     dataSourceIBMSchematicsState(),
+			"ibm_schematics_action":    dataSourceIBMSchematicsAction(),
+			"ibm_schematics_job":       dataSourceIBMSchematicsJob(),
+
 			// Added for Power Resources
 
 			"ibm_pi_key":                dataSourceIBMPIKey(),
@@ -324,6 +349,20 @@ func Provider() terraform.ResourceProvider {
 			"ibm_tg_gateways":  dataSourceIBMTransitGateways(),
 			"ibm_tg_locations": dataSourceIBMTransitGatewaysLocations(),
 			"ibm_tg_location":  dataSourceIBMTransitGatewaysLocation(),
+
+			//Added for Secrets Manager
+			"ibm_secrets_manager_secrets": dataSourceIBMSecretsManagerSecrets(),
+			"ibm_secrets_manager_secret":  dataSourceIBMSecretsManagerSecret(),
+
+			//Added for Satellite
+			"ibm_satellite_location":           dataSourceIBMSatelliteLocation(),
+			"ibm_satellite_attach_host_script": dataSourceIBMSatelliteAttachHostScript(),
+
+			// Catalog related resources
+			"ibm_cm_catalog":           dataSourceIBMCmCatalog(),
+			"ibm_cm_offering":          dataSourceIBMCmOffering(),
+			"ibm_cm_version":           dataSourceIBMCmVersion(),
+			"ibm_cm_offering_instance": dataSourceIBMCmOfferingInstance(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -387,6 +426,8 @@ func Provider() terraform.ResourceProvider {
 			"ibm_container_bind_service":                         resourceIBMContainerBindService(),
 			"ibm_container_worker_pool":                          resourceIBMContainerWorkerPool(),
 			"ibm_container_worker_pool_zone_attachment":          resourceIBMContainerWorkerPoolZoneAttachment(),
+			"ibm_ob_logging":                                     resourceIBMObLogging(),
+			"ibm_ob_monitoring":                                  resourceIBMObMonitoring(),
 			"ibm_cr_namespace":                                   resourceIBMContainerRegistryNamespace(),
 			"ibm_cos_bucket":                                     resourceIBMCOS(),
 			"ibm_dns_domain":                                     resourceIBMDNSDomain(),
@@ -397,6 +438,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_firewall":                                       resourceIBMFirewall(),
 			"ibm_firewall_policy":                                resourceIBMFirewallPolicy(),
 			"ibm_iam_access_group":                               resourceIBMIAMAccessGroup(),
+			"ibm_iam_account_settings":                           resourceIbmIamAccountSettings(),
 			"ibm_iam_custom_role":                                resourceIBMIAMCustomRole(),
 			"ibm_iam_access_group_dynamic_rule":                  resourceIBMIAMDynamicRule(),
 			"ibm_iam_access_group_members":                       resourceIBMIAMAccessGroupMembers(),
@@ -410,6 +452,8 @@ func Provider() terraform.ResourceProvider {
 			"ibm_iam_service_policy":                             resourceIBMIAMServicePolicy(),
 			"ibm_iam_user_invite":                                resourceIBMUserInvite(),
 			"ibm_ipsec_vpn":                                      resourceIBMIPSecVPN(),
+			"ibm_is_dedicated_host":                              resourceIbmIsDedicatedHost(),
+			"ibm_is_dedicated_host_group":                        resourceIbmIsDedicatedHostGroup(),
 			"ibm_is_floating_ip":                                 resourceIBMISFloatingIP(),
 			"ibm_is_flow_log":                                    resourceIBMISFlowLog(),
 			"ibm_is_instance":                                    resourceIBMISInstance(),
@@ -433,6 +477,7 @@ func Provider() terraform.ResourceProvider {
 			"ibm_is_security_group_rule":                         resourceIBMISSecurityGroupRule(),
 			"ibm_is_security_group_network_interface_attachment": resourceIBMISSecurityGroupNetworkInterfaceAttachment(),
 			"ibm_is_subnet":                                      resourceIBMISSubnet(),
+			"ibm_is_subnet_reserved_ip":                          resourceIBMISReservedIP(),
 			"ibm_is_subnet_network_acl_attachment":               resourceIBMISSubnetNetworkACLAttachment(),
 			"ibm_is_ssh_key":                                     resourceIBMISSSHKey(),
 			"ibm_is_volume":                                      resourceIBMISVolume(),
@@ -463,7 +508,10 @@ func Provider() terraform.ResourceProvider {
 			"ibm_network_vlan_spanning":                          resourceIBMNetworkVlanSpan(),
 			"ibm_object_storage_account":                         resourceIBMObjectStorageAccount(),
 			"ibm_org":                                            resourceIBMOrg(),
+			"ibm_pn_application_chrome":                          resourceIBMPNApplicationChrome(),
 			"ibm_kms_key":                                        resourceIBMKmskey(),
+			"ibm_kms_key_alias":                                  resourceIBMKmskeyAlias(),
+			"ibm_kms_key_rings":                                  resourceIBMKmskeyRings(),
 			"ibm_kp_key":                                         resourceIBMkey(),
 			"ibm_resource_group":                                 resourceIBMResourceGroup(),
 			"ibm_resource_instance":                              resourceIBMResourceInstance(),
@@ -509,9 +557,23 @@ func Provider() terraform.ResourceProvider {
 			"ibm_dl_virtual_connection": resourceIBMDLGatewayVC(),
 			"ibm_dl_provider_gateway":   resourceIBMDLProviderGateway(),
 			//Added for Transit Gateway
-			"ibm_tg_gateway":           resourceIBMTransitGateway(),
-			"ibm_tg_connection":        resourceIBMTransitGatewayConnection(),
+			"ibm_tg_gateway":    resourceIBMTransitGateway(),
+			"ibm_tg_connection": resourceIBMTransitGatewayConnection(),
+
+			//Catalog related resources
 			"ibm_cm_offering_instance": resourceIBMCmOfferingInstance(),
+			"ibm_cm_catalog":           resourceIBMCmCatalog(),
+			"ibm_cm_offering":          resourceIBMCmOffering(),
+			"ibm_cm_version":           resourceIBMCmVersion(),
+
+			//Added for Schematics
+			"ibm_schematics_workspace": resourceIBMSchematicsWorkspace(),
+			"ibm_schematics_action":    resourceIBMSchematicsAction(),
+			"ibm_schematics_job":       resourceIBMSchematicsJob(),
+
+			//satellite  resources
+			"ibm_satellite_location": resourceIBMSatelliteLocation(),
+			"ibm_satellite_host":     resourceIBMSatelliteHost(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -526,34 +588,38 @@ func Validator() ValidatorDict {
 	initOnce.Do(func() {
 		globalValidatorDict = ValidatorDict{
 			ResourceValidatorDictionary: map[string]*ResourceValidator{
-				"ibm_iam_custom_role":        resourceIBMIAMCustomRoleValidator(),
-				"ibm_cis_healthcheck":        resourceIBMCISHealthCheckValidator(),
-				"ibm_cis_rate_limit":         resourceIBMCISRateLimitValidator(),
-				"ibm_cis_domain_settings":    resourceIBMCISDomainSettingValidator(),
-				"ibm_cis_tls_settings":       resourceIBMCISTLSSettingsValidator(),
-				"ibm_cis_routing":            resourceIBMCISRoutingValidator(),
-				"ibm_cis_page_rule":          resourceCISPageRuleValidator(),
-				"ibm_cis_waf_package":        resourceIBMCISWAFPackageValidator(),
-				"ibm_cis_waf_group":          resourceIBMCISWAFGroupValidator(),
-				"ibm_cis_certificate_upload": resourceCISCertificateUploadValidator(),
-				"ibm_cis_cache_settings":     resourceIBMCISCacheSettingsValidator(),
-				"ibm_cis_custom_page":        resourceIBMCISCustomPageValidator(),
-				"ibm_cis_firewall":           resourceIBMCISFirewallValidator(),
-				"ibm_cis_range_app":          resourceIBMCISRangeAppValidator(),
-				"ibm_cis_waf_rule":           resourceIBMCISWAFRuleValidator(),
-				"ibm_cis_certificate_order":  resourceIBMCISCertificateOrderValidator(),
-				"ibm_cr_namespace":           resourceIBMCrNamespaceValidator(),
-				"ibm_tg_gateway":             resourceIBMTGValidator(),
-				"ibm_tg_connection":          resourceIBMTransitGatewayConnectionValidator(),
-				"ibm_dl_virtual_connection":  resourceIBMdlGatewayVCValidator(),
-				"ibm_dl_gateway":             resourceIBMDLGatewayValidator(),
-				"ibm_dl_provider_gateway":    resourceIBMDLProviderGatewayValidator(),
-
+				"ibm_iam_account_settings":             resourceIBMIAMAccountSettingsValidator(),
+				"ibm_iam_custom_role":                  resourceIBMIAMCustomRoleValidator(),
+				"ibm_cis_healthcheck":                  resourceIBMCISHealthCheckValidator(),
+				"ibm_cis_rate_limit":                   resourceIBMCISRateLimitValidator(),
+				"ibm_cis":                              resourceIBMCISValidator(),
+				"ibm_cis_domain_settings":              resourceIBMCISDomainSettingValidator(),
+				"ibm_cis_tls_settings":                 resourceIBMCISTLSSettingsValidator(),
+				"ibm_cis_routing":                      resourceIBMCISRoutingValidator(),
+				"ibm_cis_page_rule":                    resourceCISPageRuleValidator(),
+				"ibm_cis_waf_package":                  resourceIBMCISWAFPackageValidator(),
+				"ibm_cis_waf_group":                    resourceIBMCISWAFGroupValidator(),
+				"ibm_cis_certificate_upload":           resourceCISCertificateUploadValidator(),
+				"ibm_cis_cache_settings":               resourceIBMCISCacheSettingsValidator(),
+				"ibm_cis_custom_page":                  resourceIBMCISCustomPageValidator(),
+				"ibm_cis_firewall":                     resourceIBMCISFirewallValidator(),
+				"ibm_cis_range_app":                    resourceIBMCISRangeAppValidator(),
+				"ibm_cis_waf_rule":                     resourceIBMCISWAFRuleValidator(),
+				"ibm_cis_certificate_order":            resourceIBMCISCertificateOrderValidator(),
+				"ibm_cr_namespace":                     resourceIBMCrNamespaceValidator(),
+				"ibm_tg_gateway":                       resourceIBMTGValidator(),
+				"ibm_tg_connection":                    resourceIBMTransitGatewayConnectionValidator(),
+				"ibm_dl_virtual_connection":            resourceIBMdlGatewayVCValidator(),
+				"ibm_dl_gateway":                       resourceIBMDLGatewayValidator(),
+				"ibm_dl_provider_gateway":              resourceIBMDLProviderGatewayValidator(),
+				"ibm_database":                         resourceIBMICDValidator(),
 				"ibm_function_package":                 resourceIBMFuncPackageValidator(),
 				"ibm_function_action":                  resourceIBMFuncActionValidator(),
 				"ibm_function_rule":                    resourceIBMFuncRuleValidator(),
 				"ibm_function_trigger":                 resourceIBMFuncTriggerValidator(),
 				"ibm_function_namespace":               resourceIBMFuncNamespaceValidator(),
+				"ibm_is_dedicated_host_group":          resourceIbmIsDedicatedHostGroupValidator(),
+				"ibm_is_dedicated_host":                resourceIbmIsDedicatedHostValidator(),
 				"ibm_is_flow_log":                      resourceIBMISFlowLogValidator(),
 				"ibm_is_instance_group":                resourceIBMISInstanceGroupValidator(),
 				"ibm_is_instance_group_manager":        resourceIBMISInstanceGroupManagerValidator(),
@@ -574,6 +640,7 @@ func Validator() ValidatorDict {
 				"ibm_is_security_group":                resourceIBMISSecurityGroupValidator(),
 				"ibm_is_ssh_key":                       resourceIBMISSHKeyValidator(),
 				"ibm_is_subnet":                        resourceIBMISSubnetValidator(),
+				"ibm_is_subnet_reserved_ip":            resourceIBMISSubnetReservedIPValidator(),
 				"ibm_is_volume":                        resourceIBMISVolumeValidator(),
 				"ibm_is_address_prefix":                resourceIBMISAddressPrefixValidator(),
 				"ibm_is_route":                         resourceIBMISRouteValidator(),
@@ -582,15 +649,21 @@ func Validator() ValidatorDict {
 				"ibm_is_vpc_routing_table_route":       resourceIBMISVPCRoutingTableRouteValidator(),
 				"ibm_is_vpn_gateway_connection":        resourceIBMISVPNGatewayConnectionValidator(),
 				"ibm_is_vpn_gateway":                   resourceIBMISVPNGatewayValidator(),
+				"ibm_kms_key_rings":                    resourceIBMKeyRingValidator(),
 				"ibm_dns_glb_monitor":                  resourceIBMPrivateDNSGLBMonitorValidator(),
 				"ibm_dns_glb_pool":                     resourceIBMPrivateDNSGLBPoolValidator(),
+				"ibm_schematics_action":                resourceIBMSchematicsActionValidator(),
+				"ibm_schematics_job":                   resourceIBMSchematicsJobValidator(),
+				"ibm_schematics_workspace":             resourceIBMSchematicsWorkspaceValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
-				"ibm_is_subnet":          dataSourceIBMISSubnetValidator(),
-				"ibm_dl_offering_speeds": datasourceIBMDLOfferingSpeedsValidator(),
-				"ibm_dl_routers":         datasourceIBMDLRoutersValidator(),
-				"ibm_is_vpc":             dataSourceIBMISVpcValidator(),
-				"ibm_is_volume":          dataSourceIBMISVolumeValidator(),
+				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),
+				"ibm_dl_offering_speeds":      datasourceIBMDLOfferingSpeedsValidator(),
+				"ibm_dl_routers":              datasourceIBMDLRoutersValidator(),
+				"ibm_is_vpc":                  dataSourceIBMISVpcValidator(),
+				"ibm_is_volume":               dataSourceIBMISVolumeValidator(),
+				"ibm_secrets_manager_secret":  datasourceIBMSecretsManagerSecretValidator(),
+				"ibm_secrets_manager_secrets": datasourceIBMSecretsManagerSecretsValidator(),
 			},
 		}
 	})
@@ -646,6 +719,10 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if tm, ok := d.GetOk("ibmcloud_timeout"); ok {
 		bluemixTimeout = tm.(int)
 	}
+	var visibility string
+	if v, ok := d.GetOk("visibility"); ok {
+		visibility = v.(string)
+	}
 
 	resourceGrp := d.Get("resource_group").(string)
 	region := d.Get("region").(string)
@@ -653,7 +730,6 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	retryCount := d.Get("max_retries").(int)
 	wskNameSpace := d.Get("function_namespace").(string)
 	riaasEndPoint := d.Get("riaas_endpoint").(string)
-	generation := d.Get("generation").(int)
 
 	wskEnvVal, err := schema.EnvDefaultFunc("FUNCTION_NAMESPACE", "")()
 	if err != nil {
@@ -677,10 +753,10 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		RetryDelay:           RetryAPIDelay,
 		FunctionNameSpace:    wskNameSpace,
 		RiaasEndPoint:        riaasEndPoint,
-		Generation:           generation,
 		IAMToken:             iamToken,
 		IAMRefreshToken:      iamRefreshToken,
 		Zone:                 zone,
+		Visibility:           visibility,
 		//PowerServiceInstance: powerServiceInstance,
 	}
 

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Certificate Manager"
 layout: "ibm"
 page_title: "IBM: certificate_manager_order"
-sidebar_current: "docs-ibm-resource-certificate-manager-order"
 description: |-
   Orders and Manages Ordered Certificate.
 ---

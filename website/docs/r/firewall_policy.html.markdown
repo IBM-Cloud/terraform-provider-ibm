@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : firewal_policy"
-sidebar_current: "docs-ibm-resource-firewall-policy"
 description: |-
   Manages IBM Firewall Policy.
 ---

@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_firewall"
-sidebar_current: "docs-ibm-datasource-cis-firewall"
 description: |-
   Get information on an IBM Cloud Internet Services Firewall.
 ---

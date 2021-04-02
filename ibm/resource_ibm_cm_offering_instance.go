@@ -8,7 +8,7 @@ import (
 	"log"
 
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceIBMCmOfferingInstance() *schema.Resource {
@@ -232,7 +232,7 @@ func resourceIBMCmOfferingInstanceUpdate(d *schema.ResourceData, meta interface{
 	if _, ok := d.GetOk("cluster_region"); ok {
 		putOfferingInstanceOptions.SetClusterRegion(d.Get("cluster_region").(string))
 	}
-	if ns, ok := d.GetOk("cluster_all_namespaces"); ok {
+	if ns, ok := d.GetOk("cluster_namespaces"); ok {
 		list := expandStringList(ns.([]interface{}))
 		putOfferingInstanceOptions.SetClusterNamespaces(list)
 	}

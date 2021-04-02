@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMISFlowLogsDataSource_basic(t *testing.T) {
@@ -93,7 +93,7 @@ func testAccCheckIBMISFlowLogsDataSourceConfig(vpcname, name, flowlogname, sshna
 	  }
 
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 	  
 	resource "ibm_resource_instance" "instance2" {

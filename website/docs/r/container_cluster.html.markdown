@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_cluster"
-sidebar_current: "docs-ibm-resource-container-cluster"
 description: |-
   Manages IBM container cluster.
 ---
@@ -247,3 +248,13 @@ The following attributes are exported:
 * `private_service_endpoint_url` - Private service endpoint url.
 * `public_service_endpoint_url` - Public service endpoint url.
 * `crn` - CRN of the instance.
+
+## Import
+
+ibm_container_cluster can be imported using cluster_id
+
+```
+$ terraform import ibm_container_cluster.example <cluster_id>
+
+$ terraform import ibm_container_cluster.example c1di75fd0qpn1amo5hng
+```

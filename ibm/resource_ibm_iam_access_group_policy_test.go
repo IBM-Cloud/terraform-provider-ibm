@@ -5,15 +5,14 @@ package ibm
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
-
-	"strings"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccIBMIAMAccessGroupPolicy_Basic(t *testing.T) {
@@ -395,7 +394,7 @@ func testAccCheckIBMIAMAccessGroupPolicyResourceGroup(name string) string {
 	  	}
 	  
 	  	data "ibm_resource_group" "group" {
-			name = "default"
+			is_default=true
 	  	}
 	  
 	  	resource "ibm_iam_access_group_policy" "policy" {
@@ -420,7 +419,7 @@ func testAccCheckIBMIAMAccessGroupPolicyResourceType(name string) string {
 	  	}
 	  
 	  	data "ibm_resource_group" "group" {
-			name = "default"
+			is_default=true
 	  	}
 	  
 	  	resource "ibm_iam_access_group_policy" "policy" {

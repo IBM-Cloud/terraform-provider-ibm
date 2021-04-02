@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : region"
-sidebar_current: "docs-ibm-datasources-is-region"
 description: |-
   Manages IBM Cloud Region.
 ---

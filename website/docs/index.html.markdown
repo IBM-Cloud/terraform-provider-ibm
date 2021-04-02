@@ -51,6 +51,19 @@ resource "ibm_is_vpc" "testacc_vpc" {
   name = "test-vpc"
 }
 ```
+Visiblity support:
+```hcl
+# Configure the IBM Provider
+
+provider "ibm" {
+  visibility = "private"
+}
+
+# Create a VPC
+resource "ibm_is_vpc" "testacc_vpc" {
+  name = "test-vpc"
+}
+```
 ## Example Usage of Resources:
 
 ```hcl
@@ -93,7 +106,7 @@ resource "ibm_function_action" "nodehello" {
   name      = "action-name"
   namespace = "function-namespace-name"
   exec {
-    kind = "nodejs:6"
+    kind = "nodejs:10"
     code = file("hellonode.js")
   }
 }
@@ -222,9 +235,16 @@ The following arguments are supported in the `provider` block:
 
 * `riaas_endpoint` - (deprected, Optional) The next generation infrastructure service API endpoint . It can also be sourced from the `RIAAS_ENDPOINT`. Default value: `us-south.iaas.cloud.ibm.com`. 
 
-* `generation` - (Optional) The generation of Virtual Private Cloud. It can also be sourced from the `IC_GENERATION` (higher precedence) or `IBMCLOUD_GENERATION` environment variable. Default value: `2`. `1` for VPC Classic and `2` for VPC NextGen.
+* `generation` - (deprected, Optional) The generation is deprecated by default the provider targets to the IBM Cloud VPC infrastructure.
 
 * `zone` - (optional) The IBM Cloud zone for a region. You can also source it from the `IC_ZONE` (higher precedence) or `IBMCLOUD_ZONE` environment variable. This value is required for power resources if the region supports multi-zone. For region `eu-de` it supports two zones `eu-de-1` and `eu-de-2`. Set the region and zone for the Power Virtual Server.
+
+* `visibility` - (Optional) The visibility to IBM Cloud endpoint - `public`, `private`, `public-and-private`. Default value: `public`. Allowable values are `public`, `private`, `public-and-private`.
+    * If visibility is set to `public`, use the regional public endpoint or global public endpoint. The regional public endpoints has higher precedence.
+    * If visibility is set to `private`, use the regional private endpoint or global private endpoint. The regional private endpoint is given higher precedence.  In order to use the private endpoint from an IBM Cloud resource (such as, a classic VM instance), one must have VRF-enabled account.  If the Cloud service does not support private endpoint, the terraform resource or datasource will log an error.
+    * If visibility is set to `public-and-private`, use regional private endpoints or global private endpoint. If service doesn't support regional or global private endpoints it will use the regional or global public endpoint.
+    * This can also be sourced from the `IC_VISIBILITY` (higher precedence) or `IBMCLOUD_VISIBILITY` environment variable.
+
 
 ***Note***
 The CloudFoundry endpoint has been updated in this release of IBM Cloud Terraform provider v0.17.4.  If you are using an earlier version of IBM Cloud Terraform provider, export the `IBMCLOUD_UAA_ENDPOINT` to the new authentication endpoint, as illustrated below

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : volume"
-sidebar_current: "docs-ibm-resource-is-volume"
 description: |-
   Manages IBM Volume.
 ---
@@ -64,7 +65,10 @@ The following attributes are exported:
 * `id` - The unique identifier of the volume.
 * `status` - The status of volume.
 * `crn` - The CRN for the volume.
-
+* `status` - The status of the volume. One of [ available, failed, pending, unusable, pending_deletion ].
+* `status_reasons` - Array of reasons for the current status
+  * `code` - A snake case string succinctly identifying the status reason
+  * `message` - An explanation of the status reason
 
 ## Import
 

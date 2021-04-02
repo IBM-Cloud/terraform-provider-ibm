@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -11,26 +12,29 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
-	isVolumeName             = "name"
-	isVolumeProfileName      = "profile"
-	isVolumeZone             = "zone"
-	isVolumeEncryptionKey    = "encryption_key"
-	isVolumeCapacity         = "capacity"
-	isVolumeIops             = "iops"
-	isVolumeCrn              = "crn"
-	isVolumeTags             = "tags"
-	isVolumeStatus           = "status"
-	isVolumeDeleting         = "deleting"
-	isVolumeDeleted          = "done"
-	isVolumeProvisioning     = "provisioning"
-	isVolumeProvisioningDone = "done"
-	isVolumeResourceGroup    = "resource_group"
+	isVolumeName                 = "name"
+	isVolumeProfileName          = "profile"
+	isVolumeZone                 = "zone"
+	isVolumeEncryptionKey        = "encryption_key"
+	isVolumeCapacity             = "capacity"
+	isVolumeIops                 = "iops"
+	isVolumeCrn                  = "crn"
+	isVolumeTags                 = "tags"
+	isVolumeStatus               = "status"
+	isVolumeStatusReasons        = "status_reasons"
+	isVolumeStatusReasonsCode    = "code"
+	isVolumeStatusReasonsMessage = "message"
+	isVolumeDeleting             = "deleting"
+	isVolumeDeleted              = "done"
+	isVolumeProvisioning         = "provisioning"
+	isVolumeProvisioningDone     = "done"
+	isVolumeResourceGroup        = "resource_group"
 )
 
 func resourceIBMISVolume() *schema.Resource {
@@ -48,7 +52,7 @@ func resourceIBMISVolume() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -66,7 +70,7 @@ func resourceIBMISVolume() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "Vloume profile name",
+				Description: "Volume profile name",
 			},
 
 			isVolumeZone: {
@@ -114,6 +118,26 @@ func resourceIBMISVolume() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Volume status",
+			},
+
+			isVolumeStatusReasons: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isVolumeStatusReasonsCode: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the status reason",
+						},
+
+						isVolumeStatusReasonsMessage: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the status reason",
+						},
+					},
+				},
 			},
 
 			isVolumeTags: {
@@ -420,6 +444,19 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isVolumeCapacity, *vol.Capacity)
 	d.Set(isVolumeCrn, *vol.CRN)
 	d.Set(isVolumeStatus, *vol.Status)
+	//set the status reasons
+	if vol.StatusReasons != nil {
+		statusReasonsList := make([]map[string]interface{}, 0)
+		for _, sr := range vol.StatusReasons {
+			currentSR := map[string]interface{}{}
+			if sr.Code != nil && sr.Message != nil {
+				currentSR[isVolumeStatusReasonsCode] = *sr.Code
+				currentSR[isVolumeStatusReasonsMessage] = *sr.Message
+				statusReasonsList = append(statusReasonsList, currentSR)
+			}
+		}
+		d.Set(isVolumeStatusReasons, statusReasonsList)
+	}
 	tags, err := GetTagsUsingCRN(meta, *vol.CRN)
 	if err != nil {
 		log.Printf(

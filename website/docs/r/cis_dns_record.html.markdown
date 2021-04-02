@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_dns_record"
-sidebar_current: "docs-ibm-cis-dns-record"
 description: |-
   Provides a IBM CIS DNS Record resource.
 ---

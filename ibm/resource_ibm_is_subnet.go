@@ -4,15 +4,19 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -21,6 +25,8 @@ const (
 	isSubnetTotalIpv4AddressCount     = "total_ipv4_address_count"
 	isSubnetIPVersion                 = "ip_version"
 	isSubnetName                      = "name"
+	isSubnetTags                      = "tags"
+	isSubnetCRN                       = "crn"
 	isSubnetNetworkACL                = "network_acl"
 	isSubnetPublicGateway             = "public_gateway"
 	isSubnetStatus                    = "status"
@@ -49,6 +55,12 @@ func resourceIBMISSubnet() *schema.Resource {
 			Update: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return resourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 			isSubnetIpv4CidrBlock: {
@@ -96,6 +108,21 @@ func resourceIBMISSubnet() *schema.Resource {
 				ForceNew:     false,
 				ValidateFunc: InvokeValidator("ibm_is_subnet", isSubnetName),
 				Description:  "Subnet name",
+			},
+
+			isSubnetTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of tags",
+			},
+
+			isSubnetCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
 			},
 
 			isSubnetNetworkACL: {
@@ -311,6 +338,16 @@ func classicSubnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zo
 	if err != nil {
 		return err
 	}
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isSubnetTags); ok || v != "" {
+		oldList, newList := d.GetChange(isSubnetTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *subnet.CRN)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource subnet (%s) tags: %s", d.Id(), err)
+		}
+	}
+
 	return nil
 }
 
@@ -372,6 +409,15 @@ func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv
 	_, err = isWaitForSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
+	}
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isSubnetTags); ok || v != "" {
+		oldList, newList := d.GetChange(isSubnetTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *subnet.CRN)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource subnet (%s) tags: %s", d.Id(), err)
+		}
 	}
 	return nil
 }
@@ -498,6 +544,13 @@ func classicSubnetGet(d *schema.ResourceData, meta interface{}, id string) error
 	if err != nil {
 		return err
 	}
+	tags, err := GetTagsUsingCRN(meta, *subnet.CRN)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource subnet (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isSubnetTags, tags)
+	d.Set(isSubnetCRN, *subnet.CRN)
 	d.Set(ResourceControllerURL, controller+"/vpc/network/subnets")
 	d.Set(ResourceName, *subnet.Name)
 	d.Set(ResourceCRN, *subnet.CRN)
@@ -548,6 +601,13 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
+	tags, err := GetTagsUsingCRN(meta, *subnet.CRN)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource subnet (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isSubnetTags, tags)
+	d.Set(isSubnetCRN, *subnet.CRN)
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/subnets")
 	d.Set(ResourceName, *subnet.Name)
 	d.Set(ResourceCRN, *subnet.CRN)
@@ -566,7 +626,14 @@ func resourceIBMISSubnetUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	id := d.Id()
-
+	if d.HasChange(isSubnetTags) {
+		oldList, newList := d.GetChange(isSubnetTags)
+		err = UpdateTagsUsingCRN(oldList, newList, meta, d.Get(isSubnetCRN).(string))
+		if err != nil {
+			log.Printf(
+				"Error on update of resource subnet (%s) tags: %s", d.Id(), err)
+		}
+	}
 	if userDetails.generation == 1 {
 		err := classicSubnetUpdate(d, meta, id)
 		if err != nil {

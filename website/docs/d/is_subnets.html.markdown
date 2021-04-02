@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : Subnets"
-sidebar_current: "docs-ibm-datasources-is-subnets"
 description: |-
   Manages IBM Cloud Infrastructure Subnets.
 ---

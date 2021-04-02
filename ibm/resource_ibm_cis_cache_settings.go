@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/IBM/go-sdk-core/v4/core"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -21,6 +21,7 @@ const (
 	cisCachePurgeByCacheTags          = "purge_by_tags"
 	cisCachePurgeByHosts              = "purge_by_hosts"
 	cisCacheSettingsOnOffValidatorID  = "on_off_validator_id"
+	cisCacheServeStaleContent         = "serve_stale_content"
 )
 
 func resourceIBMCISCacheSettings() *schema.Resource {
@@ -44,6 +45,14 @@ func resourceIBMCISCacheSettings() *schema.Resource {
 				Computed:    true,
 				ValidateFunc: InvokeValidator(ibmCISCacheSettings,
 					cisCacheSettingsCachingLevel),
+			},
+			cisCacheServeStaleContent: {
+				Type:        schema.TypeString,
+				Description: "Serve Stale Content ",
+				Default:     "on",
+				Optional:    true,
+				ValidateFunc: InvokeValidator(ibmCISCacheSettings,
+					cisCacheServeStaleContent),
 			},
 			cisCacheSettingsBrowserExpiration: {
 				Type:        schema.TypeInt,
@@ -145,6 +154,13 @@ func resourceIBMCISCacheSettingsValidator() *ResourceValidator {
 			AllowedValues:              browserCacheTTL})
 	validateSchema = append(validateSchema,
 		ValidateSchema{
+			Identifier:                 cisCacheServeStaleContent,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Optional:                   true,
+			AllowedValues:              "on, off"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
 			Identifier:                 cisCacheSettingsCachingLevel,
 			ValidateFunctionIdentifier: ValidateAllowedStringValue,
 			Type:                       TypeString,
@@ -173,7 +189,8 @@ func resourceCISCacheSettingsUpdate(d *schema.ResourceData, meta interface{}) er
 		d.HasChange(cisCachePurgeAll) ||
 		d.HasChange(cisCachePurgeByURLs) ||
 		d.HasChange(cisCachePurgeByCacheTags) ||
-		d.HasChange(cisCachePurgeByHosts) {
+		d.HasChange(cisCachePurgeByHosts) ||
+		d.HasChange(cisCacheServeStaleContent) {
 
 		// Caching Level Setting
 		if value, ok := d.GetOk(cisCacheSettingsCachingLevel); ok {
@@ -182,6 +199,16 @@ func resourceCISCacheSettingsUpdate(d *schema.ResourceData, meta interface{}) er
 			_, resp, err := cisClient.UpdateCacheLevel(opt)
 			if err != nil {
 				log.Printf("Update caching level failed : %v\n", resp)
+				return err
+			}
+		}
+		// Serve Stale Content Setting
+		if value, ok := d.GetOk(cisCacheServeStaleContent); ok {
+			opt := cisClient.NewUpdateServeStaleContentOptions()
+			opt.SetValue(value.(string))
+			_, resp, err := cisClient.UpdateServeStaleContent(opt)
+			if err != nil {
+				log.Printf("Update Serve Stale Content Setting failed : %v\n", resp)
 				return err
 			}
 		}
@@ -283,6 +310,13 @@ func resourceCISCacheSettingsRead(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
+	// Serve Stale Content setting
+	servestaleContent, resp, err := cisClient.GetServeStaleContent(cisClient.NewGetServeStaleContentOptions())
+	if err != nil {
+		log.Printf("Get Serve Stale Content setting failed : %v\n", resp)
+		return err
+	}
+
 	// Browser Expiration setting
 	browserCacheTTL, resp, err := cisClient.GetBrowserCacheTTL(
 		cisClient.NewGetBrowserCacheTtlOptions())
@@ -312,6 +346,7 @@ func resourceCISCacheSettingsRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set(cisCacheSettingsCachingLevel, *cacheLevel.Result.Value)
 	d.Set(cisCacheSettingsDevelopmentMode, *devMode.Result.Value)
 	d.Set(cisCacheSettingsQueryStringSort, *queryStringSort.Result.Value)
+	d.Set(cisCacheServeStaleContent, *servestaleContent.Result.Value)
 	return nil
 }
 

@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_image_template"
-sidebar_current: "docs-ibm-datasource-compute-image-template"
 description: |-
   Get information on a IBM Compute Image Template resource
 ---

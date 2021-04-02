@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM: istance_templates"
-sidebar_current: "docs-ibm-resource-is-instance-templates"
 description: |-
   Retrives all the IBM VPC instance templates.
 ---

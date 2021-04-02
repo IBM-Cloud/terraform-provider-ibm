@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_custom_pages"
-sidebar_current: "docs-ibm-datasource-cis-custom-pages"
 description: |-
   Get information on an IBM Cloud Internet Services Custom Pages resource.
 ---

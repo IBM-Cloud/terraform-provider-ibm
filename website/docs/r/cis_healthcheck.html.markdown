@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_healthcheck"
-sidebar_current: "docs-ibm-resource-cis-healthcheck"
 description: |-
   Provides a IBM Cloud Internet Services Health Check resource.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: compute_bare_metal"
-sidebar_current: "docs-ibm-resource-compute-bare-metal"
 description: |-
   Manages IBM Compute bare metal servers.
 ---
@@ -180,7 +181,7 @@ Locate your package ID. See `package_key_name` attribute. Once you have the ID f
 * `private_vlan_id` - (Optional, Forces new resource, integer) The private VLAN to be used for the private network interface of the instance. You can find accepted values in the [VLAN docs](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID in the resulting URL.
 * `public_subnet` - (Optional, Forces new resource, string) The public subnet to be used for the public network interface of the instance. Accepted values are primary public networks. You can find accepted values in the [subnets docs](https://cloud.ibm.com/classic/network/subnets).
 * `private_subnet` - (Optional, Forces new resource, string) The private subnet to be used for the private network interface of the instance. Accepted values are primary private networks. You can find accepted values in the [subnets docs](https://cloud.ibm.com/classic/network/subnets).
-* `quote_id` - (Optional, Forces new resource, string) When you define `quote_id`, Terraform uses specifications in the quote to create a bare metal server. You can find the quote ID in the [IBM Cloud infrastructure customer portal](https://cloud.ibm.com/classic) by navigating to **Account > Sales > Quotes**.
+* `quote_id` - (Optional, Forces new resource, string) When you define `quote_id`, Terraform uses specifications in the quote to create a bare metal server. You can find the quote ID in the [IBM Cloud portal](https://cloud.ibm.com/billing/quotes).
 
 ## Attribute Reference
 

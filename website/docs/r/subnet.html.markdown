@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: subnet"
-sidebar_current: "docs-ibm-resource-subnet"
 description: |-
   Manages IBM Subnet.
 ---

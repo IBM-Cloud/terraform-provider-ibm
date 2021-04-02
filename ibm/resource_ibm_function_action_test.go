@@ -10,16 +10,16 @@ import (
 	"testing"
 
 	"github.com/apache/openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
 func TestAccIAMFunctionAction_NodeJS(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -33,7 +33,7 @@ func TestAccIAMFunctionAction_NodeJS(t *testing.T) {
 					testAccCheckFunctionActionExists("ibm_function_action.nodehello", &conf),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehello", "name", name),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehello", "namespace", namespace),
-					resource.TestCheckResourceAttr("ibm_function_action.nodehello", "exec.0.kind", "nodejs:6"),
+					resource.TestCheckResourceAttr("ibm_function_action.nodehello", "exec.0.kind", "nodejs:10"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehello", "limits.0.log_size", "10"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehello", "limits.0.timeout", "60000"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehello", "limits.0.memory", "256"),
@@ -45,7 +45,7 @@ func TestAccIAMFunctionAction_NodeJS(t *testing.T) {
 
 func TestAccIAMFunctionAction_NodeJSWithParams(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -59,7 +59,7 @@ func TestAccIAMFunctionAction_NodeJSWithParams(t *testing.T) {
 					testAccCheckFunctionActionExists("ibm_function_action.nodehellowithparameter", &conf),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehellowithparameter", "name", name),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehellowithparameter", "namespace", namespace),
-					resource.TestCheckResourceAttr("ibm_function_action.nodehellowithparameter", "exec.0.kind", "nodejs:6"),
+					resource.TestCheckResourceAttr("ibm_function_action.nodehellowithparameter", "exec.0.kind", "nodejs:10"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehellowithparameter", "limits.0.log_size", "10"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehellowithparameter", "limits.0.timeout", "60000"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehellowithparameter", "limits.0.memory", "256"),
@@ -71,7 +71,7 @@ func TestAccIAMFunctionAction_NodeJSWithParams(t *testing.T) {
 
 func TestAccIAMFunctionAction_NodeJSZip(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -85,7 +85,7 @@ func TestAccIAMFunctionAction_NodeJSZip(t *testing.T) {
 					testAccCheckFunctionActionExists("ibm_function_action.nodezip", &conf),
 					resource.TestCheckResourceAttr("ibm_function_action.nodezip", "name", name),
 					resource.TestCheckResourceAttr("ibm_function_action.nodezip", "namespace", namespace),
-					resource.TestCheckResourceAttr("ibm_function_action.nodezip", "exec.0.kind", "nodejs:6"),
+					resource.TestCheckResourceAttr("ibm_function_action.nodezip", "exec.0.kind", "nodejs:10"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodezip", "limits.0.log_size", "10"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodezip", "limits.0.timeout", "60000"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodezip", "limits.0.memory", "256"),
@@ -97,7 +97,7 @@ func TestAccIAMFunctionAction_NodeJSZip(t *testing.T) {
 
 func TestAccIAMFunctionAction_Python(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -123,7 +123,7 @@ func TestAccIAMFunctionAction_Python(t *testing.T) {
 
 func TestAccIAMFunctionAction_PythonZip(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -149,7 +149,7 @@ func TestAccIAMFunctionAction_PythonZip(t *testing.T) {
 
 func TestAccIAMFunctionAction_PHP(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -163,7 +163,7 @@ func TestAccIAMFunctionAction_PHP(t *testing.T) {
 					testAccCheckFunctionActionExists("ibm_function_action.phphello", &conf),
 					resource.TestCheckResourceAttr("ibm_function_action.phphello", "name", name),
 					resource.TestCheckResourceAttr("ibm_function_action.phphello", "namespace", namespace),
-					resource.TestCheckResourceAttr("ibm_function_action.phphello", "exec.0.kind", "php:7.1"),
+					resource.TestCheckResourceAttr("ibm_function_action.phphello", "exec.0.kind", "php:7.3"),
 					resource.TestCheckResourceAttr("ibm_function_action.phphello", "limits.0.log_size", "10"),
 					resource.TestCheckResourceAttr("ibm_function_action.phphello", "limits.0.timeout", "60000"),
 					resource.TestCheckResourceAttr("ibm_function_action.phphello", "limits.0.memory", "256"),
@@ -175,7 +175,7 @@ func TestAccIAMFunctionAction_PHP(t *testing.T) {
 
 func TestAccIAMFunctionAction_PHPZip(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -189,7 +189,7 @@ func TestAccIAMFunctionAction_PHPZip(t *testing.T) {
 					testAccCheckFunctionActionExists("ibm_function_action.phpzip", &conf),
 					resource.TestCheckResourceAttr("ibm_function_action.phpzip", "name", name),
 					resource.TestCheckResourceAttr("ibm_function_action.phpzip", "namespace", namespace),
-					resource.TestCheckResourceAttr("ibm_function_action.phpzip", "exec.0.kind", "php:7.1"),
+					resource.TestCheckResourceAttr("ibm_function_action.phpzip", "exec.0.kind", "php:7.3"),
 					resource.TestCheckResourceAttr("ibm_function_action.phpzip", "limits.0.log_size", "10"),
 					resource.TestCheckResourceAttr("ibm_function_action.phpzip", "limits.0.timeout", "60000"),
 					resource.TestCheckResourceAttr("ibm_function_action.phpzip", "limits.0.memory", "256"),
@@ -201,7 +201,7 @@ func TestAccIAMFunctionAction_PHPZip(t *testing.T) {
 
 func TestAccIAMFunctionAction_Swift(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -215,7 +215,7 @@ func TestAccIAMFunctionAction_Swift(t *testing.T) {
 					testAccCheckFunctionActionExists("ibm_function_action.swifthello", &conf),
 					resource.TestCheckResourceAttr("ibm_function_action.swifthello", "name", name),
 					resource.TestCheckResourceAttr("ibm_function_action.swifthello", "namespace", namespace),
-					resource.TestCheckResourceAttr("ibm_function_action.swifthello", "exec.0.kind", "swift:3.1.1"),
+					resource.TestCheckResourceAttr("ibm_function_action.swifthello", "exec.0.kind", "swift:4.2"),
 					resource.TestCheckResourceAttr("ibm_function_action.swifthello", "limits.0.log_size", "10"),
 					resource.TestCheckResourceAttr("ibm_function_action.swifthello", "limits.0.timeout", "60000"),
 					resource.TestCheckResourceAttr("ibm_function_action.swifthello", "limits.0.memory", "256"),
@@ -227,7 +227,7 @@ func TestAccIAMFunctionAction_Swift(t *testing.T) {
 
 func TestAccIAMFunctionAction_Sequence(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -253,7 +253,7 @@ func TestAccIAMFunctionAction_Sequence(t *testing.T) {
 
 func TestAccIAMFunctionAction_Basic(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -294,7 +294,7 @@ func TestAccIAMFunctionAction_Basic(t *testing.T) {
 
 func TestAccIAMFunctionAction_Import(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -324,7 +324,7 @@ func TestAccIAMFunctionAction_Import(t *testing.T) {
 
 func TestAccCFFunctionAction_NodeJS(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -338,7 +338,7 @@ func TestAccCFFunctionAction_NodeJS(t *testing.T) {
 					testAccCheckFunctionActionExists("ibm_function_action.nodehello", &conf),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehello", "name", name),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehello", "namespace", namespace),
-					resource.TestCheckResourceAttr("ibm_function_action.nodehello", "exec.0.kind", "nodejs:6"),
+					resource.TestCheckResourceAttr("ibm_function_action.nodehello", "exec.0.kind", "nodejs:10"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehello", "limits.0.log_size", "10"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehello", "limits.0.timeout", "60000"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehello", "limits.0.memory", "256"),
@@ -350,7 +350,7 @@ func TestAccCFFunctionAction_NodeJS(t *testing.T) {
 
 func TestAccCFFunctionAction_NodeJSWithParams(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -363,7 +363,7 @@ func TestAccCFFunctionAction_NodeJSWithParams(t *testing.T) {
 					testAccCheckFunctionActionExists("ibm_function_action.nodehellowithparameter", &conf),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehellowithparameter", "name", name),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehellowithparameter", "namespace", namespace),
-					resource.TestCheckResourceAttr("ibm_function_action.nodehellowithparameter", "exec.0.kind", "nodejs:6"),
+					resource.TestCheckResourceAttr("ibm_function_action.nodehellowithparameter", "exec.0.kind", "nodejs:10"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehellowithparameter", "limits.0.log_size", "10"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehellowithparameter", "limits.0.timeout", "60000"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodehellowithparameter", "limits.0.memory", "256"),
@@ -375,7 +375,7 @@ func TestAccCFFunctionAction_NodeJSWithParams(t *testing.T) {
 
 func TestAccCFFunctionAction_NodeJSZip(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -389,7 +389,7 @@ func TestAccCFFunctionAction_NodeJSZip(t *testing.T) {
 					testAccCheckFunctionActionExists("ibm_function_action.nodezip", &conf),
 					resource.TestCheckResourceAttr("ibm_function_action.nodezip", "name", name),
 					resource.TestCheckResourceAttr("ibm_function_action.nodezip", "namespace", namespace),
-					resource.TestCheckResourceAttr("ibm_function_action.nodezip", "exec.0.kind", "nodejs:6"),
+					resource.TestCheckResourceAttr("ibm_function_action.nodezip", "exec.0.kind", "nodejs:10"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodezip", "limits.0.log_size", "10"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodezip", "limits.0.timeout", "60000"),
 					resource.TestCheckResourceAttr("ibm_function_action.nodezip", "limits.0.memory", "256"),
@@ -401,7 +401,7 @@ func TestAccCFFunctionAction_NodeJSZip(t *testing.T) {
 
 func TestAccCFFunctionAction_Python(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -427,7 +427,7 @@ func TestAccCFFunctionAction_Python(t *testing.T) {
 
 func TestAccCFFunctionAction_PythonZip(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -453,7 +453,7 @@ func TestAccCFFunctionAction_PythonZip(t *testing.T) {
 
 func TestAccCFFunctionAction_PHP(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -467,7 +467,7 @@ func TestAccCFFunctionAction_PHP(t *testing.T) {
 					testAccCheckFunctionActionExists("ibm_function_action.phphello", &conf),
 					resource.TestCheckResourceAttr("ibm_function_action.phphello", "name", name),
 					resource.TestCheckResourceAttr("ibm_function_action.phphello", "namespace", namespace),
-					resource.TestCheckResourceAttr("ibm_function_action.phphello", "exec.0.kind", "php:7.1"),
+					resource.TestCheckResourceAttr("ibm_function_action.phphello", "exec.0.kind", "php:7.3"),
 					resource.TestCheckResourceAttr("ibm_function_action.phphello", "limits.0.log_size", "10"),
 					resource.TestCheckResourceAttr("ibm_function_action.phphello", "limits.0.timeout", "60000"),
 					resource.TestCheckResourceAttr("ibm_function_action.phphello", "limits.0.memory", "256"),
@@ -479,7 +479,7 @@ func TestAccCFFunctionAction_PHP(t *testing.T) {
 
 func TestAccCFFunctionAction_PHPZip(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -493,7 +493,7 @@ func TestAccCFFunctionAction_PHPZip(t *testing.T) {
 					testAccCheckFunctionActionExists("ibm_function_action.phpzip", &conf),
 					resource.TestCheckResourceAttr("ibm_function_action.phpzip", "name", name),
 					resource.TestCheckResourceAttr("ibm_function_action.phpzip", "namespace", namespace),
-					resource.TestCheckResourceAttr("ibm_function_action.phpzip", "exec.0.kind", "php:7.1"),
+					resource.TestCheckResourceAttr("ibm_function_action.phpzip", "exec.0.kind", "php:7.3"),
 					resource.TestCheckResourceAttr("ibm_function_action.phpzip", "limits.0.log_size", "10"),
 					resource.TestCheckResourceAttr("ibm_function_action.phpzip", "limits.0.timeout", "60000"),
 					resource.TestCheckResourceAttr("ibm_function_action.phpzip", "limits.0.memory", "256"),
@@ -505,7 +505,7 @@ func TestAccCFFunctionAction_PHPZip(t *testing.T) {
 
 func TestAccCFFunctionAction_Swift(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -519,7 +519,7 @@ func TestAccCFFunctionAction_Swift(t *testing.T) {
 					testAccCheckFunctionActionExists("ibm_function_action.swifthello", &conf),
 					resource.TestCheckResourceAttr("ibm_function_action.swifthello", "name", name),
 					resource.TestCheckResourceAttr("ibm_function_action.swifthello", "namespace", namespace),
-					resource.TestCheckResourceAttr("ibm_function_action.swifthello", "exec.0.kind", "swift:3.1.1"),
+					resource.TestCheckResourceAttr("ibm_function_action.swifthello", "exec.0.kind", "swift:4.2"),
 					resource.TestCheckResourceAttr("ibm_function_action.swifthello", "limits.0.log_size", "10"),
 					resource.TestCheckResourceAttr("ibm_function_action.swifthello", "limits.0.timeout", "60000"),
 					resource.TestCheckResourceAttr("ibm_function_action.swifthello", "limits.0.memory", "256"),
@@ -531,7 +531,7 @@ func TestAccCFFunctionAction_Swift(t *testing.T) {
 
 func TestAccCFFunctionAction_Sequence(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -557,7 +557,7 @@ func TestAccCFFunctionAction_Sequence(t *testing.T) {
 
 func TestAccCFFunctionAction_Basic(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -598,7 +598,7 @@ func TestAccCFFunctionAction_Basic(t *testing.T) {
 
 func TestAccCFFunctionAction_Import(t *testing.T) {
 	var conf whisk.Action
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_action_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -651,7 +651,7 @@ func testAccCheckFunctionActionExists(n string, obj *whisk.Action) resource.Test
 			return err
 		}
 
-		client, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+		client, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 		if err != nil {
 			return err
 
@@ -690,7 +690,7 @@ func testAccCheckFunctionActionDestroy(s *terraform.State) error {
 		namespace := parts[0]
 		name := parts[1]
 
-		client, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+		client, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 		if err != nil && strings.Contains(err.Error(), "is not in the list of entitled namespaces") {
 			return nil
 		}
@@ -712,7 +712,7 @@ func testAccCheckFunctionActionDestroy(s *terraform.State) error {
 func testAccCheckIAMFunctionActionNodeJS(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -725,7 +725,7 @@ func testAccCheckIAMFunctionActionNodeJS(name, namespace string) string {
 		name = "%s"
 		namespace = ibm_function_namespace.namespace.name
 		exec {
-		  kind = "nodejs:6"
+		  kind = "nodejs:10"
 		  code = file("test-fixtures/hellonode.js")
 		}
 	  }
@@ -738,7 +738,7 @@ func testAccCheckIAMFunctionActionNodeJSWithParams(name, namespace string) strin
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -751,7 +751,7 @@ func testAccCheckIAMFunctionActionNodeJSWithParams(name, namespace string) strin
 		name = "%s"
 		namespace = ibm_function_namespace.namespace.name
 		exec {
-		  kind = "nodejs:6"
+		  kind = "nodejs:10"
 		  code = file("test-fixtures/hellonodewithparameter.js")
 		}
 		user_defined_parameters = <<EOF
@@ -773,7 +773,7 @@ func testAccCheckIAMFunctionActionNodeJSWithParams(name, namespace string) strin
 func testAccCheckIAMFunctionActionNodeJSZip(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -786,7 +786,7 @@ func testAccCheckIAMFunctionActionNodeJSZip(name, namespace string) string {
 		name = "%s"
 		namespace = ibm_function_namespace.namespace.name
 		exec {
-		  kind = "nodejs:6"
+		  kind = "nodejs:10"
 		  code = base64encode("test-fixtures/nodeaction.zip")
 		}
 	  }
@@ -797,7 +797,7 @@ func testAccCheckIAMFunctionActionNodeJSZip(name, namespace string) string {
 func testAccCheckIAMFunctionActionPython(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -821,7 +821,7 @@ func testAccCheckIAMFunctionActionPython(name, namespace string) string {
 func testAccCheckIAMFunctionActionPythonZip(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -845,7 +845,7 @@ func testAccCheckIAMFunctionActionPythonZip(name, namespace string) string {
 func testAccCheckIAMFunctionActionPHP(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -858,7 +858,7 @@ func testAccCheckIAMFunctionActionPHP(name, namespace string) string {
 		name = "%s"
 		namespace = ibm_function_namespace.namespace.name
 		exec {
-		  kind = "php:7.1"
+		  kind = "php:7.3"
 		  code = file("test-fixtures/hellophp.php")
 		}
 	  }
@@ -869,7 +869,7 @@ func testAccCheckIAMFunctionActionPHP(name, namespace string) string {
 func testAccCheckIAMFunctionActionPHPZip(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -882,7 +882,7 @@ func testAccCheckIAMFunctionActionPHPZip(name, namespace string) string {
 		name = "%s"
 		namespace = ibm_function_namespace.namespace.name
 		exec {
-		  kind 		= "php:7.1"
+		  kind 		= "php:7.3"
 		  code_path = "test-fixtures/phpaction.zip"
 		}
 	  }
@@ -893,7 +893,7 @@ func testAccCheckIAMFunctionActionPHPZip(name, namespace string) string {
 func testAccCheckIAMFunctionActionSwift(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -906,7 +906,7 @@ func testAccCheckIAMFunctionActionSwift(name, namespace string) string {
 		name = "%s"
 		namespace = ibm_function_namespace.namespace.name
 		exec {
-		  kind = "swift:3.1.1"
+		  kind = "swift:4.2"
 		  code = file("test-fixtures/helloSwift.swift")
 		}
 	  }
@@ -918,7 +918,7 @@ func testAccCheckIAMFunctionActionSwift(name, namespace string) string {
 func testAccCheckIAMFunctionActionSequence(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -942,7 +942,7 @@ func testAccCheckIAMFunctionActionSequence(name, namespace string) string {
 func testAccCheckIAMFunctionActionCreate(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -955,7 +955,7 @@ func testAccCheckIAMFunctionActionCreate(name, namespace string) string {
 		name = "%s"
 		namespace = ibm_function_namespace.namespace.name
 		exec {
-		  kind = "nodejs:6"
+		  kind = "nodejs:10"
 		  code = file("test-fixtures/hellonode.js")
 		}
 		limits {
@@ -968,7 +968,7 @@ func testAccCheckIAMFunctionActionCreate(name, namespace string) string {
 func testAccCheckIAMFunctionActionUpdate(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -986,7 +986,7 @@ func testAccCheckIAMFunctionActionUpdate(name, namespace string) string {
 		  timeout  = 50000
 		}
 		exec {
-		  kind = "nodejs:6"
+		  kind = "nodejs:10"
 		  code = file("test-fixtures/hellonodewithparameter.js")
 		}
 		
@@ -1009,7 +1009,7 @@ func testAccCheckIAMFunctionActionUpdate(name, namespace string) string {
 func testAccCheckIAMFunctionActionImport(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -1022,7 +1022,7 @@ func testAccCheckIAMFunctionActionImport(name, namespace string) string {
 		name = "%s"
 		namespace = ibm_function_namespace.namespace.name
 		exec {
-		  kind = "nodejs:6"
+		  kind = "nodejs:10"
 		  code = file("test-fixtures/hellonodewithparameter.js")
 		}
 		user_defined_parameters = <<EOF
@@ -1057,7 +1057,7 @@ func testAccCheckCFFunctionAction(name, namespace string) string {
 		name = "%s"
 		namespace = "%s"
 		exec {
-		  kind = "nodejs:6"
+		  kind = "nodejs:10"
 		  code = file("test-fixtures/hellonode.js")
 		}
 	  }
@@ -1072,7 +1072,7 @@ func testAccCheckCFFunctionActionNodeJSWithParams(name, namespace string) string
 		name = "%s"
 		namespace = "%s"
 		exec {
-		  kind = "nodejs:6"
+		  kind = "nodejs:10"
 		  code = file("test-fixtures/hellonodewithparameter.js")
 		}
 		user_defined_parameters = <<EOF
@@ -1097,7 +1097,7 @@ func testAccCheckCFFunctionActionNodeJSZip(name, namespace string) string {
 		name = "%s"
 		namespace = "%s"
 		exec {
-		  kind = "nodejs:6"
+		  kind = "nodejs:10"
 		  code = base64encode("test-fixtures/nodeaction.zip")
 		}
 	  }
@@ -1139,7 +1139,7 @@ func testAccCheckCFFunctionActionPHP(name, namespace string) string {
 		name = "%s"
 		namespace = "%s"	
 		exec {
-		  kind = "php:7.1"
+		  kind = "php:7.3"
 		  code = file("test-fixtures/hellophp.php")
 		}
 	  }
@@ -1153,7 +1153,7 @@ func testAccCheckCFFunctionActionPHPZip(name, namespace string) string {
 		name = "%s"
 		namespace = "%s"
 		exec {
-		  kind = "php:7.1"
+		  kind = "php:7.3"
 		  code = base64encode("test-fixtures/phpaction.zip")
 		}
 	  }
@@ -1167,7 +1167,7 @@ func testAccCheckCFFunctionActionSwift(name, namespace string) string {
 		name = "%s"
 		namespace = "%s"
 		exec {
-		  kind = "swift:3.1.1"
+		  kind = "swift:4.2"
 		  code = file("test-fixtures/helloSwift.swift")
 		}
 	  }
@@ -1197,7 +1197,7 @@ func testAccCheckCFFunctionActionCreate(name, namespace string) string {
 		name = "%s"
 		namespace = "%s"
 		exec {
-		  kind = "nodejs:6"
+		  kind = "nodejs:10"
 		  code = file("test-fixtures/hellonode.js")
 		}
 		limits {
@@ -1218,7 +1218,7 @@ func testAccCheckCFFunctionActionUpdate(name, namespace string) string {
 		  timeout  = 50000
 		}
 		exec {
-		  kind = "nodejs:6"
+		  kind = "nodejs:10"
 		  code = file("test-fixtures/hellonodewithparameter.js")
 		}
 		
@@ -1244,7 +1244,7 @@ func testAccCheckCFFunctionActionImport(name, namespace string) string {
 		name = "%s"
 		namespace = "%s"
 		exec {
-		  kind = "nodejs:6"
+		  kind = "nodejs:10"
 		  code = file("test-fixtures/hellonodewithparameter.js")
 		}
 		user_defined_parameters = <<EOF
@@ -1279,7 +1279,7 @@ func testAccCheckCFFunctionActionNodeJS(name, namespace string) string {
 		name = "%s"
 		namespace = "%s"
 		exec {
-		  kind = "nodejs:6"
+		  kind = "nodejs:10"
 		  code = file("test-fixtures/hellonode.js")
 		}
 	  }

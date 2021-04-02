@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: app"
-sidebar_current: "docs-ibm-resource-app"
 description: |-
   Manages IBM Application.
 ---

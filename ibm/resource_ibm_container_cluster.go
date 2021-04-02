@@ -4,16 +4,17 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
@@ -62,7 +63,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -640,10 +641,6 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	if v, ok := d.GetOkExists("public_service_endpoint"); ok {
 		params.PublicEndpointEnabled = v.(bool)
 	}
-	var timeoutStage string
-	if v, ok := d.GetOk("wait_till"); ok {
-		timeoutStage = v.(string)
-	}
 
 	targetEnv, err := getClusterTargetHeader(d, meta)
 	if err != nil {
@@ -655,15 +652,12 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	d.SetId(cls.ID)
-	switch strings.ToLower(timeoutStage) {
 
-	case strings.ToLower(masterNodeReady):
-		_, err = waitForClusterMasterAvailable(d, meta)
-		if err != nil {
-			return err
-		}
-
-	case strings.ToLower(oneWorkerNodeReady):
+	_, err = waitForClusterMasterAvailable(d, meta)
+	if err != nil {
+		return err
+	}
+	if d.Get("wait_till").(string) == oneWorkerNodeReady {
 		_, err = waitForClusterOneWorkerAvailable(d, meta)
 		if err != nil {
 			return err
@@ -1151,8 +1145,10 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		if len(rem) > 0 {
 			return fmt.Errorf("Subnet(s) %v cannot be deleted", rem)
 		}
-
-		subnets, err := subnetAPI.List(targetEnv)
+		metro := d.Get("datacenter").(string)
+		//from datacenter retrive the metro for filtering the subnets
+		metro = metro[0:3]
+		subnets, err := subnetAPI.List(targetEnv, metro)
 		if err != nil {
 			return err
 		}

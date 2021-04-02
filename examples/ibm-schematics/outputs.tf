@@ -1,11 +1,18 @@
-output "WorkSpaceValues" {
-  value = data.ibm_schematics_workspace.test.template_id.0
+// This allows schematics_workspace data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_schematics_workspace" {
+  value       = ibm_schematics_workspace.schematics_workspace_instance
+  description = "schematics_workspace resource instance"
 }
-
-output "StateStoreValues" {
-	value = data.ibm_schematics_state.test.state_store
+// This allows schematics_action data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_schematics_action" {
+  value       = ibm_schematics_action.schematics_action_instance
+  description = "schematics_action resource instance"
 }
-
-output "OutputValues" {
-	value = data.ibm_schematics_output.test.output_values
-} 
+// This allows schematics_job data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_schematics_job" {
+  value       = ibm_schematics_job.schematics_job_instance
+  description = "schematics_job resource instance"
+}
