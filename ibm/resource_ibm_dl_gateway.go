@@ -528,15 +528,13 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 
 		} else {
 			err = fmt.Errorf("Error creating direct link connect gateway, %s is a required field", dlPort)
-			log.Printf("%s is a required field", dlPort)
 			return err
 		}
 	}
 
 	gateway, response, err := directLink.CreateGateway(createGatewayOptionsModel)
 	if err != nil {
-		log.Printf("[DEBUG] Create Direct Link Gateway (%s) err %s\n%s", dtype, err, response)
-		return err
+		return fmt.Errorf("[DEBUG] Create Direct Link Gateway (%s) err %s\n%s", dtype, err, response)
 	}
 	d.SetId(*gateway.ID)
 
@@ -545,11 +543,9 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		getPortOptions := directLink.NewGetPortOptions(*gateway.Port.ID)
 		port, response, err := directLink.GetPort(getPortOptions)
 		if err != nil {
-			log.Println("[WARN] Error getting port", response, err)
-			return err
+			return fmt.Errorf("[ERROR] Error getting port %s %s", response, err)
 		}
-
-		if !strings.Contains(strings.ToLower(*port.ProviderName), "netbond") && !strings.Contains(strings.ToLower(*port.ProviderName), "megaport") {
+		if port != nil && port.ProviderName != nil && !strings.Contains(strings.ToLower(*port.ProviderName), "netbond") && !strings.Contains(strings.ToLower(*port.ProviderName), "megaport") {
 			_, err = isWaitForDirectLinkAvailable(directLink, d.Id(), d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return err
