@@ -202,7 +202,7 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_container_vpc_cluster", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "List of tags for the resources",
 			},
@@ -363,6 +363,22 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 			Delete: schema.DefaultTimeout(45 * time.Minute),
 		},
 	}
+}
+
+func resourceIBMContainerVpcClusterValidator() *ResourceValidator {
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "tag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
+	ibmContainerVpcClusteresourceValidator := ResourceValidator{ResourceName: "ibm_container_vpc_cluster", Schema: validateSchema}
+	return &ibmContainerVpcClusteresourceValidator
 }
 
 func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface{}) error {

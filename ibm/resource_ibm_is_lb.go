@@ -139,7 +139,7 @@ func resourceIBMISLB() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_lb", "tag")},
 				Set:      resourceIBMVPCHash,
 			},
 
@@ -213,6 +213,15 @@ func resourceIBMISLBValidator() *ResourceValidator {
 			Type:                       TypeString,
 			Required:                   false,
 			AllowedValues:              isLBProfileAllowedValues})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "tag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 
 	ibmISLBResourceValidator := ResourceValidator{ResourceName: "ibm_is_lb", Schema: validateSchema}
 	return &ibmISLBResourceValidator
