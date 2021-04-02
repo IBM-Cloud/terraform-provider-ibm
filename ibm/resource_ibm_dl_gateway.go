@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/IBM/networking-go-sdk/directlinkv1"
@@ -541,10 +542,20 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 
 	log.Printf("[INFO] Created Direct Link Gateway (%s Template) : %s", dtype, *gateway.ID)
 	if dtype == "connect" {
-		_, err = isWaitForDirectLinkAvailable(directLink, d.Id(), d.Timeout(schema.TimeoutCreate))
+		getPortOptions := directLink.NewGetPortOptions(*gateway.Port.ID)
+		port, response, err := directLink.GetPort(getPortOptions)
 		if err != nil {
+			log.Println("[WARN] Error getting port", response, err)
 			return err
 		}
+
+		if !strings.Contains(strings.ToLower(*port.ProviderName), "netbond") && !strings.Contains(strings.ToLower(*port.ProviderName), "megaport") {
+			_, err = isWaitForDirectLinkAvailable(directLink, d.Id(), d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return err
+			}
+		}
+
 	}
 
 	v := os.Getenv("IC_ENV_TAGS")
