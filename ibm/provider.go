@@ -655,6 +655,10 @@ func Validator() ValidatorDict {
 				"ibm_schematics_action":                resourceIBMSchematicsActionValidator(),
 				"ibm_schematics_job":                   resourceIBMSchematicsJobValidator(),
 				"ibm_schematics_workspace":             resourceIBMSchematicsWorkspaceValidator(),
+				"ibm_resource_instance":                resourceIBMResourceInstanceValidator(),
+				"ibm_is_virtual_endpoint_gateway":      resourceIBMISEndpointGatewayValidator(),
+				"ibm_container_vpc_cluster":            resourceIBMContainerVpcClusterValidator(),
+				"ibm_container_cluster":                resourceIBMContainerClusterValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),
