@@ -7,15 +7,16 @@ import (
 	"log"
 	"time"
 
-	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	directlinklocal "github.ibm.com/ibmcloud/networking-go-sdk/directlinkv1"
 )
 
 const (
-	dlSpeeds        = "offering_speeds"
-	dlLinkSpeed     = "link_speed"
-	dlOfferingType  = "offering_type"
-	dlMacSecEnabled = "macsec_enabled"
+	dlSpeeds               = "offering_speeds"
+	dlLinkSpeed            = "link_speed"
+	dlOfferingType         = "offering_type"
+	dlMacSecEnabled        = "macsec_enabled"
+	dlMeteringCapabilities = "capabilities"
 )
 
 func dataSourceIBMDLOfferingSpeeds() *schema.Resource {
@@ -34,6 +35,12 @@ func dataSourceIBMDLOfferingSpeeds() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						dlMeteringCapabilities: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "List of capabilities for billing option",
+						},
 						dlLinkSpeed: {
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -51,13 +58,20 @@ func dataSourceIBMDLOfferingSpeeds() *schema.Resource {
 	}
 }
 
+func myDirectLinkClient(meta interface{}) (*directlinklocal.DirectLinkV1, error) {
+	sess, err := meta.(ClientSession).DirectlinkV1APIScoped()
+	return sess, err
+}
+
 func dataSourceIBMDLOfferingSpeedsRead(d *schema.ResourceData, meta interface{}) error {
-	directLink, err := directlinkClient(meta)
+	directLink, err := myDirectLinkClient(meta)
 	if err != nil {
 		return err
 	}
 	dlType := d.Get(dlOfferingType).(string)
-	listSpeedsOptionsModel := &directlinkv1.ListOfferingTypeSpeedsOptions{}
+
+	// listSpeedsOptionsModel := &directlinkv1.ListOfferingTypeSpeedsOptions{}
+	listSpeedsOptionsModel := &directlinklocal.ListOfferingTypeSpeedsOptions{}
 	listSpeedsOptionsModel.OfferingType = &dlType
 	listSpeeds, detail, err := directLink.ListOfferingTypeSpeeds(listSpeedsOptionsModel)
 
@@ -68,6 +82,9 @@ func dataSourceIBMDLOfferingSpeedsRead(d *schema.ResourceData, meta interface{})
 	speeds := make([]map[string]interface{}, 0)
 	for _, instance := range listSpeeds.Speeds {
 		speed := map[string]interface{}{}
+		if instance.Capabilities != nil {
+			speed[dlMeteringCapabilities] = flattenStringList(instance.Capabilities)
+		}
 		if instance.LinkSpeed != nil {
 			speed[dlLinkSpeed] = *instance.LinkSpeed
 		}

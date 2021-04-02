@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	directlinklocal "github.ibm.com/ibmcloud/networking-go-sdk/directlinkv1"
 )
 
 const (
@@ -16,6 +16,7 @@ const (
 	dlRouterName          = "router_name"
 	dlTotalConns          = "total_connections"
 	dlLocation            = "location_name"
+	dlMacsecCapabilities  = "capabilities"
 )
 
 func dataSourceIBMDLRouters() *schema.Resource {
@@ -39,6 +40,12 @@ func dataSourceIBMDLRouters() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						dlMacsecCapabilities: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "List of capabilities for this router",
+						},
 						dlRouterName: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -56,14 +63,19 @@ func dataSourceIBMDLRouters() *schema.Resource {
 	}
 }
 
+// func myDirectLinkClientRouter(meta interface{}) (*directlinklocal.DirectLinkV1, error) {
+// 	sess, err := meta.(ClientSession).DirectlinkV1APIScoped()
+// 	return sess, err
+// }
+
 func dataSourceIBMDLRoutersRead(d *schema.ResourceData, meta interface{}) error {
-	directLink, err := directlinkClient(meta)
+	directLink, err := myDirectLinkClient(meta)
 	if err != nil {
 		return err
 	}
 	dlType := d.Get(dlOfferingType).(string)
 	dlLocName := d.Get(dlLocation).(string)
-	listRoutersOptionsModel := &directlinkv1.ListOfferingTypeLocationCrossConnectRoutersOptions{}
+	listRoutersOptionsModel := &directlinklocal.ListOfferingTypeLocationCrossConnectRoutersOptions{}
 	listRoutersOptionsModel.OfferingType = &dlType
 	listRoutersOptionsModel.LocationName = &dlLocName
 
@@ -76,6 +88,9 @@ func dataSourceIBMDLRoutersRead(d *schema.ResourceData, meta interface{}) error 
 	routers := make([]map[string]interface{}, 0)
 	for _, instance := range listRouters.CrossConnectRouters {
 		route := map[string]interface{}{}
+		if instance.Capabilities != nil {
+			route[dlMacsecCapabilities] = flattenStringList(instance.Capabilities)
+		}
 		if instance.RouterName != nil {
 			route[dlRouterName] = *instance.RouterName
 		}
