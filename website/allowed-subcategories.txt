@@ -7,6 +7,7 @@ Cloud Foundry
 Container Registry
 Direct Link Gateway
 DNS Services
+Enterprise Management
 Event Streams
 Functions
 Identity & Access Management (IAM)

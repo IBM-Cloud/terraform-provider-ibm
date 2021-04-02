@@ -1,4 +1,5 @@
 ---
+subcategory: "Enterprise Management"
 layout: "ibm"
 page_title: "IBM : enterprise"
 sidebar_current: "docs-ibm-resource-enterprise"

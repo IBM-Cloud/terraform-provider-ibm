@@ -1,4 +1,5 @@
 ---
+subcategory: "Enterprise Management"
 layout: "ibm"
 page_title: "IBM : enterprise_account_group"
 sidebar_current: "docs-ibm-resource-enterprise-account-group"
