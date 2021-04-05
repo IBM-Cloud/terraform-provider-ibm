@@ -1,5 +1,5 @@
 ---
-subcategory: "Identity & Access (IAM)"
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM: ibm_iam_auth_token"
 description: |-
