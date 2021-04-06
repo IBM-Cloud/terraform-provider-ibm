@@ -274,8 +274,8 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	resourceKey, resp, err := rsContClient.GetResourceKey(&resourceKeyGet)
-	if err != nil {
-		return fmt.Errorf("Error retrieving resource key: %s with resp code: %s", err, resp)
+	if err != nil || resourceKey == nil {
+		return fmt.Errorf("Error retrieving resource key: %s with resp : %s", err, resp)
 	}
 	var credInterface map[string]interface{}
 	cred, _ := json.Marshal(resourceKey.Credentials)
@@ -283,9 +283,8 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("credentials", Flatten(credInterface))
 	d.Set("name", *resourceKey.Name)
 	d.Set("status", *resourceKey.State)
-	iamRoleCrn := resourceKey.Credentials.IamRoleCRN
-	if *iamRoleCrn != "" {
-		roleCrn := *iamRoleCrn
+	if resourceKey.Credentials != nil && resourceKey.Credentials.IamRoleCRN != nil {
+		roleCrn := *resourceKey.Credentials.IamRoleCRN
 		roleName := roleCrn[strings.LastIndex(roleCrn, ":")+1:]
 
 		if strings.Contains(roleCrn, ":customRole:") {
