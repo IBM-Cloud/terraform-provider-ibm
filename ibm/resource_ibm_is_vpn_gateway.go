@@ -18,20 +18,22 @@ import (
 )
 
 const (
-	isVPNGatewayName             = "name"
-	isVPNGatewayResourceGroup    = "resource_group"
-	isVPNGatewayMode             = "mode"
-	isVPNGatewayTags             = "tags"
-	isVPNGatewaySubnet           = "subnet"
-	isVPNGatewayStatus           = "status"
-	isVPNGatewayDeleting         = "deleting"
-	isVPNGatewayDeleted          = "done"
-	isVPNGatewayProvisioning     = "provisioning"
-	isVPNGatewayProvisioningDone = "done"
-	isVPNGatewayPublicIPAddress  = "public_ip_address"
-	isVPNGatewayMembers          = "members"
-	isVPNGatewayCreatedAt        = "created_at"
-	isVPNGatewayPublicIPAddress2 = "public_ip_address2"
+	isVPNGatewayName              = "name"
+	isVPNGatewayResourceGroup     = "resource_group"
+	isVPNGatewayMode              = "mode"
+	isVPNGatewayTags              = "tags"
+	isVPNGatewaySubnet            = "subnet"
+	isVPNGatewayStatus            = "status"
+	isVPNGatewayDeleting          = "deleting"
+	isVPNGatewayDeleted           = "done"
+	isVPNGatewayProvisioning      = "provisioning"
+	isVPNGatewayProvisioningDone  = "done"
+	isVPNGatewayPublicIPAddress   = "public_ip_address"
+	isVPNGatewayMembers           = "members"
+	isVPNGatewayCreatedAt         = "created_at"
+	isVPNGatewayPublicIPAddress2  = "public_ip_address2"
+	isVPNGatewayPrivateIPAddress  = "private_ip_address"
+	isVPNGatewayPrivateIPAddress2 = "private_ip_address2"
 )
 
 func resourceIBMISVPNGateway() *schema.Resource {
@@ -86,13 +88,27 @@ func resourceIBMISVPNGateway() *schema.Resource {
 			},
 
 			isVPNGatewayPublicIPAddress: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The public IP address assigned to the VPN gateway member.",
 			},
 
 			isVPNGatewayPublicIPAddress2: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The second public IP address assigned to the VPN gateway member.",
+			},
+
+			isVPNGatewayPrivateIPAddress: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Private IP address assigned to the VPN gateway member.",
+			},
+
+			isVPNGatewayPrivateIPAddress2: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Second Private IP address assigned to the VPN gateway member.",
 			},
 
 			isVPNGatewayTags: {
@@ -157,6 +173,12 @@ func resourceIBMISVPNGateway() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The public IP address assigned to the VPN gateway member",
+						},
+
+						"private_address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private IP address assigned to the VPN gateway member",
 						},
 
 						"role": {
@@ -497,9 +519,18 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	for _, member := range vpnGateway.Members {
 		members = append(members, member)
 	}
-	if len(members) > 1 {
+	if len(members) > 0 {
 		d.Set(isVPNGatewayPublicIPAddress, *members[0].PublicIP.Address)
+		if members[0].PrivateIP != nil && members[0].PrivateIP.Address != nil {
+			d.Set(isVPNGatewayPrivateIPAddress, *members[0].PrivateIP.Address)
+		}
+	}
+	if len(members) > 1 {
 		d.Set(isVPNGatewayPublicIPAddress2, *members[1].PublicIP.Address)
+		if members[1].PrivateIP != nil && members[1].PrivateIP.Address != nil {
+			d.Set(isVPNGatewayPrivateIPAddress2, *members[1].PrivateIP.Address)
+		}
+
 	}
 	tags, err := GetTagsUsingCRN(meta, *vpnGateway.CRN)
 	if err != nil {
@@ -529,6 +560,9 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 				currentMemberIP["role"] = *memberIP.Role
 				currentMemberIP["status"] = *memberIP.Status
 				vpcMembersIpsList = append(vpcMembersIpsList, currentMemberIP)
+			}
+			if memberIP.PrivateIP != nil {
+				currentMemberIP["private_address"] = *memberIP.PrivateIP.Address
 			}
 		}
 		d.Set(isVPNGatewayMembers, vpcMembersIpsList)
