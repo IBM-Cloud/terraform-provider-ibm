@@ -371,6 +371,9 @@ func Provider() *schema.Provider {
 			"ibm_cm_offering":          dataSourceIBMCmOffering(),
 			"ibm_cm_version":           dataSourceIBMCmVersion(),
 			"ibm_cm_offering_instance": dataSourceIBMCmOfferingInstance(),
+
+			//Added for Resource Tag
+			"ibm_resource_tag": dataSourceIBMResourceTag(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -588,6 +591,9 @@ func Provider() *schema.Provider {
 			//satellite  resources
 			"ibm_satellite_location": resourceIBMSatelliteLocation(),
 			"ibm_satellite_host":     resourceIBMSatelliteHost(),
+
+			//Resource Tag
+			"ibm_resource_tag": resourceIBMResourceTag(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -674,6 +680,7 @@ func Validator() ValidatorDict {
 				"ibm_is_virtual_endpoint_gateway":      resourceIBMISEndpointGatewayValidator(),
 				"ibm_container_vpc_cluster":            resourceIBMContainerVpcClusterValidator(),
 				"ibm_container_cluster":                resourceIBMContainerClusterValidator(),
+				"ibm_resource_tag":                     resourceIBMResourceTagValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),
