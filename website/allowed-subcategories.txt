@@ -10,6 +10,7 @@ DNS Services
 Enterprise Management
 Event Streams
 Functions
+Global Tagging
 Identity & Access Management (IAM)
 Internet services
 Key Management Service
@@ -23,3 +24,4 @@ Schematics
 Secrets Manager
 Transit Gateway
 VPC infrastructure
+
