@@ -22,7 +22,7 @@ var (
 	session_invalidation_in_seconds = "NOT_SET"
 )
 
-func TestAccIbmIamAccountSettingsBasic(t *testing.T) {
+func TestAccIBMIAMAccountSettingsBasic(t *testing.T) {
 	var conf iamidentityv1.AccountSettingsResponse
 
 	resource.Test(t, resource.TestCase{
@@ -43,7 +43,7 @@ func TestAccIbmIamAccountSettingsBasic(t *testing.T) {
 	})
 }
 
-func TestAccIbmIamAccountSettingsAllArgs(t *testing.T) {
+func TestAccIBMIAMAccountSettingsAllArgs(t *testing.T) {
 	var conf iamidentityv1.AccountSettingsResponse
 	includeHistory := "false"
 	includeHistoryUpdate := "true"
@@ -74,7 +74,7 @@ func TestAccIbmIamAccountSettingsAllArgs(t *testing.T) {
 	})
 }
 
-func TestAccIbmIamAccountSettingsUpdate(t *testing.T) {
+func TestAccIBMIAMAccountSettingsUpdate(t *testing.T) {
 	var conf iamidentityv1.AccountSettingsResponse
 
 	resource.Test(t, resource.TestCase{
