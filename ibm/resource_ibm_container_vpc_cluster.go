@@ -153,6 +153,12 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "Kubernetes patch version",
 			},
 
+			"retry_patch_version": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Argument which helps to retry the patch version updates on worker nodes. Increment the value to retry the patch updates if the previous apply fails",
+			},
+
 			"wait_for_worker_update": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -567,7 +573,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 
 	}
 
-	if (d.HasChange("kube_version") || d.HasChange("update_all_workers") || d.HasChange("patch_version")) && !d.IsNewResource() {
+	if (d.HasChange("kube_version") || d.HasChange("update_all_workers") || d.HasChange("patch_version") || d.HasChange("retry_patch_version")) && !d.IsNewResource() {
 
 		if d.HasChange("kube_version") {
 			ClusterClient, err := meta.(ClientSession).ContainerAPI()
@@ -620,11 +626,12 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		workersInfo := make(map[string]int, 0)
 
 		updateAllWorkers := d.Get("update_all_workers").(bool)
-		if updateAllWorkers || d.HasChange("patch_version") {
+		if updateAllWorkers || d.HasChange("patch_version") || d.HasChange("retry_patch_version") {
 
 			patchVersion := d.Get("patch_version").(string)
 			workers, err := csClient.Workers().ListWorkers(clusterID, false, targetEnv)
 			if err != nil {
+				d.Set("patch_version", nil)
 				return fmt.Errorf("Error retrieving workers for cluster: %s", err)
 			}
 
@@ -641,6 +648,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 					_, err := csClient.Workers().ReplaceWokerNode(clusterID, worker.ID, targetEnv)
 					// As API returns http response 204 NO CONTENT, error raised will be exempted.
 					if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {
+						d.Set("patch_version", nil)
 						return fmt.Errorf("Error replacing the worker node from the cluster: %s", err)
 					}
 
@@ -648,18 +656,21 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 						//1. wait for worker node to delete
 						_, deleteError := waitForWorkerNodetoDelete(d, meta, targetEnv, worker.ID)
 						if deleteError != nil {
+							d.Set("patch_version", nil)
 							return fmt.Errorf("Worker node - %s is failed to replace", worker.ID)
 						}
 
 						//2. wait for new workerNode
 						_, newWorkerError := waitForNewWorker(d, meta, targetEnv, workersCount)
 						if newWorkerError != nil {
+							d.Set("patch_version", nil)
 							return fmt.Errorf("Failed to spawn new worker node")
 						}
 
 						//3. Get new worker node ID and update the map
 						newWorkerID, index, newNodeError := getNewWorkerID(d, meta, targetEnv, workersInfo)
 						if newNodeError != nil {
+							d.Set("patch_version", nil)
 							return fmt.Errorf("Unable to find the new worker node info")
 						}
 
@@ -669,6 +680,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 						//4. wait for the worker's version update and normal state
 						_, Err := WaitForVpcClusterWokersVersionUpdate(d, meta, targetEnv, cls.MasterKubeVersion, newWorkerID)
 						if Err != nil {
+							d.Set("patch_version", nil)
 							return fmt.Errorf(
 								"Error waiting for cluster (%s) worker nodes kube version to be updated: %s", d.Id(), Err)
 						}
