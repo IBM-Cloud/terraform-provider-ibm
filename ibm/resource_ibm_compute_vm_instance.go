@@ -1011,7 +1011,12 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	var idStrings []string
-	if len(receipt.OrderDetails.OrderContainers) > 1 {
+	if quote_id > 0 {
+		vmId := fmt.Sprintf("%d", *receipt.OrderDetails.VirtualGuests[0].Id)
+		idStrings = append(idStrings, vmId)
+		d.SetId(vmId)
+
+	} else if len(receipt.OrderDetails.OrderContainers) > 1 {
 		for i := 0; i < len(receipt.OrderDetails.OrderContainers); i++ {
 			idStrings = append(idStrings, fmt.Sprintf("%d", *receipt.OrderDetails.OrderContainers[i].VirtualGuests[0].Id))
 		}
@@ -1906,165 +1911,170 @@ func placeOrder(d *schema.ResourceData, meta interface{}, name string, publicVla
 		}
 
 		guestOrders = append(guestOrders, template)
-	} else {
-		for i := 0; i < len(options); i++ {
-			opts := options[i]
+		order := &datatypes.Container_Product_Order{
+			OrderContainers: guestOrders,
+		}
+		receipt, err1 := services.GetBillingOrderQuoteService(sess).
+			Id(quote_id).PlaceOrder(order)
+		return receipt, err1
+	}
+	for i := 0; i < len(options); i++ {
+		opts := options[i]
 
-			log.Println("[INFO] Creating virtual machine")
+		log.Println("[INFO] Creating virtual machine")
 
-			// Build an order template with a custom image.
-			if opts.BlockDevices != nil && opts.BlockDeviceTemplateGroup != nil {
-				bd := *opts.BlockDeviceTemplateGroup
-				opts.BlockDeviceTemplateGroup = nil
-				opts.OperatingSystemReferenceCode = sl.String("UBUNTU_LATEST")
-				template, err = service.GenerateOrderTemplate(&opts)
-				if err != nil {
-					return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
-				}
-
-				// Remove temporary OS from actual order
-				prices := make([]datatypes.Product_Item_Price, len(template.Prices))
-				i := 0
-				for _, p := range template.Prices {
-					if !strings.Contains(*p.Item.Description, "Ubuntu") {
-						prices[i] = p
-						i++
-					}
-				}
-				template.Prices = prices[:i]
-
-				template.ImageTemplateId = sl.Int(d.Get("image_id").(int))
-				template.VirtualGuests[0].BlockDeviceTemplateGroup = &bd
-				template.VirtualGuests[0].OperatingSystemReferenceCode = nil
-			} else {
-				// Build an order template with os_reference_code
-				template, err = service.GenerateOrderTemplate(&opts)
-				if err != nil {
-					return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
-				}
-			}
-
-			items, err := product.GetPackageProducts(sess, *template.PackageId, productItemMaskWithPriceLocationGroupID)
+		// Build an order template with a custom image.
+		if opts.BlockDevices != nil && opts.BlockDeviceTemplateGroup != nil {
+			bd := *opts.BlockDeviceTemplateGroup
+			opts.BlockDeviceTemplateGroup = nil
+			opts.OperatingSystemReferenceCode = sl.String("UBUNTU_LATEST")
+			template, err = service.GenerateOrderTemplate(&opts)
 			if err != nil {
 				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
 			}
 
-			privateNetworkOnly := d.Get("private_network_only").(bool)
-
-			secondaryIPCount := d.Get("secondary_ip_count").(int)
-			if secondaryIPCount > 0 {
-				if privateNetworkOnly {
-					return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure public secondary addresses with a private_network_only option")
-				}
-				keyName := strconv.Itoa(secondaryIPCount) + "_PUBLIC_IP_ADDRESSES"
-				price, err := getItemPriceId(items, "sec_ip_addresses", keyName)
-				if err != nil {
-					return datatypes.Container_Product_Order_Receipt{}, err
-				}
-				template.Prices = append(template.Prices, price)
-			}
-
-			if d.Get("ipv6_enabled").(bool) {
-				if privateNetworkOnly {
-					return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public IPv6 address with a private_network_only option")
-				}
-				price, err := getItemPriceId(items, "pri_ipv6_addresses", "1_IPV6_ADDRESS")
-				if err != nil {
-					return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
-				}
-				template.Prices = append(template.Prices, price)
-			}
-
-			if d.Get("ipv6_static_enabled").(bool) {
-				if privateNetworkOnly {
-					return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public static IPv6 address with a private_network_only option")
-				}
-				price, err := getItemPriceId(items, "static_ipv6_addresses", "64_BLOCK_STATIC_PUBLIC_IPV6_ADDRESSES")
-				if err != nil {
-					return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
-				}
-				template.Prices = append(template.Prices, price)
-			}
-
-			// Add optional price ids.
-			// Add public bandwidth limited
-			if publicBandwidth, ok := d.GetOk("public_bandwidth_limited"); ok {
-				if *opts.HourlyBillingFlag {
-					return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public bandwidth with a hourly_billing true")
-				}
-				// Remove Default bandwidth price
-				prices := make([]datatypes.Product_Item_Price, len(template.Prices))
-				i := 0
-				for _, p := range template.Prices {
-					item := p.Item
-					if item != nil {
-						if strings.Contains(*item.Description, "Bandwidth") {
-							continue
-						}
-					}
+			// Remove temporary OS from actual order
+			prices := make([]datatypes.Product_Item_Price, len(template.Prices))
+			i := 0
+			for _, p := range template.Prices {
+				if !strings.Contains(*p.Item.Description, "Ubuntu") {
 					prices[i] = p
 					i++
 				}
-				template.Prices = prices[:i]
-				keyName := "BANDWIDTH_" + strconv.Itoa(publicBandwidth.(int)) + "_GB"
-				price, err := getItemPriceId(items, "bandwidth", keyName)
-				if err != nil {
-					return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
-				}
-				template.Prices = append(template.Prices, price)
 			}
+			template.Prices = prices[:i]
 
-			// Add public bandwidth unlimited
-			publicUnlimitedBandwidth := d.Get("public_bandwidth_unlimited").(bool)
-			if publicUnlimitedBandwidth {
-				if *opts.HourlyBillingFlag {
-					return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public bandwidth with a hourly_billing true")
-				}
-				networkSpeed := d.Get("network_speed").(int)
-				if networkSpeed != 100 {
-					return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Network speed must be 100 Mbps to configure public bandwidth unlimited")
-				}
-				// Remove Default bandwidth price
-				prices := make([]datatypes.Product_Item_Price, len(template.Prices))
-				i := 0
-				for _, p := range template.Prices {
-					item := p.Item
-					if item != nil {
-						if strings.Contains(*item.Description, "Bandwidth") {
-							continue
-						}
-					}
-					prices[i] = p
-					i++
-				}
-				template.Prices = prices[:i]
-				price, err := getItemPriceId(items, "bandwidth", "BANDWIDTH_UNLIMITED_100_MBPS_UPLINK")
-				if err != nil {
-					return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
-				}
-				template.Prices = append(template.Prices, price)
+			template.ImageTemplateId = sl.Int(d.Get("image_id").(int))
+			template.VirtualGuests[0].BlockDeviceTemplateGroup = &bd
+			template.VirtualGuests[0].OperatingSystemReferenceCode = nil
+		} else {
+			// Build an order template with os_reference_code
+			template, err = service.GenerateOrderTemplate(&opts)
+			if err != nil {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
 			}
-
-			if evault, ok := d.GetOk("evault"); ok {
-				if *opts.HourlyBillingFlag {
-					return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a evault with hourly_billing true")
-				}
-
-				keyName := "EVAULT_" + strconv.Itoa(evault.(int)) + "_GB"
-				price, err := getItemPriceId(items, "evault", keyName)
-				if err != nil {
-					return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
-				}
-				template.Prices = append(template.Prices, price)
-			}
-			// GenerateOrderTemplate omits UserData, subnet, and maxSpeed, so configure virtual_guest.
-			template.VirtualGuests[0] = opts
-			if opts.DedicatedHost != nil {
-				template.HostId = opts.DedicatedHost.Id
-			}
-			guestOrders = append(guestOrders, template)
-
 		}
+
+		items, err := product.GetPackageProducts(sess, *template.PackageId, productItemMaskWithPriceLocationGroupID)
+		if err != nil {
+			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
+		}
+
+		privateNetworkOnly := d.Get("private_network_only").(bool)
+
+		secondaryIPCount := d.Get("secondary_ip_count").(int)
+		if secondaryIPCount > 0 {
+			if privateNetworkOnly {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure public secondary addresses with a private_network_only option")
+			}
+			keyName := strconv.Itoa(secondaryIPCount) + "_PUBLIC_IP_ADDRESSES"
+			price, err := getItemPriceId(items, "sec_ip_addresses", keyName)
+			if err != nil {
+				return datatypes.Container_Product_Order_Receipt{}, err
+			}
+			template.Prices = append(template.Prices, price)
+		}
+
+		if d.Get("ipv6_enabled").(bool) {
+			if privateNetworkOnly {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public IPv6 address with a private_network_only option")
+			}
+			price, err := getItemPriceId(items, "pri_ipv6_addresses", "1_IPV6_ADDRESS")
+			if err != nil {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
+			}
+			template.Prices = append(template.Prices, price)
+		}
+
+		if d.Get("ipv6_static_enabled").(bool) {
+			if privateNetworkOnly {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public static IPv6 address with a private_network_only option")
+			}
+			price, err := getItemPriceId(items, "static_ipv6_addresses", "64_BLOCK_STATIC_PUBLIC_IPV6_ADDRESSES")
+			if err != nil {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
+			}
+			template.Prices = append(template.Prices, price)
+		}
+
+		// Add optional price ids.
+		// Add public bandwidth limited
+		if publicBandwidth, ok := d.GetOk("public_bandwidth_limited"); ok {
+			if *opts.HourlyBillingFlag {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public bandwidth with a hourly_billing true")
+			}
+			// Remove Default bandwidth price
+			prices := make([]datatypes.Product_Item_Price, len(template.Prices))
+			i := 0
+			for _, p := range template.Prices {
+				item := p.Item
+				if item != nil {
+					if strings.Contains(*item.Description, "Bandwidth") {
+						continue
+					}
+				}
+				prices[i] = p
+				i++
+			}
+			template.Prices = prices[:i]
+			keyName := "BANDWIDTH_" + strconv.Itoa(publicBandwidth.(int)) + "_GB"
+			price, err := getItemPriceId(items, "bandwidth", keyName)
+			if err != nil {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
+			}
+			template.Prices = append(template.Prices, price)
+		}
+
+		// Add public bandwidth unlimited
+		publicUnlimitedBandwidth := d.Get("public_bandwidth_unlimited").(bool)
+		if publicUnlimitedBandwidth {
+			if *opts.HourlyBillingFlag {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a public bandwidth with a hourly_billing true")
+			}
+			networkSpeed := d.Get("network_speed").(int)
+			if networkSpeed != 100 {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Network speed must be 100 Mbps to configure public bandwidth unlimited")
+			}
+			// Remove Default bandwidth price
+			prices := make([]datatypes.Product_Item_Price, len(template.Prices))
+			i := 0
+			for _, p := range template.Prices {
+				item := p.Item
+				if item != nil {
+					if strings.Contains(*item.Description, "Bandwidth") {
+						continue
+					}
+				}
+				prices[i] = p
+				i++
+			}
+			template.Prices = prices[:i]
+			price, err := getItemPriceId(items, "bandwidth", "BANDWIDTH_UNLIMITED_100_MBPS_UPLINK")
+			if err != nil {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
+			}
+			template.Prices = append(template.Prices, price)
+		}
+
+		if evault, ok := d.GetOk("evault"); ok {
+			if *opts.HourlyBillingFlag {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Unable to configure a evault with hourly_billing true")
+			}
+
+			keyName := "EVAULT_" + strconv.Itoa(evault.(int)) + "_GB"
+			price, err := getItemPriceId(items, "evault", keyName)
+			if err != nil {
+				return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf("Error generating order template: %s", err)
+			}
+			template.Prices = append(template.Prices, price)
+		}
+		// GenerateOrderTemplate omits UserData, subnet, and maxSpeed, so configure virtual_guest.
+		template.VirtualGuests[0] = opts
+		if opts.DedicatedHost != nil {
+			template.HostId = opts.DedicatedHost.Id
+		}
+		guestOrders = append(guestOrders, template)
+
 	}
 	order := &datatypes.Container_Product_Order{
 		OrderContainers: guestOrders,
