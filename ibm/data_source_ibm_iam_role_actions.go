@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -48,17 +49,23 @@ func datasourceIBMIAMRoleAction() *schema.Resource {
 }
 
 func datasourceIBMIAMRoleActionRead(d *schema.ResourceData, meta interface{}) error {
-	iampapv2Client, err := meta.(ClientSession).IAMPAPAPIV2()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
 
 	serviceName := d.Get("service").(string)
 	d.SetId(serviceName)
-	serviceRoles, err := iampapv2Client.IAMRoles().ListServiceRoles(serviceName)
+
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		ServiceName: &serviceName,
+	}
+
+	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
 	if err != nil {
 		return err
 	}
+	serviceRoles := roleList.ServiceRoles
 
 	d.Set("reader", flattenActionbyDisplayName("Reader", serviceRoles))
 	d.Set("manager", flattenActionbyDisplayName("Manager", serviceRoles))

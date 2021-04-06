@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"log"
 	"net"
 	gohttp "net/http"
@@ -196,6 +197,7 @@ type ClientSession interface {
 	IAMAPI() (iamv1.IAMServiceAPI, error)
 	IAMPAPAPI() (iampapv1.IAMPAPAPI, error)
 	IAMPAPAPIV2() (iampapv2.IAMPAPAPIV2, error)
+	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
 	IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error)
 	IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
@@ -486,6 +488,10 @@ type clientSession struct {
 	//Satellite service
 	satelliteClient    *kubernetesserviceapiv1.KubernetesServiceApiV1
 	satelliteClientErr error
+
+	//IAM Policy Management
+	iamPolicyManagementErr error
+	iamPolicyManagementAPI *iampolicymanagement.IamPolicyManagementV1
 }
 
 func (session clientSession) CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error) {
@@ -575,6 +581,11 @@ func (sess clientSession) IAMPAPAPI() (iampapv1.IAMPAPAPI, error) {
 // IAMPAPAPIV2 provides IAM PAP APIs ...
 func (sess clientSession) IAMPAPAPIV2() (iampapv2.IAMPAPAPIV2, error) {
 	return sess.iamPAPServiceAPIv2, sess.iamPAPConfigErrv2
+}
+
+// IAM Policy Management
+func (sess clientSession) IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error) {
+	return sess.iamPolicyManagementAPI, sess.iamPolicyManagementErr
 }
 
 // IAMUUMAPI provides IAM UUM APIs ...
@@ -1893,6 +1904,19 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.iamIdentityAPI = iamIdentityClient
 
+	iamPolicyManagementOptions := &iampolicymanagement.IamPolicyManagementV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, "https://iam.test.cloud.ibm.com"),
+	}
+	iamPolicyManagementClient, err := iampolicymanagement.NewIamPolicyManagementV1(iamPolicyManagementOptions)
+	if err != nil {
+		session.vpcErr = fmt.Errorf("Error occured while configuring IAM Policy Management service: %q", err)
+	}
+	if iamPolicyManagementClient != nil && iamPolicyManagementClient.Service != nil {
+		iamPolicyManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+	session.iamPolicyManagementAPI = iamPolicyManagementClient
+
 	rmURL := resourcemanager.DefaultServiceURL
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
@@ -2053,7 +2077,7 @@ func newSession(c *Config) (*Session, error) {
 		bmxConfig := &bluemix.Config{
 			BluemixAPIKey: c.BluemixAPIKey,
 			//Comment out debug mode for v0.12
-			//Debug:         os.Getenv("TF_LOG") != "",
+			Debug:         os.Getenv("TF_LOG") != "",
 			HTTPTimeout:   c.BluemixTimeout,
 			Region:        c.Region,
 			ResourceGroup: c.ResourceGroup,

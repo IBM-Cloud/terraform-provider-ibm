@@ -5,14 +5,14 @@ package ibm
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 )
 
 func resourceIBMIAMUserPolicy() *schema.Resource {
@@ -101,22 +101,23 @@ func resourceIBMIAMUserPolicy() *schema.Resource {
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
-			},
-
-			"version": {
-				Type:     schema.TypeString,
-				Computed: true,
 			},
 		},
 	}
 }
 
 func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) error {
-	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
+	if err != nil {
+		return err
+	}
+
+	var policyOptions iampolicymanagementv1.CreatePolicyOptions
+	policyOptions, err = generatePolicyOptions(d, meta)
+
 	if err != nil {
 		return err
 	}
@@ -129,42 +130,56 @@ func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) er
 	}
 
 	accountID := userDetails.userAccount
-	var policy iampapv1.Policy
-	policy, err = generateAccountPolicyV2(d, meta)
-	if err != nil {
-		return err
-	}
-
-	policy.Resources[0].SetAccountID(accountID)
-
-	policy.Type = iampapv1.AccessPolicyType
 
 	ibmUniqueID, err := getIBMUniqueId(accountID, userEmail, meta)
 	if err != nil {
 		return err
 	}
 
-	policy.Subjects = []iampapv1.Subject{
-		{
-			Attributes: []iampapv1.Attribute{
-				{
-					Name:  "iam_id",
-					Value: ibmUniqueID,
-				},
-			},
-		},
+	subjectAttribute := &iampolicymanagementv1.SubjectAttribute{
+		Name:  core.StringPtr("iam_id"),
+		Value: &ibmUniqueID,
 	}
 
-	userPolicy, err := iampapClient.V1Policy().Create(policy)
+	policySubjects := &iampolicymanagementv1.PolicySubject{
+		Attributes: []iampolicymanagementv1.SubjectAttribute{*subjectAttribute},
+	}
+
+	accountIDResourceAttribute := &iampolicymanagementv1.ResourceAttribute{
+		Name:     core.StringPtr("accountId"),
+		Value:    core.StringPtr(accountID),
+		Operator: core.StringPtr("stringEquals"),
+	}
+
+	policyResourceTags := generatePolicyTags(d)
+
+	policyResources := iampolicymanagementv1.PolicyResource{
+		Attributes: append(policyOptions.Resources[0].Attributes, *accountIDResourceAttribute),
+		Tags:       policyResourceTags,
+	}
+
+	createPolicyOptions := iamPolicyManagementClient.NewCreatePolicyOptions(
+		"access",
+		[]iampolicymanagementv1.PolicySubject{*policySubjects},
+		policyOptions.Roles,
+		[]iampolicymanagementv1.PolicyResource{policyResources},
+	)
+
+	userPolicy, _, err := iamPolicyManagementClient.CreatePolicy(createPolicyOptions)
+
 	if err != nil {
 		return err
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", userEmail, userPolicy.ID))
+	d.SetId(fmt.Sprintf("%s/%s", userEmail, *userPolicy.ID))
+
+	getPolicyOptions := &iampolicymanagementv1.GetPolicyOptions{
+		PolicyID: userPolicy.ID,
+	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		_, err = iampapClient.V1Policy().Get(userPolicy.ID)
+		_, _, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 
 		if err != nil {
 			if apiErr, ok := err.(bmxerror.RequestFailure); ok {
@@ -178,7 +193,7 @@ func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) er
 	})
 
 	if isResourceTimeoutError(err) {
-		_, err = iampapClient.V1Policy().Get(userPolicy.ID)
+		_, _, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	}
 	if err != nil {
 		return fmt.Errorf("error fetching user policy: %w", err)
@@ -188,7 +203,7 @@ func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
@@ -205,23 +220,27 @@ func resourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	userPolicy, err := iampapClient.V1Policy().Get(userPolicyID)
+	getPolicyOptions := &iampolicymanagementv1.GetPolicyOptions{
+		PolicyID: core.StringPtr(userPolicyID),
+	}
+
+	userPolicy, _, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	if err != nil {
 		return err
 	}
 	d.Set("ibm_id", userEmail)
 	roles := make([]string, len(userPolicy.Roles))
+
 	for i, role := range userPolicy.Roles {
-		roles[i] = role.Name
+		roles[i] = *role.DisplayName
 	}
 	d.Set("roles", roles)
-	d.Set("version", userPolicy.Version)
 	d.Set("resources", flattenPolicyResource(userPolicy.Resources))
 	if len(userPolicy.Resources) > 0 {
-		if userPolicy.Resources[0].GetAttribute("serviceType") == "service" {
+		if *getResourceAttribute("serviceType", userPolicy.Resources[0]) == "service" {
 			d.Set("account_management", false)
 		}
-		if userPolicy.Resources[0].GetAttribute("serviceType") == "platform_service" {
+		if *getResourceAttribute("serviceType", userPolicy.Resources[0]) == "platform_service" {
 			d.Set("account_management", true)
 		}
 	}
@@ -229,7 +248,7 @@ func resourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
-	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
@@ -246,10 +265,9 @@ func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) er
 			return err
 		}
 
-		var policy iampapv1.Policy
 		accountID := userDetails.userAccount
 
-		policy, err = generateAccountPolicyV2(d, meta)
+		createPolicyOptions, err := generatePolicyOptions(d, meta)
 		if err != nil {
 			return err
 		}
@@ -259,22 +277,49 @@ func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) er
 			return err
 		}
 
-		policy.Resources[0].SetAccountID(accountID)
-
-		policy.Subjects = []iampapv1.Subject{
-			{
-				Attributes: []iampapv1.Attribute{
-					{
-						Name:  "iam_id",
-						Value: ibmUniqueID,
-					},
-				},
-			},
+		accountIDResourceAttribute := &iampolicymanagementv1.ResourceAttribute{
+			Name:     core.StringPtr("accountId"),
+			Value:    core.StringPtr(accountID),
+			Operator: core.StringPtr("stringEquals"),
 		}
 
-		policy.Type = iampapv1.AccessPolicyType
+		policyResourceTags := generatePolicyTags(d)
 
-		_, err = iampapClient.V1Policy().Update(userPolicyID, policy, d.Get("version").(string))
+		policyResources := iampolicymanagementv1.PolicyResource{
+			Attributes: append(createPolicyOptions.Resources[0].Attributes, *accountIDResourceAttribute),
+			Tags:       policyResourceTags,
+		}
+
+		subjectAttribute := &iampolicymanagementv1.SubjectAttribute{
+			Name:  core.StringPtr("iam_id"),
+			Value: &ibmUniqueID,
+		}
+		policySubjects := &iampolicymanagementv1.PolicySubject{
+			Attributes: []iampolicymanagementv1.SubjectAttribute{*subjectAttribute},
+		}
+
+		getPolicyOptions := &iampolicymanagementv1.GetPolicyOptions{
+			PolicyID: &userPolicyID,
+		}
+		policy, response, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+		if err != nil || policy == nil {
+			if response != nil && response.StatusCode == 404 {
+				return nil
+			}
+			return fmt.Errorf("Error retrieving Policy: %s\n%s", err, response)
+		}
+
+		userPolicyETag := response.Headers.Get("ETag")
+		updatePolicyOptions := iamPolicyManagementClient.NewUpdatePolicyOptions(
+			userPolicyID,
+			userPolicyETag,
+			"access",
+			[]iampolicymanagementv1.PolicySubject{*policySubjects},
+			createPolicyOptions.Roles,
+			[]iampolicymanagementv1.PolicyResource{policyResources},
+		)
+
+		policy, _, err = iamPolicyManagementClient.UpdatePolicy(updatePolicyOptions)
 		if err != nil {
 			return fmt.Errorf("Error updating user policy: %s", err)
 		}
@@ -284,7 +329,7 @@ func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) er
 
 func resourceIBMIAMUserPolicyDelete(d *schema.ResourceData, meta interface{}) error {
 
-	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
@@ -295,7 +340,10 @@ func resourceIBMIAMUserPolicyDelete(d *schema.ResourceData, meta interface{}) er
 	}
 	userPolicyID := parts[1]
 
-	err = iampapClient.V1Policy().Delete(userPolicyID)
+	deletePolicyOptions := iamPolicyManagementClient.NewDeletePolicyOptions(
+		userPolicyID,
+	)
+	_, err = iamPolicyManagementClient.DeletePolicy(deletePolicyOptions)
 	if err != nil {
 		return err
 	}
@@ -304,7 +352,7 @@ func resourceIBMIAMUserPolicyDelete(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMIAMUserPolicyExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return false, err
 	}
@@ -316,7 +364,11 @@ func resourceIBMIAMUserPolicyExists(d *schema.ResourceData, meta interface{}) (b
 	userEmail := parts[0]
 	userPolicyID := parts[1]
 
-	userPolicy, err := iampapClient.V1Policy().Get(userPolicyID)
+	getPolicyOptions := iamPolicyManagementClient.NewGetPolicyOptions(
+		userPolicyID,
+	)
+
+	userPolicy, _, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
@@ -326,27 +378,8 @@ func resourceIBMIAMUserPolicyExists(d *schema.ResourceData, meta interface{}) (b
 		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
 
-	tempID := fmt.Sprintf("%s/%s", userEmail, userPolicy.ID)
+	tempID := fmt.Sprintf("%s/%s", userEmail, *userPolicy.ID)
 
 	return tempID == d.Id(), nil
 
-}
-
-func getIBMUniqueId(accountID, userEmail string, meta interface{}) (string, error) {
-	userManagement, err := meta.(ClientSession).UserManagementAPI()
-	if err != nil {
-		return "", err
-	}
-	client := userManagement.UserInvite()
-	res, err := client.ListUsers(accountID)
-	if err != nil {
-		return "", err
-	}
-	for _, userInfo := range res {
-		//handling case-sensitivity in userEmail
-		if strings.ToLower(userInfo.Email) == strings.ToLower(userEmail) {
-			return userInfo.IamID, nil
-		}
-	}
-	return "", fmt.Errorf("User %s is not found under account %s", userEmail, accountID)
 }
