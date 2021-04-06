@@ -11,8 +11,6 @@ description: |-
 
 Create or delete a Kubernetes VPC cluster.
 
-```
-
 In the following example, you can create a Gen-2 VPC cluster with a default worker pool with one worker:
 ```hcl
 resource "ibm_container_vpc_cluster" "cluster" {
@@ -119,6 +117,7 @@ Resource will wait for only the specified stage and complete execution. The supp
 * `patch_version` - (Optional, string) Set this to update the worker nodes with the required patch version. 
    The patch_version should be in the format - `patch_version_fixpack_version`. Learn more about the Kuberentes version [here](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions).
     **NOTE**: To update the patch/fixpack versions of the worker nodes, Run the command `ibmcloud ks workers -c <cluster_name_or_id> --output json`, fetch the required patch & fixpack versions from `kubeVersion.target` and set the patch_version parameter.
+* `retry_patch_version` - (Optional, int) This argument helps to retry the update of patch_version if the previous update fails. Increment the value to retry the update of patch_version on worker nodes.
 
 **NOTE**:
 1. For users on account to add tags to a resource, they must be assigned the appropriate access. Learn more about tags permission [here](https://cloud.ibm.com/docs/resources?topic=resources-access)
