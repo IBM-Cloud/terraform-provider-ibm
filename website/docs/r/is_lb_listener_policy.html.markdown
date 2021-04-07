@@ -108,7 +108,7 @@ Network load balancer does not support ibm_is_lb_listener_policy.
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the load balancer listener Policy. Its a combination of lb, listener and policyID delimited by /.
 * `status` - The status of load balancer listener.

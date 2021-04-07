@@ -123,7 +123,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `api_key`: The SoftLayer API key that is created for the user.
 * `id`: The unique SoftLayer identifier that is created for the user.

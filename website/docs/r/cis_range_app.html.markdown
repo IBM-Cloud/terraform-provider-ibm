@@ -48,7 +48,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The range application ID. It is a combination of <`app_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
 - `app_id` - The Range application id.

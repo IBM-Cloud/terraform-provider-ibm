@@ -41,7 +41,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The Id of the Subscription resource. It is a combination of <artifact_id>//<client_id>
 * `secret_provided` - It indicates if client secret is provided or not. i.e if client secret is provided secret_provided will be true,else false.

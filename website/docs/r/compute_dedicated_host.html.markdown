@@ -42,7 +42,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the dedicated host.
 * `cpu_count` - The capacity that the dedicated host's CPU allocation is restricted to.

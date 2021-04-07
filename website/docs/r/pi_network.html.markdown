@@ -58,7 +58,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the network.The id is composed of \<power_instance_id\>/\<network_id\>.
 * `network_id` - The unique identifier (string) of the network.

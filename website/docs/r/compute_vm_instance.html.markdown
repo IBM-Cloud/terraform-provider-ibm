@@ -284,7 +284,7 @@ This attribute can't be updated. This is provided so that you can apply security
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the VM instance.
 * `ipv4_address` - The public IPv4 address of the VM instance.

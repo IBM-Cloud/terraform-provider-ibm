@@ -39,7 +39,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the address prefix.
 * `has_subnets` - Indicates whether subnets exist with addresses from this prefix.

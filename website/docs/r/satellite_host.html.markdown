@@ -74,7 +74,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id`   - The unique identifier of the location.The id is combination of location and host_id delimited by `/`.
 * `host_state` - Health status of the host.

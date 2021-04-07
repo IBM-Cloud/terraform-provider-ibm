@@ -235,7 +235,7 @@ Nested `resources` blocks have the following structure:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 * `number_of_invited_users` - Number of users invited to a particular account
 * `invited_users` - List of invited users.
 Nested `invited_users` block have the following structure:

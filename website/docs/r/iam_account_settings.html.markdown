@@ -34,7 +34,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `history` - The update history of the settings instance
 * `entity_tag` - The version of the account settings object. You need to specify this value when updating the account settings to avoid stale updates.
