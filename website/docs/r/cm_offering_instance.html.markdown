@@ -42,7 +42,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the cm_offering_instance.
 * `url` - Url reference to this object.

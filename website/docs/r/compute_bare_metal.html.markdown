@@ -185,7 +185,7 @@ Locate your package ID. See `package_key_name` attribute. Once you have the ID f
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the bare metal server.
 * `public_ipv4_address` - The public IPv4 address of the bare metal server.

@@ -53,7 +53,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique internal identifier of the domain registration record.
 * `name_servers` - The new name servers pointing to the new DNS management service provider

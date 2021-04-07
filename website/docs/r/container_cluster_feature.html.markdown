@@ -45,7 +45,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The cluster feature ID.
 * `public_service_endpoint_url` - Public service endpoint url.

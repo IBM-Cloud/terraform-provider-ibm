@@ -75,7 +75,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the load balancer pool.The id is composed of \<lb_id\>/\<pool_id\>.
 * `provisioning_status` - The status of load balancer pool.

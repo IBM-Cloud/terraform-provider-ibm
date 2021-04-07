@@ -126,7 +126,7 @@ Resource will wait for only the specified stage and complete execution. The supp
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - Id of the cluster
 * `crn` - CRN of the cluster.

@@ -53,7 +53,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier for this routing table. The id is composed of \<vpc_route_table_id\>/\<vpc_route_table_route_id\>
 * `is_default` - Indicates whether this is the default routing table for this VPC

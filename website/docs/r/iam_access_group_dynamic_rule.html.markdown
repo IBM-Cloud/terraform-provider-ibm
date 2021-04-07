@@ -44,7 +44,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the dynamic rule resource. The id is composed of \<access_group_id\>/\<rule_id\>.<br/>
 * `rule_id` - The id of the rule.

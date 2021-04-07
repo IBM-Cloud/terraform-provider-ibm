@@ -133,7 +133,7 @@ Nested `members` blocks have the following structure:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the network gateway.
 * `public_ipv4_address` - The public IP address of the network gateway.

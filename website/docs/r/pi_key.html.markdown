@@ -53,7 +53,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the key.The id is composed of \<power_instance_id\>/\<key_name\>.
 * `key_id` -  The unique identifier of the key.

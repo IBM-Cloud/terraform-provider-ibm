@@ -33,7 +33,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `class` - The dedicated host profile class for hosts in this group.
 * `family` - The dedicated host profile family for hosts in this group.
