@@ -1,3 +1,12 @@
+## 1.23.1 (Apr07, 2021)
+ENHANCEMENTS
+* Add support to retry the update of patch version ([#2379](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2379))
+* Add gateway_connection argument for VPC VPN gateway Connection ([2270](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2270))
+
+BUGFIXES
+* Fix the crash for resource key ([#2462](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2462))
+* Change the order to place to use billing_order ([#554](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/554))
+
 ## 1.23.0 (Apr02, 2021)
 FEATURES:
 * Support Catalog Management
