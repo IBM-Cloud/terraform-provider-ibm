@@ -108,6 +108,8 @@ github.com/IBM/secrets-manager-go-sdk v0.1.19 h1:0GPs5EoTaWNsjo4QPj64GNxlWfN8VHJ
 github.com/IBM/secrets-manager-go-sdk v0.1.19/go.mod h1:eO3dBhzPrHkkt+yPex/jB2xD6qHZxBko+Aw+0tfqHeA=
 github.com/IBM/vpc-go-sdk v1.0.0 h1:YsCFKFu/DNryaidUOpH7/Y9J0RtWZl4aP1cve/cfh2A=
 github.com/IBM/vpc-go-sdk v1.0.0/go.mod h1:bhd7r482lV30UJz46r2oRgYGawGEo+TuS41ZLIY65y0=
+github.com/IBM/vpc-go-sdk v1.0.1 h1:D2cu4KRsM8Q8bLWz/uxp8m7nzUm33mcgDv1sD0w/E8M=
+github.com/IBM/vpc-go-sdk v1.0.1/go.mod h1:bhd7r482lV30UJz46r2oRgYGawGEo+TuS41ZLIY65y0=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/PuerkitoBio/purell v1.0.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/purell v1.1.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
