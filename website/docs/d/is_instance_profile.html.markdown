@@ -29,7 +29,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `family` - The family of the virtual server instance profile.
 * `architecture` - The default OS architecture for an instance with this profile.

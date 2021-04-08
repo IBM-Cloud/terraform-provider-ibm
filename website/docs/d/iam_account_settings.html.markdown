@@ -19,7 +19,7 @@ data "iam_account_settings" "iam_account_settings" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the iam_account_settings.
 

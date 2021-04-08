@@ -59,7 +59,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `permitted_networks` - List of all private domain name service zones permitted networks in the IBM Cloud Infrastructure.
   * `created_on` - The created time of the Private DNS zone.

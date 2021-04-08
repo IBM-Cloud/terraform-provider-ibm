@@ -40,7 +40,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 * `boot_volume_id` - The unique identifier of the boot volume.
 * `instance_volumes` - List of volumes attached to instance.
   * `id` - The ID of this volume.

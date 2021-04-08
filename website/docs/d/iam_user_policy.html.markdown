@@ -38,7 +38,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `policies` - A nested block describing IAM Policies assigned to user. Nested `policies` blocks have the following structure:
   * `id` - The unique identifier of the IAM user policy.The id is composed of \<ibm_id\>/\<user_policy_id\>

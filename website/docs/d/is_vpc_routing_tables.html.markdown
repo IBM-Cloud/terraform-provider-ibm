@@ -33,7 +33,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `routing tables` - List of all routing tables in a VPC in the IBM Cloud Infrastructure.
   * `name` - The name for the routing table.

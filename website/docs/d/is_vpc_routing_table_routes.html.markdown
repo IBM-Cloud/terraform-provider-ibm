@@ -41,7 +41,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `routing table routes` - List of all routes in a Routing Table in a VPC.
   * `name` - The name for the route.

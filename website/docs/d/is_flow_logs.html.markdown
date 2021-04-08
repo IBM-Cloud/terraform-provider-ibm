@@ -22,7 +22,7 @@ data "ibm_is_flow_logs" "ds_flow_logs" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `flow_log_collectors` - List of all flowlogs in the IBM Cloud Infrastructure.
   * `active` - Indicates whether this collector is active.

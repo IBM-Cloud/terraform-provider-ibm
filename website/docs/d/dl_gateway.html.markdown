@@ -28,7 +28,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 * `bgp_asn` - Customer BGP ASN.
 * `created_at` - The date and time resource was created.
 * `crn` - The CRN (Cloud Resource Name) of this gateway.

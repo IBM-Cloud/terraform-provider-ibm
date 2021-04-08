@@ -29,7 +29,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `dns_glbs` - List of all private domain name service Load balancers in the IBM Cloud Infrastructure.
   - `name` - The name of the load balancer.

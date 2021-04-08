@@ -22,7 +22,7 @@ data "ibm_is_images" "ds_images" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `images` - List of all images in the IBM Cloud Infrastructure.
   * `name` - The name for this image.

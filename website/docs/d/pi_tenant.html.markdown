@@ -38,7 +38,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier for this tenant.
 * `creation_date` - The date on which the tenant was created.

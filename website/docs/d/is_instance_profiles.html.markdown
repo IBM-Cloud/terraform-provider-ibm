@@ -22,7 +22,7 @@ data "ibm_is_instance_profiles" "ds_instance_profiles" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `profiles` - List of all server instance profiles in the region.
   * `name` - The name for this virtual server instance profile.

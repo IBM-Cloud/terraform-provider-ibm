@@ -19,7 +19,7 @@ data "ibm_is_dedicated_host_groups" "is_dedicated_host_groups" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the DedicatedHostGroupCollection.
 * `host_groups` - Collection of dedicated host groups. Nested `groups` blocks have the following structure:

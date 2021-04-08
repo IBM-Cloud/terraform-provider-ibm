@@ -42,7 +42,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the space.  
 * `managers` - The email addresses (associated with IBMid) of the users who have a manager role in this space.

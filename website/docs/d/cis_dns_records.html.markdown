@@ -32,7 +32,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `cis_dns_records` - The list of DNS records.
   - `id` - The identifier which consists of record id, zone id and crn with `:` seperator.

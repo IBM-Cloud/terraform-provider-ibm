@@ -29,7 +29,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `billing_location` - The geographical location of this location, used for billing purposes.
 * `name` - Name of the Location.

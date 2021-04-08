@@ -22,7 +22,7 @@ Import the details of all IAM (Identity and Access Management) users profile on 
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 * `id` - An alphanumeric value identifying the user.
 * `users` - List of all IAM users. Each user profile has following list of arguments	
   * `iam_id` - An alphanumeric value identifying the user's IAM ID.

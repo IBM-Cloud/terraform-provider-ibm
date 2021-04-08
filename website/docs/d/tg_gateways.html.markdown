@@ -21,7 +21,7 @@ data "ibm_tg_gateways" "ds_tggateways" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `transit_gateways` - List of all Transit gateways in the IBM Cloud Infrastructure.
   * `created_at` - The date and time resource was created.
