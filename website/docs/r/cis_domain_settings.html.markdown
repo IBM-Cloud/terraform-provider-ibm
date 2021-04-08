@@ -116,6 +116,6 @@ Additional settings not implemented in this version of the provider.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `certificate_status`. (deprecated) Value of: "none", "initializing", "authorizing", "active"

@@ -1,9 +1,6 @@
 # IBM VPC Classic Cluster example
 
 This example shows how to create a Kubernetes VPC Cluster under a specified resource group id, with default worker node with given zone and subnets. To have a multizone cluster, update the zones with new zone-name and subnet-id. 
-To create a classic VPC cluster user need to set the generation parameter inside provider blcok to 1 or export the environment varaibale IC_GENERATION as value 1.
-
-Note : By default, value of IC_GENERATION is 2.
 
 Following types of resources are supported:
 
@@ -33,10 +30,6 @@ Run `terraform destroy` when you don't need these resources.
 Create a container cluster:
 
 ```hcl
-
-provider "ibm" {
-  generation = 1
-}
 
 resource "ibm_is_vpc" "vpc1" {
   name = "vpc"

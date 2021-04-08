@@ -92,7 +92,7 @@ func resourceIBMISNetworkACL() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_network_acl", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "List of tags",
 			},
@@ -362,6 +362,15 @@ func resourceIBMISNetworkACLValidator() *ResourceValidator {
 			Type:                       TypeInt,
 			MinValue:                   "1",
 			MaxValue:                   "65535"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "tag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 
 	ibmISNetworkACLResourceValidator := ResourceValidator{ResourceName: "ibm_is_network_acl", Schema: validateSchema}
 	return &ibmISNetworkACLResourceValidator

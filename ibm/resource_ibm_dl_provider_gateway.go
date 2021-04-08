@@ -114,7 +114,7 @@ func resourceIBMDLProviderGateway() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_dl_provider_gateway", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "Tags for the direct link gateway",
 			},
@@ -173,6 +173,15 @@ func resourceIBMDLProviderGatewayValidator() *ResourceValidator {
 			Regexp:                     `^([a-zA-Z]|[a-zA-Z][-_a-zA-Z0-9]*[a-zA-Z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "tag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 
 	ibmISDLGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_dl_provider_gateway", Schema: validateSchema}
 	return &ibmISDLGatewayResourceValidator

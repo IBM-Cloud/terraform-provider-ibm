@@ -22,7 +22,19 @@ resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" 
   name = "custom-route-2"
   destination = "192.168.4.0/24"
   action = "deliver"
-  next_hop    = "10.0.0.4"
+  next_hop = "10.0.0.4"
+}
+```
+
+```hcl
+resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" {
+  vpc = ""
+  routing_table = ""
+  zone = "us-south-1"
+  name = "custom-route-2"
+  destination = "192.168.4.0/24"
+  action = "deliver"
+  next_hop = ibm_is_vpn_gateway_connection.VPNGatewayConnection.gateway_connection
 }
 
 ```
@@ -32,16 +44,16 @@ resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" 
 The following arguments are supported:
 
 * `name` - (Optional, string) The user-defined name for this route. If unspecified, the name will be a hyphenated list of randomly-selected words. Names must be unique within the VPC routing table the route resides in.
-* `vpc` - (Required, Forces new resource, string) The vpc id. 
+* `vpc` - (Required, Forces new resource, string) The vpc id.
 * `routing_table` - (Required, Forces new resource, string) The routing table identifier
-* `action` - (Optional,string) The action to perform with a packet matching the route.
-* `zone` - (Required, Forces new resource, string) Name of the zone. 
-* `destination` - (Required, Forces new resource, string) The destination of the route. 
-* `next_hop` - (Required, Forces new resource, string) The next hop of the route. 
+* `action` - (Optional,string) The action to perform with a packet matching the route `delegate`, `delegate_vpc`, `deliver`, `drop`.
+* `zone` - (Required, Forces new resource, string) Name of the zone.
+* `destination` - (Required, Forces new resource, string) The destination of the route.
+* `next_hop` - (Required, Forces new resource, string) The next hop of the route. Accepts IP address or a VPN Connection ID. For `action` other than `deliver`, it must be specified as 0.0.0.0.
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier for this routing table. The id is composed of \<vpc_route_table_id\>/\<vpc_route_table_route_id\>
 * `is_default` - Indicates whether this is the default routing table for this VPC

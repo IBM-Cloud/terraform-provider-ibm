@@ -57,7 +57,7 @@ func testAccCheckIBMResourceGroupDataSourceConfigWithName() string {
 	return fmt.Sprintf(`
 
 data "ibm_resource_group" "testacc_ds_resource_group_name" {
-	is_default=true
+	name = "default"
 }`)
 
 }

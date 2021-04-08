@@ -19,7 +19,7 @@ import (
 
 func TestAccCFFunctionPackage_Basic(t *testing.T) {
 	var conf whisk.Package
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_package_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
@@ -111,9 +111,9 @@ func TestAccCFFunctionPackage_Basic(t *testing.T) {
 
 func TestAccIAMFunctionPackage_Basic(t *testing.T) {
 	var conf whisk.Package
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_package_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
-	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("terraform_package_updated_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -203,8 +203,8 @@ func TestAccIAMFunctionPackage_Basic(t *testing.T) {
 
 func TestAccCFFunctionPackage_Bind_Basic(t *testing.T) {
 	var conf whisk.Package
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_package_%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("terraform_package_updated_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	bindName := "/whisk.system/alarms"
 
@@ -293,7 +293,7 @@ func TestAccCFFunctionPackage_Bind_Basic(t *testing.T) {
 
 func TestAccIAMFunctionPackage_Bind_Basic(t *testing.T) {
 	var conf whisk.Package
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_package_%d", acctest.RandIntRange(10, 100))
 	updatedName := fmt.Sprintf("terraform_updated_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	bindName := "/whisk.system/alarms"
@@ -383,7 +383,7 @@ func TestAccIAMFunctionPackage_Bind_Basic(t *testing.T) {
 
 func TestAccCFFunctionPackage_Import(t *testing.T) {
 	var conf whisk.Package
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_package_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -415,7 +415,7 @@ func TestAccCFFunctionPackage_Import(t *testing.T) {
 
 func TestAccIAMFunctionPackage_Import(t *testing.T) {
 	var conf whisk.Package
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_package_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -468,7 +468,7 @@ func testAccCheckFunctionPackageExists(n string, obj *whisk.Package) resource.Te
 		if err != nil {
 			return err
 		}
-		client, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+		client, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 		if err != nil {
 			return err
 
@@ -507,7 +507,7 @@ func testAccCheckFunctionPackageDestroy(s *terraform.State) error {
 		namespace := parts[0]
 		name := parts[1]
 
-		wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+		wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 		if err != nil && strings.Contains(err.Error(), "is not in the list of entitled namespaces") {
 			return nil
 		}

@@ -208,9 +208,11 @@ Resource will wait for only the specified stage and complete execution. The supp
 * `patch_version` - (Optional, string) Set this to update the worker nodes with the required patch version. 
    The patch_version should be in the format - `patch_version_fixpack_version`. Learn more about the Kuberentes version [here](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions).
     **NOTE**: To update the patch/fixpack versions of the worker nodes, Run the command `ibmcloud ks workers -c <cluster_name_or_id> --output json`, fetch the required patch & fixpack versions from `kubeVersion.target` and set the patch_version parameter.
+* `retry_patch_version` - (Optional, int) This argument helps to retry the update of patch_version if the previous update fails. Increment the value to retry the update of patch_version on worker nodes.
+
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the cluster.
 * `name` - The name of the cluster.
@@ -248,3 +250,13 @@ The following attributes are exported:
 * `private_service_endpoint_url` - Private service endpoint url.
 * `public_service_endpoint_url` - Public service endpoint url.
 * `crn` - CRN of the instance.
+
+## Import
+
+ibm_container_cluster can be imported using cluster_id
+
+```
+$ terraform import ibm_container_cluster.example <cluster_id>
+
+$ terraform import ibm_container_cluster.example c1di75fd0qpn1amo5hng
+```

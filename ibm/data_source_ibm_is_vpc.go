@@ -46,7 +46,7 @@ func dataSourceIBMISVPC() *schema.Resource {
 				Description: "Default Network ACL name",
 			},
 
-			isVPCIDefaultSecurityGroupName: {
+			isVPCDefaultSecurityGroupName: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Default security group name",
@@ -68,7 +68,7 @@ func dataSourceIBMISVPC() *schema.Resource {
 				Computed: true,
 			},
 
-			isVPCIDefaultSecurityGroup: {
+			isVPCDefaultSecurityGroup: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Security group associated with VPC",
@@ -331,9 +331,9 @@ func classicVpcGetByName(d *schema.ResourceData, meta interface{}, name string) 
 				d.Set(isVPCDefaultNetworkACL, nil)
 			}
 			if vpc.DefaultSecurityGroup != nil {
-				d.Set(isVPCIDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
+				d.Set(isVPCDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
 			} else {
-				d.Set(isVPCIDefaultSecurityGroup, nil)
+				d.Set(isVPCDefaultSecurityGroup, nil)
 			}
 			tags, err := GetTagsUsingCRN(meta, *vpc.CRN)
 			if err != nil {
@@ -541,7 +541,7 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID)
 			d.Set(isVPCDefaultNetworkACLName, *vpc.DefaultNetworkACL.Name)
 			d.Set(isVPCDefaultRoutingTableName, *vpc.DefaultRoutingTable.Name)
-			d.Set(isVPCIDefaultSecurityGroupName, *vpc.DefaultSecurityGroup.Name)
+			d.Set(isVPCDefaultSecurityGroupName, *vpc.DefaultSecurityGroup.Name)
 			if vpc.DefaultNetworkACL != nil {
 				d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID)
 			} else {
@@ -551,9 +551,9 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID)
 			}
 			if vpc.DefaultSecurityGroup != nil {
-				d.Set(isVPCIDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
+				d.Set(isVPCDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
 			} else {
-				d.Set(isVPCIDefaultSecurityGroup, nil)
+				d.Set(isVPCDefaultSecurityGroup, nil)
 			}
 			tags, err := GetTagsUsingCRN(meta, *vpc.CRN)
 			if err != nil {

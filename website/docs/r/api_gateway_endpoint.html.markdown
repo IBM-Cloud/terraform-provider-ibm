@@ -72,7 +72,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The Id of the Endpoint resource. It is a combination of <service_instance_crn>//<endpoint_ID>
 * `endpoint_id` - It is also called as Artifact ID. The Id of an Endpoint

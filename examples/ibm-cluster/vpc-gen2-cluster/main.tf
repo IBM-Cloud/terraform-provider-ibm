@@ -1,7 +1,3 @@
-provider "ibm" {
-  generation = 2
-}
-
 resource "random_id" "name1" {
   byte_length = 2
 }

@@ -136,7 +136,7 @@ func resourceIBMFunctionRuleCreate(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 	namespace := d.Get("namespace").(string)
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -199,7 +199,7 @@ func resourceIBMFunctionRuleRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -243,7 +243,7 @@ func resourceIBMFunctionRuleUpdate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	namespace := parts[0]
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -308,7 +308,7 @@ func resourceIBMFunctionRuleDelete(d *schema.ResourceData, meta interface{}) err
 
 	namespace := parts[0]
 	ruleID := parts[1]
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -352,7 +352,7 @@ func resourceIBMFunctionRuleExists(d *schema.ResourceData, meta interface{}) (bo
 		return false, err
 	}
 
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return false, err
 
