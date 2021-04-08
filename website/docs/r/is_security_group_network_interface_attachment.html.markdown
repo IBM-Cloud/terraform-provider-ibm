@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : security_group_network_interface_attachment"
-sidebar_current: "docs-ibm-resource-is-security-group-network-interface-attachment"
 description: |-
   Manages IBM Security Group Network Interface Attachment.
 ---
@@ -29,7 +30,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the security group network interface. The id is composed of \<security_group_id\>/\<network_interface_id\>.
 * `instance_network_interface` - The instance network interface id.

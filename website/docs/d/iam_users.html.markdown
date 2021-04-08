@@ -1,7 +1,7 @@
 ---
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_users"
-sidebar_current: "docs-ibm-datasource-iam-users"
 description: |-
   Fechtes all IAM users profile information.
 ---

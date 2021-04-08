@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_snapshot"
-sidebar_current: "docs-ibm-resource-pi-snapshot"
 description: |-
   Manages Snapshots in the Power Virtual Server Cloud.
 ---
@@ -56,7 +57,7 @@ will be part of the snapshot.
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the snapshot.The id is composed of \<power_instance_id\>/\<pi_snap_shot_id\>.
 * `volume_snapshots` - A map of the source and target volumes.

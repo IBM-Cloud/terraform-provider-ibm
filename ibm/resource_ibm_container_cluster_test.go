@@ -9,10 +9,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
+	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 )
 
 func TestAccIBMContainerCluster_basic(t *testing.T) {
@@ -29,8 +30,6 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "default_pool_size", "1"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "kube_version", kubeVersion),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "hardware", "shared"),
 					resource.TestCheckResourceAttr(
@@ -52,10 +51,6 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "default_pool_size", "2"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "kube_version", kubeUpdateVersion),
-					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "workers_info.0.version", kubeUpdateVersion),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "hardware", "shared"),
 					resource.TestCheckResourceAttr(
@@ -139,7 +134,6 @@ func TestAccIBMContainerClusterDiskEnc(t *testing.T) {
 }
 
 func TestAccIBMContainerClusterPrivateSubnet(t *testing.T) {
-	t.Skip()
 	clusterName := fmt.Sprintf("tf-cluster-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -164,7 +158,6 @@ func TestAccIBMContainerClusterPrivateSubnet(t *testing.T) {
 }
 
 func TestAccIBMContainerClusterPrivateAndPublicSubnet(t *testing.T) {
-	t.Skip()
 	clusterName := fmt.Sprintf("tf-cluster-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -242,7 +235,7 @@ func testAccCheckIBMContainerClusterKmsEnable(clusterName, kmsInstanceName, root
 	return fmt.Sprintf(`
 	
 	data "ibm_resource_group" "testacc_ds_resource_group" {
-		name = "default"
+		is_default=true
 	}
 	resource "ibm_resource_instance" "kms_instance" {
 		name              = "%s"

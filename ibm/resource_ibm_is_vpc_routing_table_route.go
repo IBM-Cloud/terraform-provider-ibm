@@ -6,6 +6,7 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"net"
 	"strings"
 	"time"
 
@@ -117,7 +118,7 @@ func resourceIBMISVPCRoutingTableRoute() *schema.Resource {
 func resourceIBMISVPCRoutingTableRouteValidator() *ResourceValidator {
 
 	validateSchema := make([]ValidateSchema, 2)
-	actionAllowedValues := "delegate, deliver, drop"
+	actionAllowedValues := "delegate, delegate_vpc, deliver, drop"
 
 	validateSchema = append(validateSchema,
 		ValidateSchema{
@@ -154,15 +155,25 @@ func resourceIBMISVPCRoutingTableRouteCreate(d *schema.ResourceData, meta interf
 	z := &vpcv1.ZoneIdentityByName{
 		Name: core.StringPtr(zone),
 	}
-	nextHop := d.Get(rNextHop).(string)
-	nh := &vpcv1.RouteNextHopPrototypeRouteNextHopIP{
-		Address: core.StringPtr(nextHop),
-	}
 
-	createVpcRoutingTableRouteOptions := sess.NewCreateVPCRoutingTableRouteOptions(vpcID, tableID, destination, nh, z)
+	createVpcRoutingTableRouteOptions := sess.NewCreateVPCRoutingTableRouteOptions(vpcID, tableID, destination, z)
 	createVpcRoutingTableRouteOptions.SetZone(z)
 	createVpcRoutingTableRouteOptions.SetDestination(destination)
-	createVpcRoutingTableRouteOptions.SetNextHop(nh)
+
+	if add, ok := d.GetOk(rNextHop); ok {
+		item := add.(string)
+		if net.ParseIP(item) == nil {
+			nhConnectionID := &vpcv1.RouteNextHopPrototypeVPNGatewayConnectionIdentity{
+				ID: core.StringPtr(item),
+			}
+			createVpcRoutingTableRouteOptions.SetNextHop(nhConnectionID)
+		} else {
+			nh := &vpcv1.RouteNextHopPrototypeRouteNextHopIP{
+				Address: core.StringPtr(item),
+			}
+			createVpcRoutingTableRouteOptions.SetNextHop(nh)
+		}
+	}
 
 	if action, ok := d.GetOk(rAction); ok {
 		routeAction := action.(string)
@@ -207,10 +218,12 @@ func resourceIBMISVPCRoutingTableRouteRead(d *schema.ResourceData, meta interfac
 	d.Set(rDestination, *route.Destination)
 	if route.NextHop != nil {
 		nexthop := route.NextHop.(*vpcv1.RouteNextHop)
-		//route[isRoutingTableRouteNexthop] = *nexthop.Address
-		//nh := response.NextHop.(map[string]interface{})
-		//nh := *response.NextHop.(vpcv1.RouteNextHopPrototype)
-		d.Set(rNextHop, *nexthop.Address)
+		if nexthop.Address != nil {
+			d.Set(rNextHop, *nexthop.Address)
+		}
+		if nexthop.ID != nil {
+			d.Set(rNextHop, *nexthop.ID)
+		}
 	}
 	if route.Zone != nil {
 		d.Set(rZone, *route.Zone.Name)

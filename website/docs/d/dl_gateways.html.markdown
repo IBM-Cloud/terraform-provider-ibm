@@ -1,7 +1,7 @@
 ---
+subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_gateways"
-sidebar_current: "docs-ibm-datasource-dl-gateways"
 description: |-
   Manages IBM Cloud Infrastructure Direct Link Gateway.
 ---

@@ -23,9 +23,12 @@ import (
 
 const (
 	isVPCDefaultNetworkACL          = "default_network_acl"
-	isVPCIDefaultSecurityGroup      = "default_security_group"
+	isVPCDefaultSecurityGroup       = "default_security_group"
 	isVPCDefaultRoutingTable        = "default_routing_table"
 	isVPCName                       = "name"
+	isVPCDefaultNetworkACLName      = "default_network_acl_name"
+	isVPCDefaultSecurityGroupName   = "default_security_group_name"
+	isVPCDefaultRoutingTableName    = "default_routing_table_name"
 	isVPCResourceGroup              = "resource_group"
 	isVPCStatus                     = "status"
 	isVPCDeleting                   = "deleting"
@@ -117,6 +120,30 @@ func resourceIBMISVPC() *schema.Resource {
 				Description:  "VPC name",
 			},
 
+			isVPCDefaultNetworkACLName: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCDefaultNetworkACLName),
+				Description:  "Default Network ACL name",
+			},
+
+			isVPCDefaultSecurityGroupName: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCDefaultSecurityGroupName),
+				Description:  "Default security group name",
+			},
+
+			isVPCDefaultRoutingTableName: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCDefaultRoutingTableName),
+				Description:  "Default routing table name",
+			},
+
 			isVPCResourceGroup: {
 				Type:        schema.TypeString,
 				ForceNew:    true,
@@ -131,7 +158,7 @@ func resourceIBMISVPC() *schema.Resource {
 				Description: "VPC status",
 			},
 
-			isVPCIDefaultSecurityGroup: {
+			isVPCDefaultSecurityGroup: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Security group associated with VPC",
@@ -140,7 +167,7 @@ func resourceIBMISVPC() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_vpc", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "List of tags",
 			},
@@ -349,6 +376,43 @@ func resourceIBMISVPCValidator() *ResourceValidator {
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCDefaultNetworkACLName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCDefaultSecurityGroupName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVPCDefaultRoutingTableName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "tag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 
 	ibmISVPCResourceValidator := ResourceValidator{ResourceName: "ibm_is_vpc", Schema: validateSchema}
 	return &ibmISVPCResourceValidator
@@ -486,6 +550,19 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 		return fmt.Errorf("Error while creating VPC err %s\n%s", err, response)
 	}
 	d.SetId(*vpc.ID)
+
+	if defaultSGName, ok := d.GetOk(isVPCDefaultSecurityGroupName); ok {
+		sgNameUpdate(sess, *vpc.DefaultSecurityGroup.ID, defaultSGName.(string))
+	}
+
+	if defaultRTName, ok := d.GetOk(isVPCDefaultRoutingTableName); ok {
+		rtNameUpdate(sess, *vpc.ID, *vpc.DefaultRoutingTable.ID, defaultRTName.(string))
+	}
+
+	if defaultACLName, ok := d.GetOk(isVPCDefaultNetworkACLName); ok {
+		nwaclNameUpdate(sess, *vpc.DefaultNetworkACL.ID, defaultACLName.(string))
+	}
+
 	log.Printf("[INFO] VPC : %s", *vpc.ID)
 	_, err = isWaitForVPCAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -584,9 +661,9 @@ func classicVpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isVPCDefaultNetworkACL, nil)
 	}
 	if vpc.DefaultSecurityGroup != nil {
-		d.Set(isVPCIDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
+		d.Set(isVPCDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
 	} else {
-		d.Set(isVPCIDefaultSecurityGroup, nil)
+		d.Set(isVPCDefaultSecurityGroup, nil)
 	}
 	tags, err := GetTagsUsingCRN(meta, *vpc.CRN)
 	if err != nil {
@@ -799,17 +876,20 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if vpc.DefaultNetworkACL != nil {
 		log.Printf("[DEBUG] vpc default network acl is not null :%s", *vpc.DefaultNetworkACL.ID)
 		d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID)
+		d.Set(isVPCDefaultNetworkACLName, *vpc.DefaultNetworkACL.Name)
 	} else {
 		log.Printf("[DEBUG] vpc default network acl is  null")
 		d.Set(isVPCDefaultNetworkACL, nil)
 	}
 	if vpc.DefaultSecurityGroup != nil {
-		d.Set(isVPCIDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
+		d.Set(isVPCDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
+		d.Set(isVPCDefaultSecurityGroupName, *vpc.DefaultSecurityGroup.Name)
 	} else {
-		d.Set(isVPCIDefaultSecurityGroup, nil)
+		d.Set(isVPCDefaultSecurityGroup, nil)
 	}
 	if vpc.DefaultRoutingTable != nil {
 		d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID)
+		d.Set(isVPCDefaultRoutingTableName, *vpc.DefaultRoutingTable.Name)
 	}
 	tags, err := GetTagsUsingCRN(meta, *vpc.CRN)
 	if err != nil {
@@ -1085,6 +1165,23 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 				"Error on update of resource vpc (%s) tags: %s", d.Id(), err)
 		}
 	}
+
+	if d.HasChange(isVPCDefaultSecurityGroupName) {
+		if defaultSGName, ok := d.GetOk(isVPCDefaultSecurityGroupName); ok {
+			sgNameUpdate(sess, d.Get(isVPCDefaultSecurityGroup).(string), defaultSGName.(string))
+		}
+	}
+	if d.HasChange(isVPCDefaultRoutingTableName) {
+		if defaultRTName, ok := d.GetOk(isVPCDefaultRoutingTableName); ok {
+			rtNameUpdate(sess, id, d.Get(isVPCDefaultRoutingTable).(string), defaultRTName.(string))
+		}
+	}
+	if d.HasChange(isVPCDefaultNetworkACLName) {
+		if defaultACLName, ok := d.GetOk(isVPCDefaultNetworkACLName); ok {
+			nwaclNameUpdate(sess, d.Get(isVPCDefaultNetworkACL).(string), defaultACLName.(string))
+		}
+	}
+
 	if hasChanged {
 		updateVpcOptions := &vpcv1.UpdateVPCOptions{
 			ID: &id,
@@ -1317,4 +1414,60 @@ func resourceIBMVPCHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s",
 		strings.ToLower(v.(string))))
 	return hashcode.String(buf.String())
+}
+
+func nwaclNameUpdate(sess *vpcv1.VpcV1, id, name string) error {
+	updateNetworkACLOptions := &vpcv1.UpdateNetworkACLOptions{
+		ID: &id,
+	}
+	networkACLPatchModel := &vpcv1.NetworkACLPatch{
+		Name: &name,
+	}
+	networkACLPatch, err := networkACLPatchModel.AsPatch()
+	if err != nil {
+		return fmt.Errorf("Error calling asPatch for NetworkACLPatch: %s", err)
+	}
+	updateNetworkACLOptions.NetworkACLPatch = networkACLPatch
+	_, response, err := sess.UpdateNetworkACL(updateNetworkACLOptions)
+	if err != nil {
+		return fmt.Errorf("Error Updating Network ACL(%s) name : %s\n%s", id, err, response)
+	}
+	return nil
+}
+
+func sgNameUpdate(sess *vpcv1.VpcV1, id, name string) error {
+	updateSecurityGroupOptions := &vpcv1.UpdateSecurityGroupOptions{
+		ID: &id,
+	}
+	securityGroupPatchModel := &vpcv1.SecurityGroupPatch{
+		Name: &name,
+	}
+	securityGroupPatch, err := securityGroupPatchModel.AsPatch()
+	if err != nil {
+		return fmt.Errorf("Error calling asPatch for SecurityGroupPatch: %s", err)
+	}
+	updateSecurityGroupOptions.SecurityGroupPatch = securityGroupPatch
+	_, response, err := sess.UpdateSecurityGroup(updateSecurityGroupOptions)
+	if err != nil {
+		return fmt.Errorf("Error Updating Security Group name : %s\n%s", err, response)
+	}
+	return nil
+}
+
+func rtNameUpdate(sess *vpcv1.VpcV1, vpcID, id, name string) error {
+	updateVpcRoutingTableOptions := new(vpcv1.UpdateVPCRoutingTableOptions)
+	updateVpcRoutingTableOptions.VPCID = &vpcID
+	updateVpcRoutingTableOptions.ID = &id
+	routingTablePatchModel := new(vpcv1.RoutingTablePatch)
+	routingTablePatchModel.Name = &name
+	routingTablePatchModelAsPatch, asPatchErr := routingTablePatchModel.AsPatch()
+	if asPatchErr != nil {
+		return fmt.Errorf("Error calling asPatch for RoutingTablePatchModel: %s", asPatchErr)
+	}
+	updateVpcRoutingTableOptions.RoutingTablePatch = routingTablePatchModelAsPatch
+	_, response, err := sess.UpdateVPCRoutingTable(updateVpcRoutingTableOptions)
+	if err != nil {
+		return fmt.Errorf("Error Updating Routing table name %s\n%s", err, response)
+	}
+	return nil
 }

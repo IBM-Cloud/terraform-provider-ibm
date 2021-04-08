@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : Volume Profile"
-sidebar_current: "docs-ibm-datasources-is-volume-profile"
 description: |-
   Manages IBM Cloud virtual server volume profile.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_page_rule"
-sidebar_current: "docs-ibm-resource-cis-page-rule"
 description: |-
   Provides a IBM CIS Page Rule resource.
 ---
@@ -120,7 +121,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The record ID. It is a combination of <`rule_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
 - `rule_id` - The Page rule ID.

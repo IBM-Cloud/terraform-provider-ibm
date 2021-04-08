@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : volume"
-sidebar_current: "docs-ibm-datasource-is-volume"
 description: |-
   Manages IBM Volume.
 ---
@@ -42,3 +42,7 @@ The following attributes are exported:
 * `encryption_key` - The key to use for encrypting this volume.
 * `resource_group` - The resource group ID for this volume.
 * `tags` - Tags associated with the volume.
+* `status` - The status of the volume. One of [ available, failed, pending, unusable, pending_deletion ].
+* `status_reasons` - Array of reasons for the current status
+  * `code` - A snake case string succinctly identifying the status reason
+  * `message` - An explanation of the status reason

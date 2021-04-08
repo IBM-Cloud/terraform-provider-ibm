@@ -69,6 +69,12 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 		Exists:   resourceIBMComputeVmInstanceExists,
 		Importer: &schema.ResourceImporter{},
 
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(90 * time.Minute),
+			Delete: schema.DefaultTimeout(90 * time.Minute),
+			Update: schema.DefaultTimeout(90 * time.Minute),
+		},
+
 		Schema: map[string]*schema.Schema{
 			"hostname": {
 				Type:          schema.TypeString,
@@ -201,6 +207,7 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 			"flavor_key_name": {
 				Type:          schema.TypeString,
 				Optional:      true,
+				Computed:      true,
 				Description:   "Flavor key name used to provision vm.",
 				ConflictsWith: []string{"cores", "memory"},
 			},
@@ -496,9 +503,10 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Set:      schema.HashString,
 			},
 			"wait_time_minutes": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  90,
+				Type:       schema.TypeInt,
+				Optional:   true,
+				Deprecated: "This field is deprecated. Use timeouts block instead",
+				Default:    90,
 			},
 			// Monthly only
 			// Limited BandWidth
@@ -529,6 +537,15 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				ForceNew:         true,
 				DiffSuppressFunc: applyOnce,
 			},
+
+			// Quote based provisioning only
+			"quote_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Quote ID for Quote based provisioning",
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -653,7 +670,7 @@ func expandSecurityGroupBindings(securityGroupsList []interface{}) ([]datatypes.
 	return sgBindings, nil
 }
 
-func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interface{}, datacenter string, publicVlanID, privateVlanID int) ([]datatypes.Virtual_Guest, error) {
+func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interface{}, datacenter string, publicVlanID, privateVlanID, quote_id int) ([]datatypes.Virtual_Guest, error) {
 
 	dc := datatypes.Location{
 		Name: sl.String(datacenter),
@@ -777,24 +794,28 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 			opts.TransientGuestFlag = sl.Bool(transientFlag.(bool))
 		}
 
-		if imgID, ok := d.GetOk("image_id"); ok {
-			imageID := imgID.(int)
-			service := services.
-				GetVirtualGuestBlockDeviceTemplateGroupService(meta.(ClientSession).SoftLayerSession())
+		if quote_id == 0 {
 
-			image, err := service.
-				Mask("id,globalIdentifier").Id(imageID).
-				GetObject()
-			if err != nil {
-				return vms, fmt.Errorf("Error looking up image %d: %s", imageID, err)
-			} else if image.GlobalIdentifier == nil {
-				return vms, fmt.Errorf(
-					"Image template %d does not have a global identifier", imageID)
+			if imgID, ok := d.GetOk("image_id"); ok {
+				imageID := imgID.(int)
+				service := services.
+					GetVirtualGuestBlockDeviceTemplateGroupService(meta.(ClientSession).SoftLayerSession())
+
+				image, err := service.
+					Mask("id,globalIdentifier").Id(imageID).
+					GetObject()
+				if err != nil {
+					return vms, fmt.Errorf("Error looking up image %d: %s", imageID, err)
+				} else if image.GlobalIdentifier == nil {
+					return vms, fmt.Errorf(
+						"Image template %d does not have a global identifier", imageID)
+				}
+
+				opts.BlockDeviceTemplateGroup = &datatypes.Virtual_Guest_Block_Device_Template_Group{
+					GlobalIdentifier: image.GlobalIdentifier,
+				}
 			}
 
-			opts.BlockDeviceTemplateGroup = &datatypes.Virtual_Guest_Block_Device_Template_Group{
-				GlobalIdentifier: image.GlobalIdentifier,
-			}
 		}
 
 		if operatingSystemReferenceCode, ok := d.GetOk("os_reference_code"); ok {
@@ -884,16 +905,19 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 			}
 		}
 
-		// Get configured ssh_keys
-		sshKeySet := d.Get("ssh_key_ids").(*schema.Set)
-		sshKeys := sshKeySet.List()
-		sshKeyLen := len(sshKeys)
-		if sshKeyLen > 0 {
-			opts.SshKeys = make([]datatypes.Security_Ssh_Key, 0, sshKeyLen)
-			for _, sshKey := range sshKeys {
-				opts.SshKeys = append(opts.SshKeys, datatypes.Security_Ssh_Key{
-					Id: sl.Int(sshKey.(int)),
-				})
+		if quote_id == 0 {
+
+			// Get configured ssh_keys
+			sshKeySet := d.Get("ssh_key_ids").(*schema.Set)
+			sshKeys := sshKeySet.List()
+			sshKeyLen := len(sshKeys)
+			if sshKeyLen > 0 {
+				opts.SshKeys = make([]datatypes.Security_Ssh_Key, 0, sshKeyLen)
+				for _, sshKey := range sshKeys {
+					opts.SshKeys = append(opts.SshKeys, datatypes.Security_Ssh_Key{
+						Id: sl.Int(sshKey.(int)),
+					})
+				}
 			}
 		}
 
@@ -920,6 +944,8 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 		dcName = dc.(string)
 	}
 
+	quote_id := d.Get("quote_id").(int)
+
 	if options, ok := d.GetOk("datacenter_choice"); ok {
 		retryOptions = options.([]interface{})
 	}
@@ -943,7 +969,8 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 			privateVlan = v.(int)
 
 		}
-		receipt, err1 = placeOrder(d, meta, dcName, publicVlan, privateVlan)
+
+		receipt, err1 = placeOrder(d, meta, dcName, publicVlan, privateVlan, quote_id)
 	} else if len(retryOptions) > 0 {
 
 		err := validateDatacenterOption(retryOptions, []string{"datacenter", "public_vlan_id", "private_vlan_id"})
@@ -971,7 +998,7 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 				privateVlan, _ = strconv.Atoi(v.(string))
 			}
 
-			receipt, err1 = placeOrder(d, meta, name, publicVlan, privateVlan)
+			receipt, err1 = placeOrder(d, meta, name, publicVlan, privateVlan, quote_id)
 			if err1 == nil {
 				break
 
@@ -984,7 +1011,12 @@ func resourceIBMComputeVmInstanceCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	var idStrings []string
-	if len(receipt.OrderDetails.OrderContainers) > 1 {
+	if quote_id > 0 {
+		vmId := fmt.Sprintf("%d", *receipt.OrderDetails.VirtualGuests[0].Id)
+		idStrings = append(idStrings, vmId)
+		d.SetId(vmId)
+
+	} else if len(receipt.OrderDetails.OrderContainers) > 1 {
 		for i := 0; i < len(receipt.OrderDetails.OrderContainers); i++ {
 			idStrings = append(idStrings, fmt.Sprintf("%d", *receipt.OrderDetails.OrderContainers[i].VirtualGuests[0].Id))
 		}
@@ -1434,7 +1466,7 @@ func resourceIBMComputeVmInstanceUpdate(d *schema.ResourceData, meta interface{}
 			return err
 		}
 		// Wait for upgrade transactions to finish
-		_, err = WaitForNoActiveTransactions(id, d, meta)
+		_, err = WaitForNoActiveTransactions(id, d, d.Timeout(schema.TimeoutUpdate), meta)
 		if err != nil {
 			return err
 		}
@@ -1491,7 +1523,7 @@ func resourceIBMComputeVmInstanceDelete(d *schema.ResourceData, meta interface{}
 			return fmt.Errorf("Not a valid ID, must be an integer: %s", err)
 		}
 
-		_, err = WaitForNoActiveTransactions(id, d, meta)
+		_, err = WaitForNoActiveTransactions(id, d, d.Timeout(schema.TimeoutDelete), meta)
 
 		if err != nil {
 			return fmt.Errorf("Error deleting virtual guest, couldn't wait for zero active transactions: %s", err)
@@ -1620,7 +1652,7 @@ func WaitForUpgradeTransactionsToAppear(d *schema.ResourceData, meta interface{}
 }
 
 // WaitForNoActiveTransactions Wait for no active transactions
-func WaitForNoActiveTransactions(id int, d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func WaitForNoActiveTransactions(id int, d *schema.ResourceData, timeout time.Duration, meta interface{}) (interface{}, error) {
 	log.Printf("Waiting for server (%s) to have zero active transactions", d.Id())
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"retry", activeTransaction},
@@ -1630,16 +1662,16 @@ func WaitForNoActiveTransactions(id int, d *schema.ResourceData, meta interface{
 			transactions, err := service.Id(id).GetActiveTransactions()
 			if err != nil {
 				if apiErr, ok := err.(sl.Error); ok && apiErr.StatusCode == 404 {
-					return nil, "", fmt.Errorf("Couldn't get active transactions: %s", err)
+					return nil, "", nil
 				}
-				return false, "retry", nil
+				return false, "retry", fmt.Errorf("Couldn't get active transactions: %s", err)
 			}
 			if len(transactions) == 0 {
 				return transactions, idleTransaction, nil
 			}
 			return transactions, activeTransaction, nil
 		},
-		Timeout:    time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
+		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -1655,7 +1687,7 @@ func WaitForVirtualGuestAvailable(id int, d *schema.ResourceData, meta interface
 		Pending:    []string{"retry", virtualGuestProvisioning},
 		Target:     []string{virtualGuestAvailable},
 		Refresh:    virtualGuestStateRefreshFunc(sess, id, d),
-		Timeout:    time.Duration(d.Get("wait_time_minutes").(int)) * time.Minute,
+		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -1827,17 +1859,65 @@ func setNotes(id int, d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func placeOrder(d *schema.ResourceData, meta interface{}, name string, publicVlanID, privateVlanID int) (datatypes.Container_Product_Order_Receipt, error) {
+func placeOrder(d *schema.ResourceData, meta interface{}, name string, publicVlanID, privateVlanID, quote_id int) (datatypes.Container_Product_Order_Receipt, error) {
 	sess := meta.(ClientSession).SoftLayerSession()
 	service := services.GetVirtualGuestService(sess)
 
-	options, err := getVirtualGuestTemplateFromResourceData(d, meta, name, publicVlanID, privateVlanID)
+	options, err := getVirtualGuestTemplateFromResourceData(d, meta, name, publicVlanID, privateVlanID, quote_id)
 	if err != nil {
 		return datatypes.Container_Product_Order_Receipt{}, err
 	}
-
-	var template datatypes.Container_Product_Order
 	guestOrders := make([]datatypes.Container_Product_Order, 0)
+	var template datatypes.Container_Product_Order
+	if quote_id > 0 {
+		// Build a virtual instance template from the quote.
+		template, err = services.GetBillingOrderQuoteService(sess).
+			Id(quote_id).GetRecalculatedOrderContainer(nil, sl.Bool(false))
+		if err != nil {
+			return datatypes.Container_Product_Order_Receipt{}, fmt.Errorf(
+				"Encountered problem trying to get the virtual machine order template from quote: %s", err)
+		}
+		template.Quantity = sl.Int(1)
+		template.ComplexType = sl.String("SoftLayer_Container_Product_Order_Virtual_Guest")
+		template.VirtualGuests = make([]datatypes.Virtual_Guest, 0, 1)
+		template.VirtualGuests = append(
+			template.VirtualGuests,
+			options[0],
+		)
+		// Get configured ssh_keys
+		sshKeySet := d.Get("ssh_key_ids").(*schema.Set)
+		sshKeys := sshKeySet.List()
+		sshKeyLen := len(sshKeys)
+		if sshKeyLen > 0 {
+			sshKeyA := make([]int, sshKeyLen)
+			template.SshKeys = make([]datatypes.Container_Product_Order_SshKeys, 0, sshKeyLen)
+			for i, sshKey := range sshKeys {
+				sshKeyA[i] = sshKey.(int)
+
+			}
+			template.SshKeys = append(template.SshKeys, datatypes.Container_Product_Order_SshKeys{
+				SshKeyIds: sshKeyA,
+			})
+		}
+		if rawImageTemplateId, ok := d.GetOk("image_id"); ok {
+			imageTemplateId := rawImageTemplateId.(int)
+			template.ImageTemplateId = sl.Int(imageTemplateId)
+		}
+
+		if postInstallURI, ok := d.GetOk("post_install_script_uri"); ok {
+			postInstallURIA := make([]string, 1)
+			postInstallURIA[0] = postInstallURI.(string)
+			template.ProvisionScripts = postInstallURIA
+		}
+
+		guestOrders = append(guestOrders, template)
+		order := &datatypes.Container_Product_Order{
+			OrderContainers: guestOrders,
+		}
+		receipt, err1 := services.GetBillingOrderQuoteService(sess).
+			Id(quote_id).PlaceOrder(order)
+		return receipt, err1
+	}
 	for i := 0; i < len(options); i++ {
 		opts := options[i]
 

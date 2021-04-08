@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_worker_pool"
-sidebar_current: "docs-ibm-resource-container-worker-pool"
 description: |-
   Manages IBM container worker pool.
 ---
@@ -80,7 +81,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the worker pool resource. The id is composed of \<cluster_name_id\>/\<worker_pool_id\>.<br/>
 **Note**:To reference the worker pool id in other resources use below interpolation syntax.<br/>

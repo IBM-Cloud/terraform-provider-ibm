@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : lb_pool_member"
-sidebar_current: "docs-ibm-resource-is-lb-pool-member"
 description: |-
   Manages IBM load balancer pool member.
 ---
@@ -60,7 +61,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the load balancer pool member.
 * `href` - The member's canonical URL.

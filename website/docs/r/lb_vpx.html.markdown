@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: lb_vpx"
-sidebar_current: "docs-ibm-resource-lb-vpx"
 description: |-
   Manages IBM VPX Load Balancer.
 ---
@@ -54,7 +55,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The internal identifier of a VPX load balancer
 * `name` - The internal name of a VPX load balancer.

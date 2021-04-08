@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : compute_ssl_certificate"
-sidebar_current: "docs-ibm-resource-compute-ssl-certificate"
 description: |-
   Manages IBM Compute SSL Certificate.
 ---
@@ -57,7 +58,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `common_name` - The common name encoded within the certificate. This name is usually a domain name.
 * `create_date` - The date the certificate record was created.

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Cloud Databases"
 layout: "ibm"
 page_title: "IBM : Cloud Database instance"
-sidebar_current: "docs-ibm-resource-database"
 description: |-
   Manages IBM Cloud Database Instance.
 ---
@@ -191,7 +192,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the new database instance (CRN).
 * `status` - Status of resource instance.

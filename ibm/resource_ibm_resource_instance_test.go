@@ -5,19 +5,16 @@ package ibm
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 	"testing"
 
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-
-	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
-func TestAccIBMResourceInstance_Basic(t *testing.T) {
-	var conf models.ServiceInstance
+func TestAccIBMResourceInstanceBasic(t *testing.T) {
 	serviceName := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
 	updateName := fmt.Sprintf("tf-kms-%d", acctest.RandIntRange(10, 100))
 
@@ -29,7 +26,7 @@ func TestAccIBMResourceInstance_Basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMResourceInstanceBasic(serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMResourceInstanceExists("ibm_resource_instance.instance", conf),
+					testAccCheckIBMResourceInstanceExists("ibm_resource_instance.instance"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "name", serviceName),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "cloud-object-storage"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "standard"),
@@ -39,7 +36,7 @@ func TestAccIBMResourceInstance_Basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMResourceInstanceUpdateWithSameName(serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMResourceInstanceExists("ibm_resource_instance.instance", conf),
+					testAccCheckIBMResourceInstanceExists("ibm_resource_instance.instance"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "name", serviceName),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "cloud-object-storage"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "standard"),
@@ -68,8 +65,7 @@ func TestAccIBMResourceInstance_Basic(t *testing.T) {
 	})
 }
 
-func TestAccIBMResourceInstance_import(t *testing.T) {
-	var conf models.ServiceInstance
+func TestAccIBMResourceInstanceImport(t *testing.T) {
 	serviceName := fmt.Sprintf("tf-ins-%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_resource_instance.instance"
 
@@ -81,7 +77,7 @@ func TestAccIBMResourceInstance_import(t *testing.T) {
 			{
 				Config: testAccCheckIBMResourceInstanceBasic(serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMResourceInstanceExists(resourceName, conf),
+					testAccCheckIBMResourceInstanceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "cloud-object-storage"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
@@ -99,8 +95,7 @@ func TestAccIBMResourceInstance_import(t *testing.T) {
 	})
 }
 
-func TestAccIBMResourceInstance_with_serviceendpoints(t *testing.T) {
-	var conf models.ServiceInstance
+func TestAccIBMResourceInstanceWithServiceendpoints(t *testing.T) {
 	serviceName := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_resource_instance.instance"
 
@@ -113,7 +108,7 @@ func TestAccIBMResourceInstance_with_serviceendpoints(t *testing.T) {
 			{
 				Config: testAccCheckIBMResourceInstanceServiceendpoints(serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMResourceInstanceExists(resourceName, conf),
+					testAccCheckIBMResourceInstanceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
@@ -124,8 +119,7 @@ func TestAccIBMResourceInstance_with_serviceendpoints(t *testing.T) {
 	})
 }
 
-func TestAccIBMResourceInstance_with_resource_group(t *testing.T) {
-	var conf models.ServiceInstance
+func TestAccIBMResourceInstanceWithResourceGroup(t *testing.T) {
 	serviceName := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_resource_instance.instance"
 
@@ -137,7 +131,7 @@ func TestAccIBMResourceInstance_with_resource_group(t *testing.T) {
 			{
 				Config: testAccCheckIBMResourceInstanceWithResourceGroup(serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMResourceInstanceExists(resourceName, conf),
+					testAccCheckIBMResourceInstanceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "cloud-object-storage"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
@@ -149,7 +143,7 @@ func TestAccIBMResourceInstance_with_resource_group(t *testing.T) {
 }
 
 func testAccCheckIBMResourceInstanceDestroy(s *terraform.State) error {
-	rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerAPI()
+	rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -159,17 +153,20 @@ func testAccCheckIBMResourceInstanceDestroy(s *terraform.State) error {
 		}
 
 		instanceID := rs.Primary.ID
+		resourceInstanceGet := rc.GetResourceInstanceOptions{
+			ID: &instanceID,
+		}
 
 		// Try to find the key
-		instance, err := rsContClient.ResourceServiceInstance().GetInstance(instanceID)
+		instance, resp, err := rsContClient.GetResourceInstance(&resourceInstanceGet)
 
 		if err == nil {
-			if !reflect.DeepEqual(instance, models.ServiceInstance{}) && instance.State == "active" {
+			if *instance.State == "active" {
 				return fmt.Errorf("Resource Instance still exists: %s", rs.Primary.ID)
 			}
 		} else {
 			if !strings.Contains(err.Error(), "404") {
-				return fmt.Errorf("Error checking if Resource Instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+				return fmt.Errorf("Error checking if Resource Instance (%s) has been destroyed: %s with resp code: %s", rs.Primary.ID, err, resp)
 			}
 		}
 	}
@@ -177,7 +174,7 @@ func testAccCheckIBMResourceInstanceDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMResourceInstanceExists(n string, obj models.ServiceInstance) resource.TestCheckFunc {
+func testAccCheckIBMResourceInstanceExists(n string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -185,19 +182,21 @@ func testAccCheckIBMResourceInstanceExists(n string, obj models.ServiceInstance)
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerAPI()
+		rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerV2API()
 		if err != nil {
 			return err
 		}
 		instanceID := rs.Primary.ID
-
-		instance, err := rsContClient.ResourceServiceInstance().GetInstance(instanceID)
-
-		if err != nil {
-			return err
+		resourceInstanceGet := rc.GetResourceInstanceOptions{
+			ID: &instanceID,
 		}
 
-		obj = instance
+		_, resp, err := rsContClient.GetResourceInstance(&resourceInstanceGet)
+
+		if err != nil {
+			return fmt.Errorf("Get resource instance error: %s with resp code: %s", err, resp)
+		}
+
 		return nil
 	}
 }
@@ -269,7 +268,7 @@ func testAccCheckIBMResourceInstanceWithResourceGroup(serviceName string) string
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "group" {
-		name = "default"
+		is_default=true
 	  }
 	  
 	resource "ibm_resource_instance" "instance" {

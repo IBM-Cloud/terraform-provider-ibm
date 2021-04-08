@@ -1,7 +1,7 @@
 ---
+subcategory: "Object Storage"
 layout: "ibm"
 page_title: "IBM : Cloud Object Storage Bucket"
-sidebar_current: "docs-ibm-datasource-cos-bucket"
 description: |-
   Get information about IBM CloudObject Storage Bucket.
 ---
@@ -77,3 +77,9 @@ The following attributes are exported:
 	*	`expire_rule.enable` :* (Required, bool) (Required) Specifies expire rule status either enable or disable for a bucket.
 	*	`expire_rule.days`   :* (Required, string)  Specifies the number of days when the specific rule action takes effect.
 	*	`expire_rule.prefix` :* (Optional, string) Specifies a prefix filter to apply to only a subset of objects with names that match the prefix.
+
+* Nested `retention_rule` block have the following structure:
+	*	`retention_rule.default` : (Required, int) default retention period are defined by this policy and apply to all objects in the bucket.
+	*	`retention_rule.maximum` : (Required, int) Specifies maximum duration of time an object can be kept unmodified in the bucket.
+	*	`retention_rule.minimum` : (Required, int) Specifies minimum duration of time an object must be kept unmodified in the bucket.
+	*	`retention_rule.permanent` : (Optional, bool) Specifies a permanent retention status either enable or disable for a bucket.

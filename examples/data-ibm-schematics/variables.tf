@@ -1,6 +1,0 @@
-variable "workspaceID" {
-}
-
-variable "templateID" {
-}
-

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_cluster_feature"
-sidebar_current: "docs-ibm-resource-container-cluster-feature"
 description: |-
   Manages IBM container cluster feature.
 ---
@@ -44,7 +45,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The cluster feature ID.
 * `public_service_endpoint_url` - Public service endpoint url.

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_network_port"
-sidebar_current: "docs-ibm-resource-pi-network-port"
 description: |-
   Manages an Network Port  in the Power Virtual Server Cloud. A network port is equivalent to reserving an ip in the subnet
   which can be used . When the port is created the status will be "DOWN".
@@ -52,7 +53,7 @@ The following arguments are supported:
 * `pi_network_port_description` - (Optional, string) The description for the Network Port
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the instance.The id is composed of \<power_network_port_id\>/\<id\>/<pi_network_name>.
 * `ipaddress` - The unique identifier of the instance.

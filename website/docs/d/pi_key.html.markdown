@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_key"
-sidebar_current: "docs-ibm-datasources-pi-key"
 description: |-
   Manages an key in the Power Virtual Server Cloud.
 ---

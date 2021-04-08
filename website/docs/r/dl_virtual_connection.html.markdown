@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_virtual_connection"
-sidebar_current: "docs-ibm-resource-dl-virtual-connection"
 description: |-
   Manages IBM Direct Link Gateway Virtual Connection.
 ---
@@ -32,7 +33,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `created_at` - The date and time resource was created.
 * `id` - The unique identifier of the resource.It's combination of gateway/virtual_connection_id

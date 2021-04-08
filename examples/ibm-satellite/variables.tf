@@ -1,104 +1,86 @@
-variable "apikey" {
-  description="IBM CLoud API key"
-}
-
-variable "ssh_label" {
-  default = "test_ssh"
-}
-
-variable "notes" {
-  default = "test_ssh_key_notes"
-}
-
-variable "ssh_public_key" {
-  
-}
-
-variable "region" {
-  default = "us-south"
-}
-
-# variable "cos_key" {
-# }
-
-# variable "cos_key_id" {
-# }
-
-variable "zone" {
-  description="zone of the staellite location"
-  default = "wdc06"
-}
-
+##################################################
+# IBMCLOUD Satellite Location and Host Variables
+##################################################
 variable "location" {
-  description="Location Name"
-  default ="test"
+  description = "Location Name"
+  default     = "satellite-ibm"
 }
 
-variable "label" {
-  description="Label to create location"
-  default = "prod=true"
+variable "managed_from" {
+  description  = "The IBM Cloud region to manage your Satellite location from. Choose a region close to your on-prem data center for better performance."
+  type         = string
+  default      = "wdc04"  
 }
 
-variable "vmname" {
-  description="VM Names"
+variable "location_zones" {
+  description = "Allocate your hosts across these three zones"
+  type        = list(string)
+  default     = ["us-east-1", "us-east-2", "us-east-3"]
 }
 
-variable "vmcount" {
-  default = 3
-  description="Number of VMS that you want to provision"
+variable "location_bucket" {
+  description = "COS bucket name"
+  default     = ""
 }
 
-variable "domain" {
-  description="Domain of VM|Host"
-  default = "examplehost.com"
+variable "is_location_exist" {
+  description = "Determines if the location has to be created or not"
+  type         = bool
+  default      = false
 }
 
-variable "os" {
-  description="OS of VM|Host"
-  default = "REDHAT_7_64"
+variable "host_labels" {
+  description = "Labels to add to attach host script"
+  type        = list(string)
+  default     = ["env:prod"]
+
+  validation {
+      condition     = can([for s in var.host_labels : regex("^[a-zA-Z0-9:]+$", s)])
+      error_message = "A `host_labels` can include only alphanumeric characters and with one colon."
+  }
 }
 
-variable "datacenter" {
-  description="data center of VM|Host"
-  default = "dal10"
+#################################################################################################
+# IBMCLOUD Authentication and Target Variables.
+# The region variable is common across zones used to setup VSI Infrastructure and Satellite host.
+#################################################################################################
+
+variable "ibmcloud_api_key" {
+  description = "IBM Cloud API Key"
 }
 
-variable "network_speed" {
-  description="Network speed of VM|Host"
-  default = "10"
+variable "ibm_region" {
+  description = "Region of the IBM Cloud account. Currently supported regions for satellite are us-east and eu-gb region."
+  default     = "us-east"
 }
 
-variable "cores" {
-  description="Cores of VM|Host"
-  default = "4"
+variable "resource_group" {
+  description = "Name of the resource group on which location has to be created"
+  default = "Default"
 }
 
-variable "memory" {
-  description="Memory of VM|Host"
-  default = "16384"
+variable "environment" {
+  description = "Select prod or stage environemnet to run satellite templates"
+  default     = "prod"
 }
 
-variable "disks" {
-  description="Disks of VM|Host"
-  default = "25"
+##################################################
+# IBMCLOUD VPC VSI Variables
+##################################################
+variable "host_count" {
+  description    = "The total number of ibm host to create for control plane"
+  type           = number
+  default        = 3
 }
 
-variable "cluster_name" {
-  description="Satellite cluster name"
+variable "is_prefix" {
+  description = "Prefix to the Names of the VPC Infrastructure resources"
+  type        = string
+  default     = "satellite-ibm"
 }
 
-variable "iaas_classic_api_key" {
-  description= "IAAS Classic api key"
-}
-
-variable "iaas_classic_username" {
-  description= "IAAS Classic user name"
-}
-
-variable "private_ssh_key" {
-  description= "Private ssh jet"
-}
-variable "host_zone"{
-  description= "zone in which cluster has to be assigned to host"
-  default="us-south-1"
+variable "public_key" {
+  description  = "SSH Public Key. Get your ssh key by running `ssh-key-gen` command"
+  type         = string
+  default      = ""
 }

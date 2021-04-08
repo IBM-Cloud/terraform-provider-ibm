@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_flow_log"
-sidebar_current: "docs-ibm-resource-is-flow-log"
 description: |-
   Manages IBM VPC Flow Log.
 ---
@@ -73,7 +74,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `created_at` - The date and time that the flow log collector was created. 
 * `crn` - The CRN for this flow log collector.

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: dns_reverse_record"
-sidebar_current: "docs-ibm-resource-dns-reverse-record"
 description: |-
   Manages IBM DNS reverse records.
 ---
@@ -33,6 +34,6 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of reverse dns record.

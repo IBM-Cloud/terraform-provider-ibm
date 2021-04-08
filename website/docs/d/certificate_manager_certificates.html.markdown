@@ -1,7 +1,7 @@
 ---
+subcategory: "Certificate Manager"
 layout: "ibm"
 page_title: "IBM: certificate_manager_certificates"
-sidebar_current: "docs-ibm-resource-certificate-manager-certificates"
 description: |-
   Lists Certificates of a Certificate Manager Instance
 ---

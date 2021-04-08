@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : firewall"
-sidebar_current: "docs-ibm-resource-firewall"
 description: |-
   Manages rules for IBM Firewall.
 ---
@@ -40,7 +41,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the VLAN.
 * `location` - The location/datacenter of the created firewall device.

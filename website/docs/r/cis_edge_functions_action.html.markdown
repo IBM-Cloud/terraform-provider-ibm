@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_edge_functions_action"
-sidebar_current: "docs-ibm-cis-edge-functions-action"
 description: |-
   Provides a IBM CIS Edge Functions Action resource.
 ---
@@ -33,7 +34,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The Action ID. It is a combination of <`action_name`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
 

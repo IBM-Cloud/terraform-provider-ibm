@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : "
-sidebar_current: "docs-ibm-datasources-dns-glb-monitors"
 description: |-
   Manages IBM Cloud Infrastructure Private Domain Name Service GLB monitors.
 ---

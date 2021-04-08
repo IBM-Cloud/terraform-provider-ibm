@@ -7,8 +7,6 @@ import (
 	"bytes"
 	"fmt"
 	"hash/crc32"
-
-	"github.com/hashicorp/terraform/helper/hashcode"
 )
 
 // String hashes a string to a unique hashcode.
@@ -44,5 +42,5 @@ func Strings(strings []string) string {
 		buf.WriteString(fmt.Sprintf("%s-", s))
 	}
 
-	return fmt.Sprintf("%d", hashcode.String(buf.String()))
+	return fmt.Sprintf("%d", String(buf.String()))
 }

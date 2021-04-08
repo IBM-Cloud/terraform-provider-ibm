@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: subnet"
-sidebar_current: "docs-ibm-resource-subnet"
 description: |-
   Manages IBM Subnet.
 ---
@@ -115,7 +116,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the subnet.
 * `subnet_cidr` - The IP address/cidr format (ex. 10.10.10.10/28), which you can use to get an available IP address in `subnet`.

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_authorization_policy"
-sidebar_current: "docs-ibm-resource-iam-authorization-policy"
 description: |-
   Manages IBM IAM Service Authorizations.
 ---
@@ -108,7 +109,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the authorization policy. 
 

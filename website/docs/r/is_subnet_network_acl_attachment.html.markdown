@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : subnet network acl attachment"
-sidebar_current: "docs-ibm-resource-is-subnet-network-acl-attachment"
 description: |-
   Manages IBM Subnet Network ACL Attachment.
 ---
@@ -64,7 +65,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier for this network ACL.
 * `name` - The user-defined name for this network ACL.

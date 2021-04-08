@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : vpc-routing-tables"
-sidebar_current: "docs-ibm-resource-is-vpc-routing-tables"
 description: |-
   Manages IBM IS VPC Routing tables.
 ---
@@ -39,7 +40,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier for this routing table. The id is composed of \<vpc_id\>/\<vpc_route_table_id\>
 * `href` - The URL for this routing table.

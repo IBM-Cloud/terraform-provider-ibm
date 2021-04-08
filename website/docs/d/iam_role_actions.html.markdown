@@ -1,7 +1,7 @@
 ---
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_role_actions"
-sidebar_current: "docs-ibm-datasource-iam-role-actions"
 description: |-
   Manages IBM IAM Role Actions.
 ---

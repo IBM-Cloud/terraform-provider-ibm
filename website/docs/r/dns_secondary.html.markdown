@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: dns_secondary"
-sidebar_current: "docs-ibm-resource-dns-secondary"
 description: |-
   Manages IBM DNS Secondary Zone.
 ---
@@ -32,7 +33,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - A secondary zone's internal identifier.
 * `status_id` - The current status of a secondary DNS record.

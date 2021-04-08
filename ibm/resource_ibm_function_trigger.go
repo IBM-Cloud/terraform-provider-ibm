@@ -192,7 +192,7 @@ func resourceIBMFunctionTriggerCreate(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 	namespace := d.Get("namespace").(string)
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -325,7 +325,7 @@ func resourceIBMFunctionTriggerRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -385,7 +385,7 @@ func resourceIBMFunctionTriggerUpdate(d *schema.ResourceData, meta interface{}) 
 	}
 
 	namespace := parts[0]
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -455,7 +455,7 @@ func resourceIBMFunctionTriggerDelete(d *schema.ResourceData, meta interface{}) 
 	namespace := parts[0]
 	triggerID := parts[1]
 
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -539,7 +539,7 @@ func resourceIBMFunctionTriggerExists(d *schema.ResourceData, meta interface{}) 
 		return false, err
 	}
 
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return false, err
 

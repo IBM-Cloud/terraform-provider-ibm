@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_key"
-sidebar_current: "docs-ibm-resource-pi-key"
 description: |-
   Manages IBM SSH keys in the Power Virtual Server Cloud.
 ---
@@ -52,7 +53,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the key.The id is composed of \<power_instance_id\>/\<key_name\>.
 * `key_id` -  The unique identifier of the key.

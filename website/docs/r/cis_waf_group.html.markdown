@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: cis_waf_group"
-sidebar_current: "docs-ibm-resource-cis-waf-group"
 description: |-
   Provides an IBM Cloud Internet Services WAF Rule Group resource.
 ---
@@ -34,7 +35,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - Unique identifier for the WAF Rule Group. Ex. <group-id>:<package-id>:<domain-id>:<crn>
 - `name` - The WAF Rule Group name.

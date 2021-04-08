@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : dns_resource_record"
-sidebar_current: "docs-ibm-resource-dns-resource-record"
 description: |-
   Manages IBM Private DNS Resource Records.
 ---
@@ -99,7 +100,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the private DNS resource record. The id is composed of <instance_id>/<zone_id>/<resource_record_id>.
 * `zone_id` - The unique identifier of the private DNS zone.

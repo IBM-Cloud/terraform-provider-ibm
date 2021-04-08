@@ -1,7 +1,7 @@
 ---
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM: ibm_iam_auth_token"
-sidebar_current: "docs-ibm-datasource-iam-auth-token"
 description: |-
   Get information about an IBM Cloud IAM and UAA tokens.
 ---

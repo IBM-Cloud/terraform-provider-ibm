@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_api_key_reset"
-sidebar_current: "docs-ibm-resource-container-api-key-reset"
 description: |-
   Resets Kubernetes API Key.
 ---
@@ -34,6 +35,6 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The Resource ID. Id is a combination of `<region>/<resource_group_id>`

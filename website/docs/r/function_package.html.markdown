@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function-package"
-sidebar_current: "docs-ibm-resource-function-package"
 description: |-
   Manages IBM Cloud Functions package.
 ---
@@ -94,7 +95,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the package.The id is combination of namespace and packageID delimited by `:`.
 * `namespace` - The name of the function namespace.

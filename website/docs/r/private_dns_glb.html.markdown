@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : ibm_dns_glb"
-sidebar_current: "docs-ibm-resource-dns-glb"
 description: |-
   Manages IBM Private DNS global load balancer.
 ---
@@ -48,7 +49,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The unique identifier of the private DNS Global load balancer. The id is composed of <instance_id>/<zone_id>/<glb_id>.
 - `created_on` - Load Balancer creation date.

@@ -1,7 +1,7 @@
 ---
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_access_group"
-sidebar_current: "docs-ibm-resource-iam-access-group"
 description: |-
   Get information about IBM IAM Access Group and all the members and dynamic rules associated with the group.
 ---

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_bind_service"
-sidebar_current: "docs-ibm-resource-container-bind-service"
 description: |-
   Manages IBM container cluster.
 ---
@@ -43,7 +44,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the bind service resource. The id is composed of \<cluster_name_id\>/\<service_instance_name or service_instance_id\>/\<namespace_id/>
 * `namespace_id` -  The Kubernetes namespace.

@@ -12,12 +12,11 @@ import (
 	"strings"
 	"time"
 
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
@@ -97,7 +96,7 @@ func resourceIBMResourceInstance() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_resource_instance", "tag")},
 				Set:      resourceIBMVPCHash,
 			},
 
@@ -126,11 +125,175 @@ func resourceIBMResourceInstance() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "public-and-private"}),
 			},
+
 			"dashboard_url": {
 				Description: "Dashboard URL to access resource.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+
+			"plan_history": {
+				Description: "The plan history of the instance.",
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"resource_plan_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"start_date": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+
+			"account_id": {
+				Description: "An alpha-numeric value identifying the account ID.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+
+			"resource_group_crn": {
+				Description: "The long ID (full CRN) of the resource group",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+
+			"resource_id": {
+				Description: "The unique ID of the offering",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+
+			"resource_plan_id": {
+				Description: "The unique ID of the plan associated with the offering",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+
+			"target_crn": {
+				Description: "The full deployment CRN as defined in the global catalog",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+
+			"state": {
+				Description: "The current state of the instance.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+
+			"type": {
+				Description: "The type of the instance, e.g. service_instance.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+
+			"sub_type": {
+				Description: "The sub-type of instance, e.g. cfaas .",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+
+			"allow_cleanup": {
+				Description: "A boolean that dictates if the resource instance should be deleted (cleaned up) during the processing of a region instance delete call.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
+
+			"locked": {
+				Description: "A boolean that dictates if the resource instance should be deleted (cleaned up) during the processing of a region instance delete call.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
+
+			"last_operation": {
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Description: "The status of the last operation requested on the instance",
+			},
+
+			"resource_aliases_url": {
+				Description: "The relative path to the resource aliases for the instance.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+
+			"resource_bindings_url": {
+				Description: "The relative path to the resource bindings for the instance.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+
+			"resource_keys_url": {
+				Description: "The relative path to the resource keys for the instance.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+
+			"created_at": {
+				Type:        schema.TypeString,
+				Description: "The date when the instance was created.",
+				Computed:    true,
+			},
+
+			"created_by": {
+				Type:        schema.TypeString,
+				Description: "The subject who created the instance.",
+				Computed:    true,
+			},
+
+			"update_at": {
+				Type:        schema.TypeString,
+				Description: "The date when the instance was last updated.",
+				Computed:    true,
+			},
+
+			"update_by": {
+				Type:        schema.TypeString,
+				Description: "The subject who updated the instance.",
+				Computed:    true,
+			},
+
+			"deleted_at": {
+				Type:        schema.TypeString,
+				Description: "The date when the instance was deleted.",
+				Computed:    true,
+			},
+
+			"deleted_by": {
+				Type:        schema.TypeString,
+				Description: "The subject who deleted the instance.",
+				Computed:    true,
+			},
+
+			"scheduled_reclaim_at": {
+				Type:        schema.TypeString,
+				Description: "The date when the instance was scheduled for reclamation.",
+				Computed:    true,
+			},
+
+			"scheduled_reclaim_by": {
+				Type:        schema.TypeString,
+				Description: "The subject who initiated the instance reclamation.",
+				Computed:    true,
+			},
+
+			"restored_at": {
+				Type:        schema.TypeString,
+				Description: "The date when the instance under reclamation was restored.",
+				Computed:    true,
+			},
+
+			"restored_by": {
+				Type:        schema.TypeString,
+				Description: "The subject who restored the instance back from reclamation.",
+				Computed:    true,
+			},
+
 			ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -169,18 +332,35 @@ func resourceIBMResourceInstance() *schema.Resource {
 	}
 }
 
+func resourceIBMResourceInstanceValidator() *ResourceValidator {
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "tag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
+	ibmResourceInstanceResourceValidator := ResourceValidator{ResourceName: "ibm_resource_instance", Schema: validateSchema}
+	return &ibmResourceInstanceResourceValidator
+}
+
 func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
+
 	serviceName := d.Get("service").(string)
 	plan := d.Get("plan").(string)
 	name := d.Get("name").(string)
 	location := d.Get("location").(string)
 
-	rsInst := controller.CreateServiceInstanceRequest{
-		Name: name,
+	rsInst := rc.CreateResourceInstanceOptions{
+		Name: &name,
 	}
 
 	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
@@ -206,7 +386,7 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return fmt.Errorf("Error retrieving plan: %s", err)
 	}
-	rsInst.ServicePlanID = servicePlan
+	rsInst.ResourcePlanID = &servicePlan
 
 	deployments, err := rsCatRepo.ListDeployments(servicePlan)
 	if err != nil {
@@ -225,17 +405,19 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("No deployment found for service plan %s at location %s.\nValid location(s) are: %q.\nUse 'ibm_service_instance' if the service is a Cloud Foundry service.", plan, location, locationList)
 	}
 
-	rsInst.TargetCrn = deployments[0].CatalogCRN
+	rsInst.Target = &deployments[0].CatalogCRN
 
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
-		rsInst.ResourceGroupID = rsGrpID.(string)
+		rg := rsGrpID.(string)
+		rsInst.ResourceGroup = &rg
 	} else {
 		defaultRg, err := defaultResourceGroup(meta)
 		if err != nil {
 			return err
 		}
-		rsInst.ResourceGroupID = defaultRg
+		rsInst.ResourceGroup = &defaultRg
 	}
+
 	params := map[string]interface{}{}
 
 	if serviceEndpoints, ok := d.GetOk("service_endpoints"); ok {
@@ -268,12 +450,16 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 
 	rsInst.Parameters = params
 
-	instance, err := rsConClient.ResourceServiceInstance().CreateInstance(rsInst)
+	//Start to create resource instance
+	instance, resp, err := rsConClient.CreateResourceInstance(&rsInst)
 	if err != nil {
-		return fmt.Errorf("Error creating resource instance: %s", err)
+		log.Printf(
+			"Error when creating resource instance: %s, Instance info  NAME->%s, LOCATION->%s, GROUP_ID->%s, PLAN_ID->%s",
+			err, *rsInst.Name, *rsInst.Target, *rsInst.ResourceGroup, *rsInst.ResourcePlanID)
+		return fmt.Errorf("Error when creating resource instance: %s with resp code: %s", err, resp)
 	}
 
-	d.SetId(instance.ID)
+	d.SetId(*instance.ID)
 
 	_, err = waitForResourceInstanceCreate(d, meta)
 	if err != nil {
@@ -284,7 +470,7 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk("tags"); ok || v != "" {
 		oldList, newList := d.GetChange("tags")
-		err = UpdateTagsUsingCRN(oldList, newList, meta, instance.Crn.String())
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource instance (%s) tags: %s", d.Id(), err)
@@ -295,19 +481,22 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
 
 	instanceID := d.Id()
-
-	instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
-	if err != nil {
-		return fmt.Errorf("Error retrieving resource instance: %s", err)
+	resourceInstanceGet := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
 	}
 
-	tags, err := GetTagsUsingCRN(meta, instance.Crn.String())
+	instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
+	if err != nil {
+		return fmt.Errorf("Error retrieving resource instance: %s with resp code: %s", err, resp)
+	}
+
+	tags, err := GetTagsUsingCRN(meta, *instance.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource instance tags (%s) tags: %s", d.Id(), err)
@@ -316,9 +505,14 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("name", instance.Name)
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
-	d.Set("location", instance.RegionID)
-	d.Set("crn", instance.Crn.String())
-	d.Set("dashboard_url", instance.DashboardUrl)
+	if instance.CRN != nil {
+		location := strings.Split(*instance.CRN, ":")
+		if len(location) > 5 {
+			d.Set("location", location[5])
+		}
+	}
+	d.Set("crn", instance.CRN)
+	d.Set("dashboard_url", instance.DashboardURL)
 
 	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
 	if err != nil {
@@ -326,7 +520,7 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	rsCatRepo := rsCatClient.ResourceCatalog()
 
-	serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)
+	serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
 	if err != nil {
 		return fmt.Errorf("Error retrieving service offering: %s", err)
 	}
@@ -334,9 +528,9 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("service", serviceOff)
 
 	d.Set(ResourceName, instance.Name)
-	d.Set(ResourceCRN, instance.Crn.String())
+	d.Set(ResourceCRN, instance.CRN)
 	d.Set(ResourceStatus, instance.State)
-	d.Set(ResourceGroupName, instance.ResourceGroupName)
+	d.Set(ResourceGroupName, instance.ResourceGroupCRN)
 
 	rcontroller, err := getBaseController(meta)
 	if err != nil {
@@ -344,17 +538,18 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	d.Set(ResourceControllerURL, rcontroller+"/services/")
 
-	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ServicePlanID)
+	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
 	if err != nil {
 		return fmt.Errorf("Error retrieving plan: %s", err)
 	}
 	d.Set("plan", servicePlan)
-	d.Set("guid", instance.Guid)
+	d.Set("guid", instance.GUID)
 	if instance.Parameters != nil {
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
 			d.Set("service_endpoints", endpoint)
 		}
 	}
+
 	if len(instance.Extensions) == 0 {
 		d.Set("extensions", instance.Extensions)
 	} else {
@@ -365,16 +560,19 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
 
 	instanceID := d.Id()
 
-	updateReq := controller.UpdateServiceInstanceRequest{}
+	resourceInstanceUpdate := rc.UpdateResourceInstanceOptions{
+		ID: &instanceID,
+	}
 	if d.HasChange("name") {
-		updateReq.Name = d.Get("name").(string)
+		name := d.Get("name").(string)
+		resourceInstanceUpdate.Name = &name
 	}
 
 	if d.HasChange("plan") {
@@ -396,7 +594,7 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf("Error retrieving plan: %s", err)
 		}
 
-		updateReq.ServicePlanID = servicePlan
+		resourceInstanceUpdate.ResourcePlanID = &servicePlan
 
 	}
 	params := map[string]interface{}{}
@@ -406,10 +604,13 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 		params["service-endpoints"] = endpoint
 	}
 
+	resourceInstanceGet := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
 	if d.HasChange("parameters") {
-		instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+		instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 		if err != nil {
-			return fmt.Errorf("Error retrieving resource instance: %s", err)
+			return fmt.Errorf("Error retrieving resource instance: %s with resp code: %s", err, resp)
 		}
 
 		if parameters, ok := d.GetOk("parameters"); ok {
@@ -444,26 +645,26 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 
 	}
 	if d.HasChange("service_endpoints") || d.HasChange("parameters") {
-		updateReq.Parameters = params
+		resourceInstanceUpdate.Parameters = params
 	}
 
-	instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+	instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 	if err != nil {
-		return fmt.Errorf("Error Getting resource instance: %s", err)
+		return fmt.Errorf("Error Getting resource instance: %s with resp code: %s", err, resp)
 	}
 
 	if d.HasChange("tags") {
 		oldList, newList := d.GetChange(isVPCTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, instance.Crn.String())
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource instance (%s) tags: %s", d.Id(), err)
 		}
 	}
 
-	_, err = rsConClient.ResourceServiceInstance().UpdateInstance(instanceID, updateReq)
+	_, resp, err = rsConClient.UpdateResourceInstance(&resourceInstanceUpdate)
 	if err != nil {
-		return fmt.Errorf("Error updating resource instance: %s", err)
+		return fmt.Errorf("Error updating resource instance: %s with resp code: %s", err, resp)
 	}
 
 	_, err = waitForResourceInstanceUpdate(d, meta)
@@ -476,15 +677,20 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceIBMResourceInstanceDelete(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
 	id := d.Id()
+	recursive := true
+	resourceInstanceDelete := rc.DeleteResourceInstanceOptions{
+		ID:        &id,
+		Recursive: &recursive,
+	}
 
-	err = rsConClient.ResourceServiceInstance().DeleteInstance(id, true)
-	if err != nil {
-		return fmt.Errorf("Error deleting resource instance: %s", err)
+	resp, error := rsConClient.DeleteResourceInstance(&resourceInstanceDelete)
+	if error != nil {
+		return fmt.Errorf("Error deleting resource instance: %s with resp code: %s", error, resp)
 	}
 
 	_, err = waitForResourceInstanceDelete(d, meta)
@@ -498,47 +704,51 @@ func resourceIBMResourceInstanceDelete(d *schema.ResourceData, meta interface{})
 	return nil
 }
 func resourceIBMResourceInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
 	instanceID := d.Id()
-
-	instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
-	if err != nil {
-		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
-				return false, nil
-			}
-		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+	resourceInstanceGet := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
 	}
 
-	return instance.ID == instanceID, nil
+	instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
+	if err != nil {
+		if resp != nil && resp.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error communicating with the API: %s with resp code: %s", err, resp)
+	}
+
+	return *instance.ID == instanceID, nil
 }
 
 func waitForResourceInstanceCreate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
 	instanceID := d.Id()
+	resourceInstanceGet := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus, rsInstanceProvisioningStatus},
 		Target:  []string{rsInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
-			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+			instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 			if err != nil {
-				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+				if resp != nil && resp.StatusCode == 404 {
 					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v", d.Id(), err)
 				}
-				return nil, "", err
+				return nil, "", fmt.Errorf("Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
 			}
-			if instance.State == rsInstanceFailStatus {
-				return instance, instance.State, fmt.Errorf("The resource instance %s failed: %v", d.Id(), err)
+			if *instance.State == rsInstanceFailStatus {
+				return instance, *instance.State, fmt.Errorf("The resource instance %s failed: %v", d.Id(), err)
 			}
-			return instance, instance.State, nil
+			return instance, *instance.State, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
@@ -549,27 +759,30 @@ func waitForResourceInstanceCreate(d *schema.ResourceData, meta interface{}) (in
 }
 
 func waitForResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
 	instanceID := d.Id()
+	resourceInstanceGet := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus},
 		Target:  []string{rsInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
-			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+			instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 			if err != nil {
-				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+				if resp != nil && resp.StatusCode == 404 {
 					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v", d.Id(), err)
 				}
-				return nil, "", err
+				return nil, "", fmt.Errorf("Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
 			}
-			if instance.State == rsInstanceFailStatus {
-				return instance, instance.State, fmt.Errorf("The resource instance %s failed: %v", d.Id(), err)
+			if *instance.State == rsInstanceFailStatus {
+				return instance, *instance.State, fmt.Errorf("The resource instance %s failed: %v", d.Id(), err)
 			}
-			return instance, instance.State, nil
+			return instance, *instance.State, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutUpdate),
 		Delay:      10 * time.Second,
@@ -580,26 +793,29 @@ func waitForResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 }
 
 func waitForResourceInstanceDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
 	instanceID := d.Id()
+	resourceInstanceGet := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus, rsInstanceSuccessStatus},
 		Target:  []string{rsInstanceRemovedStatus, rsInstanceReclamation},
 		Refresh: func() (interface{}, string, error) {
-			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+			instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 			if err != nil {
-				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+				if resp != nil && resp.StatusCode == 404 {
 					return instance, rsInstanceSuccessStatus, nil
 				}
-				return nil, "", err
+				return nil, "", fmt.Errorf("Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
 			}
-			if instance.State == rsInstanceFailStatus {
-				return instance, instance.State, fmt.Errorf("The resource instance %s failed to delete: %v", d.Id(), err)
+			if *instance.State == rsInstanceFailStatus {
+				return instance, *instance.State, fmt.Errorf("The resource instance %s failed to delete: %v", d.Id(), err)
 			}
-			return instance, instance.State, nil
+			return instance, *instance.State, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      10 * time.Second,

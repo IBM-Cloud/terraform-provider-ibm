@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: network_private_ip"
-sidebar_current: "docs-ibm-resource-network-public-ip"
 description: |-
   Manages IBM Network Public IP.
 ---
@@ -38,7 +39,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the public IP.
 * `ip_address` - The address of the public IP.

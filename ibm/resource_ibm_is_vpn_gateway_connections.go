@@ -19,6 +19,7 @@ const (
 	isVPNGatewayConnectionAdminAuthenticationmode   = "authentication_mode"
 	isVPNGatewayConnectionName                      = "name"
 	isVPNGatewayConnectionVPNGateway                = "vpn_gateway"
+	isVPNGatewayConnection                          = "gateway_connection"
 	isVPNGatewayConnectionPeerAddress               = "peer_address"
 	isVPNGatewayConnectionPreSharedKey              = "preshared_key"
 	isVPNGatewayConnectionLocalCIDRS                = "local_cidrs"
@@ -137,6 +138,12 @@ func resourceIBMISVPNGatewayConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "VPN gateway connection IKE Policy",
+			},
+
+			isVPNGatewayConnection: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique identifier for this VPN gateway connection",
 			},
 
 			isVPNGatewayConnectionStatus: {
@@ -495,6 +502,7 @@ func vpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID string) 
 		}
 		return fmt.Errorf("Error Getting Vpn Gateway Connection (%s): %s\n%s", gConnID, err, response)
 	}
+	d.Set(isVPNGatewayConnection, gConnID)
 	vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection)
 	d.Set(isVPNGatewayConnectionName, *vpnGatewayConnection.Name)
 	d.Set(isVPNGatewayConnectionVPNGateway, gID)

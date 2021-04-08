@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_custom_page"
-sidebar_current: "docs-ibm-resource-cis-custom-page"
 description: |-
   Provides a IBM CIS Custom Page resource.
 ---
@@ -34,7 +35,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The record ID. It is a combination of <`page_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
 - `description` - The description of custom page.

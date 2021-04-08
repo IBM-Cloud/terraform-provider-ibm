@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lbaas"
-sidebar_current: "docs-ibm-resource-lbaas"
 description: |-
   Manages IBM Load balancer as a service.
 ---
@@ -67,7 +68,7 @@ The default is 'PUBLIC'.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the created policy.
 * `datacenter` - The datacenter where the load balancer is provisioned. This is based on the subnet chosen while creating load-balancer.

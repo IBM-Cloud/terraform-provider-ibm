@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: ibm_bare_metal"
-sidebar_current: "docs-ibm-datasource-compute-bare-metal"
 description: |-
   Get information on a IBM Compute Bare Metal
 ---

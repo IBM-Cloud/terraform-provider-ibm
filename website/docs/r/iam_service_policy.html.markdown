@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_service_policy"
-sidebar_current: "docs-ibm-resource-iam-service-policy"
 description: |-
   Manages IBM IAM Service Policy.
 ---
@@ -141,12 +142,39 @@ resource "ibm_iam_service_policy" "policy" {
 }
 
 ```
+### Cross account Service policy using iam_id
+
+```hcl
+provider "ibm" {
+    alias             = "accA"
+    ibmcloud_api_key  = "Account A Api Key"
+}
+resource "ibm_iam_service_id" "serviceID" {
+  provider = ibm.accA
+  name     = "test"
+}
+
+provider "ibm" {
+    alias             = "accB"
+    ibmcloud_api_key  = "Account B Api Key"
+}
+resource "ibm_iam_service_policy" "policy" {
+  provider       =  ibm.accB
+  iam_id         =  ibm_iam_service_id.serviceID.iam_id
+  roles          =  ["Reader"]
+  resources {
+    service = "cloud-object-storage"
+  }
+}
+
+```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `iam_service_id` - (Required, Forces new resource, string) UUID of the serviceID.
+* `iam_service_id` - (Optional, Forces new resource, string) UUID of the serviceID. Exactly one of `iam_service_id`, `iam_id` is required.
+* `iam_id` - (Optional, Forces new resource, string) IAM ID of the serviceID. Exactly one of `iam_service_id`, `iam_id` is required. Can be used to assign cross account service ID Policy.
 * `roles` - (Required, list) comma separated list of roles. Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor.
 * `resources` - (Optional, list) A nested block describing the resource of this policy.
 Nested `resources` blocks have the following structure:
@@ -165,17 +193,18 @@ Nested `resources` blocks have the following structure:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
-* `id` - The unique identifier of the service policy. The id is composed of \<iam_service_id\>/\<service_policy_id\>
+* `id` - The unique identifier of the service policy. The id is composed of \<iam_service_id\>/\<service_policy_id\> if policy is created using <iam_service_id>. The id is composed of \<iam_id\>/\<service_policy_id\> if policy is created using <iam_id>. 
 
 * `version` - Version of the service policy.
 
 ## Import
 
-ibm_iam_service_policy can be imported using serviceID and service policy id, eg
+ibm_iam_service_policy can be imported using serviceID and service policy id or iamID and service policy id, eg
 
 ```
 $ terraform import ibm_iam_service_policy.example ServiceId-d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+$ terraform import ibm_iam_service_policy.example iam-ServiceId-d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
 ```
 

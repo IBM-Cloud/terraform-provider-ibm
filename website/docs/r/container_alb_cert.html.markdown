@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_alb_cert"
-sidebar_current: "docs-ibm-resource-container-alb-cert"
 description: |-
   Manages IBM container alb cert.
 ---
@@ -44,7 +45,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ALB cert ID. The id is composed of \<cluster_name_id\>/\<secret_name\>.<br/>
 * `domain_name` - The Domain name of the certificate.
@@ -56,7 +57,7 @@ The following attributes are exported:
 
 ## Import
 
-ibm_container_alb_cert can be imported using cluster_id, secret_name eg
+ibm_container_alb_cert can be imported using cluster_id, secret_name, namespace eg
 
 ```
-$ terraform import ibm_container_alb_cert.example 166179849c9a469581f28939874d0c82/mysecret
+$ terraform import ibm_container_alb_cert.example 166179849c9a469581f28939874d0c82/mysecret/ibm-cert-store

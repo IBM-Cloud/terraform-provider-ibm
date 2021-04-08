@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_network"
-sidebar_current: "docs-ibm-resource-pi-network"
 description: |-
   Manages networks in the IBM Power Virtual Server Cloud.
 ---
@@ -57,7 +58,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the network.The id is composed of \<power_instance_id\>/\<network_id\>.
 * `network_id` - The unique identifier (string) of the network.

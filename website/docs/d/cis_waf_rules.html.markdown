@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_waf_rules"
-sidebar_current: "docs-ibm-cis-waf-rules"
 description: |-
   Get information of IBM Cloud Internet Services WAF Rules resource.
 ---

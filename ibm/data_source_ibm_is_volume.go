@@ -74,6 +74,26 @@ func dataSourceIBMISVolume() *schema.Resource {
 				Description: "Volume status",
 			},
 
+			isVolumeStatusReasons: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isVolumeStatusReasonsCode: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the status reason",
+						},
+
+						isVolumeStatusReasonsMessage: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the status reason",
+						},
+					},
+				},
+			},
+
 			isVolumeTags: {
 				Type:        schema.TypeSet,
 				Computed:    true,
@@ -254,6 +274,18 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 		d.Set(isVolumeCapacity, *vol.Capacity)
 		d.Set(isVolumeCrn, *vol.CRN)
 		d.Set(isVolumeStatus, *vol.Status)
+		if vol.StatusReasons != nil {
+			statusReasonsList := make([]map[string]interface{}, 0)
+			for _, sr := range vol.StatusReasons {
+				currentSR := map[string]interface{}{}
+				if sr.Code != nil && sr.Message != nil {
+					currentSR[isVolumeStatusReasonsCode] = *sr.Code
+					currentSR[isVolumeStatusReasonsMessage] = *sr.Message
+					statusReasonsList = append(statusReasonsList, currentSR)
+				}
+			}
+			d.Set(isVolumeStatusReasons, statusReasonsList)
+		}
 		tags, err := GetTagsUsingCRN(meta, *vol.CRN)
 		if err != nil {
 			log.Printf(

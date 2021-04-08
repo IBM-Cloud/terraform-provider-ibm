@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: dns_record"
-sidebar_current: "docs-ibm-resource-dns-record"
 description: |-
   Manages IBM DNS resource records.
 ---
@@ -210,6 +211,6 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The internal identifier of the domain resource record.

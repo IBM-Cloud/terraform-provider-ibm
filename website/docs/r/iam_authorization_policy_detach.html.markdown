@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_authorization_policy_detach"
-sidebar_current: "docs-ibm-resource-iam-authorization-policy-detach"
 description: |-
   Manages IBM IAM Service Authorizations detach.
 ---

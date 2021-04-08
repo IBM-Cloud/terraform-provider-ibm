@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : compute_autoscale_group"
-sidebar_current: "docs-ibm-resource-compute-autoscale-group"
 description: |-
   Manages IBM Compute Auto Scale Group.
 ---
@@ -72,6 +73,6 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the auto scaling group.

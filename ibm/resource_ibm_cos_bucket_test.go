@@ -258,6 +258,35 @@ func TestAccIBMCosBucket_Expire(t *testing.T) {
 	})
 }
 
+func TestAccIBMCosBucket_Retention(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "jp-tok"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	default_retention := 0
+	maximum_retention := 1
+	minimum_retention := 0
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_retention(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, default_retention, maximum_retention, minimum_retention),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "retention_rule.#", "1"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMCosBucket_Smart_Type(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
@@ -449,7 +478,7 @@ func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regio
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "group" {
-		name = "default"
+		is_default=true
 	}
 	  
 	resource "ibm_resource_instance" "instance" {
@@ -475,7 +504,7 @@ func testAccCheckIBMCosBucket_updateWithSameName(serviceName string, bucketName 
 
 	return fmt.Sprintf(`	
 	data "ibm_resource_group" "group" {
-		name = "default"
+		is_default=true
 	}
 	  
 	resource "ibm_resource_instance" "instance" {
@@ -500,7 +529,7 @@ func testAccCheckIBMCosBucket_activityTracker_monitor(cosServiceName, activitySe
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	  }
 	  resource "ibm_resource_instance" "instance2" {
 		name              = "%s"
@@ -545,7 +574,7 @@ func testAccCheckIBMCosBucket_update_activityTracker_monitor(cosServiceName, act
 
 	return fmt.Sprintf(`	
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 	  
 	resource "ibm_resource_instance" "instance2" {
@@ -584,7 +613,7 @@ func testAccCheckIBMCosBucket_archive(cosServiceName string, bucketName string, 
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -614,7 +643,7 @@ func testAccCheckIBMCosBucket_archive_updateDays(cosServiceName string, bucketNa
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -643,7 +672,7 @@ func testAccCheckIBMCosBucket_update_archive(cosServiceName string, bucketName s
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -667,7 +696,7 @@ func testAccCheckIBMCosBucket_expire(cosServiceName string, bucketName string, r
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -697,7 +726,7 @@ func testAccCheckIBMCosBucket_expire_updateDays(cosServiceName string, bucketNam
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -727,7 +756,7 @@ func testAccCheckIBMCosBucket_update_expire(cosServiceName string, bucketName st
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -751,7 +780,7 @@ func testAccCheckIBMCosBucket_archive_expire(cosServiceName string, bucketName s
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -786,7 +815,7 @@ func testAccCheckIBMCosBucket_archive_expire_updateDays(cosServiceName string, b
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -822,7 +851,7 @@ func testAccCheckIBMCosBucket_update_archive_expire(cosServiceName string, bucke
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "instance" {
@@ -839,4 +868,34 @@ func testAccCheckIBMCosBucket_update_archive_expire(cosServiceName string, bucke
 		storage_class         = "%s"
 	}
 	`, cosServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_retention(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, default_retention int, maximum_retention int, minimum_retention int) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    region_location       = "%s"
+		storage_class         = "%s"
+		retention_rule {
+			default = %d
+			maximum = %d
+			minimum = %d
+			permanent = false
+		}
+	}
+	`, cosServiceName, bucketName, region, storageClass, default_retention, maximum_retention, minimum_retention)
 }

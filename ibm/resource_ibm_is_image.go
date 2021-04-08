@@ -31,6 +31,7 @@ const (
 	isImageEncryptedDataKey = "encrypted_data_key"
 	isImageEncryptionKey    = "encryption_key"
 	isImageEncryption       = "encryption"
+	isImageCheckSum         = "checksum"
 
 	isImageProvisioning     = "provisioning"
 	isImageProvisioningDone = "done"
@@ -91,7 +92,7 @@ func resourceIBMISImage() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_image", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "Tags for the image",
 			},
@@ -158,6 +159,12 @@ func resourceIBMISImage() *schema.Resource {
 				Description: "The crn of the resource",
 			},
 
+			isImageCheckSum: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The SHA256 checksum of this image",
+			},
+
 			ResourceStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -185,7 +192,15 @@ func resourceIBMISImageValidator() *ResourceValidator {
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
-
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "tag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 	ibmISImageResourceValidator := ResourceValidator{ResourceName: "ibm_is_image", Schema: validateSchema}
 	return &ibmISImageResourceValidator
 }
@@ -597,6 +612,9 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	if image.EncryptionKey != nil {
 		d.Set(isImageEncryptionKey, *image.EncryptionKey.CRN)
+	}
+	if image.File != nil && image.File.Checksums != nil {
+		d.Set(isImageCheckSum, *image.File.Checksums.Sha256)
 	}
 	tags, err := GetTagsUsingCRN(meta, *image.CRN)
 	if err != nil {

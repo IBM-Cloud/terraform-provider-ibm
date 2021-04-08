@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : cdn"
-sidebar_current: "docs-ibm-resource-cdn"
 description: |-
   Manages IBM cdn.
 ---
@@ -46,7 +47,7 @@ resource "ibm_cdn" "test_cdn1" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique internal identifier of the cdn domian mapping.
 * `status` - The Status of the cdn domian mapping.

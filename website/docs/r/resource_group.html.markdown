@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM : resource_group"
-sidebar_current: "docs-ibm-resource-resource-group"
 description: |-
   Manages IBM Resource Group.
 ---
@@ -30,7 +31,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the new resource group.
 * `default` - Specifies whether its default resource group or not.

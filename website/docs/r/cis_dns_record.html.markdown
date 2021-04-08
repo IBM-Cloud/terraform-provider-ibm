@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_dns_record"
-sidebar_current: "docs-ibm-cis-dns-record"
 description: |-
   Provides a IBM CIS DNS Record resource.
 ---
@@ -309,7 +310,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The identifier which consists of record id, zone id and crn with `:` seperator.
 - `record_id` - The DNS record identifier.

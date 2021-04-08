@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Object Storage"
 layout: "ibm"
 page_title: "IBM : Cloud Object Storage Bucket"
-sidebar_current: "docs-ibm-resource-cos-bucket"
 description: |-
   Manages IBM CloudObject Storage Bucket.
 ---
@@ -151,6 +152,21 @@ resource "ibm_cos_bucket" "expire_rule_cos" {
   }
 }
 
+### Configure retention rule on COS bucket
+resource "ibm_cos_bucket" "retention_cos" {
+  bucket_name          = "a-bucket-retention"
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = "jp-tok"
+  storage_class        = standard
+  force_delete        = true
+  retention_rule {
+    default = 1
+    maximum = 1
+    minimum = 1
+    permanent = false
+  }
+}
+
 ```
 
 ## Argument Reference
@@ -192,9 +208,21 @@ The following arguments are supported:
     *	`expire_rule.days`   : (Required, string) Specifies the number of days when the specific rule action takes effect.
     *	`expire_rule.prefix` : (Optional, string) Specifies a prefix filter to apply to only a subset of objects with names that match the prefix.
 
+* Nested `retention_rule` block have the following structure:
+  * `retention_rule.default` : (Required, int) default retention period are defined by this policy and apply to   all objects in the bucket.
+  * `retention_rule.maximum` : (Required, int) Specifies maximum duration of time an object can be kept unmodified in the bucket.
+  * `retention_rule.minimum` : (Required, int) Specifies minimum duration of time an object must be kept unmodified in the bucket.
+  * `retention_rule.permanent` : (Optional, bool) Specifies a permanent retention status either enable or disable for a bucket.
+
+    * **Note**
+     - Retention policies cannot be removed. For a new bucket, ensure that you are creating the bucket in a supported region.See Integrated Services for more details-https://cloud.ibm.com/docs/cloud-object-storage/basics?topic=cloud-object-storage-service-availability
+     - The minimum retention period must be less than or equal to the default retention period, which in turn must be less than or equal to the maximum retention period.
+     - Permanent retention can only be enabled at a IBM Cloud Object Storage bucket level with retention policy enabled and users are able to select the permanent retention period option during object uploads. Once enabled, this process can't be reversed and objects uploaded that use a permanent retention period cannot be deleted. It's the responsibility of the users to validate at their end if there's a legitimate need to permanently store objects by using Object Storage buckets with a retention policy.
+     - force delete the bucket will not work if objects uploaded use a permanent retention period. As Objects cannot be deleted or overwritten until the retention period has expired and all the legal holds have been removed.
+
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the bucket.
 * `crn` - The CRN of the bucket.
