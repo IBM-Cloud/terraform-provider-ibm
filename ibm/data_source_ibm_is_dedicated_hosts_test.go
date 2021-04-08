@@ -15,11 +15,9 @@ import (
 
 func TestAccIbmIsDedicatedHostsDSBasic(t *testing.T) {
 	var conf vpcv1.DedicatedHost
-	class := "beta"
-	family := "memory"
 	groupname := fmt.Sprintf("tfgroup%d", acctest.RandIntRange(10, 100))
 	dhname := fmt.Sprintf("tfdhost%d", acctest.RandIntRange(10, 1000))
-
+	dhresName := "ibm_is_dedicated_host.dhost"
 	resName := "data.ibm_is_dedicated_hosts.dhosts"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -27,15 +25,15 @@ func TestAccIbmIsDedicatedHostsDSBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmIsDedicatedHostDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmIsDedicatedHostConfigBasic(class, family, groupname, dedicatedHostProfileName, dhname),
+				Config: testAccCheckIbmIsDedicatedHostConfigBasic(dedicatedHostGroupClass, dedicatedHostGroupFamily, groupname, dedicatedHostProfileName, dhname),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIbmIsDedicatedHostExists("ibm_is_dedicated_host.dedicated-host-test-01", conf),
+					testAccCheckIbmIsDedicatedHostExists(dhresName, conf),
 					resource.TestCheckResourceAttr(
-						"ibm_is_dedicated_host.dedicated-host-test-01", "name", dhname),
+						dhresName, "name", dhname),
 				),
 			},
 			{
-				Config: testAccCheckIbmIsDedicatedHostsDSConfigBasic(class, family, groupname, dedicatedHostProfileName, dhname),
+				Config: testAccCheckIbmIsDedicatedHostsDSConfigBasic(dedicatedHostGroupClass, dedicatedHostGroupFamily, groupname, dedicatedHostProfileName, dhname),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resName, "dedicated_hosts.0.name"),
 					resource.TestCheckResourceAttrSet(resName, "dedicated_hosts.0.available_memory"),

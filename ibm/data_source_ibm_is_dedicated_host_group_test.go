@@ -12,8 +12,6 @@ import (
 )
 
 func TestAccIbmIsDedicatedHostGroupDataSourceBasic(t *testing.T) {
-	class := "beta"
-	family := "memory"
 	name := fmt.Sprintf("tfdhgroup%d", acctest.RandIntRange(10, 100))
 	resName := "data.ibm_is_dedicated_host_group.dgroup"
 	resource.Test(t, resource.TestCase{
@@ -22,11 +20,11 @@ func TestAccIbmIsDedicatedHostGroupDataSourceBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmIsDedicatedHostGroupDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmIsDedicatedHostGroupDataSourceConfigBasic(class, family, name),
+				Config: testAccCheckIbmIsDedicatedHostGroupDataSourceConfigBasic(dedicatedHostGroupClass, dedicatedHostGroupFamily, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "name", name),
-					resource.TestCheckResourceAttr(resName, "class", class),
-					resource.TestCheckResourceAttr(resName, "family", family),
+					resource.TestCheckResourceAttr(resName, "class", dedicatedHostGroupClass),
+					resource.TestCheckResourceAttr(resName, "family", dedicatedHostGroupFamily),
 					resource.TestCheckResourceAttrSet(resName, "zone"),
 				),
 			},
