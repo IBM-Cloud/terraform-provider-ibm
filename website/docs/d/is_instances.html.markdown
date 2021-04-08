@@ -36,7 +36,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `instances` - List of all instances in the IBM Cloud Infrastructure.
   * `id` - The id of the instance.

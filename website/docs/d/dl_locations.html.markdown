@@ -24,7 +24,7 @@ The following arguments are supported:
 Allowable values: [dedicated,connect]. Example: dedicated
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `locations` - List of Direct Link locations
   * `billing_location` - Billing location.

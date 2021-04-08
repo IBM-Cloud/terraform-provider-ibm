@@ -26,7 +26,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The account ID.
 * `roles` - A nested block list of IAM Roles. Nested `roles` blocks have the following structure:

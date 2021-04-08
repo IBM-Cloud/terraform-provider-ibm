@@ -21,7 +21,7 @@ data "ibm_tg_locations" "ds_tg_locations" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `locations` - List of all locations that support Transit Gateways in the IBM Cloud Infrastructure.
   * `billing_location` - The geographical location of this location, used for billing purposes.

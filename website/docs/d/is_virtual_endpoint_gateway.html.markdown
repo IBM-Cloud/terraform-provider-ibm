@@ -26,7 +26,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `resource_group` - The unique identifier for this resource group
 - `created_at` - Endpoint gateway created date and time

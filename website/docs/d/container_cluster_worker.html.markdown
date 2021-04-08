@@ -33,7 +33,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `state` - The unique identifier of the cluster.
 * `status` - The number of workers nodes attached to the cluster.

@@ -29,7 +29,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `cross_connect_routers` - List of cross connect router details.
   * `router_name` - The name of the Router.

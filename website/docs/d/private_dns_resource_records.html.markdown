@@ -34,7 +34,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `dns_resource_records` - List of all private domain name service resource records in the IBM Cloud Infrastructure.
   * `id` - The unique identifier of the private DNS resource record.

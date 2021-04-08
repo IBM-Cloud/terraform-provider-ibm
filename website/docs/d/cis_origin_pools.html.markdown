@@ -26,7 +26,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - ID for this load balancer pool.
 - `created_on` - The RFC3339 timestamp of when the load balancer was created.

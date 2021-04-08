@@ -25,7 +25,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - Id of the Namespace Datasource.
 * `namespaces` - List of namespaces available in the account.

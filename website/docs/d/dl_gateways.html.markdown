@@ -20,7 +20,7 @@ data "ibm_dl_gateways" "ds_dlgateways" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `gateways` - List of all Direct Link gateways in the IBM Cloud Infrastructure.
   * `bgp_asn` - Customer BGP ASN.

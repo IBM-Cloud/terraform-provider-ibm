@@ -18,7 +18,7 @@ data "ibm_iam_auth_token" "tokendata" {}
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `iam_access_token` - IAM access Token. 
 * `iam_refresh_token` - IAM Refresh Token.

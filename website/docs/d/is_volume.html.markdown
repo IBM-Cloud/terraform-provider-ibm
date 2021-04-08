@@ -34,7 +34,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `profile` - The profile to use for this volume.
 * `iops` - The bandwidth for the volume.

@@ -35,7 +35,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
   * `created_at` - The date and time resource was created.
   * `updated_at` - The date and time resource was last updated.
