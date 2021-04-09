@@ -45,3 +45,11 @@ In addition to all arguments above, the following attributes are exported:
 * `created_by` - The IAM ID of the user or service that created the account group.
 * `updated_at` - The time stamp at which the account group was last updated.
 * `updated_by` - The IAM ID of the user or service that updated the account group.
+
+## Import
+
+ibm_enterprise_account_group can be imported using account_group_id, eg.
+
+```
+$ terraform import ibm_enterprise_account_group.example ae337d0b6cf6485a918a47e289ab4628
+```
