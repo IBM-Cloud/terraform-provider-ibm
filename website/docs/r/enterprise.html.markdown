@@ -44,3 +44,12 @@ In addition to all arguments above, the following attributes are exported:
 * `created_by` - The IAM ID of the user or service that created the enterprise.
 * `updated_at` - The time stamp at which the enterprise was last updated.
 * `updated_by` - The IAM ID of the user or service that updated the enterprise.
+
+## Import
+
+ibm_enterprise can be imported using enterprise_id, eg.
+
+```
+$  terraform import ibm_enterprise.enterprise_example c117bf3cb7a448fca830645865e3f1f2
+
+```

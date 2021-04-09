@@ -29,7 +29,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the accounts.
 
-* `accounts` - A list of accounts. Nested `resources` blocks have the following structure:
+* `accounts` - A list of accounts. Nested `accounts` blocks have the following structure:
 	* `url` - The URL of the account.
 	* `id` - The account ID.
 	* `crn` - The Cloud Resource Name (CRN) of the account.

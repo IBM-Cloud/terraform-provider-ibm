@@ -29,7 +29,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the enterprises.
 
-* `enterprises` - A list of enterprise objects. Nested `resources` blocks have the following structure:
+* `enterprises` - A list of enterprise objects. Nested `enterprises` blocks have the following structure:
 	* `url` - The URL of the enterprise.
 	* `id` - The enterprise ID.
 	* `enterprise_account_id` - The enterprise account ID.

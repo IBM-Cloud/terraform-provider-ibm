@@ -36,7 +36,7 @@ The following arguments are supported to create a new account in enterprise:
 * `name` - (Required, string) The name of the account. This field must have 3 - 60 characters.
 * `owner_iam_id` - (Required, string) The IAM ID of the account owner, such as `IBMid-0123ABC`. The IAM ID must already exist.
 
-The following arguments are supported to import a new account in enterprise:
+The following arguments are supported to import an existing standalone account in enterprise:
 
 * `parent` - (Required, string) The CRN of the parent under which the account will be created. The parent can be an existing account group or the enterprise itself.
 * `enterprise_id` - (Required, string) The enterprise ID where the account should be imported to.
@@ -62,3 +62,11 @@ In addition to all arguments above, the following attributes are exported:
 * `created_by` - The IAM ID of the user or service that created the account.
 * `updated_at` - The time stamp at which the account was last updated.
 * `updated_by` - The IAM ID of the user or service that updated the account.
+
+## Import
+
+ibm_enterprise_account can be imported using account_id, eg.
+
+```
+$ terraform import ibm_enterprise_account.example 907ec1a69a354afc94d3a7b499d6784f
+```
