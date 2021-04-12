@@ -129,26 +129,25 @@ func dataSourceIbmEnterpriseAccountsRead(context context.Context, d *schema.Reso
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	listAccountsOptions := &enterprisemanagementv1.ListAccountsOptions{}
 	next_docid := ""
 	var allRecs []enterprisemanagementv1.Account
 	for {
+		listAccountsOptions := &enterprisemanagementv1.ListAccountsOptions{}
+		if next_docid != "" {
+			listAccountsOptions.NextDocid = &next_docid
+		}
 		listAccountsResponse, response, err := enterpriseManagementClient.ListAccountsWithContext(context, listAccountsOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ListAccountsWithContext failed %s\n%s", err, response)
 			return diag.FromErr(err)
 		}
+		next_docid, err = getEnterpriseNext(listAccountsResponse.NextURL)
+		if err != nil {
+			log.Printf("[DEBUG] ListAccountsWithContext failed. Error occurred while parsing NextURL: %s", err)
+			return diag.FromErr(err)
+		}
 		allRecs = append(allRecs, listAccountsResponse.Resources...)
-		if listAccountsResponse.NextURL != nil {
-			next_docid, err = getEnterpriseNext(listAccountsResponse.NextURL)
-			if err != nil {
-				log.Printf("[DEBUG] Error while parsing %s\n%v", *listAccountsResponse.NextURL, err)
-				return diag.FromErr(err)
-			}
-			listAccountsOptions.NextDocid = &next_docid
-			log.Printf("[DEBUG] ListAccountsWithContext failed %s", next_docid)
-		} else {
-			next_docid = ""
+		if next_docid == "" {
 			break
 		}
 	}
