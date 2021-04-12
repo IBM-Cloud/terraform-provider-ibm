@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"net/url"
+	"reflect"
 	"time"
 
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
@@ -115,6 +116,9 @@ func dataSourceIbmEnterpriseAccountGroups() *schema.Resource {
 }
 
 func getEnterpriseNext(next *string) (string, error) {
+	if reflect.ValueOf(next).IsNil() {
+		return "", nil
+	}
 	u, err := url.Parse(*next)
 	if err != nil {
 		return "", err
@@ -129,25 +133,24 @@ func dataSourceIbmEnterpriseAccountGroupsRead(context context.Context, d *schema
 		return diag.FromErr(err)
 	}
 	next_docid := ""
-	listAccountGroupsOptions := &enterprisemanagementv1.ListAccountGroupsOptions{}
 	var allRecs []enterprisemanagementv1.AccountGroup
 	for {
+		listAccountGroupsOptions := &enterprisemanagementv1.ListAccountGroupsOptions{}
+		if next_docid != "" {
+			listAccountGroupsOptions.NextDocid = &next_docid
+		}
 		listAccountGroupsResponse, response, err := enterpriseManagementClient.ListAccountGroupsWithContext(context, listAccountGroupsOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ListAccountGroupsWithContext failed %s\n%s", err, response)
 			return diag.FromErr(err)
 		}
+		next_docid, err = getEnterpriseNext(listAccountGroupsResponse.NextURL)
+		if err != nil {
+			log.Printf("[DEBUG] ListAccountGroupsWithContext failed. Error occurred while parsing NextURL: %s", err)
+			return diag.FromErr(err)
+		}
 		allRecs = append(allRecs, listAccountGroupsResponse.Resources...)
-		if listAccountGroupsResponse.NextURL != nil {
-			next_docid, err = getEnterpriseNext(listAccountGroupsResponse.NextURL)
-			if err != nil {
-				log.Printf("[DEBUG] Error while parsing %s\n%v", *listAccountGroupsResponse.NextURL, err)
-				return diag.FromErr(err)
-			}
-			listAccountGroupsOptions.NextDocid = &next_docid
-			log.Printf("[DEBUG] ListAccountsWithContext failed %s", next_docid)
-		} else {
-			next_docid = ""
+		if next_docid == "" {
 			break
 		}
 	}
