@@ -188,37 +188,28 @@ func dataSourceIBMCosBucket() *schema.Resource {
 			},
 			"retention_rule": {
 				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
+				Computed:    true,
 				Description: "A retention policy is enabled at the IBM Cloud Object Storage bucket level. Minimum, maximum and default retention period are defined by this policy and apply to all objects in the bucket.",
-				ForceNew:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"default": {
 							Type:         schema.TypeInt,
-							Required:     true,
-							ValidateFunc: validateAllowedRangeInt(0, 365243),
+							Computed:    true,
 							Description:  "If an object is stored in the bucket without specifying a custom retention period.",
-							ForceNew:     false,
 						},
 						"maximum": {
 							Type:         schema.TypeInt,
-							Required:     true,
-							ValidateFunc: validateAllowedRangeInt(0, 365243),
+							Computed:    true,
 							Description:  "Maximum duration of time an object can be kept unmodified in the bucket.",
-							ForceNew:     false,
 						},
 						"minimum": {
 							Type:         schema.TypeInt,
-							Required:     true,
-							ValidateFunc: validateAllowedRangeInt(0, 365243),
+							Computed:    true,
 							Description:  "Minimum duration of time an object must be kept unmodified in the bucket",
-							ForceNew:     false,
 						},
 						"permanent": {
 							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
+							Computed:    true,
 							Description: "Enable or disable the permanent retention policy on the bucket",
 						},
 					},
