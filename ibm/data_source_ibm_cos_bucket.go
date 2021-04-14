@@ -188,37 +188,28 @@ func dataSourceIBMCosBucket() *schema.Resource {
 			},
 			"retention_rule": {
 				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1000,
+				Computed:    true,
 				Description: "A retention policy is enabled at the IBM Cloud Object Storage bucket level. Minimum, maximum and default retention period are defined by this policy and apply to all objects in the bucket.",
-				ForceNew:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"default": {
-							Type:         schema.TypeInt,
-							Required:     true,
-							ValidateFunc: validateAllowedRangeInt(0, 365243),
-							Description:  "If an object is stored in the bucket without specifying a custom retention period.",
-							ForceNew:     false,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "If an object is stored in the bucket without specifying a custom retention period.",
 						},
 						"maximum": {
-							Type:         schema.TypeInt,
-							Required:     true,
-							ValidateFunc: validateAllowedRangeInt(0, 365243),
-							Description:  "Maximum duration of time an object can be kept unmodified in the bucket.",
-							ForceNew:     false,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Maximum duration of time an object can be kept unmodified in the bucket.",
 						},
 						"minimum": {
-							Type:         schema.TypeInt,
-							Required:     true,
-							ValidateFunc: validateAllowedRangeInt(0, 365243),
-							Description:  "Minimum duration of time an object must be kept unmodified in the bucket",
-							ForceNew:     false,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Minimum duration of time an object must be kept unmodified in the bucket",
 						},
 						"permanent": {
 							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
+							Computed:    true,
 							Description: "Enable or disable the permanent retention policy on the bucket",
 						},
 					},
@@ -396,7 +387,10 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if retentionptr != nil {
-		d.Set("retention_rule", retentionRuleGet(retentionptr.ProtectionConfiguration))
+		retentionRules := retentionRuleGet(retentionptr.ProtectionConfiguration)
+		if len(retentionRules) > 0 {
+			d.Set("retention_rule", retentionRules)
+		}
 	}
 
 	return nil

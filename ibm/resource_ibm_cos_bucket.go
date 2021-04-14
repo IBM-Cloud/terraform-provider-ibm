@@ -253,7 +253,7 @@ func resourceIBMCOS() *schema.Resource {
 			"retention_rule": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				MaxItems:    1000,
+				MaxItems:    1,
 				Description: "A retention policy is enabled at the IBM Cloud Object Storage bucket level. Minimum, maximum and default retention period are defined by this policy and apply to all objects in the bucket.",
 				ForceNew:    true,
 				Elem: &schema.Resource{
@@ -774,7 +774,10 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if retentionptr != nil {
-		d.Set("retention_rule", retentionRuleGet(retentionptr.ProtectionConfiguration))
+		retentionRules := retentionRuleGet(retentionptr.ProtectionConfiguration)
+		if len(retentionRules) > 0 {
+			d.Set("retention_rule", retentionRules)
+		}
 	}
 
 	return nil

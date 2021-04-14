@@ -739,8 +739,9 @@ func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
 }
 
 func retentionRuleGet(in *s3.ProtectionConfiguration) []interface{} {
-	protectConfig := make(map[string]interface{})
-	if in != nil {
+	rules := make([]interface{}, 0, 1)
+	if in != nil && in.Status != nil && *in.Status == "Retention" {
+		protectConfig := make(map[string]interface{})
 		if in.DefaultRetention != nil {
 			protectConfig["default"] = int(*(in.DefaultRetention).Days)
 		}
@@ -753,8 +754,9 @@ func retentionRuleGet(in *s3.ProtectionConfiguration) []interface{} {
 		if in.EnablePermanentRetention != nil {
 			protectConfig["permanent"] = *in.EnablePermanentRetention
 		}
+		rules = append(rules, protectConfig)
 	}
-	return []interface{}{protectConfig}
+	return rules
 }
 
 func flattenLimits(in *whisk.Limits) []interface{} {
