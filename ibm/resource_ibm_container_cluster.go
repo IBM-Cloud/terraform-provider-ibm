@@ -1604,7 +1604,7 @@ func resourceIBMContainerClusterExists(d *schema.ResourceData, meta interface{})
 	cls, err := csClient.Clusters().FindWithOutShowResourcesCompatible(clusterID, targetEnv)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
+			if apiErr.StatusCode() == 404 && strings.Contains(apiErr.Description(), "The specified cluster could not be found") {
 				return false, nil
 			}
 		}
