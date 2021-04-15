@@ -47,6 +47,11 @@ func dataSourceIBMSatelliteLocation() *schema.Resource {
 				Computed:    true,
 				Description: "Location CRN",
 			},
+			"resource_group_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the resource group",
+			},
 		},
 	}
 }
@@ -75,6 +80,7 @@ func dataSourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}
 	d.Set("zones", instance.WorkerZones)
 	d.Set("managed_from", *instance.Datacenter)
 	d.Set("crn", *instance.Crn)
+	d.Set("resource_group_id", *instance.ResourceGroup)
 
 	return nil
 }

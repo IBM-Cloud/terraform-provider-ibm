@@ -16,10 +16,15 @@ Create, update, or delete [IBM Cloud Satellite Location](https://cloud.ibm.com/d
 ###  Create location
 
 ```hcl
+data "ibm_resource_group" "group" {
+    name = "Default"
+}
+
 resource "ibm_satellite_location" "create_location" {
-  location      = var.location
-  zones         = var.location_zones
-  managed_from  = var.managed_from
+  location          = var.location
+  zones             = var.location_zones
+  managed_from      = var.managed_from
+  resource_group_id = data.ibm_resource_group.group.id
 }
 
 ```
@@ -56,6 +61,7 @@ The following arguments are supported:
     * `access_key-id` - The HMAC secret access key ID.
     * `secret_access_key` - The HMAC secret access key. 
 * `zones` - (Optional, array of strings) The names for the host zones. For high availability, allocate your hosts across these three zones based on your infrastructure provider zones. ex: [ us-east-1, us-east-2, us-east-3 ]
+* `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`.
 
 ## Attributes Reference
 
