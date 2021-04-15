@@ -35,4 +35,5 @@ In addition to all arguments above, the following attributes are exported:
 * `description` - Description of the new Satellite location.
 * `logging_account_id` -  The account ID for IBM Log Analysis with LogDNA log forwarding.
 * `zones` - The names for the host zones. For high availability, allocate your hosts across these three zones based on your infrastructure provider zones. ex: [ us-east-1, us-east-2, us-east-3 ]
+* `resource_group_id` - The ID of the resource group.
 
