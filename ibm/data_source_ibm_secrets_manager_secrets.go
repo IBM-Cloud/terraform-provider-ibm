@@ -10,10 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 )
 
 func dataSourceIBMSecretsManagerSecrets() *schema.Resource {
@@ -291,7 +290,8 @@ func dataSourceIBMSecretsManagerSecretsRead(context context.Context, d *schema.R
 		} else {
 			smEndpointURL = "https://" + instanceID + "." + region + ".secrets-manager.appdomain.cloud"
 		}
-		secretsManagerClient.Service.Options.URL = smEndpointURL
+		smUrl := envFallBack([]string{"IBMCLOUD_SECRETS_MANAGER_API_ENDPOINT"}, smEndpointURL)
+		secretsManagerClient.Service.Options.URL = smUrl
 	} else {
 		return diag.FromErr(fmt.Errorf("Invalid or unsupported service Instance"))
 	}

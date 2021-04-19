@@ -47,6 +47,7 @@ import (
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
+	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
@@ -93,7 +94,6 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
-	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -1178,7 +1178,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	schematicsClientOptions := &schematicsv1.SchematicsV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_SCHEMATICS_ENDPOINT"}, schematicsEndpoint),
+		URL:           envFallBack([]string{"IBMCLOUD_SCHEMATICS_API_ENDPOINT"}, schematicsEndpoint),
 	}
 
 	// Construct the service client.
@@ -1923,7 +1923,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	resourceManagerOptions := &resourcemanager.ResourceManagerV2Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_MANAGER_API_ENDPOINT"}, rmURL),
+		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_MANAGEMENT_API_ENDPOINT"}, rmURL),
 	}
 	resourceManagerClient, err := resourcemanager.NewResourceManagerV2(resourceManagerOptions)
 	if err != nil {
