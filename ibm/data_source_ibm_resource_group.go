@@ -64,6 +64,9 @@ func dataSourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) er
 		if err != nil {
 			return fmt.Errorf("Error retrieving default resource group: %s", err)
 		}
+		if len(grp) < 1 {
+			return fmt.Errorf("Error retrieving default resource group: no groups found")
+		}
 		d.SetId(grp[0].ID)
 
 	} else if name != "" {
@@ -73,6 +76,9 @@ func dataSourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) er
 		grp, err := rsGroup.FindByName(resourceGroupQuery, name)
 		if err != nil {
 			return fmt.Errorf("Error retrieving resource group %s: %s", name, err)
+		}
+		if len(grp) < 1 {
+			return fmt.Errorf("Error retrieving resource group %s: no groups found", name)
 		}
 		d.SetId(grp[0].ID)
 
