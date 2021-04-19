@@ -66,7 +66,6 @@ func resourceIBMISReservedIP() *schema.Resource {
 			isReservedIPAddress: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Optional:    true,
 				Description: "The user-defined or system-provided name for this reserved IP.",
 			},
 			isReservedIP: {
