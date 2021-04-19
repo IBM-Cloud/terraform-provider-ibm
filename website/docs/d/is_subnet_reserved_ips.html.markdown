@@ -1,7 +1,7 @@
 ---
 subcategory: "VPC infrastructure"
 layout: "ibm"
-page_title: "IBM : reserved_ip"
+page_title: "IBM : reserved_ips"
 description: |-
   Lists all the info in reserved IP for Subnet.
 ---

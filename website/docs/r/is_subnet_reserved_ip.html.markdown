@@ -6,7 +6,7 @@ description: |-
   Manages IBM Subnet reserved IP
 ---
 
-# ibm_is_virtual_endpoint_gateway
+# ibm_is_subnet_reserved_ip
 
 Provides a subnet reserved IP resource. This allows Subnet reserved IP to be created, updated, and deleted.
 
@@ -69,6 +69,11 @@ The following arguments are supported:
 
 * `id` - The combination of the subnet ID and reserved IP ID seperated by '/'.
 * `reserved_ip` - This refers to only the reserved IP.
+* `created_at` -The date and time that the reserved IP was created.",
+* `href` - The URL for this reserved IP.
+* `owner` - The owner of a reserved IP, defining whether it is managed by the user or the provider.
+* `resource_type` - The resource type.
+* `address` - The user-defined or system-provided name for this reserved IP.
 
 ## Import
 
