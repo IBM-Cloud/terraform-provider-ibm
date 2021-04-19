@@ -13,7 +13,7 @@ Provides a read-only data source for iam_account_settings. You can then referenc
 ## Example Usage
 
 ```hcl
-data "iam_account_settings" "iam_account_settings" {
+data "ibm_iam_account_settings" "iam_account_settings" {
 }
 ```
 
