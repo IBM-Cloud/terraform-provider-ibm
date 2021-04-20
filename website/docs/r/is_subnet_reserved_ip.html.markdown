@@ -95,6 +95,7 @@ The following arguments are supported:
 * `resource_type` - The resource type.
 * `address` - The IP address.
 * `target` - The id for the target endpoint gateway for the reserved IP.
+
 ## Import
 
 ibm_is_subnet_reserved_ip can be imported using subnet ID and reserved IP ID seperated by '/' eg
