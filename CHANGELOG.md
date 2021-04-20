@@ -1,3 +1,16 @@
+## 1.23.2 (Apr20, 2021)
+ENHANCEMENTS
+* Add support for COS retention policy ([#1880](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1880))
+* Add support for private_address for VPN gateway ([2282](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2382))
+* List all certificates in a certificate manager instance ([2358](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2358))
+* Enhance description for attribute reference ([2475](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2475))
+*  Add suuport for regional ca-tor COS bucket ([#2483](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2483))
+
+BUGFIXES
+* Fix the broken links for classic infrastructure bare metal ([#2481](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2481))
+* Fix cis primary certificate crash ([#2490](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2490))
+* Fix ibm_satellite_location: cannot specify resource group ([#2499](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2499))
+
 ## 1.23.1 (Apr07, 2021)
 ENHANCEMENTS
 * Add support to retry the update of patch version ([#2379](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2379))
