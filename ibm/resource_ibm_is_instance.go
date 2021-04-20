@@ -135,7 +135,7 @@ func resourceIBMISInstance() *schema.Resource {
 
 			isInstanceProfile: {
 				Type:        schema.TypeString,
-				ForceNew:    true,
+				ForceNew:    false,
 				Required:    true,
 				Description: "Profile info",
 			},
@@ -1854,6 +1854,49 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if d.HasChange(isInstanceProfile) {
+
+		actiontype := "stop"
+		createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+			InstanceID: &id,
+			Type:       &actiontype,
+		}
+		_, response, err := instanceC.CreateInstanceAction(createinsactoptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return nil
+			}
+			return fmt.Errorf("Error Creating Instance Action: %s\n%s", err, response)
+		}
+		_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
+		if err != nil {
+			return err
+		}
+
+		updnetoptions := &vpcv1.UpdateInstanceOptions{
+			ID: &id,
+		}
+
+		instanceProfile := d.Get(isInstanceProfile).(string)
+		profile := &vpcv1.InstancePatchProfile{
+			Name: &instanceProfile,
+		}
+		instancePatchModel := &vpcv1.InstancePatch{
+			Profile: profile,
+		}
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstancePatch: %s", err)
+		}
+		updnetoptions.InstancePatch = instancePatch
+
+		_, response, err = instanceC.UpdateInstance(updnetoptions)
+		if err != nil {
+			return fmt.Errorf("Error in UpdateInstancePatch: %s\n%s", err, response)
+		}
+
 	}
 
 	getinsOptions := &vpcv1.GetInstanceOptions{
