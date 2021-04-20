@@ -38,7 +38,7 @@ In the following example, you can create a Reserved IP:
     // Subnet ID with a given name
     resource "ibm_is_subnet_reserved_ip" "res_ip_name" {
         subnet = ibm_is_subnet.subnet1.id
-        name = "my-subnet"
+        name = "my-subnet-reserved-ip"
     }
 
     // Subnet ID with auto_delete
@@ -50,9 +50,27 @@ In the following example, you can create a Reserved IP:
     // Subnet ID with both name and auto_delete
     resource "ibm_is_subnet_reserved_ip" "res_ip_auto_delete_name" {
         subnet = ibm_is_subnet.subnet1.id
-        name = "my-subnet"
+        name = "my-subnet-reserved-ip"
         auto_delete = true
     }
+
+    // Create a virtual endpoint gateway and set as a target for reserved IP
+
+    resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway" {
+        name = "my-endpoint-gateway-1"
+        target {
+            name          = "ibm-ntp-server"
+            resource_type = "provider_infrastructure_service"
+        }
+        vpc = ibm_is_vpc.vpc1.id
+    }
+
+    resource "ibm_is_subnet_reserved_ip" "reserved_ip_1" {
+        subnet = ibm_is_subnet.subnet1.id
+        name = "%s"
+        target = ibm_is_virtual_endpoint_gateway.endpoint_gateway.id
+    }
+
 ```
 
 ## Argument Reference
@@ -63,6 +81,8 @@ The following arguments are supported:
 * `name` - (Optional, string) The name of the reserved IP.
     **NOTE**: Raise error if name is given with a prefix `ibm-`.
 * `auto_delete` - (Optional, boolean) If reserved IP is auto deleted.
+* `target` - The id for the target endpoint gateway for the reserved IP.
+
 
 
 ## Attribure Reference
@@ -74,7 +94,7 @@ The following arguments are supported:
 * `owner` - The owner of a reserved IP, defining whether it is managed by the user or the provider.
 * `resource_type` - The resource type.
 * `address` - The IP address.
-
+* `target` - The id for the target endpoint gateway for the reserved IP.
 ## Import
 
 ibm_is_subnet_reserved_ip can be imported using subnet ID and reserved IP ID seperated by '/' eg
