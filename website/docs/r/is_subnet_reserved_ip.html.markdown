@@ -93,7 +93,7 @@ The following arguments are supported:
 * `href` - The URL for this reserved IP.
 * `owner` - The owner of a reserved IP, defining whether it is managed by the user or the provider.
 * `resource_type` - The resource type.
-* `address` - The user-defined or system-provided name for this reserved IP.
+* `address` - The IP address.
 * `target` - The id for the target endpoint gateway for the reserved IP.
 
 ## Import
