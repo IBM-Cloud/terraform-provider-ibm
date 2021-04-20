@@ -87,6 +87,11 @@ func dataSourceIBMISReservedIPs() *schema.Resource {
 							Computed:    true,
 							Description: "The resource type.",
 						},
+						isReservedIPTarget: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Reserved IP target id",
+						},
 					},
 				},
 			},
@@ -140,7 +145,10 @@ func dataSdataSourceIBMISReservedIPsRead(d *schema.ResourceData, meta interface{
 		ipsOutput[isReservedIPName] = *data.Name
 		ipsOutput[isReservedIPOwner] = *data.Owner
 		ipsOutput[isReservedIPType] = *data.ResourceType
-
+		target, ok := data.Target.(*vpcv1.ReservedIPTarget)
+		if ok {
+			ipsOutput[isReservedIPTarget] = target.ID
+		}
 		reservedIPs = append(reservedIPs, ipsOutput)
 	}
 

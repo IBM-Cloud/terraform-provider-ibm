@@ -6,6 +6,7 @@ package ibm
 import (
 	"fmt"
 
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -87,6 +88,11 @@ func dataSourceIBMISReservedIP() *schema.Resource {
 				Computed:    true,
 				Description: "The resource type.",
 			},
+			isReservedIPTarget: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Reserved IP target id.",
+			},
 		},
 	}
 }
@@ -116,5 +122,9 @@ func dataSdataSourceIBMISReservedIPRead(d *schema.ResourceData, meta interface{}
 	d.Set(isReservedIPName, *reserveIP.Name)
 	d.Set(isReservedIPOwner, *reserveIP.Owner)
 	d.Set(isReservedIPType, *reserveIP.ResourceType)
+	target, ok := reserveIP.Target.(*vpcv1.ReservedIPTarget)
+	if ok {
+		d.Set(isReservedIPTarget, target.ID)
+	}
 	return nil // By default there should be no error
 }
