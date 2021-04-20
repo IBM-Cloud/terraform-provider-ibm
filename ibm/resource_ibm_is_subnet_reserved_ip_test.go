@@ -111,9 +111,19 @@ func testAccCheckISSubnetReservedIPConfigBasic(vpcName, subnetName, resIPName st
 		total_ipv4_address_count = 256
 	  }
 
+	  resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway" {
+		name = "my-endpoint-gateway-1"
+		target {
+		  name          = "ibm-ntp-server"
+		  resource_type = "provider_infrastructure_service"
+		}
+		vpc = ibm_is_vpc.vpc1.id
+	  }
+
 	  resource "ibm_is_subnet_reserved_ip" "resIP1" {
 		subnet = ibm_is_subnet.subnet1.id
 		name = "%s"
+		target = ibm_is_virtual_endpoint_gateway.endpoint_gateway.id
 	  }
 	`, vpcName, subnetName, resIPName)
 }
