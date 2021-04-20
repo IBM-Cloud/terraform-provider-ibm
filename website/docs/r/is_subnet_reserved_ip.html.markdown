@@ -96,7 +96,6 @@ The following arguments are supported:
 * `address` - The user-defined or system-provided name for this reserved IP.
 * `target` - The id for the target endpoint gateway for the reserved IP.
 
-
 ## Import
 
 ibm_is_subnet_reserved_ip can be imported using subnet ID and reserved IP ID seperated by '/' eg
