@@ -26,7 +26,7 @@ func resourceIBMISInstanceGroupManagerAction() *schema.Resource {
 			"name": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: InvokeValidator("ibm_is_instance_group_manager", "name"),
+				ValidateFunc: InvokeValidator("ibm_is_instance_group_manager_action", "name"),
 				Description:  "instance group manager action name",
 			},
 
@@ -58,6 +58,7 @@ func resourceIBMISInstanceGroupManagerAction() *schema.Resource {
 			"cron_spec": {
 				Type:          schema.TypeString,
 				Optional:      true,
+				ValidateFunc:  InvokeValidator("ibm_is_instance_group_manager_action", "cron_spec"),
 				Description:   "The cron specification for a recurring scheduled action. Actions can be applied a maximum of one time within a 5 min period.",
 				ConflictsWith: []string{"run_at"},
 			},
@@ -65,6 +66,7 @@ func resourceIBMISInstanceGroupManagerAction() *schema.Resource {
 			"membership_count": {
 				Type:          schema.TypeInt,
 				Optional:      true,
+				ValidateFunc:  InvokeValidator("ibm_is_instance_group_manager_action", "membership_count"),
 				Description:   "The number of members the instance group should have at the scheduled time.",
 				ConflictsWith: []string{"instance_group_manager_autoscale", "max_membership_count", "min_membership_count"},
 			},
@@ -72,6 +74,7 @@ func resourceIBMISInstanceGroupManagerAction() *schema.Resource {
 			"max_membership_count": {
 				Type:          schema.TypeInt,
 				Optional:      true,
+				Default:       1,
 				ValidateFunc:  InvokeValidator("ibm_is_instance_group_manager_action", "max_membership_count"),
 				Description:   "The maximum number of members in a managed instance group",
 				ConflictsWith: []string{"membership_count"},
@@ -174,6 +177,21 @@ func resourceIBMISInstanceGroupManagerActionValidator() *ResourceValidator {
 			Type:                       TypeInt,
 			MinValue:                   "1",
 			MaxValue:                   "1000"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "cron_spec",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Regexp:                     `^((((\d+,)+\d+|([\d\*]+(\/|-)\d+)|\d+|\*) ?){5,7})$`,
+			MinValueLength:             9,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "membership_count",
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			MinValue:                   "0",
+			MaxValue:                   "100"})
 
 	ibmISInstanceGroupManagerResourceValidator := ResourceValidator{ResourceName: "ibm_is_instance_group_manager_action", Schema: validateSchema}
 	return &ibmISInstanceGroupManagerResourceValidator
@@ -218,7 +236,7 @@ func resourceIBMISInstanceGroupManagerActionCreate(d *schema.ResourceData, meta 
 		instanceGroupManagerActionPrototype.Group = &instanceGroupManagerScheduledActionGroupPrototype
 	}
 
-	instanceGroupManagerScheduledActionByManagerManager := vpcv1.InstanceGroupManagerScheduledActionByManagerManager{}
+	instanceGroupManagerScheduledActionByManagerManager := vpcv1.InstanceGroupManagerScheduledActionByManagerManagerInstanceGroupManagerScheduledActionManagerAutoScalePrototype{}
 	if v, ok := d.GetOk("min_membership_count"); ok {
 		minmembershipCount := int64(v.(int))
 		instanceGroupManagerScheduledActionByManagerManager.MinMembershipCount = &minmembershipCount
@@ -278,23 +296,28 @@ func resourceIBMISInstanceGroupManagerActionUpdate(d *schema.ResourceData, meta 
 		changed = true
 	}
 
-	// if d.HasChange("max_membership_count") {
-	// 	maxMembershipCount := int64(d.Get("max_membership_count").(int))
-	// 	instanceGroupManagerPatchModel.MaxMembershipCount = &maxMembershipCount
-	// 	changed = true
-	// }
+	if d.HasChange("membership_count") {
+		membershipCount := int64(d.Get("membership_count").(int))
+		instanceGroupManagerScheduledActionGroupPatch := vpcv1.InstanceGroupManagerScheduledActionGroupPatch{}
+		instanceGroupManagerScheduledActionGroupPatch.MembershipCount = &membershipCount
+		instanceGroupManagerActionPatchModel.Group = &instanceGroupManagerScheduledActionGroupPatch
+		changed = true
+	}
 
-	// if d.HasChange("min_membership_count") {
-	// 	minMembershipCount := int64(d.Get("min_membership_count").(int))
-	// 	instanceGroupManagerPatchModel.MinMembershipCount = &minMembershipCount
-	// 	changed = true
-	// }
+	instanceGroupManagerScheduledActionByManagerPatchManager := vpcv1.InstanceGroupManagerScheduledActionByManagerPatchManager{}
 
-	// if d.HasChange("enable_manager") {
-	// 	enableManager := d.Get("enable_manager").(bool)
-	// 	instanceGroupManagerPatchModel.ManagementEnabled = &enableManager
-	// 	changed = true
-	// }
+	if d.HasChange("min_membership_count") {
+		minmembershipCount := int64(d.Get("min_membership_count").(int))
+		instanceGroupManagerScheduledActionByManagerPatchManager.MinMembershipCount = &minmembershipCount
+		changed = true
+	}
+
+	if d.HasChange("max_membership_count") {
+		minmembershipCount := int64(d.Get("max_membership_count").(int))
+		instanceGroupManagerScheduledActionByManagerPatchManager.MinMembershipCount = &minmembershipCount
+		changed = true
+	}
+	instanceGroupManagerActionPatchModel.Manager = &instanceGroupManagerScheduledActionByManagerPatchManager
 
 	if changed {
 
