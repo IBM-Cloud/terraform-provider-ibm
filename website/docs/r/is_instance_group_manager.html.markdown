@@ -70,6 +70,15 @@ resource "ibm_is_instance_group_manager" "instance_group_manager" {
   max_membership_count = 2
   min_membership_count = 1
 }
+
+OR
+
+resource "ibm_is_instance_group_manager" "instance_group_manager" {
+	name = "testinstancegroupmanager"
+	instance_group = ibm_is_instance_group.instance_group.id
+	manager_type = "scheduled"
+	enable_manager = true
+}
 ```
 
 ## Argument Reference
@@ -79,11 +88,11 @@ The following arguments are supported:
 * `name` - (Optional, string) The name of the instance group manager.
 * `enable_manager` - (Optional, bool) Enable or disbale the instance group manager. Default is set to True.
 * `instance_group` - (Required, string) The instance group ID where instance group manager is created.
-* `manager_type` - (Optional, string) The type of instance group manager. Default is set to 'autoscale'
+* `manager_type` - (Required, string) The type of instance group manager. Allowed values are 'autoscale' and 'scheduled'.
 * `aggregation_window` - (Optional, int) The time window in seconds to aggregate metrics prior to evaluation
 * `cooldown` - (Optional, int) The duration of time in seconds to pause further scale actions after scaling has taken place
-* `max_membership_count` - (Required, int) The maximum number of members in a managed instance group
-* `main_membership_count` - (Optional, int) The minimum number of members in a managed instance group. Default valeue is set to 1.
+* `max_membership_count` - (Optional, int) The maximum number of members in a managed instance group
+* `min_membership_count` - (Optional, int) The minimum number of members in a managed instance group. Default valeue is set to 1.
 
 ## Attribute Reference
 
@@ -92,6 +101,7 @@ In addition to all arguments above, the following attributes are exported:
 * `id` - Id is the comination of instance group ID and instance group manager ID
 * `policies` - list of policies associated with the instance group manager.
 * `manager_id` - Id of the instance group manager
+* `actions` - list of actions of the instance group manager.
 
 ## Import
 

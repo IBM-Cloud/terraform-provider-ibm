@@ -27,7 +27,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+The following attributes are exported:
 
 * `instance_group_managers` - Nested block containing list of instance manager properties
   * `id` - d is the the combination of instance group ID and instance group manager ID.
@@ -37,5 +37,6 @@ In addition to all arguments above, the following attributes are exported:
   * `manager_id` - instance group manager ID
   * `cooldown` - The duration of time in seconds to pause further scale actions after scaling has taken place.
   * `max_membership_count` - The maximum number of members in a managed instance group.
-  * `main_membership_count` - The minimum number of members in a managed instance group. 
+  * `min_membership_count` - The minimum number of members in a managed instance group. 
+  * `actions` - list of actions of the instance group manager.
 
