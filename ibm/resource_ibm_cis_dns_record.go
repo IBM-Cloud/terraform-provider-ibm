@@ -401,7 +401,7 @@ func resourceIBMCISDnsRecordCreate(d *schema.ResourceData, meta interface{}) err
 			opt.SetPriority(priority.(int64))
 		}
 		if ttl, ok := d.GetOk("ttl"); ok {
-			opt.SetTTL(ttl.(int64))
+			opt.SetTTL(int64(ttl.(int)))
 		}
 
 	}
@@ -736,7 +736,7 @@ func resourceIBMCISDnsRecordUpdate(d *schema.ResourceData, meta interface{}) err
 					opt.SetProxied(proxied.(bool))
 				}
 				if ttlOK {
-					opt.SetTTL(ttl.(int64))
+					opt.SetTTL(int64(ttl.(int)))
 				}
 				if ttl != 1 && proxied == true {
 					return fmt.Errorf("To enable proxy TTL should be Automatic %s",
