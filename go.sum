@@ -96,8 +96,12 @@ github.com/IBM/go-sdk-core/v5 v5.3.0 h1:ZDqawFURQ1nlNhy4SE9Q+0AOlpa/TrsbVC7TnoSi
 github.com/IBM/go-sdk-core/v5 v5.3.0/go.mod h1:+MNa5Jbqb9FO7KEevo982Pb/YXr4adkyEffJlPs2TGc=
 github.com/IBM/ibm-cos-sdk-go v1.3.1 h1:6SHueqFpznp7S/9b39/WiJ9mt3TgD322j2pArzyd/c8=
 github.com/IBM/ibm-cos-sdk-go v1.3.1/go.mod h1:YLBAYobEA8bD27P7xpMwSQeNQu6W3DNBtBComXrRzRY=
+github.com/IBM/ibm-cos-sdk-go v1.6.1 h1:2XG/fsXno8228gBEwxf0u2AFI/Nii3wpk17lkpF0IvA=
+github.com/IBM/ibm-cos-sdk-go v1.6.1/go.mod h1:BOqDAOxuJTamCSdAKx2XStknDaeB99nXWaf1PtvW0iY=
 github.com/IBM/ibm-cos-sdk-go-config v1.0.1 h1:Nld42UysaZ16hPl4XMnkCgbuwW+s4OVctqEf2QbE5ec=
 github.com/IBM/ibm-cos-sdk-go-config v1.0.1/go.mod h1:BAbdv1Zf8mRP6rj40Cem7KgBp+UQn9Fe2EWxIBrp5sM=
+github.com/IBM/ibm-cos-sdk-go-config v1.1.0 h1:udFHLvw1o1mtLdX3t1hTaPSdLAUPnkc2qCngNhubR1o=
+github.com/IBM/ibm-cos-sdk-go-config v1.1.0/go.mod h1:BAbdv1Zf8mRP6rj40Cem7KgBp+UQn9Fe2EWxIBrp5sM=
 github.com/IBM/keyprotect-go-client v0.7.0 h1:JstSHD14Lp6ihwQseyPuGcs1AjOBjAmcisP0dTBA6A0=
 github.com/IBM/keyprotect-go-client v0.7.0/go.mod h1:SVr2ylV/fhSQPDiUjWirN9fsyWFCNNbt8GIT8hPJVjE=
 github.com/IBM/networking-go-sdk v0.12.1 h1:GmzrRjvAyqKMfUPM8Y/R5dce0x5AXTqmseVZ3n7eZks=
@@ -1010,6 +1014,8 @@ golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb h1:eBmm0M9fYhWpKZLjQUUKka/Lt
 golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb/go.mod h1:sp8m0HH+o8qH0wwXwYZr8TS3Oi6o0r6Gce1SSxlDquU=
 golang.org/x/net v0.0.0-20210119194325-5f4716e94777 h1:003p0dJM77cxMSyCPFphvZf/Y5/NXf5fzg6ufd1/Oew=
 golang.org/x/net v0.0.0-20210119194325-5f4716e94777/go.mod h1:m0MpNAwzfU5UDzcl9v0D8zg8gWTRqZa9RBIspLL5mdg=
+golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 h1:qWPm9rbaAMKs8Bq/9LRpbMqxWRVUAQwMI9fVrssnTfw=
+golang.org/x/net v0.0.0-20210226172049-e18ecbb05110/go.mod h1:m0MpNAwzfU5UDzcl9v0D8zg8gWTRqZa9RBIspLL5mdg=
 golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be/go.mod h1:N/0e6XlmueqKjAGxoOufVs8QHGRruUQn6yWY3a++T0U=
 golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
 golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=

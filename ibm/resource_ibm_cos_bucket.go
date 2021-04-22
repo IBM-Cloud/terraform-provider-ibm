@@ -175,6 +175,12 @@ func resourceIBMCOS() *schema.Resource {
 							Default:     false,
 							Description: "Usage metrics will be sent to the monitoring service.",
 						},
+						"request_metrics_enabled": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Request metrics will be sent to the monitoring service.",
+						},
 						"metrics_monitoring_crn": {
 							Type:        schema.TypeString,
 							Required:    true,
@@ -596,7 +602,11 @@ func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
 					metrics := metricsSet.(bool)
 					metricsMonitor.UsageMetricsEnabled = &metrics
 				}
-
+				// request metrics enabled - as its optional check for existence
+				if metricsSet := metricsMap["request_metrics_enabled"]; metricsSet != nil {
+					metrics := metricsSet.(bool)
+					metricsMonitor.RequestMetricsEnabled = &metrics
+				}
 				//crn - Required field
 				crn := metricsMap["metrics_monitoring_crn"].(string)
 				metricsMonitor.MetricsMonitoringCrn = &crn

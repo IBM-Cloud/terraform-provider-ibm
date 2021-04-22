@@ -668,6 +668,9 @@ func flattenMetricsMonitor(in *resourceconfigurationv1.MetricsMonitoring) []inte
 		if in.MetricsMonitoringCrn != nil {
 			att["metrics_monitoring_crn"] = *in.MetricsMonitoringCrn
 		}
+		if in.RequestMetricsEnabled != nil {
+			att["request_metrics_enabled"] = *in.RequestMetricsEnabled
+		}
 	}
 	return []interface{}{att}
 }

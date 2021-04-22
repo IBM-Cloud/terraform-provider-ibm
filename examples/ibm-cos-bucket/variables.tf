@@ -14,6 +14,10 @@ variable "region" {
   default = "us"
 }
 
+variable "single_site_loc" {
+  default = "sjc04"
+}
+
 variable "archive_ruleid" {
   default = ""
 }
