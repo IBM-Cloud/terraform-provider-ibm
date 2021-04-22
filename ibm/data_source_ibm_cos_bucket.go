@@ -124,6 +124,11 @@ func dataSourceIBMCosBucket() *schema.Resource {
 							Computed:    true,
 							Description: "Usage metrics will be sent to the monitoring service.",
 						},
+						"request_metrics_enabled": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Request metrics will be sent to the monitoring service.",
+						},
 						"metrics_monitoring_crn": {
 							Type:        schema.TypeString,
 							Computed:    true,
