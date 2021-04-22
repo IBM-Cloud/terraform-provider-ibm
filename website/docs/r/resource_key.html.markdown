@@ -103,7 +103,7 @@ The following arguments are supported:
 
 * `name` - (Required,Forces new resource, string) A descriptive name used to identify a resource key.
 * `role` - (Required,Forces new resource, string) Name of the user role. Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor.
-* `parameters` - (Optional,Forces new resource, map) Arbitrary parameters to pass. Must be a JSON object.
+* `parameters` - (Optional, map) Arbitrary parameters to pass. Must be a JSON object.
 * `resource_instance_id` - (Optional, Forces new resource,string) The id of the resource instance associated with the resource key.  
  **NOTE**: Conflicts with `resource_alias_id`.
 * `resource_alias_id` - (Optional,Forces new resource,string) The id of the resource alias associated with the resource key.  

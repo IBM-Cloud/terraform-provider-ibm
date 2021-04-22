@@ -134,7 +134,7 @@ func resourceIBMResourceInstance() *schema.Resource {
 
 			"plan_history": {
 				Description: "The plan history of the instance.",
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -212,7 +212,7 @@ func resourceIBMResourceInstance() *schema.Resource {
 
 			"last_operation": {
 				Type:        schema.TypeMap,
-				Optional:    true,
+				Computed:    true,
 				Description: "The status of the last operation requested on the instance",
 			},
 
@@ -479,7 +479,6 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 
 	return resourceIBMResourceInstanceRead(d, meta)
 }
-
 func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
@@ -554,6 +553,45 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 		d.Set("extensions", instance.Extensions)
 	} else {
 		d.Set("extensions", Flatten(instance.Extensions))
+	}
+	d.Set("account_id", instance.AccountID)
+	d.Set("restored_by", instance.RestoredBy)
+	if instance.RestoredAt != nil {
+		d.Set("restored_at", instance.RestoredAt.String())
+	}
+	d.Set("scheduled_reclaim_by", instance.ScheduledReclaimBy)
+	if instance.ScheduledReclaimAt != nil {
+		d.Set("scheduled_reclaim_at", instance.ScheduledReclaimAt.String())
+	}
+	if instance.ScheduledReclaimAt != nil {
+		d.Set("deleted_at", instance.DeletedAt.String())
+	}
+	d.Set("deleted_by", instance.DeletedBy)
+	if instance.UpdatedAt != nil {
+		d.Set("update_at", instance.UpdatedAt.String())
+	}
+	if instance.CreatedAt != nil {
+		d.Set("created_at", instance.CreatedAt.String())
+	}
+	d.Set("update_by", instance.UpdatedBy)
+	d.Set("created_by", instance.CreatedBy)
+	d.Set("resource_keys_url", instance.ResourceKeysURL)
+	d.Set("resource_bindings_url", instance.ResourceBindingsURL)
+	d.Set("resource_aliases_url", instance.ResourceAliasesURL)
+	if instance.LastOperation != nil {
+		d.Set("last_operation", Flatten(instance.LastOperation))
+	}
+	d.Set("locked", instance.Locked)
+	d.Set("allow_cleanup", instance.AllowCleanup)
+	d.Set("type", instance.Type)
+	d.Set("state", instance.State)
+	d.Set("sub_type", instance.SubType)
+	d.Set("target_crn", instance.TargetCRN)
+	d.Set("resource_plan_id", instance.ResourcePlanID)
+	d.Set("resource_id", instance.ResourceID)
+	d.Set("resource_group_crn", instance.ResourceGroupCRN)
+	if instance.PlanHistory != nil {
+		d.Set("plan_history", flattenPlanHistory(instance.PlanHistory))
 	}
 
 	return nil
@@ -838,4 +876,15 @@ func filterDeployments(deployments []models.ServiceDeployment, location string) 
 		}
 	}
 	return supportedDeployments, supportedLocations
+}
+
+func flattenPlanHistory(keys []rc.PlanHistoryItem) []interface{} {
+	var out = make([]interface{}, len(keys), len(keys))
+	for i, k := range keys {
+		m := make(map[string]interface{})
+		m["resource_plan_id"] = k.ResourcePlanID
+		m["start_date"] = k.StartDate.String()
+		out[i] = m
+	}
+	return out
 }
