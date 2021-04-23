@@ -2080,6 +2080,7 @@ func newSession(c *Config) (*Session, error) {
 			ResourceGroup: c.ResourceGroup,
 			RetryDelay:    &c.RetryDelay,
 			MaxRetries:    &c.RetryCount,
+			Visibility:    c.Visibility,
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {
@@ -2100,6 +2101,7 @@ func newSession(c *Config) (*Session, error) {
 			ResourceGroup: c.ResourceGroup,
 			RetryDelay:    &c.RetryDelay,
 			MaxRetries:    &c.RetryCount,
+			Visibility:    c.Visibility,
 			//PowerServiceInstance: c.PowerServiceInstance,
 		}
 		sess, err := bxsession.New(bmxConfig)
