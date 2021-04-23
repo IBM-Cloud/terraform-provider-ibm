@@ -75,11 +75,6 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 		return err
 	}
 
-	bxClient, err := meta.(ClientSession).BluemixSession()
-	if err != nil {
-		return err
-	}
-
 	getSatLocOptions := &kubernetesserviceapiv1.GetSatelliteLocationOptions{
 		Controller: &location,
 	}
@@ -110,8 +105,6 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 	createRegOptions := &kubernetesserviceapiv1.AttachSatelliteHostOptions{}
 	createRegOptions.Controller = locData.ID
 	createRegOptions.Labels = labels
-	authMap := map[string]string{"Authorization": bxClient.Config.IAMAccessToken}
-	createRegOptions.Headers = authMap
 
 	resp, err := satClient.AttachSatelliteHost(createRegOptions)
 	if err != nil {
