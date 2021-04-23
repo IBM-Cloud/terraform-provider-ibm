@@ -2115,6 +2115,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	if d.HasChange(isInstanceVolAttSnapshot) {
+		volProfile := "general-purpose"
 		ovs, nvs := d.GetChange(isInstanceVolAttSnapshot)
 		ov := ovs.(*schema.Set)
 		nv := nvs.(*schema.Set)
@@ -2132,6 +2133,9 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				createvolattoptions := &vpcv1.CreateInstanceVolumeAttachmentOptions{
 					InstanceID: &id,
 					Volume: &vpcv1.VolumeAttachmentPrototypeVolume{
+						Profile: &vpcv1.VolumeProfileIdentity{
+							Name: &volProfile,
+						},
 						SourceSnapshot: &vpcv1.SnapshotIdentity{
 							ID: &add[i],
 						},
