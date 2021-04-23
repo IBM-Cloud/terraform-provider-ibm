@@ -22,6 +22,12 @@ data "ibm_kms_key" "test" {
   instance_id = "guid-of-keyprotect-or hs-crypto-instance"
   alias = "alias_name"
 }
+OR
+data "ibm_kms_key" "test" {
+  instance_id = "guid-of-keyprotect-or hs-crypto-instance"
+  limit = 100
+  key_name = "name-of-key"
+}
 resource "ibm_cos_bucket" "flex-us-south" {
   bucket_name          = "atest-bucket"
   resource_instance_id = "cos-instance-id"
@@ -31,20 +37,24 @@ resource "ibm_cos_bucket" "flex-us-south" {
 }
 ```
 
-**NOTE : Data of the key can be retrieved either using a key name or an alias name (if created for the key or keys) .
+**NOTE :
+1) Data of the key can be retrieved either using a key name or an alias name (if created for the key or keys) .
+2) limit is an optional parameter used with the keyname, which iterates and fetches the key till the limit given. When the limit is not passed then the first 2000 keys are fetched according to SDK default behaviour. 
 
 ## Argument Reference
 
 The following arguments are supported:
 
 * `instance_id` - (Required, string) The keyprotect instance guid.
-* `key_name` - (Required, In conflict with alias_name, string) The name of the key. Only the keys with matching name will be retreived.
-* `alias` - (Required, In conflict with key_name, string) The alias name associated with the key. Only the key with matching alias name will be retreived.
+* `key_id` - (Required, In conflict with alias_name,key_name, string) The keyID of the key to be fetched.
+* `limit` - (Optional, int) The limit till the keys need to be fetched in the instance.
+* `key_name` - (Required, In conflict with alias_name,key_id string) The name of the key. Only the keys with matching name will be retreived.
+* `alias` - (Required, In conflict with key_name,key_id string) The alias name associated with the key. Only the key with matching alias name will be retreived.
 * `endpoint_type` - (Optional, string) The type of the endpoint (public or private) to be used for fetching keys.
 
 ## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+The following attributes are exported:
 
 * `keys` - List of all Keys in the IBM hs-crypto or Key-protect instance.
   * `name` - The name for the key.

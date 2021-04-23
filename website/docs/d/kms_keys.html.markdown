@@ -31,8 +31,12 @@ The following arguments are supported:
 
 * `instance_id` - (Required, string) The keyprotect instance guid.
 * `key_name` - (Optional, string) The name of the key. Only the keys with matching name will be retreived.
+* `key_id` - (Required, In conflict with alias_name,key_name, string) The keyID of the key to be fetched.
+* `limit` - (Optional, int) The limit till the keys need to be fetched in the instance.
 * `alias` - (Optional, string) The alias name associated with the key. Only the key with matching alias name will be retreived.
 * `endpoint_type` - (Optional, string) The type of the endpoint (public or private) to be used for fetching keys.
+
+**NOTE: limit is an optional parameter used with the keyname, which iterates and fetches the key till the limit given. When the limit is not passed then the first 2000 keys are fetched according to SDK default behaviour.
 
 ## Attribute Reference
 
