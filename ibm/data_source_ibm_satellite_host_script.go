@@ -79,9 +79,9 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 		Controller: &location,
 	}
 
-	locData, _, err := satClient.GetSatelliteLocation(getSatLocOptions)
+	locData, response, err := satClient.GetSatelliteLocation(getSatLocOptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error getting Satellite location (%s): %s\n%s", location, err, response)
 	}
 
 	// script labels

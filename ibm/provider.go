@@ -378,8 +378,10 @@ func Provider() *schema.Provider {
 			"ibm_secrets_manager_secret":  dataSourceIBMSecretsManagerSecret(),
 
 			//Added for Satellite
-			"ibm_satellite_location":           dataSourceIBMSatelliteLocation(),
-			"ibm_satellite_attach_host_script": dataSourceIBMSatelliteAttachHostScript(),
+			"ibm_satellite_location":            dataSourceIBMSatelliteLocation(),
+			"ibm_satellite_attach_host_script":  dataSourceIBMSatelliteAttachHostScript(),
+			"ibm_satellite_cluster":             dataSourceIBMSatelliteCluster(),
+			"ibm_satellite_cluster_worker_pool": dataSourceIBMSatelliteClusterWorkerPool(),
 
 			// Catalog related resources
 			"ibm_cm_catalog":           dataSourceIBMCmCatalog(),
@@ -613,11 +615,10 @@ func Provider() *schema.Provider {
 			"ibm_schematics_job":       resourceIBMSchematicsJob(),
 
 			//satellite  resources
-			"ibm_satellite_location": resourceIBMSatelliteLocation(),
-			"ibm_satellite_host":     resourceIBMSatelliteHost(),
-
-			//Resource Tag
-			"ibm_resource_tag": resourceIBMResourceTag(),
+			"ibm_satellite_location":            resourceIBMSatelliteLocation(),
+			"ibm_satellite_host":                resourceIBMSatelliteHost(),
+			"ibm_satellite_cluster":             resourceIBMSatelliteCluster(),
+			"ibm_satellite_cluster_worker_pool": resourceIBMSatelliteClusterWorkerPool(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -711,6 +712,7 @@ func Validator() ValidatorDict {
 				"ibm_container_cluster":                 resourceIBMContainerClusterValidator(),
 				"ibm_resource_tag":                      resourceIBMResourceTagValidator(),
 				"ibm_satellite_location":                resourceIBMSatelliteLocationValidator(),
+				"ibm_satellite_cluster":                 resourceIBMSatelliteClusterValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),

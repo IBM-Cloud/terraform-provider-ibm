@@ -6,6 +6,7 @@
 variable "location" {
   description = "Location Name"
   type         = string
+  default = "sat-loc-1031"
 }
 
 variable "managed_from" {
@@ -28,17 +29,12 @@ variable "is_location_exist" {
 
 variable "location_bucket" {
   description = "COS bucket name"
-  default     = ""
+  default     = null
 }
 
 #################################################################################################
 # IBMCLOUD -  Authentication , Target Variables.
 #################################################################################################
-
-variable "ibmcloud_api_key" {
-  description  = "IBM Cloud API Key"
-  type         = string
-}
 
 variable "resource_group" {
   description = "Name of the resource group on which location has to be created"
@@ -47,6 +43,17 @@ variable "resource_group" {
 variable "ibm_region" {
   description = "Region of the IBM Cloud account. Currently supported regions for satellite are us-east and eu-gb region."
   default     = "us-east"
+}
+
+variable "host_labels" {
+  description = "Labels to add to attach host script"
+  type        = list(string)
+  default     = ["env:prod"]
+
+  validation {
+      condition     = can([for s in var.host_labels : regex("^[a-zA-Z0-9:]+$", s)])
+      error_message = "A `host_labels` can include only alphanumeric characters and with one colon."
+  }
 }
 
 variable "host_provider" {
