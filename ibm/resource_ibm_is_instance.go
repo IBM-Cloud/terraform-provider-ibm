@@ -1927,7 +1927,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			return fmt.Errorf("Error Getting Instance (%s): %s\n%s", id, err, response)
 		}
 
-		if *instance.Status == "running" {
+		if instance != nil && *instance.Status == "running" {
 			actiontype := "stop"
 			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
 				InstanceID: &id,
