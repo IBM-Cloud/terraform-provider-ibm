@@ -1915,21 +1915,35 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if d.HasChange(isInstanceProfile) {
 
-		actiontype := "stop"
-		createinsactoptions := &vpcv1.CreateInstanceActionOptions{
-			InstanceID: &id,
-			Type:       &actiontype,
+		getinsOptions := &vpcv1.GetInstanceOptions{
+			ID: &id,
 		}
-		_, response, err := instanceC.CreateInstanceAction(createinsactoptions)
+		instance, response, err := instanceC.GetInstance(getinsOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
 				return nil
 			}
-			return fmt.Errorf("Error Creating Instance Action: %s\n%s", err, response)
+			return fmt.Errorf("Error Getting Instance (%s): %s\n%s", id, err, response)
 		}
-		_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
-		if err != nil {
-			return err
+
+		if *instance.Status == "running" {
+			actiontype := "stop"
+			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+				InstanceID: &id,
+				Type:       &actiontype,
+			}
+			_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					return nil
+				}
+				return fmt.Errorf("Error Creating Instance Action: %s\n%s", err, response)
+			}
+			_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
+			if err != nil {
+				return err
+			}
 		}
 
 		updnetoptions := &vpcv1.UpdateInstanceOptions{
