@@ -36,7 +36,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `image_info` - List of all images in the IBM Power Virtual Server Cloud.
   * `name` - The name for this image.

@@ -34,7 +34,7 @@ resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" 
   name = "custom-route-2"
   destination = "192.168.4.0/24"
   action = "deliver"
-  next_hop = vpnConnectinID
+  next_hop = ibm_is_vpn_gateway_connection.VPNGatewayConnection.gateway_connection
 }
 
 ```
@@ -53,7 +53,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier for this routing table. The id is composed of \<vpc_route_table_id\>/\<vpc_route_table_route_id\>
 * `is_default` - Indicates whether this is the default routing table for this VPC

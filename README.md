@@ -33,7 +33,27 @@ You can also pull the docker image for the ibmcloud terraform provider :
 docker pull ibmterraform/terraform-provider-ibm-docker
 ```
 
-## Using the provider
+## Download the Provider from the [Terraform Registry](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest) (Option 1)
+
+Complete the following steps to configure the IBM Cloud provider plug-in for Terraform v0.13 and newer versions.
+
+1. [Download and install Terraform for your system](https://www.terraform.io/intro/getting-started/install.html). 
+
+2. Create a `versions.tf` file in in your Terraform module folder and add a `terraform` block using the syntax below. Note, you must be using Terraform v0.13.x or a newer version.
+```
+ terraform {
+   required_providers {
+      ibm = {
+         source = "IBM-Cloud/ibm"
+         version = "<provider version>"
+      }
+    }
+  }
+```
+
+3. Run `terraform init` to fetch the IBM Cloud provider plug-in for Terraform from the Terraform Registry.
+
+## Download the Provider Manually (Option 2)
 
 If you want to run Terraform with the IBM Cloud provider plugin on your system, complete the following steps:
 

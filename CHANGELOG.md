@@ -1,3 +1,68 @@
+## 1.23.2 (Apr20, 2021)
+ENHANCEMENTS
+* Add support for COS retention policy ([#1880](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1880))
+* Add support for private_address for VPN gateway ([#2282](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2382))
+* List all certificates in a certificate manager instance ([#2358](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2358))
+* Enhance description for attribute reference ([#2475](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2475))
+*  Add support for regional ca-tor COS bucket ([#2483](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2483))
+BUGFIXES
+* Fix the broken links for classic infrastructure bare metal ([#2481](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2481))
+* Fix cis primary certificate crash ([#2490](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2490))
+* Fix ibm_satellite_location: cannot specify resource group ([#2499](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2499))
+* Fix ibm_satellite_location resource doesn't work correctly to ensure that resource is created / deleted appropriately ([#2497](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2497))
+* Fix invalid example for ibm_iam_account_settings ([#2484](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2484))
+* Fix the documentiaon for VPC reserved IP ([#2512](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2512))
+
+## 1.23.1 (Apr07, 2021)
+ENHANCEMENTS
+* Add support to retry the update of patch version ([#2379](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2379))
+* Add gateway_connection argument for VPC VPN gateway Connection ([2270](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2270))
+
+BUGFIXES
+* Fix the crash for resource key ([#2462](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2462))
+* Change the order to place to use billing_order ([#554](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/554))
+
+## 1.23.0 (Apr02, 2021)
+FEATURES:
+* Support Catalog Management
+    - **Resources**
+        - ibm_cm_offering_instance
+        - ibm_cm_catalog
+        - ibm_cm_offering
+        - ibm_cm_version
+    - **DataSources**
+        - ibm_cm_catalog
+        - ibm_cm_offering
+	    - ibm_cm_version
+		- ibm_cm_offering_instance
+* Support IAM Account Management
+    - **Resources**
+        - ibm_iam_account_settings
+    - **DataSources**
+    	- ibm_iam_account_settings
+
+* Support Enterprise Management
+    - **Resources**
+        - ibm_enterprise
+        - ibm_enterprise_account_group
+        - ibm_enterprise_account
+    - **DataSources**
+    	- ibm_enterprises
+        - ibm_enterprise_account_groups
+        - ibm_enterprise_accounts
+
+BUGFIXES
+* Fix the provision of classic Infrastructure VM to apply sshkeys, imageid and script ([#2448](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2448))
+* Fix documentation updates ([#2443](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2443))
+* Fix Dedicated host with status 'failed' throws error during destroy ([#2443](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2446))
+* Fix while creating a DL Connect gateway do not wait for gateway to be provisioned for few providers ([#2458](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2458))
+
+## 1.22.1 (Apr01, 2021)
+
+BUGFIXES
+* Fix the provision of classic Infrastructure VM to apply sshkeys, imageid and script ([#2448](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2448))
+* Fix documentation updates ([#2443](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2443))
+
 ## 1.22.0 (Mar30, 2021)
 
 FEATURES:

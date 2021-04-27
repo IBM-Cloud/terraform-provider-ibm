@@ -16,6 +16,7 @@ const (
 	isReservedIPProvisioning     = "provisioning"
 	isReservedIPProvisioningDone = "done"
 	isReservedIP                 = "reserved_ip"
+	isReservedIPTarget           = "target"
 )
 
 func resourceIBMISReservedIP() *schema.Resource {
@@ -56,6 +57,12 @@ func resourceIBMISReservedIP() *schema.Resource {
 				ValidateFunc: InvokeValidator("ibm_is_subnet_reserved_ip", isReservedIPName),
 				Description:  "The user-defined or system-provided name for this reserved IP.",
 			},
+			isReservedIPTarget: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "The unique identifier for target.",
+			},
 			/*
 				Response Parameters
 				===================
@@ -66,7 +73,6 @@ func resourceIBMISReservedIP() *schema.Resource {
 			isReservedIPAddress: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Optional:    true,
 				Description: "The user-defined or system-provided name for this reserved IP.",
 			},
 			isReservedIP: {
@@ -134,7 +140,12 @@ func resourceIBMISReservedIPCreate(d *schema.ResourceData, meta interface{}) err
 
 	autoDeleteBool := d.Get(isReservedIPAutoDelete).(bool)
 	options.AutoDelete = &autoDeleteBool
-
+	if t, ok := d.GetOk(isReservedIPTarget); ok {
+		targetId := t.(string)
+		options.Target = &vpcv1.ReservedIPTargetPrototype{
+			ID: &targetId,
+		}
+	}
 	rip, response, err := sess.CreateSubnetReservedIP(options)
 	if err != nil || response == nil || rip == nil {
 		return fmt.Errorf("Error creating the reserved IP: %s\n%s", err, response)
@@ -168,6 +179,12 @@ func resourceIBMISReservedIPRead(d *schema.ResourceData, meta interface{}) error
 		d.Set(isReservedIPName, *rip.Name)
 		d.Set(isReservedIPOwner, *rip.Owner)
 		d.Set(isReservedIPType, *rip.ResourceType)
+		if rip.Target != nil {
+			target, ok := rip.Target.(*vpcv1.ReservedIPTarget)
+			if ok {
+				d.Set(isReservedIPTarget, target.ID)
+			}
+		}
 	}
 	return nil
 }

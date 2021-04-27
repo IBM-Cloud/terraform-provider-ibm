@@ -94,7 +94,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - Id is the comination of the instance group ID, insatnce group manager ID and instance group manager policy ID.
 * `policy_id` - ID of the policy

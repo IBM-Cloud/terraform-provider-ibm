@@ -22,7 +22,7 @@ data "ibm_is_lb_profiles" "ds_lb_profiles" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `lb_profiles` - List of all load balancer profiles in the IBM Cloud Infrastructure.
   * `family` - The product family this load balancer profile belongs to.

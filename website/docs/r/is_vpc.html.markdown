@@ -47,13 +47,10 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the VPC.
 * `crn` - The CRN of VPC.
-* `default_security_group` - The unique identifier of the VPC default security group.
-* `default_routing_table` - The unique identifier of the VPC default routing table.
-* `default_network_acl` - The unique identifier of the VPC default Network ACL.
 * `status` - The status of VPC.
 * `cse_source_addresses` - A list describing the cloud service endpoint source ip adresses and zones. The nested cse_source_addresses block have the following structure:
   * `address` - Ip Address of the cloud service endpoint.

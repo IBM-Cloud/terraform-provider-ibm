@@ -30,7 +30,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `endpoints` - List of all endpoints of the API Gateway Instance. Each endpoint block in a list has following structure.
   * `endpoint_id` - The Id of the Endpoint

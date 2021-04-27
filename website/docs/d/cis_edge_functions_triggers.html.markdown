@@ -28,7 +28,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `pattern_url` - The Route pattern. It is a domain name which the action will be performed.
 - `trigger_id` - The Route ID of action trigger.

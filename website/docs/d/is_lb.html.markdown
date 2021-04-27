@@ -43,7 +43,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 
 * `subnets` - ID of the subnets to provision this load balancer.
@@ -81,7 +81,7 @@ The following attributes are exported:
 * `status` - The status of load balancer.
 * `operating_status` - The operating status of this load balancer.
 * `hostname` - Fully qualified domain name assigned to this load balancer.
-* `logging` - (Optional, bool) Enable or disable datapath logging for this load balancer. If unspecified, datapath logging is disabled. This is applicable only for application load balancer. One of: false, true.
-* `security_groups` - (Optional, list) The security groups to use for this load balancer.This is applicable only for application load balancer.
+* `logging` - Enable or disable datapath logging for this load balancer. If unspecified, datapath logging is disabled. This is applicable only for application load balancer. One of: false, true.
+* `security_groups` - The security groups to use for this load balancer.This is applicable only for application load balancer.
 * `security_groups_supported` - Indicates whether this load balancer supports security groups.
 

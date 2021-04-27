@@ -668,6 +668,9 @@ func flattenMetricsMonitor(in *resourceconfigurationv1.MetricsMonitoring) []inte
 		if in.MetricsMonitoringCrn != nil {
 			att["metrics_monitoring_crn"] = *in.MetricsMonitoringCrn
 		}
+		if in.RequestMetricsEnabled != nil {
+			att["request_metrics_enabled"] = *in.RequestMetricsEnabled
+		}
 	}
 	return []interface{}{att}
 }
@@ -734,6 +737,27 @@ func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
 
 			rules = append(rules, rule)
 		}
+	}
+	return rules
+}
+
+func retentionRuleGet(in *s3.ProtectionConfiguration) []interface{} {
+	rules := make([]interface{}, 0, 1)
+	if in != nil && in.Status != nil && *in.Status == "Retention" {
+		protectConfig := make(map[string]interface{})
+		if in.DefaultRetention != nil {
+			protectConfig["default"] = int(*(in.DefaultRetention).Days)
+		}
+		if in.MaximumRetention != nil {
+			protectConfig["maximum"] = int(*(in.MaximumRetention).Days)
+		}
+		if in.MinimumRetention != nil {
+			protectConfig["minimum"] = int(*(in.MinimumRetention).Days)
+		}
+		if in.EnablePermanentRetention != nil {
+			protectConfig["permanent"] = *in.EnablePermanentRetention
+		}
+		rules = append(rules, protectConfig)
 	}
 	return rules
 }

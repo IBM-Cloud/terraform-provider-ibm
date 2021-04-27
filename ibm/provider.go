@@ -8,9 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/mutexkv"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // This is a global MutexKV for use within this plugin.
@@ -226,6 +225,7 @@ func Provider() *schema.Provider {
 			"ibm_dns_secondary":                      dataSourceIBMDNSSecondary(),
 			"ibm_event_streams_topic":                dataSourceIBMEventStreamsTopic(),
 			"ibm_iam_access_group":                   dataSourceIBMIAMAccessGroup(),
+			"ibm_iam_account_settings":               dataSourceIBMIAMAccountSettings(),
 			"ibm_iam_auth_token":                     dataSourceIBMIAMAuthToken(),
 			"ibm_iam_role_actions":                   datasourceIBMIAMRoleAction(),
 			"ibm_iam_users":                          dataSourceIBMIAMUsers(),
@@ -257,10 +257,13 @@ func Provider() *schema.Provider {
 			"ibm_is_instance_profiles":               dataSourceIBMISInstanceProfiles(),
 			"ibm_is_instance":                        dataSourceIBMISInstance(),
 			"ibm_is_instances":                       dataSourceIBMISInstances(),
+			"ibm_is_instance_disk":                   dataSourceIbmIsInstanceDisk(),
+			"ibm_is_instance_disks":                  dataSourceIbmIsInstanceDisks(),
 			"ibm_is_lb":                              dataSourceIBMISLB(),
 			"ibm_is_lb_profiles":                     dataSourceIBMISLbProfiles(),
 			"ibm_is_lbs":                             dataSourceIBMISLBS(),
 			"ibm_is_public_gateway":                  dataSourceIBMISPublicGateway(),
+			"ibm_is_public_gateways":                 dataSourceIBMISPublicGateways(),
 			"ibm_is_region":                          dataSourceIBMISRegion(),
 			"ibm_is_ssh_key":                         dataSourceIBMISSSHKey(),
 			"ibm_is_subnet":                          dataSourceIBMISSubnet(),
@@ -350,6 +353,11 @@ func Provider() *schema.Provider {
 			"ibm_tg_locations": dataSourceIBMTransitGatewaysLocations(),
 			"ibm_tg_location":  dataSourceIBMTransitGatewaysLocation(),
 
+			//Added for BSS Enterprise
+			"ibm_enterprises":               dataSourceIbmEnterprises(),
+			"ibm_enterprise_account_groups": dataSourceIbmEnterpriseAccountGroups(),
+			"ibm_enterprise_accounts":       dataSourceIbmEnterpriseAccounts(),
+
 			//Added for Secrets Manager
 			"ibm_secrets_manager_secrets": dataSourceIBMSecretsManagerSecrets(),
 			"ibm_secrets_manager_secret":  dataSourceIBMSecretsManagerSecret(),
@@ -357,6 +365,12 @@ func Provider() *schema.Provider {
 			//Added for Satellite
 			"ibm_satellite_location":           dataSourceIBMSatelliteLocation(),
 			"ibm_satellite_attach_host_script": dataSourceIBMSatelliteAttachHostScript(),
+
+			// Catalog related resources
+			"ibm_cm_catalog":           dataSourceIBMCmCatalog(),
+			"ibm_cm_offering":          dataSourceIBMCmOffering(),
+			"ibm_cm_version":           dataSourceIBMCmVersion(),
+			"ibm_cm_offering_instance": dataSourceIBMCmOfferingInstance(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -432,6 +446,7 @@ func Provider() *schema.Provider {
 			"ibm_firewall":                                       resourceIBMFirewall(),
 			"ibm_firewall_policy":                                resourceIBMFirewallPolicy(),
 			"ibm_iam_access_group":                               resourceIBMIAMAccessGroup(),
+			"ibm_iam_account_settings":                           resourceIbmIamAccountSettings(),
 			"ibm_iam_custom_role":                                resourceIBMIAMCustomRole(),
 			"ibm_iam_access_group_dynamic_rule":                  resourceIBMIAMDynamicRule(),
 			"ibm_iam_access_group_members":                       resourceIBMIAMAccessGroupMembers(),
@@ -450,6 +465,7 @@ func Provider() *schema.Provider {
 			"ibm_is_floating_ip":                                 resourceIBMISFloatingIP(),
 			"ibm_is_flow_log":                                    resourceIBMISFlowLog(),
 			"ibm_is_instance":                                    resourceIBMISInstance(),
+			"ibm_is_instance_disk_management":                    resourceIBMISInstanceDiskManagement(),
 			"ibm_is_instance_group":                              resourceIBMISInstanceGroup(),
 			"ibm_is_instance_group_manager":                      resourceIBMISInstanceGroupManager(),
 			"ibm_is_instance_group_manager_policy":               resourceIBMISInstanceGroupManagerPolicy(),
@@ -550,9 +566,19 @@ func Provider() *schema.Provider {
 			"ibm_dl_virtual_connection": resourceIBMDLGatewayVC(),
 			"ibm_dl_provider_gateway":   resourceIBMDLProviderGateway(),
 			//Added for Transit Gateway
-			"ibm_tg_gateway":           resourceIBMTransitGateway(),
-			"ibm_tg_connection":        resourceIBMTransitGatewayConnection(),
+			"ibm_tg_gateway":    resourceIBMTransitGateway(),
+			"ibm_tg_connection": resourceIBMTransitGatewayConnection(),
+
+			//Catalog related resources
 			"ibm_cm_offering_instance": resourceIBMCmOfferingInstance(),
+			"ibm_cm_catalog":           resourceIBMCmCatalog(),
+			"ibm_cm_offering":          resourceIBMCmOffering(),
+			"ibm_cm_version":           resourceIBMCmVersion(),
+
+			//Added for enterprise
+			"ibm_enterprise":               resourceIbmEnterprise(),
+			"ibm_enterprise_account_group": resourceIbmEnterpriseAccountGroup(),
+			"ibm_enterprise_account":       resourceIbmEnterpriseAccount(),
 
 			//Added for Schematics
 			"ibm_schematics_workspace": resourceIBMSchematicsWorkspace(),
@@ -576,6 +602,7 @@ func Validator() ValidatorDict {
 	initOnce.Do(func() {
 		globalValidatorDict = ValidatorDict{
 			ResourceValidatorDictionary: map[string]*ResourceValidator{
+				"ibm_iam_account_settings":             resourceIBMIAMAccountSettingsValidator(),
 				"ibm_iam_custom_role":                  resourceIBMIAMCustomRoleValidator(),
 				"ibm_cis_healthcheck":                  resourceIBMCISHealthCheckValidator(),
 				"ibm_cis_rate_limit":                   resourceIBMCISRateLimitValidator(),
@@ -615,6 +642,7 @@ func Validator() ValidatorDict {
 				"ibm_is_ike_policy":                    resourceIBMISIKEValidator(),
 				"ibm_is_image":                         resourceIBMISImageValidator(),
 				"ibm_is_instance":                      resourceIBMISInstanceValidator(),
+				"ibm_is_instance_disk_management":      resourceIBMISInstanceDiskManagementValidator(),
 				"ibm_is_ipsec_policy":                  resourceIBMISIPSECValidator(),
 				"ibm_is_lb_listener_policy_rule":       resourceIBMISLBListenerPolicyRuleValidator(),
 				"ibm_is_lb_listener_policy":            resourceIBMISLBListenerPolicyValidator(),
@@ -642,6 +670,10 @@ func Validator() ValidatorDict {
 				"ibm_schematics_action":                resourceIBMSchematicsActionValidator(),
 				"ibm_schematics_job":                   resourceIBMSchematicsJobValidator(),
 				"ibm_schematics_workspace":             resourceIBMSchematicsWorkspaceValidator(),
+				"ibm_resource_instance":                resourceIBMResourceInstanceValidator(),
+				"ibm_is_virtual_endpoint_gateway":      resourceIBMISEndpointGatewayValidator(),
+				"ibm_container_vpc_cluster":            resourceIBMContainerVpcClusterValidator(),
+				"ibm_container_cluster":                resourceIBMContainerClusterValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),

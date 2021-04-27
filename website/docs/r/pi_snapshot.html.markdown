@@ -57,7 +57,7 @@ will be part of the snapshot.
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the snapshot.The id is composed of \<power_instance_id\>/\<pi_snap_shot_id\>.
 * `volume_snapshots` - A map of the source and target volumes.

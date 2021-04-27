@@ -241,14 +241,14 @@ The following arguments are supported:
     **NOTE**: Conflicts with `image_id`.
 *   `image_id` - (Optional, Forces new resource, integer) The image template ID you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the IBM Cloud infrastructure customer portal, navigate to **Devices > Manage > Images**, click the desired image, and note the ID number in the resulting URL.  
 
-    **NOTE**: Conflicts with `os_reference_code`. If you don't know the ID(s) of your image templates, you can [refer to an image template ID by name using a data source](../d/compute_image_template.html).
+    **NOTE**: Conflicts with `os_reference_code`. If you don't know the ID(s) of your image templates, you can [refer to an image template ID by name using a data source](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/d/compute_image_template.html.markdown).
 *  `network_speed` - (Optional, integer) The connection speed (in Mbps) for the instance's network components. The default value is `100`.
 *  `private_network_only` - (Optional, Forces new resource, boolean) When set to `true`, a compute instance only has access to the private network. The default value is `false`.
 *  `private_security_group_ids` - (Optional, Forces new resource, array of integers) The ids of security groups to apply on the private interface.
 This attribute can't be updated. This is provided so that you can apply security groups to  your VSI right from the beginning, the first time it comes up. If you would like to add or remove security groups in the future to this VSI then you should consider using `ibm_network_interface_sg_attachment` resource. If you use this attribute in addition to `ibm_network_interface_sg_attachment` resource you might get some spurious diffs. So use one of these consistently for a particular VSI.
-*  `public_vlan_id` - (Optional, Forces new resource, integer) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).  
+*  `public_vlan_id` - (Optional, Forces new resource, integer) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/d/network_vlan.html.markdown).  
     **NOTE**: Conflicts with `datacenter_choice`.
-* `private_vlan_id` - (Optional, Forces new resource, integer) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).  
+* `private_vlan_id` - (Optional, Forces new resource, integer) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/d/network_vlan.html.markdown).  
     **NOTE**: Conflicts with `datacenter_choice`.
 * `public_security_group_ids` - (Optional, Forces new resource, array of integers) The ids of security groups to apply on the public interface.
 This attribute can't be updated. This is provided so that you can apply security groups to  your VSI right from the beginning, the first time it comes up. If you would like to add or remove security groups in the future to this VSI then you should consider using `ibm_network_interface_sg_attachment` resource. If you use this attribute in addition to `ibm_network_interface_sg_attachment` resource you might get some spurious diffs. So use one of these consistently for a particular VSI.
@@ -258,7 +258,7 @@ This attribute can't be updated. This is provided so that you can apply security
 * `user_metadata` - (Optional, Forces new resource, string) Arbitrary data to be made available to the computing instance.
 *  `notes` - (Optional, string) Descriptive text of up to 1000 characters about the VM instance.
 * `ssh_key_ids` - (Optional, array of numbers) The SSH key IDs to install on the computing instance when the instance provisions.  
-    **NOTE:** If you don't know the ID(s) for your SSH keys, you can [reference your SSH keys by their labels](../d/compute_ssh_key.html).
+    **NOTE:** If you don't know the ID(s) for your SSH keys, you can [reference your SSH keys by their labels](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/d/compute_ssh_key.html.markdown).
 * `file_storage_ids` - (Optional, array of numbers) File storage to which this computing instance should have access. File storage must be in the same data center as the bare metal server. If you use this argument to authorize access to file storage, then do not use the `allowed_virtual_guest_ids` argument in the `ibm_storage_file` resource in order to prevent the same storage being added twice.
 * `block_storage_ids` - (Optional, array of numbers) File storage to which this computing instance should have access. File storage must be in the same data center as the bare metal server. If you use this argument to authorize access to file storage, then do not use the `allowed_virtual_guest_ids` argument in the `ibm_storage_block` resource in order to prevent the same storage being added twice.
 * `post_install_script_uri` - (Optional, Forces new resource, string) The URI of the script to be downloaded and executed after installation is complete.
@@ -274,8 +274,8 @@ This attribute can't be updated. This is provided so that you can apply security
 * `evault` - (Optional, Forces new resource, int). Allowed evault(GB) per month for monthly based servers.
 * `datacenter_choice` - (Optional, list) A nested block to describe datacenter choice options to retry on different datacenters and vlans. Nested `datacenter_choice` blocks must have the following structure:
     * `datacenter` - (Required, string) The datacenter in which you want to provision the instance.
-    * `public_vlan_id` - (Optional, string) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
-    * `private_vlan_id` - (Optional, Forces new resource, string) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).   
+    * `public_vlan_id` - (Optional, string) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/d/network_vlan.html.markdown).
+    * `private_vlan_id` - (Optional, Forces new resource, string) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/d/network_vlan.html.markdown).   
     **NOTE**: Conflicts with `datacenter`, `private_vlan_id`, `public_vlan_id`, `placement_group_name` and `placement_group_id`.
 
 * `quote_id` - (Optional, Forces new resource, string) When you define `quote_id`, Terraform uses specifications in the quote to create a virtual server. You can find the quote ID in the [IBM Cloud portal](https://cloud.ibm.com/billing/quotes).
@@ -284,7 +284,7 @@ This attribute can't be updated. This is provided so that you can apply security
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the VM instance.
 * `ipv4_address` - The public IPv4 address of the VM instance.

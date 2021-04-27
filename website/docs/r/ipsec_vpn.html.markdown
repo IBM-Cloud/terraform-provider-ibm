@@ -45,7 +45,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - (Computed, string) The id of the IPSec VPN device that is created
 * `name` - (Computed, string) The name of the IPSec VPN device that is created

@@ -27,7 +27,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `key_rings` - List of all Key Rings in the IBM hs-crypto or Key-protect instance.
   * `id` - The unique identifier for the key ring

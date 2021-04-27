@@ -28,7 +28,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `cis_page_rules` - The page rules detail.
   - `rule_id` - The Page rule ID.

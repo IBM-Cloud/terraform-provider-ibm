@@ -19,8 +19,11 @@ const (
 	satLocation = "location"
 	sateLocZone = "managed_from"
 
-	isLocationDeleting   = "deleting"
-	isLocationDeleteDone = "done"
+	isLocationDeleting     = "deleting"
+	isLocationDeleteDone   = "done"
+	isLocationDeploying    = "deploying"
+	isLocationReady        = "action required"
+	isLocationDeployFailed = "deploy_failed"
 )
 
 func resourceIBMSatelliteLocation() *schema.Resource {
@@ -38,7 +41,7 @@ func resourceIBMSatelliteLocation() *schema.Resource {
 		),
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
+			Create: schema.DefaultTimeout(30 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(60 * time.Minute),
 		},
@@ -114,6 +117,12 @@ func resourceIBMSatelliteLocation() *schema.Resource {
 				Set:         schema.HashString,
 				Description: "The names of at least three high availability zones to use for the location",
 			},
+			"resource_group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "ID of the resource group.",
+			},
 		},
 	}
 }
@@ -138,19 +147,26 @@ func resourceIBMSatelliteLocationCreate(d *schema.ResourceData, meta interface{}
 		createSatLocOptions.CosCredentials = expandCosCredentials(v.([]interface{}))
 	}
 
-	if _, ok := d.GetOk("logging_account_id"); ok {
-		logAccID := d.Get("logging_account_id").(string)
+	if v, ok := d.GetOk("logging_account_id"); ok {
+		logAccID := v.(string)
 		createSatLocOptions.LoggingAccountID = &logAccID
 	}
 
-	if _, ok := d.GetOk("description"); ok {
-		desc := d.Get("description").(string)
+	if v, ok := d.GetOk("description"); ok {
+		desc := v.(string)
 		createSatLocOptions.Description = &desc
 	}
 
-	if _, ok := d.GetOk("zones"); ok {
-		z := d.Get("zones").(*schema.Set)
+	if v, ok := d.GetOk("zones"); ok {
+		z := v.(*schema.Set)
 		createSatLocOptions.Zones = flatterSatelliteZones(z)
+	}
+
+	if v, ok := d.GetOk("resource_group_id"); ok {
+		pathParamsMap := map[string]string{
+			"X-Auth-Resource-Group": v.(string),
+		}
+		createSatLocOptions.Headers = pathParamsMap
 	}
 
 	instance, response, err := satClient.CreateSatelliteLocation(createSatLocOptions)
@@ -159,7 +175,14 @@ func resourceIBMSatelliteLocationCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	d.SetId(satLocation)
-	log.Printf("[INFO] Created satellite location : %s", *instance.ID)
+	log.Printf("[INFO] Created satellite location : %s", satLocation)
+
+	//Wait for location to be in ready state
+	_, err = waitForLocationToReady(*instance.ID, d, meta)
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for location (%s) to reach ready state: %s", *instance.ID, err)
+	}
 
 	return resourceIBMSatelliteLocationRead(d, meta)
 }
@@ -195,6 +218,10 @@ func resourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}) 
 
 	if instance.WorkerZones != nil {
 		d.Set("zones", instance.WorkerZones)
+	}
+
+	if instance.ResourceGroup != nil {
+		d.Set("resource_group_id", instance.ResourceGroup)
 	}
 
 	return nil
@@ -261,6 +288,41 @@ func waitForLocationDelete(location string, d *schema.ResourceData, meta interfa
 			return nil, "", fmt.Errorf("Failed to delete location : %s\n%s", err, response)
 		},
 		Timeout:    d.Timeout(schema.TimeoutDelete),
+		Delay:      60 * time.Second,
+		MinTimeout: 60 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func waitForLocationToReady(loc string, d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	satClient, err := meta.(ClientSession).SatelliteClientSession()
+	if err != nil {
+		return false, err
+	}
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{isLocationDeploying},
+		Target:  []string{isLocationReady, isLocationDeployFailed},
+		Refresh: func() (interface{}, string, error) {
+			getSatLocOptions := &kubernetesserviceapiv1.GetSatelliteLocationOptions{
+				Controller: ptrToString(loc),
+			}
+			location, response, err := satClient.GetSatelliteLocation(getSatLocOptions)
+			if err != nil {
+				return nil, "", fmt.Errorf("Error Getting location : %s\n%s", err, response)
+			}
+
+			if location != nil && *location.State == isLocationDeployFailed {
+				return location, isLocationDeployFailed, fmt.Errorf("The location is in failed state: %s", d.Id())
+			}
+
+			if location != nil && *location.State == isLocationReady {
+				return location, isLocationReady, nil
+			}
+			return location, isLocationDeploying, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      60 * time.Second,
 		MinTimeout: 60 * time.Second,
 	}

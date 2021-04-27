@@ -68,7 +68,7 @@ func dataSourceIbmIsDedicatedHosts() *schema.Resource {
 						"host_group": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The unique user-defined name of the dedicated host group this dedicated host is in.",
+							Description: "The unique identifier of the dedicated host group this dedicated host is in.",
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,

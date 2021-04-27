@@ -1,5 +1,5 @@
 ---
-subcategory: "Identity & Access (IAM)"
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_role_actions"
 description: |-
@@ -28,7 +28,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the service.
 * `reader` -  reader actions bound to of the service.

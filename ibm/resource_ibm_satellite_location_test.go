@@ -123,11 +123,16 @@ func testAccCheckSatelliteLocationDestroy(s *terraform.State) error {
 func testAccCheckSatelliteLocationCreate(name, managed_from string) string {
 	return fmt.Sprintf(`
 
+	data "ibm_resource_group" "res_group" {
+		is_default = true
+	} 
+
 	resource "ibm_satellite_location" "location" {
-		location      = "%s"
-		managed_from  = "%s"
-		description	  = "test"	
-		zones		  = ["us-east-1", "us-east-2", "us-east-3"]
+		location = "%s"
+		managed_from = "%s"
+		description = "test"
+		zones = ["us-east-1", "us-east-2", "us-east-3"]
+		resource_group_id = data.ibm_resource_group.res_group.id
 	}
 	  
 `, name, managed_from)

@@ -54,7 +54,9 @@ var ISZoneName string
 var ISCIDR string
 var ISAddressPrefixCIDR string
 var instanceProfileName string
+var instanceProfileNameUpdate string
 var dedicatedHostProfileName string
+var instanceDiskProfileName string
 var volumeProfileName string
 var ISRouteDestination string
 var ISRouteNextHop string
@@ -93,7 +95,8 @@ var image_operating_system string
 var tg_cross_network_account_id string
 var tg_cross_network_id string
 
-//
+//Enterprise Management
+var account_to_be_imported string
 
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
@@ -349,10 +352,23 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'cx2-2x4'")
 	}
 
+	instanceProfileNameUpdate = os.Getenv("SL_INSTANCE_PROFILE_UPDATE")
+	if instanceProfileNameUpdate == "" {
+		instanceProfileNameUpdate = "cx2-4x8"
+		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE_UPDATE for testing ibm_is_instance resource else it is set to default value 'cx2-4x8'")
+	}
+
 	dedicatedHostProfileName = os.Getenv("IS_DEDICATED_HOST_PROFILE")
 	if dedicatedHostProfileName == "" {
 		dedicatedHostProfileName = "cx2-host-152x304" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_PROFILE for testing ibm_is_instance resource else it is set to default value 'cx2-host-152x304'")
+	}
+
+	instanceDiskProfileName = os.Getenv("IS_INSTANCE_DISK_PROFILE")
+	if instanceDiskProfileName == "" {
+		//instanceProfileName = "bc1-2x8" // for classic infrastructure
+		instanceDiskProfileName = "bx2d-16x64" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'bx2d-16x64'")
 	}
 
 	volumeProfileName = os.Getenv("IS_VOLUME_PROFILE")
@@ -502,6 +518,10 @@ func init() {
 	if tg_cross_network_id == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_NETWORK_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
 	}
+	account_to_be_imported = os.Getenv("ACCOUNT_TO_BE_IMPORTED")
+	if account_to_be_imported == "" {
+		fmt.Println("[INFO] Set the environment variable ACCOUNT_TO_BE_IMPORTED for testing import enterprise account resource else  tests will fail if this is not set correctly")
+	}
 
 }
 
@@ -537,6 +557,22 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
+func testAccPreCheckEnterprise(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+
+}
+
+func testAccPreCheckEnterpriseAccountImport(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+	if account_to_be_imported == "" {
+		t.Fatal("ACCOUNT_TO_BE_IMPORTED must be set for acceptance tests")
+	}
+
+}
 func testAccPreCheckCis(t *testing.T) {
 	testAccPreCheck(t)
 	if cisInstance == "" {

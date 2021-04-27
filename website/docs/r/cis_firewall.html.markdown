@@ -102,7 +102,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The firewall ID. It is a combination of <`firewall_type`>,<`lockdown_id/access_rul_id/ua_rule_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
 - `lockdown`

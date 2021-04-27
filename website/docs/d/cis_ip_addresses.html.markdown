@@ -22,7 +22,7 @@ No arguments are required. All CIS instances on an account use the same range of
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `ipv4_cidrs` - The ipv4 address ranges used by CIS for name servers. To be whitelisted by the service user.
 - `ipv6_cidrs` - The ipv6 address ranges used by CIS for name servers. To be whitelisted by the service user.

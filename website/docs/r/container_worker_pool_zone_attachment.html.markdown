@@ -74,7 +74,7 @@ Resource will wait for ALBs to availbale in the zone added if attribute is set t
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the worker pool zone attachment resource. The id is composed of \<cluster_name_id\>/\< worker_pool_name_id\>/\<zone/>
 * `worker_count` - Number of workers attached to this zone.

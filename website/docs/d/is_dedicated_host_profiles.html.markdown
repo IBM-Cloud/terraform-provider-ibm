@@ -19,7 +19,7 @@ data "ibm_is_dedicated_host_profiles" "is_dedicated_host_profiles" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the DedicatedHostProfileCollection.
 * `profiles` - Collection of dedicated host profiles. Nested `profiles` blocks have the following structure:

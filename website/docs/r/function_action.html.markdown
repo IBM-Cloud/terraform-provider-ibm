@@ -130,7 +130,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the action.The id is combination of namespace and actionID delimited by `:` .
 * `namespace` - The name of the function namespace.

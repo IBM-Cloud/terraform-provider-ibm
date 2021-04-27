@@ -36,7 +36,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of resource. Id id the combination of <domain_id>:<cis_id>
 * `paused` - Boolean of whether this domain is paused (traffic bypasses CIS). Default: false.

@@ -25,7 +25,7 @@ var singleSiteLocation = []string{
 }
 
 var regionLocation = []string{
-	"au-syd", "eu-de", "eu-gb", "jp-tok", "jp-osa", "us-east", "us-south",
+	"au-syd", "ca-tor", "eu-de", "eu-gb", "jp-tok", "jp-osa", "us-east", "us-south",
 }
 
 var crossRegionLocation = []string{
@@ -175,6 +175,12 @@ func resourceIBMCOS() *schema.Resource {
 							Default:     false,
 							Description: "Usage metrics will be sent to the monitoring service.",
 						},
+						"request_metrics_enabled": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Request metrics will be sent to the monitoring service.",
+						},
 						"metrics_monitoring_crn": {
 							Type:        schema.TypeString,
 							Required:    true,
@@ -246,6 +252,44 @@ func resourceIBMCOS() *schema.Resource {
 							Required:     true,
 							ValidateFunc: validateAllowedRangeInt(0, 3650),
 							Description:  "Specifies the number of days when the specific rule action takes effect.",
+						},
+					},
+				},
+			},
+			"retention_rule": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "A retention policy is enabled at the IBM Cloud Object Storage bucket level. Minimum, maximum and default retention period are defined by this policy and apply to all objects in the bucket.",
+				ForceNew:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"default": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							ValidateFunc: validateAllowedRangeInt(0, 365243),
+							Description:  "If an object is stored in the bucket without specifying a custom retention period.",
+							ForceNew:     false,
+						},
+						"maximum": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							ValidateFunc: validateAllowedRangeInt(0, 365243),
+							Description:  "Maximum duration of time an object can be kept unmodified in the bucket.",
+							ForceNew:     false,
+						},
+						"minimum": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							ValidateFunc: validateAllowedRangeInt(0, 365243),
+							Description:  "Minimum duration of time an object must be kept unmodified in the bucket",
+							ForceNew:     false,
+						},
+						"permanent": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Enable or disable the permanent retention policy on the bucket",
 						},
 					},
 				},
@@ -359,46 +403,45 @@ func expireRuleList(expireList []interface{}) []*s3.LifecycleRule {
 }
 
 func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
+	var s3Conf *aws.Config
+	rsConClient, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return err
+	}
+	bucketName := parseBucketId(d.Id(), "bucketName")
+	serviceID := parseBucketId(d.Id(), "serviceID")
+	endpointType := parseBucketId(d.Id(), "endpointType")
+	apiEndpoint, apiEndpointPrivate := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
+	if endpointType == "private" {
+		apiEndpoint = apiEndpointPrivate
+	}
+	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
+	if err != nil {
+		return err
+	}
+	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
+	apiKey := rsConClient.Config.BluemixAPIKey
+	if apiKey != "" {
+		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
+	}
+	iamAccessToken := rsConClient.Config.IAMAccessToken
+	if iamAccessToken != "" {
+		initFunc := func() (*token.Token, error) {
+			return &token.Token{
+				AccessToken:  rsConClient.Config.IAMAccessToken,
+				RefreshToken: rsConClient.Config.IAMRefreshToken,
+				TokenType:    "Bearer",
+				ExpiresIn:    int64((time.Hour * 248).Seconds()) * -1,
+				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
+			}, nil
+		}
+		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
+	}
+	s3Sess := session.Must(session.NewSession())
+	s3Client := s3.New(s3Sess, s3Conf)
 
 	//// Update  the lifecycle (Archive or Expire)
 	if d.HasChange("archive_rule") || d.HasChange("expire_rule") {
-		var s3Conf *aws.Config
-		rsConClient, err := meta.(ClientSession).BluemixSession()
-		if err != nil {
-			return err
-		}
-		bucketName := parseBucketId(d.Id(), "bucketName")
-		serviceID := parseBucketId(d.Id(), "serviceID")
-		endpointType := parseBucketId(d.Id(), "endpointType")
-		apiEndpoint, apiEndpointPrivate := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
-		if endpointType == "private" {
-			apiEndpoint = apiEndpointPrivate
-		}
-		authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
-		if err != nil {
-			return err
-		}
-		authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
-		apiKey := rsConClient.Config.BluemixAPIKey
-		if apiKey != "" {
-			s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
-		}
-		iamAccessToken := rsConClient.Config.IAMAccessToken
-		if iamAccessToken != "" && apiKey == "" {
-			initFunc := func() (*token.Token, error) {
-				return &token.Token{
-					AccessToken:  rsConClient.Config.IAMAccessToken,
-					RefreshToken: rsConClient.Config.IAMRefreshToken,
-					TokenType:    "Bearer",
-					ExpiresIn:    int64((time.Hour * 248).Seconds()) * -1,
-					Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
-				}, nil
-			}
-			s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
-		}
-		s3Sess := session.Must(session.NewSession())
-		s3Client := s3.New(s3Sess, s3Conf)
-
 		var archive, archive_ok = d.GetOk("archive_rule")
 		var expire, expire_ok = d.GetOk("expire_rule")
 		var rules []*s3.LifecycleRule
@@ -434,11 +477,65 @@ func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	//// Update  the Retention policy
+	if d.HasChange("retention_rule") {
+		var defaultretention, minretention, maxretention int64
+		var permanentretention bool
+		if retention, ok := d.GetOk("retention_rule"); ok {
+			retentionList := retention.([]interface{})
+			if len(retentionList) > 1 {
+				return fmt.Errorf("Can not more than 1 retention policy")
+			}
+			for _, l := range retentionList {
+				retentionMap, _ := l.(map[string]interface{})
+				//Default Days
+				if defaultretentionSet, exist := retentionMap["default"]; exist {
+					defaultdays := int64(defaultretentionSet.(int))
+					defaultretention = defaultdays
+				}
+				//Maximum Days
+				if maxretentionSet, exist := retentionMap["maximum"]; exist {
+					maxdays := int64(maxretentionSet.(int))
+					maxretention = maxdays
+				}
+				//Minimum Days
+				if minretentionSet, exist := retentionMap["minimum"]; exist {
+					mindays := int64(minretentionSet.(int))
+					minretention = mindays
+				}
+				//Permanent Retention Enable/Disable
+				if permanentretentionSet, exist := retentionMap["permanent"]; exist {
+					permanentretention = permanentretentionSet.(bool)
+				}
+			}
+			// PUT BUCKET PROTECTION CONFIGURATION
+			pInput := &s3.PutBucketProtectionConfigurationInput{
+				Bucket: aws.String(bucketName),
+				ProtectionConfiguration: &s3.ProtectionConfiguration{
+					DefaultRetention: &s3.BucketProtectionDefaultRetention{
+						Days: aws.Int64(defaultretention),
+					},
+					MaximumRetention: &s3.BucketProtectionMaximumRetention{
+						Days: aws.Int64(maxretention),
+					},
+					MinimumRetention: &s3.BucketProtectionMinimumRetention{
+						Days: aws.Int64(minretention),
+					},
+					Status:                   aws.String("Retention"),
+					EnablePermanentRetention: aws.Bool(permanentretention),
+				},
+			}
+			_, err := s3Client.PutBucketProtectionConfiguration(pInput)
+			if err != nil {
+				return fmt.Errorf("failed to update the retention rule on COS bucket %s, %v", bucketName, err)
+			}
+		}
+	}
+
 	sess, err := meta.(ClientSession).CosConfigV1API()
 	if err != nil {
 		return err
 	}
-	endpointType := parseBucketId(d.Id(), "endpointType")
 	if endpointType == "private" {
 		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
 	}
@@ -447,7 +544,7 @@ func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
 	updateBucketConfigOptions := &resourceconfigurationv1.UpdateBucketConfigOptions{}
 
 	//BucketName
-	bucketName := d.Get("bucket_name").(string)
+	bucketName = d.Get("bucket_name").(string)
 	updateBucketConfigOptions.Bucket = &bucketName
 
 	if d.HasChange("allowed_ip") {
@@ -505,7 +602,11 @@ func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
 					metrics := metricsSet.(bool)
 					metricsMonitor.UsageMetricsEnabled = &metrics
 				}
-
+				// request metrics enabled - as its optional check for existence
+				if metricsSet := metricsMap["request_metrics_enabled"]; metricsSet != nil {
+					metrics := metricsSet.(bool)
+					metricsMonitor.RequestMetricsEnabled = &metrics
+				}
 				//crn - Required field
 				crn := metricsMap["metrics_monitoring_crn"].(string)
 				metricsMonitor.MetricsMonitoringCrn = &crn
@@ -670,6 +771,22 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		if len(expireRules) > 0 {
 			d.Set("expire_rule", expireRules)
+		}
+	}
+
+	retentionInput := &s3.GetBucketProtectionConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+	retentionptr, err := s3Client.GetBucketProtectionConfiguration(retentionInput)
+
+	if err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
+		return err
+	}
+
+	if retentionptr != nil {
+		retentionRules := retentionRuleGet(retentionptr.ProtectionConfiguration)
+		if len(retentionRules) > 0 {
+			d.Set("retention_rule", retentionRules)
 		}
 	}
 

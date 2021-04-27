@@ -44,7 +44,7 @@ Constraints: 2 ≤ length ≤ 100, Value must match regular expression ^[a-zA-Z0
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - Unique Identifier for the terraform resource.
 * `key_ring_id` - The key ring ID.

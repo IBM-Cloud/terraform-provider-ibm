@@ -65,10 +65,10 @@ func resourceIBMResourceKey() *schema.Resource {
 			},
 
 			"parameters": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Arbitrary parameters to pass. Must be a JSON object",
+				Type:             schema.TypeMap,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "Arbitrary parameters to pass. Must be a JSON object",
 			},
 
 			"credentials": {
@@ -273,8 +273,8 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	resourceKey, resp, err := rsContClient.GetResourceKey(&resourceKeyGet)
-	if err != nil {
-		return fmt.Errorf("Error retrieving resource key: %s with resp code: %s", err, resp)
+	if err != nil || resourceKey == nil {
+		return fmt.Errorf("Error retrieving resource key: %s with resp : %s", err, resp)
 	}
 	var credInterface map[string]interface{}
 	cred, _ := json.Marshal(resourceKey.Credentials)
@@ -282,9 +282,8 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("credentials", Flatten(credInterface))
 	d.Set("name", *resourceKey.Name)
 	d.Set("status", *resourceKey.State)
-	iamRoleCrn := resourceKey.Credentials.IamRoleCRN
-	if *iamRoleCrn != "" {
-		roleCrn := *iamRoleCrn
+	if resourceKey.Credentials != nil && resourceKey.Credentials.IamRoleCRN != nil {
+		roleCrn := *resourceKey.Credentials.IamRoleCRN
 		roleName := roleCrn[strings.LastIndex(roleCrn, ":")+1:]
 
 		// TODO.S: update client

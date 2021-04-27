@@ -86,7 +86,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the security group rule. The id is composed of \<security_group_id\>/\<security_group_rule_id\>.
 * `rule_id` - The unique identifier of the rule.

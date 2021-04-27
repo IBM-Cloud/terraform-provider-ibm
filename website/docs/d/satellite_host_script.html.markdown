@@ -6,7 +6,7 @@ description: |-
   Generate host script to attach host to satellite location.
 ---
 
-# ibm\_satellite_host
+# ibm\_satellite_attach_host_script
 
 Import the details of an existing IBM satellite location registration script as a data source. Creates a script to run on a Red Hat Enterprise Linux 7 or AWS EC2 host in your on-premises infrastructure. The script attaches the host to your IBM Cloud Satellite location. The host must have access to the public network in order for the script to complete.
 
@@ -41,7 +41,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the location.
 * `labels` - (Optional, array of strings) Key-value pairs to label the host, such as cpu=4 to describe the host capabilities.

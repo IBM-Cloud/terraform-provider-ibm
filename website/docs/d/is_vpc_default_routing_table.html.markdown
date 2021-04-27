@@ -33,7 +33,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `name` - The name for the default routing table.
 * `id` - The unique identifier for the default routing table.

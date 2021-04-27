@@ -71,7 +71,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - Unique identifier for the global load balancer. Ex. <unique-id>:<domain-id>:<crn>
 - `glb_id` - Unique identifier for the global load balancer.

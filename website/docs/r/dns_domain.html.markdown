@@ -11,7 +11,7 @@ description: |-
 
 Provides a single DNS domain managed on IBM Cloud Classic Infrastructure (SoftLayer). Domains contain general information about the domain name, such as the name and serial number.
 
-Individual records, such as `A`, `AAAA`, `CTYPE`, and `MX` records, are stored in the domain's associated resource records using the [`ibm_dns_record` resource](../r/dns_record.html).
+Individual records, such as `A`, `AAAA`, `CTYPE`, and `MX` records, are stored in the domain's associated resource records using the [`ibm_dns_record` resource](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/r/dns_record.html.markdown).
 
 
 ## Example Usage
@@ -34,7 +34,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique internal identifier of the domain record.
 * `serial` - A unique number denoting the latest revision of the domain.
