@@ -158,13 +158,18 @@ The following arguments are supported:
 * `vpc` - (Required, Forces new resource, string) The vpc id. 
 * `zone` - (Required, Forces new resource, string) Name of the zone. 
 * `profile` - (Required, Forces new resource, string) The profile name. 
-* `image` - (Required, string) ID of the image.
+* `image` - (Optional, string) ID of the image.
+    * **NOTE**: Required with `zone`, `primary_network_interface` and one of `boot_volume.source_snapshot`, `image`, `source_template` is mandatory. 
 * `boot_volume` - (Optional, list) A block describing the boot volume of this instance.  
 `boot_volume` block have the following structure:
   * `name` - (Optional, string) The name of the boot volume.
   * `encryption` -(Optional, string) The encryption of the boot volume.
+  * `source_snapshot` -(Optional, string) Snapshot ID of the boot volume.
+    * **NOTE**: Required with `zone`, `primary_network_interface`, conflicts with `volume` and one of `boot_volume.source_snapshot`, `image`, `source_template` is mandatory.  
+  * `volume` -(Optional, string) ID the boot volume.
+    * **NOTE**: Required with `zone`, `primary_network_interface`, conflicts with `source_snapshot` and one of `boot_volume.volume`, `image`, `source_template` is mandatory.    
 * `keys` - (Required, list) Comma separated IDs of ssh keys.  
-* `primary_network_interface` - (Required, list) A nested block describing the primary network interface of this instance. We can have only one primary network interface.
+* `primary_network_interface` - (Optional, list) A nested block describing the primary network interface of this instance. We can have only one primary network interface.
 Nested `primary_network_interface` block have the following structure:
   * `name` - (Optional, string) The name of the network interface.
   * `port_speed` - (Deprecated, int) Speed of the network interface.
@@ -180,7 +185,13 @@ Nested `network_interfaces` block have the following structure:
   * `security_groups` - (Optional, list) Comma separated IDs of security groups.
   * `allow_ip_spoofing` - (Optional, bool) Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If true, IP spoofing is allowed on this interface.
 * `volumes` - (Optional, list) Comma separated IDs of volumes. 
-* `auto_delete_volume` - (Optional, bool) If set to true, automatically deletes volumes attached to the instance.  
+* `snapshots` - (Optional, list) Comma separated IDs of snapshots to be attached as data volume.
+* `boot_volume_type` - (Optional, string) Type of the boot volume.
+  * One of [`image`, `template`, `volume`]
+  * Default : `image`
+* `source_template` - (Optional, string) ID of the source template.  
+    * **NOTE**: One of `boot_volume.source_snapshot`, `image`, `source_template` is mandatory.   
+* `auto_delete_volume` - (Optional, string) If set to true, automatically deletes volumes attached to the instance.  
 **Note** Setting this argument may bring some inconsistency in volume resources since the volumes will be destroyed along with instances.
 * `user_data` - (Optional, string) User data to transfer to the server instance.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID for this instance.
