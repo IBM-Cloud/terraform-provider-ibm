@@ -409,20 +409,6 @@ func getLBStatus(sess *vpcv1.VpcV1, lbId string) (string, error) {
 	return *lb.ProvisioningStatus, nil
 }
 
-// func isWaitForLBActive(sess *vpcv1.VpcV1, lbId string, timeout time.Duration) (interface{}, error) {
-// 	fmt.Printf("Waiting for load balancer (%s) to be available.", lbId)
-
-// 	stateConf := &resource.StateChangeConf{
-// 		Pending:    []string{"retry", "provisioning", "update_pending", "delete_pending", "maintenance_pending", "create_pending"},
-// 		Target:     []string{"done", "active", "failed", "online", ""},
-// 		Refresh:    isLBRefreshFunc(sess, lbId),
-// 		Timeout:    timeout,
-// 		Delay:      10 * time.Second,
-// 		MinTimeout: 10 * time.Second,
-// 	}
-// 	return stateConf.WaitForState()
-// }
-
 func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
@@ -442,10 +428,6 @@ func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) 
 		}
 		return fmt.Errorf("Internal Error fetching info for instance group [%s]", instanceGroupID)
 	}
-
-	// Now get the Load balancer ID from the instance
-	// var ls string
-
 	// Inorder to delete instance group, need to update membership count to 0
 	zeroMembers := int64(0)
 	instanceGroupUpdateOptions := vpcv1.UpdateInstanceGroupOptions{}
@@ -481,17 +463,14 @@ func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) 
 		}
 		if lbStatus != "active" {
 			log.Printf("Load Balancer [%s] is not active....Waiting it to be active!\n", loadBalancerID)
-			// _, err := isWaitForLBActive(sess, loadBalancerID, time.Minute*10)
 			_, err := isWaitForLBAvailable(sess, loadBalancerID, d.Timeout(schema.TimeoutDelete))
 			if err != nil {
 				return err
 			}
-			// log.Println("Calling the status function after wait")
 			lbStatus, err = getLBStatus(sess, loadBalancerID)
 			if err != nil {
 				return err
 			}
-			// log.Printf("Checking the status if it is active after wait %s", lbStatus)
 			if lbStatus != "active" {
 				return fmt.Errorf("LoadBalancer [%s] is not active yet! Current Load Balancer status is [%s]", loadBalancerID, lbStatus)
 			}
@@ -499,7 +478,6 @@ func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) 
 	}
 
 	deleteInstanceGroupOptions := vpcv1.DeleteInstanceGroupOptions{ID: &instanceGroupID}
-	// log.Printf("Just Before the delete function %s", loadS)
 	response, Err := sess.DeleteInstanceGroup(&deleteInstanceGroupOptions)
 	if Err != nil {
 		if response != nil && response.StatusCode == 404 {
