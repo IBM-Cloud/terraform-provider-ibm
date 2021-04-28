@@ -1,4 +1,5 @@
 ---
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_api_key"
 sidebar_current: "docs-ibm-resource-iam-api-key"
@@ -42,3 +43,11 @@ The following attributes are exported:
 * `created_at` - If set contains a date time string of the creation date in ISO format.
 * `created_by` - IAM ID of the user or service which created the API key.
 * `modified_at` - If set contains a date time string of the last modification date in ISO format.
+
+## Import
+
+ibm_iam_api_key can be imported using User API Key, eg:
+
+```
+$ terraform import ibm_iam__api_key.testacc_apiKey <ApiKey-UniqueId>
+```

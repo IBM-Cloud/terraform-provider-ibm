@@ -1,18 +1,5 @@
-/**
- * (C) Copyright IBM Corp. 2021.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -44,6 +31,7 @@ func resourceIbmIamApiKey() *schema.Resource {
 			"iam_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The iam_id that this API key authenticates.",
 			},
 			"description": &schema.Schema{
@@ -54,11 +42,15 @@ func resourceIbmIamApiKey() *schema.Resource {
 			"account_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "The account ID of the API key.",
 			},
 			"apikey": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
+				Sensitive:   true,
+				ForceNew:    true,
 				Description: "You can optionally passthrough the API key value for this API key. If passed, NO validation of that apiKey value is done, i.e. the value can be non-URL safe. If omitted, the API key management will create an URL safe opaque API key value. The value of the API key is checked for uniqueness. Please ensure enough variations when passing in this value.",
 			},
 			"store_value": &schema.Schema{
@@ -75,6 +67,7 @@ func resourceIbmIamApiKey() *schema.Resource {
 			"id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
+				ForceNew:    true,
 				Description: "Unique identifier of this API Key.",
 			},
 			"entity_tag": &schema.Schema{

@@ -1,4 +1,5 @@
 ---
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_api_key"
 sidebar_current: "docs-ibm-datasource-iam-api-key"

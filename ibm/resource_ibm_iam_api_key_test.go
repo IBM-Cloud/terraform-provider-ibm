@@ -1,18 +1,5 @@
-/**
- * (C) Copyright IBM Corp. 2021.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -30,9 +17,7 @@ import (
 func TestAccIbmIamApiKeyBasic(t *testing.T) {
 	var conf iamidentityv1.APIKey
 	name := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
-	iamID := fmt.Sprintf("iam_id_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
-	iamIDUpdate := fmt.Sprintf("iam_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -40,18 +25,16 @@ func TestAccIbmIamApiKeyBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmIamApiKeyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmIamApiKeyConfigBasic(name, iamID),
+				Config: testAccCheckIbmIamApiKeyConfigBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIamApiKeyExists("ibm_iam_api_key.iam_api_key", conf),
 					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "iam_id", iamID),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmIamApiKeyConfigBasic(nameUpdate, iamIDUpdate),
+				Config: testAccCheckIbmIamApiKeyConfigBasic(nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "iam_id", iamIDUpdate),
 				),
 			},
 		},
@@ -61,19 +44,11 @@ func TestAccIbmIamApiKeyBasic(t *testing.T) {
 func TestAccIbmIamApiKeyAllArgs(t *testing.T) {
 	var conf iamidentityv1.APIKey
 	name := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
-	iamID := fmt.Sprintf("iam_id_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("description_%d", acctest.RandIntRange(10, 100))
-	accountID := fmt.Sprintf("account_id_%d", acctest.RandIntRange(10, 100))
-	apikey := fmt.Sprintf("apikey_%d", acctest.RandIntRange(10, 100))
 	storeValue := "false"
-	entityLock := fmt.Sprintf("lock_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
-	iamIDUpdate := fmt.Sprintf("iam_id_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("description_%d", acctest.RandIntRange(10, 100))
-	accountIDUpdate := fmt.Sprintf("account_id_%d", acctest.RandIntRange(10, 100))
-	apikeyUpdate := fmt.Sprintf("apikey_%d", acctest.RandIntRange(10, 100))
 	storeValueUpdate := "true"
-	entityLockUpdate := fmt.Sprintf("locked_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -81,28 +56,20 @@ func TestAccIbmIamApiKeyAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmIamApiKeyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmIamApiKeyConfig(name, iamID, description, accountID, apikey, storeValue, entityLock),
+				Config: testAccCheckIbmIamApiKeyConfig(name, description, storeValue),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIamApiKeyExists("ibm_iam_api_key.iam_api_key", conf),
 					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "iam_id", iamID),
 					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "description", description),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "account_id", accountID),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "apikey", apikey),
 					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "store_value", storeValue),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "locked", entityLock),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmIamApiKeyConfig(nameUpdate, iamIDUpdate, descriptionUpdate, accountIDUpdate, apikeyUpdate, storeValueUpdate, entityLockUpdate),
+				Config: testAccCheckIbmIamApiKeyConfig(nameUpdate, descriptionUpdate, storeValueUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "iam_id", iamIDUpdate),
 					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "description", descriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "account_id", accountIDUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "apikey", apikeyUpdate),
 					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "store_value", storeValueUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_api_key.iam_api_key", "locked", entityLockUpdate),
 				),
 			},
 			resource.TestStep{
@@ -114,29 +81,24 @@ func TestAccIbmIamApiKeyAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmIamApiKeyConfigBasic(name string, iamID string) string {
+func testAccCheckIbmIamApiKeyConfigBasic(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_api_key" "iam_api_key" {
 			name = "%s"
-			iam_id = "%s"
 		}
-	`, name, iamID)
+	`, name)
 }
 
-func testAccCheckIbmIamApiKeyConfig(name string, iamID string, description string, accountID string, apikey string, storeValue string, entityLock string) string {
+func testAccCheckIbmIamApiKeyConfig(name string, description string, storeValue string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_api_key" "iam_api_key" {
 			name = "%s"
-			iam_id = "%s"
 			description = "%s"
-			account_id = "%s"
-			apikey = "%s"
 			store_value = %s
-			locked = "%s"
 		}
-	`, name, iamID, description, accountID, apikey, storeValue, entityLock)
+	`, name, description, storeValue)
 }
 
 func testAccCheckIbmIamApiKeyExists(n string, obj iamidentityv1.APIKey) resource.TestCheckFunc {

@@ -1,18 +1,5 @@
-/**
- * (C) Copyright IBM Corp. 2021.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -26,14 +13,13 @@ import (
 
 func TestAccIbmIamApiKeyDataSourceBasic(t *testing.T) {
 	apiKeyName := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
-	apiKeyIamID := fmt.Sprintf("iam_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmIamApiKeyDataSourceConfigBasic(apiKeyName, apiKeyIamID),
+				Config: testAccCheckIbmIamApiKeyDataSourceConfigBasic(apiKeyName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "entity_tag"),
@@ -55,19 +41,15 @@ func TestAccIbmIamApiKeyDataSourceBasic(t *testing.T) {
 
 func TestAccIbmIamApiKeyDataSourceAllArgs(t *testing.T) {
 	apiKeyName := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
-	apiKeyIamID := fmt.Sprintf("iam_id_%d", acctest.RandIntRange(10, 100))
 	apiKeyDescription := fmt.Sprintf("description_%d", acctest.RandIntRange(10, 100))
-	apiKeyAccountID := fmt.Sprintf("account_id_%d", acctest.RandIntRange(10, 100))
-	apiKeyApikey := fmt.Sprintf("apikey_%d", acctest.RandIntRange(10, 100))
 	apiKeyStoreValue := "false"
-	apiKeyEntityLock := fmt.Sprintf("locked_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmIamApiKeyDataSourceConfig(apiKeyName, apiKeyIamID, apiKeyDescription, apiKeyAccountID, apiKeyApikey, apiKeyStoreValue, apiKeyEntityLock),
+				Config: testAccCheckIbmIamApiKeyDataSourceConfig(apiKeyName, apiKeyDescription, apiKeyStoreValue),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "entity_tag"),
@@ -87,33 +69,28 @@ func TestAccIbmIamApiKeyDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmIamApiKeyDataSourceConfigBasic(apiKeyName string, apiKeyIamID string) string {
+func testAccCheckIbmIamApiKeyDataSourceConfigBasic(apiKeyName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_api_key" "iam_api_key" {
 			name = "%s"
-			iam_id = "%s"
 		}
 
 		data "ibm_iam_api_key" "iam_api_key" {
 			id = ibm_iam_api_key.iam_api_key.id
 		}
-	`, apiKeyName, apiKeyIamID)
+	`, apiKeyName)
 }
 
-func testAccCheckIbmIamApiKeyDataSourceConfig(apiKeyName string, apiKeyIamID string, apiKeyDescription string, apiKeyAccountID string, apiKeyApikey string, apiKeyStoreValue string, apiKeyEntityLock string) string {
+func testAccCheckIbmIamApiKeyDataSourceConfig(apiKeyName string, apiKeyDescription string, apiKeyStoreValue string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_api_key" "iam_api_key" {
 			name = "%s"
-			iam_id = "%s"
 			description = "%s"
-			account_id = "%s"
-			apikey = "%s"
 			store_value = %s
-			locked = "%s"
 		}
 
 		data "ibm_iam_api_key" "iam_api_key" {
 			id = ibm_iam_api_key.iam_api_key.id
 		}
-	`, apiKeyName, apiKeyIamID, apiKeyDescription, apiKeyAccountID, apiKeyApikey, apiKeyStoreValue, apiKeyEntityLock)
+	`, apiKeyName, apiKeyDescription, apiKeyStoreValue)
 }
