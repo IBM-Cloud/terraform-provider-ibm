@@ -573,7 +573,7 @@ func classicNwaclGet(d *schema.ResourceData, meta interface{}, id string) error 
 					if rulex.Code != nil && rulex.Type != nil {
 						icmp[0] = map[string]int{
 							isNetworkACLRuleICMPCode: int(*rulex.Code),
-							isNetworkACLRuleICMPType: int(*rulex.Code),
+							isNetworkACLRuleICMPType: int(*rulex.Type),
 						}
 					}
 					rule[isNetworkACLRuleICMP] = icmp
@@ -693,7 +693,7 @@ func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
 					if rulex.Code != nil && rulex.Type != nil {
 						icmp[0] = map[string]int{
 							isNetworkACLRuleICMPCode: int(*rulex.Code),
-							isNetworkACLRuleICMPType: int(*rulex.Code),
+							isNetworkACLRuleICMPType: int(*rulex.Type),
 						}
 					}
 					rule[isNetworkACLRuleICMP] = icmp
