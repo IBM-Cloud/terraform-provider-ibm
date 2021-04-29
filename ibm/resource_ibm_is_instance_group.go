@@ -23,6 +23,8 @@ const (
 	HEALTHY = "healthy"
 	// DELETING ...
 	DELETING = "deleting"
+	// UNHEALTHY
+	UNHEALTHY = "unhealthy"
 )
 
 func resourceIBMISInstanceGroup() *schema.Resource {
@@ -403,42 +405,60 @@ func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 	instanceGroupID := d.Id()
+	getInstanceGroupOptions := vpcv1.GetInstanceGroupOptions{ID: &instanceGroupID}
+	instanceGroup, _, _ := sess.GetInstanceGroup(&getInstanceGroupOptions)
 
-	// Inorder to delete instance group, need to update membership count to 0
-	zeroMembers := int64(0)
-	instanceGroupUpdateOptions := vpcv1.UpdateInstanceGroupOptions{}
-	instanceGroupPatchModel := vpcv1.InstanceGroupPatch{}
-
-	instanceGroupPatchModel.MembershipCount = &zeroMembers
-	instanceGroupPatch, err := instanceGroupPatchModel.AsPatch()
-	if err != nil {
-		return fmt.Errorf("Error calling asPatch for ImagePatch: %s", err)
-	}
-
-	instanceGroupUpdateOptions.ID = &instanceGroupID
-	instanceGroupUpdateOptions.InstanceGroupPatch = instanceGroupPatch
-	_, response, err := sess.UpdateInstanceGroup(&instanceGroupUpdateOptions)
-	if err != nil {
-		return fmt.Errorf("Error updating instanceGroup's instance count to 0 : %s\n%s", err, response)
-	}
-	_, healthError := waitForHealthyInstanceGroup(d, meta, d.Timeout(schema.TimeoutUpdate))
-	if healthError != nil {
-		return healthError
-	}
-
-	deleteInstanceGroupOptions := vpcv1.DeleteInstanceGroupOptions{ID: &instanceGroupID}
-	response, Err := sess.DeleteInstanceGroup(&deleteInstanceGroupOptions)
-	if Err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
+	if *instanceGroup.Status == UNHEALTHY {
+		intf, healthError := waitForHealthyInstanceGroupAfterDetachingInstances(d, meta, d.Timeout(schema.TimeoutDelete))
+		ig := intf.(*vpcv1.InstanceGroup)
+		if *ig.Status == UNHEALTHY || healthError != nil {
+			return fmt.Errorf("Error deleting instance group, group %s", *ig.Status)
 		}
-		return fmt.Errorf("Error Deleting the InstanceGroup: %s\n%s", Err, response)
 	}
+	// Inorder to delete instance group, need to update membership count to 0
 
-	_, deleteError := waitForInstanceGroupDelete(d, meta)
-	if deleteError != nil {
-		return deleteError
+	if *instanceGroup.MembershipCount > 0 {
+		zeroMembers := int64(0)
+		instanceGroupUpdateOptions := vpcv1.UpdateInstanceGroupOptions{}
+		instanceGroupPatchModel := vpcv1.InstanceGroupPatch{}
+
+		instanceGroupPatchModel.MembershipCount = &zeroMembers
+		instanceGroupPatch, err := instanceGroupPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for IGPatch: %s", err)
+		}
+
+		instanceGroupUpdateOptions.ID = &instanceGroupID
+		instanceGroupUpdateOptions.InstanceGroupPatch = instanceGroupPatch
+		_, response, err := sess.UpdateInstanceGroup(&instanceGroupUpdateOptions)
+		if err != nil {
+			return fmt.Errorf("Error updating instanceGroup's instance count to 0 : %s\n%s", err, response)
+		}
+		intf, healthError := waitForHealthyInstanceGroupAfterDetachingInstances(d, meta, d.Timeout(schema.TimeoutDelete))
+		ig := intf.(*vpcv1.InstanceGroup)
+
+		if *ig.Status == UNHEALTHY || healthError != nil {
+			return fmt.Errorf("Error deleting instance group, group %s", *ig.Status)
+		}
+
+	}
+	if *instanceGroup.Status == HEALTHY {
+		deleteInstanceGroupOptions := vpcv1.DeleteInstanceGroupOptions{ID: &instanceGroupID}
+		response, Err := sess.DeleteInstanceGroup(&deleteInstanceGroupOptions)
+		if Err != nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			return fmt.Errorf("Error Deleting the InstanceGroup: %s\n%s", Err, response)
+		}
+
+		_, deleteError := waitForInstanceGroupDelete(d, meta)
+		if deleteError != nil {
+			return deleteError
+		}
+	} else {
+		return fmt.Errorf("Error Deleting the InstanceGroup: group in %s state", *instanceGroup.Status)
 	}
 	return nil
 }
@@ -471,6 +491,40 @@ func waitForHealthyInstanceGroup(d *schema.ResourceData, meta interface{}, timeo
 
 	healthStateConf := &resource.StateChangeConf{
 		Pending: []string{SCALING},
+		Target:  []string{HEALTHY},
+		Refresh: func() (interface{}, string, error) {
+			instanceGroup, response, err := sess.GetInstanceGroup(&getInstanceGroupOptions)
+			if err != nil || instanceGroup == nil {
+				return nil, SCALING, fmt.Errorf("Error Getting InstanceGroup: %s\n%s", err, response)
+			}
+			log.Println("Status : ", *instanceGroup.Status)
+
+			if *instanceGroup.Status == "" {
+				return instanceGroup, SCALING, nil
+			}
+			return instanceGroup, *instanceGroup.Status, nil
+		},
+		Timeout:      timeout,
+		Delay:        20 * time.Second,
+		MinTimeout:   5 * time.Second,
+		PollInterval: 10 * time.Second,
+	}
+
+	return healthStateConf.WaitForState()
+
+}
+
+func waitForHealthyInstanceGroupAfterDetachingInstances(d *schema.ResourceData, meta interface{}, timeout time.Duration) (interface{}, error) {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return nil, err
+	}
+
+	instanceGroupID := d.Id()
+	getInstanceGroupOptions := vpcv1.GetInstanceGroupOptions{ID: &instanceGroupID}
+
+	healthStateConf := &resource.StateChangeConf{
+		Pending: []string{SCALING, UNHEALTHY},
 		Target:  []string{HEALTHY},
 		Refresh: func() (interface{}, string, error) {
 			instanceGroup, response, err := sess.GetInstanceGroup(&getInstanceGroupOptions)
