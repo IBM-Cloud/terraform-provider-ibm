@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -80,6 +81,13 @@ func dataSourceIBMISSubnets() *schema.Resource {
 						"zone": {
 							Type:     schema.TypeString,
 							Computed: true,
+						},
+						"tags": {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         resourceIBMVPCHash,
+							Description: "List of tags",
 						},
 					},
 				},
@@ -194,6 +202,14 @@ func subnetList(d *schema.ResourceData, meta interface{}) error {
 			"total_ipv4_address_count":     tac,
 			"vpc":                          *subnet.VPC.ID,
 			"zone":                         *subnet.Zone.Name,
+		}
+		if subnet.CRN != nil {
+			tags, err := GetTagsUsingCRN(meta, *subnet.CRN)
+			if err != nil {
+				log.Printf(
+					"An error occured during reading of subnet (%s) tags : %s", *subnet.ID, err)
+			}
+			l["tags"] = tags
 		}
 		if subnet.PublicGateway != nil {
 			l["public_gateway"] = *subnet.PublicGateway.ID

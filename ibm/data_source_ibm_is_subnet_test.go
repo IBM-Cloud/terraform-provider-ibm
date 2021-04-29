@@ -25,6 +25,8 @@ func TestAccIBMISSubnetDatasource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_subnet.ds_subnet", "name", name),
+					resource.TestCheckResourceAttr(
+						"data.ibm_is_subnet.ds_subnet", "tags.0", "test-tags"),
 				),
 			},
 		},
@@ -42,6 +44,7 @@ resource "ibm_is_subnet" "testacc_subnet" {
 	vpc = "${ibm_is_vpc.testacc_vpc.id}"
 	zone = "%s"
 	ipv4_cidr_block = "%s"
+	tags = ["test-tags"]
 }
 data "ibm_is_subnet" "ds_subnet" {
 	identifier = "${ibm_is_subnet.testacc_subnet.id}"

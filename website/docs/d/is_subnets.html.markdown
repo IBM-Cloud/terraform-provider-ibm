@@ -38,3 +38,4 @@ In addition to all arguments above, the following attributes are exported:
   * `resource_group` - Resource group where this subnet is created.
   * `vpc` - VPC where this subnet is created.
   * `zone` - Zone where this subnet is created.
+  * `tags` - Tags associated with the subnet.
