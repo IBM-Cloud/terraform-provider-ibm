@@ -33,7 +33,7 @@ func testAccCheckIBMDLRoutersDataSourceConfig() string {
 	return fmt.Sprintf(`
 	data "ibm_dl_routers" "test1" {
 		offering_type = "dedicated"
-		location_name = "dal03"
+		location_name = "dal10"
 	}
 	`)
 }
