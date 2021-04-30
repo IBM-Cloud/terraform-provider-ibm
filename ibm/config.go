@@ -668,7 +668,6 @@ func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
 func (sess clientSession) DirectlinkV1API() (*dl.DirectLinkV1, error) {
 	return sess.directlinkAPI, sess.directlinkErr
 }
-
 func (sess clientSession) DirectlinkProviderV2API() (*dlProviderV2.DirectLinkProviderV2, error) {
 	return sess.dlProviderAPI, sess.dlProviderErr
 }

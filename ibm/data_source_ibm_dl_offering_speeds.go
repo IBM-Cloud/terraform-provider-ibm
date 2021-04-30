@@ -64,7 +64,6 @@ func dataSourceIBMDLOfferingSpeedsRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	dlType := d.Get(dlOfferingType).(string)
-
 	listSpeedsOptionsModel := &directlinkv1.ListOfferingTypeSpeedsOptions{}
 	listSpeedsOptionsModel.OfferingType = &dlType
 	listSpeeds, detail, err := directLink.ListOfferingTypeSpeeds(listSpeedsOptionsModel)
