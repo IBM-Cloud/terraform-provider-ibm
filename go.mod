@@ -13,7 +13,7 @@ require (
 	github.com/IBM/ibm-cos-sdk-go v1.3.1
 	github.com/IBM/ibm-cos-sdk-go-config v1.0.1
 	github.com/IBM/keyprotect-go-client v0.5.2
-	github.com/IBM/networking-go-sdk v0.12.1
+	github.com/IBM/networking-go-sdk v0.14.0
 	github.com/IBM/platform-services-go-sdk v0.17.13
 	github.com/IBM/vpc-go-sdk v0.4.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
@@ -42,12 +42,9 @@ require (
 	github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22
-	github.ibm.com/ibmcloud/networking-go-sdk v1.0.2
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/tools v0.0.0-20210107193943-4ed967dd8eff // indirect
 	gotest.tools v2.2.0+incompatible
 )
 
 replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => ./common/github.com/softlayer/softlayer-go
-
-replace github.ibm.com/ibmcloud/networking-go-sdk v1.0.2 => /Users/ajaymalhotra/go/src/github.ibm.com/ibmcloud/networking-go-sdk

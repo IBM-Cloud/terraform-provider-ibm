@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	directlinklocal "github.ibm.com/ibmcloud/networking-go-sdk/directlinkv1"
 )
 
 const (
@@ -63,19 +63,14 @@ func dataSourceIBMDLRouters() *schema.Resource {
 	}
 }
 
-// func myDirectLinkClientRouter(meta interface{}) (*directlinklocal.DirectLinkV1, error) {
-// 	sess, err := meta.(ClientSession).DirectlinkV1APIScoped()
-// 	return sess, err
-// }
-
 func dataSourceIBMDLRoutersRead(d *schema.ResourceData, meta interface{}) error {
-	directLink, err := myDirectLinkClient(meta)
+	directLink, err := directlinkClient(meta)
 	if err != nil {
 		return err
 	}
 	dlType := d.Get(dlOfferingType).(string)
 	dlLocName := d.Get(dlLocation).(string)
-	listRoutersOptionsModel := &directlinklocal.ListOfferingTypeLocationCrossConnectRoutersOptions{}
+	listRoutersOptionsModel := &directlinkv1.ListOfferingTypeLocationCrossConnectRoutersOptions{}
 	listRoutersOptionsModel.OfferingType = &dlType
 	listRoutersOptionsModel.LocationName = &dlLocName
 

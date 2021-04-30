@@ -25,9 +25,6 @@ import (
 	ciscustompagev1 "github.com/IBM/networking-go-sdk/custompagesv1"
 	dlProviderV2 "github.com/IBM/networking-go-sdk/directlinkproviderv2"
 	dl "github.com/IBM/networking-go-sdk/directlinkv1"
-
-	dlscoped "github.ibm.com/ibmcloud/networking-go-sdk/directlinkv1"
-
 	cisdnsbulkv1 "github.com/IBM/networking-go-sdk/dnsrecordbulkv1"
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
 	dns "github.com/IBM/networking-go-sdk/dnssvcsv1"
@@ -214,7 +211,6 @@ type ClientSession interface {
 	PrivateDNSClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
 	DirectlinkV1API() (*dl.DirectLinkV1, error)
-	DirectlinkV1APIScoped() (*dlscoped.DirectLinkV1, error)
 	DirectlinkProviderV2API() (*dlProviderV2.DirectLinkProviderV2, error)
 	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
 	HpcsEndpointAPI() (hpcs.HPCSV2, error)
@@ -351,12 +347,10 @@ type clientSession struct {
 	vpcErr error
 	vpcAPI *vpc.VpcV1
 
-	directlinkAPI       *dl.DirectLinkV1
-	directlinkErr       error
-	directlinkScopedAPI *dlscoped.DirectLinkV1
-	directlinkScopedErr error
-	dlProviderAPI       *dlProviderV2.DirectLinkProviderV2
-	dlProviderErr       error
+	directlinkAPI *dl.DirectLinkV1
+	directlinkErr error
+	dlProviderAPI *dlProviderV2.DirectLinkProviderV2
+	dlProviderErr error
 
 	cosConfigErr error
 	cosConfigAPI *cosconfig.ResourceConfigurationV1
@@ -636,10 +630,6 @@ func (sess clientSession) DirectlinkV1API() (*dl.DirectLinkV1, error) {
 	return sess.directlinkAPI, sess.directlinkErr
 }
 
-func (sess clientSession) DirectlinkV1APIScoped() (*dlscoped.DirectLinkV1, error) {
-	return sess.directlinkScopedAPI, sess.directlinkScopedErr
-}
-
 func (sess clientSession) DirectlinkProviderV2API() (*dlProviderV2.DirectLinkProviderV2, error) {
 	return sess.dlProviderAPI, sess.dlProviderErr
 }
@@ -905,7 +895,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.pDNSErr = errEmptyBluemixCredentials
 		session.bmxUserFetchErr = errEmptyBluemixCredentials
 		session.directlinkErr = errEmptyBluemixCredentials
-		session.directlinkScopedErr = errEmptyBluemixCredentials
 		session.dlProviderErr = errEmptyBluemixCredentials
 		session.cosConfigErr = errEmptyBluemixCredentials
 		session.transitgatewayErr = errEmptyBluemixCredentials
@@ -1290,17 +1279,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.directlinkAPI, session.directlinkErr = dl.NewDirectLinkV1(directlinkOptions)
 	if session.directlinkErr != nil {
 		session.directlinkErr = fmt.Errorf("Error occured while configuring Direct Link Service: %s", session.directlinkErr)
-	}
-
-	directlinkScopedOptions := &dlscoped.DirectLinkV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_DL_API_ENDPOINT"}, "https://directlink.test.cloud.ibm.com/v1"),
-		Authenticator: authenticator,
-		Version:       &version,
-	}
-
-	session.directlinkScopedAPI, session.directlinkScopedErr = dlscoped.NewDirectLinkV1(directlinkScopedOptions)
-	if session.directlinkScopedErr != nil {
-		session.directlinkScopedErr = fmt.Errorf("Error occured while configuring Direct Link Service: %s", session.directlinkScopedErr)
 	}
 
 	//Direct link provider
