@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_access_group_members"
-sidebar_current: "docs-ibm-resource-iam-access-group-members"
 description: |-
   Manages IBM IAM Access Group Members.
 ---
@@ -43,7 +44,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the access group members. The id is composed of \<iam_access_group_id\>/\<randomid\>
 * `members` - List of members attached to the access group.

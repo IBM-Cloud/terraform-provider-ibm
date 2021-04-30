@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : public_gateway"
-sidebar_current: "docs-ibm-datasource-is-public-gateway"
 description: |-
   Manages IBM Public Gateway.
 ---
@@ -39,7 +39,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the public gateway.
 * `status` - The status of the gateway.

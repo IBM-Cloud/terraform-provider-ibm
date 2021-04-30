@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : security_group"
-sidebar_current: "docs-ibm-resource-is-security-group"
 description: |-
   Manages IBM Security Group.
 ---
@@ -31,10 +32,11 @@ The following arguments are supported:
 * `name` - (Optional, string) The security group name.
 * `vpc` - (Required, Forces new resource, string) The vpc id. 
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID where the security group to be created.
+* `tags` - (Optional, list(string)) Tags associated with the instance.
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the security group.
 * `rules` - A nested block describing the rules of this security group.
@@ -47,7 +49,8 @@ Nested `rules` blocks have the following structure:
   * `code` - The ICMP traffic code to allow.
   * `port_max` - The inclusive upper bound of TCP/UDP port range.
   * `port_min` - The inclusive lower bound of TCP/UDP port range. 
-   
+* `crn` - The CRN of the security group. 
+
 ## Import
 
 ibm_is_security_group can be imported using lbID, eg

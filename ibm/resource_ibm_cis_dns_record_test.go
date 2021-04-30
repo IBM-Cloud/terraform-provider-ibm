@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/IBM/go-sdk-core/v4/core"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMCisDNSRecord_Basic(t *testing.T) {
@@ -31,6 +31,33 @@ func TestAccIBMCisDNSRecord_Basic(t *testing.T) {
 						resourceName, "name", testName+"."+cisDomainStatic),
 					resource.TestCheckResourceAttr(
 						resourceName, "content", "192.168.0.10"),
+					resource.TestCheckResourceAttr(
+						resourceName, "data.%", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCisDNSRecord_PTR(t *testing.T) {
+	//t.Parallel()
+	var record string
+	testName := "tf-acctest-ptr"
+	resourceName := fmt.Sprintf("ibm_cis_dns_record.%s", testName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckCis(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMCisDNSRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCisDNSRecordConfigPTR(testName, cisDomainStatic),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCisDNSRecordExists(resourceName, &record),
+					resource.TestCheckResourceAttr(
+						resourceName, "name", "192.168.0.10."+cisDomainStatic),
+					resource.TestCheckResourceAttr(
+						resourceName, "content", testName+"."+cisDomainStatic),
 					resource.TestCheckResourceAttr(
 						resourceName, "data.%", "0"),
 				),
@@ -309,6 +336,18 @@ func testAccCheckIBMCisDNSRecordConfigCisRIBasic(resourceID string, cisDomain st
 		type    = "A"
 	  }
 `, resourceID)
+}
+
+func testAccCheckIBMCisDNSRecordConfigPTR(resourceID string, cisDomainStatic string) string {
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
+	resource "ibm_cis_dns_record" "%[1]s" {
+		cis_id    = data.ibm_cis.cis.id
+		domain_id = data.ibm_cis_domain.cis_domain.id
+		name    = "192.168.0.10"
+		content = "%[1]s.%[2]s"
+		type    = "PTR"
+	  }
+	`, resourceID, cisDomainStatic)
 }
 
 func testAccCheckIBMCisDNSRecordConfigCaseSensitive(resourceID string, cisDomainStatic string) string {

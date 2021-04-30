@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM : Cloud Internet Services instance"
-sidebar_current: "docs-ibm-resource-cis"
 description: |-
   Manages IBM Cloud Internet Services Instance.
 ---
@@ -56,7 +57,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the new CIS instance.
 * `status` - Status of resource instance.

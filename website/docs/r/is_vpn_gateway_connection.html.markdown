@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : VPN-gateway-connection"
-sidebar_current: "docs-ibm-resource-is-vpn-gateway-connection"
 description: |-
   Manages IBM VPN Gateway Connection
 ---
@@ -52,8 +53,8 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
-
+In addition to all arguments above, the following attributes are exported:
+* `gateway_connection` - The unique identifier for this VPN gateway connection
 * `id` - The unique identifier of the VPN gateway connection. The id is composed of \<vpn_gateway_id\>/\<vpn_gateway_connection_id\>.
 * `status` - The status of VPN gateway connection.
 * `authentication_mode` -  The authentication mode,Only psk is currently supported..

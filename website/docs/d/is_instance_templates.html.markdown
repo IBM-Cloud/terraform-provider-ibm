@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM: istance_templates"
-sidebar_current: "docs-ibm-resource-is-instance-templates"
 description: |-
   Retrives all the IBM VPC instance templates.
 ---
@@ -21,7 +21,7 @@ data "ibm_is_instance_templates" "instancetemplates" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 * `templates` - List of templates
   * `id` - Id of the instance instance template
   * `name` - The name of the instance template.

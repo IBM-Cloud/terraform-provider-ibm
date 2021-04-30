@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Transit Gateway"
 layout: "ibm"
 page_title: "IBM : tg_locations"
-sidebar_current: "docs-ibm-datasource-tg-locations"
 description: |-
   Manages IBM Cloud Infrastructure Transit Locations.
 ---
@@ -20,7 +21,7 @@ data "ibm_tg_locations" "ds_tg_locations" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `locations` - List of all locations that support Transit Gateways in the IBM Cloud Infrastructure.
   * `billing_location` - The geographical location of this location, used for billing purposes.

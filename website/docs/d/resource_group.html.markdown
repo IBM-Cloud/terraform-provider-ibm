@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM: ibm_resource_group"
-sidebar_current: "docs-ibm-datasource-reosurce-group"
 description: |-
   Get information about an IBM resource Group.
 ---
@@ -40,6 +41,6 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the resource group.  

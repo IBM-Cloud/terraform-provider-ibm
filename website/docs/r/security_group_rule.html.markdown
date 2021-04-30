@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: security_group_rule"
-sidebar_current: "docs-ibm-resource-security-group-rule"
 description: |-
   Manages IBM Security Group Rules
 ---
@@ -44,6 +45,6 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the security group rule.

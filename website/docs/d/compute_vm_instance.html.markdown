@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: ibm_vm_instance"
-sidebar_current: "docs-ibm-datasource-compute-vm_instance"
 description: |-
   Get information on a IBM Compute VM Instance resource
 ---
@@ -30,7 +30,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the VM instance.
 * `datacenter` - The data center in which the VM instance is deployed.

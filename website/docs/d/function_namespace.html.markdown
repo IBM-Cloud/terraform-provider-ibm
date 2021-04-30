@@ -1,7 +1,7 @@
 ---
+subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_namespace"
-sidebar_current: "docs-ibm-datasource-function-namespace"
 description: |-
   Get information on an IBM Cloud Functions namespace.
 ---
@@ -26,7 +26,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the namespace.
 * `resource_group_id` - The ID of the resource group.

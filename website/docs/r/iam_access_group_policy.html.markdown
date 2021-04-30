@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_access_group_policy"
-sidebar_current: "docs-ibm-resource-iam-access-group-policy"
 description: |-
   Manages IBM IAM Access Group Policy.
 ---
@@ -188,7 +189,7 @@ Nested `resources` blocks have the following structure:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the access group policy. The id is composed of \<access_group_id\>/\<access_group_policy_id\>
 

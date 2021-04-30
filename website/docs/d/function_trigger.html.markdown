@@ -1,7 +1,7 @@
 ---
+subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_trigger"
-sidebar_current: "docs-ibm-datasource-functions-trigger"
 description: |-
   Get information on an IBM Cloud Functions Trigger.
 ---
@@ -29,7 +29,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the trigger.
 * `namespace` - The name of the function namespace.

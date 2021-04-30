@@ -221,7 +221,15 @@ resource "ibm_cis_cache_settings" "test" {
   development_mode   = "off"
   query_string_sort  = "off"
   purge_all          = true
+  serve_stale_content = "on"
 }
+
+# CIS Cache Settings data source
+data "ibm_cis_cache_settings" "test" {
+  cis_id    = data.ibm_cis_cache_settings.test.cis_id
+  domain_id = data.ibm_cis_cache_settings.test.domain_id
+}
+
 
 # CIS Custom Page service
 resource "ibm_cis_custom_page" "custom_page" {

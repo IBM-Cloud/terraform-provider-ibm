@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_key"
-sidebar_current: "docs-ibm-datasources-pi-key"
 description: |-
   Manages an key in the Power Virtual Server Cloud.
 ---
@@ -39,7 +40,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier for the key.
 * `creation_date` - The creation date.

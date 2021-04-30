@@ -1,7 +1,7 @@
 ---
+subcategory: "Key Management Service"
 layout: "ibm"
 page_title: "IBM : kp-key"
-sidebar_current: "docs-ibm-datasource-kp-key"
 description: |-
   Manages IBM Keyprotect keys.
 ---
@@ -35,7 +35,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `keys` - List of all Keys in the IBM Keyprotect instance.
   * `name` - The name for the key.

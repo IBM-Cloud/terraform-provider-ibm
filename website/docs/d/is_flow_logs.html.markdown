@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_flow_logs"
-sidebar_current: "docs-ibm-datasources-is-flow-logs"
 description: |-
   Manages IBM Cloud Infrastructure Flow Logs.
 ---
@@ -22,7 +22,7 @@ data "ibm_is_flow_logs" "ds_flow_logs" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `flow_log_collectors` - List of all flowlogs in the IBM Cloud Infrastructure.
   * `active` - Indicates whether this collector is active.

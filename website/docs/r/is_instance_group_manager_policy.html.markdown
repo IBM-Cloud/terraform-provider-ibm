@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM: instance_group_manager_policy"
-sidebar_current: "docs-ibm-resource-is-instance-group-manager-policy"
 description: |-
   Manages IBM VPC instance group manager policy.
 ---
@@ -14,10 +15,6 @@ Create update or delete a policy of an instance group manager
 
 In the following example, you can create a policy for instance group manager.
 ```hcl
-provider "ibm" {
-  generation = 2
-}
-
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2test"
 }
@@ -97,7 +94,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - Id is the comination of the instance group ID, insatnce group manager ID and instance group manager policy ID.
 * `policy_id` - ID of the policy

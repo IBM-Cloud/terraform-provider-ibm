@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_service_plan"
-sidebar_current: "docs-ibm-datasource-service-plan"
 description: |-
   Get information about a service plan from IBM Cloud.
 ---
@@ -29,6 +30,6 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the service plan.  

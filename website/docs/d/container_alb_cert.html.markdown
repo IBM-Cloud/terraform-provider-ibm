@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_alb_cert"
-sidebar_current: "docs-ibm-resource-container-alb-cert"
 description: |-
   Get information about a IBM container alb cert.
 ---
@@ -33,7 +33,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ALB cert ID. The id is composed of \<cluster_name_id\>/\<secret_name\>.<br/>
 * `cert_crn` - The certificate CRN. 

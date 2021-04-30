@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -12,14 +13,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	validation "github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	//	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 )
@@ -59,23 +59,19 @@ type CsEntry struct {
 
 func resourceIBMDatabaseInstance() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMDatabaseInstanceCreate,
-		Read:     resourceIBMDatabaseInstanceRead,
-		Update:   resourceIBMDatabaseInstanceUpdate,
-		Delete:   resourceIBMDatabaseInstanceDelete,
-		Exists:   resourceIBMDatabaseInstanceExists,
-		Importer: &schema.ResourceImporter{},
+		Create:        resourceIBMDatabaseInstanceCreate,
+		Read:          resourceIBMDatabaseInstanceRead,
+		Update:        resourceIBMDatabaseInstanceUpdate,
+		Delete:        resourceIBMDatabaseInstanceDelete,
+		Exists:        resourceIBMDatabaseInstanceExists,
+		CustomizeDiff: resourceIBMDatabaseInstanceDiff,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
-			Update: schema.DefaultTimeout(20 * time.Minute),
+			Update: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
-		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
-				return resourceTagsCustomizeDiff(diff)
-			},
-		),
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -146,24 +142,60 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				ForceNew:    true,
 			},
 			"members_memory_allocation_mb": {
-				Description: "Memory allocation required for cluster",
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				//ValidateFunc: validation.IntBetween(2048, 114688),
+				Description:   "Memory allocation required for cluster",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"node_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count"},
 			},
 			"members_disk_allocation_mb": {
-				Description: "Disk allocation required for cluster",
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				//ValidateFunc: validation.IntBetween(2048, 1048576),
+				Description:   "Disk allocation required for cluster",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"node_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count"},
 			},
 			"members_cpu_allocation_count": {
-				Description: "CPU allocation required for cluster",
+				Description:   "CPU allocation required for cluster",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"node_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count"},
+			},
+			"node_count": {
+				Description:   "Total number of nodes in the cluster",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count"},
+			},
+			"node_memory_allocation_mb": {
+				Description: "Memory allocation per node",
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
+
+				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count"},
+			},
+			"node_disk_allocation_mb": {
+				Description:   "Disk allocation per node",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count"},
+			},
+			"node_cpu_allocation_count": {
+				Description:   "CPU allocation per node",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count"},
+			},
+			"plan_validation": {
+				Description: "For elasticsearch and postgres perform database parameter validation during the plan phase. Otherwise, database parameter validation happens in apply phase.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
 			},
 			"service_endpoints": {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
@@ -205,7 +237,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_database", "tag")},
 				Set:      resourceIBMVPCHash,
 			},
 			"point_in_time_recovery_deployment_id": {
@@ -661,6 +693,23 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 		},
 	}
 }
+func resourceIBMICDValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "tag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
+	ibmICDResourceValidator := ResourceValidator{ResourceName: "ibm_database", Schema: validateSchema}
+	return &ibmICDResourceValidator
+}
 
 type Params struct {
 	Version             string `json:"version,omitempty"`
@@ -677,9 +726,191 @@ type Params struct {
 	PITRTimeStamp       string `json:"point_in_time_recovery_time,omitempty"`
 }
 
+func getDatabaseServiceDefaults(service string, meta interface{}) (*icdv4.Group, error) {
+	icdClient, err := meta.(ClientSession).ICDAPI()
+	if err != nil {
+		return nil, fmt.Errorf("Error getting database client settings: %s", err)
+	}
+
+	var dbType string
+	if strings.HasPrefix(service, "messages-for-") {
+		dbType = service[len("messages-for-"):]
+	} else {
+		dbType = service[len("databases-for-"):]
+	}
+
+	groupDefaults, err := icdClient.Groups().GetDefaultGroups(dbType)
+	if err != nil {
+		return nil, fmt.Errorf("ICD API is down for plan validation, set plan_validation=false")
+	}
+	return &groupDefaults.Groups[0], nil
+}
+
+func getInitialNodeCount(d *schema.ResourceData, meta interface{}) (int, error) {
+	service := d.Get("service").(string)
+	planPhase := d.Get("plan_validation").(bool)
+	if planPhase {
+		groupDefaults, err := getDatabaseServiceDefaults(service, meta)
+		if err != nil {
+			return 0, err
+		}
+		return groupDefaults.Members.MinimumCount, nil
+	} else {
+		if service == "databases-for-elasticsearch" {
+			return 3, nil
+		}
+		return 2, nil
+	}
+}
+
+type GroupLimit struct {
+	Units        string
+	Allocation   int
+	Minimum      int
+	Maximum      int
+	StepSize     int
+	IsAdjustable bool
+	CanScaleDown bool
+}
+
+func checkGroupValue(name string, limits GroupLimit, divider int, diff *schema.ResourceDiff) error {
+	if diff.HasChange(name) {
+		oldSetting, newSetting := diff.GetChange(name)
+		old := oldSetting.(int)
+		new := newSetting.(int)
+
+		if new < limits.Minimum/divider || new > limits.Maximum/divider || new%(limits.StepSize/divider) != 0 {
+			return fmt.Errorf("%s must be >= %d and <= %d in increments of %d", name, limits.Minimum/divider, limits.Maximum/divider/divider, limits.StepSize/divider)
+		}
+		if old != new && !limits.IsAdjustable {
+			return fmt.Errorf("%s can not change value after create", name)
+		}
+		if new < old && !limits.CanScaleDown {
+			return fmt.Errorf("%s can not scale down from %d to %d", name, old, new)
+		}
+		return nil
+	}
+	return nil
+}
+
+type CountLimit struct {
+	Units           string
+	AllocationCount int
+	MinimumCount    int
+	MaximumCount    int
+	StepSizeCount   int
+	IsAdjustable    bool
+	CanScaleDown    bool
+}
+
+func checkCountValue(name string, limits CountLimit, divider int, diff *schema.ResourceDiff) error {
+	groupLimit := GroupLimit{
+		Units:        limits.Units,
+		Allocation:   limits.AllocationCount,
+		Minimum:      limits.MinimumCount,
+		Maximum:      limits.MaximumCount,
+		StepSize:     limits.StepSizeCount,
+		IsAdjustable: limits.IsAdjustable,
+		CanScaleDown: limits.CanScaleDown,
+	}
+	return checkGroupValue(name, groupLimit, divider, diff)
+}
+
+type MbLimit struct {
+	Units        string
+	AllocationMb int
+	MinimumMb    int
+	MaximumMb    int
+	StepSizeMb   int
+	IsAdjustable bool
+	CanScaleDown bool
+}
+
+func checkMbValue(name string, limits MbLimit, divider int, diff *schema.ResourceDiff) error {
+	groupLimit := GroupLimit{
+		Units:        limits.Units,
+		Allocation:   limits.AllocationMb,
+		Minimum:      limits.MinimumMb,
+		Maximum:      limits.MaximumMb,
+		StepSize:     limits.StepSizeMb,
+		IsAdjustable: limits.IsAdjustable,
+		CanScaleDown: limits.CanScaleDown,
+	}
+	return checkGroupValue(name, groupLimit, divider, diff)
+}
+
+func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+
+	err := resourceTagsCustomizeDiff(diff)
+	if err != nil {
+		return err
+	}
+
+	service := diff.Get("service").(string)
+	if service == "databases-for-postgresql" || service == "databases-for-elasticsearch" {
+		planPhase := diff.Get("plan_validation").(bool)
+
+		if planPhase {
+
+			groupDefaults, err := getDatabaseServiceDefaults(service, meta)
+			if err != nil {
+				return err
+			}
+
+			err = checkMbValue("members_memory_allocation_mb", MbLimit(groupDefaults.Memory), 1, diff)
+			if err != nil {
+				return err
+			}
+
+			err = checkMbValue("members_disk_allocation_mb", MbLimit(groupDefaults.Disk), 1, diff)
+			if err != nil {
+				return err
+			}
+
+			err = checkCountValue("members_cpu_allocation_count", CountLimit(groupDefaults.Cpu), 1, diff)
+			if err != nil {
+				return err
+			}
+
+			err = checkCountValue("node_count", CountLimit(groupDefaults.Members), 1, diff)
+			if err != nil {
+				return err
+			}
+
+			var divider = groupDefaults.Members.MinimumCount
+			err = checkMbValue("node_memory_allocation_mb", MbLimit(groupDefaults.Memory), divider, diff)
+			if err != nil {
+				return err
+			}
+
+			err = checkMbValue("node_disk_allocation_mb", MbLimit(groupDefaults.Disk), divider, diff)
+			if err != nil {
+				return err
+			}
+
+			if diff.HasChange("node_cpu_allocation_count") {
+				err = checkCountValue("node_cpu_allocation_count", CountLimit(groupDefaults.Cpu), divider, diff)
+				if err != nil {
+					return err
+				}
+			} else if diff.HasChange("node_count") {
+				_, newSetting := diff.GetChange("node_count")
+				min := groupDefaults.Cpu.MinimumCount / divider
+				if newSetting != min {
+					return fmt.Errorf("node_cpu_allocation_count must be set when node_count is greater then the minimum %d", min)
+				}
+			}
+		}
+	} else if diff.HasChange("node_count") || diff.HasChange("node_memory_allocation_mb") || diff.HasChange("node_disk_allocation_mb") || diff.HasChange("node_cpu_allocation_count") {
+		return fmt.Errorf("node_count, node_memory_allocation_mb, node_disk_allocation_mb, node_cpu_allocation_count only supported for postgresql and elasticsearch")
+	}
+
+	return nil
+}
+
 // Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "database......."
 func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -689,8 +920,8 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	name := d.Get("name").(string)
 	location := d.Get("location").(string)
 
-	rsInst := controller.CreateServiceInstanceRequest{
-		Name: name,
+	rsInst := rc.CreateResourceInstanceOptions{
+		Name: &name,
 	}
 
 	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
@@ -708,7 +939,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return fmt.Errorf("Error retrieving plan: %s", err)
 	}
-	rsInst.ServicePlanID = servicePlan
+	rsInst.ResourcePlanID = &servicePlan
 
 	deployments, err := rsCatRepo.ListDeployments(servicePlan)
 	if err != nil {
@@ -726,28 +957,43 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 		}
 		return fmt.Errorf("No deployment found for service plan %s at location %s.\nValid location(s) are: %q.", plan, location, locationList)
 	}
-
-	rsInst.TargetCrn = deployments[0].CatalogCRN
+	catalogCRN := deployments[0].CatalogCRN
+	rsInst.Target = &catalogCRN
 
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
-		rsInst.ResourceGroupID = rsGrpID.(string)
+		rgID := rsGrpID.(string)
+		rsInst.ResourceGroup = &rgID
 	} else {
 		defaultRg, err := defaultResourceGroup(meta)
 		if err != nil {
 			return err
 		}
-		rsInst.ResourceGroupID = defaultRg
+		rsInst.ResourceGroup = &defaultRg
+	}
+
+	initialNodeCount, err := getInitialNodeCount(d, meta)
+	if err != nil {
+		return err
 	}
 
 	params := Params{}
 	if memory, ok := d.GetOk("members_memory_allocation_mb"); ok {
 		params.Memory = memory.(int)
 	}
+	if memory, ok := d.GetOk("node_memory_allocation_mb"); ok {
+		params.Memory = memory.(int) * initialNodeCount
+	}
 	if disk, ok := d.GetOk("members_disk_allocation_mb"); ok {
 		params.Disk = disk.(int)
 	}
+	if disk, ok := d.GetOk("node_disk_allocation_mb"); ok {
+		params.Disk = disk.(int) * initialNodeCount
+	}
 	if cpu, ok := d.GetOk("members_cpu_allocation_count"); ok {
 		params.CPU = cpu.(int)
+	}
+	if cpu, ok := d.GetOk("node_cpu_allocation_count"); ok {
+		params.CPU = cpu.(int) * initialNodeCount
 	}
 	if version, ok := d.GetOk("version"); ok {
 		params.Version = version.(string)
@@ -781,33 +1027,46 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	//paramString := string(parameters[:])
 	rsInst.Parameters = raw
 
-	instance, err := rsConClient.ResourceServiceInstance().CreateInstance(rsInst)
+	instance, response, err := rsConClient.CreateResourceInstance(&rsInst)
 	if err != nil {
-		return fmt.Errorf("Error creating database instance: %s", err)
+		return fmt.Errorf("Error creating database instance: %s %s", err, response)
 	}
 
 	// Moved d.SetId(instance.ID) to after waiting for resource to finish creation. Otherwise Terraform initates depedent tasks too early.
 	// Original flow had SetId here as its required as input to waitForDatabaseInstanceCreate
 
-	_, err = waitForDatabaseInstanceCreate(d, meta, instance.ID)
+	_, err = waitForDatabaseInstanceCreate(d, meta, *instance.ID)
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for create database instance (%s) to complete: %s", d.Id(), err)
 	}
 
-	d.SetId(instance.ID)
+	d.SetId(*instance.ID)
 
+	if node_count, ok := d.GetOk("node_count"); ok {
+		if initialNodeCount != node_count {
+			icdClient, err := meta.(ClientSession).ICDAPI()
+			if err != nil {
+				return fmt.Errorf("Error getting database client settings: %s", err)
+			}
+
+			err = horizontalScale(d, meta, icdClient)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk("tags"); ok || v != "" {
 		oldList, newList := d.GetChange("tags")
-		err = UpdateTagsUsingCRN(oldList, newList, meta, instance.Crn.String())
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of ibm database (%s) tags: %s", d.Id(), err)
 		}
 	}
 
-	icdId := EscapeUrlParm(instance.ID)
+	icdId := EscapeUrlParm(*instance.ID)
 	icdClient, err := meta.(ClientSession).ICDAPI()
 	if err != nil {
 		return fmt.Errorf("Error getting database client settings: %s", err)
@@ -939,14 +1198,17 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
 
 	instanceID := d.Id()
 	connectionEndpoint := "public"
-	instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+	rsInst := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+	instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 	if err != nil {
 		if strings.Contains(err.Error(), "Object not found") ||
 			strings.Contains(err.Error(), "status code: 404") {
@@ -954,25 +1216,30 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error retrieving resource instance: %s", err)
+		return fmt.Errorf("Error retrieving resource instance: %s %s", err, response)
 	}
-	if strings.Contains(instance.State, "removed") {
+	if strings.Contains(*instance.State, "removed") {
 		log.Printf("[WARN] Removing instance from TF state because it's now in removed state")
 		d.SetId("")
 		return nil
 	}
 
-	tags, err := GetTagsUsingCRN(meta, instance.Crn.String())
+	tags, err := GetTagsUsingCRN(meta, *instance.CRN)
 	if err != nil {
 		log.Printf(
-			"Error on get of ibm database tags (%s) tags: %s", d.Id(), err)
+			"Error on get of ibm Database tags (%s) tags: %s", d.Id(), err)
 	}
 	d.Set("tags", tags)
-	d.Set("name", instance.Name)
-	d.Set("status", instance.State)
-	d.Set("resource_group_id", instance.ResourceGroupID)
-	d.Set("location", instance.RegionID)
-	d.Set("guid", instance.Guid)
+	d.Set("name", *instance.Name)
+	d.Set("status", *instance.State)
+	d.Set("resource_group_id", *instance.ResourceGroupID)
+	if instance.CRN != nil {
+		location := strings.Split(*instance.CRN, ":")
+		if len(location) > 5 {
+			d.Set("location", location[5])
+		}
+	}
+	d.Set("guid", *instance.GUID)
 
 	if instance.Parameters != nil {
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
@@ -984,16 +1251,16 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 
 	}
 
-	d.Set(ResourceName, instance.Name)
-	d.Set(ResourceCRN, instance.Crn.String())
-	d.Set(ResourceStatus, instance.State)
-	d.Set(ResourceGroupName, instance.ResourceGroupName)
+	d.Set(ResourceName, *instance.Name)
+	d.Set(ResourceCRN, *instance.CRN)
+	d.Set(ResourceStatus, *instance.State)
+	d.Set(ResourceGroupName, *instance.ResourceGroupCRN)
 
 	rcontroller, err := getBaseController(meta)
 	if err != nil {
 		return err
 	}
-	d.Set(ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(instance.Crn.String()))
+	d.Set(ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(*instance.CRN))
 
 	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
 	if err != nil {
@@ -1001,14 +1268,14 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	rsCatRepo := rsCatClient.ResourceCatalog()
 
-	serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)
+	serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
 	if err != nil {
 		return fmt.Errorf("Error retrieving service offering: %s", err)
 	}
 
 	d.Set("service", serviceOff)
 
-	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ServicePlanID)
+	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
 	if err != nil {
 		return fmt.Errorf("Error retrieving plan: %s", err)
 	}
@@ -1035,9 +1302,16 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("Error getting database groups: %s", err)
 	}
 	d.Set("groups", flattenIcdGroups(groupList))
+	d.Set("node_count", groupList.Groups[0].Members.AllocationCount)
+
 	d.Set("members_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb)
+	d.Set("node_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb/groupList.Groups[0].Members.AllocationCount)
+
 	d.Set("members_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb)
+	d.Set("node_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb/groupList.Groups[0].Members.AllocationCount)
+
 	d.Set("members_cpu_allocation_count", groupList.Groups[0].Cpu.AllocationCount)
+	d.Set("node_cpu_allocation_count", groupList.Groups[0].Cpu.AllocationCount/groupList.Groups[0].Members.AllocationCount)
 
 	autoSclaingGroup, err := icdClient.AutoScaling().GetAutoScaling(icdId, "member")
 	if err != nil {
@@ -1073,16 +1347,19 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
 
 	instanceID := d.Id()
-	updateReq := controller.UpdateServiceInstanceRequest{}
+	updateReq := rc.UpdateResourceInstanceOptions{
+		ID: &instanceID,
+	}
 	update := false
 	if d.HasChange("name") {
-		updateReq.Name = d.Get("name").(string)
+		name := d.Get("name").(string)
+		updateReq.Name = &name
 		update = true
 	}
 	if d.HasChange("service_endpoints") {
@@ -1096,9 +1373,9 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 	}
 
 	if update {
-		_, err = rsConClient.ResourceServiceInstance().UpdateInstance(instanceID, updateReq)
+		_, response, err := rsConClient.UpdateResourceInstance(&updateReq)
 		if err != nil {
-			return fmt.Errorf("Error updating resource instance: %s", err)
+			return fmt.Errorf("Error updating resource instance: %s %s", err, response)
 		}
 
 		_, err = waitForDatabaseInstanceUpdate(d, meta)
@@ -1115,7 +1392,7 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 		err = UpdateTagsUsingCRN(oldList, newList, meta, instanceID)
 		if err != nil {
 			log.Printf(
-				"Error on update of resource instance (%s) tags: %s", d.Id(), err)
+				"Error on update of Database (%s) tags: %s", d.Id(), err)
 		}
 	}
 
@@ -1125,11 +1402,24 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 	}
 	icdId := EscapeUrlParm(instanceID)
 
-	if d.HasChange("members_memory_allocation_mb") || d.HasChange("members_disk_allocation_mb") || d.HasChange("members_cpu_allocation_count") {
+	if d.HasChange("node_count") {
+		err = horizontalScale(d, meta, icdClient)
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("members_memory_allocation_mb") || d.HasChange("members_disk_allocation_mb") || d.HasChange("members_cpu_allocation_count") || d.HasChange("node_memory_allocation_mb") || d.HasChange("node_disk_allocation_mb") || d.HasChange("node_cpu_allocation_count") {
 		params := icdv4.GroupReq{}
 		if d.HasChange("members_memory_allocation_mb") {
 			memory := d.Get("members_memory_allocation_mb").(int)
 			memoryReq := icdv4.MemoryReq{AllocationMb: memory}
+			params.GroupBdy.Memory = &memoryReq
+		}
+		if d.HasChange("node_memory_allocation_mb") || d.HasChange("node_count") {
+			memory := d.Get("node_memory_allocation_mb").(int)
+			count := d.Get("node_count").(int)
+			memoryReq := icdv4.MemoryReq{AllocationMb: memory * count}
 			params.GroupBdy.Memory = &memoryReq
 		}
 		if d.HasChange("members_disk_allocation_mb") {
@@ -1137,10 +1427,22 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 			diskReq := icdv4.DiskReq{AllocationMb: disk}
 			params.GroupBdy.Disk = &diskReq
 		}
+		if d.HasChange("node_disk_allocation_mb") || d.HasChange("node_count") {
+			disk := d.Get("node_disk_allocation_mb").(int)
+			count := d.Get("node_count").(int)
+			diskReq := icdv4.DiskReq{AllocationMb: disk * count}
+			params.GroupBdy.Disk = &diskReq
+		}
 		if d.HasChange("members_cpu_allocation_count") {
 			cpu := d.Get("members_cpu_allocation_count").(int)
 			cpuReq := icdv4.CpuReq{AllocationCount: cpu}
 			params.GroupBdy.Cpu = &cpuReq
+		}
+		if d.HasChange("node_cpu_allocation_mb") || d.HasChange("node_count") {
+			cpu := d.Get("node_cpu_allocation_count").(int)
+			count := d.Get("node_count").(int)
+			CpuReq := icdv4.CpuReq{AllocationCount: cpu * count}
+			params.GroupBdy.Cpu = &CpuReq
 		}
 		task, err := icdClient.Groups().UpdateGroup(icdId, "member", params)
 		if err != nil {
@@ -1151,8 +1453,8 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf(
 				"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
 		}
-
 	}
+
 	if d.HasChange("auto_scaling.0.cpu") {
 		cpuRecord := d.Get("auto_scaling.0.cpu")
 		params := icdv4.AutoscalingSetGroup{}
@@ -1365,6 +1667,37 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 	return resourceIBMDatabaseInstanceRead(d, meta)
 }
 
+func horizontalScale(d *schema.ResourceData, meta interface{}, icdClient icdv4.ICDServiceAPI) error {
+	params := icdv4.GroupReq{}
+
+	icdId := EscapeUrlParm(d.Id())
+
+	members := d.Get("node_count").(int)
+	membersReq := icdv4.MembersReq{AllocationCount: members}
+	params.GroupBdy.Members = &membersReq
+
+	//task, err := icdClient.Groups().UpdateGroup(icdId, "member", params)
+	_, err := icdClient.Groups().UpdateGroup(icdId, "member", params)
+
+	if err != nil {
+		return fmt.Errorf("Error updating database scaling group: %s", err)
+	}
+
+	//_, err = waitForDatabaseTaskCompleteDuration(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
+	//if err != nil {
+	//	return fmt.Errorf(
+	//		"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
+	//}
+
+	_, err = waitForDatabaseInstanceUpdate(d, meta)
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for database (%s) horizontal scale to complete: %s", d.Id(), err)
+	}
+
+	return nil
+}
+
 func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint string, meta interface{}) (CsEntry, error) {
 	csEntry := CsEntry{}
 	icdClient, err := meta.(ClientSession).ICDAPI()
@@ -1428,13 +1761,17 @@ func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint st
 }
 
 func resourceIBMDatabaseInstanceDelete(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
 	id := d.Id()
-
-	err = rsConClient.ResourceServiceInstance().DeleteInstance(id, true)
+	recursive := true
+	deleteReq := rc.DeleteResourceInstanceOptions{
+		Recursive: &recursive,
+		ID:        &id,
+	}
+	response, err := rsConClient.DeleteResourceInstance(&deleteReq)
 	if err != nil {
 		// If prior delete occurs, instance is not immediately deleted, but remains in "removed" state"
 		// RC 410 with "Gone" returned as error
@@ -1443,7 +1780,7 @@ func resourceIBMDatabaseInstanceDelete(d *schema.ResourceData, meta interface{})
 			log.Printf("[WARN] Resource instance already deleted %s\n ", err)
 			err = nil
 		} else {
-			return fmt.Errorf("Error deleting resource instance: %s", err)
+			return fmt.Errorf("Error deleting resource instance: %s %s ", err, response)
 		}
 	}
 
@@ -1458,31 +1795,34 @@ func resourceIBMDatabaseInstanceDelete(d *schema.ResourceData, meta interface{})
 	return nil
 }
 func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
 	instanceID := d.Id()
-	instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+	rsInst := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+	instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("Error communicating with the API: %s %s", err, response)
 	}
-	if strings.Contains(instance.State, "removed") {
+	if strings.Contains(*instance.State, "removed") {
 		log.Printf("[WARN] Removing instance from state because it's in removed state")
 		d.SetId("")
 		return false, nil
 	}
 
-	return instance.ID == instanceID, nil
+	return *instance.ID == instanceID, nil
 }
 
 func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, instanceID string) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -1491,17 +1831,20 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus, databaseInstanceProvisioningStatus},
 		Target:  []string{databaseInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
-			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+			rsInst := rc.GetResourceInstanceOptions{
+				ID: &instanceID,
+			}
+			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v", d.Id(), err)
+					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v %s", d.Id(), err, response)
 				}
 				return nil, "", err
 			}
-			if instance.State == databaseInstanceFailStatus {
-				return instance, instance.State, fmt.Errorf("The resource instance %s failed: %v", d.Id(), err)
+			if *instance.State == databaseInstanceFailStatus {
+				return *instance, *instance.State, fmt.Errorf("The resource instance %s failed: %v %s", d.Id(), err, response)
 			}
-			return instance, instance.State, nil
+			return *instance, *instance.State, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
@@ -1512,7 +1855,7 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 }
 
 func waitForDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -1522,17 +1865,20 @@ func waitForDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus},
 		Target:  []string{databaseInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
-			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+			rsInst := rc.GetResourceInstanceOptions{
+				ID: &instanceID,
+			}
+			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v", d.Id(), err)
+					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v %s", d.Id(), err, response)
 				}
 				return nil, "", err
 			}
-			if instance.State == databaseInstanceFailStatus {
-				return instance, instance.State, fmt.Errorf("The resource instance %s failed: %v", d.Id(), err)
+			if *instance.State == databaseInstanceFailStatus {
+				return *instance, *instance.State, fmt.Errorf("The resource instance %s failed: %v %s", d.Id(), err, response)
 			}
-			return instance, instance.State, nil
+			return *instance, *instance.State, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutUpdate),
 		Delay:      10 * time.Second,
@@ -1570,13 +1916,12 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 			if innerTask.Status == "completed" || innerTask.Status == "" {
 				return true, nil
 			}
-
 		}
 	}
 }
 
 func waitForDatabaseInstanceDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -1585,17 +1930,20 @@ func waitForDatabaseInstanceDelete(d *schema.ResourceData, meta interface{}) (in
 		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus, databaseInstanceSuccessStatus},
 		Target:  []string{databaseInstanceRemovedStatus, databaseInstanceReclamation},
 		Refresh: func() (interface{}, string, error) {
-			instance, err := rsConClient.ResourceServiceInstance().GetInstance(instanceID)
+			rsInst := rc.GetResourceInstanceOptions{
+				ID: &instanceID,
+			}
+			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 					return instance, databaseInstanceSuccessStatus, nil
 				}
 				return nil, "", err
 			}
-			if instance.State == databaseInstanceFailStatus {
-				return instance, instance.State, fmt.Errorf("The resource instance %s failed to delete: %v", d.Id(), err)
+			if *instance.State == databaseInstanceFailStatus {
+				return instance, *instance.State, fmt.Errorf("The resource instance %s failed to delete: %v %s", d.Id(), err, response)
 			}
-			return instance, instance.State, nil
+			return *instance, *instance.State, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      10 * time.Second,

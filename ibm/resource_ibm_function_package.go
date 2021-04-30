@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/apache/openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -160,7 +160,7 @@ func resourceIBMFunctionPackageCreate(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 	namespace := d.Get("namespace").(string)
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -247,7 +247,7 @@ func resourceIBMFunctionPackageRead(d *schema.ResourceData, meta interface{}) er
 	if err != nil {
 		return err
 	}
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -324,7 +324,7 @@ func resourceIBMFunctionPackageUpdate(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -396,7 +396,7 @@ func resourceIBMFunctionPackageDelete(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -439,7 +439,7 @@ func resourceIBMFunctionPackageExists(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return false, err
 	}
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return false, err
 

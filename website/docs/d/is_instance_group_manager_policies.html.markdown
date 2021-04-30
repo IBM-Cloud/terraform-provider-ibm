@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM: instance_group_manager_policies"
-sidebar_current: "docs-ibm-resource-is-instance-group-manager-policies"
 description: |-
   Get all the IBM VPC instance group manager policies info.
 ---
@@ -28,7 +28,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `instance_group_manager_policies` - instance group manager policies list
   * `id` - Id is the combination of instance group ID, instance group manager ID and instance group manager policy ID

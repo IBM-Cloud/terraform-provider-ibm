@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_addons"
-sidebar_current: "docs-ibm-data-source-container-addons"
 description: |-
   Reads all enabled IBM  container addons.
 ---
@@ -29,7 +29,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The AddOns ID.
 * `resource_group_id` - The ID of the cluster resource group in which the addons have to be installed.

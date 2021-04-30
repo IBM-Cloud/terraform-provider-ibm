@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Data source to find all the policies for a user in a particular account
@@ -109,8 +109,8 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 
 	query := iampapv1.SearchParams{
 		AccountID: accountID,
-		Type:      ibmUniqueID,
-		IAMID:     iampapv1.AccessPolicyType,
+		IAMID:     ibmUniqueID,
+		Type:      iampapv1.AccessPolicyType,
 	}
 
 	if v, ok := d.GetOk("sort"); ok {

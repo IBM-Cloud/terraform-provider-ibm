@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM: instance_group"
-sidebar_current: "docs-ibm-resource-is-instance-group"
 description: |-
   Manages IBM VPC instance group.
 ---
@@ -14,10 +15,6 @@ Create, update or delete a instance group on VPC
 
 In the following example, you can create a instance group on VPC gen-2 infrastructure.
 ```hcl
-provider "ibm" {
-  generation = 2
-}
-
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2test"
 }
@@ -88,7 +85,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - Id of the instance group
 * `instances` - The number of instances in the intances group

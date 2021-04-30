@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM: ibm_resource_key"
-sidebar_current: "docs-ibm-datasource-resource-key"
 description: |-
   Get information about a resource key from IBM Cloud.
 ---
@@ -32,7 +33,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the resource key.
 * `credentials` - The credentials associated with the key.

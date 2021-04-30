@@ -1,7 +1,7 @@
 ---
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_service_id"
-sidebar_current: "docs-ibm-datasource-iam-service-id"
 description: |-
   Manages IBM IAM Service ID.
 ---
@@ -27,7 +27,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `service_ids` - A nested block list of IAM ServiceIDs. Nested `service_ids` blocks have the following structure:
   * `id` - The unique identifier of the serviceID.

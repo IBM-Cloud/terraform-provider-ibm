@@ -9,8 +9,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var cfOrganization string
@@ -55,14 +54,22 @@ var ISZoneName string
 var ISCIDR string
 var ISAddressPrefixCIDR string
 var instanceProfileName string
+var instanceProfileNameUpdate string
+var dedicatedHostProfileName string
+var instanceDiskProfileName string
 var volumeProfileName string
 var ISRouteDestination string
 var ISRouteNextHop string
 var workspaceID string
 var templateID string
+var actionID string
+var jobID string
 var imageName string
 var functionNamespace string
 var hpcsInstanceID string
+var secretsManagerInstanceID string
+var secretsManagerSecretType string
+var secretsManagerSecretID string
 
 // For Power Colo
 
@@ -88,7 +95,8 @@ var image_operating_system string
 var tg_cross_network_account_id string
 var tg_cross_network_id string
 
-//
+//Enterprise Management
+var account_to_be_imported string
 
 func init() {
 	cfOrganization = os.Getenv("IBM_ORG")
@@ -344,6 +352,25 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'cx2-2x4'")
 	}
 
+	instanceProfileNameUpdate = os.Getenv("SL_INSTANCE_PROFILE_UPDATE")
+	if instanceProfileNameUpdate == "" {
+		instanceProfileNameUpdate = "cx2-4x8"
+		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE_UPDATE for testing ibm_is_instance resource else it is set to default value 'cx2-4x8'")
+	}
+
+	dedicatedHostProfileName = os.Getenv("IS_DEDICATED_HOST_PROFILE")
+	if dedicatedHostProfileName == "" {
+		dedicatedHostProfileName = "cx2-host-152x304" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_PROFILE for testing ibm_is_instance resource else it is set to default value 'cx2-host-152x304'")
+	}
+
+	instanceDiskProfileName = os.Getenv("IS_INSTANCE_DISK_PROFILE")
+	if instanceDiskProfileName == "" {
+		//instanceProfileName = "bc1-2x8" // for classic infrastructure
+		instanceDiskProfileName = "bx2d-16x64" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'bx2d-16x64'")
+	}
+
 	volumeProfileName = os.Getenv("IS_VOLUME_PROFILE")
 	if volumeProfileName == "" {
 		volumeProfileName = "general-purpose"
@@ -398,17 +425,26 @@ func init() {
 		pi_instance_name = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_PVM_INSTANCE_ID for testing pi_instance_name resource else it is set to default value 'terraform-test-power'")
 	}
-	workspaceID = os.Getenv("WORKSPACE_ID")
+	workspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
 	if workspaceID == "" {
-		workspaceID = "outwork-2737f163-b966-44"
-		fmt.Println("[INFO] Set the environment variable WORKSPACE_ID for testing data_source_ibm_schematics_state_test else it is set to default value")
+		workspaceID = "us-south.workspace.tf-acc-test-schematics-state-test.392cd99f"
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_WORKSPACE_ID for testing schematics resources else it is set to default value")
 	}
-	templateID = os.Getenv("TEMPLATE_ID")
+	templateID = os.Getenv("SCHEMATICS_TEMPLATE_ID")
 	if templateID == "" {
-		templateID = "653f60a4-f64f-41"
-		fmt.Println("[INFO] Set the environment variable TEMPLATE_ID for testing data_source_ibm_schematics_state_test else it is set to default value")
+		templateID = "c8d52331-056f-40"
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_TEMPLATE_ID for testing schematics resources else it is set to default value")
 	}
-
+	actionID = os.Getenv("SCHEMATICS_ACTION_ID")
+	if actionID == "" {
+		actionID = "us-east.ACTION.action_pm.a4ffeec3"
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_ACTION_ID for testing schematics resources else it is set to default value")
+	}
+	jobID = os.Getenv("SCHEMATICS_JOB_ID")
+	if actionID == "" {
+		actionID = "us-east.ACTION.action_pm.a4ffeec3"
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_JOB_ID for testing schematics resources else it is set to default value")
+	}
 	// Added for resource image testing
 	image_cos_url = os.Getenv("IMAGE_COS_URL")
 	if image_cos_url == "" {
@@ -455,6 +491,25 @@ func init() {
 		hpcsInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
 		fmt.Println("[INFO] Set the environment variable HPCS_INSTANCE_ID for testing data_source_ibm_kms_key_test else it is set to default value")
 	}
+
+	secretsManagerInstanceID = os.Getenv("SECRETS_MANAGER_INSTANCE_ID")
+	if secretsManagerInstanceID == "" {
+		// secretsManagerInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_INSTANCE_ID for testing data_source_ibm_secrets_manager_secrets_test else tests will fail if this is not set correctly")
+	}
+
+	secretsManagerSecretType = os.Getenv("SECRETS_MANAGER_SECRET_TYPE")
+	if secretsManagerSecretType == "" {
+		secretsManagerSecretType = "username_password"
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SECRET_TYPE for testing data_source_ibm_secrets_manager_secrets_test, else it is set to default value. For data_source_ibm_secrets_manager_secret_test, tests will fail if this is not set correctly")
+	}
+
+	secretsManagerSecretID = os.Getenv("SECRETS_MANAGER_SECRET_ID")
+	if secretsManagerSecretID == "" {
+		// secretsManagerSecretID = "644f4a69-0d17-198f-3b58-23f2746c706d"
+		fmt.Println("[WARN] Set the environment variable SECRETS_MANAGER_SECRET_ID for testing data_source_ibm_secrets_manager_secret_test else tests will fail if this is not set correctly")
+	}
+
 	tg_cross_network_account_id = os.Getenv("IBM_TG_CROSS_ACCOUNT_ID")
 	if tg_cross_network_account_id == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_ACCOUNT_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
@@ -463,27 +518,31 @@ func init() {
 	if tg_cross_network_id == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_NETWORK_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
 	}
+	account_to_be_imported = os.Getenv("ACCOUNT_TO_BE_IMPORTED")
+	if account_to_be_imported == "" {
+		fmt.Println("[INFO] Set the environment variable ACCOUNT_TO_BE_IMPORTED for testing import enterprise account resource else  tests will fail if this is not set correctly")
+	}
 
 }
 
-var testAccProviders map[string]terraform.ResourceProvider
+var testAccProviders map[string]*schema.Provider
 var testAccProvider *schema.Provider
 
 func init() {
-	testAccProvider = Provider().(*schema.Provider)
-	testAccProviders = map[string]terraform.ResourceProvider{
+	testAccProvider = Provider()
+	testAccProviders = map[string]*schema.Provider{
 		"ibm": testAccProvider,
 	}
 }
 
 func TestProvider(t *testing.T) {
-	if err := Provider().(*schema.Provider).InternalValidate(); err != nil {
+	if err := Provider().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
 }
 
 func TestProvider_impl(t *testing.T) {
-	var _ terraform.ResourceProvider = Provider()
+	var _ *schema.Provider = Provider()
 }
 
 func testAccPreCheck(t *testing.T) {
@@ -498,6 +557,22 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
+func testAccPreCheckEnterprise(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+
+}
+
+func testAccPreCheckEnterpriseAccountImport(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+	if account_to_be_imported == "" {
+		t.Fatal("ACCOUNT_TO_BE_IMPORTED must be set for acceptance tests")
+	}
+
+}
 func testAccPreCheckCis(t *testing.T) {
 	testAccPreCheck(t)
 	if cisInstance == "" {

@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -13,10 +14,10 @@ import (
 	"github.com/IBM/go-sdk-core/v3/core"
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -43,7 +44,7 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -152,6 +153,12 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "Kubernetes patch version",
 			},
 
+			"retry_patch_version": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Argument which helps to retry the patch version updates on worker nodes. Increment the value to retry the patch updates if the previous apply fails",
+			},
+
 			"wait_for_worker_update": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -201,7 +208,7 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_container_vpc_cluster", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "List of tags for the resources",
 			},
@@ -362,6 +369,22 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 			Delete: schema.DefaultTimeout(45 * time.Minute),
 		},
 	}
+}
+
+func resourceIBMContainerVpcClusterValidator() *ResourceValidator {
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "tag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
+	ibmContainerVpcClusteresourceValidator := ResourceValidator{ResourceName: "ibm_container_vpc_cluster", Schema: validateSchema}
+	return &ibmContainerVpcClusteresourceValidator
 }
 
 func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface{}) error {
@@ -550,7 +573,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 
 	}
 
-	if (d.HasChange("kube_version") || d.HasChange("update_all_workers") || d.HasChange("patch_version")) && !d.IsNewResource() {
+	if (d.HasChange("kube_version") || d.HasChange("update_all_workers") || d.HasChange("patch_version") || d.HasChange("retry_patch_version")) && !d.IsNewResource() {
 
 		if d.HasChange("kube_version") {
 			ClusterClient, err := meta.(ClientSession).ContainerAPI()
@@ -603,11 +626,12 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		workersInfo := make(map[string]int, 0)
 
 		updateAllWorkers := d.Get("update_all_workers").(bool)
-		if updateAllWorkers || d.HasChange("patch_version") {
+		if updateAllWorkers || d.HasChange("patch_version") || d.HasChange("retry_patch_version") {
 
 			patchVersion := d.Get("patch_version").(string)
 			workers, err := csClient.Workers().ListWorkers(clusterID, false, targetEnv)
 			if err != nil {
+				d.Set("patch_version", nil)
 				return fmt.Errorf("Error retrieving workers for cluster: %s", err)
 			}
 
@@ -624,6 +648,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 					_, err := csClient.Workers().ReplaceWokerNode(clusterID, worker.ID, targetEnv)
 					// As API returns http response 204 NO CONTENT, error raised will be exempted.
 					if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {
+						d.Set("patch_version", nil)
 						return fmt.Errorf("Error replacing the worker node from the cluster: %s", err)
 					}
 
@@ -631,18 +656,21 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 						//1. wait for worker node to delete
 						_, deleteError := waitForWorkerNodetoDelete(d, meta, targetEnv, worker.ID)
 						if deleteError != nil {
+							d.Set("patch_version", nil)
 							return fmt.Errorf("Worker node - %s is failed to replace", worker.ID)
 						}
 
 						//2. wait for new workerNode
 						_, newWorkerError := waitForNewWorker(d, meta, targetEnv, workersCount)
 						if newWorkerError != nil {
+							d.Set("patch_version", nil)
 							return fmt.Errorf("Failed to spawn new worker node")
 						}
 
 						//3. Get new worker node ID and update the map
 						newWorkerID, index, newNodeError := getNewWorkerID(d, meta, targetEnv, workersInfo)
 						if newNodeError != nil {
+							d.Set("patch_version", nil)
 							return fmt.Errorf("Unable to find the new worker node info")
 						}
 
@@ -652,6 +680,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 						//4. wait for the worker's version update and normal state
 						_, Err := WaitForVpcClusterWokersVersionUpdate(d, meta, targetEnv, cls.MasterKubeVersion, newWorkerID)
 						if Err != nil {
+							d.Set("patch_version", nil)
 							return fmt.Errorf(
 								"Error waiting for cluster (%s) worker nodes kube version to be updated: %s", d.Id(), Err)
 						}
@@ -1172,7 +1201,7 @@ func resourceIBMContainerVpcClusterExists(d *schema.ResourceData, meta interface
 	cls, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
+			if apiErr.StatusCode() == 404 && strings.Contains(apiErr.Description(), "The specified cluster could not be found") {
 				return false, nil
 			}
 		}

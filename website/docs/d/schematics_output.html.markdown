@@ -1,24 +1,23 @@
 ---
+
+subcategory: "Schematics"
 layout: "ibm"
-page_title: "IBM: ibm_schematics_output"
-sidebar_current: "docs-ibm-schematics-output"
+page_title: "IBM : ibm_schematics_output"
+sidebar_current: "docs-ibm-datasource-schematics-output"
 description: |-
-  Get information about the terraform output values of a specific template in a Schematics Workspace .
+  Get information about ibm_schematics_output
 ---
 
 # ibm\_schematics_output
 
-
-Import details of a Terraform Output values of a template in a  schematics workspace as a read-only data source. You can then reference the field output_values of the data source in other resources within the same configuration using interpolation syntax.
-
+Provides a read-only data source for ibm_schematics_output. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_schematics_output" "test" {
-  workspace_id = "my-worspace-id"
-  template_id= "my-template-id"
-
+data "ibm_schematics_output" "schematics_output" {
+	workspace_id = "workspace_id"
+  template_id = "template_id"
 }
 ```
 
@@ -26,12 +25,10 @@ data "ibm_schematics_output" "test" {
 
 The following arguments are supported:
 
-* `workspace_id` - (Required, string) The ID of the Schematics workspace.
-* `template_id` - (Required, string) The ID of the template that the workspace is associated with.
+* `workspace_id` - (Required, string) The ID of the workspace for which you want to retrieve output values. To find the workspace ID, use the `GET /workspaces` API.
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
-* `output_values` - The output values exported as a map of key:value pairs
-* `output_json` - The JSON representation of the output values data in string format.
+* `id` - The unique identifier of the schematics_output.

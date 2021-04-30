@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_service_api_key"
-sidebar_current: "docs-ibm-resource-iam-service_api_key"
 description: |-
   Manages IBM IAM Service API Key.
 ---
@@ -37,7 +38,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the Service API Key.
 * `account_id` - The account ID of the API key.

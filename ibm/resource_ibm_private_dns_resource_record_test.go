@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMPrivateDNSResourceRecord_Basic(t *testing.T) {
@@ -72,7 +72,7 @@ func TestAccIBMPrivateDNSResourceRecordImport(t *testing.T) {
 func testAccCheckIBMPrivateDNSResourceRecordBasic(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_is_vpc" "test_pdns_vpc" {
@@ -178,7 +178,7 @@ func testAccCheckIBMPrivateDNSResourceRecordBasic(name string) string {
 func testAccCheckIBMPrivateDNSResourceRecordUpdate(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_is_vpc" "test_pdns_vpc" {

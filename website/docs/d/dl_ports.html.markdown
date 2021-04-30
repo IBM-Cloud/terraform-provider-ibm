@@ -1,7 +1,7 @@
 ---
+subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_ports"
-sidebar_current: "docs-ibm-datasource-dl-ports"
 description: |-
   Manages IBM Cloud Infrastructure Direct Link Ports.
 ---
@@ -25,7 +25,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `ports` - List of all Direct Link ports in the IBM Cloud Infrastructure.
   * `direct_link_count` - Count of existing Direct Link gateways in this account on this port.

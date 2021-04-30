@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : load balancer"
-sidebar_current: "docs-ibm-data-source-is-lbs"
 description: |-
   Manages IBM load balancer.
 ---
@@ -20,7 +20,7 @@ data "ibm_is_lbs" "ds_lbs" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `load_balancers` - Collection of load balancers
   * `name` -  Name of the loadbalancer.

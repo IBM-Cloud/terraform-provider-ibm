@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_vpc_cluster"
-sidebar_current: "docs-ibm-data-source-container-vpc-cluster"
 description: |-
   Manages IBM VPC container cluster.
 ---
@@ -30,7 +30,7 @@ The following arguments are supported:
 ​
 ## Attribute Reference
 ​
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 ​
 * `worker_count` - The number of worker nodes per zone in the default worker pool. Default value '1'.
 * `workers` - Worker nodes in worker pool.

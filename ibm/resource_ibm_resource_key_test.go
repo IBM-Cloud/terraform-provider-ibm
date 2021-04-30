@@ -8,15 +8,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-
-	"github.com/IBM-Cloud/bluemix-go/models"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMResourceKey_Basic(t *testing.T) {
-	var conf models.ServiceKey
 	resourceName := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
 	resourceKey := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
 
@@ -28,7 +26,7 @@ func TestAccIBMResourceKey_Basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMResourceKeyBasic(resourceName, resourceKey),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey", conf),
+					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "credentials.%", "7"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", "Reader"),
@@ -46,7 +44,6 @@ func TestAccIBMResourceKey_Basic(t *testing.T) {
 }
 
 func TestAccIBMResourceKey_With_Tags(t *testing.T) {
-	var conf models.ServiceKey
 	resourceName := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
 	resourceKey := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
 
@@ -58,7 +55,7 @@ func TestAccIBMResourceKey_With_Tags(t *testing.T) {
 			{
 				Config: testAccCheckIBMResourceKeyWithTags(resourceName, resourceKey),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey", conf),
+					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", "Manager"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "tags.#", "1"),
@@ -67,7 +64,7 @@ func TestAccIBMResourceKey_With_Tags(t *testing.T) {
 			{
 				Config: testAccCheckIBMResourceKeyWithUpdatedTags(resourceName, resourceKey),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey", conf),
+					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "tags.#", "2"),
 				),
 			},
@@ -76,7 +73,6 @@ func TestAccIBMResourceKey_With_Tags(t *testing.T) {
 }
 
 func TestAccIBMResourceKey_Parameters(t *testing.T) {
-	var conf models.ServiceKey
 	resourceName := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
 	resourceKey := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
 
@@ -88,7 +84,7 @@ func TestAccIBMResourceKey_Parameters(t *testing.T) {
 			{
 				Config: testAccCheckIBMResourceKeyParameters(resourceName, resourceKey),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey", conf),
+					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", "Manager"),
 					resource.TestCheckResourceAttrSet("ibm_resource_key.resourceKey", "credentials.%"),
@@ -99,7 +95,6 @@ func TestAccIBMResourceKey_Parameters(t *testing.T) {
 }
 
 func TestAccIBMResourceKeyWithCustomRole(t *testing.T) {
-	var conf models.ServiceKey
 	resourceName := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
 	resourceKey := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
 	crName := fmt.Sprintf("Name%d", acctest.RandIntRange(10, 100))
@@ -113,7 +108,7 @@ func TestAccIBMResourceKeyWithCustomRole(t *testing.T) {
 			{
 				Config: testAccCheckIBMResourceKeyWithCustomRole(resourceName, resourceKey, crName, displayName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey", conf),
+					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "credentials.%", "7"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", crName),
@@ -123,7 +118,7 @@ func TestAccIBMResourceKeyWithCustomRole(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMResourceKeyExists(n string, obj models.ServiceKey) resource.TestCheckFunc {
+func testAccCheckIBMResourceKeyExists(n string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -131,24 +126,26 @@ func testAccCheckIBMResourceKeyExists(n string, obj models.ServiceKey) resource.
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerAPI()
+		rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerV2API()
 		if err != nil {
 			return err
 		}
 		resourceKeyID := rs.Primary.ID
-
-		resourceKey, err := rsContClient.ResourceServiceKey().GetKey(resourceKeyID)
-		if err != nil {
-			return err
+		resourceKeyGet := rc.GetResourceKeyOptions{
+			ID: &resourceKeyID,
 		}
 
-		obj = resourceKey
+		_, resp, err := rsContClient.GetResourceKey(&resourceKeyGet)
+		if err != nil {
+			return fmt.Errorf("Get resource key error: %s with resp code: %s", err, resp)
+		}
+
 		return nil
 	}
 }
 
 func testAccCheckIBMResourceKeyDestroy(s *terraform.State) error {
-	rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerAPI()
+	rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -159,17 +156,20 @@ func testAccCheckIBMResourceKeyDestroy(s *terraform.State) error {
 		}
 
 		resourceKeyID := rs.Primary.ID
+		resourceKeyGet := rc.GetResourceKeyOptions{
+			ID: &resourceKeyID,
+		}
 
 		// Try to find the key
-		key, err := rsContClient.ResourceServiceKey().GetKey(resourceKeyID)
+		key, resp, err := rsContClient.GetResourceKey(&resourceKeyGet)
 
 		if err == nil {
-			if key.State == "removed" {
+			if *key.State == "removed" {
 				return nil
 			}
-			return fmt.Errorf("Resource key still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("Resource key still exists: %s with resp code: %s", rs.Primary.ID, resp)
 		} else if !strings.Contains(err.Error(), "404") {
-			return fmt.Errorf("Error waiting for resource key (%s) to be destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error waiting for resource key (%s) to be destroyed: %s with resp code: %s", rs.Primary.ID, err, resp)
 		}
 	}
 

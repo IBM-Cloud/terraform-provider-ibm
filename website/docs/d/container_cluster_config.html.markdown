@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: ibm_container_cluster_config"
-sidebar_current: "docs-ibm-datasource-container-cluster-config"
 description: |-
   Get the cluster configuration for Kubernetes on IBM Cloud.
 ---
@@ -116,7 +116,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the cluster configuration.
 * `admin_key`- (Sensitive) The admin key of the cluster configuration.

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: storage_block"
-sidebar_current: "docs-ibm-resource-storage-block"
 description: |-
   Manages IBM Storage Block.
 ---
@@ -82,7 +83,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the storage.
 * `hostname` - The fully qualified domain name of the storage.

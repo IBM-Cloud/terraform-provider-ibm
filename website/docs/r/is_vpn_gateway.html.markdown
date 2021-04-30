@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : VPN-gateway"
-sidebar_current: "docs-ibm-resource-is-vpn-gateway"
 description: |-
   Manages IBM VPN Gateway
 ---
@@ -43,16 +44,19 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the VPN gateway.
 * `status` - The status of VPN gateway.
-* `public_ip_address` -  The IP address assigned to this VPN gateway.
-* `public_ip_address2` -  The Second IP address assigned to this VPN gateway.
+* `public_ip_address` -  The Public IP address assigned to this VPN gateway member.
+* `public_ip_address2` -  The Second Public IP address assigned to this VPN gateway member.
+* `private_ip_address` -  The Private IP address assigned to this VPN gateway member.
+* `private_ip_address2` -  The Second Private IP address assigned to this VPN gateway.
 * `status` -  The status of the VPN gateway-(available, deleting, failed, pending).
 * `created_at` -  The Second IP address assigned to this VPN gateway.
 * `members` -  Collection of VPN gateway members.
   * `address` -  The public IP address assigned to the VPN gateway member.
+  * `private_address` -  The private IP address assigned to the VPN gateway member.
   * `role` -  The high availability role assigned to the VPN gateway member.
   * `status` -  The status of the VPN gateway member.
 

@@ -9,7 +9,7 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -144,9 +144,9 @@ func resourceIBMISIKEPolicy() *schema.Resource {
 func resourceIBMISIKEValidator() *ResourceValidator {
 
 	validateSchema := make([]ValidateSchema, 1)
-	authentication_algorithm := "md5, sha1, sha256"
+	authentication_algorithm := "md5, sha1, sha256, sha512"
 	encryption_algorithm := "triple_des, aes128, aes256"
-	dh_group := "2, 5, 14"
+	dh_group := "2, 5, 14, 19"
 	ike_version := "1, 2"
 	validateSchema = append(validateSchema,
 		ValidateSchema{

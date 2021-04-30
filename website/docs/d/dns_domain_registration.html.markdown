@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: ibm_dns_domain_registration"
-sidebar_current: "docs-ibm-datasource-dns-domain-registration"
 description: |-
   Get resource identifier for IBM DNS domain registration.
 ---
@@ -34,6 +34,6 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the domain.

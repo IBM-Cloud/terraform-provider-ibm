@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : Routing Tables"
-sidebar_current: "docs-ibm-datasources-is-vpc-routing-tables"
 description: |-
   Get information about IBM VPC Routing Tables.
 ---
@@ -33,7 +33,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `routing tables` - List of all routing tables in a VPC in the IBM Cloud Infrastructure.
   * `name` - The name for the routing table.

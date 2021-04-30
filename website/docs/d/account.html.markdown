@@ -1,7 +1,7 @@
 ---
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_account"
-sidebar_current: "docs-ibm-datasource-account"
 description: |-
   Get information about an IBM Cloud account.
 ---
@@ -30,7 +30,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the account.  
 * `account_users` - The list of account user's in the account. Nested `account_users` blocks have the following structure:

@@ -1,9 +1,9 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_global_load_balancers"
-sidebar_current: "docs-ibm-datasources-cis-global_load_balancers"
 description: |-
-Manages IBM Cloud Internet Services Global Load Balancers resource.
+  Manages IBM Cloud Internet Services Global Load Balancers resource.
 ---
 
 # ibm_cis_global_load_balancers
@@ -30,7 +30,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - Load balancer ID, domain id and CRN. Ex. id:domain-id:crn
 - `glb_id` - Load balancer ID.

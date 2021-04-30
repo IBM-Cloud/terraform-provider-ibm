@@ -1,7 +1,7 @@
 ---
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_roles"
-sidebar_current: "docs-ibm-datasource-iam-roles"
 description: |-
   Manages IBM IAM Roles.
 ---
@@ -26,7 +26,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The account ID.
 * `roles` - A nested block list of IAM Roles. Nested `roles` blocks have the following structure:

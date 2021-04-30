@@ -1,7 +1,7 @@
 ---
+subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_rule"
-sidebar_current: "docs-ibm-datasource-functions-rule"
 description: |-
   Get information about an IBM Cloud Functions Rule.
 ---
@@ -28,7 +28,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the rule.
 * `namespace` -  The name of the function namespace.

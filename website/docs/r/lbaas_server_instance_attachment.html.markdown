@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lbaas"
-sidebar_current: "docs-ibm-resource-lbaas-server-instance-attachment"
 description: |-
   Attach server instances to IBM Cloud Load balancer.
 ---
@@ -67,6 +68,6 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `uuid` - The unique identifier of the load balancer member.

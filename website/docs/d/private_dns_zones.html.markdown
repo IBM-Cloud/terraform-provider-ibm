@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : "
-sidebar_current: "docs-ibm-datasources-dns-zones"
 description: |-
   Manages IBM Cloud Infrastructure Private Domain Name Service Zones.
 ---
@@ -33,7 +34,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `dns_zones` - List of all private domain name service zones in the IBM Cloud Infrastructure.
   * `zone_id` - The unique identifier of the private DNS zone.

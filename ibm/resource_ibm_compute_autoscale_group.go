@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
 	"github.com/softlayer/softlayer-go/session"
@@ -239,9 +239,9 @@ func getVirtualGuestTemplate(vGuestTemplateList []interface{}, meta interface{})
 	dc := vGuestResourceData.Get("datacenter").(string)
 	publicVlan := vGuestResourceData.Get("public_vlan_id").(int)
 	privateVlan := vGuestResourceData.Get("private_vlan_id").(int)
-
+	quote_id := 0
 	// Get the virtual guest creation template from the completed resource data object
-	vgs, err := getVirtualGuestTemplateFromResourceData(vGuestResourceData, meta, dc, publicVlan, privateVlan)
+	vgs, err := getVirtualGuestTemplateFromResourceData(vGuestResourceData, meta, dc, publicVlan, privateVlan, quote_id)
 	return vgs[0], err
 }
 

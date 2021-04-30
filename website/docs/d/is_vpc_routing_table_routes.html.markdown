@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : Routing Table Routes"
-sidebar_current: "docs-ibm-datasources-is-vpc-routing-table-routes"
 description: |-
   Get information about IBM VPC Routing Table Routes.
 ---
@@ -41,7 +41,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `routing table routes` - List of all routes in a Routing Table in a VPC.
   * `name` - The name for the route.
@@ -51,5 +51,5 @@ The following attributes are exported:
   * `created_at` - The date and time that the route was created.
   * `action` - The action to perform with a packet matching the route.
   * `destination` - The destination of the route.
-  * `next_hop` - The next_hop address of the route.
+  * `nexthop` - The next_hop address of the route.
   * `zone` - The zone name of the route.

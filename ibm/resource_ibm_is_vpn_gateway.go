@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -11,26 +12,28 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
-	isVPNGatewayName             = "name"
-	isVPNGatewayResourceGroup    = "resource_group"
-	isVPNGatewayMode             = "mode"
-	isVPNGatewayTags             = "tags"
-	isVPNGatewaySubnet           = "subnet"
-	isVPNGatewayStatus           = "status"
-	isVPNGatewayDeleting         = "deleting"
-	isVPNGatewayDeleted          = "done"
-	isVPNGatewayProvisioning     = "provisioning"
-	isVPNGatewayProvisioningDone = "done"
-	isVPNGatewayPublicIPAddress  = "public_ip_address"
-	isVPNGatewayMembers          = "members"
-	isVPNGatewayCreatedAt        = "created_at"
-	isVPNGatewayPublicIPAddress2 = "public_ip_address2"
+	isVPNGatewayName              = "name"
+	isVPNGatewayResourceGroup     = "resource_group"
+	isVPNGatewayMode              = "mode"
+	isVPNGatewayTags              = "tags"
+	isVPNGatewaySubnet            = "subnet"
+	isVPNGatewayStatus            = "status"
+	isVPNGatewayDeleting          = "deleting"
+	isVPNGatewayDeleted           = "done"
+	isVPNGatewayProvisioning      = "provisioning"
+	isVPNGatewayProvisioningDone  = "done"
+	isVPNGatewayPublicIPAddress   = "public_ip_address"
+	isVPNGatewayMembers           = "members"
+	isVPNGatewayCreatedAt         = "created_at"
+	isVPNGatewayPublicIPAddress2  = "public_ip_address2"
+	isVPNGatewayPrivateIPAddress  = "private_ip_address"
+	isVPNGatewayPrivateIPAddress2 = "private_ip_address2"
 )
 
 func resourceIBMISVPNGateway() *schema.Resource {
@@ -48,7 +51,7 @@ func resourceIBMISVPNGateway() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -85,20 +88,34 @@ func resourceIBMISVPNGateway() *schema.Resource {
 			},
 
 			isVPNGatewayPublicIPAddress: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The public IP address assigned to the VPN gateway member.",
 			},
 
 			isVPNGatewayPublicIPAddress2: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The second public IP address assigned to the VPN gateway member.",
+			},
+
+			isVPNGatewayPrivateIPAddress: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Private IP address assigned to the VPN gateway member.",
+			},
+
+			isVPNGatewayPrivateIPAddress2: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Second Private IP address assigned to the VPN gateway member.",
 			},
 
 			isVPNGatewayTags: {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_vpn_gateway", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "VPN Gateway tags list",
 			},
@@ -158,6 +175,12 @@ func resourceIBMISVPNGateway() *schema.Resource {
 							Description: "The public IP address assigned to the VPN gateway member",
 						},
 
+						"private_address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private IP address assigned to the VPN gateway member",
+						},
+
 						"role": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -196,6 +219,16 @@ func resourceIBMISVPNGatewayValidator() *ResourceValidator {
 			Type:                       TypeString,
 			Required:                   false,
 			AllowedValues:              modeCheckTypes})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "tag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 
 	ibmISVPNGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_is_vpn_gateway", Schema: validateSchema}
 	return &ibmISVPNGatewayResourceValidator
@@ -486,9 +519,18 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	for _, member := range vpnGateway.Members {
 		members = append(members, member)
 	}
-	if len(members) > 1 {
+	if len(members) > 0 {
 		d.Set(isVPNGatewayPublicIPAddress, *members[0].PublicIP.Address)
+		if members[0].PrivateIP != nil && members[0].PrivateIP.Address != nil {
+			d.Set(isVPNGatewayPrivateIPAddress, *members[0].PrivateIP.Address)
+		}
+	}
+	if len(members) > 1 {
 		d.Set(isVPNGatewayPublicIPAddress2, *members[1].PublicIP.Address)
+		if members[1].PrivateIP != nil && members[1].PrivateIP.Address != nil {
+			d.Set(isVPNGatewayPrivateIPAddress2, *members[1].PrivateIP.Address)
+		}
+
 	}
 	tags, err := GetTagsUsingCRN(meta, *vpnGateway.CRN)
 	if err != nil {
@@ -518,6 +560,9 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 				currentMemberIP["role"] = *memberIP.Role
 				currentMemberIP["status"] = *memberIP.Status
 				vpcMembersIpsList = append(vpcMembersIpsList, currentMemberIP)
+			}
+			if memberIP.PrivateIP != nil {
+				currentMemberIP["private_address"] = *memberIP.PrivateIP.Address
 			}
 		}
 		d.Set(isVPNGatewayMembers, vpcMembersIpsList)

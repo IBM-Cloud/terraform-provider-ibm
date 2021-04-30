@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/IBM/go-sdk-core/v4/core"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -128,14 +128,18 @@ func dataIBMCISCertificatesRead(d *schema.ResourceData, meta interface{}) error 
 		certificate["id"] = convertCisToTfThreeVar(*instance.ID, zoneID, crn)
 		certificate[cisCertificateOrderID] = *instance.ID
 		certificate[cisCertificateOrderStatus] = *instance.Status
-		certificate[cisCertificatesPrimaryCertificate] =
-			convertCISCertificatesObj(*instance.Type, instance.PrimaryCertificate)
+		if instance.PrimaryCertificate != nil {
+			certificate[cisCertificatesPrimaryCertificate] =
+				convertCISCertificatesObj(*instance.Type, instance.PrimaryCertificate)
+		}
 		certificate[cisCertificateOrderHosts] = flattenStringList(instance.Hosts)
 
 		certs := []interface{}{}
 		for _, i := range instance.Certificates {
 			cert := map[string]interface{}{}
-			cert[cisCertificatesCertificatesID] = convertCISCertificatesObj(*instance.Type, i.ID)
+			if i.ID != nil {
+				cert[cisCertificatesCertificatesID] = convertCISCertificatesObj(*instance.Type, i.ID)
+			}
 			cert[cisCertificatesCertificatesStatus] = *i.Status
 			cert[cisCertificatesCertificatesHosts] = flattenStringList(i.Hosts)
 			certs = append(certs, cert)
@@ -159,7 +163,7 @@ func convertCISCertificatesObj(certType string, obj interface{}) (result string)
 	if certType == cisCertificateTypeDedicated {
 		result = strings.TrimSpace(fmt.Sprintf("%32.f", obj))
 	} else {
-		result = obj.(string)
+		result = fmt.Sprint(obj)
 	}
 	return result
 }

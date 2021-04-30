@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : "
-sidebar_current: "docs-ibm-datasources-is-vpn-gateway-connections"
 description: |-
   Manages IBM vpn gateway connections.
 ---
@@ -30,7 +30,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - ID of the VPN Gateway connection.
 * `admin_state_up` - VPN gateway connection admin state,default: true.

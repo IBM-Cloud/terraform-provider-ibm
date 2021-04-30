@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_is_virtual_endpoint_gateways"
-sidebar_current: "docs-ibm-datasource-is-virtual_endpoint_gateways"
 description: |-
   Manages IBM Cloud Infrastructure virtual endpoint gateways .
 ---
@@ -22,7 +22,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - Endpoint gateway id
 - `name` - Endpoint gateway name

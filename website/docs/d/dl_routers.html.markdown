@@ -1,7 +1,7 @@
 ---
+subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_routers"
-sidebar_current: "docs-ibm-datasource-dl-routers"
 description: |-
   Retrieve location specific cross connect router information. Only valid for offering_type=dedicated locations.
 ---
@@ -29,7 +29,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `cross_connect_routers` - List of cross connect router details.
   * `router_name` - The name of the Router.

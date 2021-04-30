@@ -19,7 +19,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/ScaleFT/sshkeys"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -378,6 +378,50 @@ func dataSourceIBMISInstance() *schema.Resource {
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
 			},
+			isInstanceDisks: &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Collection of the instance's disks.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"created_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time that the disk was created.",
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this instance disk.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this instance disk.",
+						},
+						"interface_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined name for this disk.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+						"size": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The size of the disk in GB (gigabytes).",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -725,6 +769,13 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			gpuList := make([]map[string]interface{}, 0)
 			d.Set(isInstanceGpu, gpuList)
 
+			if instance.Disks != nil {
+				err = d.Set(isInstanceDisks, dataSourceInstanceFlattenDisks(instance.Disks))
+				if err != nil {
+					return fmt.Errorf("Error setting disks %s", err)
+				}
+			}
+
 			if instance.PrimaryNetworkInterface != nil {
 				primaryNicList := make([]map[string]interface{}, 0)
 				currentPrimNic := map[string]interface{}{}
@@ -982,4 +1033,40 @@ func isOpenSSHPrivKeyEncrypted(data []byte) (bool, error) {
 		return false, nil
 	}
 	return true, nil
+}
+
+func dataSourceInstanceFlattenDisks(result []vpcv1.InstanceDisk) (disks []map[string]interface{}) {
+	for _, disksItem := range result {
+		disks = append(disks, dataSourceInstanceDisksToMap(disksItem))
+	}
+
+	return disks
+}
+
+func dataSourceInstanceDisksToMap(disksItem vpcv1.InstanceDisk) (disksMap map[string]interface{}) {
+	disksMap = map[string]interface{}{}
+
+	if disksItem.CreatedAt != nil {
+		disksMap["created_at"] = disksItem.CreatedAt.String()
+	}
+	if disksItem.Href != nil {
+		disksMap["href"] = disksItem.Href
+	}
+	if disksItem.ID != nil {
+		disksMap["id"] = disksItem.ID
+	}
+	if disksItem.InterfaceType != nil {
+		disksMap["interface_type"] = disksItem.InterfaceType
+	}
+	if disksItem.Name != nil {
+		disksMap["name"] = disksItem.Name
+	}
+	if disksItem.ResourceType != nil {
+		disksMap["resource_type"] = disksItem.ResourceType
+	}
+	if disksItem.Size != nil {
+		disksMap["size"] = disksItem.Size
+	}
+
+	return disksMap
 }

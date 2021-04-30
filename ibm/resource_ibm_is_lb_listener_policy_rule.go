@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -161,7 +161,7 @@ func resourceIBMISLBListenerPolicyRuleValidator() *ResourceValidator {
 
 	validateSchema := make([]ValidateSchema, 1)
 	condition := "contains, equals, matches_regex"
-	ruletype := "header, hostname, path"
+	ruletype := "header, hostname, path, body, query"
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isLBListenerPolicyRulecondition,

@@ -4,15 +4,17 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/IBM/networking-go-sdk/directlinkv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -76,7 +78,7 @@ func resourceIBMDLGateway() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.Sequence(
-			func(diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
 		),
@@ -331,7 +333,7 @@ func resourceIBMDLGateway() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_dl_gateway", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "Tags for the direct link gateway",
 			},
@@ -389,6 +391,15 @@ func resourceIBMDLGatewayValidator() *ResourceValidator {
 			Regexp:                     `^([a-zA-Z]|[a-zA-Z][-_a-zA-Z0-9]*[a-zA-Z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "tag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 
 	ibmISDLGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_dl_gateway", Schema: validateSchema}
 	return &ibmISDLGatewayResourceValidator
@@ -526,24 +537,30 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 
 		} else {
 			err = fmt.Errorf("Error creating direct link connect gateway, %s is a required field", dlPort)
-			log.Printf("%s is a required field", dlPort)
 			return err
 		}
 	}
 
 	gateway, response, err := directLink.CreateGateway(createGatewayOptionsModel)
 	if err != nil {
-		log.Printf("[DEBUG] Create Direct Link Gateway (%s) err %s\n%s", dtype, err, response)
-		return err
+		return fmt.Errorf("[DEBUG] Create Direct Link Gateway (%s) err %s\n%s", dtype, err, response)
 	}
 	d.SetId(*gateway.ID)
 
 	log.Printf("[INFO] Created Direct Link Gateway (%s Template) : %s", dtype, *gateway.ID)
 	if dtype == "connect" {
-		_, err = isWaitForDirectLinkAvailable(directLink, d.Id(), d.Timeout(schema.TimeoutCreate))
+		getPortOptions := directLink.NewGetPortOptions(*gateway.Port.ID)
+		port, response, err := directLink.GetPort(getPortOptions)
 		if err != nil {
-			return err
+			return fmt.Errorf("[ERROR] Error getting port %s %s", response, err)
 		}
+		if port != nil && port.ProviderName != nil && !strings.Contains(strings.ToLower(*port.ProviderName), "netbond") && !strings.Contains(strings.ToLower(*port.ProviderName), "megaport") {
+			_, err = isWaitForDirectLinkAvailable(directLink, d.Id(), d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return err
+			}
+		}
+
 	}
 
 	v := os.Getenv("IC_ENV_TAGS")

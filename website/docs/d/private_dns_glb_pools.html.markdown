@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : "
-sidebar_current: "docs-ibm-datasources-dns-glb-pools"
 description: |-
   Manages IBM Cloud Infrastructure Private Domain Name Service GLB Pools.
 ---
@@ -28,7 +29,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `dns_glb_pools` - List of all private domain name service GLB in the IBM PoolsCloud Infrastructure.
   - `name` -  Name of the load balancer pool.

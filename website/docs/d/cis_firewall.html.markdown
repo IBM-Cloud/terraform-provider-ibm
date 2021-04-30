@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_firewall"
-sidebar_current: "docs-ibm-datasource-cis-firewall"
 description: |-
   Get information on an IBM Cloud Internet Services Firewall.
 ---
@@ -36,7 +36,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The record ID. It is a combination of <`firewall_type`>,<`lockdown_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
 - `lockdown` - List of lockdown to be created. It is the data describing a lockdowns rule.

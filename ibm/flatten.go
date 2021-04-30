@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 )
 
@@ -17,7 +18,6 @@ import (
 // See the tests for examples of what inputs are turned into.
 func Flatten(thing map[string]interface{}) Map {
 	result := make(map[string]string)
-
 	for k, raw := range thing {
 		val := reflect.ValueOf(raw)
 		if val.IsValid() {
@@ -46,10 +46,13 @@ func flatten(result map[string]string, prefix string, v reflect.Value) {
 		flattenMap(result, prefix, v)
 	case reflect.Slice:
 		flattenSlice(result, prefix, v)
+	case reflect.Float32:
+	case reflect.Float64:
+		result[prefix] = fmt.Sprint(v)
 	case reflect.String:
 		result[prefix] = v.String()
 	default:
-		panic(fmt.Sprintf("Unknown: %s", v))
+		log.Printf("Unknown: %v", v)
 	}
 }
 

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : dns_permitted_network"
-sidebar_current: "docs-ibm-resource-dns-permitted-network"
 description: |-
   Manages IBM Private DNS Permitted Network.
 ---
@@ -34,7 +35,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the permitted network.. The id is composed of <instance_id>/<zone_id>/<permitted_network_id>.
 * `created_on` - The time (Created On) of the DNS permitted network. 

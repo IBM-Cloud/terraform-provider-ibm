@@ -9,21 +9,13 @@ import (
 	"testing"
 
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMCmOfferingInstance(t *testing.T) {
-	//	var conf catalogmanagementv1.OfferingInstance
-	label := os.Getenv("CATMGMT_LABEL")
-	catalogID := os.Getenv("CATMGMT_CATALOGID")
-	offeringID := os.Getenv("CATMGMT_OFFERINGID")
-	kindFormat := "operator"
-	version := os.Getenv("CATMGMT_VERSION")
-	clusterID := os.Getenv("CATMGMT_CLUSTERID")
-	region := os.Getenv("CATMGMT_CLUSTERREGION")
-	clusterNamespace := os.Getenv("CATMGMT_NAMESPACE")
-	clusterAllNamespaces := "false"
+	clusterId := os.Getenv("CATMGMT_CLUSTERID")
+	clusterRegion := os.Getenv("CATMGMT_CLUSTERREGION")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -31,16 +23,10 @@ func TestAccIBMCmOfferingInstance(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCmOfferingInstanceDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCmOfferingInstanceConfig(label, catalogID, offeringID, kindFormat, version, clusterID, region, clusterNamespace, clusterAllNamespaces),
+				Config: testAccCheckIBMCmOfferingInstanceConfig(clusterId, clusterRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cm_offering_instance.cm_offering_instance", "label", label),
-					resource.TestCheckResourceAttr("ibm_cm_offering_instance.cm_offering_instance", "catalog_id", catalogID),
-					resource.TestCheckResourceAttr("ibm_cm_offering_instance.cm_offering_instance", "offering_id", offeringID),
-					resource.TestCheckResourceAttr("ibm_cm_offering_instance.cm_offering_instance", "kind_format", kindFormat),
-					resource.TestCheckResourceAttr("ibm_cm_offering_instance.cm_offering_instance", "version", version),
-					resource.TestCheckResourceAttr("ibm_cm_offering_instance.cm_offering_instance", "cluster_id", clusterID),
-					resource.TestCheckResourceAttr("ibm_cm_offering_instance.cm_offering_instance", "cluster_region", region),
-					resource.TestCheckResourceAttr("ibm_cm_offering_instance.cm_offering_instance", "cluster_all_namespaces", clusterAllNamespaces),
+					resource.TestCheckResourceAttrSet("ibm_cm_offering_instance.cm_offering_instance", "label"),
+					testAccCheckIBMCmOfferingInstanceExists("ibm_cm_offering_instance.cm_offering_instance"),
 				),
 			},
 			resource.TestStep{
@@ -51,49 +37,38 @@ func TestAccIBMCmOfferingInstance(t *testing.T) {
 		},
 	})
 }
-
-func testAccCheckIBMCmOfferingInstanceConfig(label string, catalogID string, offeringID string, kindFormat string, version string, clusterID string, region string, clusterNamespace string, clusterAllNamespaces string) string {
+func testAccCheckIBMCmOfferingInstanceConfig(clusterId string, clusterRegion string) string {
 	return fmt.Sprintf(`
 
+		resource "ibm_cm_catalog" "cm_catalog" {
+			label = "tf_test_instance_catalog"
+			short_description = "testing terraform provider with catalog"
+		}
+
+		resource "ibm_cm_offering" "cm_offering" {
+			catalog_id = ibm_cm_catalog.cm_catalog.id
+			label = "tf_test_offering"
+			tags = ["dev_ops", "target_roks", "operator"]
+		}
+
+		resource "ibm_cm_version" "cm_version" {
+			catalog_identifier = ibm_cm_catalog.cm_catalog.id
+			offering_id = ibm_cm_offering.cm_offering.id
+			zipurl = "https://raw.githubusercontent.com/operator-framework/community-operators/master/community-operators/cockroachdb/5.0.3/manifests/cockroachdb.clusterserviceversion.yaml"
+		}
+
 		resource "ibm_cm_offering_instance" "cm_offering_instance" {
-			label = "%s"
-			catalog_id = "%s"
-			offering_id = "%s"
-			kind_format = "%s"
-			version = "%s"
+			label = "tf_test_offering_instance_label"
+			catalog_id = ibm_cm_catalog.cm_catalog.id
+			offering_id = ibm_cm_offering.cm_offering.id
+			kind_format = "operator"
+			version = ibm_cm_version.cm_version.version
 			cluster_id = "%s"
 			cluster_region = "%s"
-			cluster_namespaces = ["%s"]
-			cluster_all_namespaces = %s
+			cluster_namespaces = ["tf-cm-test"]
+			cluster_all_namespaces = false
 		}
-	`, label, catalogID, offeringID, kindFormat, version, clusterID, region, clusterNamespace, clusterAllNamespaces)
-}
-
-func testAccCheckIBMCmOfferingInstanceExists(n string, obj catalogmanagementv1.OfferingInstance) resource.TestCheckFunc {
-
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		catalogManagementClient, err := testAccProvider.Meta().(ClientSession).CatalogManagementV1()
-		if err != nil {
-			return err
-		}
-
-		getOfferingInstanceOptions := &catalogmanagementv1.GetOfferingInstanceOptions{}
-
-		getOfferingInstanceOptions.SetInstanceIdentifier(rs.Primary.ID)
-
-		offeringInstance, _, err := catalogManagementClient.GetOfferingInstance(getOfferingInstanceOptions)
-		if err != nil {
-			return err
-		}
-
-		obj = *offeringInstance
-		return nil
-	}
+		`, clusterId, clusterRegion)
 }
 
 func testAccCheckIBMCmOfferingInstanceDestroy(s *terraform.State) error {
@@ -121,4 +96,30 @@ func testAccCheckIBMCmOfferingInstanceDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func testAccCheckIBMCmOfferingInstanceExists(n string) resource.TestCheckFunc {
+
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+
+		catalogManagementClient, err := testAccProvider.Meta().(ClientSession).CatalogManagementV1()
+		if err != nil {
+			return err
+		}
+
+		getOfferingInstanceOptions := &catalogmanagementv1.GetOfferingInstanceOptions{}
+
+		getOfferingInstanceOptions.SetInstanceIdentifier(rs.Primary.ID)
+
+		_, _, err = catalogManagementClient.GetOfferingInstance(getOfferingInstanceOptions)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
 }

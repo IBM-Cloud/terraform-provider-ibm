@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: compute_monitor"
-sidebar_current: "docs-ibm-resource-compute-monitor"
 description: |-
   Manages IBM Compute monitor resources.
 ---
@@ -43,7 +44,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the monitor.
 * `notified_users` - The list of user IDs that will be notified.

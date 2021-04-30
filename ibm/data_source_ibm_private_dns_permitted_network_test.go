@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMPrivateDNSNetworkDataSource_basic(t *testing.T) {
@@ -36,7 +36,7 @@ func testAccCheckIBMpDNSPermittedNetworksDataSourceConfig(riname, vpcname, zonen
 	// status filter defaults to empty
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_resource_instance" "test-pdns-instance" {

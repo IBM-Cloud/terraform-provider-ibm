@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : dns_glb_monitor"
-sidebar_current: "docs-ibm-resource-dns-glb-monitor"
 description: |-
   Manages IBM Private DNS GLB monitor.
 ---
@@ -61,7 +62,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the private DNS Monitor. The id is composed of <instance_id>/<glb_monitor_id>.
 * `created_on` - The time (Created On) of the DNS glb monitor. 

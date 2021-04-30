@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : Volume Profile"
-sidebar_current: "docs-ibm-datasources-is-volume-profile"
 description: |-
   Manages IBM Cloud virtual server volume profile.
 ---
@@ -29,6 +29,6 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `family` - The family of the virtual server volume profile.

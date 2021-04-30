@@ -15,7 +15,7 @@ import (
 	token "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/token"
 	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var bucketTypes = []string{"single_site_location", "region_location", "cross_region_location"}
@@ -124,6 +124,11 @@ func dataSourceIBMCosBucket() *schema.Resource {
 							Computed:    true,
 							Description: "Usage metrics will be sent to the monitoring service.",
 						},
+						"request_metrics_enabled": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Request metrics will be sent to the monitoring service.",
+						},
 						"metrics_monitoring_crn": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -182,6 +187,35 @@ func dataSourceIBMCosBucket() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The rule applies to any objects with keys that match this prefix",
+						},
+					},
+				},
+			},
+			"retention_rule": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "A retention policy is enabled at the IBM Cloud Object Storage bucket level. Minimum, maximum and default retention period are defined by this policy and apply to all objects in the bucket.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"default": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "If an object is stored in the bucket without specifying a custom retention period.",
+						},
+						"maximum": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Maximum duration of time an object can be kept unmodified in the bucket.",
+						},
+						"minimum": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Minimum duration of time an object must be kept unmodified in the bucket",
+						},
+						"permanent": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Enable or disable the permanent retention policy on the bucket",
 						},
 					},
 				},
@@ -344,6 +378,23 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 			if len(expireRules) > 0 {
 				d.Set("expire_rule", expireRules)
 			}
+		}
+	}
+
+	// Read the retention policy
+	retentionInput := &s3.GetBucketProtectionConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+	retentionptr, err := s3Client.GetBucketProtectionConfiguration(retentionInput)
+
+	if err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
+		return err
+	}
+
+	if retentionptr != nil {
+		retentionRules := retentionRuleGet(retentionptr.ProtectionConfiguration)
+		if len(retentionRules) > 0 {
+			d.Set("retention_rule", retentionRules)
 		}
 	}
 

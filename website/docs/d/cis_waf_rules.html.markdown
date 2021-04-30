@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_waf_rules"
-sidebar_current: "docs-ibm-cis-waf-rules"
 description: |-
   Get information of IBM Cloud Internet Services WAF Rules resource.
 ---
@@ -30,7 +30,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `waf_rules` - The list of waf rules.
   - `id` - It is a combination of <`rule_id`>,<`package_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".

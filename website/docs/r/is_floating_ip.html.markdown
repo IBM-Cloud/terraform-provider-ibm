@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : floating_ip"
-sidebar_current: "docs-ibm-resource-is-floating-ip"
 description: |-
   Manages IBM Floating IP.
 ---
@@ -58,7 +59,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the floating ip.
 * `status` - The status of the floating ip.

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_user_settings"
-sidebar_current: "docs-ibm-resource-iam-user-settings"
 description: |-
   Manages IBM IAM User Settings.
 ---
@@ -31,6 +32,6 @@ The following arguments are supported:
 
 ## Attributes
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the IAM user setting.The id is composed of \<account_id\>/\<iam_id\>.

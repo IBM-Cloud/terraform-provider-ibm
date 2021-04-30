@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM : ibm_cis_waf_packages"
-sidebar_current: "docs-ibm-datasource-cis-waf-packages"
 description: |-
   Get information on an IBM Cloud Internet Services WAF Packages.
 ---
@@ -28,7 +28,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of resource. Id id the combination of <package_id>:<domain_id>:<cis_id>.
 - `description` - The WAF Package description.

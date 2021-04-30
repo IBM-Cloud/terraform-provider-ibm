@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM: ibm_resource_instance"
-sidebar_current: "docs-ibm-datasource-resource-instance"
 description: |-
   Get information about a resource instance from IBM Cloud.
 ---
@@ -40,7 +41,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the resource instance.
 * `status` - The status of resource instance.

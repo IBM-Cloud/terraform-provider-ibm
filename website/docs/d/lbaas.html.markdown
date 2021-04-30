@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lbaas"
-sidebar_current: "docs-ibm-datasource-lbaas"
 description: |-
   Manages IBM Load Balancer As A Service.
 ---
@@ -46,7 +46,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `description` - A description of the load balancer.
 * `datacenter` - The datacenter where load balancer is located.

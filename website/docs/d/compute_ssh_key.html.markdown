@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: ibm_compute_ssh_key"
-sidebar_current: "docs-ibm-datasource-compute-ssh-key"
 description: |-
   Get information about an IBM Compute SSH key.
 ---
@@ -45,7 +45,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the SSH key.  
 * `fingerprint` - The sequence of bytes to authenticate or look up a longer SSH key.

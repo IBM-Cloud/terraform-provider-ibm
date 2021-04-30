@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : subnet"
-sidebar_current: "docs-ibm-datasources-is-subnet"
 description: |-
   Manages IBM subnet.
 ---
@@ -60,7 +60,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `ipv4_cidr_block` -  The IPv4 range of the subnet.
 * `ipv6_cidr_block` - The IPv6 range of the subnet.
@@ -74,3 +74,5 @@ The following attributes are exported:
 * `zone` - The subnet zone name.
 * `resource_group` - The subnet Resource group.
 * `available_ipv4_address_count` - The total number of available IPv4 addresses.
+* `tags` - Tags associated with the instance.
+* `crn` - The CRN of subnet.

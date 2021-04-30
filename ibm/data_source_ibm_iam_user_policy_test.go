@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMIAMUserPolicyDataSource_Basic(t *testing.T) {
@@ -93,7 +93,7 @@ resource "ibm_iam_user_policy" "policy" {
 }
 
 data "ibm_resource_group" "group" {
-  name = "default"
+  is_default=true
 }
 
 resource "ibm_iam_user_policy" "policy1" {

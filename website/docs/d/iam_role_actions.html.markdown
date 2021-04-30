@@ -1,7 +1,7 @@
 ---
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_role_actions"
-sidebar_current: "docs-ibm-datasource-iam-role-actions"
 description: |-
   Manages IBM IAM Role Actions.
 ---
@@ -28,7 +28,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the service.
 * `reader` -  reader actions bound to of the service.

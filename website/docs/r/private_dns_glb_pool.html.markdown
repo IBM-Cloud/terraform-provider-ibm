@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : dns_glb_pool"
-sidebar_current: "docs-ibm-resource-dns-glb-pool"
 description: |-
   Manages IBM Private DNS glb pool.
 ---
@@ -56,7 +57,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The unique identifier of the private DNS zone. The id is composed of <instance_id>/<glb_pool_id>.
 - `pool_id` - Pool Id.

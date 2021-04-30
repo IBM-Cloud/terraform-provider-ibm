@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_is_virtual_endpoint_gateway"
-sidebar_current: "docs-ibm-datasource-is-virtual-endpoint-gateway"
 description: |-
   Manages IBM Cloud Infrastructure virtual endpoint gateway.
 ---
@@ -26,7 +26,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `resource_group` - The unique identifier for this resource group
 - `created_at` - Endpoint gateway created date and time

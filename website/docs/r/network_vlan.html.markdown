@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : vlan"
-sidebar_current: "docs-ibm-resource-network-vlan"
 description: |-
   Manages IBM Network VLAN.
 ---
@@ -52,7 +53,7 @@ The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/d
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the VLAN.
 * `vlan_number` - The VLAN number as recorded within the SoftLayer network. This attribute is configured directly on SoftLayer's networking equipment.

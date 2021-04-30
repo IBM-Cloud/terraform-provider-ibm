@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM : Cloud Internet Services instance"
-sidebar_current: "docs-ibm-datasource-cis"
 description: |-
   Get information on an IBM Cloud Internet Services Instance.
 ---
@@ -26,7 +26,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of this CIS instance.
 * `plan` - The service plan for this Internet Services' instance

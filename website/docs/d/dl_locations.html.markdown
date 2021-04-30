@@ -1,11 +1,9 @@
 ---
-
+subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_locations"
-sidebar_current: "docs-ibm_dl_locations"
 description: |-
-Manages IBM Cloud Infrastructure Directlink Offering Locations.
-
+  Manages IBM Cloud Infrastructure Directlink Offering Locations.
 ---
 
 # ibm_dl_locations
@@ -26,7 +24,7 @@ The following arguments are supported:
 Allowable values: [dedicated,connect]. Example: dedicated
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `locations` - List of Direct Link locations
   * `billing_location` - Billing location.

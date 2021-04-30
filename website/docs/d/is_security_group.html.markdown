@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : security_group"
-sidebar_current: "docs-ibm-resource-is-security-group"
 description: |-
   Reads IBM Cloud Security Group.
 ---
@@ -74,7 +74,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the security group. 
 * `rules` - Rules associated with security group. Each rule has follwoing attributes
@@ -87,6 +87,8 @@ The following attributes are exported:
   * `port_max` - The inclusive upper bound of TCP/UDP port range.
   * `port_min` - The inclusive lower bound of TCP/UDP port range.
   * `protocol` - The type of the protocol all, icmp, tcp, udp.
+* `tags` - Tags associated with the security group.
+* `crn` - The CRN of the security group.
   
 
 

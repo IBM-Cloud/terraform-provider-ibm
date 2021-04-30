@@ -1,7 +1,7 @@
 ---
+subcategory: "Cloud Databases"
 layout: "ibm"
 page_title: "IBM : Cloud Databases instance"
-sidebar_current: "docs-ibm-datasource-database"
 description: |-
   Get information on an IBM Cloud Database Instance.
 ---
@@ -35,7 +35,7 @@ The following arguments are required:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of this ICD instance.
 * `plan` - The service plan for this ICD instance

@@ -1,7 +1,7 @@
 ---
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_user_profile"
-sidebar_current: "docs-ibm-datasource-iam-user-profile"
 description: |-
   Manages IBM IAM user settings & profle.
 ---
@@ -32,7 +32,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `allowed_ip_addresses` - List of IPs from which invited user can access the IBM cloud console of the inviter.
 * `id` - The unique identifier (email) of the IAM user setting.

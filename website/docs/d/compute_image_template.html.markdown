@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_image_template"
-sidebar_current: "docs-ibm-datasource-compute-image-template"
 description: |-
   Get information on a IBM Compute Image Template resource
 ---
@@ -34,6 +34,6 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the image template.

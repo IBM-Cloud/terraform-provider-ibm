@@ -13,8 +13,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	homedir "github.com/mitchellh/go-homedir"
 	gouuid "github.com/satori/go.uuid"
 
@@ -108,6 +108,18 @@ func validateAllowedIntValue(is []int) schema.SchemaValidateFunc {
 	}
 }
 
+func validateAllowedEnterpriseNameValue() schema.SchemaValidateFunc {
+	return func(v interface{}, k string) (ws []string, errors []error) {
+		value := v.(string)
+
+		if len(value) < 3 || len(value) > 60 {
+			errors = append(errors, fmt.Errorf(
+				"%q must contain a valid string value with length between 3 and 60", value))
+		}
+		return
+
+	}
+}
 func validateRoutePath(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
 	//Somehow API allows this
@@ -259,9 +271,9 @@ func validateMaxConn(v interface{}, k string) (ws []string, errors []error) {
 
 func validateKeyLifeTime(v interface{}, k string) (ws []string, errors []error) {
 	secs := v.(int)
-	if secs < 300 || secs > 86400 {
+	if secs < 1800 || secs > 86400 {
 		errors = append(errors, fmt.Errorf(
-			"%q must be between 300 and 86400",
+			"%q must be between 1800 and 86400",
 			k))
 		return
 	}
@@ -399,6 +411,28 @@ func validateCIDRAddress() schema.SchemaValidateFunc {
 		if err != nil {
 			errors = append(errors, fmt.Errorf(
 				"%q must be a valid cidr address",
+				k))
+		}
+		return
+	}
+}
+
+//validateOverlappingAddress...
+func validateOverlappingAddress() schema.SchemaValidateFunc {
+	return func(v interface{}, k string) (ws []string, errors []error) {
+		nonOverlappingCIDR := map[string]bool{
+			"127.0.0.0/8":    true,
+			"161.26.0.0/16":  true,
+			"166.8.0.0/14":   true,
+			"169.254.0.0/16": true,
+			"224.0.0.0/4":    true,
+		}
+
+		address := v.(string)
+		_, found := nonOverlappingCIDR[address]
+		if found {
+			errors = append(errors, fmt.Errorf(
+				"%q the request is overlapping with reserved address ranges",
 				k))
 		}
 		return
@@ -590,7 +624,7 @@ func validateActionName(v interface{}, k string) (ws []string, errors []error) {
 
 func validateActionKind(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
-	kindList := []string{"php:7.1", "nodejs:8", "swift:3", "nodejs", "blackbox", "java", "sequence", "nodejs:6", "python:3", "python", "python:2", "swift", "swift:3.1.1"}
+	kindList := []string{"php:7.3", "nodejs:8", "swift:3", "nodejs", "blackbox", "java", "sequence", "nodejs:10", "python:3", "python", "python:2", "swift", "swift:4.2"}
 	if !stringInSlice(value, kindList) {
 		errors = append(errors, fmt.Errorf(
 			"%q (%q) Invalid kind is provided.Supported list of kinds of actions are (%q)", k, value, kindList))
@@ -1068,6 +1102,7 @@ const (
 	ValidateJSONString
 	ValidateJSONParam
 	ValidateBindedPackageName
+	ValidateOverlappingAddress
 )
 
 // ValueType -- Copied from Terraform for now. You can refer to Terraform ValueType directly.
@@ -1234,6 +1269,8 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 		return validateJSONString()
 	case ValidateBindedPackageName:
 		return validateBindedPackageName()
+	case ValidateOverlappingAddress:
+		return validateOverlappingAddress()
 
 	default:
 		return nil

@@ -1,7 +1,7 @@
 ---
+subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_action"
-sidebar_current: "docs-ibm-datasource-cloud-function-action"
 description: |- 
     Get information on a IBM Cloud Functions action.
 ---
@@ -28,7 +28,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id`- The ID of the action.
 * `namespace` -  The name of the function namespace.

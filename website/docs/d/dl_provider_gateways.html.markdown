@@ -1,7 +1,7 @@
 ---
+subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_provider_gateways"
-sidebar_current: "docs-ibm-datasource-dl-provider-gateways"
 description: |-
   Manages IBM Cloud Infrastructure Direct Link Provider Gateway.
 ---
@@ -20,7 +20,7 @@ data "ibm_dl_provider_gateways" "ds_dlproviderGateways" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `gateways` - List of all Direct Link provider gateways in the IBM Cloud Infrastructure.
   * `bgp_asn` - Customer BGP ASN.

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_dns_records_import"
-sidebar_current: "docs-ibm-resource-cis-dns-records-import"
 description: |-
   Provides a IBM CIS DNS Records Import resource.
 ---
@@ -32,7 +33,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The record ID. It is a combination of <`total_records_parsed`>,<`records_added`>,<`file`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
 - `total_records_parsed` - The parsed records count from imported file.

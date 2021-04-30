@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: ibm_container_cluster_versions"
-sidebar_current: "docs-ibm-datasource-container-cluster-versions"
 description: |-
   List supported kubernetes versions on IBM Cloud.
 ---
@@ -30,7 +30,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the cluster versions.
 * `valid_kube_versions` - The supported kubernetes versions on IBM Cloud.

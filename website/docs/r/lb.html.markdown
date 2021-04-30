@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lb"
-sidebar_current: "docs-ibm-resource-lb"
 description: |-
   Manages IBM Load Balancer.
 ---
@@ -50,7 +51,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the local load balancer.
 * `hostname` - The host name of the local load balancer.

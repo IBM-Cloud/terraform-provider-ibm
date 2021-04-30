@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_volume"
-sidebar_current: "docs-ibm-datasources-pi-volume"
 description: |-
   Manages a volume in the Power Virtual Server Cloud.
 ---
@@ -39,7 +40,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier for this volume.
 * `type` - The disk type for this volume.

@@ -2,8 +2,6 @@
 
 This example shows how to create a Kubernetes VPC Gen-2 Cluster under a specified resource group id, with default worker node with given zone and subnets. To have a multizone cluster, update the zones with new zone-name and subnet-id. 
  
-Note : To create a Gen-2 VPC cluster user need to set the generation parameter inside provider blcok to 2 or export the environment varaibale IC_GENERATION as value 2. By default, value of IC_GENERATION is 2.
-
 Following types of resources are supported:
 
 * [ VPC Gen-2 Cluster Resource ](https://cloud.ibm.com/docs/terraform?topic=terraform-container-resources#vpc-gen2)
@@ -32,11 +30,6 @@ Run `terraform destroy` when you don't need these resources.
 Create a container cluster:
 
 ```hcl
-
-provider "ibm" {
-  generation = 2
-}
-
 resource "ibm_is_vpc" "vpc1" {
   name = "vpc"
 }

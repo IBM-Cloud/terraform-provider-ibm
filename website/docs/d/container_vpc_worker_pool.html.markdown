@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_vpc_worker_pool"
-sidebar_current: "docs-ibm-datasource-container-vpc-worker-pool"
 description: |-
   Get information about a Kubernetes container vpc worker pool.
 ---
@@ -31,7 +31,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the worker pool resource. The id is composed of \<cluster_name_id\>/\<worker_pool_id\>.<br/>
 * `vpc_id` -  The Id of VPC 

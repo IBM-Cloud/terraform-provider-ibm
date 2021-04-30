@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: subnet"
-sidebar_current: "docs-ibm-resource-subnet"
 description: |-
   Manages IBM Subnet.
 ---
@@ -107,7 +108,7 @@ The following arguments are supported:
     * Accepted values for a public static IPv4 subnet are 1, 2, 4, 8, 16, and 32.
     * Accepted value for a public portable IPv6 subnet is 64. A /64 block is created and 2^64 IP addresses are provided.
     * Accepted value for a public static IPv6 subnet is 64. A /64 block is created and 2^64 IP addresses are provided.
-* `vlan_id` - (Optional,Forces new resource, integer) The VLAN ID for portable subnet. You can configure both public and private VLAN ID. You can find accepted values in the [Softlayer VLAN documentation](https://cloud.ibm.com/classic/network/vlans) by clicking on the desired VLAN and noting the ID in the resulting URL. You can also [refer to a VLAN by name using a data source](../d/network_vlan.html).
+* `vlan_id` - (Optional,Forces new resource, integer) The VLAN ID for portable subnet. You can configure both public and private VLAN ID. You can find accepted values in the [Softlayer VLAN documentation](https://cloud.ibm.com/classic/network/vlans) by clicking on the desired VLAN and noting the ID in the resulting URL. You can also [refer to a VLAN by name using a data source](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/d/network_vlan.html.markdown).
 * `endpoint_ip` - (Optional,Forces new resource, string) The target primary IP address for a static subnet. Only public IP addresses of virtual servers, bare metal servers, and netscaler VPXs can be configured as an `endpoint_ip`. The `static subnet` will be created on the VLAN where the `endpoint_ip` is located.
 * `notes` - (Optional, string) Descriptive text or comments about the subnet.
 * `tags` - (Optional, array of strings) Tags associated with the subnet instance.  
@@ -115,7 +116,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the subnet.
 * `subnet_cidr` - The IP address/cidr format (ex. 10.10.10.10/28), which you can use to get an available IP address in `subnet`.

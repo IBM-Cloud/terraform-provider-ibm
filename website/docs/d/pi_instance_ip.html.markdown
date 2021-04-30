@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_instance_ip"
-sidebar_current: "docs-ibm-datasources-pi-instance_ip"
 description: |-
   Obtains the information about the ip address for a specific subnet on an instance.
 ---
@@ -41,7 +42,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the network.
 * `ip` - The IP Address that is attached to this instance from that specific subnet. 

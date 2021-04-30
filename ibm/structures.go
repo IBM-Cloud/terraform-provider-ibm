@@ -21,9 +21,10 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/apache/openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
+	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
 
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -667,6 +668,9 @@ func flattenMetricsMonitor(in *resourceconfigurationv1.MetricsMonitoring) []inte
 		if in.MetricsMonitoringCrn != nil {
 			att["metrics_monitoring_crn"] = *in.MetricsMonitoringCrn
 		}
+		if in.RequestMetricsEnabled != nil {
+			att["request_metrics_enabled"] = *in.RequestMetricsEnabled
+		}
 	}
 	return []interface{}{att}
 }
@@ -733,6 +737,27 @@ func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
 
 			rules = append(rules, rule)
 		}
+	}
+	return rules
+}
+
+func retentionRuleGet(in *s3.ProtectionConfiguration) []interface{} {
+	rules := make([]interface{}, 0, 1)
+	if in != nil && in.Status != nil && *in.Status == "Retention" {
+		protectConfig := make(map[string]interface{})
+		if in.DefaultRetention != nil {
+			protectConfig["default"] = int(*(in.DefaultRetention).Days)
+		}
+		if in.MaximumRetention != nil {
+			protectConfig["maximum"] = int(*(in.MaximumRetention).Days)
+		}
+		if in.MinimumRetention != nil {
+			protectConfig["minimum"] = int(*(in.MinimumRetention).Days)
+		}
+		if in.EnablePermanentRetention != nil {
+			protectConfig["permanent"] = *in.EnablePermanentRetention
+		}
+		rules = append(rules, protectConfig)
 	}
 	return rules
 }
@@ -1886,4 +1911,53 @@ func IgnoreSystemLabels(labels map[string]string) map[string]string {
 	}
 
 	return result
+}
+
+// expandCosConfig ..
+func expandCosConfig(cos []interface{}) *kubernetesserviceapiv1.COSBucket {
+	if len(cos) == 0 || cos[0] == nil {
+		return &kubernetesserviceapiv1.COSBucket{}
+	}
+	in := cos[0].(map[string]interface{})
+	obj := &kubernetesserviceapiv1.COSBucket{
+		Bucket:   ptrToString(in["bucket"].(string)),
+		Endpoint: ptrToString(in["endpoint"].(string)),
+		Region:   ptrToString(in["region"].(string)),
+	}
+	return obj
+}
+
+// expandCosCredentials ..
+func expandCosCredentials(cos []interface{}) *kubernetesserviceapiv1.COSAuthorization {
+	if len(cos) == 0 || cos[0] == nil {
+		return &kubernetesserviceapiv1.COSAuthorization{}
+	}
+	in := cos[0].(map[string]interface{})
+	obj := &kubernetesserviceapiv1.COSAuthorization{
+		AccessKeyID:     ptrToString(in["access_key-id"].(string)),
+		SecretAccessKey: ptrToString(in["secret_access_key"].(string)),
+	}
+	return obj
+}
+
+// flattenHostLabels ..
+func flattenHostLabels(hostLabels []interface{}) map[string]string {
+	labels := make(map[string]string)
+	for _, v := range hostLabels {
+		parts := strings.Split(v.(string), ":")
+		if parts != nil {
+			labels[parts[0]] = parts[1]
+		}
+	}
+
+	return labels
+}
+
+func flatterSatelliteZones(zones *schema.Set) []string {
+	zoneList := make([]string, zones.Len())
+	for i, v := range zones.List() {
+		zoneList[i] = fmt.Sprint(v)
+	}
+
+	return zoneList
 }

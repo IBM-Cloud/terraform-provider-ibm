@@ -1,7 +1,8 @@
 ---
+
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_is_virtual_endpoint_gateway"
-sidebar_current: "docs-ibm-resource-is-virtual-endpoint-gateway"
 description: |-
   Manages IBM Virtual endpoint gateway
 ---
@@ -74,7 +75,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The unique identifier of the endpoint gateway connection.
 - `resource_type` - Endpoint gateway resource type

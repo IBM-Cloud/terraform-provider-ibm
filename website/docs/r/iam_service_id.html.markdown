@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_service_id"
-sidebar_current: "docs-ibm-resource-iam-service-id"
 description: |-
   Manages IBM IAM ServiceID.
 ---
@@ -30,7 +31,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the serviceID.
 * `version` - Version of the serviceID.

@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : Default Routing Table"
-sidebar_current: "docs-ibm-datasources-is-vpc-default-routing-table"
 description: |-
   Get Information about IBM VPC Default Routing Table.
 ---
@@ -33,7 +33,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `name` - The name for the default routing table.
 * `id` - The unique identifier for the default routing table.

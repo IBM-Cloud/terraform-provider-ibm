@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: ibm_container_cluster"
-sidebar_current: "docs-ibm-datasource-container-cluster"
 description: |-
   Get information about a Kubernetes cluster on IBM Cloud.
 ---
@@ -36,7 +36,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the cluster.
 * `worker_count` - The number of workers that are attached to the cluster.

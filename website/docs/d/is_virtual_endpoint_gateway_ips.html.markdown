@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_is_virtual_endpoint_gateway_ips"
-sidebar_current: "docs-ibm-datasource-is-virtual-endpoint-gateway-ips"
 description: |-
   Manages IBM Cloud Infrastructure virtual endpoint gateway ips.
 ---
@@ -26,7 +26,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `ips` - Endpoint gateway reserved IP id
 - `reserved_ip` - Endpoint gateway IP id

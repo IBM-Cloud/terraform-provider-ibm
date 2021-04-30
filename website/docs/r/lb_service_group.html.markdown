@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lb_service_group"
-sidebar_current: "docs-ibm-resource-lb-service-group"
 description: |-
   Manages IBM local load balancer service group.
 ---
@@ -41,7 +42,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `virtual_server_id` - The unique identifier of the virtual server.
 * `service_group_id` - The unique identifier of the load balancer service group.

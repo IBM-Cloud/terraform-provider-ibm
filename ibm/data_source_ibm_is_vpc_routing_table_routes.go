@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -84,7 +84,7 @@ func dataSourceIBMISVPCRoutingTableRoutes() *schema.Resource {
 						isRoutingTableRouteNexthop: {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Routing Table Route Nexthop Address",
+							Description: "Routing Table Route Nexthop Address or VPN Gateway Connection ID",
 						},
 						isRoutingTableRouteZoneName: {
 							Type:        schema.TypeString,
@@ -154,6 +154,8 @@ func dataSourceIBMISVPCRoutingTableRoutesList(d *schema.ResourceData, meta inter
 			nexthop := *instance.NextHop.(*vpcv1.RouteNextHop)
 			if nexthop.Address != nil {
 				route[isRoutingTableRouteNexthop] = *nexthop.Address
+			} else {
+				route[isRoutingTableRouteNexthop] = *nexthop.ID
 			}
 		}
 

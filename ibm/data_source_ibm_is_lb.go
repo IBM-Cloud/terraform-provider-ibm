@@ -10,7 +10,7 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -83,6 +83,20 @@ func dataSourceIBMISLB() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
 				Description: "Load Balancer subnets list",
+			},
+
+			isLBSecurityGroups: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "Load Balancer securitygroups list",
+			},
+
+			isLBSecurityGroupsSupported: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Security Group Supported for this Load Balancer",
 			},
 
 			isLBTags: {
@@ -428,6 +442,20 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				}
 				d.Set(isLBSubnets, subnetList)
 			}
+
+			d.Set(isLBSecurityGroupsSupported, false)
+			if lb.SecurityGroups != nil {
+				securitygroupList := make([]string, 0)
+				for _, securityGroup := range lb.SecurityGroups {
+					if securityGroup.ID != nil {
+						securityGroupID := *securityGroup.ID
+						securitygroupList = append(securitygroupList, securityGroupID)
+					}
+				}
+				d.Set(isLBSecurityGroups, securitygroupList)
+				d.Set(isLBSecurityGroupsSupported, true)
+			}
+
 			if lb.Listeners != nil {
 				listenerList := make([]string, 0)
 				for _, listener := range lb.Listeners {

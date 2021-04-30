@@ -1,7 +1,7 @@
 ---
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_images"
-sidebar_current: "docs-ibm-datasources-pi-images"
 description: |-
   List all of the images for the respective cloud instance that are imported  from catalog by the user
 ---
@@ -36,7 +36,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `image_info` - List of all images in the IBM Power Virtual Server Cloud.
   * `name` - The name for this image.

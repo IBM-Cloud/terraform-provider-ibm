@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : "
-sidebar_current: "docs-ibm-datasources-dns-glb-monitors"
 description: |-
   Manages IBM Cloud Infrastructure Private Domain Name Service GLB monitors.
 ---
@@ -31,7 +32,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `dns_glb_monitors` - List of all private domain name service GLB monitors in the IBM Cloud Infrastructure.
   * `name` - The name of the load balancer monitor.

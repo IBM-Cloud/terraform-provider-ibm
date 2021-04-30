@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_certificate_upload"
-sidebar_current: "docs-ibm-resource-cis-certificate-upload"
 description: |-
   Provides a IBM CIS Certificate Upload resource.
 ---
@@ -38,7 +39,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The record ID. It is a combination of <`custom_cert_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
 - `custom_cert_id` - The Certificate Upload Rule ID.

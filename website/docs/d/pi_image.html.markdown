@@ -1,7 +1,7 @@
 ---
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_image"
-sidebar_current: "docs-ibm-datasources-pi-image"
 description: |-
   Manages an image in the Power Virtual Server Cloud.
 ---
@@ -39,7 +39,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier for this image.
 * `state` - The state for this image.

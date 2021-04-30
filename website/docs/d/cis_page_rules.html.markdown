@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_page_rules"
-sidebar_current: "docs-ibm-datasource-cis-page-rules"
 description: |-
   Get information on an IBM Cloud Internet Services Page Rules.
 ---
@@ -28,7 +28,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `cis_page_rules` - The page rules detail.
   - `rule_id` - The Page rule ID.

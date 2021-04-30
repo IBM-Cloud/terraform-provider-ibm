@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_origin_pool"
-sidebar_current: "docs-ibm-resource-cis-origin-pool"
 description: |-
   Provides a IBM Cloud Internet Services Origin Pool resource.
 ---
@@ -54,7 +55,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - ID for this load balancer pool.
 - `created_on` - The RFC3339 timestamp of when the load balancer was created.

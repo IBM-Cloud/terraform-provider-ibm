@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -54,6 +54,12 @@ func dataSourceIBMISVPNGateways() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The public IP address assigned to the VPN gateway member",
+									},
+
+									"private_address": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The private IP address assigned to the VPN gateway member",
 									},
 
 									"role": {
@@ -153,6 +159,9 @@ func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 					currentMemberIP["role"] = *memberIP.Role
 					currentMemberIP["status"] = *memberIP.Status
 					vpcMembersIpsList = append(vpcMembersIpsList, currentMemberIP)
+				}
+				if memberIP.PrivateIP != nil {
+					currentMemberIP["private_address"] = *memberIP.PrivateIP.Address
 				}
 			}
 			gateway[isVPNGatewayMembers] = vpcMembersIpsList

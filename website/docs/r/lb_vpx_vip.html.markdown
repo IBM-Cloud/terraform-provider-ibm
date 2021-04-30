@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lb_vpx_vip"
-sidebar_current: "docs-ibm-resource-lb-vpx-vip"
 description: |-
   Manages IBM VPX load balancer virtual IP addresses.
 ---
@@ -94,6 +95,6 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the VPX load balancer virtual IP.

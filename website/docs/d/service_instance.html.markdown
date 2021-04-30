@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_service_instance"
-sidebar_current: "docs-ibm-datasource-service-instance"
 description: |-
   Get information about a service instance from IBM Cloud.
 ---
@@ -34,7 +35,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the service instance.
 * `credentials` - The credentials provided by the service broker to use this service.

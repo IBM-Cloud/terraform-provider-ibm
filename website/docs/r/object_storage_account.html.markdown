@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : object_storage_account"
-sidebar_current: "docs-ibm-resource-object-storage-account"
 description: |-
   Manages IBM Object Storage Account.
 ---
@@ -26,6 +27,6 @@ resource "ibm_object_storage_account" "foo" {
 
 ## Computed Fields
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The Object Storage account name, which you can use with Swift resources.

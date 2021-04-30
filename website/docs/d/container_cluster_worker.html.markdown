@@ -1,7 +1,7 @@
 ---
+subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: ibm_container_cluster_worker"
-sidebar_current: "docs-ibm-datasource-container-cluster-worker"
 description: |-
   Get information about a worker node that is attached to a Kubernetes cluster on IBM Cloud.
 ---
@@ -33,7 +33,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `state` - The unique identifier of the cluster.
 * `status` - The number of workers nodes attached to the cluster.

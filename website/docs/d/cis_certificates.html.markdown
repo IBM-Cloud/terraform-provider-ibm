@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_certificates"
-sidebar_current: "docs-ibm-datasource-cis-certificates"
 description: |-
   Get information on IBM Cloud Internet Services Certificates.
 ---
@@ -28,7 +28,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `certificates` - The Collection of certificates
   - `id` - It is a combination of <`certificate_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".

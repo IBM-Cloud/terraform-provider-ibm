@@ -7,36 +7,30 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMSchematicsOutputDataSource_basic(t *testing.T) {
+func TestAccIBMSchematicsOutputDataSourceBasic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMSchematicsOutputDataSourceConfig(workspaceID, templateID),
+			resource.TestStep{
+				Config: testAccCheckIBMSchematicsOutputDataSourceConfigBasic(workspaceID, templateID),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_schematics_output.test", "workspace_id", workspaceID),
+					resource.TestCheckResourceAttr("data.ibm_schematics_output.schematics_output", "workspace_id", workspaceID),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMSchematicsOutputDataSourceConfig(WorkspaceID, templateID string) string {
+func testAccCheckIBMSchematicsOutputDataSourceConfigBasic(wID string, templateID string) string {
 	return fmt.Sprintf(`
-	data "ibm_schematics_workspace" "test" {
-		workspace_id = "%s"
-	}
-	data "ibm_schematics_output" "test" {
-		workspace_id = data.ibm_schematics_workspace.test.workspace_id
-		template_id = data.ibm_schematics_workspace.test.template_id.0
-	}
-	output "output_values" {
-		value = data.ibm_schematics_output.test.output_values
-	}
-`, WorkspaceID)
+		  data "ibm_schematics_output" "schematics_output" {
+			workspace_id = "%s"
+			template_id = "%s"
+		  }
+	  `, workspaceID, templateID)
 }

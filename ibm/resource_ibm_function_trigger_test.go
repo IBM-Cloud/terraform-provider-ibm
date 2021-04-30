@@ -10,16 +10,16 @@ import (
 	"testing"
 
 	"github.com/apache/openwhisk-client-go/whisk"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
 func TestAccIAMFunctionTrigger_Basic(t *testing.T) {
 	var conf whisk.Trigger
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -53,7 +53,7 @@ func TestAccIAMFunctionTrigger_Basic(t *testing.T) {
 
 func TestAccIAMFunctionTrigger_Feed_Basic(t *testing.T) {
 	var conf whisk.Trigger
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -89,7 +89,7 @@ func TestAccIAMFunctionTrigger_Feed_Basic(t *testing.T) {
 
 func TestAccIAMFunctionTrigger_Import(t *testing.T) {
 	var conf whisk.Trigger
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
 	namespace := fmt.Sprintf("namespace_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -119,7 +119,7 @@ func TestAccIAMFunctionTrigger_Import(t *testing.T) {
 
 func TestAccCFFunctionTrigger_Basic(t *testing.T) {
 	var conf whisk.Trigger
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 
 	resource.Test(t, resource.TestCase{
@@ -154,7 +154,7 @@ func TestAccCFFunctionTrigger_Basic(t *testing.T) {
 
 func TestAccCFFunctionTrigger_Feed_Basic(t *testing.T) {
 	var conf whisk.Trigger
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -190,7 +190,7 @@ func TestAccCFFunctionTrigger_Feed_Basic(t *testing.T) {
 
 func TestAccCFFunctionTrigger_Import(t *testing.T) {
 	var conf whisk.Trigger
-	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("terraform_trigger_%d", acctest.RandIntRange(10, 100))
 	namespace := os.Getenv("IBM_FUNCTION_NAMESPACE")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -244,7 +244,7 @@ func testAccCheckFunctionTriggerExists(n string, obj *whisk.Trigger) resource.Te
 			return err
 		}
 
-		client, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+		client, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 		if err != nil {
 			return err
 
@@ -283,7 +283,7 @@ func testAccCheckFunctionTriggerDestroy(s *terraform.State) error {
 		namespace := parts[0]
 		name := parts[1]
 
-		client, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+		client, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 		if err != nil && strings.Contains(err.Error(), "is not in the list of entitled namespaces") {
 			return nil
 		}
@@ -304,7 +304,7 @@ func testAccCheckFunctionTriggerDestroy(s *terraform.State) error {
 func testAccCheckIAMFunctionTriggerCreate(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -326,7 +326,7 @@ func testAccCheckIAMFunctionTriggerUpdate(name, namespace string) string {
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -367,7 +367,7 @@ func testAccCheckIAMFunctionTriggerUpdate(name, namespace string) string {
 func testAccCheckIAMFunctionTriggerFeedCreate(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -411,7 +411,7 @@ func testAccCheckIAMFunctionTriggerFeedCreate(name, namespace string) string {
 func testAccCheckIAMFunctionTriggerFeedUpdate(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {
@@ -468,7 +468,7 @@ func testAccCheckIAMFunctionTriggerFeedUpdate(name, namespace string) string {
 func testAccCheckIAMFunctionTriggerImport(name, namespace string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "default"
+		is_default=true
 	}
 
 	resource "ibm_function_namespace" "namespace" {

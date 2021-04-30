@@ -1,11 +1,9 @@
 ---
-
+subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_gateway"
-sidebar_current: "docs-ibm-datasources-dl-gateway"
 description: |-
-Manages IBM Cloud Infrastructure Directlink gatway.
-
+  Manages IBM Cloud Infrastructure Directlink gatway.
 ---
 
 # ibm\_dl_gateway
@@ -30,7 +28,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 * `bgp_asn` - Customer BGP ASN.
 * `created_at` - The date and time resource was created.
 * `crn` - The CRN (Cloud Resource Name) of this gateway.

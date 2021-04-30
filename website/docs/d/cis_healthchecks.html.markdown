@@ -1,9 +1,9 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_healthchecks"
-sidebar_current: "docs-ibm-datasources-cis-healthchecks"
 description: |-
-Manages IBM Cloud Internet Services Health Check/Monitor resource.
+  Manages IBM Cloud Internet Services Health Check/Monitor resource.
 ---
 
 # ibm_cis_healthchecks
@@ -28,7 +28,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - Load balancer monitor ID and CRN. Ex. monitor_id:crn
 - `monitor_id` - Load balancer monitor ID.

@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Certificate Manager"
 layout: "ibm"
 page_title: "IBM: certificate_manager_order"
-sidebar_current: "docs-ibm-resource-certificate-manager-order"
 description: |-
   Orders and Manages Ordered Certificate.
 ---
@@ -61,7 +62,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The Crn Id of the Certificate. It is a combination of instance crn and the certificate id i.e <instance crn>:certificate:<certID>
 * `issuer` - The issuer of the certificate.

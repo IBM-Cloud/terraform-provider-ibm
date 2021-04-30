@@ -10,9 +10,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMISLBListener_basic(t *testing.T) {
@@ -34,7 +34,7 @@ func TestAccIBMISLBListener_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMISLBListenerDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMISLBListenerConfig(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port1, protocol1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener.testacc_lb_listener", lb),
@@ -44,10 +44,12 @@ func TestAccIBMISLBListener_basic(t *testing.T) {
 						"ibm_is_lb_listener.testacc_lb_listener", "port", port1),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_listener.testacc_lb_listener", "protocol", protocol1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener.testacc_lb_listener", "accept_proxy_protocol", "true"),
 				),
 			},
 
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMISLBListenerConfigUpdate(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port2, protocol2, connLimit),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener.testacc_lb_listener", lb),
@@ -57,6 +59,8 @@ func TestAccIBMISLBListener_basic(t *testing.T) {
 						"ibm_is_lb_listener.testacc_lb_listener", "protocol", protocol2),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_listener.testacc_lb_listener", "connection_limit", connLimit),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener.testacc_lb_listener", "accept_proxy_protocol", "false"),
 				),
 			},
 		},
@@ -167,7 +171,6 @@ func testAccCheckIBMISLBListenerExists(n, LBListener string) resource.TestCheckF
 
 func testAccCheckIBMISLBListenerConfig(vpcname, subnetname, zone, cidr, lbname, port, protocol string) string {
 	return fmt.Sprintf(`
-
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
@@ -186,13 +189,13 @@ func testAccCheckIBMISLBListenerConfig(vpcname, subnetname, zone, cidr, lbname, 
 		lb = "${ibm_is_lb.testacc_LB.id}"
 		port = %s
 		protocol = "%s"
+		accept_proxy_protocol = true
 }`, vpcname, subnetname, zone, cidr, lbname, port, protocol)
 
 }
 
 func testAccCheckIBMISLBListenerConfigUpdate(vpcname, subnetname, zone, cidr, lbname, port, protocol, connLimit string) string {
 	return fmt.Sprintf(`
-
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
@@ -212,6 +215,7 @@ func testAccCheckIBMISLBListenerConfigUpdate(vpcname, subnetname, zone, cidr, lb
 		port = %s
 		protocol = "%s"
 		connection_limit = %s
+		accept_proxy_protocol = false
 }`, vpcname, subnetname, zone, cidr, lbname, port, protocol, connLimit)
 
 }

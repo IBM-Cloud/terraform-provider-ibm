@@ -1,7 +1,7 @@
 ---
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_cloud_instance"
-sidebar_current: "docs-ibm-datasources-pi-cloud-instance"
 description: |-
   Provides data for a cloud instance  in the IBM Power Virtual Server Cloud.
 ---
@@ -37,7 +37,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier for this tenant.
 * `creation_date` - The date on which the tenant was created.

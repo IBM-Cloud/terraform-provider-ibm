@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_compute_placement_group"
-sidebar_current: "docs-ibm-datasource-compute-placement-group"
 description: |-
   Get information on a IBM Compute Placement Group resources
 ---
@@ -34,7 +34,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the placement group.
 * `datacenter` - The datacenter in which placement group resides.

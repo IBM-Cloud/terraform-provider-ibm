@@ -14,6 +14,10 @@ variable "region" {
   default = "us"
 }
 
+variable "single_site_loc" {
+  default = "sjc04"
+}
+
 variable "archive_ruleid" {
   default = ""
 }
@@ -40,4 +44,16 @@ variable "expire_days" {
 
 variable "expire_prefix" {
   default = ""
+}
+
+variable "default_retention" {
+  default = "0"
+}
+
+variable "minimum_retention" {
+  default = "0"
+}
+
+variable "maximum_retention" {
+  default = "1"
 }

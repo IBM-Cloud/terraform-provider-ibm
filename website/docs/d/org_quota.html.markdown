@@ -1,7 +1,7 @@
 ---
+subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_org_quota"
-sidebar_current: "docs-ibm-datasource-org-quota"
 description: |-
   Get information about an IBM Cloud organization quota.
 ---
@@ -27,7 +27,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the organization.
 * `app_instance_limit` - Defines the total number of app instances that are allowed for the organization.

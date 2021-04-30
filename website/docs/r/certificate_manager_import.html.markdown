@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Certificate Manager"
 layout: "ibm"
 page_title: "IBM: certificate_manager_import"
-sidebar_current: "docs-ibm-resource-certificate-manager-import"
 description: |-
   Imports and Manages Imported Certificate.
 ---
@@ -49,7 +50,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The Id of the Certificate
 * `issuer` - The issuer of the certificate.

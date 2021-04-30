@@ -1,7 +1,7 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : Volume profiles"
-sidebar_current: "docs-ibm-datasources-is-volume-profiles"
 description: |-
   Manages IBM Cloud virtual server volume profiles.
 ---
@@ -22,7 +22,7 @@ data "ibm_is_volume_profiles" "volprofiles"{
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `profiles` - List of all server volume profiles in the region.
   * `name` - The name for this virtual server volume profile.

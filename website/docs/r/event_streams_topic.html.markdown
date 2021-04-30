@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Event Streams"
 layout: "ibm"
 page_title: "IBM: event_streams_topic"
-sidebar_current: "docs-ibm-resource-event-streams-topics"
 description: |-
   Manages IBM Event Streams topics.
 ---
@@ -101,7 +102,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` (string) - The ID of the topic in CRN format. eg. `crn:v1:bluemix:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:cb5a0252-8b8d-4390-b017-80b743d32839:topic:my-es-topic`
 - `kafka_http_url` (string) - The API endpoint for interacting with Event Streams REST API.

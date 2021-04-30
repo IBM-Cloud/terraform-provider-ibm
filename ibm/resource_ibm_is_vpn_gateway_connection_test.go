@@ -10,9 +10,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMISVPNGatewayConnection_basic(t *testing.T) {
@@ -39,6 +39,8 @@ func TestAccIBMISVPNGatewayConnection_basic(t *testing.T) {
 					testAccCheckIBMISVPNGatewayConnectionExists("ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", VPNGatewayConnection),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "name", name1),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "gateway_connection"),
 				),
 			},
 			resource.TestStep{

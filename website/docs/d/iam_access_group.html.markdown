@@ -1,7 +1,7 @@
 ---
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_access_group"
-sidebar_current: "docs-ibm-resource-iam-access-group"
 description: |-
   Get information about IBM IAM Access Group and all the members and dynamic rules associated with the group.
 ---
@@ -27,7 +27,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `groups` - List of Access Groups attached to the Account.
 Nested `groups` blocks have the following structure:

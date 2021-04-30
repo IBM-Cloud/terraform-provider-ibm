@@ -1,7 +1,7 @@
 ---
+subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_package"
-sidebar_current: "docs-ibm-datasource-function-package"
 description: |-
   Get information on an IBM Cloud Functions Package.
 ---
@@ -28,7 +28,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the package.
 * `namespace` -  The name of the function namespace.

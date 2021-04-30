@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_user_policy"
-sidebar_current: "docs-ibm-resource-iam-user-policy"
 description: |-
   Manages IBM IAM User Policy.
 ---
@@ -141,7 +142,7 @@ Nested `resources` blocks have the following structure:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the User Policy. The id is composed of \<ibm_id\>/\<user_policy_id\>
 

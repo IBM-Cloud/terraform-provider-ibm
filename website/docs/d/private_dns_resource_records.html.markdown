@@ -1,7 +1,8 @@
 ---
+
+subcategory: "DNS Services"
 layout: "ibm"
-page_title: "IBM : "
-sidebar_current: "docs-ibm-datasources-dns-resource-records"
+page_title: "IBM : Private DNS Resource Records"
 description: |-
   Manages IBM Cloud Infrastructure Private Domain Name Service Resource Records.
 ---
@@ -33,7 +34,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `dns_resource_records` - List of all private domain name service resource records in the IBM Cloud Infrastructure.
   * `id` - The unique identifier of the private DNS resource record.

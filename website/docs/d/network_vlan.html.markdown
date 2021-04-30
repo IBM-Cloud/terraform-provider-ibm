@@ -1,7 +1,7 @@
 ---
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_network_vlan"
-sidebar_current: "docs-ibm-datasource-network-vlan"
 description: |-
   Get information on a IBM Network VLAN.
 ---
@@ -39,7 +39,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the VLAN.
 * `subnets` - The collection of subnets associated with the VLAN.

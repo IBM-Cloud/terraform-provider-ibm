@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : hardware firewall shared"
-sidebar_current: "docs-ibm-resource-hardware-firewall-shared"
 description: |-
   Manages rules for IBM Firewall shared.
 ---
@@ -40,6 +41,6 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
  * `id` - The unique identifier of the hardware firewall.

@@ -1,7 +1,7 @@
 ---
+subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_provider_ports"
-sidebar_current: "docs-ibm-datasource-dl-provider-ports"
 description: |-
   Manages IBM Cloud Infrastructure Direct Link Provider Ports.
 ---
@@ -20,7 +20,7 @@ data "ibm_dl_provider_ports" "ds_dl_provider_ports" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `ports` - List of all Direct Link ports in the IBM Cloud Infrastructure.
   * `label` - Port Label.

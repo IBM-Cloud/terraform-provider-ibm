@@ -1,7 +1,8 @@
 ---
+
+subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_public_network"
-sidebar_current: "docs-ibm-datasources-pi-public-network"
 description: |-
   Manages a public network in the IBM Power Virtual Server Cloud.
 ---
@@ -38,7 +39,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier for this network.
 * `type` - The network type for this network.

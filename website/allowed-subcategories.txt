@@ -1,1 +1,25 @@
 API Gateway
+Catalog Management
+Certificate Manager
+Classic infrastructure
+Cloud Databases
+Cloud Foundry
+Container Registry
+Direct Link Gateway
+DNS Services
+Enterprise Management
+Event Streams
+Functions
+Identity & Access Management (IAM)
+Internet services
+Key Management Service
+Kubernetes Service
+Object Storage
+Power Systems
+Push Notifications
+Resource management
+Satellite
+Schematics
+Secrets Manager
+Transit Gateway
+VPC infrastructure

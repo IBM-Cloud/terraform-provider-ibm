@@ -1,7 +1,7 @@
 ---
+subcategory: "Certificate Manager"
 layout: "ibm"
 page_title: "IBM: certificate_manager_certificates"
-sidebar_current: "docs-ibm-resource-certificate-manager-certificates"
 description: |-
   Lists Certificates of a Certificate Manager Instance
 ---
@@ -31,7 +31,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The Id of the Certificate. It is a combination of <`certificate_manager_instance_id`>:<`CertificateID`>
 * `name` - The display name for the certificate.

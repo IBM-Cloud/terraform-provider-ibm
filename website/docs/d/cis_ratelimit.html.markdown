@@ -1,7 +1,7 @@
 ---
+subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_rate_limit"
-sidebar_current: "docs-ibm-cis-rate-limit"
 description: |-
   Get information on an IBM Cloud Internet Services Rate Limit resource.
 ---
@@ -32,7 +32,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The record ID. It is a combination of <`rule_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
 - `rule_id` - The Rate Limit Rule ID.

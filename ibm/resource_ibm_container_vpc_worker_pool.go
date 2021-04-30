@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -109,6 +109,11 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: applyOnce,
 				Description:      "Entitlement option reduces additional OCP Licence cost in Openshift Clusters",
+			},
+			ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Resource Controller URL",
 			},
 		},
 	}
@@ -420,7 +425,7 @@ func resourceIBMContainerVpcWorkerPoolExists(d *schema.ResourceData, meta interf
 	workerPool, err := workerPoolsAPI.GetWorkerPool(cluster, workerPoolID, targetEnv)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
+			if apiErr.StatusCode() == 404 && strings.Contains(apiErr.Description(), "The specified worker pool could not be found") {
 				return false, nil
 			}
 		}
