@@ -446,7 +446,7 @@ func Provider() *schema.Provider {
 			"ibm_ob_logging":                                     resourceIBMObLogging(),
 			"ibm_ob_monitoring":                                  resourceIBMObMonitoring(),
 			"ibm_cr_namespace":                                   resourceIBMContainerRegistryNamespace(),
-			"ibm_cos_bucket":                                     resourceIBMCOS(),
+			"ibm_cos_bucket":                                     resourceIBMCOSBucket(),
 			"ibm_dns_domain":                                     resourceIBMDNSDomain(),
 			"ibm_dns_domain_registration_nameservers":            resourceIBMDNSDomainRegistrationNameservers(),
 			"ibm_dns_secondary":                                  resourceIBMDNSSecondary(),
