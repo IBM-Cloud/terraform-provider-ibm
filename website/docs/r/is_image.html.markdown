@@ -19,6 +19,8 @@ For additional details, see the [IBM Cloud Docs: Virtual Private Cloud - IBM Clo
 resource "ibm_is_image" "test_is_images" {
  name                   = "test_image"
  href                   = "cos://us-south/buckettesttest/livecd.ubuntu-cpc.azure.vhd"
+ //optional field, either of href or source_volume is required
+ //source_volume        = "xxxx-xxxx-xxxxxxx"
  operating_system       = "ubuntu-16-04-amd64"
  encrypted_data_key     = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
  encryption_key         = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
@@ -31,13 +33,14 @@ resource "ibm_is_image" "test_is_images" {
 The following arguments are supported:
 
 * `name` - (Required, string) The descriptive name used to identify an image.
-* `href` - (Required, string) The path(SQL URL of COS Bucket Object) of an image to be uploaded.
-* `operating_system` - (Required, string) Description of underlying OS of an image.
+* `href` - (Optional, string) The path(SQL URL of COS Bucket Object) of an image to be uploaded.
+* `operating_system` - (Optional, string) Description of underlying OS of an image.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID for this image.
 * `encrypted_data_key` - (Optional, Forces new resource, string) A base64-encoded, encrypted representation of the key that was used to encrypt the data for this image.
 * `encryption_key` - (Optional, Forces new resource, string) The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource.
 * `tags` - (Optional, array of strings) Tags associated with the image.
-
+* `source_volume` - (Optional, string) The volume id of the image.
+  * Creating image from volume requires instance to which volume is attached to be in stopped status, running instance will be stopped on using this option.
 ## Attribute Reference
 
 In addition to all arguments above, the following attributes are exported:

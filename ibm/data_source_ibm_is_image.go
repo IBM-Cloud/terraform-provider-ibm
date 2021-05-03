@@ -66,6 +66,11 @@ func dataSourceIBMISImage() *schema.Resource {
 				Computed:    true,
 				Description: "The type of encryption used on the image",
 			},
+			"source_volume": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Source volume id of the image",
+			},
 		},
 	}
 }
@@ -176,6 +181,9 @@ func imageGet(d *schema.ResourceData, meta interface{}, name, visibility string)
 			}
 			if image.File != nil && image.File.Checksums != nil {
 				d.Set(isImageCheckSum, *image.File.Checksums.Sha256)
+			}
+			if image.SourceVolume != nil {
+				d.Set("source_volume", *image.SourceVolume.ID)
 			}
 			return nil
 		}

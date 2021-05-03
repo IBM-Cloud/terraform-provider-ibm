@@ -41,4 +41,5 @@ In addition to all arguments above, the following attributes are exported:
 * `architecture` - The architecture for this image.
 * `encryption` - The type of encryption used on the image.
 * `encryption_key` - The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource.
+* `source_volume` - The source volume id of the image.
 

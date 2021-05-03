@@ -333,3 +333,21 @@ data "ibm_is_dedicated_host" "dhost" {
   name = ibm_is_dedicated_host.is_dedicated_host.name
   host_group = data.ibm_is_dedicated_host_group.dgroup.id
 }
+
+resource "ibm_is_image" "image1" {
+  href = var.image_cos_url
+  name = "my-img-1"
+  operating_system = var.image_operating_system
+}
+
+resource "ibm_is_image" "image2" {
+  source_volume = data.ibm_is_instance.instance1.volume_attachments.0.volume_id
+  name = "my-img-1"
+}
+
+data "ibm_is_image" "dsimage" {
+  name = ibm_is_image.image1.name
+}
+
+data "ibm_is_images" "dsimages" {
+}
