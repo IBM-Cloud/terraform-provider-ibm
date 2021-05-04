@@ -21,7 +21,7 @@ func TestAccIbmIamApiKeyDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmIamApiKeyDataSourceConfigBasic(apiKeyName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "apikey_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "entity_tag"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "locked"),
@@ -51,7 +51,7 @@ func TestAccIbmIamApiKeyDataSourceAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmIamApiKeyDataSourceConfig(apiKeyName, apiKeyDescription, apiKeyStoreValue),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "apikey_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "entity_tag"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "locked"),
@@ -76,7 +76,7 @@ func testAccCheckIbmIamApiKeyDataSourceConfigBasic(apiKeyName string) string {
 		}
 
 		data "ibm_iam_api_key" "iam_api_key" {
-			id = ibm_iam_api_key.iam_api_key.id
+			apikey_id = ibm_iam_api_key.iam_api_key.id
 		}
 	`, apiKeyName)
 }
@@ -90,7 +90,7 @@ func testAccCheckIbmIamApiKeyDataSourceConfig(apiKeyName string, apiKeyDescripti
 		}
 
 		data "ibm_iam_api_key" "iam_api_key" {
-			id = ibm_iam_api_key.iam_api_key.id
+			apikey_id = ibm_iam_api_key.iam_api_key.id
 		}
 	`, apiKeyName, apiKeyDescription, apiKeyStoreValue)
 }

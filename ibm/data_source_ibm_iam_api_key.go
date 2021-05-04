@@ -19,7 +19,7 @@ func dataSourceIbmIamApiKey() *schema.Resource {
 		ReadContext: dataSourceIbmIamApiKeyRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"apikey_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Unique ID of the API key.",
@@ -91,7 +91,7 @@ func dataSourceIbmIamApiKeyRead(context context.Context, d *schema.ResourceData,
 
 	getApiKeyOptions := &iamidentityv1.GetAPIKeyOptions{}
 
-	getApiKeyOptions.SetID(d.Get("id").(string))
+	getApiKeyOptions.SetID(d.Get("apikey_id").(string))
 
 	apiKey, response, err := iamIdentityClient.GetAPIKey(getApiKeyOptions)
 	if err != nil {

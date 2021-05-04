@@ -30,8 +30,7 @@ func resourceIbmIamApiKey() *schema.Resource {
 			},
 			"iam_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Computed:    true,
 				Description: "The iam_id that this API key authenticates.",
 			},
 			"description": &schema.Schema{
@@ -41,8 +40,7 @@ func resourceIbmIamApiKey() *schema.Resource {
 			},
 			"account_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Computed:    true,
 				Description: "The account ID of the API key.",
 			},
 			"apikey": &schema.Schema{
@@ -50,7 +48,6 @@ func resourceIbmIamApiKey() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Sensitive:   true,
-				ForceNew:    true,
 				Description: "You can optionally passthrough the API key value for this API key. If passed, NO validation of that apiKey value is done, i.e. the value can be non-URL safe. If omitted, the API key management will create an URL safe opaque API key value. The value of the API key is checked for uniqueness. Please ensure enough variations when passing in this value.",
 			},
 			"store_value": &schema.Schema{
@@ -64,10 +61,9 @@ func resourceIbmIamApiKey() *schema.Resource {
 				Default:     "false",
 				Description: "Indicates if the API key is locked for further write operations. False by default.",
 			},
-			"id": &schema.Schema{
+			"apikey_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "Unique identifier of this API Key.",
 			},
 			"entity_tag": &schema.Schema{
@@ -112,13 +108,19 @@ func resourceIbmIamApiKeyCreate(context context.Context, d *schema.ResourceData,
 
 	createApiKeyOptions := &iamidentityv1.CreateAPIKeyOptions{}
 
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	iamID := userDetails.userID
+	accountID := userDetails.userAccount
+
 	createApiKeyOptions.SetName(d.Get("name").(string))
-	createApiKeyOptions.SetIamID(d.Get("iam_id").(string))
+	createApiKeyOptions.SetIamID(iamID)
+	createApiKeyOptions.SetAccountID(accountID)
+
 	if _, ok := d.GetOk("description"); ok {
 		createApiKeyOptions.SetDescription(d.Get("description").(string))
-	}
-	if _, ok := d.GetOk("account_id"); ok {
-		createApiKeyOptions.SetAccountID(d.Get("account_id").(string))
 	}
 	if _, ok := d.GetOk("apikey"); ok {
 		createApiKeyOptions.SetApikey(d.Get("apikey").(string))
@@ -186,7 +188,7 @@ func resourceIbmIamApiKeyRead(context context.Context, d *schema.ResourceData, m
 	if err = d.Set("locked", apiKey.Locked); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting entity_lock: %s", err))
 	}
-	if err = d.Set("id", apiKey.ID); err != nil {
+	if err = d.Set("apikey_id", apiKey.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
 	}
 	if err = d.Set("entity_tag", apiKey.EntityTag); err != nil {
