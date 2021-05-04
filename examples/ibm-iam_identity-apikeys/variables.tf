@@ -9,18 +9,8 @@ variable "iam_api_key_name" {
   type        = string
   default     = "name"
 }
-variable "iam_api_key_iam_id" {
-  description = "The iam_id that this API key authenticates."
-  type        = string
-  default     = "iam_id"
-}
 variable "iam_api_key_description" {
   description = "The optional description of the API key. The 'description' property is only available if a description was provided during a create of an API key."
-  type        = string
-  default     = "placeholder"
-}
-variable "iam_api_key_account_id" {
-  description = "The account ID of the API key."
   type        = string
   default     = "placeholder"
 }

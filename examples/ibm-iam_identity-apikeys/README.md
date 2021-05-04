@@ -26,9 +26,7 @@ iam_api_key resource:
 ```hcl
 resource "iam_api_key" "iam_api_key_instance" {
   name = var.iam_api_key_name
-  iam_id = var.iam_api_key_iam_id
   description = var.iam_api_key_description
-  account_id = var.iam_api_key_account_id
   apikey = var.iam_api_key_apikey
   store_value = var.iam_api_key_store_value
   entity_lock = var.iam_api_key_entity_lock
@@ -41,7 +39,7 @@ iam_api_key data source:
 
 ```hcl
 data "iam_api_key" "iam_api_key_instance" {
-  id = var.iam_api_key_id
+  apikey_id = var.iam_api_key_id
 }
 ```
 
@@ -71,13 +69,11 @@ data "iam_api_key" "iam_api_key_instance" {
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | name | Name of the API key. The name is not checked for uniqueness. Therefore multiple names with the same value can exist. Access is done via the UUID of the API key. | `string` | true |
-| iam_id | The iam_id that this API key authenticates. | `string` | true |
 | description | The optional description of the API key. The 'description' property is only available if a description was provided during a create of an API key. | `string` | false |
-| account_id | The account ID of the API key. | `string` | false |
 | apikey | You can optionally passthrough the API key value for this API key. If passed, NO validation of that apiKey value is done, i.e. the value can be non-URL safe. If omitted, the API key management will create an URL safe opaque API key value. The value of the API key is checked for uniqueness. Please ensure enough variations when passing in this value. | `string` | false |
 | store_value | Send true or false to set whether the API key value is retrievable in the future by using the Get details of an API key request. If you create an API key for a user, you must specify `false` or omit the value. We don't allow storing of API keys for users. | `bool` | false |
 | entity_lock | Indicates if the API key is locked for further write operations. False by default. | `string` | false |
-| id | Unique ID of the API key. | `string` | true |
+| apikey_id | Unique ID of the API key. | `string` | true |
 
 ## Outputs
 

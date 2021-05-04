@@ -15,7 +15,7 @@ Provides a read-only data source for iam_api_key. You can then reference the fie
 
 ```hcl
 data "iam_api_key" "iam_api_key" {
-	id = "id"
+	apikey_id = "id"
 }
 ```
 
@@ -23,13 +23,13 @@ data "iam_api_key" "iam_api_key" {
 
 The following arguments are supported:
 
-* `id` - (Required, string) Unique ID of the API key.
+* `apikey_id` - (Required, string) Unique ID of the API key.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the iam_api_key.
+* `apikey_id` - The unique identifier of the iam_api_key.
 
 * `entity_tag` - Version of the API Key details object. You need to specify this value when updating the API key to avoid stale updates.
 
