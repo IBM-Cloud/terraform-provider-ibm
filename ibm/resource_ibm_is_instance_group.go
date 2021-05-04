@@ -403,7 +403,7 @@ func getLBStatus(sess *vpcv1.VpcV1, lbId string) (string, error) {
 		ID: &lbId,
 	}
 	lb, response, err := sess.GetLoadBalancer(getlboptions)
-	if err != nil {
+	if err != nil || lb == nil {
 		return "", fmt.Errorf("Error Getting Load Balancer : %s\n%s", err, response)
 	}
 	return *lb.ProvisioningStatus, nil
