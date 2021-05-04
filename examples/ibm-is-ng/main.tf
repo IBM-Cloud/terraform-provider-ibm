@@ -289,6 +289,13 @@ data "ibm_is_public_gateway" "testacc_dspgw"{
 data "ibm_is_public_gateways" "publicgateways"{
 }
 
+data "ibm_is_public_gateways" "publicgateways-filtered"{
+  filter {
+      name = "zone"
+      values = ["us-south-1", "us-south-2"]
+  }
+}
+
 data "ibm_is_vpc" "vpc1" {
   name = ibm_is_vpc.vpc1.name
 }
