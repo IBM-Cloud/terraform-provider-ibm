@@ -18,6 +18,7 @@ var cisDomainStatic string
 var cisDomainTest string
 var cisInstance string
 var cisResourceGroup string
+var cosCRN string
 var ibmid1 string
 var ibmid2 string
 var IAMUser string
@@ -175,6 +176,12 @@ func init() {
 	if cisResourceGroup == "" {
 		cisResourceGroup = ""
 		fmt.Println("[WARN] Set the environment variable IBM_CIS_RESOURCE_GROUP with the resource group for the CIS Instance ")
+	}
+
+	cosCRN = os.Getenv("IBM_COS_CRN")
+	if cosCRN == "" {
+		cosCRN = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_CRN with a VALID COS instance CRN for testing ibm_cos_* resources")
 	}
 
 	trustedMachineType = os.Getenv("IBM_TRUSTED_MACHINE_TYPE")
@@ -600,6 +607,13 @@ func testAccPreCheckCis(t *testing.T) {
 	}
 	if cisDomainTest == "" {
 		t.Fatal("IBM_CIS_DOMAIN_TEST must be set for acceptance tests")
+	}
+}
+
+func testAccPreCheckCOS(t *testing.T) {
+	testAccPreCheck(t)
+	if cosCRN == "" {
+		t.Fatal("IBM_COS_CRN must be set for acceptance tests")
 	}
 }
 
