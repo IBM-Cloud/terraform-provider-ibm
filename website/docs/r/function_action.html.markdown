@@ -112,13 +112,13 @@ The following arguments are supported:
     * `log_size` - The maximum log size for the action, specified in MBs. Default value: `10`.
 * `exec` - (Required, list) A nested block to describe executable binaries. Nested `exec` blocks have the following structure:
     * `image` - (Optional, string) When using the `blackbox` executable, the name of the container image name.  
-     **NOTE**: Conflicts with `exec.components`, `exec.code`,`exec.code_path`.
+     **NOTE**: Conflicts with `exec.components`.
     * `init` - (Optional, string) When using `nodejs`, the optional zipfile reference.  
      **NOTE**: Conflicts with `exec.components`, `exec.image`.
-    * `code` - (Optional, string) When not using the `blackbox` executable, the code to execute.  
-    **NOTE**: Conflicts with `exec.components`, `exec.image`, `exec.code_path`.
-    * `code_path` - (Optional, string) When not using the `blackbox` executable, the file path of code to execute and it supports only .zip extension to create the action.
-    **NOTE**: Conflicts with `exec.components`, `exec.image`,`exec.code`.
+    * `code` - (Optional, string) The code to execute.  
+    **NOTE**: Conflicts with `exec.components`, `exec.code_path`.
+    * `code_path` - (Optional, string) The file path of code to execute and it supports only .zip extension to create the action.
+    **NOTE**: Conflicts with `exec.components`,`exec.code`.
     * `kind` - (Required, string) The type of action. You can find supported kinds in the [IBM Cloud Functions docs](https://cloud.ibm.com/docs/openwhisk?topic=cloud-functions-runtimes).
     * `main` - (Optional, string) The name of the action entry point (function or fully-qualified method name, when applicable).  
     **NOTE**: Conflicts with `exec.components`, `exec.image`.
