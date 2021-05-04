@@ -48,6 +48,43 @@ output "ICD Etcd database connection string" {
 }
 
 ```
+
+## Example Usage using node_ attributes
+
+This will deploy database as above using the `node_` attributes instead of `memory_`
+
+```hcl
+data "ibm_resource_group" "group" {
+  name = "<your_group>"
+}
+
+resource "ibm_database" "<your_database>" {
+  name              = "<your_database_name>"
+  plan              = "standard"
+  location          = "eu-gb"
+  service           = "databases-for-etcd"
+  resource_group_id = data.ibm_resource_group.group.id
+  tags              = ["tag1", "tag2"]
+
+  adminpassword                = "password12"
+  node_count                = 3
+  node_memory_allocation_mb = 1024
+  node_disk_allocation_mb   = 20480
+  users {
+    name     = "user123"
+    password = "password12"
+  }
+  whitelist {
+    address     = "172.168.1.1/32"
+    description = "desc"
+  }
+}
+
+output "ICD Etcd database connection string" {
+  value = "http://${ibm_database.test_acc.connectionstrings[0].composed}"
+}
+
+```
 ## Example Usage using point_in_time_recovery time
 
 ```hcl
@@ -124,10 +161,10 @@ See https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm
 ibm_database provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
 * `create` - (Default 60 minutes) Used for Creating Instance.
-* `update` - (Default 20 minutes) Used for Updating Instance.
+* `update` - (Default 60 minutes) Used for Updating Instance.
 * `delete` - (Default 10 minutes) Used for Deleting Instance.
 
-ICD instance create typically takes between 10 to 20 minutes. Delete and update in minutes. Provisioning time can be unpredictable. If the apply fails due to a timeout, import the database resource after it has finished creation.  
+ICD instance create and update typically takes between 10 to 20 minutes. Delete in minutes. Provisioning time can be unpredictable. If the apply fails due to a timeout, import the database resource after it has finished creation.  
 
 
 ## Argument Reference
@@ -141,11 +178,16 @@ The following arguments are supported:
 * `tags` - (Optional, array of strings) Tags associated with the instance.
 * `service` - (Required, string) The ICD database type to be created. Only the following services are currently accepted: 
 `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`, `databases-for-mongodb`
-* `version` - (Optiona, Forces new resource, string)  The version of the database to be provisioned. If omitted, the database is created with the most recent major and minor version.
-* `adminpassword` - (Optional, string) If not specified the password is unitialised and the id unusable. In this case addditional users must be specified in a user block.   
+* `version` - (Optional, Forces new resource, string)  The version of the database to be provisioned. If omitted, the database is created with the most recent major and minor version.
+* `adminpassword` - (Optional, string) If not specified the password is uninitialized and the id unusable. In this case additional users must be specified in a user block.   
 * `members_memory_allocation_mb` - (Optional) The memory size for the database, split across all members. If not specified defaults to the database default. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-provisioning.html#list-of-additional-parameters
 * `members_disk_allocation_mb`  - (Optional) The disk size of the database, split across all members. As above.
-* `members_cpu_allocation_count` - (Optional, int) Enables and allocates the number of specified dedicated cores to your deployment. 
+* `members_cpu_allocation_count` - (Optional, int) Enables and allocates the number of specified dedicated cores to your deployment.
+* `node_count` - (Optional) The total number of nodes in the cluster. If not specified defaults to the database minimum node count. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-provisioning.html#list-of-additional-parameters
+* `node_memory_allocation_mb` - (Optional) The memory size for the database per node. If not specified defaults to the database default. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-provisioning.html#list-of-additional-parameters
+* `node_disk_allocation_mb`  - (Optional) The disk size of the database per node. As above.
+* `node_cpu_allocation_count` - (Optional, int) Enables and allocates the number of specified dedicated cores to your deployment per node.
+* `plan_validation` - (Optional, bool) Enable or disable validating the database parameters for elasticsearch and postgres (more coming soon) during the plan phase. If not specified defaults to true.
 * `backup_id` - (Optional, string) A CRN of a backup resource to restore from. The backup must have been created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format crn:v1:<...>:backup:<uuid>. If omitted, the database is provisioned empty.
 * `remote_leader_id` - (Optional, string) A CRN of the leader database to make the replica(read-only) deployment. The leader database must have been created by a database deployment with the same service ID. A read-only replica is set up to replicate all of your data from the leader deployment to the replica deployment using asynchronous replication. See the documentation related to Read-only Replicas here. https://cloud.ibm.com/docs/services/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas
 * `key_protect_key` - (Optional, Force new resource, string) The CRN of a Key Protect key, which is then used for disk encryption. A key protect CRN is in the format crn:v1:<...>:key:<id>. No update support available. `key_protect_key` can be added only at the time of creation. See the documentation related to Disk encryption here.https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect#using-the-key-protect-key
@@ -192,7 +234,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+The following attributes are exported:
 
 * `id` - The unique identifier of the new database instance (CRN).
 * `status` - Status of resource instance.

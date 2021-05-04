@@ -258,6 +258,8 @@ func Provider() *schema.Provider {
 			"ibm_is_instance_profiles":               dataSourceIBMISInstanceProfiles(),
 			"ibm_is_instance":                        dataSourceIBMISInstance(),
 			"ibm_is_instances":                       dataSourceIBMISInstances(),
+			"ibm_is_instance_disk":                   dataSourceIbmIsInstanceDisk(),
+			"ibm_is_instance_disks":                  dataSourceIbmIsInstanceDisks(),
 			"ibm_is_lb":                              dataSourceIBMISLB(),
 			"ibm_is_lb_profiles":                     dataSourceIBMISLbProfiles(),
 			"ibm_is_lbs":                             dataSourceIBMISLBS(),
@@ -370,6 +372,9 @@ func Provider() *schema.Provider {
 			"ibm_cm_offering":          dataSourceIBMCmOffering(),
 			"ibm_cm_version":           dataSourceIBMCmVersion(),
 			"ibm_cm_offering_instance": dataSourceIBMCmOfferingInstance(),
+
+			//Added for Resource Tag
+			"ibm_resource_tag": dataSourceIBMResourceTag(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -465,6 +470,7 @@ func Provider() *schema.Provider {
 			"ibm_is_floating_ip":                                 resourceIBMISFloatingIP(),
 			"ibm_is_flow_log":                                    resourceIBMISFlowLog(),
 			"ibm_is_instance":                                    resourceIBMISInstance(),
+			"ibm_is_instance_disk_management":                    resourceIBMISInstanceDiskManagement(),
 			"ibm_is_instance_group":                              resourceIBMISInstanceGroup(),
 			"ibm_is_instance_group_manager":                      resourceIBMISInstanceGroupManager(),
 			"ibm_is_instance_group_manager_policy":               resourceIBMISInstanceGroupManagerPolicy(),
@@ -587,6 +593,9 @@ func Provider() *schema.Provider {
 			//satellite  resources
 			"ibm_satellite_location": resourceIBMSatelliteLocation(),
 			"ibm_satellite_host":     resourceIBMSatelliteHost(),
+
+			//Resource Tag
+			"ibm_resource_tag": resourceIBMResourceTag(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -641,6 +650,7 @@ func Validator() ValidatorDict {
 				"ibm_is_ike_policy":                    resourceIBMISIKEValidator(),
 				"ibm_is_image":                         resourceIBMISImageValidator(),
 				"ibm_is_instance":                      resourceIBMISInstanceValidator(),
+				"ibm_is_instance_disk_management":      resourceIBMISInstanceDiskManagementValidator(),
 				"ibm_is_ipsec_policy":                  resourceIBMISIPSECValidator(),
 				"ibm_is_lb_listener_policy_rule":       resourceIBMISLBListenerPolicyRuleValidator(),
 				"ibm_is_lb_listener_policy":            resourceIBMISLBListenerPolicyValidator(),
@@ -672,6 +682,7 @@ func Validator() ValidatorDict {
 				"ibm_is_virtual_endpoint_gateway":      resourceIBMISEndpointGatewayValidator(),
 				"ibm_container_vpc_cluster":            resourceIBMContainerVpcClusterValidator(),
 				"ibm_container_cluster":                resourceIBMContainerClusterValidator(),
+				"ibm_resource_tag":                     resourceIBMResourceTagValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),

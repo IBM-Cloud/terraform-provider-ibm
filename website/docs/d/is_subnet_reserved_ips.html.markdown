@@ -40,7 +40,8 @@ The following attributes are exported as output/response:
    - `name` - The user-defined or system-provided name for this reserved IP
    - `owner` - The owner of a reserved IP, defining whether it is managed by the user or the provider
    - `resource_type` - The resource type
-  
+   - `target` - The id for the target for the reserved IP.
+
 * `sort` - The keyword on which all the reserved IPs are sorted
 * `subnet` - The id for the subnet for the reserved IP
 * `total_count` - The number of reserved IP in the subnet

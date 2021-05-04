@@ -75,11 +75,6 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 		return err
 	}
 
-	bxClient, err := meta.(ClientSession).BluemixSession()
-	if err != nil {
-		return err
-	}
-
 	getSatLocOptions := &kubernetesserviceapiv1.GetSatelliteLocationOptions{
 		Controller: &location,
 	}
@@ -110,8 +105,6 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 	createRegOptions := &kubernetesserviceapiv1.AttachSatelliteHostOptions{}
 	createRegOptions.Controller = locData.ID
 	createRegOptions.Labels = labels
-	authMap := map[string]string{"Authorization": bxClient.Config.IAMAccessToken}
-	createRegOptions.Headers = authMap
 
 	resp, err := satClient.AttachSatelliteHost(createRegOptions)
 	if err != nil {
@@ -127,7 +120,7 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 			} else if strings.ToLower(hostProvider) == "ibm" {
 				lines[i] = "subscription-manager refresh\nsubscription-manager repos --enable=*\n"
 			} else if strings.ToLower(hostProvider) == "azure" {
-				lines[i] = "# Grow the TMP LV\nlvextend -L+10G /dev/rootvg/tmplv\nxfs_growfs /dev/rootvg/tmplv\nyum update -y\nyum-config-manager --enable '*'\nyum repolist all\nyum install container-selinux -y"
+				lines[i] = "# Grow the TMP LV\nlvextend -L+10G /dev/rootvg/tmplv\nxfs_growfs /dev/rootvg/tmplv\n# Grow the var LV\nlvextend -L+20G /dev/rootvg/varlv\nxfs_growfs /dev/rootvg/varlv\nyum update -y\nyum-config-manager --enable '*'\nyum repolist all\nyum install container-selinux -y"
 			}
 		}
 	}

@@ -54,7 +54,9 @@ var ISZoneName string
 var ISCIDR string
 var ISAddressPrefixCIDR string
 var instanceProfileName string
+var instanceProfileNameUpdate string
 var dedicatedHostProfileName string
+var instanceDiskProfileName string
 var volumeProfileName string
 var ISRouteDestination string
 var ISRouteNextHop string
@@ -350,10 +352,23 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'cx2-2x4'")
 	}
 
+	instanceProfileNameUpdate = os.Getenv("SL_INSTANCE_PROFILE_UPDATE")
+	if instanceProfileNameUpdate == "" {
+		instanceProfileNameUpdate = "cx2-4x8"
+		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE_UPDATE for testing ibm_is_instance resource else it is set to default value 'cx2-4x8'")
+	}
+
 	dedicatedHostProfileName = os.Getenv("IS_DEDICATED_HOST_PROFILE")
 	if dedicatedHostProfileName == "" {
 		dedicatedHostProfileName = "cx2-host-152x304" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_PROFILE for testing ibm_is_instance resource else it is set to default value 'cx2-host-152x304'")
+	}
+
+	instanceDiskProfileName = os.Getenv("IS_INSTANCE_DISK_PROFILE")
+	if instanceDiskProfileName == "" {
+		//instanceProfileName = "bc1-2x8" // for classic infrastructure
+		instanceDiskProfileName = "bx2d-16x64" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'bx2d-16x64'")
 	}
 
 	volumeProfileName = os.Getenv("IS_VOLUME_PROFILE")

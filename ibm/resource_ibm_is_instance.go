@@ -60,6 +60,8 @@ const (
 	isInstanceGpuMemory               = "memory"
 	isInstanceGpuModel                = "model"
 	isInstanceMemory                  = "memory"
+	isInstanceDisks                   = "disks"
+	isInstanceDedicatedHost           = "dedicated_host"
 	isInstanceStatus                  = "status"
 
 	isEnableCleanDelete        = "wait_before_delete"
@@ -135,7 +137,7 @@ func resourceIBMISInstance() *schema.Resource {
 
 			isInstanceProfile: {
 				Type:        schema.TypeString,
-				ForceNew:    true,
+				ForceNew:    false,
 				Required:    true,
 				Description: "Profile info",
 			},
@@ -450,6 +452,50 @@ func resourceIBMISInstance() *schema.Resource {
 				Description: "Define timeout to force the instances to start/stop in minutes.",
 				Type:        schema.TypeInt,
 				Optional:    true,
+			},
+			isInstanceDisks: &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Collection of the instance's disks.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"created_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time that the disk was created.",
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this instance disk.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this instance disk.",
+						},
+						"interface_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined name for this disk.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+						"size": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The size of the disk in GB (gigabytes).",
+						},
+					},
+				},
 			},
 		},
 	}
@@ -1381,6 +1427,17 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isInstanceResourceGroup, *instance.ResourceGroup.ID)
 		d.Set(ResourceGroupName, *instance.ResourceGroup.Name)
 	}
+
+	if instance.Disks != nil {
+		disks := []map[string]interface{}{}
+		for _, disksItem := range instance.Disks {
+			disksItemMap := resourceIbmIsInstanceInstanceDiskToMap(disksItem)
+			disks = append(disks, disksItemMap)
+		}
+		if err = d.Set(isInstanceDisks, disks); err != nil {
+			return fmt.Errorf("Error setting disks: %s", err)
+		}
+	}
 	return nil
 }
 
@@ -1854,6 +1911,80 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if d.HasChange(isInstanceProfile) && !d.IsNewResource() {
+
+		getinsOptions := &vpcv1.GetInstanceOptions{
+			ID: &id,
+		}
+		instance, response, err := instanceC.GetInstance(getinsOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			return fmt.Errorf("Error Getting Instance (%s): %s\n%s", id, err, response)
+		}
+
+		if instance != nil && *instance.Status == "running" {
+			actiontype := "stop"
+			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+				InstanceID: &id,
+				Type:       &actiontype,
+			}
+			_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					return nil
+				}
+				return fmt.Errorf("Error Creating Instance Action: %s\n%s", err, response)
+			}
+			_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
+			if err != nil {
+				return err
+			}
+		}
+
+		updnetoptions := &vpcv1.UpdateInstanceOptions{
+			ID: &id,
+		}
+
+		instanceProfile := d.Get(isInstanceProfile).(string)
+		profile := &vpcv1.InstancePatchProfile{
+			Name: &instanceProfile,
+		}
+		instancePatchModel := &vpcv1.InstancePatch{
+			Profile: profile,
+		}
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstancePatch: %s", err)
+		}
+		updnetoptions.InstancePatch = instancePatch
+
+		_, response, err = instanceC.UpdateInstance(updnetoptions)
+		if err != nil {
+			return fmt.Errorf("Error in UpdateInstancePatch: %s\n%s", err, response)
+		}
+
+		actiontype := "start"
+		createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+			InstanceID: &id,
+			Type:       &actiontype,
+		}
+		_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return nil
+			}
+			return fmt.Errorf("Error Creating Instance Action: %s\n%s", err, response)
+		}
+		_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
+		if err != nil {
+			return err
+		}
+
 	}
 
 	getinsOptions := &vpcv1.GetInstanceOptions{
@@ -2411,4 +2542,18 @@ func isWaitForInstanceVolumeDetached(instanceC *vpcv1.VpcV1, d *schema.ResourceD
 	}
 
 	return stateConf.WaitForState()
+}
+
+func resourceIbmIsInstanceInstanceDiskToMap(instanceDisk vpcv1.InstanceDisk) map[string]interface{} {
+	instanceDiskMap := map[string]interface{}{}
+
+	instanceDiskMap["created_at"] = instanceDisk.CreatedAt.String()
+	instanceDiskMap["href"] = instanceDisk.Href
+	instanceDiskMap["id"] = instanceDisk.ID
+	instanceDiskMap["interface_type"] = instanceDisk.InterfaceType
+	instanceDiskMap["name"] = instanceDisk.Name
+	instanceDiskMap["resource_type"] = instanceDisk.ResourceType
+	instanceDiskMap["size"] = intValue(instanceDisk.Size)
+
+	return instanceDiskMap
 }

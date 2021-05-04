@@ -66,10 +66,10 @@ func resourceIBMResourceKey() *schema.Resource {
 			},
 
 			"parameters": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Arbitrary parameters to pass. Must be a JSON object",
+				Type:             schema.TypeMap,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "Arbitrary parameters to pass. Must be a JSON object",
 			},
 
 			"credentials": {
