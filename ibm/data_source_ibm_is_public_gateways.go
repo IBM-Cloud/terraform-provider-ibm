@@ -109,6 +109,7 @@ func dataSourceIBMISPublicGateways() *schema.Resource {
 					},
 				},
 			},
+			"filter": dataSourceFiltersSchema(),
 		},
 	}
 }
@@ -188,8 +189,13 @@ func publicGatewaysGet(d *schema.ResourceData, meta interface{}, name string) er
 		}
 		publicgwInfo = append(publicgwInfo, l)
 	}
-	d.SetId(dataSourceIBMISPublicGatewaysID(d))
+
+	if f, ok := d.GetOk("filter"); ok {
+		publicgwInfo = *filterIBMDataSources(f.(*schema.Set), &publicgwInfo)
+	}
+
 	d.Set(isPublicGateways, publicgwInfo)
+	d.SetId(dataSourceIBMISPublicGatewaysID(d))
 	return nil
 }
 
