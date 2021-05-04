@@ -985,7 +985,7 @@ func isWaitForLBAvailable(sess *vpcv1.VpcV1, lbId string, timeout time.Duration)
 	log.Printf("Waiting for load balancer (%s) to be available.", lbId)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", isLBProvisioning, "update_pending", "delete_pending"},
+		Pending:    []string{"retry", isLBProvisioning, "update_pending"},
 		Target:     []string{isLBProvisioningDone, ""},
 		Refresh:    isLBRefreshFunc(sess, lbId),
 		Timeout:    timeout,
