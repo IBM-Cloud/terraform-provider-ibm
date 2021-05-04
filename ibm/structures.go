@@ -1132,6 +1132,14 @@ func idParts(id string) ([]string, error) {
 	return []string{}, fmt.Errorf("The given id %s does not contain / please check documentation on how to provider id during import command", id)
 }
 
+func sepIdParts(id string, separator string) ([]string, error) {
+	if strings.Contains(id, separator) {
+		parts := strings.Split(id, separator)
+		return parts, nil
+	}
+	return []string{}, fmt.Errorf("The given id %s does not contain %s please check documentation on how to provider id during import command", id, separator)
+}
+
 func vmIdParts(id string) ([]string, error) {
 	parts := strings.Split(id, "/")
 	return parts, nil
