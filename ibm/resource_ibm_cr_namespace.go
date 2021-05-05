@@ -1,18 +1,5 @@
-/**
- * (C) Copyright IBM Corp. 2021.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright IBM Corp. 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
 
 package ibm
 
@@ -155,7 +142,8 @@ func resourceIBMCrNamespaceRead(context context.Context, d *schema.ResourceData,
 
 	listNamespaceDetailsOptions := &containerregistryv1.ListNamespaceDetailsOptions{}
 
-	namespaceDetailsList, response, err := containerRegistryClient.ListNamespaceDetails(listNamespaceDetailsOptions)
+	namespaceDetailsList, response, err := containerRegistryClient.ListNamespaceDetailsWithContext(context, listNamespaceDetailsOptions)
+
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -172,7 +160,8 @@ func resourceIBMCrNamespaceRead(context context.Context, d *schema.ResourceData,
 		}
 	}
 	if namespaceDetails.Name == nil || *namespaceDetails.Name != d.Id() {
-		return diag.FromErr(fmt.Errorf("Namespace %s not found", d.Id()))
+		d.SetId("")
+		return nil
 	}
 
 	if err = d.Set("name", namespaceDetails.Name); err != nil {

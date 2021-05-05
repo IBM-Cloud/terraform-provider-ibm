@@ -1,9 +1,9 @@
 ---
 layout: "ibm"
 page_title: "IBM : cr_retention_policy"
-sidebar_current: "docs-ibm-resource-cr-retention-policy"
 description: |-
   Manages cr_retention_policy.
+subcategory: "Container Registry"
 ---
 
 # ibm\_cr_retention_policy
@@ -30,6 +30,14 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the cr_retention_policy.
+
+## Import
+
+You can import the `cr_retention_policy` resource by using `namespace`. The namespace to which the retention policy is attached.
+
+```
+$ terraform import cr_retention_policy.cr_retention_policy <namespace>
+```
