@@ -5,7 +5,6 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -109,17 +108,11 @@ func dataSourceIBMISInstanceGroupMemberships() *schema.Resource {
 }
 
 func dataSourceIBMISInstanceGroupMembershipsRead(d *schema.ResourceData, meta interface{}) error {
-	log.Println("Inside dataSourceIbmIsInstanceGroupMembershipsRead")
-
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
-
 	instanceGroupID := d.Get("instance_group").(string)
-	log.Println("instanceGroupID")
-	log.Println(instanceGroupID)
-
 	// Support for pagination
 	start := ""
 	allrecs := []vpcv1.InstanceGroupMembership{}
@@ -128,7 +121,6 @@ func dataSourceIBMISInstanceGroupMembershipsRead(d *schema.ResourceData, meta in
 		listInstanceGroupMembershipsOptions := vpcv1.ListInstanceGroupMembershipsOptions{
 			InstanceGroupID: &instanceGroupID,
 		}
-		log.Println(instanceGroupID)
 		instanceGroupMembershipCollection, response, err := sess.ListInstanceGroupMemberships(&listInstanceGroupMembershipsOptions)
 		if err != nil {
 			return fmt.Errorf("Error Getting InstanceGroup Membership Collection %s\n%s", err, response)
@@ -155,8 +147,6 @@ func dataSourceIBMISInstanceGroupMembershipsRead(d *schema.ResourceData, meta in
 
 		instances := make([]map[string]interface{}, 0)
 		if instanceGroupMembership.Instance != nil {
-			log.Println("*instanceGroupMembership.Instance.CRN - Instance")
-			log.Println(*instanceGroupMembership.Instance.CRN)
 			instance := map[string]interface{}{
 				"crn":                     *instanceGroupMembership.Instance.CRN,
 				"virtual_server_instance": *instanceGroupMembership.Instance.ID,
@@ -168,8 +158,6 @@ func dataSourceIBMISInstanceGroupMembershipsRead(d *schema.ResourceData, meta in
 
 		instance_templates := make([]map[string]interface{}, 0)
 		if instanceGroupMembership.InstanceTemplate != nil {
-			log.Println("*instanceGroupMembership.Instance.CRN - instance template")
-			log.Println(*instanceGroupMembership.Instance.CRN)
 			instance_template := map[string]interface{}{
 				"crn":               *instanceGroupMembership.InstanceTemplate.CRN,
 				"instance_template": *instanceGroupMembership.InstanceTemplate.ID,
@@ -180,8 +168,6 @@ func dataSourceIBMISInstanceGroupMembershipsRead(d *schema.ResourceData, meta in
 		membership["instance_template"] = instance_templates
 
 		if instanceGroupMembership.PoolMember != nil && instanceGroupMembership.PoolMember.ID != nil {
-			log.Println("*instanceGroupMembership.PoolMember.ID")
-			log.Println(*instanceGroupMembership.PoolMember.ID)
 			membership["load_balancer_pool_member"] = *instanceGroupMembership.PoolMember.ID
 		}
 
