@@ -11,6 +11,7 @@ import (
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/functions"
+	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	"github.com/apache/openwhisk-client-go/whisk"
 )
 
@@ -50,8 +51,8 @@ func getBaseURL(region string) string {
  * iam-based namespace don't have an auth key and needs only iam token for authorization.
  *
  */
-func setupOpenWhiskClientConfig(namespace string, c *bluemix.Config, functionNamespace functions.FunctionServiceAPI) (*whisk.Client, error) {
-	u, _ := url.Parse(fmt.Sprintf("https://%s.functions.cloud.ibm.com/api", c.Region))
+func setupOpenWhiskClientConfig(namespace string, sess *bxsession.Session, functionNamespace functions.FunctionServiceAPI) (*whisk.Client, error) {
+	u, _ := url.Parse(fmt.Sprintf("https://%s.functions.cloud.ibm.com/api", sess.Config.Region))
 	wskClient, _ := whisk.NewClient(http.DefaultClient, &whisk.Config{
 		Host:    u.Host,
 		Version: "v1",
@@ -79,7 +80,21 @@ func setupOpenWhiskClientConfig(namespace string, c *bluemix.Config, functionNam
 			// Configure whisk properties to handle iam-based/iam-migrated  namespaces.
 			if n.IsIamEnabled() {
 				additionalHeaders := make(http.Header)
-				additionalHeaders.Add("Authorization", c.IAMAccessToken)
+
+				err := refreshToken(sess)
+				if err != nil {
+					for count := sess.Config.MaxRetries; *count >= 0; *count-- {
+						if err == nil || !isRetryable(err) {
+							break
+						}
+						err = refreshToken(sess)
+					}
+					if err != nil {
+						return nil, err
+					}
+
+				}
+				additionalHeaders.Add("Authorization", sess.Config.IAMAccessToken)
 				additionalHeaders.Add("X-Namespace-Id", n.GetID())
 
 				wskClient.Config.Namespace = n.GetID()
@@ -91,7 +106,7 @@ func setupOpenWhiskClientConfig(namespace string, c *bluemix.Config, functionNam
 
 	// Configure whisk properties to handle cf-based namespaces.
 	if isCFNamespace {
-		if c.UAAAccessToken == "" && c.UAARefreshToken == "" {
+		if sess.Config.UAAAccessToken == "" && sess.Config.UAARefreshToken == "" {
 			return nil, fmt.Errorf("Couldn't retrieve auth key for IBM Cloud Function")
 		}
 		err := validateNamespace(namespace)

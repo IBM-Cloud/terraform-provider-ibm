@@ -30,7 +30,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - Id is the combination of instance group ID, instance group manager ID and instance group manager policy ID
 * `policy_type` - The type of metric to be evaluated.

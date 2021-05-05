@@ -277,13 +277,29 @@ output "ns_record_output" {
 }
 ```
 
+## Example Usage 11 : Create PTR record
+
+```hcl
+resource "ibm_cis_dns_record" "test_dns_ptr_record" {
+  cis_id  = var.cis_crn
+  domain_id = var.zone_id
+  name    = "1.2.3.4"
+  type    = "PTR"
+  content = "test-exmple.ptr.com"
+}
+
+output "ns_record_output" {
+  value = ibm_cis_dns_record.test_dns_ptr_record
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
 - `cis_id` - (Required,string) The ID of the CIS service instance
 - `domain_id` - (Required,string) The ID of the domain to add the DNS record to. IT can either be a combination of <domain_id>:<cis_id> or <domain_id>
-- `type` - (Required, string) The type of the DNS record to be created. Supported Record types are: A, AAAA, CNAME, LOC, TXT, MX, SRV, SPF, NS, CAA.
+- `type` - (Required, string) The type of the DNS record to be created. Supported Record types are: A, AAAA, CNAME, LOC, TXT, MX, SRV, SPF, NS, CAA, PTR.
 - `name` - (Required, string) The name of a DNS record.
 - `content` - (Optional,string) The (string) value of the record, e.g. "192.168.127.127". Either this or `data` must be specified
 - `ttl`-(Optional,int) TTL of the record. It should be automatic(i.e ttl=1) if the record is proxied. Terraform provider takes ttl in unit seconds. Therefore, it starts with value 120.
@@ -310,7 +326,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The identifier which consists of record id, zone id and crn with `:` seperator.
 - `record_id` - The DNS record identifier.

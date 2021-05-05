@@ -73,7 +73,7 @@ func dataSourceIBMFunctionAction() *schema.Resource {
 						"kind": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The type of action. Possible values:php:7.1, nodejs:8, swift:3, nodejs, blackbox, java, sequence, nodejs:6, python:3, python, python:2, swift, swift:3.1.1.",
+							Description: "The type of action. Possible values:php:7.3, nodejs:8, swift:3, nodejs, blackbox, java, sequence, nodejs:10, python:3, python, python:2, swift, swift:4.2.",
 						},
 						"main": {
 							Type:        schema.TypeString,
@@ -133,7 +133,7 @@ func dataSourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 	namespace := d.Get("namespace").(string)
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 

@@ -30,7 +30,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the account.  
 * `account_users` - The list of account user's in the account. Nested `account_users` blocks have the following structure:

@@ -33,6 +33,12 @@ func TestAccIBMISVPC_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpc.testacc_vpc", "name", name1),
 					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc", "default_network_acl_name", "dnwacln"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc", "default_security_group_name", "dsgn"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc", "default_routing_table_name", "drtn"),
+					resource.TestCheckResourceAttr(
 						"ibm_is_vpc.testacc_vpc", "tags.#", "2"),
 				),
 			},
@@ -168,6 +174,9 @@ func testAccCheckIBMISVPCConfig(name string) string {
 	return fmt.Sprintf(`
 resource "ibm_is_vpc" "testacc_vpc" {
 	name = "%s"
+	default_network_acl_name = "dnwacln"
+    default_security_group_name = "dsgn"
+    default_routing_table_name = "drtn"
 	tags = ["Tag1", "tag2"]
 }`, name)
 

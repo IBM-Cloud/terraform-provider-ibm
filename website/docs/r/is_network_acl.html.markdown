@@ -150,7 +150,7 @@ Nested `rules` blocks have the following structure:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the network ACL.
 * `rules` - The rules for a network ACL.

@@ -31,14 +31,17 @@ The following arguments are supported:
 
 * `instance_id` - (Required, string) The keyprotect instance guid.
 * `key_name` - (Optional, string) The name of the key. Only the keys with matching name will be retreived.
-* `endpoint_type` - (Optional, string) The type of the endpoint (public or private) to be used for fetching keys. 
+* `alias` - (Optional, string) The alias name associated with the key. Only the key with matching alias name will be retreived.
+* `endpoint_type` - (Optional, string) The type of the endpoint (public or private) to be used for fetching keys.
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `keys` - List of all Keys in the IBM hs-crypto or Key-protect instance.
   * `name` - The name for the key.
+  * `aliases` - List of all the alias associated with the keys.
+  * `key_ring_id` - The key ring id for the key.
   * `id` - The unique identifier for this key
   * `crn` - The crn of the key.
   * `standard_key` - This flag is true in case of standard key, else false for root key.

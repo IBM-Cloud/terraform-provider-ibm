@@ -237,6 +237,7 @@ resource "ibm_cis_cache_settings" "test" {
   development_mode   = "off"
   query_string_sort  = "off"
   purge_all          = true
+  serve_stale_content = "on"
 }
 ```
 `CIS Custom Page service`
@@ -474,6 +475,12 @@ data "ibm_cis_custom_certificates" "test" {
   domain_id = ibm_cis_certificate_upload.test.domain_id
 }
 ```
+`CIS Cache Settings data source`
+```hcl
+data "ibm_cis_cache_settings" "test" {
+  cis_id    = data.ibm_cis_cache_settings.test.cis_id
+  domain_id = data.ibm_cis_cache_settings.test.domain_id
+}
 
 ## Dependencies
 
@@ -590,6 +597,7 @@ Customise the variables in `variables.tf` to your local environment and chosen D
 | browser_expiratin | The Browser cache expiration setting | `number` | no |
 | development_mode | The Development mode setting | `string` | no |
 | query_string_sort | The Query string sort setting | `string` | no |
+| serve_stale_content | The Serve stale content setting | `string` | no |
 | url | The URL | `string` | yes |
 | targets\_target | The Targets, which rule is added | `string` | yes |
 | constraint\_operator | The Constraint operator for page rule | `string` | yes |

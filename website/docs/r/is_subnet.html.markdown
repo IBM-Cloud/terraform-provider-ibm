@@ -69,7 +69,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the subnet.
 * `ipv6_cidr_block` - The IPv6 range of the subnet.

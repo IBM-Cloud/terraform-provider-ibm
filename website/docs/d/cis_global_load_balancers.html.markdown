@@ -30,7 +30,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - Load balancer ID, domain id and CRN. Ex. id:domain-id:crn
 - `glb_id` - Load balancer ID.

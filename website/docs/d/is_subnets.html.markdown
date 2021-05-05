@@ -22,7 +22,7 @@ data "ibm_is_subnets" "ds_subnets" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `subnets` - List of all subnets in the IBM Cloud Infrastructure.
   * `name` - The name for this subnet.

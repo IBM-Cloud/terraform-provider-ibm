@@ -62,7 +62,7 @@ Header is not currently supported in this version of the provider.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - Load balancer monitor ID and CRN. Ex. monitor_id:crn.
 - `monitor_id` - Load balancer monitor ID.

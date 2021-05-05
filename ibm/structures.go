@@ -20,10 +20,12 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	kp "github.com/IBM/keyprotect-go-client"
+	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
+	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
 
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -667,6 +669,9 @@ func flattenMetricsMonitor(in *resourceconfigurationv1.MetricsMonitoring) []inte
 		if in.MetricsMonitoringCrn != nil {
 			att["metrics_monitoring_crn"] = *in.MetricsMonitoringCrn
 		}
+		if in.RequestMetricsEnabled != nil {
+			att["request_metrics_enabled"] = *in.RequestMetricsEnabled
+		}
 	}
 	return []interface{}{att}
 }
@@ -733,6 +738,27 @@ func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
 
 			rules = append(rules, rule)
 		}
+	}
+	return rules
+}
+
+func retentionRuleGet(in *s3.ProtectionConfiguration) []interface{} {
+	rules := make([]interface{}, 0, 1)
+	if in != nil && in.Status != nil && *in.Status == "Retention" {
+		protectConfig := make(map[string]interface{})
+		if in.DefaultRetention != nil {
+			protectConfig["default"] = int(*(in.DefaultRetention).Days)
+		}
+		if in.MaximumRetention != nil {
+			protectConfig["maximum"] = int(*(in.MaximumRetention).Days)
+		}
+		if in.MinimumRetention != nil {
+			protectConfig["minimum"] = int(*(in.MinimumRetention).Days)
+		}
+		if in.EnablePermanentRetention != nil {
+			protectConfig["permanent"] = *in.EnablePermanentRetention
+		}
+		rules = append(rules, protectConfig)
 	}
 	return rules
 }
@@ -1653,6 +1679,129 @@ func UpdateTags(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
+func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
+
+	gtClient, err := meta.(ClientSession).GlobalTaggingAPIv1()
+	if err != nil {
+		return nil, fmt.Errorf("Error getting global tagging client settings: %s", err)
+	}
+
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return nil, err
+	}
+	accountID := userDetails.userAccount
+
+	var providers []string
+	if strings.Contains(resourceType, "SoftLayer_") {
+		providers = []string{"ims"}
+	}
+
+	ListTagsOptions := &globaltaggingv1.ListTagsOptions{}
+	ListTagsOptions.AttachedTo = &resourceID
+	ListTagsOptions.Providers = providers
+	if len(tagType) > 0 {
+		ListTagsOptions.TagType = ptrToString(tagType)
+
+		if tagType == service {
+			ListTagsOptions.AccountID = ptrToString(accountID)
+		}
+	}
+	taggingResult, _, err := gtClient.ListTags(ListTagsOptions)
+	if err != nil {
+		return nil, err
+	}
+	var taglist []string
+	for _, item := range taggingResult.Items {
+		taglist = append(taglist, *item.Name)
+	}
+	log.Println("tagList: ", taglist)
+	return newStringSet(resourceIBMVPCHash, taglist), nil
+}
+
+func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, resourceID, resourceType, tagType string) error {
+	gtClient, err := meta.(ClientSession).GlobalTaggingAPIv1()
+	if err != nil {
+		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+	}
+
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
+	acctID := userDetails.userAccount
+
+	resources := []globaltaggingv1.Resource{}
+	r := globaltaggingv1.Resource{ResourceID: ptrToString(resourceID), ResourceType: ptrToString(resourceType)}
+	resources = append(resources, r)
+
+	if oldList == nil {
+		oldList = new(schema.Set)
+	}
+	if newList == nil {
+		newList = new(schema.Set)
+	}
+	olds := oldList.(*schema.Set)
+	news := newList.(*schema.Set)
+	removeInt := olds.Difference(news).List()
+	addInt := news.Difference(olds).List()
+	add := make([]string, len(addInt))
+	for i, v := range addInt {
+		add[i] = fmt.Sprint(v)
+	}
+	remove := make([]string, len(removeInt))
+	for i, v := range removeInt {
+		remove[i] = fmt.Sprint(v)
+	}
+
+	schematicTags := os.Getenv("IC_ENV_TAGS")
+	var envTags []string
+	if schematicTags != "" {
+		envTags = strings.Split(schematicTags, ",")
+		add = append(add, envTags...)
+	}
+
+	if len(remove) > 0 {
+		detachTagOptions := &globaltaggingv1.DetachTagOptions{
+			Resources: resources,
+			TagNames:  remove,
+		}
+
+		_, resp, err := gtClient.DetachTag(detachTagOptions)
+		if err != nil {
+			return fmt.Errorf("Error detaching database tags %v: %s\n%s", remove, err, resp)
+		}
+		for _, v := range remove {
+			delTagOptions := &globaltaggingv1.DeleteTagOptions{
+				TagName: ptrToString(v),
+			}
+			_, resp, err := gtClient.DeleteTag(delTagOptions)
+			if err != nil {
+				return fmt.Errorf("Error deleting database tag %v: %s\n%s", v, err, resp)
+			}
+		}
+	}
+
+	if len(add) > 0 {
+		AttachTagOptions := &globaltaggingv1.AttachTagOptions{}
+		AttachTagOptions.Resources = resources
+		AttachTagOptions.TagNames = add
+		if len(tagType) > 0 {
+			AttachTagOptions.TagType = ptrToString(tagType)
+			if tagType == service {
+				AttachTagOptions.AccountID = ptrToString(acctID)
+			}
+		}
+
+		_, resp, err := gtClient.AttachTag(AttachTagOptions)
+		if err != nil {
+			return fmt.Errorf("Error updating database tags %v : %s\n%s", add, err, resp)
+		}
+	}
+
+	return nil
+}
+
 func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) {
 
 	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
@@ -1886,4 +2035,53 @@ func IgnoreSystemLabels(labels map[string]string) map[string]string {
 	}
 
 	return result
+}
+
+// expandCosConfig ..
+func expandCosConfig(cos []interface{}) *kubernetesserviceapiv1.COSBucket {
+	if len(cos) == 0 || cos[0] == nil {
+		return &kubernetesserviceapiv1.COSBucket{}
+	}
+	in := cos[0].(map[string]interface{})
+	obj := &kubernetesserviceapiv1.COSBucket{
+		Bucket:   ptrToString(in["bucket"].(string)),
+		Endpoint: ptrToString(in["endpoint"].(string)),
+		Region:   ptrToString(in["region"].(string)),
+	}
+	return obj
+}
+
+// expandCosCredentials ..
+func expandCosCredentials(cos []interface{}) *kubernetesserviceapiv1.COSAuthorization {
+	if len(cos) == 0 || cos[0] == nil {
+		return &kubernetesserviceapiv1.COSAuthorization{}
+	}
+	in := cos[0].(map[string]interface{})
+	obj := &kubernetesserviceapiv1.COSAuthorization{
+		AccessKeyID:     ptrToString(in["access_key-id"].(string)),
+		SecretAccessKey: ptrToString(in["secret_access_key"].(string)),
+	}
+	return obj
+}
+
+// flattenHostLabels ..
+func flattenHostLabels(hostLabels []interface{}) map[string]string {
+	labels := make(map[string]string)
+	for _, v := range hostLabels {
+		parts := strings.Split(v.(string), ":")
+		if parts != nil {
+			labels[parts[0]] = parts[1]
+		}
+	}
+
+	return labels
+}
+
+func flatterSatelliteZones(zones *schema.Set) []string {
+	zoneList := make([]string, zones.Len())
+	for i, v := range zones.List() {
+		zoneList[i] = fmt.Sprint(v)
+	}
+
+	return zoneList
 }

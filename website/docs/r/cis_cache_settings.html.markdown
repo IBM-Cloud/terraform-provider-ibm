@@ -24,6 +24,7 @@ resource "ibm_cis_cache_settings" "cache_settings" {
   development_mode   = "off"
   query_string_sort  = "off"
   purge_all          = true
+  serve_stale_content = "off"
 }
 ```
 
@@ -41,15 +42,15 @@ The following arguments are supported:
 - `purge_by_urls` - (Optional, list(string)) Purge cached urls.
 - `purge_by_hosts` - (Optional, list(string)) Purge cached hosts.
 - `purge_by_tags` - (Optional, list(string)) Purge cached item which matches the tags.
+- `serve_stale_content` - (Optional, string) The Serve stale content  enable/disable setting. Valid values are `on` and `off`.
 
 **Note**:
 
 - Among all the purge actions `purge_all`, `purge_by-urls`, `purge_by_hosts` and `purge_by_tags`, only one is allowed to give inside a resource.
-- `serve_stale_content` is not supported yet.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The record ID. It is a combination of <`domain_id`>,<`cis_id`> attributes concatenated with ":".
 

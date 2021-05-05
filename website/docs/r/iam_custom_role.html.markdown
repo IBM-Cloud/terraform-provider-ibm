@@ -1,6 +1,6 @@
 ---
 
-subcategory: "Identity & Access (IAM)"
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_custom_role"
 description: |-
@@ -35,7 +35,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the custom role.
 * `crn` - CRN of the custom role.

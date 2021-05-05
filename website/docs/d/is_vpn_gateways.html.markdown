@@ -29,7 +29,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - ID of the VPN Gateway.
 * `name` - VPN Gateway instance name.
@@ -37,6 +37,7 @@ The following attributes are exported:
 * `crn` - The VPN gateway's CRN.
 * `members` - Collection of VPN gateway members.
   * `address` - The public IP address assigned to the VPN gateway member.
+  * `private_address` - The private IP address assigned to the VPN gateway member.
   * `role` - The high availability role assigned to the VPN gateway member.
   * `status` - The status of the VPN gateway member
 * `resource_type` - The resource type(vpn_gateway)

@@ -61,7 +61,7 @@ func TestAccIBMPrivateDNSPermittedNetworkImport(t *testing.T) {
 func testAccCheckIBMPrivateDNSPermittedNetworkBasic(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		name = "default"
+		is_default=true
 	}
 	resource "ibm_is_vpc" "test-pdns-permitted-network" {
 		name = "test-pdns-permitted-network"

@@ -27,7 +27,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `instance_group_managers` - Nested block containing list of instance manager properties
   * `id` - d is the the combination of instance group ID and instance group manager ID.

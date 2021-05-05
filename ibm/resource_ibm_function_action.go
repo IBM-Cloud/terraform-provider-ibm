@@ -84,26 +84,26 @@ func resourceIBMFunctionAction() *schema.Resource {
 							Type:          schema.TypeString,
 							Optional:      true,
 							Description:   "Container image name when kind is 'blackbox'.",
-							ConflictsWith: []string{"exec.components", "exec.code"},
+							ConflictsWith: []string{"exec.0.components"},
 						},
 						"init": {
 							Type:          schema.TypeString,
 							Optional:      true,
 							Description:   "Optional zipfile reference.",
-							ConflictsWith: []string{"exec.image", "exec.components"},
+							ConflictsWith: []string{"exec.0.image", "exec.0.components"},
 						},
 						"code": {
 							Type:          schema.TypeString,
 							Computed:      true,
 							Optional:      true,
-							Description:   "The code to execute when kind is not ‘blackbox’.",
-							ConflictsWith: []string{"exec.0.image", "exec.0.components", "exec.0.code_path"},
+							Description:   "The code to execute.",
+							ConflictsWith: []string{"exec.0.components", "exec.0.code_path"},
 						},
 						"code_path": {
 							Type:          schema.TypeString,
 							Optional:      true,
-							Description:   "The code to execute when kind is not ‘blackbox’.",
-							ConflictsWith: []string{"exec.0.image", "exec.0.components", "exec.0.code"},
+							Description:   "The file path of code to execute.",
+							ConflictsWith: []string{"exec.0.components", "exec.0.code"},
 						},
 						"kind": {
 							Type:        schema.TypeString,
@@ -114,7 +114,7 @@ func resourceIBMFunctionAction() *schema.Resource {
 							Type:          schema.TypeString,
 							Optional:      true,
 							Description:   "The name of the action entry point (function or fully-qualified method name when applicable).",
-							ConflictsWith: []string{"exec.image", "exec.components"},
+							ConflictsWith: []string{"exec.0.image", "exec.0.components"},
 						},
 						"components": {
 							Type:          schema.TypeList,
@@ -229,7 +229,7 @@ func resourceIBMFunctionActionCreate(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 	namespace := d.Get("namespace").(string)
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -311,7 +311,7 @@ func resourceIBMFunctionActionRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -413,7 +413,7 @@ func resourceIBMFunctionActionUpdate(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -498,7 +498,7 @@ func resourceIBMFunctionActionDelete(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return err
 	}
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return err
 
@@ -542,7 +542,7 @@ func resourceIBMFunctionActionExists(d *schema.ResourceData, meta interface{}) (
 		return false, err
 	}
 
-	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession.Config, functionNamespaceAPI)
+	wskClient, err := setupOpenWhiskClientConfig(namespace, bxSession, functionNamespaceAPI)
 	if err != nil {
 		return false, err
 

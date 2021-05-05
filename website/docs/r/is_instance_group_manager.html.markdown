@@ -16,10 +16,6 @@ Create, Update or delete a instance group manager on of an instance group
 In the following example, you can create a instance group manager.
 
 ```hcl
-provider "ibm" {
-  generation = 2
-}
-
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2test"
 }
@@ -91,7 +87,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - Id is the comination of instance group ID and instance group manager ID
 * `policies` - list of policies associated with the instance group manager.

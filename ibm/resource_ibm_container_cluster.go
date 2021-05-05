@@ -199,6 +199,12 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Description: "Kubernetes patch version",
 			},
 
+			"retry_patch_version": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Argument which helps to retry the patch version updates on worker nodes. Increment the value to retry the patch updates if the previous apply fails",
+			},
+
 			"update_all_workers": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -396,7 +402,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_container_cluster", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "Tags for the resource",
 			},
@@ -571,6 +577,22 @@ func resourceIBMContainerCluster() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceIBMContainerClusterValidator() *ResourceValidator {
+	validateSchema := make([]ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "tag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
+	ibmContainerClusterResourceValidator := ResourceValidator{ResourceName: "ibm_container_cluster", Schema: validateSchema}
+	return &ibmContainerClusterResourceValidator
 }
 
 func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{}) error {
@@ -843,7 +865,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 
 	clusterID := d.Id()
 
-	if (d.HasChange("kube_version") || d.HasChange("update_all_workers") || d.HasChange("patch_version")) && !d.IsNewResource() {
+	if (d.HasChange("kube_version") || d.HasChange("update_all_workers") || d.HasChange("patch_version") || d.HasChange("retry_patch_version")) && !d.IsNewResource() {
 		if d.HasChange("kube_version") {
 			var masterVersion string
 			if v, ok := d.GetOk("kube_version"); ok {
@@ -867,7 +889,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		// "update_all_workers" deafult is false, enable to true when all worker nodes to be updated
 		// with major and minor updates.
 		updateAllWorkers := d.Get("update_all_workers").(bool)
-		if updateAllWorkers || d.HasChange("patch_version") {
+		if updateAllWorkers || d.HasChange("patch_version") || d.HasChange("retry_patch_version") {
 			patchVersion := d.Get("patch_version").(string)
 			workerFields, err := wrkAPI.List(clusterID, targetEnv)
 			if err != nil {
@@ -891,11 +913,13 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 					}
 					err = wrkAPI.Update(clusterID, w.ID, params, targetEnv)
 					if err != nil {
+						d.Set("patch_version", nil)
 						return fmt.Errorf("Error updating worker %s: %s", w.ID, err)
 					}
 					if waitForWorkerUpdate {
 						_, err = WaitForWorkerAvailable(d, meta, targetEnv)
 						if err != nil {
+							d.Set("patch_version", nil)
 							return fmt.Errorf(
 								"Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
 						}
@@ -1145,8 +1169,10 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		if len(rem) > 0 {
 			return fmt.Errorf("Subnet(s) %v cannot be deleted", rem)
 		}
-
-		subnets, err := subnetAPI.List(targetEnv)
+		metro := d.Get("datacenter").(string)
+		//from datacenter retrive the metro for filtering the subnets
+		metro = metro[0:3]
+		subnets, err := subnetAPI.List(targetEnv, metro)
 		if err != nil {
 			return err
 		}
@@ -1578,7 +1604,7 @@ func resourceIBMContainerClusterExists(d *schema.ResourceData, meta interface{})
 	cls, err := csClient.Clusters().FindWithOutShowResourcesCompatible(clusterID, targetEnv)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
+			if apiErr.StatusCode() == 404 && strings.Contains(apiErr.Description(), "The specified cluster could not be found") {
 				return false, nil
 			}
 		}

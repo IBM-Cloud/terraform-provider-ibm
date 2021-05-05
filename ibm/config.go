@@ -46,13 +46,19 @@ import (
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
+	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
+	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
+	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
+	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/dgrijalva/jwt-go"
 	slsession "github.com/softlayer/softlayer-go/session"
+	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
@@ -162,7 +168,8 @@ type Config struct {
 	PowerServiceInstance string
 
 	// Zone
-	Zone string
+	Zone       string
+	Visibility string
 }
 
 //Session stores the information required for communication with the SoftLayer and Bluemix API
@@ -187,6 +194,7 @@ type ClientSession interface {
 	FunctionClient() (*whisk.Client, error)
 	GlobalSearchAPI() (globalsearchv2.GlobalSearchServiceAPI, error)
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
+	GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error)
 	ICDAPI() (icdv4.ICDServiceAPI, error)
 	IAMAPI() (iamv1.IAMServiceAPI, error)
 	IAMPAPAPI() (iampapv1.IAMPAPAPI, error)
@@ -201,7 +209,6 @@ type ClientSession interface {
 	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
-	SchematicsAPI() (schematics.SchematicsServiceAPI, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
 	PushServiceV1() (*pushservicev1.PushServiceV1, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
@@ -242,6 +249,11 @@ type ClientSession interface {
 	IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
 	ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error)
 	CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error)
+	EnterpriseManagementV1() (*enterprisemanagementv1.EnterpriseManagementV1, error)
+	ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error)
+	SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error)
+	SchematicsV1() (*schematicsv1.SchematicsV1, error)
+	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
 }
 
 type clientSession struct {
@@ -289,6 +301,9 @@ type clientSession struct {
 	globalTaggingConfigErr  error
 	globalTaggingServiceAPI globaltaggingv3.GlobalTaggingServiceAPI
 
+	globalTaggingConfigErrV1  error
+	globalTaggingServiceAPIV1 globaltaggingv1.GlobalTaggingV1
+
 	iamPAPConfigErr  error
 	iamPAPServiceAPI iampapv1.IAMPAPAPI
 
@@ -306,6 +321,9 @@ type clientSession struct {
 
 	userManagementErr error
 	userManagementAPI usermanagementv2.UserManagementAPI
+
+	enterprise    *enterprisemanagementv1.EnterpriseManagementV1
+	enterpriseErr error
 
 	icdConfigErr  error
 	icdServiceAPI icdv4.ICDServiceAPI
@@ -464,6 +482,23 @@ type clientSession struct {
 	//Catalog Management Option
 	catalogManagementClient    *catalogmanagementv1.CatalogManagementV1
 	catalogManagementClientErr error
+
+	enterpriseManagementClient    *enterprisemanagementv1.EnterpriseManagementV1
+	enterpriseManagementClientErr error
+
+	//Resource Controller Option
+	resourceControllerErr   error
+	resourceControllerAPI   *resourcecontroller.ResourceControllerV2
+	secretsManagerClient    *secretsmanagerv1.SecretsManagerV1
+	secretsManagerClientErr error
+
+	// Schematics service options
+	schematicsClient    *schematicsv1.SchematicsV1
+	schematicsClientErr error
+
+	//Satellite service
+	satelliteClient    *kubernetesserviceapiv1.KubernetesServiceApiV1
+	satelliteClientErr error
 }
 
 func (session clientSession) CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error) {
@@ -506,8 +541,8 @@ func (session clientSession) ContainerRegistryV1() (*containerregistryv1.Contain
 }
 
 // SchematicsAPI provides schematics Service APIs ...
-func (sess clientSession) SchematicsAPI() (schematics.SchematicsServiceAPI, error) {
-	return sess.stxServiceAPI, sess.stxConfigErr
+func (sess clientSession) SchematicsV1() (*schematicsv1.SchematicsV1, error) {
+	return sess.schematicsClient, sess.schematicsClientErr
 }
 
 // CisAPI provides Cloud Internet Services APIs ...
@@ -528,6 +563,11 @@ func (sess clientSession) GlobalSearchAPI() (globalsearchv2.GlobalSearchServiceA
 // GlobalTaggingAPI provides Global Search  APIs ...
 func (sess clientSession) GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error) {
 	return sess.globalTaggingServiceAPI, sess.globalTaggingConfigErr
+}
+
+// GlobalTaggingAPIV1 provides Platform-go Global Tagging  APIs ...
+func (sess clientSession) GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error) {
+	return sess.globalTaggingServiceAPIV1, sess.globalTaggingConfigErrV1
 }
 
 // HpcsEndpointAPI provides Hpcs Endpoint generator APIs ...
@@ -853,6 +893,27 @@ func (sess clientSession) ResourceManagerV2API() (*resourcemanager.ResourceManag
 	return sess.resourceManagerAPI, sess.resourceManagerErr
 }
 
+func (session clientSession) EnterpriseManagementV1() (*enterprisemanagementv1.EnterpriseManagementV1, error) {
+	return session.enterpriseManagementClient, session.enterpriseManagementClientErr
+}
+
+// ResourceController Session
+func (sess clientSession) ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error) {
+	return sess.resourceControllerAPI, sess.resourceControllerErr
+}
+
+// SecretsManager Session
+func (session clientSession) SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error) {
+	return session.secretsManagerClient, session.secretsManagerClientErr
+}
+
+var cloudEndpoint = "cloud.ibm.com"
+
+// Session to the Satellite client
+func (sess clientSession) SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error) {
+	return sess.satelliteClient, sess.satelliteClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -931,6 +992,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisRangeAppErr = errEmptyBluemixCredentials
 		session.cisWAFRuleErr = errEmptyBluemixCredentials
 		session.iamIdentityErr = errEmptyBluemixCredentials
+		session.secretsManagerClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -986,7 +1048,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 
 	}
-	userConfig, err := fetchUserDetails(sess.BluemixSession, c.Generation, c.RetryCount, c.RetryDelay)
+	userConfig, err := fetchUserDetails(sess.BluemixSession, c.RetryCount, c.RetryDelay)
 	if err != nil {
 		session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
 	}
@@ -1037,7 +1099,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.hpcsEndpointAPI = hpcsAPI
 
-	kpurl := fmt.Sprintf("https://%s.kms.cloud.ibm.com", c.Region)
+	kpurl := contructEndpoint(fmt.Sprintf("%s.kms", c.Region), cloudEndpoint)
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		kpurl = contructEndpoint(fmt.Sprintf("private.%s.kms", c.Region), cloudEndpoint)
+	}
 	options := kp.ClientConfig{
 		BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kpurl),
 		Authorization: sess.BluemixSession.Config.IAMAccessToken,
@@ -1050,7 +1115,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.kpAPI = kpAPIclient
 
-	kmsurl := fmt.Sprintf("https://%s.kms.cloud.ibm.com", c.Region)
+	kmsurl := contructEndpoint(fmt.Sprintf("%s.kms", c.Region), cloudEndpoint)
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		kmsurl = contructEndpoint(fmt.Sprintf("private.%s.kms", c.Region), cloudEndpoint)
+	}
 	kmsOptions := kp.ClientConfig{
 		BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
 		Authorization: sess.BluemixSession.Config.IAMAccessToken,
@@ -1082,6 +1150,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct an "options" struct for creating the service client.
 	catalogManagementURL := "https://cm.globalcatalog.cloud.ibm.com/api/v1-beta"
+	if c.Visibility == "private" {
+		session.catalogManagementClientErr = fmt.Errorf("Catalog Management resource doesnot support private endpoints")
+	}
 	catalogManagementClientOptions := &catalogmanagementv1.CatalogManagementV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT"}, catalogManagementURL),
 		Authenticator: authenticator,
@@ -1099,8 +1170,47 @@ func (c *Config) ClientSession() (interface{}, error) {
 	} else {
 		session.catalogManagementClientErr = fmt.Errorf("Error occurred while configuring Catalog Management API service: %q", err)
 	}
+	schematicsEndpoint := "https://schematics.cloud.ibm.com"
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			schematicsEndpoint = contructEndpoint("private-us.schematics", cloudEndpoint)
+		} else if c.Region == "eu-gb" || c.Region == "eu-de" {
+			schematicsEndpoint = contructEndpoint("private-eu.schematics", cloudEndpoint)
+		} else {
+			schematicsEndpoint = "https://schematics.cloud.ibm.com"
+		}
+	}
+	schematicsClientOptions := &schematicsv1.SchematicsV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_SCHEMATICS_API_ENDPOINT"}, schematicsEndpoint),
+	}
 
-	vpcclassicurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
+	// Construct the service client.
+	schematicsClient, err := schematicsv1.NewSchematicsV1(schematicsClientOptions)
+	// Enable retries for API calls
+	if schematicsClient != nil && schematicsClient.Service != nil {
+		schematicsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		if err != nil {
+			session.schematicsClientErr = fmt.Errorf("Error occurred while configuring Schematics Service API service: %q", err)
+		}
+	}
+	session.schematicsClient = schematicsClient
+
+	vpcclassicurl := contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+	if c.Visibility == "private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			vpcclassicurl = contructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+		} else {
+			session.vpcClassicErr = fmt.Errorf("VPC Classic supports private endpoints only in us-south and us-east")
+		}
+	}
+	if c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			vpcclassicurl = contructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+		} else {
+			vpcclassicurl = contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+		}
+	}
 	vpcclassicoptions := &vpcclassic.VpcClassicV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_IS_API_ENDPOINT"}, vpcclassicurl),
 		Authenticator: authenticator,
@@ -1109,9 +1219,26 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if err != nil {
 		session.vpcErr = fmt.Errorf("Error occured while configuring vpc classic service: %q", err)
 	}
+	if vpcclassicclient != nil && vpcclassicclient.Service != nil {
+		vpcclassicclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+
 	session.vpcClassicAPI = vpcclassicclient
 
-	vpcurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
+	vpcurl := contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+	if c.Visibility == "private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			vpcurl = contructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+		} else {
+			session.vpcErr = fmt.Errorf("VPC supports private endpoints only in us-south and us-east")
+		}
+	}
+	if c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			vpcurl = contructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+		}
+		vpcurl = contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+	}
 	vpcoptions := &vpc.VpcV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
 		Authenticator: authenticator,
@@ -1126,6 +1253,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.vpcAPI = vpcclient
 
 	pnurl := fmt.Sprintf("https://%s.imfpush.cloud.ibm.com/imfpush/v1", c.Region)
+	if c.Visibility == "private" {
+		session.pushServiceClientErr = fmt.Errorf("Push Service API doesnot support private endpoints")
+	}
 	pushNotificationOptions := &pushservicev1.PushServiceV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_PUSH_API_ENDPOINT"}, pnurl),
 		Authenticator: authenticator,
@@ -1174,12 +1304,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.cosConfigAPI = cosconfigclient
 
-	schematicService, err := schematics.New(sess.BluemixSession)
-	if err != nil {
-		session.stxConfigErr = fmt.Errorf("Error occured while fetching schematics Configuration: %q", err)
-	}
-	session.stxServiceAPI = schematicService
-
 	cisAPI, err := cisv1.New(sess.BluemixSession)
 	if err != nil {
 		session.cisConfigErr = fmt.Errorf("Error occured while configuring Cloud Internet Services: %q", err)
@@ -1197,6 +1321,31 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.globalTaggingConfigErr = fmt.Errorf("Error occured while configuring Global Tagging: %q", err)
 	}
 	session.globalTaggingServiceAPI = globalTaggingAPI
+
+	globalTaggingEndpoint := "https://tags.global-search-tagging.cloud.ibm.com"
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		var globalTaggingRegion string
+		if c.Region != "us-south" && c.Region != "us-east" {
+			globalTaggingRegion = "us-south"
+		} else {
+			globalTaggingRegion = c.Region
+		}
+		globalTaggingEndpoint = contructEndpoint(fmt.Sprintf("tags.private.%s", globalTaggingRegion), fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
+	}
+
+	globalTaggingV1Options := &globaltaggingv1.GlobalTaggingV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_GT_API_ENDPOINT"}, globalTaggingEndpoint),
+		Authenticator: authenticator,
+	}
+
+	globalTaggingAPIV1, err := globaltaggingv1.NewGlobalTaggingV1(globalTaggingV1Options)
+	if err != nil {
+		session.globalTaggingConfigErr = fmt.Errorf("Error occured while configuring Global Tagging: %q", err)
+	}
+	if globalTaggingAPIV1 != nil {
+		session.globalTaggingServiceAPIV1 = *globalTaggingAPIV1
+		session.globalTaggingServiceAPIV1.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	iampap, err := iampapv1.New(sess.BluemixSession)
 	if err != nil {
@@ -1281,7 +1430,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.functionIAMNamespaceAPI = namespaceFunction
 
-	apicurl := fmt.Sprintf("https://api.%s.apigw.cloud.ibm.com/controller", c.Region)
+	apicurl := contructEndpoint(fmt.Sprintf("api.%s.apigw", c.Region), fmt.Sprintf("%s/controller", cloudEndpoint))
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		apicurl = contructEndpoint(fmt.Sprintf("api.private.%s.apigw", c.Region), fmt.Sprintf("%s/controller", cloudEndpoint))
+	}
 	APIGatewayControllerAPIV1Options := &apigateway.ApiGatewayControllerApiV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_API_GATEWAY_ENDPOINT"}, apicurl),
 		Authenticator: &core.NoAuthAuthenticator{},
@@ -1292,7 +1444,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.apigatewayAPI = apigatewayAPI
 
-	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, false, (c.BluemixTimeout * 10000000000), session.bmxUserDetails.userAccount, c.Zone)
+	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, false, 90000000000, session.bmxUserDetails.userAccount, c.Zone)
 	if err != nil {
 		session.ibmpiConfigErr = err
 		return nil, err
@@ -1300,8 +1452,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	session.ibmpiSession = ibmpisession
 
+	pdnsURL := dns.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		pdnsURL = contructEndpoint("api.private.dns-svcs", fmt.Sprintf("%s/v1", cloudEndpoint))
+	}
 	dnsOptions := &dns.DnsSvcsV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_PRIVATE_DNS_API_ENDPOINT"}, "https://api.dns-svcs.cloud.ibm.com/v1"),
+		URL:           envFallBack([]string{"IBMCLOUD_PRIVATE_DNS_API_ENDPOINT"}, pdnsURL),
 		Authenticator: authenticator,
 	}
 
@@ -1309,32 +1465,55 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.pDNSErr != nil {
 		session.pDNSErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", session.pDNSErr)
 	}
-	version := time.Now().Format("2006-01-02")
+	if session.pDNSClient != nil && session.pDNSClient.Service != nil {
+		session.pDNSClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
+	ver := time.Now().Format("2006-01-02")
+
+	dlURL := dl.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		dlURL = contructEndpoint("private.directlink", fmt.Sprintf("%s/v1", cloudEndpoint))
+	}
 	directlinkOptions := &dl.DirectLinkV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_DL_API_ENDPOINT"}, "https://directlink.cloud.ibm.com/v1"),
+		URL:           envFallBack([]string{"IBMCLOUD_DL_API_ENDPOINT"}, dlURL),
 		Authenticator: authenticator,
-		Version:       &version,
+		Version:       &ver,
 	}
 
 	session.directlinkAPI, session.directlinkErr = dl.NewDirectLinkV1(directlinkOptions)
 	if session.directlinkErr != nil {
 		session.directlinkErr = fmt.Errorf("Error occured while configuring Direct Link Service: %s", session.directlinkErr)
 	}
+	if session.directlinkAPI != nil && session.directlinkAPI.Service != nil {
+		session.directlinkAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	//Direct link provider
+	dlproviderURL := dlProviderV2.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		dlproviderURL = contructEndpoint("private.directlink", fmt.Sprintf("%s/provider/v2", cloudEndpoint))
+	}
 	directLinkProviderV2Options := &dlProviderV2.DirectLinkProviderV2Options{
-		URL:           envFallBack([]string{"IBMCLOUD_DL_PROVIDER_API_ENDPOINT"}, "https://directlink.cloud.ibm.com/provider/v2"),
+		URL:           envFallBack([]string{"IBMCLOUD_DL_PROVIDER_API_ENDPOINT"}, dlproviderURL),
 		Authenticator: authenticator,
-		Version:       &version,
+		Version:       &ver,
 	}
 
 	session.dlProviderAPI, session.dlProviderErr = dlProviderV2.NewDirectLinkProviderV2(directLinkProviderV2Options)
 	if session.dlProviderErr != nil {
 		session.dlProviderErr = fmt.Errorf("Error occured while configuring Direct Link Provider Service: %s", session.dlProviderErr)
 	}
+	if session.dlProviderAPI != nil && session.dlProviderAPI.Service != nil {
+		session.dlProviderAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+
+	tgURL := tg.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		tgURL = contructEndpoint("private.transit", fmt.Sprintf("%s/v1", cloudEndpoint))
+	}
 	transitgatewayOptions := &tg.TransitGatewayApisV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_TG_API_ENDPOINT"}, "https://transit.cloud.ibm.com/v1"),
+		URL:           envFallBack([]string{"IBMCLOUD_TG_API_ENDPOINT"}, tgURL),
 		Authenticator: authenticator,
 		Version:       CreateVersionDate(),
 	}
@@ -1343,9 +1522,37 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.transitgatewayErr != nil {
 		session.transitgatewayErr = fmt.Errorf("Error occured while configuring Transit Gateway Service: %s", session.transitgatewayErr)
 	}
+	if session.transitgatewayAPI != nil && session.transitgatewayAPI.Service != nil {
+		session.transitgatewayAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	// CIS Service instances starts here.
-	cisEndPoint := envFallBack([]string{"IBMCLOUD_CIS_API_ENDPOINT"}, "https://api.cis.cloud.ibm.com")
+	cisURL := contructEndpoint("api.cis", cloudEndpoint)
+	if c.Visibility == "private" {
+		// cisURL = contructEndpoint("api.private.cis", cloudEndpoint)
+		session.cisZonesErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisDNSBulkErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisGLBPoolErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisGLBErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisGLBHealthCheckErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisIPErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisRLErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisPageRuleErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisEdgeFunctionErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisSSLErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisWAFPackageErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisDomainSettingsErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisRoutingErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisWAFGroupErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisCacheErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisCustomPageErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisAccessRuleErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisUARuleErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisLockdownErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisRangeAppErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisWAFRuleErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+	}
+	cisEndPoint := envFallBack([]string{"IBMCLOUD_CIS_API_ENDPOINT"}, cisURL)
 
 	// IBM Network CIS Zones service
 	cisZonesV1Opt := &ciszonesv1.ZonesV1Options{
@@ -1359,6 +1566,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"Error occured while configuring CIS Zones service: %s",
 			session.cisZonesErr)
 	}
+	if session.cisZonesV1Client != nil && session.cisZonesV1Client.Service != nil {
+		session.cisZonesV1Client.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	// IBM Network CIS DNS Record service
 	cisDNSRecordsOpt := &cisdnsrecordsv1.DnsRecordsV1Options{
@@ -1370,6 +1580,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.cisDNSRecordsClient, session.cisDNSErr = cisdnsrecordsv1.NewDnsRecordsV1(cisDNSRecordsOpt)
 	if session.cisDNSErr != nil {
 		session.cisDNSErr = fmt.Errorf("Error occured while configuring CIS DNS Service: %s", session.cisDNSErr)
+	}
+	if session.cisDNSRecordsClient != nil && session.cisDNSRecordsClient.Service != nil {
+		session.cisDNSRecordsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 
 	// IBM Network CIS DNS Record bulk service
@@ -1385,6 +1598,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"Error occured while configuration CIS DNS bulk service : %s",
 			session.cisDNSBulkErr)
 	}
+	if session.cisDNSRecordBulkClient != nil && session.cisDNSRecordBulkClient.Service != nil {
+		session.cisDNSRecordBulkClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	// IBM Network CIS Global load balancer pool
 	cisGLBPoolOpt := &cisglbpoolv0.GlobalLoadBalancerPoolsV0Options{
@@ -1398,6 +1614,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisGLBPoolErr =
 			fmt.Errorf("Error occured while configuring CIS GLB Pool service: %s",
 				session.cisGLBPoolErr)
+	}
+	if session.cisGLBPoolClient != nil && session.cisGLBPoolClient.Service != nil {
+		session.cisGLBPoolClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 
 	// IBM Network CIS Global load balancer
@@ -1413,6 +1632,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 			fmt.Errorf("Error occured while configuring CIS GLB service: %s",
 				session.cisGLBErr)
 	}
+	if session.cisGLBClient != nil && session.cisGLBClient.Service != nil {
+		session.cisGLBClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	// IBM Network CIS Global load balancer health check/monitor
 	cisGLBHealthCheckOpt := &cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1Options{
@@ -1427,6 +1649,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 			fmt.Errorf("Error occured while configuring CIS GLB Health Check service: %s",
 				session.cisGLBHealthCheckErr)
 	}
+	if session.cisGLBHealthCheckClient != nil && session.cisGLBHealthCheckClient.Service != nil {
+		session.cisGLBHealthCheckClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	// IBM Network CIS IP
 	cisIPOpt := &cisipv1.CisIpApiV1Options{
@@ -1437,6 +1662,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisIPErr != nil {
 		session.cisIPErr = fmt.Errorf("Error occured while configuring CIS IP service: %s",
 			session.cisIPErr)
+	}
+	if session.cisIPClient != nil && session.cisIPClient.Service != nil {
+		session.cisIPClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 
 	// IBM Network CIS Zone Rate Limit
@@ -1452,6 +1680,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"Error occured while cofiguring CIS Zone Rate Limit service: %s",
 			session.cisRLErr)
 	}
+	if session.cisRLClient != nil && session.cisRLClient.Service != nil {
+		session.cisRLClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	// IBM Network CIS Page Rules
 	cisPageRuleOpt := &cispagerulev1.PageRuleApiV1Options{
@@ -1465,6 +1696,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisPageRuleErr = fmt.Errorf(
 			"Error occured while cofiguring CIS Page Rule service: %s",
 			session.cisPageRuleErr)
+	}
+	if session.cisPageRuleClient != nil && session.cisPageRuleClient.Service != nil {
+		session.cisPageRuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 
 	// IBM Network CIS Edge Function
@@ -1481,6 +1715,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 			fmt.Errorf("Error occured while configuring CIS Edge Function service: %s",
 				session.cisEdgeFunctionErr)
 	}
+	if session.cisEdgeFunctionClient != nil && session.cisEdgeFunctionClient.Service != nil {
+		session.cisEdgeFunctionClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	// IBM Network CIS SSL certificate
 	cisSSLOpt := &cissslv1.SslCertificateApiV1Options{
@@ -1495,6 +1732,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisSSLErr =
 			fmt.Errorf("Error occured while configuring CIS SSL certificate service: %s",
 				session.cisSSLErr)
+	}
+	if session.cisSSLClient != nil && session.cisSSLClient.Service != nil {
+		session.cisSSLClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 
 	// IBM Network CIS WAF Package
@@ -1511,6 +1751,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 			fmt.Errorf("Error occured while configuration CIS WAF Package service: %s",
 				session.cisWAFPackageErr)
 	}
+	if session.cisWAFPackageClient != nil && session.cisWAFPackageClient.Service != nil {
+		session.cisWAFPackageClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	// IBM Network CIS Domain settings
 	cisDomainSettingsOpt := &cisdomainsettingsv1.ZonesSettingsV1Options{
@@ -1525,6 +1768,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisDomainSettingsErr =
 			fmt.Errorf("Error occured while configuring CIS Domain Settings service: %s",
 				session.cisDomainSettingsErr)
+	}
+	if session.cisDomainSettingsClient != nil && session.cisDomainSettingsClient.Service != nil {
+		session.cisDomainSettingsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 
 	// IBM Network CIS Routing
@@ -1541,6 +1787,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 			fmt.Errorf("Error occured while configuring CIS Routing service: %s",
 				session.cisRoutingErr)
 	}
+	if session.cisRoutingClient != nil && session.cisRoutingClient.Service != nil {
+		session.cisRoutingClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	// IBM Network CIS WAF Group
 	cisWAFGroupOpt := &ciswafgroupv1.WafRuleGroupsApiV1Options{
@@ -1556,6 +1805,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 			fmt.Errorf("Error occured while configuring CIS WAF Group service: %s",
 				session.cisWAFGroupErr)
 	}
+	if session.cisWAFGroupClient != nil && session.cisWAFGroupClient.Service != nil {
+		session.cisWAFGroupClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	// IBM Network CIS Cache service
 	cisCacheOpt := &ciscachev1.CachingApiV1Options{
@@ -1570,6 +1822,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisCacheErr =
 			fmt.Errorf("Error occured while configuring CIS Caching service: %s",
 				session.cisCacheErr)
+	}
+	if session.cisCacheClient != nil && session.cisCacheClient.Service != nil {
+		session.cisCacheClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 
 	// IBM Network CIS Custom pages service
@@ -1587,6 +1842,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 			fmt.Errorf("Error occured while configuring CIS Custom Pages service: %s",
 				session.cisCustomPageErr)
 	}
+	if session.cisCustomPageClient != nil && session.cisCustomPageClient.Service != nil {
+		session.cisCustomPageClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	// IBM Network CIS Firewall Access rule
 	cisAccessRuleOpt := &cisaccessrulev1.ZoneFirewallAccessRulesV1Options{
@@ -1601,6 +1859,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisAccessRuleErr =
 			fmt.Errorf("Error occured while configuring CIS Firewall Access Rule service: %s",
 				session.cisAccessRuleErr)
+	}
+	if session.cisAccessRuleClient != nil && session.cisAccessRuleClient.Service != nil {
+		session.cisAccessRuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 
 	// IBM Network CIS Firewall User Agent Blocking rule
@@ -1617,6 +1878,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 			fmt.Errorf("Error occured while configuring CIS Firewall User Agent Blocking Rule service: %s",
 				session.cisUARuleErr)
 	}
+	if session.cisUARuleClient != nil && session.cisUARuleClient.Service != nil {
+		session.cisUARuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	// IBM Network CIS Firewall Lockdown rule
 	cisLockdownOpt := &cislockdownv1.ZoneLockdownV1Options{
@@ -1631,6 +1895,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisLockdownErr =
 			fmt.Errorf("Error occured while configuring CIS Firewall Lockdown Rule service: %s",
 				session.cisLockdownErr)
+	}
+	if session.cisLockdownClient != nil && session.cisLockdownClient.Service != nil {
+		session.cisLockdownClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 
 	// IBM Network CIS Range Application rule
@@ -1647,6 +1914,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 			fmt.Errorf("Error occured while configuring CIS Range Application rule service: %s",
 				session.cisRangeAppErr)
 	}
+	if session.cisRangeAppClient != nil && session.cisRangeAppClient.Service != nil {
+		session.cisRangeAppClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	// IBM Network CIS WAF Rule Service
 	cisWAFRuleOpt := &ciswafrulev1.WafRulesApiV1Options{
@@ -1662,20 +1932,51 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"Error occured while configuring CIS WAF Rules service: %s",
 			session.cisWAFRuleErr)
 	}
+	if session.cisWAFRuleClient != nil && session.cisWAFRuleClient.Service != nil {
+		session.cisWAFRuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+
 	// iamIdenityURL := fmt.Sprintf("https://%s.iam.cloud.ibm.com/v1", c.Region)
+	iamURL := iamidentity.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			iamURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+		} else {
+			iamURL = contructEndpoint("private.iam", cloudEndpoint)
+		}
+	}
 	iamIdentityOptions := &iamidentity.IamIdentityV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, "https://iam.cloud.ibm.com"),
+		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL),
 	}
 	iamIdentityClient, err := iamidentity.NewIamIdentityV1(iamIdentityOptions)
 	if err != nil {
 		session.vpcErr = fmt.Errorf("Error occured while configuring IAM Identity service: %q", err)
 	}
+	if iamIdentityClient != nil && iamIdentityClient.Service != nil {
+		iamIdentityClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 	session.iamIdentityAPI = iamIdentityClient
 
+	rmURL := resourcemanager.DefaultServiceURL
+	if c.Visibility == "private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			rmURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s/v2", cloudEndpoint))
+		} else {
+			fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
+			rmURL = contructEndpoint("private.us-south.resource-controller", fmt.Sprintf("%s/v2", cloudEndpoint))
+		}
+	}
+	if c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			rmURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s/v2", cloudEndpoint))
+		} else {
+			rmURL = resourcemanager.DefaultServiceURL
+		}
+	}
 	resourceManagerOptions := &resourcemanager.ResourceManagerV2Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_MANAGER_API_ENDPOINT"}, "https://resource-controller.cloud.ibm.com/v2"),
+		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_MANAGEMENT_API_ENDPOINT"}, rmURL),
 	}
 	resourceManagerClient, err := resourcemanager.NewResourceManagerV2(resourceManagerOptions)
 	if err != nil {
@@ -1685,6 +1986,100 @@ func (c *Config) ClientSession() (interface{}, error) {
 		resourceManagerClient.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 	session.resourceManagerAPI = resourceManagerClient
+
+	enterpriseURL := enterprisemanagementv1.DefaultServiceURL
+	if c.Visibility == "private" {
+		if c.Region == "us-south" || c.Region == "us-east" || c.Region == "eu-fr" {
+			enterpriseURL = contructEndpoint(fmt.Sprintf("private.%s.enterprise", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+		} else {
+			fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
+			enterpriseURL = contructEndpoint("private.us-south.enterprise", fmt.Sprintf("%s/v1", cloudEndpoint))
+		}
+	}
+	if c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" || c.Region == "eu-fr" {
+			enterpriseURL = contructEndpoint(fmt.Sprintf("private.%s.enterprise", c.Region),
+				fmt.Sprintf("%s/v1", cloudEndpoint))
+		} else {
+			enterpriseURL = enterprisemanagementv1.DefaultServiceURL
+		}
+	}
+	enterpriseManagementClientOptions := &enterprisemanagementv1.EnterpriseManagementV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_ENTERPRISE_API_ENDPOINT"}, enterpriseURL),
+	}
+	enterpriseManagementClient, err := enterprisemanagementv1.NewEnterpriseManagementV1(enterpriseManagementClientOptions)
+	if err == nil {
+		enterpriseManagementClient.EnableRetries(c.RetryCount, c.RetryDelay)
+	} else {
+		session.enterpriseManagementClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Enterprise Management API service: %q", err)
+	}
+	session.enterpriseManagementClient = enterpriseManagementClient
+
+	// resource controller API
+	rcURL := resourcecontroller.DefaultServiceURL
+	if c.Visibility == "private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			rcURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), cloudEndpoint)
+		} else {
+			fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
+			rcURL = contructEndpoint("private.us-south.resource-controller", cloudEndpoint)
+		}
+	}
+	if c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			rcURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), cloudEndpoint)
+		} else {
+			rcURL = resourcecontroller.DefaultServiceURL
+		}
+	}
+	resourceControllerOptions := &resourcecontroller.ResourceControllerV2Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_CONTROLLER_API_ENDPOINT"}, rcURL),
+	}
+	resourceControllerClient, err := resourcecontroller.NewResourceControllerV2(resourceControllerOptions)
+	if err != nil {
+		session.resourceControllerErr = fmt.Errorf("Error occured while configuring Resource Controller service: %q", err)
+	}
+	if resourceControllerClient != nil {
+		resourceControllerClient.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+	session.resourceControllerAPI = resourceControllerClient
+	// var authenticator2 *core.BearerTokenAuthenticator
+	// Construct an "options" struct for creating the service client.
+	secretsManagerClientOptions := &secretsmanagerv1.SecretsManagerV1Options{
+		Authenticator: authenticator,
+	}
+
+	/// Construct the service client.
+	session.secretsManagerClient, err = secretsmanagerv1.NewSecretsManagerV1(secretsManagerClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.secretsManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.secretsManagerClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.secretsManagerClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Secrets Manager API service: %q", err)
+	}
+
+	containerEndpoint := kubernetesserviceapiv1.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		containerEndpoint = contructEndpoint(fmt.Sprintf("private.%s.containers", c.Region), fmt.Sprintf("%s/global", cloudEndpoint))
+	}
+
+	kubernetesServiceV1Options := &kubernetesserviceapiv1.KubernetesServiceApiV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_SATELLITE_API_ENDPOINT"}, containerEndpoint),
+		Authenticator: authenticator,
+	}
+
+	session.satelliteClient, err = kubernetesserviceapiv1.NewKubernetesServiceApiV1(kubernetesServiceV1Options)
+	if err != nil {
+		session.satelliteClientErr = fmt.Errorf("Error occured while configuring satellite client: %q", err)
+	}
+	// Enable retries for API calls
+	session.satelliteClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 
 	return session, nil
 }
@@ -1738,6 +2133,7 @@ func newSession(c *Config) (*Session, error) {
 			ResourceGroup: c.ResourceGroup,
 			RetryDelay:    &c.RetryDelay,
 			MaxRetries:    &c.RetryCount,
+			Visibility:    c.Visibility,
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {
@@ -1758,6 +2154,7 @@ func newSession(c *Config) (*Session, error) {
 			ResourceGroup: c.ResourceGroup,
 			RetryDelay:    &c.RetryDelay,
 			MaxRetries:    &c.RetryCount,
+			Visibility:    c.Visibility,
 			//PowerServiceInstance: c.PowerServiceInstance,
 		}
 		sess, err := bxsession.New(bmxConfig)
@@ -1796,7 +2193,7 @@ func authenticateCF(sess *bxsession.Session) error {
 	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
 }
 
-func fetchUserDetails(sess *bxsession.Session, generation, retries int, retryDelay time.Duration) (*UserConfig, error) {
+func fetchUserDetails(sess *bxsession.Session, retries int, retryDelay time.Duration) (*UserConfig, error) {
 	config := sess.Config
 	user := UserConfig{}
 	var bluemixToken string
@@ -1817,7 +2214,7 @@ func fetchUserDetails(sess *bxsession.Session, generation, retries int, retryDel
 				time.Sleep(retryDelay)
 				log.Printf("Retrying authentication for user details %d", retries)
 				_ = authenticateAPIKey(sess)
-				return fetchUserDetails(sess, generation, retries-1, retryDelay)
+				return fetchUserDetails(sess, retries-1, retryDelay)
 			}
 		}
 		return &user, err
@@ -1836,7 +2233,7 @@ func fetchUserDetails(sess *bxsession.Session, generation, retries int, retryDel
 	}
 	user.cloudType = "public"
 
-	user.generation = generation
+	user.generation = 2
 	return &user, nil
 }
 
@@ -1857,11 +2254,7 @@ func refreshToken(sess *bxsession.Session) error {
 func envFallBack(envs []string, defaultValue string) string {
 	for _, k := range envs {
 		if v := os.Getenv(k); v != "" {
-			if strings.Contains(v, "https://") {
-				return v
-			} else {
-				return fmt.Sprintf("https://%s/v1", v)
-			}
+			return v
 		}
 	}
 	return defaultValue
@@ -1901,4 +2294,9 @@ func isRetryable(err error) bool {
 	}
 
 	return false
+}
+
+func contructEndpoint(subdomain, domain string) string {
+	endpoint := fmt.Sprintf("https://%s.%s", subdomain, domain)
+	return endpoint
 }

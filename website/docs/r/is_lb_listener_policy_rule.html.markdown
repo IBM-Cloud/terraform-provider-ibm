@@ -69,7 +69,7 @@ The following arguments are supported:
 * `listener` - (Required, Forces new resource, string) Unique Load Balancer Listener ID
 * `policy` - (Required, Forces new resource, string) Unique Load Balancer listener policy ID
 * `condition` - (Required, string). The condition of the rule. Allowable values: [contains,equals,matches_regex].
-* `type` - (Required, string) The type of the rule.Allowable values: [header,hostname,path].
+* `type` - (Required, string) The type of the rule.Allowable values: [header,hostname,path,query,body].
 * `value` - (Required, string) Value to be matched for rule condition. Constraints: 1 ≤ length ≤ 128
 * `field` - (Optional, string) HTTP header field. This is only applicable to "header" rule type. 
 
@@ -80,7 +80,7 @@ Network load balancer does not support ibm_is_lb_listener_policy_rule.
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the load balancer listener Policy. Its a combination of lb, listener and policyID delimited by /.
 * `status` - The status of load balancer listener.

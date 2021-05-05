@@ -34,7 +34,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The Action ID. It is a combination of <`trigger_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
 - `pattern_url` - The Route pattern. It is a domain name which the action will be performed.

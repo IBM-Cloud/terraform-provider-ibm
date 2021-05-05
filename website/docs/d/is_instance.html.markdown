@@ -76,6 +76,14 @@ The following attributes can be exported:
 * `zone` - zone of the instance.
 * `vpc` - vpc id of the instance.
 * `resource_group` - resource group id of the instance.
+* `disks` - Collection of the instance's disks. Nested `disks` blocks have the following structure:
+	* `created_at` - The date and time that the disk was created.
+	* `href` - The URL for this instance disk.
+	* `id` - The unique identifier for this instance disk.
+	* `interface_type` - The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
+	* `name` - The user-defined name for this disk.
+	* `resource_type` - The resource type.
+	* `size` - The size of the disk in GB (gigabytes).
 * `vcpu` - A nested block describing the VCPU configuration of this instance.
 Nested `vcpu` blocks have the following structure:
   * `architecture` - The architecture of the instance.

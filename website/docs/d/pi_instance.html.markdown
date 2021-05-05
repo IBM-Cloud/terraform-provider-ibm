@@ -40,7 +40,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier for this instance.
 * `memory` - The memory of the instance.

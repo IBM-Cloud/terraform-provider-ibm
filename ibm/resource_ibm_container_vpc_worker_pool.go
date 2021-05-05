@@ -425,7 +425,7 @@ func resourceIBMContainerVpcWorkerPoolExists(d *schema.ResourceData, meta interf
 	workerPool, err := workerPoolsAPI.GetWorkerPool(cluster, workerPoolID, targetEnv)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
+			if apiErr.StatusCode() == 404 && strings.Contains(apiErr.Description(), "The specified worker pool could not be found") {
 				return false, nil
 			}
 		}

@@ -32,7 +32,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `crn` - The CRN of VPC.
 * `status` - The status of VPC.
@@ -64,3 +64,6 @@ The following attributes are exported:
     * `code` - The ICMP traffic code to allow.
     * `port_min` - The inclusive lower bound of TCP port range. 
     * `port_max` - The inclusive upper bound of TCP port range. 
+* `default_network_acl_name` - The name of the default network acl.
+* `default_security_group_name` - The name of the default security group.
+* `default_routing_table_name` - The name of the default routing table.

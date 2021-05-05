@@ -15,10 +15,6 @@ Create, Update or delete an instance template on VPC
 
 In the following example, you can create a instance template VPC gen-2 infrastructure.
 ```hcl
-provider "ibm" {
-  generation = 2
-}
-
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2test"
 }
@@ -90,9 +86,11 @@ The following arguments are supported:
   * `delete_volume_on_instance_delete` - (Required, bool) Configured to delete the storage volume to be deleted upon instance deletion.
 * `user_data` - (Optional, string) User data provided for the instance.
 
+**NOTE**: `volume_attachments` Volume attachments are not supported for instance groups, so if you plan to use this instance template with an instance group do not include volume attachment for Data volumes. Otherwise, you can add one or more secondary data volumes to be included in the template to be used when you provision the instances with the Template
+
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - Id of the instance template
 

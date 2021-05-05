@@ -11,35 +11,8 @@ description: |-
 
 Create or delete a Kubernetes VPC cluster.
 
-**NOTE**:
-Configuration of an ibm_container_vpc_cluster resource requires that the `generation` parameter is set for the IBM provider either in the `provider.tf or export as an environment variable IC_GENERATION. If not set the default value for generation will be 2.
-
-## Example Usage
-
-In the following example, you can create a Gen-1 VPC cluster with a default worker pool with one worker:
-
-```hcl
-provider "ibm" {
-  generation = 1
-}
-resource "ibm_container_vpc_cluster" "cluster" {
-  name              = "my_vpc_cluster"
-  vpc_id            = "6015365a-9d93-4bb4-8248-79ae0db2dc21"
-  flavor            = "c2.2x4"
-  worker_count      = "1"
-  resource_group_id = data.ibm_resource_group.resource_group.id
-  zones {
-    subnet_id = "015ffb8b-efb1-4c03-8757-29335a07493h"
-    name      = "us-south-1"
-  }
-}
-```
-
 In the following example, you can create a Gen-2 VPC cluster with a default worker pool with one worker:
 ```hcl
-provider "ibm" {
-  generation = 2
-}
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = "my_vpc_cluster"
   vpc_id            = "r006-abb7c7ea-aadf-41bd-94c5-b8521736fadf"
@@ -56,10 +29,6 @@ resource "ibm_container_vpc_cluster" "cluster" {
 
 Create the Openshift Cluster with default worker Pool entitlement with one worker node:
 ```hcl
-provider "ibm" {
-  generation = 2
-}
-
 resource "ibm_resource_instance" "cos_instance" {
   name     = "my_cos_instance"
   service  = "cloud-object-storage"
@@ -148,6 +117,7 @@ Resource will wait for only the specified stage and complete execution. The supp
 * `patch_version` - (Optional, string) Set this to update the worker nodes with the required patch version. 
    The patch_version should be in the format - `patch_version_fixpack_version`. Learn more about the Kuberentes version [here](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions).
     **NOTE**: To update the patch/fixpack versions of the worker nodes, Run the command `ibmcloud ks workers -c <cluster_name_or_id> --output json`, fetch the required patch & fixpack versions from `kubeVersion.target` and set the patch_version parameter.
+* `retry_patch_version` - (Optional, int) This argument helps to retry the update of patch_version if the previous update fails. Increment the value to retry the update of patch_version on worker nodes.
 
 **NOTE**:
 1. For users on account to add tags to a resource, they must be assigned the appropriate access. Learn more about tags permission [here](https://cloud.ibm.com/docs/resources?topic=resources-access)
@@ -156,7 +126,7 @@ Resource will wait for only the specified stage and complete execution. The supp
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - Id of the cluster
 * `crn` - CRN of the cluster.

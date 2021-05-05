@@ -36,13 +36,21 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `instances` - List of all instances in the IBM Cloud Infrastructure.
   * `id` - The id of the instance.
   * `memory` - Memory of the instance.
   * `status` - Status of the instance.
   * `image` - Image used in the instance.
+  * `disks` - Collection of the instance's disks. Nested `disks` blocks have the following structure:
+	  * `created_at` - The date and time that the disk was created.
+	  * `href` - The URL for this instance disk.
+	  * `id` - The unique identifier for this instance disk.
+	  * `interface_type` - The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
+	  * `name` - The user-defined name for this disk.
+	  * `resource_type` - The resource type.
+	  * `size` - The size of the disk in GB (gigabytes).
   * `zone` - zone of the instance.
   * `vpc` - vpc id of the instance.
   * `resource_group` - resource group id of the instance.

@@ -52,21 +52,26 @@ resource "ibm_resource_instance" "metrics_monitor" {
   name              = "metrics_monitor"
   resource_group_id = data.ibm_resource_group.cos_group.id
   service           = "sysdig-monitor"
-  plan              = "lite"
+  plan              = "graduated-tier"
   location          = "us-south"
+  parameters        = {
+    default_receiver = true
+  }
 }
 resource "ibm_cos_bucket" "standard-ams03" {
   bucket_name          = var.bucket_name
   resource_instance_id = ibm_resource_instance.cos_instance.id
-  cross_region_location      = var.region
+  single_site_location = "sjc04"
+  #cross_region_location = var.region
   storage_class        = var.storage
- activity_tracking {
+  activity_tracking {
     read_data_events     = true
     write_data_events    = true
     activity_tracker_crn = ibm_resource_instance.activity_tracker.id
   }
   metrics_monitoring {
     usage_metrics_enabled  = true
+    request_metrics_enabled = true
     metrics_monitoring_crn = ibm_resource_instance.metrics_monitor.id
   }
   allowed_ip =  ["223.196.168.27","223.196.161.38","192.168.0.1"]
@@ -114,6 +119,12 @@ data "ibm_cos_bucket" "standard-ams03" {
 | resource\_group\_name | Name of the resource group. | `string` | yes |
 | storage | The storage class that you want to use for the bucket. Supported values are standard, vault, cold, flex, and smart.| `string` | no |
 | region | The location for a cross-regional bucket. Supported values are us, eu, and ap. | `string` | no |
+| read_data_events | Enables sending log data to Activity Tracker and LogDNA to provide visibility into object read and write events.. | `array` | no
+| write_data_events | all object write events (i.e. uploads) will be sent to Activity Tracker. | `bool` | no
+| activity_tracker_crn | Required the first time activity_tracking is configured. | `string` | yes
+| usage_metrics_enabled | Specify true or false to set usage metrics (i.e. bytes_used). | `bool` | no
+| request_metrics_enabled | Specify true or false to set cos request metrics (i.e. get,put,post request). | `bool` | no
+| metrics_monitoring_crn | Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics. | `string` | yes
 | archive_ruleid | Unique identifier for the rule. | `string` | no
 | regional_loc | The location for a regional bucket. Supported values are au-syd, eu-de, eu-gb, jp-tok,,us-east,us-south. | `string` | no
 | archive_days | Specifies the number of days when the specific archive rule action takes effect. | `int` | yes
@@ -121,3 +132,7 @@ data "ibm_cos_bucket" "standard-ams03" {
 | expire_ruleid | Unique identifier for the rule. | `string` | no
 | expire_days | Specifies the number of days when the specific expire rule action takes effect. | `int` | yes
 | expire_prefix | Specifies a prefix filter to apply to only a subset of objects with names that match the prefix. | `string` | no
+| default | Specifies a default retention period to apply in all objects in the bucket. | `int` | yes
+| maximum | Specifies maximum duration of time an object can be kept unmodified in the bucket. | `int` | yes
+| minimum | Specifies minimum duration of time an object must be kept unmodified in the bucket. | `int` | yes
+| permanent | Specifies a permanent retention status either enable or disable for a bucket. | `bool` | no

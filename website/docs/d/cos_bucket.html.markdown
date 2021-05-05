@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_cos_bucket
 
-Get information about already existing buckets.
+Creates an IBM Cloud Object Storage bucket. It also allows object storage buckets to be updated and deleted. The ibmcloud_api_key used by Terraform must have been granted sufficient IAM rights to create and modify IBM Cloud Object Storage buckets and have access to the Resource Group the Cloud Object Storage bucket will be associated with. See https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-iam for more details on setting IAM and Access Group rights to manage COS buckets.
 
 ## Example Usage
 
@@ -49,7 +49,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the bucket.
 * `crn` - The CRN of the bucket.
@@ -61,19 +61,26 @@ The following attributes are exported:
 * `storage_class` - Storage class of the bucket.
 * `allowed_ip` - List of IPv4 or IPv6 addresses in CIDR notation to be affected by firewall.
 * Nested `activity_tracking` block have the following structure:
-	*	`activity_tracking.read_data_events` : (Optional, array) Enables sending log data to Activity Tracker and LogDNA to provide visibility into object read and write events.
-	*	`activity_tracking.write_data_events` : (Optional,bool) If set to true, all object write events (i.e. uploads) will be sent to Activity Tracker.
-	*	`activity_tracking.activity_tracker_crn` : (Required, string) Required the first time activity_tracking is configured.
+	*	`read_data_events` : (Optional, array) Enables sending log data to Activity Tracker and LogDNA to provide visibility into object read and write events.
+	*	`write_data_events` : (Optional,bool) If set to true, all object write events (i.e. uploads) will be sent to Activity Tracker.
+	*	`activity_tracker_crn` : (Required, string) Required the first time activity_tracking is configured.
 * Nested `metrics_monitoring` block have the following structure:
-	*	`metrics_monitoring.usage_metrics_enabled` : (Optional,bool) If set to true, all usage metrics (i.e. bytes_used) will be sent to the monitoring service.
-	*	`metrics_monitoring.metrics_monitoring_crn` : (Required, string) Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics.
+	*	`usage_metrics_enabled` : (Optional,bool) If set to true, all usage metrics (i.e. bytes_used) will be sent to the monitoring service.
+	*	`request_metrics_enabled` : (Optional,bool) If set to true, all request metrics (i.e. ibm_cos_bucket_all_request) will be sent to the monitoring service @1mins granulatiy.
+	*	`metrics_monitoring_crn` : (Required, string) Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics.
 * Nested `archive_rule` block have the following structure:
-	*	`archive_rule.rule_id` : (Optional, Computed, string) Unique identifier for the rule. Archive rules allow you to set a specific time frame after which objects transition to the archive.
-	*	`archive_rule.enable` :* (Required, bool) (Required) Specifies archive rule status either enable or disable for a bucket.
-	*	`archive_rule.days` :* (Required, string)  Specifies the number of days when the specific rule action takes effect.
-	*	`archive_rule.type` :* (Required, string) Specifies the storage class/archive type to which you want the object to transition. It can be Glacier or Accelerated.
+	*	`rule_id` : (Optional, Computed, string) Unique identifier for the rule. Archive rules allow you to set a specific time frame after which objects transition to the archive.
+	*	`enable` :* (Required, bool) (Required) Specifies archive rule status either enable or disable for a bucket.
+	*	`days` :* (Required, string)  Specifies the number of days when the specific rule action takes effect.
+	*	`type` :* (Required, string) Specifies the storage class/archive type to which you want the object to transition. It can be Glacier or Accelerated.
 * Nested `expire_rule` block have the following structure:
-	*	`expire_rule.rule_id` : (Optional, Computed, string) Unique identifier for the rule. Expire rules allow you to set a specific time frame after which objects are deleted.
-	*	`expire_rule.enable` :* (Required, bool) (Required) Specifies expire rule status either enable or disable for a bucket.
-	*	`expire_rule.days`   :* (Required, string)  Specifies the number of days when the specific rule action takes effect.
-	*	`expire_rule.prefix` :* (Optional, string) Specifies a prefix filter to apply to only a subset of objects with names that match the prefix.
+	*	`rule_id` : (Optional, Computed, string) Unique identifier for the rule. Expire rules allow you to set a specific time frame after which objects are deleted.
+	*	`enable` :* (Required, bool) (Required) Specifies expire rule status either enable or disable for a bucket.
+	*	`days`   :* (Required, string)  Specifies the number of days when the specific rule action takes effect.
+	*	`prefix` :* (Optional, string) Specifies a prefix filter to apply to only a subset of objects with names that match the prefix.
+
+* Nested `retention_rule` block have the following structure:
+	*	`default` : (Required, int) default retention period are defined by this policy and apply to all objects in the bucket.
+	*	`maximum` : (Required, int) Specifies maximum duration of time an object can be kept unmodified in the bucket.
+	*	`minimum` : (Required, int) Specifies minimum duration of time an object must be kept unmodified in the bucket.
+	*	`permanent` : (Optional, bool) Specifies a permanent retention status either enable or disable for a bucket.

@@ -8,7 +8,7 @@ description: |-
 
 # ibm\_kms_key
 
-Import the details of existing hs-crypto or key-protect keys as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. Retreives a list of keys from the hs-crypto or key-protect instance for the provided key name. Configuration of an ibm_kms_key datasource requires that the region parameter is set for the IBM provider in the provider block to be the same as the target key protect instance location/region. If not specified it will default to us-south. A terraform apply will fail if the key protect instance location is set differently.
+Import the details of existing hs-crypto or key-protect keys as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. Retreives a list of keys from the hs-crypto or key-protect instance for the provided key name or alias name (if created for the key). Configuration of an ibm_kms_key datasource requires that the region parameter is set for the IBM provider in the provider block to be the same as the target key protect instance location/region. If not specified it will default to us-south. A terraform apply will fail if the key protect instance location is set differently.
 
 ## Example Usage
 
@@ -16,6 +16,11 @@ Import the details of existing hs-crypto or key-protect keys as a read-only data
 data "ibm_kms_key" "test" {
   instance_id = "guid-of-keyprotect-or hs-crypto-instance"
   key_name = "name-of-key"
+}
+OR
+data "ibm_kms_key" "test" {
+  instance_id = "guid-of-keyprotect-or hs-crypto-instance"
+  alias = "alias_name"
 }
 resource "ibm_cos_bucket" "flex-us-south" {
   bucket_name          = "atest-bucket"
@@ -26,21 +31,26 @@ resource "ibm_cos_bucket" "flex-us-south" {
 }
 ```
 
+**NOTE : Data of the key can be retrieved either using a key name or an alias name (if created for the key or keys) .
+
 ## Argument Reference
 
 The following arguments are supported:
 
 * `instance_id` - (Required, string) The keyprotect instance guid.
-* `key_name` - (Required, string) The name of the key. Only the keys with matching name will be retreived.
-* `endpoint_type` - (Optional, string) The type of the endpoint (public or private) to be used for fetching keys. 
+* `key_name` - (Required, In conflict with alias_name, string) The name of the key. Only the keys with matching name will be retreived.
+* `alias` - (Required, In conflict with key_name, string) The alias name associated with the key. Only the key with matching alias name will be retreived.
+* `endpoint_type` - (Optional, string) The type of the endpoint (public or private) to be used for fetching keys.
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `keys` - List of all Keys in the IBM hs-crypto or Key-protect instance.
   * `name` - The name for the key.
+  * `aliases` - List of all the alias associated with the keys.
   * `id` - The unique identifier for this key
+  * `key_ring_id` - The key ring id for the key.
   * `crn` - The crn of the key.
   * `standard_key` - This flag is true in case of standard key, else false for root key.
   * `policy` - The policies associated with the key.

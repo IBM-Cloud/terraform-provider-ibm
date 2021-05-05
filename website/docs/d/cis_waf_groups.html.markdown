@@ -28,7 +28,7 @@ data "ibm_cis_waf_groups" "waf_groups" {
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `name` - The name of WAF Rule Group.
 - `group_id` - The WAF group ID.

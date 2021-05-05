@@ -20,7 +20,7 @@ resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway1" {
 
   name = "my-endpoint-gateway-1"
   target {
-	name          = "ibm-dns-server2"
+	name          = "ibm-ntp-server"
     resource_type = "provider_infrastructure_service"
   }
   vpc = ibm_is_vpc.testacc_vpc.id
@@ -30,7 +30,7 @@ resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway1" {
 resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway2" {
 	name = "my-endpoint-gateway-1"
 	target {
-	  name          = "ibm-dns-server2"
+	  name          = "ibm-ntp-server"
 	  resource_type = "provider_infrastructure_service"
 	}
 	vpc = ibm_is_vpc.testacc_vpc.id
@@ -44,7 +44,7 @@ resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway2" {
 resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway3" {
 	name = "my-endpoint-gateway-1"
 	target {
-	  name          = "ibm-dns-server2"
+	  name          = "ibm-ntp-server"
 	  resource_type = "provider_infrastructure_service"
 	}
 	vpc = ibm_is_vpc.testacc_vpc.id
@@ -75,7 +75,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The unique identifier of the endpoint gateway connection.
 - `resource_type` - Endpoint gateway resource type

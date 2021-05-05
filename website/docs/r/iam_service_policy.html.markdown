@@ -1,6 +1,6 @@
 ---
 
-subcategory: "Identity & Access (IAM)"
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_service_policy"
 description: |-
@@ -193,7 +193,7 @@ Nested `resources` blocks have the following structure:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the service policy. The id is composed of \<iam_service_id\>/\<service_policy_id\> if policy is created using <iam_service_id>. The id is composed of \<iam_id\>/\<service_policy_id\> if policy is created using <iam_id>. 
 

@@ -157,8 +157,8 @@ The following arguments are supported:
 * `name` - (Optional, string) The instance name.
 * `vpc` - (Required, Forces new resource, string) The vpc id. 
 * `zone` - (Required, Forces new resource, string) Name of the zone. 
-* `profile` - (Required, Forces new resource, string) The profile name. 
-* `image` - (Required, string) ID of the image.
+* `profile` - (Required, string) The profile name. 
+  * * Updating profile requires instance to be in stopped status, running instance will be stopped on update profile action.  * `image` - (Required, string) ID of the image.
 * `boot_volume` - (Optional, list) A block describing the boot volume of this instance.  
 `boot_volume` block have the following structure:
   * `name` - (Optional, string) The name of the boot volume.
@@ -189,7 +189,7 @@ Nested `network_interfaces` block have the following structure:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the instance.
 * `memory` - Memory of the instance.
@@ -235,7 +235,14 @@ Nested `volume_attachments` block have the following structure:
   * `volume_id` - The id of the volume attachment's volume
   * `volume_name` -  The name of the volume attachment's volume
   * `volume_crn` -  The CRN of the volume attachment's volume
-
+* `disks` - Collection of the instance's disks. Nested `disks` blocks have the following structure:
+	* `created_at` - The date and time that the disk was created.
+	* `href` - The URL for this instance disk.
+	* `id` - The unique identifier for this instance disk.
+	* `interface_type` - The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
+	* `name` - The user-defined name for this disk.
+	* `resource_type` - The resource type.
+	* `size` - The size of the disk in GB (gigabytes).
 ## Import
 
 ibm_is_instance can be imported using instanceID, eg

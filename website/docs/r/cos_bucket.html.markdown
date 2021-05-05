@@ -9,11 +9,9 @@ description: |-
 
 # ibm\_cos_bucket
 
-Create or delete a bucket in a cloud object storage.
+Creates an IBM Cloud Object Storage bucket. It also allows object storage buckets to be updated and deleted. The ibmcloud_api_key used by Terraform must have been granted sufficient IAM rights to create and modify IBM Cloud Object Storage buckets and have access to the Resource Group the Cloud Object Storage bucket will be associated with. See https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-iam for more details on setting IAM and Access Group rights to manage COS buckets.
 
 ## Example Usage
-
-In the following example, you can create a three buckets:
 
 ```hcl
 data "ibm_resource_group" "cos_group" {
@@ -39,8 +37,11 @@ resource "ibm_resource_instance" "metrics_monitor" {
   name              = "metrics_monitor"
   resource_group_id = data.ibm_resource_group.cos_group.id
   service           = "sysdig-monitor"
-  plan              = "lite"
+  plan              = "graduated-tier "
   location          = "us-south"
+  parameters        = {
+    default_receiver = true
+  }
 }
 
 resource "ibm_cos_bucket" "standard-ams03" {
@@ -67,7 +68,7 @@ resource "ibm_cos_bucket" "cold-ap" {
 resource "ibm_cos_bucket" "standard-ams03-firewall" {
   bucket_name           = "a-standard-bucket-at-ams-firewall"
   resource_instance_id  = ibm_resource_instance.cos_instance.id
-  cross_region_location = "us"
+  single_site_location  = "sjc04"
   storage_class         = "standard"
   activity_tracking {
     read_data_events     = true
@@ -76,6 +77,7 @@ resource "ibm_cos_bucket" "standard-ams03-firewall" {
   }
   metrics_monitoring {
     usage_metrics_enabled  = true
+    request_metrics_enabled = true
     metrics_monitoring_crn = ibm_resource_instance.metrics_monitor.id
   }
   allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
@@ -84,7 +86,7 @@ resource "ibm_cos_bucket" "standard-ams03-firewall" {
 resource "ibm_cos_bucket" "flex-us-south-firewall" {
   bucket_name           = "a-flex-bucket-at-us-south"
   resource_instance_id  = ibm_resource_instance.cos_instance.id
-  cross_region_location = "us"
+  single_site_location  = "sjc04"
   storage_class         = "flex"
   activity_tracking {
     read_data_events     = true
@@ -93,6 +95,7 @@ resource "ibm_cos_bucket" "flex-us-south-firewall" {
   }
   metrics_monitoring {
     usage_metrics_enabled  = true
+    request_metrics_enabled = true
     metrics_monitoring_crn = ibm_resource_instance.metrics_monitor.id
   }
   allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
@@ -101,7 +104,7 @@ resource "ibm_cos_bucket" "flex-us-south-firewall" {
 resource "ibm_cos_bucket" "cold-ap-firewall" {
   bucket_name           = "a-cold-bucket-at-ap"
   resource_instance_id  = ibm_resource_instance.cos_instance.id
-  cross_region_location = "us"
+  single_site_location  = "sjc04"
   storage_class         = "cold"
   activity_tracking {
     read_data_events     = true
@@ -110,6 +113,7 @@ resource "ibm_cos_bucket" "cold-ap-firewall" {
   }
   metrics_monitoring {
     usage_metrics_enabled  = true
+    request_metrics_enabled = true
     metrics_monitoring_crn = ibm_resource_instance.metrics_monitor.id
   }
   allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
@@ -152,6 +156,21 @@ resource "ibm_cos_bucket" "expire_rule_cos" {
   }
 }
 
+### Configure retention rule on COS bucket
+resource "ibm_cos_bucket" "retention_cos" {
+  bucket_name          = "a-bucket-retention"
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = "jp-tok"
+  storage_class        = standard
+  force_delete        = true
+  retention_rule {
+    default = 1
+    maximum = 1
+    minimum = 1
+    permanent = false
+  }
+}
+
 ```
 
 ## Argument Reference
@@ -162,16 +181,18 @@ The following arguments are supported:
 * `resource_instance_id` - (Required, string) The id of Cloud Object Storage instance.
 * `key_protect` - (Optional, bool) CRN of the Key Protect instance where there a root key is already provisioned. Authorization required: [Docs](https://cloud.ibm.com/docs/services/cloud-object-storage?topic=cloud-object-storage-encryption#grant-service-authorization)
 * `single_site_location` - (Optional,string) Location if single site bucket is desired. Accepted values: 'ams03', 'che01', 'hkg02', 'mel01', 'mex01', 'mil01', 'mon01', 'osl01', 'par01', 'sjc04', 'sao01', 'seo01', 'sng01', 'tor01' Conflicts with: `region_location`, `cross_region_location`
-* `region_location` - (Optional,string) Location if regional bucket is desired. Accepted values: 'au-syd', 'eu-de', 'eu-gb', 'jp-tok', 'us-east', 'us-south' Conflicts with: `single_site_location`, `cross_region_location`
+* `region_location` - (Optional,string) Location if regional bucket is desired. Accepted values: 'au-syd', "ca-tor", 'eu-de', 'eu-gb', 'jp-tok', 'us-east', 'us-south' Conflicts with: `single_site_location`, `cross_region_location`
 * `cross_region_location` - (Optional,string) Location if cross regional bucket is desired. Accepted values: 'us', 'eu', 'ap' Conflicts with: `single_site_location`, `region_location`
 * `allowed_ip` - (Optional, list of strings) List of IPv4 or IPv6 addresses in CIDR notation to be affected by firewall in CIDR notation is supported. 
 * Nested `activity_tracking` block have the following structure:
-	*	`activity_tracking.read_data_events` : (Optional, array) Enables sending log data to Activity Tracker and LogDNA to provide visibility into object read and write events.
-	*	`activity_tracking.write_data_events` : (Optional,bool) If set to true, all object write events (i.e. uploads) will be sent to Activity Tracker.
-	*	`activity_tracking.activity_tracker_crn` : (Required, string) Required the first time activity_tracking is configured.
+	*	`read_data_events` : (Optional, array) Enables sending log data to Activity Tracker and LogDNA to provide visibility into object read and write events.
+	*	`write_data_events` : (Optional,bool) If set to true, all object write events (i.e. uploads) will be sent to Activity Tracker.
+	*	`activity_tracker_crn` : (Required, string) Required the first time activity_tracking is configured.
 * Nested `metrics_monitoring` block have the following structure:
-	*	`metrics_monitoring.usage_metrics_enabled` : (Optional,bool) If set to true, all usage metrics (i.e. bytes_used) will be sent to the monitoring service.
-	*	`metrics_monitoring.metrics_monitoring_crn` : (Required, string) Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics.
+	*	`usage_metrics_enabled` : (Optional,bool) If set to true, all usage metrics (i.e. bytes_used) will be sent to the monitoring service.
+	*	`request_metrics_enabled` : (Optional,bool) If set to true, all request metrics (i.e. ibm_cos_bucket_all_request) will be sent to the monitoring service @1mins granulatiy.
+  *	`metrics_monitoring_crn` : (Required, string) Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics.
+* **Note** - For now request metrics support is enabled only in SJC04 (single_site_location) (only through API/SDK - NO UI support yet). Later we will add the support for other regions(Notified soon).The bucket-level request metrics monitoring service is disabled in the container vault for each region except sjc04.
 
 * **Note** - One of the location option must be present.
 * `storage_class` - (Required, string) Storage class of the bucket. Accepted values: 'standard', 'vault', 'cold', 'flex', 'smart'.
@@ -181,21 +202,33 @@ The following arguments are supported:
 
 * **Note** - Both archive_rule and expire_rule must be managed by terraform as they use the same lifecycle configuration. If user creates any of the rule outside of terraform using CLI/UI, you may see unexpected diff such as  removal of any of the rule or one rule overrides another , the policy may not match as expected due to API limitation because the LifeCycle is a single API request for both Archive and Expire.
 * Nested `archive_rule` block have the following structure:
-	*	`archive_rule.rule_id` : (Optional, Computed, string) Unique identifier for the rule. Archive rules allow you to set a specific time frame after which objects transition to the archive. 
-	*	`archive_rule.enable` : (Required, bool) Specifies archive rule status either enable or disable for a bucket.
-    *	`archive_rule.days` : (Required, string) Specifies the number of days when the specific rule action takes effect.
-    *	`archive_rule.type` : (Required, string) Specifies the storage class/archive type to which you want the object to transition. It can be Glacier or Accelerated.
+	*	`rule_id` : (Optional, Computed, string) Unique identifier for the rule. Archive rules allow you to set a specific time frame after which objects transition to the archive. 
+	*	`enable` : (Required, bool) Specifies archive rule status either enable or disable for a bucket.
+  *	`days` : (Required, string) Specifies the number of days when the specific rule action takes effect.
+  *	`type` : (Required, string) Specifies the storage class/archive type to which you want the object to transition. It can be Glacier or Accelerated.
     * **Note** - Archive is available in certain regions only. See Integrated Services for more details-https://cloud.ibm.com/docs/cloud-object-storage/basics?topic=cloud-object-storage-service-availability
 
 * Nested `expire_rule` block have the following structure:
-	*	`expire_rule.rule_id` : (Optional, Computed, string) Unique identifier for the rule. Expire rules allow you to set a specific time frame after which objects are deleted. 
-	*	`expire_rule.enable` : (Required, bool) Specifies expire rule status either enable or disable for a bucket.
-    *	`expire_rule.days`   : (Required, string) Specifies the number of days when the specific rule action takes effect.
-    *	`expire_rule.prefix` : (Optional, string) Specifies a prefix filter to apply to only a subset of objects with names that match the prefix.
+	*	`rule_id` : (Optional, Computed, string) Unique identifier for the rule. Expire rules allow you to set a specific time frame after which objects are deleted. 
+	*	`enable` : (Required, bool) Specifies expire rule status either enable or disable for a bucket.
+  *	`days`   : (Required, string) Specifies the number of days when the specific rule action takes effect.
+  *	`prefix` : (Optional, string) Specifies a prefix filter to apply to only a subset of objects with names that match the prefix.
+
+* Nested `retention_rule` block have the following structure:
+  * `default` : (Required, int) default retention period are defined by this policy and apply to   all objects in the bucket.
+  * `maximum` : (Required, int) Specifies maximum duration of time an object can be kept unmodified in the bucket.
+  * `minimum` : (Required, int) Specifies minimum duration of time an object must be kept unmodified in the bucket.
+  * `permanent` : (Optional, bool) Specifies a permanent retention status either enable or disable for a bucket.
+
+    * **Note**
+     - Retention policies cannot be removed. For a new bucket, ensure that you are creating the bucket in a supported region.See Integrated Services for more details-https://cloud.ibm.com/docs/cloud-object-storage/basics?topic=cloud-object-storage-service-availability
+     - The minimum retention period must be less than or equal to the default retention period, which in turn must be less than or equal to the maximum retention period.
+     - Permanent retention can only be enabled at a IBM Cloud Object Storage bucket level with retention policy enabled and users are able to select the permanent retention period option during object uploads. Once enabled, this process can't be reversed and objects uploaded that use a permanent retention period cannot be deleted. It's the responsibility of the users to validate at their end if there's a legitimate need to permanently store objects by using Object Storage buckets with a retention policy.
+     - force deleting the bucket will not work if any object is still under retention. As Objects cannot be deleted or overwritten until the retention period has expired and all the legal holds have been removed.
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the bucket.
 * `crn` - The CRN of the bucket.

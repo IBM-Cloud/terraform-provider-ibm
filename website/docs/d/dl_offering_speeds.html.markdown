@@ -27,7 +27,7 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `offering_speeds` - List of all Direct Link offering speeds in the IBM Cloud Infrastructure.
   * `link_speed` - Link speed in megabits per second.

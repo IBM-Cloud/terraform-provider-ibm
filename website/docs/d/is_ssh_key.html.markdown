@@ -29,9 +29,10 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the ssh key.
 * `fingerprint` -  The SHA256 fingerprint of the public key.
 * `length` - The length of this key.
 * `type` - The cryptosystem used by this key.
+* `public_key` - SSH Public key data.

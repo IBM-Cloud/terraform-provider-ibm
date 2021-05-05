@@ -84,7 +84,7 @@ func dataSourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interf
 
 	// Support for pagination
 	start := ""
-	allrecs := []vpcv1.InstanceGroupManager{}
+	allrecs := []vpcv1.InstanceGroupManagerIntf{}
 
 	for {
 		listInstanceGroupManagerOptions := vpcv1.ListInstanceGroupManagersOptions{
@@ -103,8 +103,8 @@ func dataSourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interf
 	}
 
 	instanceGroupManagerName := d.Get("name").(string)
-	for _, instanceGroupManager := range allrecs {
-
+	for _, instanceGroupManagerIntf := range allrecs {
+		instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
 		if instanceGroupManagerName == *instanceGroupManager.Name {
 			d.SetId(fmt.Sprintf("%s/%s", instanceGroupID, *instanceGroupManager.ID))
 			d.Set("aggregation_window", *instanceGroupManager.AggregationWindow)
