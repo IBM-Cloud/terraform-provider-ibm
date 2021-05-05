@@ -1109,11 +1109,22 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		kpurl = contructEndpoint(fmt.Sprintf("private.%s.kms", c.Region), cloudEndpoint)
 	}
-	options := kp.ClientConfig{
-		BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kpurl),
-		Authorization: sess.BluemixSession.Config.IAMAccessToken,
-		// InstanceID:    "42fET57nnadurKXzXAedFLOhGqETfIGYxOmQXkFgkJV9",
-		Verbose: kp.VerboseFailOnly,
+	var options kp.ClientConfig
+	if c.BluemixAPIKey != "" {
+		options = kp.ClientConfig{
+			BaseURL: envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kpurl),
+			APIKey:  sess.BluemixSession.Config.BluemixAPIKey, //pragma: allowlist secret
+			// InstanceID:    "42fET57nnadurKXzXAedFLOhGqETfIGYxOmQXkFgkJV9",
+			Verbose: kp.VerboseFailOnly,
+		}
+
+	} else {
+		options = kp.ClientConfig{
+			BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kpurl),
+			Authorization: sess.BluemixSession.Config.IAMAccessToken,
+			// InstanceID:    "42fET57nnadurKXzXAedFLOhGqETfIGYxOmQXkFgkJV9",
+			Verbose: kp.VerboseFailOnly,
+		}
 	}
 	kpAPIclient, err := kp.New(options, kp.DefaultTransport())
 	if err != nil {
@@ -1125,11 +1136,22 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		kmsurl = contructEndpoint(fmt.Sprintf("private.%s.kms", c.Region), cloudEndpoint)
 	}
-	kmsOptions := kp.ClientConfig{
-		BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
-		Authorization: sess.BluemixSession.Config.IAMAccessToken,
-		// InstanceID:    "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8",
-		Verbose: kp.VerboseFailOnly,
+	var kmsOptions kp.ClientConfig
+	if c.BluemixAPIKey != "" {
+		kmsOptions = kp.ClientConfig{
+			BaseURL: envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
+			APIKey:  sess.BluemixSession.Config.BluemixAPIKey, //pragma: allowlist secret
+			// InstanceID:    "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8",
+			Verbose: kp.VerboseFailOnly,
+		}
+
+	} else {
+		kmsOptions = kp.ClientConfig{
+			BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
+			Authorization: sess.BluemixSession.Config.IAMAccessToken,
+			// InstanceID:    "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8",
+			Verbose: kp.VerboseFailOnly,
+		}
 	}
 	kmsAPIclient, err := kp.New(kmsOptions, DefaultTransport())
 	if err != nil {
