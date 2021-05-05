@@ -36,6 +36,7 @@ The following arguments are supported:
 * `vpc` - (Required, Forces new resource, string) The vpc id. 
 * `zone` - (Required, Forces new resource, string) Name of the zone. 
 * `cidr` - (Required, Forces new resource, string) The CIDR block for the address prefix. 
+* `is_default` - (Optional, string) Makes the prefix as default prefix for this zone in this VPC. 
 
 ## Attribute Reference
 
