@@ -246,6 +246,7 @@ func Provider() *schema.Provider {
 			"ibm_is_flow_logs":                       dataSourceIBMISFlowLogs(),
 			"ibm_is_image":                           dataSourceIBMISImage(),
 			"ibm_is_images":                          dataSourceIBMISImages(),
+			"ibm_is_endpoint_gateway_targets":        dataSourceIBMISEndpointGatewayTargets(),
 			"ibm_is_instance_group":                  dataSourceIBMISInstanceGroup(),
 			"ibm_is_instance_group_manager":          dataSourceIBMISInstanceGroupManager(),
 			"ibm_is_instance_group_managers":         dataSourceIBMISInstanceGroupManagers(),
