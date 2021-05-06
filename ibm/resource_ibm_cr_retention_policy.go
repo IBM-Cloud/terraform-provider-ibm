@@ -53,11 +53,11 @@ func resourceIBMCrRetentionPolicyCreate(context context.Context, d *schema.Resou
 	setRetentionPolicyOptions := &containerregistryv1.SetRetentionPolicyOptions{}
 
 	setRetentionPolicyOptions.SetNamespace(d.Get("namespace").(string))
-	if _, ok := d.GetOk("images_per_repo"); ok {
-		setRetentionPolicyOptions.SetImagesPerRepo(int64(d.Get("images_per_repo").(int)))
-	} else {
+	_, ok := d.GetOk("images_per_repo")
+	if !ok || int64(d.Get("images_per_repo").(int)) == -1 {
 		return diag.Errorf("images_per_repo must be set when creating a retention policy")
 	}
+	setRetentionPolicyOptions.SetImagesPerRepo(int64(d.Get("images_per_repo").(int)))
 	if _, ok := d.GetOk("retain_untagged"); ok {
 		setRetentionPolicyOptions.SetRetainUntagged(d.Get("retain_untagged").(bool))
 	}
