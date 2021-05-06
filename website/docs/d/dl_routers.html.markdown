@@ -32,6 +32,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `cross_connect_routers` - List of cross connect router details.
+  * `capabilities` - Macsec and non-macsec capabilities for the router.
   * `router_name` - The name of the Router.
   * `total_connections` - Count of existing Direct Link Dedicated gateways on this router for this account.
 
