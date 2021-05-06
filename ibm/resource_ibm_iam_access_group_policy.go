@@ -161,7 +161,7 @@ func resourceIBMIAMAccessGroupPolicyCreate(d *schema.ResourceData, meta interfac
 
 	accessGroupPolicy, res, err := iamPolicyManagementClient.CreatePolicy(createPolicyOptions)
 	if err != nil || accessGroupPolicy == nil {
-		return fmt.Errorf("Error creating Access Group Policy: %s\n%s", err, res)
+		return fmt.Errorf("Error creating access group policy: %s\n%s", err, res)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", accessGroupId, *accessGroupPolicy.ID))
@@ -186,7 +186,7 @@ func resourceIBMIAMAccessGroupPolicyCreate(d *schema.ResourceData, meta interfac
 		_, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	}
 	if err != nil {
-		return fmt.Errorf("Error fetching Access Group Policy: %s\n%s", err, res)
+		return fmt.Errorf("Error fetching access group policy: %s\n%s", err, res)
 	}
 
 	return resourceIBMIAMAccessGroupPolicyRead(d, meta)
@@ -212,7 +212,7 @@ func resourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interface{
 
 	accessGroupPolicy, res, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	if err != nil {
-		return fmt.Errorf("Error retrieving Access Group Policy: %s\n%s", err, res)
+		return fmt.Errorf("Error retrieving access group policy: %s\n%s", err, res)
 	}
 
 	retrievedAttribute := getSubjectAttribute("access_group_id", accessGroupPolicy.Subjects[0])
@@ -295,7 +295,7 @@ func resourceIBMIAMAccessGroupPolicyUpdate(d *schema.ResourceData, meta interfac
 
 		_, res, err := iamPolicyManagementClient.UpdatePolicy(updatePolicyOptions)
 		if err != nil {
-			return fmt.Errorf("Error updating Custom Roles: %s\n%s", err, res)
+			return fmt.Errorf("Error updating access group policy: %s\n%s", err, res)
 		}
 	}
 

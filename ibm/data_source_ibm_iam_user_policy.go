@@ -132,7 +132,7 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 	for _, policy := range policies {
 		roles := make([]string, len(policy.Roles))
 		for i, role := range policy.Roles {
-			roles[i] = *role.RoleID
+			roles[i] = *role.DisplayName
 		}
 		resources := flattenPolicyResource(policy.Resources)
 		p := map[string]interface{}{

@@ -7,7 +7,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"log"
 	"net"
 	gohttp "net/http"
@@ -49,6 +48,7 @@ import (
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
+	iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
@@ -75,8 +75,6 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/hpcs"
 	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
@@ -196,8 +194,6 @@ type ClientSession interface {
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
 	ICDAPI() (icdv4.ICDServiceAPI, error)
 	IAMAPI() (iamv1.IAMServiceAPI, error)
-	IAMPAPAPI() (iampapv1.IAMPAPAPI, error)
-	IAMPAPAPIV2() (iampapv2.IAMPAPAPIV2, error)
 	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
 	IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error)
 	IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error)
@@ -300,12 +296,6 @@ type clientSession struct {
 
 	globalTaggingConfigErr  error
 	globalTaggingServiceAPI globaltaggingv3.GlobalTaggingServiceAPI
-
-	iamPAPConfigErr  error
-	iamPAPServiceAPI iampapv1.IAMPAPAPI
-
-	iamPAPConfigErrv2  error
-	iamPAPServiceAPIv2 iampapv2.IAMPAPAPIV2
 
 	iamUUMConfigErr  error
 	iamUUMServiceAPI iamuumv1.IAMUUMServiceAPI
@@ -579,16 +569,6 @@ func (sess clientSession) IAMAPI() (iamv1.IAMServiceAPI, error) {
 // UserManagementAPI provides User management APIs ...
 func (sess clientSession) UserManagementAPI() (usermanagementv2.UserManagementAPI, error) {
 	return sess.userManagementAPI, sess.userManagementErr
-}
-
-// IAMPAPAPI provides IAM PAP APIs ...
-func (sess clientSession) IAMPAPAPI() (iampapv1.IAMPAPAPI, error) {
-	return sess.iamPAPServiceAPI, sess.iamPAPConfigErr
-}
-
-// IAMPAPAPIV2 provides IAM PAP APIs ...
-func (sess clientSession) IAMPAPAPIV2() (iampapv2.IAMPAPAPIV2, error) {
-	return sess.iamPAPServiceAPIv2, sess.iamPAPConfigErrv2
 }
 
 // IAM Policy Management
@@ -1916,9 +1896,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.iamIdentityAPI = iamIdentityClient
 
+	iamPolicyManagementURL := iampolicymanagement.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			iamPolicyManagementURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+		} else {
+			iamPolicyManagementURL = contructEndpoint("private.iam", cloudEndpoint)
+		}
+	}
 	iamPolicyManagementOptions := &iampolicymanagement.IamPolicyManagementV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, "https://iam.test.cloud.ibm.com"),
+		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamPolicyManagementURL),
 	}
 	iamPolicyManagementClient, err := iampolicymanagement.NewIamPolicyManagementV1(iamPolicyManagementOptions)
 	if err != nil {
