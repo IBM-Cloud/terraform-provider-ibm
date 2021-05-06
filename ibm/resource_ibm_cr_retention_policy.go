@@ -55,6 +55,8 @@ func resourceIBMCrRetentionPolicyCreate(context context.Context, d *schema.Resou
 	setRetentionPolicyOptions.SetNamespace(d.Get("namespace").(string))
 	if _, ok := d.GetOk("images_per_repo"); ok {
 		setRetentionPolicyOptions.SetImagesPerRepo(int64(d.Get("images_per_repo").(int)))
+	} else {
+		return diag.Errorf("images_per_repo must be set when creating a retention policy")
 	}
 	if _, ok := d.GetOk("retain_untagged"); ok {
 		setRetentionPolicyOptions.SetRetainUntagged(d.Get("retain_untagged").(bool))
@@ -91,7 +93,7 @@ func resourceIBMCrRetentionPolicyRead(context context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	// A retention policy "does not exist" if `imagesPerRepo` and `retainUntagged` have their default values
+	// A retention policy "does not exist" if `imagesPerRepo` is -1 `retainUntagged` is true
 	if *retentionPolicy.ImagesPerRepo == -1 && *retentionPolicy.RetainUntagged == true {
 		d.SetId("")
 		return nil
