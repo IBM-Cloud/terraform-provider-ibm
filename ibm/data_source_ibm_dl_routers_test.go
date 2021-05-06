@@ -20,6 +20,7 @@ func TestAccIBMDLRoutersDataSource_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMDLRoutersDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(node, "cross_connect_routers.0.capabilities.#"),
 					resource.TestCheckResourceAttrSet(node, "cross_connect_routers.0.router_name"),
 					resource.TestCheckResourceAttrSet(node, "cross_connect_routers.0.total_connections"),
 				),

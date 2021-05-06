@@ -21,7 +21,9 @@ func TestAccIBMDLOfferingSpeedsDataSource_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMDLOfferingSpeedsDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(node1, "offering_speeds.0.capabilities.#"),
 					resource.TestCheckResourceAttrSet(node1, "offering_speeds.0.link_speed"),
+					resource.TestCheckResourceAttrSet(node2, "offering_speeds.0.capabilities.#"),
 					resource.TestCheckResourceAttrSet(node2, "offering_speeds.0.link_speed"),
 				),
 			},

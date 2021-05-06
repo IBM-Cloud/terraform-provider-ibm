@@ -149,7 +149,7 @@ func testAccCheckIBMISNetworkACLConfig() string {
 		  destination = "0.0.0.0/0"
 		  direction   = "outbound"
 		  icmp {
-			code = 1
+			code = 8
 			type = 1
 		  }
 		  # Optionals :
@@ -163,7 +163,7 @@ func testAccCheckIBMISNetworkACLConfig() string {
 		  destination = "0.0.0.0/0"
 		  direction   = "inbound"
 		  icmp {
-			code = 1
+			code = 8
 			type = 1
 		  }
 		  # Optionals :
@@ -191,7 +191,7 @@ func testAccCheckIBMISNetworkACLConfig1() string {
 		  destination = "0.0.0.0/0"
 		  direction   = "outbound"
 		  icmp {
-			code = 1
+			code = 8
 			type = 1
 		  }
 		  # Optionals :
@@ -205,7 +205,7 @@ func testAccCheckIBMISNetworkACLConfig1() string {
 		  destination = "0.0.0.0/0"
 		  direction   = "inbound"
 		  icmp {
-			code = 1
+			code = 8
 			type = 1
 		  }
 		  # Optionals :
