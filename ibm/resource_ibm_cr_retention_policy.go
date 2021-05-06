@@ -37,7 +37,7 @@ func resourceIBMCrRetentionPolicy() *schema.Resource {
 			"retain_untagged": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     true,
+				Default:     false,
 				Description: "Determines if untagged images are retained when executing the retention policy. This is false by default meaning untagged images will be deleted when the policy is executed.",
 			},
 		},
