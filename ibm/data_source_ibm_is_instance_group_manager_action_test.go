@@ -50,8 +50,8 @@ func testAccCheckIBMISInstanceGroupManagerActionConfigd(vpcName, subnetName, ssh
 	return testAccCheckIBMISInstanceGroupManagerActionConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, instanceGroupName, instanceGroupManager, instanceGroupManageraction) + fmt.Sprintf(`
 
 	data "ibm_is_instance_group_manager_action" "instance_group_manager_action" {
-		instance_group = ibm_is_instance_group_manager_action.cpuaction.instance_group
-		instance_group_manager = ibm_is_instance_group_manager_action.cpuaction.instance_group_manager
+		instance_group = ibm_is_instance_group_manager_action.instance_group_manager_action.instance_group
+		instance_group_manager_scheduled = ibm_is_instance_group_manager_action.instance_group_manager_action.instance_group_manager_scheduled
 		name = "%s"
 	}
 	`, instanceGroupManageraction)

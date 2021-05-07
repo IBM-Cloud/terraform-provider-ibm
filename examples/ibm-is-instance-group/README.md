@@ -76,6 +76,13 @@ resource "ibm_is_instance_group_manager" "instance_group_manager" {
   min_membership_count = var.min_membership_count
 }
 
+resource "ibm_is_instance_group_manager" "instance_group_manager_scheduled" {
+	name = var.instance_group_manager_name_scheduled
+	instance_group = ibm_is_instance_group.instance_group.id
+	manager_type = var.manager_type.scheduled
+	enable_manager = var.enable_manager
+}
+
 resource "ibm_is_instance_group_manager_policy" "cpuPolicy" {
   instance_group         = ibm_is_instance_group.instance_group.id
   instance_group_manager = ibm_is_instance_group_manager.instance_group_manager.manager_id
@@ -84,6 +91,16 @@ resource "ibm_is_instance_group_manager_policy" "cpuPolicy" {
   policy_type            = "target"
   name                   = var.policy_name
 }
+
+  resource "ibm_is_instance_group_manager_action" "instance_group_manager_action" {
+		name                              = var.instance_group_manager_action_name
+    instance_group                    = ibm_is_instance_group.instance_group.id
+    instance_group_manager_scheduled  = ibm_is_instance_group_manager.instance_group_manager_scheduled.manager_id
+    cron_spec                         = var.cron_spec
+    instance_group_manager_autoscale  = ibm_is_instance_group_manager.instance_group_manager.manager_id
+    min_membership_count              = var.max_membership_count
+    max_membership_count              = var.min_membership_count
+  }
 
 data "ibm_is_instance_group" "instance_group_data" {
   name = ibm_is_instance_group.instance_group.name
@@ -98,6 +115,12 @@ data "ibm_is_instance_group_manager_policy" "instance_group_manager_policy" {
   instance_group         = ibm_is_instance_group_manager_policy.cpuPolicy.instance_group
   instance_group_manager = ibm_is_instance_group_manager_policy.cpuPolicy.instance_group_manager
   name                   = ibm_is_instance_group_manager_policy.cpuPolicy.name
+}
+
+data "ibm_is_instance_group_manager_action" "instance_group_manager_action" {
+		instance_group                    = ibm_is_instance_group_manager_action.instance_group_manager_action_autoscale.instance_group
+		instance_group_manager_scheduled  = ibm_is_instance_group_manager_action.instance_group_manager_action_autoscale.
+		name                              = ibm_is_instance_group_manager_action.instance_group_manager_action.name
 }
 ```
 
@@ -141,5 +164,7 @@ data "ibm_is_instance_group_manager_policy" "instance_group_manager_policy" {
 | min\_membership\_count | The lower threshold value set to instance group manager to scale the nubner of instances to least value. | `integer` | yes |
 | policy\_name | The instance group manager's policy name. | `string` | no |
 | metric\_value | Metric value to be set to evaluated by instance group manager. | `integer` | no |
+| action\_name | The instance group manager's action name. | `string` | no |
+| cron\spec | The cron specification for a recurring scheduled action. Actions can be applied a maximum of one time within a 5 min period. | `string` | no |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
