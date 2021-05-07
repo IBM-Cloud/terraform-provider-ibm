@@ -7,6 +7,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -38,6 +40,9 @@ func resourceIBMSatelliteLocation() *schema.Resource {
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
 			},
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return immutableResourceCustomizeDiff([]string{satLocation, sateLocZone, "resource_group_id"}, diff)
+			},
 		),
 
 		Timeouts: &schema.ResourceTimeout{
@@ -53,8 +58,14 @@ func resourceIBMSatelliteLocation() *schema.Resource {
 				Description: "A unique name for the new Satellite location",
 			},
 			sateLocZone: {
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:     schema.TypeString,
+				Required: true,
+				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
+					if strings.Contains(o, n) {
+						return true
+					}
+					return o == n
+				},
 				Description: "The IBM Cloud metro from which the Satellite location is managed",
 			},
 			"description": {
@@ -123,8 +134,70 @@ func resourceIBMSatelliteLocation() *schema.Resource {
 				Computed:    true,
 				Description: "ID of the resource group.",
 			},
+			tags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_satellite_location", "tags")},
+				Set:         resourceIBMVPCHash,
+				Description: "List of tags associated with resource instance",
+			},
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Name of the resource group",
+			},
+			"crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Location CRN",
+			},
+			"host_attached_count": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "The total number of hosts that are attached to the Satellite location.",
+			},
+			"host_available_count": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "The available number of hosts that can be assigned to a cluster resource in the Satellite location.",
+			},
+			"created_on": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Created Date",
+			},
+			"ingress_hostname": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"ingress_secret": {
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
+			},
 		},
 	}
+}
+
+func resourceIBMSatelliteLocationValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "tags",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
+	ibmSatelliteLocationValidator := ResourceValidator{ResourceName: "ibm_satellite_location", Schema: validateSchema}
+	return &ibmSatelliteLocationValidator
 }
 
 func resourceIBMSatelliteLocationCreate(d *schema.ResourceData, meta interface{}) error {
@@ -162,7 +235,7 @@ func resourceIBMSatelliteLocationCreate(d *schema.ResourceData, meta interface{}
 		createSatLocOptions.Zones = flatterSatelliteZones(z)
 	}
 
-	if v, ok := d.GetOk("resource_group_id"); ok {
+	if v, ok := d.GetOk("resource_group_id"); ok && v != nil {
 		pathParamsMap := map[string]string{
 			"X-Auth-Resource-Group": v.(string),
 		}
@@ -170,12 +243,22 @@ func resourceIBMSatelliteLocationCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	instance, response, err := satClient.CreateSatelliteLocation(createSatLocOptions)
-	if err != nil {
+	if err != nil || instance == nil {
 		return fmt.Errorf("Error Creating Satellite Location: %s\n%s", err, response)
 	}
 
-	d.SetId(satLocation)
+	d.SetId(*instance.ID)
 	log.Printf("[INFO] Created satellite location : %s", satLocation)
+
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk("tags"); ok || v != "" {
+		oldList, newList := d.GetChange("tags")
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.Crn)
+		if err != nil {
+			log.Printf(
+				"Error on create of ibm satellite location (%s) tags: %s", d.Id(), err)
+		}
+	}
 
 	//Wait for location to be in ready state
 	_, err = waitForLocationToReady(*instance.ID, d, meta)
@@ -199,7 +282,7 @@ func resourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	instance, response, err := satClient.GetSatelliteLocation(getSatLocOptions)
-	if err != nil {
+	if err != nil || instance == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
@@ -207,7 +290,7 @@ func resourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	d.Set(satLocation, ID)
+	d.Set(satLocation, *instance.Name)
 	if instance.Description != nil {
 		d.Set("description", *instance.Description)
 	}
@@ -224,10 +307,51 @@ func resourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}) 
 		d.Set("resource_group_id", instance.ResourceGroup)
 	}
 
+	tags, err := GetTagsUsingCRN(meta, *instance.Crn)
+	if err != nil {
+		log.Printf(
+			"Error on get of ibm satellite location tags (%s) tags: %s", d.Id(), err)
+	}
+	d.Set("tags", tags)
+	d.Set("crn", *instance.Crn)
+	d.Set(ResourceGroupName, *instance.ResourceGroupName)
+	if instance.Hosts != nil {
+		d.Set("host_attached_count", *instance.Hosts.Total)
+		d.Set("host_available_count", *instance.Hosts.Available)
+	}
+	d.Set("created_on", *instance.CreatedDate)
+	if instance.Ingress != nil {
+		d.Set("ingress_hostname", *instance.Ingress.Hostname)
+		d.Set("ingress_secret", *instance.Ingress.SecretName)
+	}
+
 	return nil
 }
 
 func resourceIBMSatelliteLocationUpdate(d *schema.ResourceData, meta interface{}) error {
+	ID := d.Id()
+	satClient, err := meta.(ClientSession).SatelliteClientSession()
+	if err != nil {
+		return err
+	}
+
+	v := os.Getenv("IC_ENV_TAGS")
+	if d.HasChange("tags") || v != "" {
+		oldList, newList := d.GetChange("tags")
+		getSatLocOptions := &kubernetesserviceapiv1.GetSatelliteLocationOptions{
+			Controller: &ID,
+		}
+
+		instance, response, err := satClient.GetSatelliteLocation(getSatLocOptions)
+		if err != nil || instance == nil {
+			return fmt.Errorf("Error retrieving satellite location: %s\n%s", err, response)
+		}
+		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.Crn)
+		if err != nil {
+			log.Printf(
+				"An error occured during update of instance (%s) tags: %s", ID, err)
+		}
+	}
 	return nil
 }
 

@@ -2400,3 +2400,20 @@ func getIBMUniqueId(accountID, userEmail string, meta interface{}) (string, erro
 	}
 	return "", fmt.Errorf("User %s is not found under account %s", userEmail, accountID)
 }
+
+func immutableResourceCustomizeDiff(resourceList []string, diff *schema.ResourceDiff) error {
+
+	for _, rName := range resourceList {
+		if diff.Id() != "" && diff.HasChange(rName) {
+			o, n := diff.GetChange(rName)
+			old := o.(string)
+			new := n.(string)
+			if len(old) > 0 && old != new {
+				if !(rName == sateLocZone && strings.Contains(old, new)) {
+					return fmt.Errorf("'%s' attribute is immutable and can't be changed from %s to %s.", rName, old, new)
+				}
+			}
+		}
+	}
+	return nil
+}

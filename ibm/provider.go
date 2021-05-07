@@ -692,6 +692,7 @@ func Validator() ValidatorDict {
 				"ibm_container_vpc_cluster":             resourceIBMContainerVpcClusterValidator(),
 				"ibm_container_cluster":                 resourceIBMContainerClusterValidator(),
 				"ibm_resource_tag":                      resourceIBMResourceTagValidator(),
+				"ibm_satellite_location":                resourceIBMSatelliteLocationValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),

@@ -9,6 +9,7 @@ module "satellite-location" {
   ibmcloud_api_key  = var.ibmcloud_api_key
   ibm_region        = var.ibm_region
   resource_group    = var.resource_group
+  tags              = var.tags
 }
 
 data "ibm_satellite_attach_host_script" "script" {
