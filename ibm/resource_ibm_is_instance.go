@@ -137,7 +137,6 @@ func resourceIBMISInstance() *schema.Resource {
 			isInstanceVolAttSnapshot: {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				ForceNew:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
 				Description: "List of snapshots",
@@ -319,6 +318,7 @@ func resourceIBMISInstance() *schema.Resource {
 			isInstanceImage: {
 				Type:         schema.TypeString,
 				ForceNew:     true,
+				Computed:     true,
 				Optional:     true,
 				ExactlyOneOf: []string{isInstanceImage, isInstanceBootVolTemplate, "boot_volume.0.source_snapshot"},
 				RequiredWith: []string{isInstanceZone, isInstancePrimaryNetworkInterface},
@@ -373,6 +373,7 @@ func resourceIBMISInstance() *schema.Resource {
 			isInstanceVolumes: {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
 				Description: "List of volumes",
@@ -1754,7 +1755,16 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if instance.VolumeAttachments != nil {
 		for _, volume := range instance.VolumeAttachments {
 			if volume.Volume != nil && *volume.Volume.ID != *instance.BootVolumeAttachment.Volume.ID {
-				volumes = append(volumes, *volume.Volume.ID)
+				getvolOptions := &vpcv1.GetVolumeOptions{
+					ID: volume.Volume.ID,
+				}
+				vol, response, err := instanceC.GetVolume(getvolOptions)
+				if err != nil {
+					return fmt.Errorf("Error getting volumes attached to the instance %s\n%s", err, response)
+				}
+				if vol.SourceSnapshot == nil {
+					volumes = append(volumes, *volume.Volume.ID)
+				}
 			}
 		}
 	}
