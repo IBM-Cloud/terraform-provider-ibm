@@ -2079,7 +2079,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			for i := range add {
 				createvolattoptions := &vpcv1.CreateInstanceVolumeAttachmentOptions{
 					InstanceID: &id,
-					Volume: &vpcv1.VolumeAttachmentPrototypeVolume{
+					Volume: &vpcv1.VolumeIdentity{
 						ID: &add[i],
 					},
 					DeleteVolumeOnInstanceDelete: &volautoDelete,
