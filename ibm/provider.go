@@ -363,9 +363,6 @@ func Provider() *schema.Provider {
 			"ibm_cm_offering":          dataSourceIBMCmOffering(),
 			"ibm_cm_version":           dataSourceIBMCmVersion(),
 			"ibm_cm_offering_instance": dataSourceIBMCmOfferingInstance(),
-			//Added for Snapshot
-			"ibm_is_snapshot":  dataSourceSnapshot(),
-			"ibm_is_snapshots": dataSourceSnapshots(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -577,9 +574,6 @@ func Provider() *schema.Provider {
 			//satellite  resources
 			"ibm_satellite_location": resourceIBMSatelliteLocation(),
 			"ibm_satellite_host":     resourceIBMSatelliteHost(),
-
-			//snapshot resources
-			"ibm_is_snapshot": resourceIBMSnapshot(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -661,7 +655,6 @@ func Validator() ValidatorDict {
 				"ibm_schematics_action":                resourceIBMSchematicsActionValidator(),
 				"ibm_schematics_job":                   resourceIBMSchematicsJobValidator(),
 				"ibm_schematics_workspace":             resourceIBMSchematicsWorkspaceValidator(),
-				"ibm_is_snapshot":                      resourceIBMISSnapshotValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),
@@ -671,7 +664,6 @@ func Validator() ValidatorDict {
 				"ibm_is_volume":               dataSourceIBMISVolumeValidator(),
 				"ibm_secrets_manager_secret":  datasourceIBMSecretsManagerSecretValidator(),
 				"ibm_secrets_manager_secrets": datasourceIBMSecretsManagerSecretsValidator(),
-				"ibm_is_snapshot":             dataSourceIBMISSnapshotValidator(),
 			},
 		}
 	})
