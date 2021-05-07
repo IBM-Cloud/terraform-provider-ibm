@@ -55,6 +55,47 @@ type CsEntry struct {
 	QueryOptions map[string]interface{}
 	Path         string
 	Database     string
+	BundleName   string
+	BundleBase64 string
+}
+
+func retry(f func() error) (err error) {
+	attempts := 3
+
+	for i := 0; ; i++ {
+		sleep := time.Duration(10*i*i) * time.Second
+		time.Sleep(sleep)
+
+		err = f()
+		if err == nil {
+			return nil
+		}
+
+		if i == attempts {
+			return err
+		}
+
+		log.Println("retrying after error:", err)
+	}
+}
+func retryTask(f func() (icdv4.Task, error)) (task icdv4.Task, err error) {
+	attempts := 3
+
+	for i := 0; ; i++ {
+		sleep := time.Duration(5*i) * time.Second
+		time.Sleep(sleep)
+
+		task, err = f()
+		if err == nil {
+			return task, nil
+		}
+
+		if i == attempts {
+			return task, nil
+		}
+
+		log.Println("retrying after error:", err)
+	}
 }
 
 func resourceIBMDatabaseInstance() *schema.Resource {
@@ -98,13 +139,13 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Description:  "The name of the Cloud Internet database service",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"databases-for-etcd", "databases-for-postgresql", "databases-for-redis", "databases-for-elasticsearch", "databases-for-mongodb", "messages-for-rabbitmq", "databases-for-mysql"}),
+				ValidateFunc: validateAllowedStringValue([]string{"databases-for-etcd", "databases-for-postgresql", "databases-for-redis", "databases-for-elasticsearch", "databases-for-mongodb", "messages-for-rabbitmq", "databases-for-mysql", "databases-for-cassandra"}),
 			},
 			"plan": {
 				Description:  "The plan type of the Database instance",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"standard"}),
+				ValidateFunc: validateAllowedStringValue([]string{"standard", "enterprise"}),
 			},
 
 			"status": {
@@ -306,6 +347,16 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 						},
 						"certbase64": {
 							Description: "Certificate in base64 encoding",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"bundlename": {
+							Description: "Cassandra Bundle Name",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"bundlebase64": {
+							Description: "Cassandra base64 encoding",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
@@ -739,7 +790,9 @@ func getDatabaseServiceDefaults(service string, meta interface{}) (*icdv4.Group,
 	}
 
 	var dbType string
-	if strings.HasPrefix(service, "messages-for-") {
+	if service == "databases-for-cassandra" {
+		dbType = "datastax_enterprise_full"
+	} else if strings.HasPrefix(service, "messages-for-") {
 		dbType = service[len("messages-for-"):]
 	} else {
 		dbType = service[len("databases-for-"):]
@@ -763,6 +816,8 @@ func getInitialNodeCount(d *schema.ResourceData, meta interface{}) (int, error) 
 		return groupDefaults.Members.MinimumCount, nil
 	} else {
 		if service == "databases-for-elasticsearch" {
+			return 3, nil
+		} else if service == "databases-for-cassandra" {
 			return 3, nil
 		}
 		return 2, nil
@@ -853,7 +908,7 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 	}
 
 	service := diff.Get("service").(string)
-	if service == "databases-for-postgresql" || service == "databases-for-elasticsearch" {
+	if service == "databases-for-postgresql" || service == "databases-for-elasticsearch" || service == "databases-for-cassandra" {
 		planPhase := diff.Get("plan_validation").(bool)
 
 		if planPhase {
@@ -900,10 +955,12 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 					return err
 				}
 			} else if diff.HasChange("node_count") {
-				_, newSetting := diff.GetChange("node_count")
-				min := groupDefaults.Cpu.MinimumCount / divider
-				if newSetting != min {
-					return fmt.Errorf("node_cpu_allocation_count must be set when node_count is greater then the minimum %d", min)
+				if _, ok := diff.GetOk("node_cpu_allocation_count"); !ok {
+					_, newSetting := diff.GetChange("node_count")
+					min := groupDefaults.Cpu.MinimumCount / divider
+					if newSetting != min {
+						return fmt.Errorf("node_cpu_allocation_count must be set when node_count is greater then the minimum %d", min)
+					}
 				}
 			}
 		}
@@ -1450,10 +1507,16 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 			CpuReq := icdv4.CpuReq{AllocationCount: cpu * count}
 			params.GroupBdy.Cpu = &CpuReq
 		}
+
+		//task, err := retryTask(func() (task icdv4.Task, err error) {
+		//	return icdClient.Groups().UpdateGroup(icdId, "member", params)
+		//})
+
 		task, err := icdClient.Groups().UpdateGroup(icdId, "member", params)
 		if err != nil {
 			return fmt.Errorf("Error updating database scaling group: %s", err)
 		}
+
 		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
@@ -1682,19 +1745,13 @@ func horizontalScale(d *schema.ResourceData, meta interface{}, icdClient icdv4.I
 	membersReq := icdv4.MembersReq{AllocationCount: members}
 	params.GroupBdy.Members = &membersReq
 
-	//task, err := icdClient.Groups().UpdateGroup(icdId, "member", params)
 	_, err := icdClient.Groups().UpdateGroup(icdId, "member", params)
 
 	if err != nil {
 		return fmt.Errorf("Error updating database scaling group: %s", err)
 	}
 
-	//_, err = waitForDatabaseTaskCompleteDuration(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
-	//if err != nil {
-	//	return fmt.Errorf(
-	//		"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
-	//}
-
+	// ScaleOut is handled with an ICD API call, however, the check is is on the instance status
 	_, err = waitForDatabaseInstanceUpdate(d, meta)
 	if err != nil {
 		return fmt.Errorf(
@@ -1719,6 +1776,8 @@ func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint st
 
 	service := d.Get("service")
 	dbConnection := icdv4.Uri{}
+	var cassandraConnection icdv4.CassandraUri
+
 	switch service {
 	case "databases-for-postgresql":
 		dbConnection = connection.Postgres
@@ -1730,6 +1789,8 @@ func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint st
 	// 	dbConnection = connection.Mysql
 	case "databases-for-elasticsearch":
 		dbConnection = connection.Https
+	case "databases-for-cassandra":
+		cassandraConnection = connection.Secure
 	case "databases-for-etcd":
 		dbConnection = connection.Grpc
 	case "messages-for-rabbitmq":
@@ -1738,31 +1799,42 @@ func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint st
 		return csEntry, fmt.Errorf("Unrecognised database type during connection string lookup: %s", service)
 	}
 
-	csEntry = CsEntry{
-		Name:     userName,
-		Password: "",
-		// Populate only first 'composed' connection string as an example
-		Composed:     dbConnection.Composed[0],
-		CertName:     dbConnection.Certificate.Name,
-		CertBase64:   dbConnection.Certificate.CertificateBase64,
-		Hosts:        dbConnection.Hosts,
-		Scheme:       dbConnection.Scheme,
-		Path:         dbConnection.Path,
-		QueryOptions: dbConnection.QueryOptions.(map[string]interface{}),
-	}
-	// Postgres DB name is of type string, Redis is json.Number, others are nil
-	if dbConnection.Database != nil {
-		switch v := dbConnection.Database.(type) {
-		default:
-			return csEntry, fmt.Errorf("Unexpected data type: %T", v)
-		case json.Number:
-			csEntry.Database = dbConnection.Database.(json.Number).String()
-		case string:
-			csEntry.Database = dbConnection.Database.(string)
+	if &cassandraConnection != nil {
+		csEntry = CsEntry{
+			Name:         userName,
+			Hosts:        cassandraConnection.Hosts,
+			BundleName:   cassandraConnection.Bundle.Name,
+			BundleBase64: cassandraConnection.Bundle.BundleBase64,
 		}
 	} else {
-		csEntry.Database = ""
+		csEntry = CsEntry{
+			Name:     userName,
+			Password: "",
+			// Populate only first 'composed' connection string as an example
+			Composed:     dbConnection.Composed[0],
+			CertName:     dbConnection.Certificate.Name,
+			CertBase64:   dbConnection.Certificate.CertificateBase64,
+			Hosts:        dbConnection.Hosts,
+			Scheme:       dbConnection.Scheme,
+			Path:         dbConnection.Path,
+			QueryOptions: dbConnection.QueryOptions.(map[string]interface{}),
+		}
+
+		// Postgres DB name is of type string, Redis is json.Number, others are nil
+		if dbConnection.Database != nil {
+			switch v := dbConnection.Database.(type) {
+			default:
+				return csEntry, fmt.Errorf("Unexpected data type: %T", v)
+			case json.Number:
+				csEntry.Database = dbConnection.Database.(json.Number).String()
+			case string:
+				csEntry.Database = dbConnection.Database.(string)
+			}
+		} else {
+			csEntry.Database = ""
+		}
 	}
+
 	return csEntry, nil
 }
 
@@ -1827,6 +1899,30 @@ func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{})
 	return *instance.ID == instanceID, nil
 }
 
+func waitForICDReady(meta interface{}, instanceID string) error {
+	icdId := EscapeUrlParm(instanceID)
+	icdClient, clientErr := meta.(ClientSession).ICDAPI()
+	if clientErr != nil {
+		return fmt.Errorf("Error getting database client settings: %s", clientErr)
+	}
+
+	// Wait for ICD Interface
+	err := retry(func() (err error) {
+		_, cdbErr := icdClient.Cdbs().GetCdb(icdId)
+		if cdbErr != nil {
+			if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+				return fmt.Errorf("The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
+			}
+			return fmt.Errorf("Error getting database config for: %s with error %s\n", icdId, err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, instanceID string) (interface{}, error) {
 	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
@@ -1855,6 +1951,12 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
+	}
+
+	waitErr := waitForICDReady(meta, instanceID)
+	if waitErr != nil {
+		return false, fmt.Errorf("Error ICD interface not ready after create: %s with error %s\n", instanceID, waitErr)
+
 	}
 
 	return stateConf.WaitForState()
@@ -1889,6 +1991,12 @@ func waitForDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 		Timeout:    d.Timeout(schema.TimeoutUpdate),
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
+	}
+
+	waitErr := waitForICDReady(meta, instanceID)
+	if waitErr != nil {
+		return false, fmt.Errorf("Error ICD interface not ready after update: %s with error %s\n", instanceID, waitErr)
+
 	}
 
 	return stateConf.WaitForState()
