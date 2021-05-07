@@ -1390,6 +1390,8 @@ func flattenConnectionStrings(cs []CsEntry) []map[string]interface{} {
 			"scheme":       csEntry.Scheme,
 			"path":         csEntry.Path,
 			"database":     csEntry.Database,
+			"bundlename":   csEntry.BundleName,
+			"bundlebase64": csEntry.BundleBase64,
 		}
 		hosts := csEntry.Hosts
 		hostsList := make([]map[string]interface{}, len(hosts), len(hosts))

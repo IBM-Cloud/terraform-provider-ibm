@@ -223,7 +223,7 @@ Review the argument reference that you can specify for your resource.
 
   ~> **Note:** `members_memory_allocation_mb`, `members_disk_allocation_mb`, `members_cpu_allocation_count` conflicts with `node_count`,`node_cpu_allocation_count`, `node_disk_allocation_mb`, `node_memory_allocation_mb` Either members or node arguments has to be provided
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
-- `plan` - (Required, String) The name of the service plan that you choose for your instance. Supported values are `standard`.
+- `plan` - (Required, String) The name of the service plan that you choose for your instance. All databases use `standard` except for "cassandra" which uses `enterprise`.
 * `plan_validation` - (Optional, bool) Enable or disable validating the database parameters for elasticsearch and postgres (more coming soon) during the plan phase. If not specified defaults to true.
 - `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
 - `point_in_time_recovery_time` - (Optional, String) The timestamp in UTC format that you want to restore to. To retrieve the timestamp, run the `ibmcloud cdb postgresql earliest-pitr-timestamp <deployment name or CRN>` command. For more information, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-pitr).
