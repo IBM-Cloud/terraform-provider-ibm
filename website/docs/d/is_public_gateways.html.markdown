@@ -29,6 +29,7 @@ The following attributes are exported:
   * `vpc` - The vpc id of gateway.
   * `zone` - The gateway zone name.
   * `tags` - Tags associated with the Public gateway.
+  * `name` - The name of the public gateway.
   * `floating_ip` - A nested block describing the floating IP of this gateway.
   Nested `floating_ip` blocks have the following structure:
     * `id` - ID of the floating ip bound to the public gateway.
