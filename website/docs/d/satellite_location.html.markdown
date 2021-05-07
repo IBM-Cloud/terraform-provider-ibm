@@ -36,4 +36,11 @@ In addition to all arguments above, the following attributes are exported:
 * `logging_account_id` -  The account ID for IBM Log Analysis with LogDNA log forwarding.
 * `zones` - The names for the host zones. For high availability, allocate your hosts across these three zones based on your infrastructure provider zones. ex: [ us-east-1, us-east-2, us-east-3 ]
 * `resource_group_id` - The ID of the resource group.
+* `resource_group_name` - The name of the resource group.
+* `host_attached_count` - The total number of hosts that are attached to the Satellite location.
+* `host_available_count` - The available number of hosts that can be assigned to a cluster resource in the Satellite location.
+* `created_on` - The created time of the satellite location.
+* `ingress_hostname` - The Ingress hostname.
+* `ingress_secret` - The Ingress secret.
+* `tags` - List of tags associated with resource instance.
 

@@ -40,6 +40,12 @@ variable "host_labels" {
   }
 }
 
+variable "tags" {
+  description = "List of tags associated with this satellite."
+  type        = list(string)
+  default     = [ "env:dev" ]
+}
+
 #################################################################################################
 # IBMCLOUD Authentication and Target Variables.
 # The region variable is common across zones used to setup VSI Infrastructure and Satellite host.
@@ -56,7 +62,6 @@ variable "ibm_region" {
 
 variable "resource_group" {
   description = "Name of the resource group on which location has to be created"
-  default = "Default"
 }
 
 variable "environment" {
