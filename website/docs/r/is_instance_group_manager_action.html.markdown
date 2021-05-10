@@ -78,7 +78,7 @@ The following arguments are supported:
 * `instance_group` - (Required, string) The instance group identifier.
 * `instance_group_manager_scheduled` - (Required, string) The instance group manager identifier.
 * `name` - (Optional, string) The user-defined name for this instance group manager action. Names must be unique within the instance group manager.
-* `run_at` - (Optional, string) The date and time the scheduled action will run.
+* `run_at` - (Optional, string) The date and time that is specified for the scheduled action. The format is in ISO 8601 format. Example: 2024-03-05T15:31:50.701Z or 2024-03-05T15:31:50.701+8:00.
 * `cron_spec` - (Optional, string) The cron specification for a recurring scheduled action. Actions can be applied a maximum of one time within a 5 min period.
 * `membership_count` - (Optional, int) "The number of members the instance group should have at the scheduled time."
 * `instance_group_manager_autoscale` - (Optional, string) The unique identifier for this instance group manager of type autoscale.
