@@ -1,19 +1,21 @@
 ---
-
 subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: Org"
 description: |-
-  Manages IBM Organization.
+  Manages IBM organization.
 ---
 
-# ibm\_org
+# `ibm_org`
 
-Provides an organization resource. This allows organizations to be created, updated, and deleted.
+Create, update, or delete a Cloud Foundry organization. For more information, about organization, see [Updating orgs and spaces](https://cloud.ibm.com/docs/account?topic=account-orgupdates).
 
-## Example Usage
 
-```hcl
+## Example usage
+The following example create the `myorg` Cloud Foundry organization and assigns users access to the organization. 
+
+
+```
 resource "ibm_org" "testacc_org" {
     name = "myorg"
     org_quota_definition_guid = "myorgquotaguid"
@@ -24,41 +26,44 @@ resource "ibm_org" "testacc_org" {
 }
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the input parameters that you can specify for your resource. 
 
-* `name` - (Required, string) The descriptive name used to identify a org. The org name must be unique in IBM Cloud and cannot be in use by another IBM Cloud user. 
-* `org_quota_definition_guid` - (Optional, string) The GUID for the quota associated with the org. The quota sets memory, service, and instance limits for the org.
-* `managers` - (Optional, set) The email addresses for users that you want to assign manager access to. The email address needs to be associated with an IBMid. Managers have the following permissions within the org:
-  * Can create, view, edit, or delete spaces.
-  * Can view usage and quota information.
-  * Can invite users and manage user access.
-  * Can assign roles to users.
-  * Can manage custom domains.
-* `users` - (Optional, set) The email addresses for the users that you want to grant org-level access to. The email address needs to be associated with an IBMid. 
-* `auditors` - (Optional, set) The email addresses for the users that you want to assign auditor access to. The email address needs to be associated with an IBMid. Auditors have the following permissions within the org:
-  * Can view users and their assigned roles.
-  * Can view quota information.
-* `billing_managers` - (Optional, set) The email addresses for the users that you want to assign billing manager access to. The email address needs to be associated with an IBMid. Billing managers have the following permissions within the org:
-  * Can view runtime and service usage information on the usage dashboard.  
+- `auditors`(Optional, Sets) The email addresses of the users that you want to assign Cloud Foundry **Auditor** access to. The email address needs to be associated with an IBMID. Auditors have the following permissions within the org: <ul><li>View users and their assigned roles.</li><li>View quota information.</li></ul>.
+- `billing_managers`(Optional, Sets) The email addresses of the users that you want to assign the **Billing manager** access to. The email address needs to be associated with an IBMID. Billing managers have the following permissions within the org: <ul><li>View runtime and service usage information on the usage dashboard.</li></ul>.
+- `managers`(Optional, Sets) The email addresses of the users that you want to assign Cloud Foundry **Manager** access to. The email address needs to be associated with an IBMID. Managers have the following permissions within the org: <ul><li>Create, view, edit, or delete spaces.</li><li>View usage and quota information.</li><li>Invite users and manage user access. </li><li> Assign roles to users.</li><li>Manage custom domains.</li></ul>.
+- `name` - (Required, String) The descriptive name used of the Cloud Foundry organization. The name must be unique in IBM Cloud.
+- `org_quota_definition_guid` - (Optional, String) The GUID for the quota that is assigned to organization. The quota sets memory, service, and instance limits for the organization.
+- `tags`-(Optional, array of strings) Tags associated with the org.  **Note** Tags are managed locally and not stored on the IBM Cloud service endpoint.
+- `users`(Optional, Sets) The email addresses of the users that you want to grant org-level access to. The email address needs to be associated with an IBMID.
 
-**NOTE**: By default the user creating this resource will have the manager role as per the Cloud Foundry API behavior. Terraform will throw error if you add yourself to the manager role or as a user. This information is not persisted in the state file to avoid any spurious diffs.
-* `tags` - (Optional, array of strings) Tags associated with the org.  
-  **NOTE**: Tags are managed locally and not stored on the IBM Cloud service endpoint.
+**Note**
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the org.  
+By default, the user that creates this resource is assigned the **Manager** Cloud Foundry role.  Terraform returns an error when you assign the **Manager** or Cloud Foundry user role to yourself. User information is not persisted in the  Terraform state file to avoid any incorrect information.
 
 
-## Import
+## Attribute reference
+Review the output parameters that you can access after your resource is created. 
 
-Org can be imported using the `id`, e.g.
+- `id` - (String) The unique identifier of the Cloud Foundry organization.
+
+
+### Import
+The Cloud Foundry organization can be imported by using the `id`.
+
+**Syntax**
 
 ```
-$ terraform import ibm_org.myorg abde-12345
+terraform import ibm_org.myorg <id>
 ```
-Once you bring your current org under terraform management, you can perform others operations like adding user or assigning them required roles.
+
+**Example**
+
+```
+terraform import ibm_org.myorg abde-12345
+```
+
+If you bring your current organization in Terraform management, you can perform others operations such as adding a user or assigning users with the required roles.
+
+
