@@ -6,43 +6,42 @@ description: |-
   Get information about an IBM Application.
 ---
 
-# ibm\_app
+# `ibm_app`
 
-Import the details of an existing IBM Cloud app as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about an existing Cloud Foundry app. For more information, about a Cloud Foundry application, see [getting started with Cloud Foundry Public](https://cloud.ibm.com/docs/cloud-foundry-public?topic=cloud-foundry-public-getting-started).
 
-## Example Usage
 
-```hcl
+## Example usage
+The following example retrieves information about the `my-app` Cloud Foundry app.  
+
+
+```
 data "ibm_app" "testacc_ds_app" {
   name       = "my-app"
   space_guid = ibm_app.app.space_guid
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the input parameters that you can specify for your data source. 
 
-The following arguments are supported:
+- `name` - (Required, String) The name of the app. You can retrieve the value by running the `ibmcloud app list` command in the IBM Cloud CLI.
+- `space_guid` - (Required, String) The GUID of the IBM Cloud space where the app is deployed. You can retrieve the value with the `ibm_space` data source or by running the `ibmcloud iam space <space-name> guid` command in the IBM Cloud CLI.
 
-* `name` - (Required, string) The name of the application. You can retrieve the value by running the `ibmcloud app list` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
-* `space_guid` - (Required, string) The GUID of the IBM Cloud space where the application is deployed. You can retrieve the value with the `ibm_space` data source or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
 
-## Attribute Reference
+## Attribute reference
+Review the output parameters that you can access after you retrieved your data source. 
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the application.
-* `memory` - The memory, specified in megabytes, that is allocated to the application.
-* `instances` - The number of instances of the application.
-* `disk_quota` - The disk quota for an instance of the application, specified in megabytes.
-* `buildpack` - The buildpack used by the application. It can be any of the following:
-    * Blank, to indicate auto-detection.
-    * A Git URL pointing to a buildpack.
-    * The name of an installed buildpack.
-* `environment_json` - Key/value pairs of all the environment variables. Does not include any system or service variables.
-* `route_guid` - The route GUIDs that are bound to the application.
-* `service_instance_guid` - The service instance GUIDs that are bound to the application.
-* `package_state` - The state of the application package, such as staged or pending.
-* `state` - The state of the application.
-* `health_check_http_endpoint` - Endpoint called to determine if the app is healthy.
-* `health_check_type` - Type of health check.
-* `health_check_timeout` - Health check timeout in seconds.
+- `buildpack` - (String) The buildpack that is used by the app. Supported values are: <ul><li>Blank, indicates auto-detection</li><li>A Git URL that points to a buildpack</li><li>The name of an installed buildpack</li></ul>.
+- `disk_quota`- (Integer) The maximum amount of disk space that an app instance can use, specified in megabytes.
+- `environment_json`- (List of strings) A list of environment variables that the app uses. Environment variables are listed as key-value pairs and do not include system or service variables.
+- `health_check_http_endpoint` - (String) The endpoint that is used to perform an HTTP health check and determine if the app is healthy.
+- `health_check_type` - (String) Type of health check that is performed.
+- `health_check_timeout`- (Integer) The timeout in seconds that the app remains unresponsive before the app is considered to be unhealthy.
+- `id` - (String) The unique identifier of the app.
+- `instances`- (Integer) The number of app instances that are deployed.
+- `memory`- (Integer) The amount of memory, specified in megabytes, that is allocated to the app.
+- `package_state` - (String) The state of the app package, such as `staged` or `pending`.
+- `route_guid` - (String) The GUIDs of the routes that are assigned to the app.
+- `service_instance_guid` - (String) The GUIDs of the service instances that are bound to the app.
+- `state` - (String) The state of the app.

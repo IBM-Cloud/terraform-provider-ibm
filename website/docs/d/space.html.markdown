@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_space"
@@ -7,22 +6,24 @@ description: |-
   Get information about an IBM Cloud space.
 ---
 
-# ibm\_space
+# `ibm_space`
 
-Import the details of an existing IBM Cloud space as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about an existing Cloud Foundry space. For more information, about Cloud Foundry space, see [Getting started with IBM Cloud Foundry Enterprise Environment](https://cloud.ibm.com/docs/cloud-foundry?topic=cloud-foundry-getting-started).
 
-## Example Usage
 
-```hcl
+## Example usage
+The following example retrieves information about the `prod` Cloud Foundry space.
+
+```
 data "ibm_space" "spaceData" {
   space = "prod"
-  org   = "someexample.com"
+  org   = "myorg.com"
 }
 ```
 
 The following example shows how you can use the data source to reference the space ID in the `ibm_service_instance` resource.
 
-```hcl
+```
 resource "ibm_service_instance" "service_instance" {
   name       = "test"
   space_guid = data.ibm_space.spaceData.id
@@ -32,19 +33,18 @@ resource "ibm_service_instance" "service_instance" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the input parameters that you can specify for your data source. 
 
-The following arguments are supported:
+- `name` - (Optional, String)  The name of your space.
+- `org` - (Deprecated, String) The name of your Cloud Foundry organization that the space belongs to. You can retrieve the value by running the `ibmcloud iam orgs` command in the IBM Cloud CLI.
+- `space` - (Deprecated, String)  The name of your Cloud Foundry space. You can retrieve the value by running the `ibmcloud iam spaces` command in the IBM Cloud CLI.
 
-* `org` - (Required) The name of your IBM Cloud organization. You can retrieve the value by running the `ibmcloud iam orgs` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
-* `space` - (Deprecated) The name of your space. You can retrieve the value by running the `ibmcloud iam spaces` command in the IBM Cloud CLI.
-* `name` - (Optional, string) The name of your space.
 
-## Attribute Reference
+## Attribute reference
+Review the output parameters that you can access after you retrieved your data source. 
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the space.  
-* `managers` - The email addresses (associated with IBMid) of the users who have a manager role in this space.
-* `auditors` - The email addresses (associated with IBMid) of the users who have an auditor role in this space.
-* `developers` - The email addresses (associated with IBMid) of the users who have a developer role in this space.
+- `auditors` - (String) The email addresses (associated with IBMID) of the users who have an auditor role in this space.
+- `developers` - (String) The email addresses (associated with IBMID) of the users who have a developer role in this space.
+- `id` - (String) The unique identifier of the space.
+- `managers` - (String) The email addresses (associated with IBMID) of the users who have a manager role in this space.

@@ -6,38 +6,39 @@ description: |-
   Get information about an IBM Cloud organization quota.
 ---
 
-# ibm\_org_quota
+# `ibm_org_quota`
 
-Import the details of an existing quota for an IBM Cloud org as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about a quota for a Cloud Foundry organization. For more information, about organization and usage of quote, see [Updating orgs and spaces](https://cloud.ibm.com/docs/account?topic=account-orgupdates).
 
-## Example Usage
 
-```hcl
+## Example usage
+The following example retrieves information for an existing quota plan. 
+
+
+```
 data "ibm_org_quota" "orgquotadata" {
   name = "quotaname"
 }
-
 ```
 
-## Argument Reference
+## Argument reference
+Review the input parameters that you can specify for your data source. 
 
-The following arguments are supported:
+- `name` - (Required, String) The name of the quota plan for the Cloud Foundry organization. You can retrieve the value by running the `ibmcloud cf quotas` command in the IBM Cloud CLI.
 
-* `name` - (Required, string) The name of the quota plan for the IBM Cloud org. You can retrieve the value by running the `ibmcloud cf quotas` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 
-## Attribute Reference
+## Attribute referenceReview the output parameters that you can access after you retrieved your data source. 
 
-In addition to all arguments above, the following attributes are exported:
+- `app_instance_limit`- (Integer) Defines the total number of app instances that are allowed for the Cloud Foundry organization.
+- `app_tasks_limit`- (Integer) Defines the total number of app tasks for a Cloud Foundry organization.
+- `id` - (String) The unique identifier of the Cloud Foundry organization.
+- `instance_memory_limit`- (Integer) Defines the total amount of memory that an instance can use in a Cloud Foundry organization.
+- `memory_limit`- (Integer) Defines the total amount of memory that can be used by the Cloud Foundry organization.
+- `non_basic_services_allowed`- (Boolean) Defines if non-basic (paid) services are allowed for the Cloud Foundry organization.
+- `total_private_domains`- (Integer) Defines the total number of private domains that can be created for a Cloud Foundry organization.
+- `total_reserved_route_ports`- (Integer) Defines the number of routes with reserved ports for the Cloud Foundry organization.
+- `total_routes`- (Integer) Defines the maximum number of routes that can be created for a Cloud Foundry organization.
+- `total_service_keys`- (Integer) Defines the maximum number of service keys for the Cloud Foundry organization.
+- `total_services`- (Integer) Defines the maximum number of services that can be created in a Cloud Foundry organization.
+- `trial_db_allowed`- (Boolean) Defines if a trial database is allowed for the Cloud Foundry organization.
 
-* `id` - The unique identifier of the organization.
-* `app_instance_limit` - Defines the total number of app instances that are allowed for the organization.
-* `app_tasks_limit` - Defines the total app task limit for the organization.
-* `instance_memory_limit` - Defines the total memory usage that is allowed per instance for the organization.
-* `memory_limit` - Defines the total memory usage that is allowed for the organization.
-* `non_basic_services_allowed` - Defines if non-basic (paid) services are allowed for the organization.
-* `total_private_domains` - Defines the total private domain limit for the organization.
-* `total_reserved_route_ports` - Defines the number of routes with reserved ports for the organization. 
-* `total_routes` - Defines the maximum total routes for the organization.
-* `total_service_keys` - Defines the maximum number of service keys for the organization.
-* `total_services` - Defines the maximum number of services for organization.
-* `trial_db_allowed` - Defines if a trial db is allowed for the organization.
