@@ -205,9 +205,12 @@ func dataSourceIBMISInstanceGroupManagerActionRead(d *schema.ResourceData, meta 
 				return fmt.Errorf("error setting action_type: %s", err)
 			}
 
-			if err = d.Set("cron_spec", *instanceGroupManagerAction.CronSpec); err != nil {
-				return fmt.Errorf("error setting cron_spec: %s", err)
+			if instanceGroupManagerAction.CronSpec != nil {
+				if err = d.Set("cron_spec", *instanceGroupManagerAction.CronSpec); err != nil {
+					return fmt.Errorf("error setting cron_spec: %s", err)
+				}
 			}
+
 			if instanceGroupManagerAction.LastAppliedAt != nil {
 				if err = d.Set("last_applied_at", instanceGroupManagerAction.LastAppliedAt.String()); err != nil {
 					return fmt.Errorf("error setting last_applied_at: %s", err)
