@@ -16,6 +16,7 @@ const (
 	dlRouterName          = "router_name"
 	dlTotalConns          = "total_connections"
 	dlLocation            = "location_name"
+	dlMacsecCapabilities  = "capabilities"
 )
 
 func dataSourceIBMDLRouters() *schema.Resource {
@@ -39,6 +40,12 @@ func dataSourceIBMDLRouters() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						dlMacsecCapabilities: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "List of capabilities for this router",
+						},
 						dlRouterName: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -76,6 +83,9 @@ func dataSourceIBMDLRoutersRead(d *schema.ResourceData, meta interface{}) error 
 	routers := make([]map[string]interface{}, 0)
 	for _, instance := range listRouters.CrossConnectRouters {
 		route := map[string]interface{}{}
+		if instance.Capabilities != nil {
+			route[dlMacsecCapabilities] = flattenStringList(instance.Capabilities)
+		}
 		if instance.RouterName != nil {
 			route[dlRouterName] = *instance.RouterName
 		}

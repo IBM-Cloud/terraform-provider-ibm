@@ -78,7 +78,7 @@ The following arguments are supported:
 * `name` - (Optional, string) The name of the reserved IP.
     **NOTE**: Raise error if name is given with a prefix `ibm-`.
 * `auto_delete` - (Optional, boolean) If reserved IP is auto deleted.
-* `target` - The id for the target endpoint gateway for the reserved IP.
+* `target` - (Optional, string) The id for the target endpoint gateway for the reserved IP.
 
 
 ## Attribure Reference

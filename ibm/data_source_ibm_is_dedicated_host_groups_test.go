@@ -14,8 +14,6 @@ import (
 
 func TestAccIbmIsDedicatedHostGroupsDataSourceBasic(t *testing.T) {
 	var conf vpcv1.DedicatedHostGroup
-	class := "beta"
-	family := "memory"
 	name := fmt.Sprintf("tfdhgroups%d", acctest.RandIntRange(10, 100))
 	resName := "data.ibm_is_dedicated_host_groups.dhgroups"
 	resource.Test(t, resource.TestCase{
@@ -24,16 +22,16 @@ func TestAccIbmIsDedicatedHostGroupsDataSourceBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmIsDedicatedHostGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmIsDedicatedHostGroupConfigBasic(class, family, name),
+				Config: testAccCheckIbmIsDedicatedHostGroupConfigBasic(dedicatedHostGroupClass, dedicatedHostGroupFamily, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsDedicatedHostGroupExists("ibm_is_dedicated_host_group.is_dedicated_host_group", conf),
-					resource.TestCheckResourceAttr("ibm_is_dedicated_host_group.is_dedicated_host_group", "class", class),
-					resource.TestCheckResourceAttr("ibm_is_dedicated_host_group.is_dedicated_host_group", "family", family),
+					resource.TestCheckResourceAttr("ibm_is_dedicated_host_group.is_dedicated_host_group", "class", dedicatedHostGroupClass),
+					resource.TestCheckResourceAttr("ibm_is_dedicated_host_group.is_dedicated_host_group", "family", dedicatedHostGroupFamily),
 					resource.TestCheckResourceAttr("ibm_is_dedicated_host_group.is_dedicated_host_group", "name", name),
 				),
 			},
 			{
-				Config: testAccCheckIbmIsDedicatedHostGroupsDataSourceConfigBasic(class, family, name),
+				Config: testAccCheckIbmIsDedicatedHostGroupsDataSourceConfigBasic(dedicatedHostGroupClass, dedicatedHostGroupFamily, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resName, "host_groups.0.name"),
 					resource.TestCheckResourceAttrSet(resName, "host_groups.0.class"),

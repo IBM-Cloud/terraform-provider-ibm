@@ -48,6 +48,8 @@ import (
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
+	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
+        iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
@@ -192,6 +194,7 @@ type ClientSession interface {
 	FunctionClient() (*whisk.Client, error)
 	GlobalSearchAPI() (globalsearchv2.GlobalSearchServiceAPI, error)
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
+	GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error)
 	ICDAPI() (icdv4.ICDServiceAPI, error)
 	IAMAPI() (iamv1.IAMServiceAPI, error)
 	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
@@ -296,6 +299,9 @@ type clientSession struct {
 
 	globalTaggingConfigErr  error
 	globalTaggingServiceAPI globaltaggingv3.GlobalTaggingServiceAPI
+
+	globalTaggingConfigErrV1  error
+	globalTaggingServiceAPIV1 globaltaggingv1.GlobalTaggingV1
 
 	iamUUMConfigErr  error
 	iamUUMServiceAPI iamuumv1.IAMUUMServiceAPI
@@ -554,6 +560,11 @@ func (sess clientSession) GlobalSearchAPI() (globalsearchv2.GlobalSearchServiceA
 // GlobalTaggingAPI provides Global Search  APIs ...
 func (sess clientSession) GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error) {
 	return sess.globalTaggingServiceAPI, sess.globalTaggingConfigErr
+}
+
+// GlobalTaggingAPIV1 provides Platform-go Global Tagging  APIs ...
+func (sess clientSession) GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error) {
+	return sess.globalTaggingServiceAPIV1, sess.globalTaggingConfigErrV1
 }
 
 // HpcsEndpointAPI provides Hpcs Endpoint generator APIs ...
@@ -1282,6 +1293,31 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.globalTaggingConfigErr = fmt.Errorf("Error occured while configuring Global Tagging: %q", err)
 	}
 	session.globalTaggingServiceAPI = globalTaggingAPI
+
+	globalTaggingEndpoint := "https://tags.global-search-tagging.cloud.ibm.com"
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		var globalTaggingRegion string
+		if c.Region != "us-south" && c.Region != "us-east" {
+			globalTaggingRegion = "us-south"
+		} else {
+			globalTaggingRegion = c.Region
+		}
+		globalTaggingEndpoint = contructEndpoint(fmt.Sprintf("tags.private.%s", globalTaggingRegion), fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
+	}
+
+	globalTaggingV1Options := &globaltaggingv1.GlobalTaggingV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_GT_API_ENDPOINT"}, globalTaggingEndpoint),
+		Authenticator: authenticator,
+	}
+
+	globalTaggingAPIV1, err := globaltaggingv1.NewGlobalTaggingV1(globalTaggingV1Options)
+	if err != nil {
+		session.globalTaggingConfigErr = fmt.Errorf("Error occured while configuring Global Tagging: %q", err)
+	}
+	if globalTaggingAPIV1 != nil {
+		session.globalTaggingServiceAPIV1 = *globalTaggingAPIV1
+		session.globalTaggingServiceAPIV1.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
 
 	iam, err := iamv1.New(sess.BluemixSession)
 	if err != nil {
