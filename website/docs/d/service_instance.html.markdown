@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: ibm_service_instance"
@@ -7,15 +6,18 @@ description: |-
   Get information about a service instance from IBM Cloud.
 ---
 
-# ibm\_service_instance
+# `ibm_service_instance`
 
-Import the details of an existing IBM service instance from IBM Cloud as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about a Cloud Foundry service instance. For more information, about creating organization, spaces, and an instance, see [Getting started with IBM Cloud Foundry Enterprise Environment](https://cloud.ibm.com/docs/cloud-foundry?topic=cloud-foundry-getting-started).
 
-## Example Usage
 
-```hcl
+## Example usage
+The following example retrieves information about the `mycloudantdb` instance. 
+
+
+```
 data "ibm_space" "space" {
-  org   = "example.com"
+  org   = "myorg"
   space = "dev"
 }
 
@@ -25,19 +27,19 @@ data "ibm_service_instance" "serviceInstance" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the input parameters that you can specify for your data source. 
 
-The following arguments are supported:
+- `name` - (Required, String) The name of the service instance. You can retrieve the value by running the `ibmcloud service list` command.
+- `space_guid` - (Required, String) The GUID of the Cloud Foundry space where the service instance is deployed to. You can retrieve the value from data source `ibm_space`.
 
-* `name` - (Required, string) The name of the service instance. You can retrieve the value by running the `ibmcloud service list` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 
-* `space_guid` - (Required, string) The GUID of the space where the service instance exists. You can retrieve the value from data source `ibm_space`.
+## Attribute reference
+Review the output parameters that you can access after you retrieved your data source. 
 
-## Attribute Reference
+- `credentials` - (String) The credentials provided by the service broker to use this service.
+- `id` - (String) The unique identifier of the service instance.
+- `service_keys` - (String) The service keys associated with this service.
+- `service_plan_guid` - (String) The plan GUID for the service offering used by this service instance.
 
-In addition to all arguments above, the following attributes are exported:
 
-* `id` - The unique identifier of the service instance.
-* `credentials` - The credentials provided by the service broker to use this service.
-* `service_keys` - The service keys associated with this service.
-* `service_plan_guid` - The plan GUID for the service offering used by this service instance.

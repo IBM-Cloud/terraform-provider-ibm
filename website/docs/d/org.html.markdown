@@ -6,29 +6,28 @@ description: |-
   Get information about an IBM Cloud organization.
 ---
 
-# ibm\_org
+# `ibm_org`
 
-Import the details of an existing IBM Cloud org as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about an existing Cloud Foundry organization. For more information, about organization, see [Updating orgs and spaces](https://cloud.ibm.com/docs/account?topic=account-orgupdates).
 
-## Example Usage
+## Example usage
+The following example retrieves information about the `myorg` Cloud Foundry organization. 
 
-```hcl
-
+```
 data "ibm_org" "orgdata" {
   org = "example.com"
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the input parameters that you can specify for your data source.
 
-The following arguments are supported:
+- `name` - (Optional, String) The name of the IBM Cloud organization.
+- `org` - (Deprecated, String) The name of the IBM Cloud organization.
 
-* `org` - (Deprecated, string) The name of the IBM Cloud organization. You can retrieve the value by running the `ibmcloud iam orgs` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
-* `name` - (Optional, string) The name of the IBM Cloud organization.
+## Attribute reference
+Review the output parameters that you can access after you retrieved your data source. 
+
+- `id` - (String) The unique identifier of the Cloud Foundry organization.
 
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the organization.  

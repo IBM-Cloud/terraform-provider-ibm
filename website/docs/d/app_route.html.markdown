@@ -6,34 +6,38 @@ description: |-
   Get information about an IBM Cloud route.
 ---
 
-# ibm\_app_route
+# `ibm_app_route`
 
-Import the details of an existing IBM Cloud route as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about an existing app route. For more information, about an app route, see [Updating your domain](https://cloud.ibm.com/docs/cloud-foundry-public?topic=cloud-foundry-public-update-domain).
 
-## Example Usage
 
-```hcl
+## Example usage
+The following example retrieves information about an app route. 
+
+
+```
 data "ibm_app_route" "route" {
   domain_guid = data.ibm_app_domain_shared.domain.id
   space_guid  = data.ibm_space.spacedata.id
-  host        = "somehost"
+  host        = "myhost"
   path        = "/app"
 }
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the input parameters that you can specify for your data source. 
 
-* `domain_guid` - (Required, string) The GUID of the associated domain. You can retrieve the value from the `ibm_app_domain_shared` data source.
-* `space_guid` - (Required, string) The GUID of the space where you want to create the route. You can retrieve the value from the `ibm_space` data source or by running the `ibmcloud iam space <space-name> --guid` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
-* `host` - (Optional, string) The host portion of the route. Required for shared domains.
-* `port` - (Optional, integer) The port of the route. Supported for domains of TCP router groups only.
-* `path` - (Optional, string) The path for a route as raw text. Paths must contain 2 - 128 characters. Paths must start with a forward slash (/). Paths must not contain a question mark (?).
+- `domain_guid`- (Required, String) The GUID of the domain that the route belongs to. You can retrieve the value from the `ibm_app_domain_shared` data source.
+- `host` - (Optional, String)  The host name of the route. Required for shared domains.
+- `path` - (Optional, String)  The path for a route. Paths must contain 2-128 characters. Paths must start with a forward slash (/). Paths must not contain a question mark (?).
+- `port` - (Optional, String)  The port of the route. This value is supported for TCP router group domains only.
+- `space_guid` - (Required, String) The GUID of the space that the route belongs to. You can retrieve the value from the `ibm_space` data source or by running the `ibmcloud iam space <space-name> guid` command in the IBM Cloud CLI.
 
 
-## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
+Review the output parameters that you can access after you retrieved your data source. 
 
-* `id` - The unique identifier of the route.  
+- `id` - (String) The unique identifier of the route.
+
