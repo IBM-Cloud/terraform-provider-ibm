@@ -224,7 +224,9 @@ func resourceIBMPIVolumeExists(d *schema.ResourceData, meta interface{}) (bool, 
 	if err != nil {
 		return false, err
 	}
-
+	if len(parts) < 2 {
+		return false, fmt.Errorf("Incorrect ID %s: Id should be a combination of powerInstanceID/VolumeID", d.Id())
+	}
 	powerinstanceid := parts[0]
 	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
 

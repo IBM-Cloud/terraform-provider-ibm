@@ -8,10 +8,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
+
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
 const (
@@ -162,6 +163,9 @@ func resourceIBMSatelliteHostRead(d *schema.ResourceData, meta interface{}) erro
 	parts, err := idParts(d.Id())
 	if err != nil {
 		return err
+	}
+	if len(parts) < 2 {
+		return fmt.Errorf("Incorrect ID %s: Id should be a combination of location/hostName", d.Id())
 	}
 	location := parts[0]
 	hostName := parts[1]
