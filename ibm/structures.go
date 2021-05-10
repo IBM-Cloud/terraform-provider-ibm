@@ -1959,6 +1959,34 @@ func resourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 	return nil
 }
 
+func resourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
+
+	if volsintf, ok := diff.GetOk("volume_attachments"); ok {
+		vols := volsintf.([]interface{})
+		for volAttIdx := range vols {
+			volumeid := "volume_attachments." + strconv.Itoa(volAttIdx) + "." + isInstanceTemplateVolAttVol
+			volumePrototype := "volume_attachments." + strconv.Itoa(volAttIdx) + "." + isInstanceTemplateVolAttVolPrototype
+			var volIdnterpolated = false
+			var volumeIdFound = false
+			if _, volumeIdFound = diff.GetOk(volumeid); !volumeIdFound {
+				if !diff.NewValueKnown(volumeid) {
+					volIdnterpolated = true
+				}
+			}
+			_, volPrototypeFound := diff.GetOk(volumePrototype)
+
+			if volPrototypeFound && (volumeIdFound || volIdnterpolated) {
+				return fmt.Errorf("InstanceTemplate - volume_attachments[%d]: Cannot provide both 'volume' and 'volume_prototype' together.", volAttIdx)
+			}
+			if !volPrototypeFound && !volumeIdFound && !volIdnterpolated {
+				return fmt.Errorf("InstanceTemplate - volume_attachments[%d]: Volume details missing. Provide either 'volume' or 'volume_prototype'.", volAttIdx)
+			}
+		}
+	}
+
+	return nil
+}
+
 func flattenRoleData(object []iampolicymanagementv1.Role, roleType string) []map[string]string {
 	var roles []map[string]string
 
