@@ -1959,6 +1959,26 @@ func resourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 	return nil
 }
 
+func resourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
+
+	if volsintf, ok := diff.GetOk("volume_attachments"); ok {
+		vols := volsintf.([]interface{})
+		for _, resource := range vols {
+			vol := resource.(map[string]interface{})
+			volIdStr := vol["volume"].(string)
+			newvolintfArr := vol["new_volume"].([]interface{})
+			if volIdStr == "" && len(newvolintfArr) == 0 {
+				return fmt.Errorf("InstanceTemplate - volume_attachments: Volume details missing. Provide either 'volume' or 'new_volume'.")
+			}
+			if volIdStr != "" && len(newvolintfArr) > 0 {
+				return fmt.Errorf("InstanceTemplate - volume_attachments: Cannot provide both 'volume' and 'new_volume' together.")
+			}
+		}
+	}
+
+	return nil
+}
+
 func flattenRoleData(object []iampolicymanagementv1.Role, roleType string) []map[string]string {
 	var roles []map[string]string
 

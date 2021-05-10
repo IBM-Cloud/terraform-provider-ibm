@@ -52,10 +52,17 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 		Exists:   resourceIBMisInstanceTemplateExists,
 		Importer: &schema.ResourceImporter{},
 
-		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return resourceTagsCustomizeDiff(diff)
-			},
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceTagsCustomizeDiff(diff)
+				},
+			),
+
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceVolumeAttachmentValidate(diff)
+				}),
 		),
 
 		Schema: map[string]*schema.Schema{
@@ -104,16 +111,55 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isInstanceTemplateVolumeDeleteOnInstanceDelete: {
-							Type:     schema.TypeBool,
-							Required: true,
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "If set to true, when deleting the instance the volume will also be deleted.",
 						},
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The user-defined name for this volume attachment.",
 						},
 						"volume": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The unique identifier for this volume.",
+						},
+						"new_volume": {
+							Type:     schema.TypeList,
+							MaxItems: 1,
+							MinItems: 1,
+							Optional: true,
+							ForceNew: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"iops": {
+										Type:        schema.TypeInt,
+										Optional:    true,
+										ForceNew:    true,
+										Description: "The maximum I/O operations per second (IOPS) for the volume.",
+									},
+									"profile": {
+										Type:        schema.TypeString,
+										Required:    true,
+										ForceNew:    true,
+										Description: "The  globally unique name for the volume profile to use for this volume.",
+									},
+									"capacity": {
+										Type:        schema.TypeInt,
+										Required:    true,
+										ForceNew:    true,
+										Description: "The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating volumes may expand in the future.",
+									},
+									"encryption_key": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										ForceNew:    true,
+										Description: "The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -430,17 +476,43 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 		for _, resource := range vols {
 			vol := resource.(map[string]interface{})
 			volInterface := &vpcv1.VolumeAttachmentPrototypeInstanceContext{}
-			deleteVol, _ := vol[isInstanceTemplateVolumeDeleteOnInstanceDelete]
-			deleteVolBool := deleteVol.(bool)
+			deleteVolBool := vol[isInstanceTemplateVolumeDeleteOnInstanceDelete].(bool)
 			volInterface.DeleteVolumeOnInstanceDelete = &deleteVolBool
-			name, _ := vol["name"]
-			namestr := name.(string)
-			volInterface.Name = &namestr
-			volintf, _ := vol["volume"]
-			volintfstr := volintf.(string)
-			volInterface.Volume = &vpcv1.VolumeAttachmentVolumePrototypeInstanceContext{
-				ID: &volintfstr,
+			attachmentnamestr := vol["name"].(string)
+			volInterface.Name = &attachmentnamestr
+			volIdStr := vol["volume"].(string)
+
+			if volIdStr != "" {
+				volInterface.Volume = &vpcv1.VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity{
+					ID: &volIdStr,
+				}
+			} else {
+				newvolintf := vol["new_volume"].([]interface{})[0]
+				newvol := newvolintf.(map[string]interface{})
+				profileName := newvol["profile"].(string)
+				capacity := int64(newvol["capacity"].(int))
+
+				volPrototype := &vpcv1.VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext{
+					Profile: &vpcv1.VolumeProfileIdentity{
+						Name: &profileName,
+					},
+					Capacity: &capacity,
+				}
+				iops := int64(newvol["iops"].(int))
+				encryptionKey := newvol["encryption_key"].(string)
+
+				if iops != 0 {
+					volPrototype.Iops = &iops
+				}
+
+				if encryptionKey != "" {
+					volPrototype.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
+						CRN: &encryptionKey,
+					}
+				}
+				volInterface.Volume = volPrototype
 			}
+
 			intfs = append(intfs, *volInterface)
 		}
 		instanceproto.VolumeAttachments = intfs
@@ -679,16 +751,31 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			volumeAttach := map[string]interface{}{}
 			volumeAttach[isInstanceTemplateVolAttName] = *volume.Name
 			volumeAttach[isInstanceTemplateDeleteVolume] = *volume.DeleteVolumeOnInstanceDelete
-			volumeID := map[string]interface{}{}
+			newVolumeArr := []map[string]interface{}{}
+			newVolume := map[string]interface{}{}
 			volumeIntf := volume.Volume
 			volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentVolumePrototypeInstanceContext)
-			if volumeInst.Name != nil {
-				volumeID["name"] = *volumeInst.Name
+			if volumeInst.ID != nil {
+				volumeAttach[isInstanceTemplateVolAttVolume] = *volumeInst.ID
 			}
+
+			if volumeInst.Capacity != nil {
+				newVolume["capacity"] = *volumeInst.Capacity
+			}
+			if volumeInst.Profile != nil {
+				profile := volumeInst.Profile.(*vpcv1.VolumeProfileIdentity)
+				newVolume["profile"] = profile.Name
+			}
+
 			if volumeInst.Iops != nil {
-				volumeID["iops"] = *volumeInst.Iops
+				newVolume["iops"] = *volumeInst.Iops
 			}
-			volumeAttach[isInstanceTemplateVolAttVolume] = volumeID
+			if volumeInst.EncryptionKey != nil {
+				encryptionKey := volumeInst.EncryptionKey.(*vpcv1.EncryptionKeyIdentity)
+				newVolume["encryption_key"] = *encryptionKey.CRN
+			}
+			newVolumeArr = append(newVolumeArr, newVolume)
+			volumeAttach["new_volume"] = newVolumeArr
 			interfacesList = append(interfacesList, volumeAttach)
 		}
 		d.Set(isInstanceTemplateVolumeAttachments, interfacesList)
