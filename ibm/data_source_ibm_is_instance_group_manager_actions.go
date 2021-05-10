@@ -194,7 +194,9 @@ func dataSourceIBMISInstanceGroupManagerActionsRead(d *schema.ResourceData, meta
 			"status":                        *instanceGroupManagerAction.Status,
 			"updated_at":                    instanceGroupManagerAction.UpdatedAt.String(),
 			"action_type":                   *instanceGroupManagerAction.ActionType,
-			"cron_spec":                     *instanceGroupManagerAction.CronSpec,
+		}
+		if instanceGroupManagerAction.CronSpec != nil {
+			action["cron_spec"] = *instanceGroupManagerAction.CronSpec
 		}
 		if instanceGroupManagerAction.LastAppliedAt != nil {
 			action["last_applied_at"] = instanceGroupManagerAction.LastAppliedAt.String()

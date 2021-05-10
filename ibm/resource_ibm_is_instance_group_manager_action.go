@@ -220,8 +220,15 @@ func resourceIBMISInstanceGroupManagerActionCreate(d *schema.ResourceData, meta 
 	}
 
 	if v, ok := d.GetOk("run_at"); ok {
-		runat := v.(strfmt.DateTime)
-		instanceGroupManagerActionPrototype.RunAt = &runat
+		log.Println("Inside RUN_AT conversion block")
+		runat := v.(string)
+		log.Println(runat)
+		datetime, err := strfmt.ParseDateTime(runat)
+		if err != nil {
+			return fmt.Errorf("error in converting run_at to datetime format %s", err)
+		}
+		log.Println(datetime)
+		instanceGroupManagerActionPrototype.RunAt = &datetime
 	}
 
 	if v, ok := d.GetOk("cron_spec"); ok {
@@ -291,8 +298,12 @@ func resourceIBMISInstanceGroupManagerActionUpdate(d *schema.ResourceData, meta 
 	}
 
 	if d.HasChange("run_at") {
-		runat := d.Get("run_at").(strfmt.DateTime)
-		instanceGroupManagerActionPatchModel.RunAt = &runat
+		runat := d.Get("run_at").(string)
+		datetime, err := strfmt.ParseDateTime(runat)
+		if err != nil {
+			return fmt.Errorf("error in converting run_at to datetime format %s", err)
+		}
+		instanceGroupManagerActionPatchModel.RunAt = &datetime
 		changed = true
 	}
 
@@ -409,8 +420,10 @@ func resourceIBMISInstanceGroupManagerActionRead(d *schema.ResourceData, meta in
 		return fmt.Errorf("error setting action_type: %s", err)
 	}
 
-	if err = d.Set("cron_spec", *instanceGroupManagerAction.CronSpec); err != nil {
-		return fmt.Errorf("error setting cron_spec: %s", err)
+	if instanceGroupManagerAction.CronSpec != nil {
+		if err = d.Set("cron_spec", *instanceGroupManagerAction.CronSpec); err != nil {
+			return fmt.Errorf("error setting cron_spec: %s", err)
+		}
 	}
 
 	if instanceGroupManagerAction.LastAppliedAt != nil {
