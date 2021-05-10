@@ -17,6 +17,7 @@ const (
 	isVPCAddressPrefixCIDR       = "cidr"
 	isVPCAddressPrefixVPCID      = "vpc"
 	isVPCAddressPrefixHasSubnets = "has_subnets"
+	isVPCAddressPrefixDefault    = "is_default"
 )
 
 func resourceIBMISVpcAddressPrefix() *schema.Resource {
@@ -49,6 +50,12 @@ func resourceIBMISVpcAddressPrefix() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: InvokeValidator("ibm_is_address_prefix", isVPCAddressPrefixCIDR),
 				Description:  "CIDIR address prefix",
+			},
+			isVPCAddressPrefixDefault: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Is default prefix for this zone in this VPC",
 			},
 
 			isVPCAddressPrefixVPCID: {
@@ -110,10 +117,14 @@ func resourceIBMISVpcAddressPrefixCreate(d *schema.ResourceData, meta interface{
 	if err != nil {
 		return err
 	}
+	isDefault := false
 	prefixName := d.Get(isVPCAddressPrefixPrefixName).(string)
 	zoneName := d.Get(isVPCAddressPrefixZoneName).(string)
 	cidr := d.Get(isVPCAddressPrefixCIDR).(string)
 	vpcID := d.Get(isVPCAddressPrefixVPCID).(string)
+	if isDefaultPrefix, ok := d.GetOk(isVPCAddressPrefixDefault); ok {
+		isDefault = isDefaultPrefix.(bool)
+	}
 
 	isVPCAddressPrefixKey := "vpc_address_prefix_key_" + vpcID
 	ibmMutexKV.Lock(isVPCAddressPrefixKey)
@@ -125,7 +136,7 @@ func resourceIBMISVpcAddressPrefixCreate(d *schema.ResourceData, meta interface{
 			return err
 		}
 	} else {
-		err := vpcAddressPrefixCreate(d, meta, prefixName, zoneName, cidr, vpcID)
+		err := vpcAddressPrefixCreate(d, meta, prefixName, zoneName, cidr, vpcID, isDefault)
 		if err != nil {
 			return err
 		}
@@ -157,15 +168,16 @@ func classicVpcAddressPrefixCreate(d *schema.ResourceData, meta interface{}, nam
 	return nil
 }
 
-func vpcAddressPrefixCreate(d *schema.ResourceData, meta interface{}, name, zone, cidr, vpcID string) error {
+func vpcAddressPrefixCreate(d *schema.ResourceData, meta interface{}, name, zone, cidr, vpcID string, isDefault bool) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
 	options := &vpcv1.CreateVPCAddressPrefixOptions{
-		Name:  &name,
-		VPCID: &vpcID,
-		CIDR:  &cidr,
+		Name:      &name,
+		VPCID:     &vpcID,
+		CIDR:      &cidr,
+		IsDefault: &isDefault,
 		Zone: &vpcv1.ZoneIdentity{
 			Name: &zone,
 		},
@@ -261,6 +273,7 @@ func vpcAddressPrefixGet(d *schema.ResourceData, meta interface{}, vpcID, addrPr
 		return fmt.Errorf("Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
 	}
 	d.Set(isVPCAddressPrefixVPCID, vpcID)
+	d.Set(isVPCAddressPrefixDefault, *addrPrefix.IsDefault)
 	d.Set(isVPCAddressPrefixPrefixName, *addrPrefix.Name)
 	if addrPrefix.Zone != nil {
 		d.Set(isVPCAddressPrefixZoneName, *addrPrefix.Zone.Name)
@@ -286,7 +299,9 @@ func resourceIBMISVpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{
 	}
 
 	name := ""
-	hasChanged := false
+	isDefault := false
+	hasNameChanged := false
+	hasIsDefaultChanged := false
 
 	parts, err := idParts(d.Id())
 	if err != nil {
@@ -301,16 +316,19 @@ func resourceIBMISVpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{
 
 	if d.HasChange(isVPCAddressPrefixPrefixName) {
 		name = d.Get(isVPCAddressPrefixPrefixName).(string)
-		hasChanged = true
+		hasNameChanged = true
 	}
-
+	if d.HasChange(isVPCAddressPrefixDefault) {
+		isDefault = d.Get(isVPCAddressPrefixDefault).(bool)
+		hasIsDefaultChanged = true
+	}
 	if userDetails.generation == 1 {
-		err := classicVpcAddressPrefixUpdate(d, meta, vpcID, addrPrefixID, name, hasChanged)
+		err := classicVpcAddressPrefixUpdate(d, meta, vpcID, addrPrefixID, name, hasNameChanged)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := vpcAddressPrefixUpdate(d, meta, vpcID, addrPrefixID, name, hasChanged)
+		err := vpcAddressPrefixUpdate(d, meta, vpcID, addrPrefixID, name, isDefault, hasNameChanged, hasIsDefaultChanged)
 		if err != nil {
 			return err
 		}
@@ -345,18 +363,23 @@ func classicVpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{}, vpc
 	return nil
 }
 
-func vpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID, name string, hasChanged bool) error {
+func vpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{}, vpcID, addrPrefixID, name string, isDefault, hasNameChanged, hasIsDefaultChanged bool) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
-	if hasChanged {
+	if hasNameChanged || hasIsDefaultChanged {
 		updatevpcAddressPrefixoptions := &vpcv1.UpdateVPCAddressPrefixOptions{
 			VPCID: &vpcID,
 			ID:    &addrPrefixID,
 		}
-		addressPrefixPatchModel := &vpcv1.AddressPrefixPatch{
-			Name: &name,
+
+		addressPrefixPatchModel := &vpcv1.AddressPrefixPatch{}
+		if hasNameChanged {
+			addressPrefixPatchModel.Name = &name
+		}
+		if hasIsDefaultChanged {
+			addressPrefixPatchModel.IsDefault = &isDefault
 		}
 		addressPrefixPatch, err := addressPrefixPatchModel.AsPatch()
 		if err != nil {

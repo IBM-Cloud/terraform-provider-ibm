@@ -5,7 +5,6 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -26,17 +25,15 @@ func dataSourceIBMISSecurityGroupTargets() *schema.Resource {
 
 			"targets": {
 				Type:        schema.TypeList,
-				Description: "List of subnets",
+				Description: "List of targets",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 
 						"target": {
-							Type:         schema.TypeString,
-							Required:     true,
-							Description:  "security group target identifier",
-							ForceNew:     true,
-							ValidateFunc: InvokeValidator("ibm_is_security_group_target", isSecurityGroupTargetID),
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "security group target identifier",
 						},
 
 						"name": {
@@ -80,7 +77,7 @@ func dataSourceIBMISSecurityGroupTargetsRead(d *schema.ResourceData, meta interf
 		listSecurityGroupTargetsOptions := sess.NewListSecurityGroupTargetsOptions(securityGroupID)
 
 		groups, response, err := sess.ListSecurityGroupTargets(listSecurityGroupTargetsOptions)
-		if err != nil {
+		if err != nil || groups == nil {
 			return fmt.Errorf("Error Getting InstanceGroup Managers %s\n%s", err, response)
 		}
 		if *groups.TotalCount == int64(0) {
@@ -104,8 +101,6 @@ func dataSourceIBMISSecurityGroupTargetsRead(d *schema.ResourceData, meta interf
 			"target":        *securityGroupTargetReference.ID,
 			"resource_type": *securityGroupTargetReference.ResourceType,
 		}
-		log.Println("name")
-		log.Println(*securityGroupTargetReference.Name)
 		if securityGroupTargetReference.Deleted != nil {
 			tr["more_info"] = *securityGroupTargetReference.Deleted.MoreInfo
 		}

@@ -1,6 +1,6 @@
 ---
 
-subcategory: "VPC infrastructure"
+subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: ibm_security_group"
 description: |-

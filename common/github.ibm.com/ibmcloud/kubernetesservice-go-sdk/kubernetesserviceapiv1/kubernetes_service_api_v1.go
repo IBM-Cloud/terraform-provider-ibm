@@ -5,12 +5,9 @@
 package kubernetesserviceapiv1
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"reflect"
 	"time"
@@ -9923,43 +9920,47 @@ func (kubernetesServiceApi *KubernetesServiceApiV1) AttachSatelliteHostWithConte
 		return
 	}
 
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = kubernetesServiceApi.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(kubernetesServiceApi.Service.Options.URL, `/v2/satellite/hostqueue/createRegistrationScript`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range attachSatelliteHostOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("kubernetes_service_api", "V1", "AttachSatelliteHost")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Content-Type", "application/json")
+
 	body := make(map[string]interface{})
 	if attachSatelliteHostOptions.Controller != nil {
-		body["controller"] = *attachSatelliteHostOptions.Controller
+		body["controller"] = attachSatelliteHostOptions.Controller
 	}
 	if attachSatelliteHostOptions.Labels != nil {
 		body["labels"] = attachSatelliteHostOptions.Labels
 	}
-
-	bytesRepresentation, err := json.Marshal(body)
+	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
-		log.Fatalln(err)
+		return
 	}
 
-	// post some data
-	req, err := http.NewRequest("POST",
-		fmt.Sprintf("%s/%s", kubernetesServiceApi.Service.Options.URL, "v2/satellite/hostqueue/createRegistrationScript"),
-		bytes.NewBuffer(bytesRepresentation))
-
-	// Set headers
-	req.Header.Set("Content-Type", "application/json")
-	for _, element := range attachSatelliteHostOptions.Headers {
-		req.Header.Set("Authorization", element)
-	}
-
-	// Set client timeout
-	client := &http.Client{Timeout: time.Second * 10}
-
-	// Send request
-	resp, err := client.Do(req)
+	request, err := builder.Build()
 	if err != nil {
-		log.Fatal("Error reading response. ", err)
+		return
 	}
-	defer resp.Body.Close()
-	response, err = ioutil.ReadAll(resp.Body)
+
+	var resultData []byte
+	respBody, err := kubernetesServiceApi.Service.Request(request, &resultData)
 	if err != nil {
-		log.Fatal("Error reading ressponse body. ", err)
+		return
 	}
+	response = respBody.Result.([]byte)
 
 	return
 }

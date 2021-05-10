@@ -5,7 +5,6 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -68,6 +67,14 @@ func resourceIBMISSecurityGroupTargetValidator() *ResourceValidator {
 			Required:                   true,
 			Regexp:                     `^[-0-9a-z_]+$`,
 			MinValueLength:             1,
+			MaxValueLength:             64},
+		ValidateSchema{
+			Identifier:                 "security_group",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^[-0-9a-z_]+$`,
+			MinValueLength:             1,
 			MaxValueLength:             64})
 
 	ibmISSecurityGroupResourceValidator := ResourceValidator{ResourceName: "ibm_is_security_group_target", Schema: validateSchema}
@@ -89,7 +96,7 @@ func resourceIBMISSecurityGroupTargetCreate(d *schema.ResourceData, meta interfa
 	createSecurityGroupTargetBindingOptions.ID = &targetID
 
 	sg, response, err := sess.CreateSecurityGroupTargetBinding(createSecurityGroupTargetBindingOptions)
-	if err != nil {
+	if err != nil || sg == nil {
 		return fmt.Errorf("error while creating Security Group Target Binding %s\n%s", err, response)
 	}
 	sgtarget := sg.(*vpcv1.SecurityGroupTargetReference)
@@ -117,7 +124,7 @@ func resourceIBMISSecurityGroupTargetRead(d *schema.ResourceData, meta interface
 	}
 
 	data, response, err := sess.GetSecurityGroupTarget(getSecurityGroupTargetOptions)
-	if err != nil {
+	if err != nil || data == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
@@ -126,8 +133,6 @@ func resourceIBMISSecurityGroupTargetRead(d *schema.ResourceData, meta interface
 	}
 
 	target := data.(*vpcv1.SecurityGroupTargetReference)
-	log.Println("*target.Name")
-	log.Println(*target.Name)
 	d.Set("name", *target.Name)
 	d.Set(isSecurityGroupResourceType, *target.ResourceType)
 

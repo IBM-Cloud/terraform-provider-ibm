@@ -248,6 +248,50 @@ func dataSourceIBMISInstances() *schema.Resource {
 							Computed:    true,
 							Description: "Instance Image",
 						},
+						isInstanceDisks: &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Collection of the instance's disks.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"created_at": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The date and time that the disk was created.",
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this instance disk.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this instance disk.",
+									},
+									"interface_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The user-defined name for this disk.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+									"size": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The size of the disk in GB (gigabytes).",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -574,6 +618,11 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		if instance.Image != nil {
 			l["image"] = *instance.Image.ID
 		}
+
+		if instance.Disks != nil {
+			l[isInstanceDisks] = dataSourceInstanceFlattenDisks(instance.Disks)
+		}
+
 		instancesInfo = append(instancesInfo, l)
 	}
 	d.SetId(dataSourceIBMISInstancesID(d))

@@ -305,8 +305,8 @@ name = "Default" ///give your resource grp
 }
 
 resource "ibm_is_dedicated_host_group" "dh_group01" {
-  family = "memory"
-  class = "beta"
+  family = "balanced"
+  class = "bx2d"
   zone = "us-south-1"
   name = "my-dh-group-01"
   resource_group = data.ibm_resource_group.default.id
@@ -315,7 +315,7 @@ data "ibm_is_dedicated_host_group" "dgroup" {
 	name = ibm_is_dedicated_host_group.dh_group01.name
 }
 resource "ibm_is_dedicated_host" "is_dedicated_host" {
-  profile = "dh2-56x464"
+  profile = "bx2d-host-152x608"
   name = "my-dedicated-host-01"
 	host_group = ibm_is_dedicated_host_group.dh_group01.id
   resource_group = data.ibm_resource_group.default.id
@@ -325,7 +325,7 @@ data "ibm_is_dedicated_host_groups" "dgroups" {
 }
 
 data "ibm_is_dedicated_host_profile" "ibm_is_dedicated_host_profile" {
-	name = "dh2-56x464"
+	name = "bx2d-host-152x608"
 } 
 
 data "ibm_is_dedicated_host_profiles" "ibm_is_dedicated_host_profiles" {
@@ -339,4 +339,44 @@ data "ibm_is_dedicated_hosts" "dhosts" {
 data "ibm_is_dedicated_host" "dhost" {
   name = ibm_is_dedicated_host.is_dedicated_host.name
   host_group = data.ibm_is_dedicated_host_group.dgroup.id
+}
+
+resource "ibm_is_instance_disk_management" "disks"{
+  instance = ibm_is_instance.instance1.id 
+  disks {
+    name = "mydisk01"
+    id = ibm_is_instance.instance1.disks.0.id
+  }
+}
+
+data "ibm_is_instance_disks" "disk1" {
+  instance = ibm_is_instance.instance1.id
+}
+
+data "ibm_is_instance_disk" "disk1" {
+  instance = ibm_is_instance.instance1.id
+  disk = data.ibm_is_instance_disks.disk1.disks.0.id
+}
+
+data "ibm_is_dedicated_host_disks" "dhdisks" {
+  dedicated_host = data.ibm_is_dedicated_host.dhost.id
+}
+
+data "ibm_is_dedicated_host_disk" "dhdisk" {
+  dedicated_host = data.ibm_is_dedicated_host.dhost.id
+  disk = ibm_is_dedicated_host_disk_management.disks.disks.0.id
+}
+
+resource "ibm_is_dedicated_host_disk_management" "disks" {
+  dedicated_host = data.ibm_is_dedicated_host.dhost.id
+  disks  {
+    name = "newdisk01"
+    id = data.ibm_is_dedicated_host.dhost.disks.0.id
+  
+  }
+  disks  {
+    name = "newdisk02"
+    id = data.ibm_is_dedicated_host.dhost.disks.1.id
+  
+  }
 }

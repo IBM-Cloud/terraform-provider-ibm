@@ -40,3 +40,4 @@ The following attributes are exported as output/response:
 * `reserved_ip` - Same as `id`
 * `resource_type` - The type of resource
 * `subnet` - The id for the subnet for the reserved IP
+* `target` - The id for the target for the reserved IP

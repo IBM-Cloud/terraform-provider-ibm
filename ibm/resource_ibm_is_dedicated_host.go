@@ -109,6 +109,114 @@ func resourceIbmIsDedicatedHost() *schema.Resource {
 				Computed:    true,
 				Description: "The CRN for this dedicated host.",
 			},
+			"disks": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Collection of the dedicated host's disks.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"available": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The remaining space left for instance placement in GB (gigabytes).",
+						},
+						"created_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time that the disk was created.",
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this disk.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this disk.",
+						},
+						"instance_disks": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Instance disks that are on this dedicated host disk.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this instance disk.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this instance disk.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The user-defined name for this disk.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
+						"interface_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The disk interface used for attaching the diskThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.",
+						},
+						"lifecycle_state": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The lifecycle state of this dedicated host disk.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined or system-provided name for this disk.",
+						},
+						"provisionable": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this dedicated host disk is available for instance disk creation.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of resource referenced.",
+						},
+						"size": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The size of the disk in GB (gigabytes).",
+						},
+						"supported_instance_interface_types": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The instance disk interfaces supported for this dedicated host disk.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+					},
+				},
+			},
 			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -344,8 +452,14 @@ func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("crn", dedicatedHost.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
-	//groupMap := resourceIbmIsDedicatedHostDedicatedHostGroupReferenceToMap(*dedicatedHost.Group)
-
+	disks := []map[string]interface{}{}
+	for _, disksItem := range dedicatedHost.Disks {
+		disksItemMap := resourceIbmIsDedicatedHostDedicatedHostDiskToMap(disksItem)
+		disks = append(disks, disksItemMap)
+	}
+	if err = d.Set("disks", disks); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting disks: %s", err))
+	}
 	d.Set("host_group", *dedicatedHost.Group.ID)
 
 	if err = d.Set("href", dedicatedHost.Href); err != nil {
@@ -519,8 +633,8 @@ func resourceIbmIsDedicatedHostDelete(context context.Context, d *schema.Resourc
 		log.Printf("[DEBUG] GetDedicatedHostWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
-
 	if dedicatedHost != nil && dedicatedHost.LifecycleState != nil && *dedicatedHost.LifecycleState != isDedicatedHostSuspended && *dedicatedHost.LifecycleState != isDedicatedHostFailed {
+
 		updateDedicatedHostOptions := &vpcv1.UpdateDedicatedHostOptions{}
 		dedicatedHostPrototypeMap := map[string]interface{}{}
 		dedicatedHostPrototypeMap["instance_placement_enabled"] = core.BoolPtr(false)
@@ -614,4 +728,54 @@ func isDedicatedHostRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.Res
 		}
 		return dhost, *dhost.LifecycleState, nil
 	}
+}
+
+func resourceIbmIsDedicatedHostDedicatedHostDiskToMap(dedicatedHostDisk vpcv1.DedicatedHostDisk) map[string]interface{} {
+	dedicatedHostDiskMap := map[string]interface{}{}
+
+	dedicatedHostDiskMap["available"] = intValue(dedicatedHostDisk.Available)
+	dedicatedHostDiskMap["created_at"] = dedicatedHostDisk.CreatedAt.String()
+	dedicatedHostDiskMap["href"] = dedicatedHostDisk.Href
+	dedicatedHostDiskMap["id"] = dedicatedHostDisk.ID
+	instanceDisks := []map[string]interface{}{}
+	for _, instanceDisksItem := range dedicatedHostDisk.InstanceDisks {
+		instanceDisksItemMap := resourceIbmIsDedicatedHostInstanceDiskReferenceToMap(instanceDisksItem)
+		instanceDisks = append(instanceDisks, instanceDisksItemMap)
+		// TODO: handle InstanceDisks of type TypeList -- list of non-primitive, not model items
+	}
+	dedicatedHostDiskMap["instance_disks"] = instanceDisks
+	dedicatedHostDiskMap["interface_type"] = dedicatedHostDisk.InterfaceType
+	if dedicatedHostDisk.LifecycleState != nil {
+		dedicatedHostDiskMap["lifecycle_state"] = dedicatedHostDisk.LifecycleState
+	}
+	dedicatedHostDiskMap["name"] = dedicatedHostDisk.Name
+	dedicatedHostDiskMap["provisionable"] = dedicatedHostDisk.Provisionable
+	dedicatedHostDiskMap["resource_type"] = dedicatedHostDisk.ResourceType
+	dedicatedHostDiskMap["size"] = intValue(dedicatedHostDisk.Size)
+	dedicatedHostDiskMap["supported_instance_interface_types"] = dedicatedHostDisk.SupportedInstanceInterfaceTypes
+
+	return dedicatedHostDiskMap
+}
+
+func resourceIbmIsDedicatedHostInstanceDiskReferenceToMap(instanceDiskReference vpcv1.InstanceDiskReference) map[string]interface{} {
+	instanceDiskReferenceMap := map[string]interface{}{}
+
+	if instanceDiskReference.Deleted != nil {
+		DeletedMap := resourceIbmIsDedicatedHostInstanceDiskReferenceDeletedToMap(*instanceDiskReference.Deleted)
+		instanceDiskReferenceMap["deleted"] = []map[string]interface{}{DeletedMap}
+	}
+	instanceDiskReferenceMap["href"] = instanceDiskReference.Href
+	instanceDiskReferenceMap["id"] = instanceDiskReference.ID
+	instanceDiskReferenceMap["name"] = instanceDiskReference.Name
+	instanceDiskReferenceMap["resource_type"] = instanceDiskReference.ResourceType
+
+	return instanceDiskReferenceMap
+}
+
+func resourceIbmIsDedicatedHostInstanceDiskReferenceDeletedToMap(instanceDiskReferenceDeleted vpcv1.InstanceDiskReferenceDeleted) map[string]interface{} {
+	instanceDiskReferenceDeletedMap := map[string]interface{}{}
+
+	instanceDiskReferenceDeletedMap["more_info"] = instanceDiskReferenceDeleted.MoreInfo
+
+	return instanceDiskReferenceDeletedMap
 }

@@ -48,6 +48,7 @@ import (
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
+	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
@@ -193,6 +194,7 @@ type ClientSession interface {
 	FunctionClient() (*whisk.Client, error)
 	GlobalSearchAPI() (globalsearchv2.GlobalSearchServiceAPI, error)
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
+	GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error)
 	ICDAPI() (icdv4.ICDServiceAPI, error)
 	IAMAPI() (iamv1.IAMServiceAPI, error)
 	IAMPAPAPI() (iampapv1.IAMPAPAPI, error)
@@ -298,6 +300,9 @@ type clientSession struct {
 
 	globalTaggingConfigErr  error
 	globalTaggingServiceAPI globaltaggingv3.GlobalTaggingServiceAPI
+
+	globalTaggingConfigErrV1  error
+	globalTaggingServiceAPIV1 globaltaggingv1.GlobalTaggingV1
 
 	iamPAPConfigErr  error
 	iamPAPServiceAPI iampapv1.IAMPAPAPI
@@ -558,6 +563,11 @@ func (sess clientSession) GlobalSearchAPI() (globalsearchv2.GlobalSearchServiceA
 // GlobalTaggingAPI provides Global Search  APIs ...
 func (sess clientSession) GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error) {
 	return sess.globalTaggingServiceAPI, sess.globalTaggingConfigErr
+}
+
+// GlobalTaggingAPIV1 provides Platform-go Global Tagging  APIs ...
+func (sess clientSession) GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error) {
+	return sess.globalTaggingServiceAPIV1, sess.globalTaggingConfigErrV1
 }
 
 // HpcsEndpointAPI provides Hpcs Endpoint generator APIs ...
@@ -1294,6 +1304,31 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.globalTaggingServiceAPI = globalTaggingAPI
 
+	globalTaggingEndpoint := "https://tags.global-search-tagging.cloud.ibm.com"
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		var globalTaggingRegion string
+		if c.Region != "us-south" && c.Region != "us-east" {
+			globalTaggingRegion = "us-south"
+		} else {
+			globalTaggingRegion = c.Region
+		}
+		globalTaggingEndpoint = contructEndpoint(fmt.Sprintf("tags.private.%s", globalTaggingRegion), fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
+	}
+
+	globalTaggingV1Options := &globaltaggingv1.GlobalTaggingV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_GT_API_ENDPOINT"}, globalTaggingEndpoint),
+		Authenticator: authenticator,
+	}
+
+	globalTaggingAPIV1, err := globaltaggingv1.NewGlobalTaggingV1(globalTaggingV1Options)
+	if err != nil {
+		session.globalTaggingConfigErr = fmt.Errorf("Error occured while configuring Global Tagging: %q", err)
+	}
+	if globalTaggingAPIV1 != nil {
+		session.globalTaggingServiceAPIV1 = *globalTaggingAPIV1
+		session.globalTaggingServiceAPIV1.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+
 	iampap, err := iampapv1.New(sess.BluemixSession)
 	if err != nil {
 		session.iamPAPConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAMPAP Service: %q", err)
@@ -1391,7 +1426,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.apigatewayAPI = apigatewayAPI
 
-	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, false, (c.BluemixTimeout * 10000000000), session.bmxUserDetails.userAccount, c.Zone)
+	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, false, 90000000000, session.bmxUserDetails.userAccount, c.Zone)
 	if err != nil {
 		session.ibmpiConfigErr = err
 		return nil, err
@@ -2080,6 +2115,7 @@ func newSession(c *Config) (*Session, error) {
 			ResourceGroup: c.ResourceGroup,
 			RetryDelay:    &c.RetryDelay,
 			MaxRetries:    &c.RetryCount,
+			Visibility:    c.Visibility,
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {
@@ -2100,6 +2136,7 @@ func newSession(c *Config) (*Session, error) {
 			ResourceGroup: c.ResourceGroup,
 			RetryDelay:    &c.RetryDelay,
 			MaxRetries:    &c.RetryCount,
+			Visibility:    c.Visibility,
 			//PowerServiceInstance: c.PowerServiceInstance,
 		}
 		sess, err := bxsession.New(bmxConfig)
