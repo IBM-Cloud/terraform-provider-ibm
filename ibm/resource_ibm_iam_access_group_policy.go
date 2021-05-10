@@ -313,6 +313,9 @@ func resourceIBMIAMAccessGroupPolicyExists(d *schema.ResourceData, meta interfac
 	if err != nil {
 		return false, err
 	}
+	if len(parts) < 2 {
+		return false, fmt.Errorf("Incorrect ID %s: Id should be a combination of accessGroupID/PolicyID", d.Id())
+	}
 
 	accgrpPolicyID := parts[1]
 

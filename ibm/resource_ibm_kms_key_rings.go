@@ -151,6 +151,9 @@ func resourceIBMKmsKeyRingRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	id := strings.Split(d.Id(), ":keyRing:")
+	if len(id) < 2 {
+		return fmt.Errorf("Incorrect ID %s: Id should be a combination of keyRingID:keyRing:InstanceCRN", d.Id())
+	}
 	crn := id[1]
 	crnData := strings.Split(crn, ":")
 	endpointType := crnData[3]

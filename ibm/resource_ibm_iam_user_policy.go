@@ -313,6 +313,9 @@ func resourceIBMIAMUserPolicyExists(d *schema.ResourceData, meta interface{}) (b
 	if err != nil {
 		return false, err
 	}
+	if len(parts) < 2 {
+		return false, fmt.Errorf("Incorrect ID %s: Id should be a combination of userEmail/PolicyID", d.Id())
+	}
 	userEmail := parts[0]
 	userPolicyID := parts[1]
 

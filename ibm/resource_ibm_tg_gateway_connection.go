@@ -415,7 +415,9 @@ func resourceIBMTransitGatewayConnectionExists(d *schema.ResourceData, meta inte
 	if err != nil {
 		return false, err
 	}
-
+	if len(parts) < 2 {
+		return false, fmt.Errorf("Incorrect ID %s: Id should be a combination of gatewayID/ConnectionID", d.Id())
+	}
 	gatewayId := parts[0]
 	ID := parts[1]
 

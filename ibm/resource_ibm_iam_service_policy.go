@@ -356,6 +356,9 @@ func resourceIBMIAMServicePolicyExists(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return false, err
 	}
+	if len(parts) < 2 {
+		return false, fmt.Errorf("Incorrect ID %s: Id should be a combination of serviceID(OR)iamID/PolicyID", d.Id())
+	}
 	serviceIDUUID := parts[0]
 	servicePolicyID := parts[1]
 

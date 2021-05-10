@@ -127,6 +127,9 @@ func resourceIBMKmsKeyAliasRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 	id := strings.Split(d.Id(), ":alias:")
+	if len(id) < 2 {
+		return fmt.Errorf("Incorrect ID %s: Id should be a combination of keyAlias:alias:keyCRN", d.Id())
+	}
 	crn := id[1]
 	crnData := strings.Split(crn, ":")
 	endpointType := crnData[3]
