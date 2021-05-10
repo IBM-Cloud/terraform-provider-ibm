@@ -48,8 +48,8 @@ import (
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
-	iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
@@ -926,8 +926,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.globalTaggingConfigErr = errEmptyBluemixCredentials
 		session.hpcsEndpointErr = errEmptyBluemixCredentials
 		session.iamConfigErr = errEmptyBluemixCredentials
-		session.iamPAPConfigErr = errEmptyBluemixCredentials
-		session.iamPAPConfigErrv2 = errEmptyBluemixCredentials
 		session.iamUUMConfigErr = errEmptyBluemixCredentials
 		session.iamUUMConfigErrV2 = errEmptyBluemixCredentials
 		session.icdConfigErr = errEmptyBluemixCredentials
@@ -1284,18 +1282,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.globalTaggingConfigErr = fmt.Errorf("Error occured while configuring Global Tagging: %q", err)
 	}
 	session.globalTaggingServiceAPI = globalTaggingAPI
-
-	iampap, err := iampapv1.New(sess.BluemixSession)
-	if err != nil {
-		session.iamPAPConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAMPAP Service: %q", err)
-	}
-	session.iamPAPServiceAPI = iampap
-
-	iampapv2, err := iampapv2.New(sess.BluemixSession)
-	if err != nil {
-		session.iamPAPConfigErrv2 = fmt.Errorf("Error occured while configuring Bluemix IAMPAP Service: %q", err)
-	}
-	session.iamPAPServiceAPIv2 = iampapv2
 
 	iam, err := iamv1.New(sess.BluemixSession)
 	if err != nil {
