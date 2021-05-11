@@ -41,7 +41,7 @@ Review the output parameters that you can access after your resource is created.
 	- `name` - (String) The name of the endpoint.
 	- `open_api_doc` - (String) The Open API document of the endpoint.
 	- `provider_id` - (String) The provider ID of the endpoint.
-    	- `routes` - (Strings) Invokable routes for an endpoint.
+	- `routes` - (Strings) Invokable routes for an endpoint.
 	- `shared` - (String) The shared status of the endpoint.
     	- `subscriptions`- (List of endpoint subscriptions) A list of subscriptions that you created for your endpoint.
 		- `client_id` - (String) The client ID of a subscription.
