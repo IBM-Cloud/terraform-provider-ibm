@@ -48,11 +48,13 @@ func resourceIBMCOSObject() *schema.Resource {
 			"bucket_crn": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "COS bucket CRN",
 			},
 			"bucket_location": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "COS bucket location",
 			},
 			"content": {
@@ -99,6 +101,7 @@ func resourceIBMCOSObject() *schema.Resource {
 			"key": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "COS object key",
 			},
 			"last_modified": {

@@ -59,14 +59,14 @@ resource "ibm_cos_object" "file" {
 
 The following arguments are supported:
 
-* `bucket_crn` - (Required, string) The CRN of the COS bucket.
-* `bucket_location` - (Required, string) The location of the COS bucket.
+* `bucket_crn` - (Required, Forces new resource, string) The CRN of the COS bucket.
+* `bucket_location` - (Required, Forces new resource, string) The location of the COS bucket.
 * `content` - (Optional, string) Literal string value to use as the object content, which will be uploaded as UTF-8-encoded text. Conflicts with `content_base64` and `content_file`.
 * `content_base64` - (Optional, string) Base64-encoded data that will be decoded and uploaded as raw bytes for the object content. This allows safely uploading non-UTF8 binary data, but is recommended only for small content. Conflicts with `content` and `content_file`.
 * `content_file` - (Optional, string) The path to a file that will be read and uploaded as raw bytes for the object content. Conflicts with `content` and `content_base64`.
 * `endpoint_type` - (Optional, string) The type of endpoint used to access COS. Accepted values: `public`, `private`, or `direct`. Default value is `public`.
 * `etag` - (Optional, string) MD5 hexdigest used to trigger updates. The only meaningful value is `filemd5("path/to/file")`.
-* `key` - (Required, string) The name of the object in the COS bucket.
+* `key` - (Required, Forces new resource, string) The name of the object in the COS bucket.
 
 ## Attribute Reference
 
