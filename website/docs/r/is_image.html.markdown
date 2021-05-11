@@ -2,12 +2,12 @@
 
 subcategory: "VPC infrastructure"
 layout: "ibm"
-page_title: "IBM: compute_images"
+page_title: "IBM: is_image"
 description: |-
-  Manages IBM Compute Images.
+  Manages IBM VPC Custom Images.
 ---
 
-# ibm\_compute_images
+# ibm\_is_image
 
 Provide an image resource. This allows images to be created, retrieved, and deleted.
 
