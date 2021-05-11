@@ -35,6 +35,7 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
+* `default_routing_table` - The unique identifier for the default routing table.
 * `name` - The name for the default routing table.
 * `id` - The unique identifier for the default routing table.
 * `lifecycle_state` - The lifecycle state of the default routing table.
