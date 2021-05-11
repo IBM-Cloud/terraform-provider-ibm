@@ -448,16 +448,15 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Get Key failed with error: %s", err)
 	}
-	if d.Get("policies") != nil {
-		policies, err := kpAPI.GetPolicies(context.Background(), keyid)
-		if err != nil {
-			return fmt.Errorf("Failed to read policies: %s", err)
-		}
-		if len(policies) == 0 {
-			log.Printf("No Policy Configurations read\n")
-		} else {
-			d.Set("policies", flattenKeyPolicies(policies))
-		}
+
+	policies, err := kpAPI.GetPolicies(context.Background(), keyid)
+	if err != nil && !strings.Contains(fmt.Sprint(err), "Unauthorized: The user does not have access to the specified resource") {
+		return fmt.Errorf("Failed to read policies: %s", err)
+	}
+	if len(policies) == 0 {
+		log.Printf("No Policy Configurations read\n")
+	} else {
+		d.Set("policies", flattenKeyPolicies(policies))
 	}
 	d.Set("instance_id", instanceID)
 	d.Set("key_id", keyid)
