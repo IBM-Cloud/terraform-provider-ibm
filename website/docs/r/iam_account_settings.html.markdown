@@ -31,6 +31,7 @@ The following arguments are supported:
 * `mfa` - (Optional, string) Defines the session expiration in seconds for the account.
 * `session_expiration_in_seconds` - (Optional, string) Defines the session expiration in seconds for the account.
 * `session_invalidation_in_seconds` - (Optional, string) Defines the period of time in seconds in which a session will be invalidated due to inactivity.
+* `max_sessions_per_identity` - (Optional, string) Defines the max allowed sessions per identity required by the account.
 
 ## Attribute Reference
 
@@ -44,5 +45,6 @@ In addition to all arguments above, the following attributes are exported:
 * `mfa` - Defines the session expiration in seconds for the account.
 * `session_expiration_in_seconds` - Defines the session expiration in seconds for the account.
 * `session_invalidation_in_seconds` - Defines the period of time in seconds in which a session will be invalidated due to inactivity.
+* `max_sessions_per_identity` - Defines the max allowed sessions per identity required by the account.
 * `account_id` - Unique Id of the account.
 * `id` - Unique Id of the account settings instance

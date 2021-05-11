@@ -47,3 +47,4 @@ In addition to all arguments above, the following attributes are exported:
 
 * `session_invalidation_in_seconds` - Defines the period of time in seconds in which a session will be invalidated due  to inactivity. Valid values:   * Any whole number between '900' and '7200'   * NOT_SET - To unset account setting and use service default.
 
+* `max_sessions_per_identity` - Defines the max allowed sessions per identity required by the account. Value values: * Any whole number greater than '0'   * NOT_SET - To unset account setting and use service default 

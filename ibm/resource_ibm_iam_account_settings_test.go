@@ -20,6 +20,7 @@ var (
 	mfa_trait                       = "NONE"
 	session_expiration_in_seconds   = "NOT_SET"
 	session_invalidation_in_seconds = "NOT_SET"
+	max_sessions_per_identity       = "NOT_SET"
 )
 
 func TestAccIBMIAMAccountSettingsBasic(t *testing.T) {
@@ -90,6 +91,7 @@ func TestAccIBMIAMAccountSettingsUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "mfa", mfa_trait),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "session_expiration_in_seconds", session_expiration_in_seconds),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "session_invalidation_in_seconds", session_invalidation_in_seconds),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "max_sessions_per_identity", max_sessions_per_identity),
 				),
 			},
 		},
@@ -123,6 +125,7 @@ func testAccCheckIbmIamAccountSettingsUpdateConfig() string {
 			mfa = "%s"
 			session_expiration_in_seconds = "%s"
 			session_invalidation_in_seconds = "%s"
+			max_sessions_per_identity = "%s"
 		}
 	`,
 		restrict_create_service_id,
@@ -131,6 +134,7 @@ func testAccCheckIbmIamAccountSettingsUpdateConfig() string {
 		mfa_trait,
 		session_expiration_in_seconds,
 		session_invalidation_in_seconds,
+		max_sessions_per_identity,
 	)
 }
 
