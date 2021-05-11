@@ -46,7 +46,8 @@ Review the input parameters that you can specify for your resource.
 ## Attribute reference
 Review the output parameters that you can access after your resource is created. 
 
-- `credentials` - (String) The credentials provided by the service broker to use the service.
+- `credentials` - (Map) The credentials provided by the service broker to use the service.
+- `dashboard_url`- (String) The dashboard URL of the new service instance.
 - `id` - (String) The unique identifier of the new service instance.
 - `service_keys` - (String) The service keys associated with the service.
 - `service_plan_guid` - (String) The plan of the service offering used by this service instance.
