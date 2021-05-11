@@ -297,7 +297,14 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	} else if crnData[4] == "kms" {
 		if endpointType == "private" {
 			if !strings.HasPrefix(kpAPI.Config.BaseURL, "private") {
-				kpAPI.Config.BaseURL = "private." + kpAPI.Config.BaseURL
+				kmsEndpURL := strings.SplitAfter(kpAPI.Config.BaseURL, "https://")
+				kmsEndpointURL := kmsEndpURL[0] + "private." + kmsEndpURL[1]
+				log.Println("kmsendpoiNturl ===>", kmsEndpointURL)
+				u, err := url.Parse(kmsEndpointURL)
+				if err != nil {
+					return fmt.Errorf("Error Parsing kms EndpointURL")
+				}
+				kpAPI.URL = u
 			}
 		}
 	} else {
