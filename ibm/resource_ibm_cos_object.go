@@ -214,6 +214,7 @@ func resourceIBMCOSObjectRead(ctx context.Context, d *schema.ResourceData, m int
 
 	out, err := s3Client.HeadObject(headInput)
 	if err != nil {
+		d.SetId("") // Set state back to empty for terraform refresh
 		return diag.FromErr(fmt.Errorf("failed getting COS bucket (%s) object (%s): %w", bucketName, objectKey, err))
 	}
 
