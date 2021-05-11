@@ -32,7 +32,7 @@ Review the input parameters that you can specify for your resource.
 ## Attribute reference
 Review the output parameters that you can access after your resource is created. 
 
-- `endpoints`-List of API Gateway endpoints-A list of API Gateway endpoints that are associated with the service instance.
+- `endpoints`- (List) A list of API Gateway endpoints that are associated with the service instance.
 	- `alias_url` - (String) The alias URL of an endpoint.
 	- `base_path` - (String) The base path of the endpoint.
 	- `endpoint_id` - (String) The ID of the endpoint.
@@ -41,9 +41,9 @@ Review the output parameters that you can access after your resource is created.
 	- `name` - (String) The name of the endpoint.
 	- `open_api_doc` - (String) The Open API document of the endpoint.
 	- `provider_id` - (String) The provider ID of the endpoint.
-    - `routes` (Array of Strings) A list of routes that can be invoked for the endpoint.
+    	- `routes` - (Strings) Invokable routes for an endpoint.
 	- `shared` - (String) The shared status of the endpoint.
-    - `subscriptions`- (List of endpoint subscriptions) A list of subscriptions that you created for your endpoint.
+    	- `subscriptions`- (List of endpoint subscriptions) A list of subscriptions that you created for your endpoint.
 		- `client_id` - (String) The client ID of a subscription.
 	   	- `name` - (String) The name of the subscription.
 		- `secret_provided`- (Boolean) If set to **true**, the client secret is provided. If set to **false**, the client secret is not provided.
