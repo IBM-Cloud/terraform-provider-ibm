@@ -5,7 +5,6 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/go-openapi/strfmt"
@@ -197,9 +196,7 @@ func resourceIBMISInstanceGroupManagerActionValidator() *ResourceValidator {
 	return &ibmISInstanceGroupManagerResourceValidator
 }
 
-func resourceIBMISInstanceGroupManagerActionCreate(d *schema.ResourceData, meta interface{}) error {
-	log.Println("Inside resourceIBMISInstanceGroupManagerActionCreate")
-	// CreateInstanceGroupManagerAction
+func resourceIBMISInstanceGroupManagerActionCreate(d *schema.ResourceData, meta interface{}) error { // CreateInstanceGroupManagerAction
 	instanceGroupID := d.Get("instance_group").(string)
 	instancegroupmanagerscheduledID := d.Get("instance_group_manager_scheduled").(string)
 
@@ -220,14 +217,11 @@ func resourceIBMISInstanceGroupManagerActionCreate(d *schema.ResourceData, meta 
 	}
 
 	if v, ok := d.GetOk("run_at"); ok {
-		log.Println("Inside RUN_AT conversion block")
 		runat := v.(string)
-		log.Println(runat)
 		datetime, err := strfmt.ParseDateTime(runat)
 		if err != nil {
 			return fmt.Errorf("error in converting run_at to datetime format %s", err)
 		}
-		log.Println(datetime)
 		instanceGroupManagerActionPrototype.RunAt = &datetime
 	}
 
@@ -263,12 +257,10 @@ func resourceIBMISInstanceGroupManagerActionCreate(d *schema.ResourceData, meta 
 	instanceGroupManagerActionOptions.InstanceGroupManagerActionPrototype = &instanceGroupManagerActionPrototype
 
 	instanceGroupManagerActionIntf, response, err := sess.CreateInstanceGroupManagerAction(&instanceGroupManagerActionOptions)
-	instanceGroupManagerAction := instanceGroupManagerActionIntf.(*vpcv1.InstanceGroupManagerAction)
-	if err != nil || instanceGroupManagerAction == nil {
+	if err != nil || instanceGroupManagerActionIntf == nil {
 		return fmt.Errorf("error creating InstanceGroup manager Action: %s\n%s", err, response)
 	}
-	log.Println("instanceGroupManagerAction.ID")
-	log.Println(*instanceGroupManagerAction.ID)
+	instanceGroupManagerAction := instanceGroupManagerActionIntf.(*vpcv1.InstanceGroupManagerAction)
 	d.SetId(fmt.Sprintf("%s/%s/%s", instanceGroupID, instancegroupmanagerscheduledID, *instanceGroupManagerAction.ID))
 
 	return resourceIBMISInstanceGroupManagerActionRead(d, meta)
