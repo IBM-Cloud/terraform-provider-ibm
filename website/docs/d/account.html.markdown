@@ -37,10 +37,10 @@ Review the input parameters that you can specify for your data source.
 Review the output parameters that you can access after you retrieved your data source. 
 
 - `account_users` - (List of Objects) The list of account user's in the account. The nested `account_users` has the following structure:
-	  - `email` - (String) The email address of the account user.
-	  - `id` - (String) The user ID of the account user.
-    - `role` -  (String) The Cloud Foundry account role that is assigned to the account user.
-    - `state` - (String) The state of the account user.
+	- `email` - (String) The email address of the account user.
+        - `id` - (String) The user ID of the account user.
+        - `role` -  (String) The Cloud Foundry account role that is assigned to the account user.
+        - `state` - (String) The state of the account user.
 - `id` - (String) The unique identifier of the IBM Cloud account.
 
 
