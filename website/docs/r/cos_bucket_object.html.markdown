@@ -1,12 +1,12 @@
 ---
 subcategory: "Object Storage"
 layout: "ibm"
-page_title: "IBM : Cloud Object Storage Object"
+page_title: "IBM: ibm_cos_bucket_object"
 description: |-
   Manages an object in an IBM Cloud Object Storage bucket.
 ---
 
-# ibm\_cos_bucket
+# ibm\_cos_bucket_object
 
 Create, update, or delete an object in an IBM Cloud Object Storage bucket.
 
@@ -32,21 +32,21 @@ resource "ibm_cos_bucket" "cos_bucket" {
   storage_class         = "standard"
 }
 
-resource "ibm_cos_object" "plaintext" {
+resource "ibm_cos_bucket_object" "plaintext" {
   bucket_crn      = ibm_cos_bucket.cos_bucket.crn
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
   content         = "Hello World"
   key             = "plaintext.txt"
 }
 
-resource "ibm_cos_object" "base64" {
+resource "ibm_cos_bucket_object" "base64" {
   bucket_crn      = ibm_cos_bucket.cos_bucket.crn
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
   content_base64  = "RW5jb2RlZCBpbiBiYXNlNjQ="
   key             = "base64.txt"
 }
 
-resource "ibm_cos_object" "file" {
+resource "ibm_cos_bucket_object" "file" {
   bucket_crn      = ibm_cos_bucket.cos_bucket.crn
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
   content_file    = "${path.module}/object.json"
@@ -81,12 +81,12 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-The `ibm_cos_object` resource can be imported using the `id`. The ID is formed from the COS bucket CRN, the object key name, and the bucket location.
+The `ibm_cos_bucket_object` resource can be imported using the `id`. The ID is formed from the COS bucket CRN, the object key name, and the bucket location.
 
 id = ${bucketCRN}:object:${objectKey}:location:${bucketLocation}
 
 ```
-$ terraform import ibm_cos_object.my_object <id>
+$ terraform import ibm_cos_bucket_object.my_object <id>
 
 $ terraform import ibm_cos_bucket.my_object crn:v1:bluemix:public:cloud-object-storage:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3:bucket:myBucketName:object:myObject.key:location:us-east
 ```

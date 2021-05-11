@@ -1,12 +1,12 @@
 ---
 subcategory: "Object Storage"
 layout: "ibm"
-page_title: "IBM : Cloud Object Storage Object"
+page_title: "IBM: ibm_cos_bucket_object"
 description: |-
   Get information about an object in an IBM Cloud Object Storage bucket.
 ---
 
-# ibm\_cos_object
+# ibm\_cos_bucket_object
 
 Retrieves information of an object in IBM Cloud Object Storage bucket.
 
@@ -30,7 +30,7 @@ data "ibm_cos_bucket" "cos_bucket" {
   bucket_region        = "us-east"
 }
 
-data "ibm_cos_object" "cos_object" {
+data "ibm_cos_bucket_object" "cos_object" {
   bucket_crn      = data.ibm_cos_bucket.cos_bucket.crn
   bucket_location = data.ibm_cos_bucket.cos_bucket.bucket_region
   key             = "object.json"

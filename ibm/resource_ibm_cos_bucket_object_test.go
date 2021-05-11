@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMCOSObject_basic(t *testing.T) {
+func TestAccIBMCOSBucketObject_basic(t *testing.T) {
 	name := "tf-testacc-cos"
 	instanceCRN := cosCRN
 	objectBody := "Acceptance Testing"
@@ -19,21 +19,21 @@ func TestAccIBMCOSObject_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccIBMCOSObjectConfig_basic(name, instanceCRN, objectBody),
+				Config: testAccIBMCOSBucketObjectConfig_basic(name, instanceCRN, objectBody),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("ibm_cos_object.testacc", "id"),
-					resource.TestCheckResourceAttrSet("ibm_cos_object.testacc", "content_length"),
-					resource.TestCheckResourceAttrSet("ibm_cos_object.testacc", "content_type"),
-					resource.TestCheckResourceAttrSet("ibm_cos_object.testacc", "etag"),
-					resource.TestCheckResourceAttrSet("ibm_cos_object.testacc", "last_modified"),
-					resource.TestCheckResourceAttr("ibm_cos_object.testacc", "body", objectBody),
+					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc", "id"),
+					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc", "content_length"),
+					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc", "content_type"),
+					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc", "etag"),
+					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc", "last_modified"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object.testacc", "body", objectBody),
 				),
 			},
 		},
 	})
 }
 
-func testAccIBMCOSObjectConfig_basic(name string, instanceCRN string, objectBody string) string {
+func testAccIBMCOSBucketObjectConfig_basic(name string, instanceCRN string, objectBody string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cos_bucket" "testacc" {
 			bucket_name          = "%[1]s"
@@ -41,7 +41,7 @@ func testAccIBMCOSObjectConfig_basic(name string, instanceCRN string, objectBody
 			region_location      = "us-east"
 			storage_class        = "standard"
 		}
-		resource "ibm_cos_object" "testacc" {
+		resource "ibm_cos_bucket_object" "testacc" {
 			bucket_crn	    = ibm_cos_bucket.testacc.crn
 			bucket_location = ibm_cos_bucket.testacc.region_location
 			key 					  = "%[1]s.txt"

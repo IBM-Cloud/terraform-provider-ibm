@@ -26,12 +26,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceIBMCOSObject() *schema.Resource {
+func resourceIBMCOSBucketObject() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMCOSObjectCreate,
-		ReadContext:   resourceIBMCOSObjectRead,
-		UpdateContext: resourceIBMCOSObjectUpdate,
-		DeleteContext: resourceIBMCOSObjectDelete,
+		CreateContext: resourceIBMCOSBucketObjectCreate,
+		ReadContext:   resourceIBMCOSBucketObjectRead,
+		UpdateContext: resourceIBMCOSBucketObjectUpdate,
+		DeleteContext: resourceIBMCOSBucketObjectDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -113,7 +113,7 @@ func resourceIBMCOSObject() *schema.Resource {
 	}
 }
 
-func resourceIBMCOSObjectCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIBMCOSBucketObjectCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	bucketCRN := d.Get("bucket_crn").(string)
 	bucketName := strings.Split(bucketCRN, ":bucket:")[1]
 	instanceCRN := fmt.Sprintf("%s::", strings.Split(bucketCRN, ":bucket:")[0])
@@ -184,10 +184,10 @@ func resourceIBMCOSObjectCreate(ctx context.Context, d *schema.ResourceData, m i
 	objectID := getObjectId(bucketCRN, objectKey, bucketLocation)
 	d.SetId(objectID)
 
-	return resourceIBMCOSObjectRead(ctx, d, m)
+	return resourceIBMCOSBucketObjectRead(ctx, d, m)
 }
 
-func resourceIBMCOSObjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIBMCOSBucketObjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	objectID := d.Id()
 
 	bucketCRN := parseObjectId(objectID, "bucketCRN")
@@ -265,7 +265,7 @@ func resourceIBMCOSObjectRead(ctx context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
-func resourceIBMCOSObjectUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIBMCOSBucketObjectUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	if d.HasChanges("content", "content_base64", "content_file", "etag") {
 		bucketCRN := d.Get("bucket_crn").(string)
 		bucketName := strings.Split(bucketCRN, ":bucket:")[1]
@@ -328,10 +328,10 @@ func resourceIBMCOSObjectUpdate(ctx context.Context, d *schema.ResourceData, m i
 		d.SetId(objectID)
 	}
 
-	return resourceIBMCOSObjectRead(ctx, d, m)
+	return resourceIBMCOSBucketObjectRead(ctx, d, m)
 }
 
-func resourceIBMCOSObjectDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIBMCOSBucketObjectDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	bucketCRN := d.Get("bucket_crn").(string)
 	bucketName := strings.Split(bucketCRN, ":bucket:")[1]
 	instanceCRN := fmt.Sprintf("%s::", strings.Split(bucketCRN, ":bucket:")[0])

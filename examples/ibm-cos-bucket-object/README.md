@@ -4,7 +4,7 @@ This example illustrates how to use IBM Cloud Object Storage to create objects i
 
 These types of resources are supported:
 
-* ibm_cos_object
+* ibm_cos_bucket_object
 
 ## Usage
 
@@ -19,10 +19,10 @@ $ terraform destroy
 
 ## COS object resource
 
-ibm_cos_object resource:
+ibm_cos_bucket_object resource:
 
 ```hcl
-resource "ibm_cos_object" "object" {
+resource "ibm_cos_bucket_object" "object" {
   bucket_crn      = var.cos_bucket_crn
   bucket_location = var.cos_bucket_location
   content         = "Hello World"
@@ -32,10 +32,10 @@ resource "ibm_cos_object" "object" {
 
 ## COS object data source
 
-ibm_cos_object data source:
+ibm_cos_bucket_object data source:
 
 ```hcl
-data "ibm_cos_object" "object" {
+data "ibm_cos_bucket_object" "object" {
   bucket_crn      = var.cos_bucket_crn
   bucket_location = var.cos_bucket_location
   key             = "file.txt"

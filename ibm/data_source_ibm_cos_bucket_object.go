@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceIBMCosObject() *schema.Resource {
+func dataSourceIBMCosBucketObject() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMCosObjectRead,
+		ReadContext: dataSourceIBMCosBucketObjectRead,
 
 		Schema: map[string]*schema.Schema{
 			"body": {
@@ -73,7 +73,7 @@ func dataSourceIBMCosObject() *schema.Resource {
 	}
 }
 
-func dataSourceIBMCosObjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceIBMCosBucketObjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	bucketCRN := d.Get("bucket_crn").(string)
 	bucketName := strings.Split(bucketCRN, ":bucket:")[1]
 	instanceCRN := fmt.Sprintf("%s::", strings.Split(bucketCRN, ":bucket:")[0])
