@@ -2125,7 +2125,7 @@ func newSession(c *Config) (*Session, error) {
 			IAMAccessToken:  c.IAMToken,
 			IAMRefreshToken: c.IAMRefreshToken,
 			//Comment out debug mode for v0.12
-			//Debug:           os.Getenv("TF_LOG") != "",
+			//Debug:         os.Getenv("TF_LOG") != "",
 			HTTPTimeout:   c.BluemixTimeout,
 			Region:        c.Region,
 			ResourceGroup: c.ResourceGroup,
@@ -2146,7 +2146,7 @@ func newSession(c *Config) (*Session, error) {
 		bmxConfig := &bluemix.Config{
 			BluemixAPIKey: c.BluemixAPIKey,
 			//Comment out debug mode for v0.12
-			// Debug:         os.Getenv("TF_LOG") != "",
+			//Debug:         os.Getenv("TF_LOG") != "",
 			HTTPTimeout:   c.BluemixTimeout,
 			Region:        c.Region,
 			ResourceGroup: c.ResourceGroup,

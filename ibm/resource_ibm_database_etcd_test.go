@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccIBMDatabaseInstance_Etcd_Basic(t *testing.T) {
-	t.Parallel()
+	//t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
 	rnd := fmt.Sprintf("tf-Etcd-%d", acctest.RandIntRange(10, 100))
@@ -81,7 +81,7 @@ func TestAccIBMDatabaseInstance_Etcd_Basic(t *testing.T) {
 // TestAccIBMDatabaseInstance_CreateAfterManualDestroy not required as tested by resource_instance tests
 
 func TestAccIBMDatabaseInstanceEtcdImport(t *testing.T) {
-	t.Parallel()
+	//t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
 	serviceName := fmt.Sprintf("tf-Etcd-%d", acctest.RandIntRange(10, 100))

@@ -1085,7 +1085,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 			if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 				return fmt.Errorf("The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
 			}
-			return fmt.Errorf("Error getting database config for: %s with error %s\n", icdId, err)
+			return fmt.Errorf("Error getting database config while updating adminpassword for: %s with error %s\n", icdId, err)
 		}
 
 		userParams := icdv4.UserReq{
@@ -1097,7 +1097,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 		if err != nil {
 			return fmt.Errorf("Error updating database admin password: %s", err)
 		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return fmt.Errorf(
 				"Error waiting for update of database (%s) admin password task to complete: %s", icdId, err)
@@ -1117,7 +1117,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 			if err != nil {
 				return fmt.Errorf("Error updating database whitelist entry: %s", err)
 			}
-			_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+			_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return fmt.Errorf(
 					"Error waiting for update of database (%s) whitelist task to complete: %s", icdId, err)
@@ -1133,12 +1133,12 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 		params.Autoscaling.CPU = &cpuBody
 		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
 		if err != nil {
-			return fmt.Errorf("Error updating database scaling group: %s", err)
+			return fmt.Errorf("Error updating database cpu auto_scaling group: %s", err)
 		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return fmt.Errorf(
-				"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
+				"Error waiting for database (%s) cpu auto_scaling group update task to complete: %s", icdId, err)
 		}
 
 	}
@@ -1151,12 +1151,12 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 		params.Autoscaling.Disk = &diskBody
 		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
 		if err != nil {
-			return fmt.Errorf("Error updating database scaling group: %s", err)
+			return fmt.Errorf("Error updating database disk auto_scaling group: %s", err)
 		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return fmt.Errorf(
-				"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
+				"Error waiting for database (%s) disk auto_scaling group update task to complete: %s", icdId, err)
 		}
 
 	}
@@ -1169,12 +1169,12 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 		params.Autoscaling.Memory = &memoryBody
 		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
 		if err != nil {
-			return fmt.Errorf("Error updating database scaling group: %s", err)
+			return fmt.Errorf("Error updating database memory auto_scaling group: %s", err)
 		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return fmt.Errorf(
-				"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
+				"Error waiting for database (%s) memory auto_scaling group update task to complete: %s", icdId, err)
 		}
 
 	}
@@ -1192,7 +1192,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 			if err != nil {
 				return fmt.Errorf("Error updating database user (%s) entry: %s", user.UserName, err)
 			}
-			_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+			_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return fmt.Errorf(
 					"Error waiting for update of database (%s) user (%s) create task to complete: %s", icdId, user.UserName, err)
@@ -1454,7 +1454,7 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 		if err != nil {
 			return fmt.Errorf("Error updating database scaling group: %s", err)
 		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
 				"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
@@ -1471,12 +1471,12 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 		params.Autoscaling.CPU = &cpuBody
 		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
 		if err != nil {
-			return fmt.Errorf("Error updating database scaling group: %s", err)
+			return fmt.Errorf("Error updating database cpu auto_scaling group: %s", err)
 		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
-				"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
+				"Error waiting for database (%s) cpu auto_scaling group update task to complete: %s", icdId, err)
 		}
 
 	}
@@ -1490,12 +1490,12 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 		params.Autoscaling.Disk = &diskBody
 		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
 		if err != nil {
-			return fmt.Errorf("Error updating database scaling group: %s", err)
+			return fmt.Errorf("Error updating database disk auto_scaling  group: %s", err)
 		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
-				"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
+				"Error waiting for database (%s) disk auto_scaling group update task to complete: %s", icdId, err)
 		}
 
 	}
@@ -1509,12 +1509,12 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 		params.Autoscaling.Memory = &memoryBody
 		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
 		if err != nil {
-			return fmt.Errorf("Error updating database scaling group: %s", err)
+			return fmt.Errorf("Error updating database memory auto_scaling  group: %s", err)
 		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
-				"Error waiting for database (%s) scaling group update task to complete: %s", icdId, err)
+				"Error waiting for database (%s) memory auto_scaling group update task to complete: %s", icdId, err)
 		}
 
 	}
@@ -1531,7 +1531,7 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 		if err != nil {
 			return fmt.Errorf("Error updating database admin password: %s", err)
 		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf(
 				"Error waiting for database (%s) admin password update task to complete: %s", icdId, err)
@@ -1565,7 +1565,7 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 				if err != nil {
 					return fmt.Errorf("Error updating database whitelist entry %v : %s", wlEntry.Address, err)
 				}
-				_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+				_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
 					return fmt.Errorf(
 						"Error waiting for database (%s) whitelist create task to complete for entry %s : %s", icdId, wlEntry.Address, err)
@@ -1587,7 +1587,7 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 				if err != nil {
 					return fmt.Errorf("Error deleting database whitelist entry: %s", err)
 				}
-				_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+				_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
 					return fmt.Errorf(
 						"Error waiting for database (%s) whitelist delete task to complete for ipAddress %s : %s", icdId, ipAddress, err)
@@ -1633,13 +1633,13 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 					if err != nil {
 						return fmt.Errorf("Error updating database user (%s) password: %s", newEntry["name"].(string), err)
 					}
-					_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+					_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
 					if err != nil {
 						return fmt.Errorf(
 							"Error waiting for database (%s) user (%s) password update task to complete: %s", icdId, newEntry["name"].(string), err)
 					}
 				} else {
-					_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+					_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
 					if err != nil {
 						return fmt.Errorf(
 							"Error waiting for database (%s) user (%s) create task to complete: %s", icdId, newEntry["name"].(string), err)
@@ -1661,7 +1661,7 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 				if err != nil {
 					return fmt.Errorf("Error deleting database user (%s) entry: %s", user, err)
 				}
-				_, err = waitForDatabaseTaskComplete(task.Id, d, meta)
+				_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
 					return fmt.Errorf(
 						"Error waiting for database (%s) user (%s) delete task to complete: %s", icdId, user, err)
@@ -1894,14 +1894,14 @@ func waitForDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 	return stateConf.WaitForState()
 }
 
-func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta interface{}) (bool, error) {
+func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta interface{}, t time.Duration) (bool, error) {
 	icdClient, err := meta.(ClientSession).ICDAPI()
 	if err != nil {
 		return false, fmt.Errorf("Error getting database client settings: %s", err)
 	}
 	delayDuration := 5 * time.Second
 
-	timeout := time.After(15 * time.Minute)
+	timeout := time.After(t)
 	delay := time.Tick(delayDuration)
 	innerTask := icdv4.Task{}
 
