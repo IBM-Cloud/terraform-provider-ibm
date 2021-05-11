@@ -50,7 +50,7 @@ output "ICD Etcd database connection string" {
 
 ```
 
-## Sample2 Terraform code
+### Sample database instance by using `node_` attributes
 An example to configure and deploy database by using `node_` attributes instead of `memory_`.
 
 ```
@@ -86,7 +86,7 @@ output "ICD Etcd database connection string" {
 
 ```
 
-## Sample3 Terraform code
+### Sample database instance by using `point_in_time_recovery`
 An example for configuring `point_in_time_recovery` time by using `ibm_database` resource.
 
 
@@ -107,7 +107,7 @@ resource "ibm_database" "test_acc" {
 ```
 
 
-## Sample4 Terraform code by using auto_scaling
+### Sample database instance by using auto_scaling
 
 ```
 resource "ibm_database" "autoscale" {
