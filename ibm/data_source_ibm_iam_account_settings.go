@@ -123,6 +123,7 @@ func dataSourceIbmIamAccountSettingsRead(context context.Context, d *schema.Reso
 	}
 
 	getAccountSettingsOptions := &iamidentityv1.GetAccountSettingsOptions{}
+	getAccountSettingsOptions.SetIncludeHistory(d.Get("include_history").(bool))
 
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
