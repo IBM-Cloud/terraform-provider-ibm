@@ -58,20 +58,20 @@ resource "ibm_dl_gateway" "test_dl_connect" {
 ## Argument reference
 Review the input parameters that you can specify for your resource. 
 
-- `bgp_asn`- (Required, Integer) The BGP ASN of the gateway to be created. For example, `64999`.Yes.
+- `bgp_asn`- (Required, Forces new resource, Integer) The BGP ASN of the gateway to be created. For example, `64999`.
 - `bgp_base_cidr` - (Optional, String) (Deprecated) The BGP base CIDR of the gateway to be created. See `bgp_ibm_cidr` and `bgp_cer_cidr` for details on how to create a gateway by using  automatic or explicit IP assignment. Any `bgp_base_cidr` value set will be ignored.
 - `bgp_cer_cidr` - (Optional, Forces new resource, String) The BGP customer edge router CIDR. Specify a value within `bgp_base_cidr`.  For auto IP assignment, omit `bgp_cer_cidr` and `bgp_ibm_cidr`. IBM will automatically select values for `bgp_cer_cidr` and `bgp_ibm_cidr`.
 - `bgp_ibm_cidr` - (Optional, Forces new resource, String) The BGP IBM CIDR. For auto IP assignment, omit `bgp_cer_cidr` and `bgp_ibm_cidr`. IBM will automatically select values for `bgp_cer_cidr` and `bgp_ibm_cidr`.
 - `carrier_name` - (Required, Forces new resource, String) The carrier name is required for `dedicated` type. Constraints are 1 ≤ length ≤ 128, Value must match regular expression ^[a-z][A-Z][0-9][ -_]$. For example, `myCarrierName`.
 - `cross_connect_router` - (Required, Forces new resource, String) The cross connect router required for `dedicated` type. For example, `xcr01.dal03`.
 - `customer_name` - (Required, Forces new resource, String) The customer name is required for `dedicated` type. Constraints are 1 ≤ length ≤ 128, Value must match regular expression ^[a-z][A-Z][0-9][ -_]$. For example, `newCustomerName`.
-- `global`- (Bool) Required-Gateway with global routing as **true** can connect networks outside your associated region.No.
+- `global`- (Bool) Required-Gateway with global routing as **true** can connect networks outside your associated region.
 - `location_name` - (Required, Forces new resource, String) The gateway location is required for `dedicated` type. For example, `dal03`.
 - `name` - (Required, String) The unique user-defined name for the gateway. For example, `myGateway`.No.
-- `metered`- (Bool) Required-Metered billing option. If set **true** gateway usage is billed per GB. Otherwise, flat rate is charged for the gateway.No.
+- `metered`- (Required, Bool) Metered billing option. If set **true** gateway usage is billed per GB. Otherwise, flat rate is charged for the gateway.
 - `port` - (Required, Forces new resource, String) The gateway port for type is connect gateways. This parameter is required for Direct Link connect type.
 - `resource_group` - (Optional, Forces new resource, String) The resource group. If unspecified, the account's default resource group is used.
-- `speed_mbps`- (Required, Integer) The gateway speed in MBPS. For example, `10.254.30.78/30`.No.
+- `speed_mbps`- (Required, Integer) The gateway speed in MBPS. For example, `10.254.30.78/30`.
 - `type` - (Required, Forces new resource, String) The gateway type, allowed values are `dedicated` and `connect`.
 
 ## Attribute reference
