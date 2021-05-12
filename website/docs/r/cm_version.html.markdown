@@ -27,7 +27,7 @@ Review the input parameters that you can specify for your resource.
  
 - `catalog_identifier` - (Required, Forces new resource, String) Catalog identifier.
 - `content` - (Optional, Forces new resource, String) The byte array representing the content to import. Currently supports only `OVA` images.
-- `offering_id` - (Required, String) Offering identification.
+- `offering_id` - (Required, Forces new resource, String) Offering identification.
 - `tags` - (Optional, Forces new resource, List) The tags array.
 - `target_kinds` - (Optional, Forces new resource, List) The target kinds. Supported values are `iks`, `roks`, `vcenter`, and `terraform`.
 - `target_version` - (Optional, Forces new resource, String) The semver value for the new version, if not found in the `zip` URL package content.
