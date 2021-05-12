@@ -6,31 +6,34 @@ description: |-
   Manages cm_catalog.
 ---
 
-# ibm\_cm_catalog
+# `ibm_cm_catalog`
 
-Provides a resource for cm_catalog. This allows cm_catalog to be created, updated and deleted.
+Create, modify, or delete an `cm_catalog` resources. You can manage the settings for all catalogs across your account. For more information, about managing catalog, refer to [catalog management settings](https://cloud.ibm.com/docs/account?topic=account-account-getting-started).
 
-## Example Usage
 
-```hcl
+## Example usage
+
+```
 resource "ibm_cm_catalog" "cm_catalog" {
   label = "placeholder"
   short_description = "placeholder"
 }
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the input parameters that you can specify for your resource. 
 
-* `label` - (Required, Forces new resource, string) Display Name in the requested language.
-* `short_description` - (Optional, Forces new resource, string) Description in the requested language.
+- `label` - (Required, Forces new resource, String) The display name in the requested language.
+- `short_description` - (Optional, Forces new resource, String) The short description in the requested language.
 
-## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
+Review the output parameters that you can access after your resource is created. 
 
-* `id` - The unique identifier of the cm_catalog.
-* `url` - The url for this specific catalog.
-* `crn` - CRN associated with the catalog.
-* `offerings_url` - URL path to offerings.
+- `crn` - (String) The CRN associated with the catalog.
+- `id` - (String) The unique identifier of the `cm_catalog`.
+- `offerings_url` - (String) The URL path to the offerings.
+- `url` - (String) The URL for this specific catalog.
+
+
