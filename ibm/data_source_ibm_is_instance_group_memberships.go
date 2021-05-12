@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -108,6 +109,7 @@ func dataSourceIBMISInstanceGroupMemberships() *schema.Resource {
 }
 
 func dataSourceIBMISInstanceGroupMembershipsRead(d *schema.ResourceData, meta interface{}) error {
+	log.Println("Inside dataSourceIBMISInstanceGroupMembershipsRead")
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -137,7 +139,8 @@ func dataSourceIBMISInstanceGroupMembershipsRead(d *schema.ResourceData, meta in
 
 	memberships := make([]map[string]interface{}, 0)
 	for _, instanceGroupMembership := range allrecs {
-
+		log.Println("instance_group_membership -> Name")
+		log.Println(*instanceGroupMembership.Name)
 		membership := map[string]interface{}{
 			"delete_instance_on_membership_delete": *instanceGroupMembership.DeleteInstanceOnMembershipDelete,
 			"instance_group_membership":            *instanceGroupMembership.ID,
@@ -174,7 +177,7 @@ func dataSourceIBMISInstanceGroupMembershipsRead(d *schema.ResourceData, meta in
 		memberships = append(memberships, membership)
 	}
 	d.Set("memberships", memberships)
-	d.SetId(dataSourceIBMISInstanceGroupManagersID(d))
+	d.SetId(dataSourceIbmIsInstanceGroupMembershipsID(d))
 
 	return nil
 }
