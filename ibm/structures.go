@@ -20,6 +20,7 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	kp "github.com/IBM/keyprotect-go-client"
+	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -1131,6 +1132,14 @@ func idParts(id string) ([]string, error) {
 	return []string{}, fmt.Errorf("The given id %s does not contain / please check documentation on how to provider id during import command", id)
 }
 
+func sepIdParts(id string, separator string) ([]string, error) {
+	if strings.Contains(id, separator) {
+		parts := strings.Split(id, separator)
+		return parts, nil
+	}
+	return []string{}, fmt.Errorf("The given id %s does not contain %s please check documentation on how to provider id during import command", id, separator)
+}
+
 func vmIdParts(id string) ([]string, error) {
 	parts := strings.Split(id, "/")
 	return parts, nil
@@ -1675,6 +1684,129 @@ func UpdateTags(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 	}
+	return nil
+}
+
+func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
+
+	gtClient, err := meta.(ClientSession).GlobalTaggingAPIv1()
+	if err != nil {
+		return nil, fmt.Errorf("Error getting global tagging client settings: %s", err)
+	}
+
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return nil, err
+	}
+	accountID := userDetails.userAccount
+
+	var providers []string
+	if strings.Contains(resourceType, "SoftLayer_") {
+		providers = []string{"ims"}
+	}
+
+	ListTagsOptions := &globaltaggingv1.ListTagsOptions{}
+	ListTagsOptions.AttachedTo = &resourceID
+	ListTagsOptions.Providers = providers
+	if len(tagType) > 0 {
+		ListTagsOptions.TagType = ptrToString(tagType)
+
+		if tagType == service {
+			ListTagsOptions.AccountID = ptrToString(accountID)
+		}
+	}
+	taggingResult, _, err := gtClient.ListTags(ListTagsOptions)
+	if err != nil {
+		return nil, err
+	}
+	var taglist []string
+	for _, item := range taggingResult.Items {
+		taglist = append(taglist, *item.Name)
+	}
+	log.Println("tagList: ", taglist)
+	return newStringSet(resourceIBMVPCHash, taglist), nil
+}
+
+func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, resourceID, resourceType, tagType string) error {
+	gtClient, err := meta.(ClientSession).GlobalTaggingAPIv1()
+	if err != nil {
+		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+	}
+
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
+	acctID := userDetails.userAccount
+
+	resources := []globaltaggingv1.Resource{}
+	r := globaltaggingv1.Resource{ResourceID: ptrToString(resourceID), ResourceType: ptrToString(resourceType)}
+	resources = append(resources, r)
+
+	if oldList == nil {
+		oldList = new(schema.Set)
+	}
+	if newList == nil {
+		newList = new(schema.Set)
+	}
+	olds := oldList.(*schema.Set)
+	news := newList.(*schema.Set)
+	removeInt := olds.Difference(news).List()
+	addInt := news.Difference(olds).List()
+	add := make([]string, len(addInt))
+	for i, v := range addInt {
+		add[i] = fmt.Sprint(v)
+	}
+	remove := make([]string, len(removeInt))
+	for i, v := range removeInt {
+		remove[i] = fmt.Sprint(v)
+	}
+
+	schematicTags := os.Getenv("IC_ENV_TAGS")
+	var envTags []string
+	if schematicTags != "" {
+		envTags = strings.Split(schematicTags, ",")
+		add = append(add, envTags...)
+	}
+
+	if len(remove) > 0 {
+		detachTagOptions := &globaltaggingv1.DetachTagOptions{
+			Resources: resources,
+			TagNames:  remove,
+		}
+
+		_, resp, err := gtClient.DetachTag(detachTagOptions)
+		if err != nil {
+			return fmt.Errorf("Error detaching database tags %v: %s\n%s", remove, err, resp)
+		}
+		for _, v := range remove {
+			delTagOptions := &globaltaggingv1.DeleteTagOptions{
+				TagName: ptrToString(v),
+			}
+			_, resp, err := gtClient.DeleteTag(delTagOptions)
+			if err != nil {
+				return fmt.Errorf("Error deleting database tag %v: %s\n%s", v, err, resp)
+			}
+		}
+	}
+
+	if len(add) > 0 {
+		AttachTagOptions := &globaltaggingv1.AttachTagOptions{}
+		AttachTagOptions.Resources = resources
+		AttachTagOptions.TagNames = add
+		if len(tagType) > 0 {
+			AttachTagOptions.TagType = ptrToString(tagType)
+			if tagType == service {
+				AttachTagOptions.AccountID = ptrToString(acctID)
+			}
+		}
+
+		_, resp, err := gtClient.AttachTag(AttachTagOptions)
+		if err != nil {
+			return fmt.Errorf("Error updating database tags %v : %s\n%s", add, err, resp)
+		}
+	}
+
 	return nil
 }
 

@@ -18,7 +18,8 @@ import (
 
 func TestAccIBMISVPCAddressPrefix_basic(t *testing.T) {
 	var vpcAddressPrefix string
-	name1 := fmt.Sprintf("tfvpcuat-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfvpcuat-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfvpcnameuat-%d", acctest.RandIntRange(10, 100))
 	prefixName := fmt.Sprintf("tfaddprename-%d", acctest.RandIntRange(10, 100))
 	prefixName1 := fmt.Sprintf("tfaddprenamename-%d", acctest.RandIntRange(10, 100))
 
@@ -28,31 +29,29 @@ func TestAccIBMISVPCAddressPrefix_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMISVPCAddressPrefixDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISVPCAddressPrefixConfig(name1, prefixName),
+				Config: testAccCheckIBMISVPCAddressPrefixConfig(name, prefixName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISVPCAddressPrefixExists("ibm_is_vpc_address_prefix.testacc_vpc_address_prefix", vpcAddressPrefix),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpc_address_prefix.testacc_vpc_address_prefix", "name", prefixName),
-				),
-			},
-			{
-				Config: testAccCheckIBMISVPCAddressPrefixConfig(name1, prefixName1),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVPCAddressPrefixExists("ibm_is_vpc_address_prefix.testacc_vpc_address_prefix", vpcAddressPrefix),
 					resource.TestCheckResourceAttr(
-						"ibm_is_vpc_address_prefix.testacc_vpc_address_prefix", "name", prefixName1),
+						"ibm_is_vpc_address_prefix.testacc_vpc_address_prefix", "is_default", "true"),
 				),
 			},
 			{
-				Config:      testAccCheckIBMISVPCAddressPrefixConfig1(name1, prefixName1),
-				ExpectError: regexp.MustCompile(fmt.Sprintf("the request is overlapping with reserved address ranges")),
+				Config: testAccCheckIBMISVPCAddressPrefixConfig1(name1, prefixName1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCAddressPrefixExists("ibm_is_vpc_address_prefix.testacc_vpc_address_prefix1", vpcAddressPrefix),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc_address_prefix.testacc_vpc_address_prefix1", "name", prefixName1),
+				),
 			},
 		},
 	})
 }
 
 func TestAccIBMISVPCAddressPrefix_InvalidCidr(t *testing.T) {
-	name1 := fmt.Sprintf("tfvpcuat-%d", acctest.RandIntRange(10, 100))
+	name2 := fmt.Sprintf("tfvpcuatnamename-%d", acctest.RandIntRange(10, 100))
 	prefixName2 := fmt.Sprintf("tfaddprename-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -60,7 +59,7 @@ func TestAccIBMISVPCAddressPrefix_InvalidCidr(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config:      testAccCheckIBMISVPCAddressPrefixConfig1(name1, prefixName2),
+				Config:      testAccCheckIBMISVPCAddressPrefixConfig2(name2, prefixName2),
 				ExpectError: regexp.MustCompile(fmt.Sprintf("the request is overlapping with reserved address ranges")),
 			},
 		},
@@ -170,24 +169,39 @@ func testAccCheckIBMISVPCAddressPrefixConfig(name, prefixName string) string {
 	return fmt.Sprintf(`
 resource "ibm_is_vpc" "testacc_vpc" {
     name = "%s"
+	address_prefix_management = "manual"
 }
 resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix" {
     name = "%s"
     zone = "%s"
     vpc = "${ibm_is_vpc.testacc_vpc.id}"
 	cidr = "%s"
+	is_default = true
 }`, name, prefixName, ISZoneName, ISAddressPrefixCIDR)
 }
 
 func testAccCheckIBMISVPCAddressPrefixConfig1(name, prefixName string) string {
 	return fmt.Sprintf(`
-resource "ibm_is_vpc" "testacc_vpc" {
+resource "ibm_is_vpc" "testacc_vpc1" {
     name = "%s"
 }
-resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix" {
+resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix1" {
     name = "%s"
     zone = "%s"
-    vpc = "${ibm_is_vpc.testacc_vpc.id}"
+    vpc = "${ibm_is_vpc.testacc_vpc1.id}"
+	cidr = "%s"
+}`, name, prefixName, ISZoneName, ISAddressPrefixCIDR)
+}
+
+func testAccCheckIBMISVPCAddressPrefixConfig2(name, prefixName string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "testacc_vpc2" {
+    name = "%s"
+}
+resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix2" {
+    name = "%s"
+    zone = "%s"
+    vpc = "${ibm_is_vpc.testacc_vpc2.id}"
 	cidr = "127.0.0.0/8"
 }`, name, prefixName, ISZoneName)
 }

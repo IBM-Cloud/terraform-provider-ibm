@@ -1,50 +1,52 @@
 ---
-
 subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: app_route"
 description: |-
-  Manages IBM Application route.
+  Manages IBM application route.
 ---
 
-# ibm\_app_route
+# `ibm_app_route`
 
-Provides a route resource. This allows routes to be created, updated, and deleted.
+Create, update, or delete a route for your Cloud Foundry app. For more information, about an app route, see [Adding and using a custom domain](https://cloud.ibm.com/docs/cloud-foundry-public?topic=cloud-foundry-public-custom-domains)
 
-## Example Usage
 
-```hcl
+## Example usage
+The following example creates a route for the `example.com` shared domain. 
+
+
+```
 data "ibm_space" "spacedata" {
   space = "space"
-  org   = "someexample.com"
+  org   = "myorg.com"
 }
 
 data "ibm_app_domain_shared" "domain" {
-  name = "mybluemix.net"
+  name = "example.com"
 }
 
 resource "ibm_app_route" "route" {
   domain_guid = data.ibm_app_domain_shared.domain.id
   space_guid  = data.ibm_space.spacedata.id
-  host        = "somehost172"
+  host        = "myhost"
   path        = "/app"
 }
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the input parameters that you can specify for your resource. 
 
-* `domain_guid` - (Required, string) The GUID of the associated domain. You can retrieve the value from data source `ibm_app_domain_shared` or `ibm_app_domain_private`.
-* `space_guid` - (Required, string) The GUID of the space where you want to create the route. You can retrieve the value from data source `ibm_space` or by running the `ibmcloud iam space <space_name> --guid` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
-* `host` - (Optional, string) The host portion of the route. Host is required for shared-domains.
-* `port` - (Optional, integer) The port of the route. Port is supported for domains of TCP router groups only.
-* `path` - (Optional, string) The path for a route as raw text. Paths must be 2 - 128 characters. Paths must start with a forward slash (/) and cannot contain a question mark (?).
-* `tags` - (Optional, array of strings) Tags associated with the route instance.  
-    **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+- `domain_guid` - (Required, String) The GUID of the associated domain. You can retrieve the value from data source `ibm_app_domain_shared` or `ibm_app_domain_private`.
+- `host` - (Optional, String) The hostname of the route. The hostname is required for shared domains.
+- `path` - (Optional, String) The path for the route. Paths must be between 2-128 characters, must start with a forward slash (/), and cannot contain a question mark (?).
+- `port` - (Optional, String) The port of the route. This option is supported for TCP router group domains only.
+- `space_guid` - (Required, String)  The GUID of the Cloud Foundry space where you want to create the route. You can retrieve the value from data source `ibm_space` or by running the `ibmcloud iam space <space_name> guid` command in the IBM Cloud CLI.
+- `tags` (Optional, Array of Strings) The tags that you want to add to the route. Tags can help you find the route more easily later. **Note** Currently, `Tags` that are managed locally and not sored on the IBM Cloud service endpoint.
 
-## Attribute Reference
+## Attribute reference
+Review the output parameters that you can access after your resource is created. 
 
-In addition to all arguments above, the following attributes are exported:
+- `id` - (String) The unique identifier of the route.
 
-* `id` - The unique identifier of the route.
+

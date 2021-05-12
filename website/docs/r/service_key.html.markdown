@@ -1,19 +1,21 @@
 ---
-
 subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM : service_key"
 description: |-
-  Manages IBM Service Key.
+  Manages IBM service key.
 ---
 
-# ibm\_service_key
+# `ibm_service_key`
 
-Provides a service key resource. This allows service keys to be created, updated, and deleted.
+Create, update, or delete a service key for your Cloud Foundry service instance. For more information, about creating organization, spaces, and a service key, see [Getting started with IBM Cloud Foundry Enterprise Environment](https://cloud.ibm.com/docs/cli?topic=cli-ibmcloud_commands_services#ibmcloud_service_key_create).
 
-## Example Usage
 
-```hcl
+## Example usage
+The following example creates the `mycloudantkey` service key. 
+
+
+```
 data "ibm_service_instance" "service_instance" {
   name = "mycloudant"
 }
@@ -24,19 +26,18 @@ resource "ibm_service_key" "serviceKey" {
 }
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the input parameters that you can specify for your resource. 
 
-* `name` - (Required, string) A descriptive name used to identify a service key.
-* `parameters` - (Optional, map) Arbitrary parameters to pass along to the service broker. Must be a JSON object.
-* `service_instance_guid` - (Required, string) The GUID of the service instance associated with the service key.
-* `tags` - (Optional, array of strings) Tags associated with the service key instance.  
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+- `name` - (Required, String) A descriptive name for the service key.
+- `parameters` (Optional, Map) Arbitrary parameters to pass along to the service broker. Must be a JSON object.
+- `service_instance_guid` - (Required, String) The GUID of the service instance for which you create the service key.
+- `tags` (Optional, Array of Strings) The tags that you want to add to the service key instance. Tags can help you find the service keys more easily later.
 
-## Attribute Reference
+## Attribute reference
+Review the output parameters that you can access after your resource is created. 
 
-In addition to all arguments above, the following attributes are exported:
+- `credentials` - (String) The credentials associated with the key.
+- `id` - (String) The unique identifier of the new service key.
 
-* `id` - The unique identifier of the new service key.
-* `credentials` - The credentials associated with the key.

@@ -57,6 +57,8 @@ var instanceProfileName string
 var instanceProfileNameUpdate string
 var dedicatedHostProfileName string
 var instanceDiskProfileName string
+var dedicatedHostGroupFamily string
+var dedicatedHostGroupClass string
 var volumeProfileName string
 var ISRouteDestination string
 var ISRouteNextHop string
@@ -360,8 +362,20 @@ func init() {
 
 	dedicatedHostProfileName = os.Getenv("IS_DEDICATED_HOST_PROFILE")
 	if dedicatedHostProfileName == "" {
-		dedicatedHostProfileName = "cx2-host-152x304" // for next gen infrastructure
-		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_PROFILE for testing ibm_is_instance resource else it is set to default value 'cx2-host-152x304'")
+		dedicatedHostProfileName = "bx2d-host-152x608" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_PROFILE for testing ibm_is_instance resource else it is set to default value 'bx2d-host-152x608'")
+	}
+
+	dedicatedHostGroupClass = os.Getenv("IS_DEDICATED_HOST_GROUP_CLASS")
+	if dedicatedHostGroupClass == "" {
+		dedicatedHostGroupClass = "bx2d" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_GROUP_CLASS for testing ibm_is_instance resource else it is set to default value 'bx2d'")
+	}
+
+	dedicatedHostGroupFamily = os.Getenv("IS_DEDICATED_HOST_GROUP_FAMILY")
+	if dedicatedHostGroupFamily == "" {
+		dedicatedHostGroupFamily = "balanced" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_GROUP_FAMILY for testing ibm_is_instance resource else it is set to default value 'balanced'")
 	}
 
 	instanceDiskProfileName = os.Getenv("IS_INSTANCE_DISK_PROFILE")

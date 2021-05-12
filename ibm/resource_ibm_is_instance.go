@@ -1913,7 +1913,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if d.HasChange(isInstanceProfile) {
+	if d.HasChange(isInstanceProfile) && !d.IsNewResource() {
 
 		getinsOptions := &vpcv1.GetInstanceOptions{
 			ID: &id,
@@ -1966,6 +1966,23 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		_, response, err = instanceC.UpdateInstance(updnetoptions)
 		if err != nil {
 			return fmt.Errorf("Error in UpdateInstancePatch: %s\n%s", err, response)
+		}
+
+		actiontype := "start"
+		createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+			InstanceID: &id,
+			Type:       &actiontype,
+		}
+		_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return nil
+			}
+			return fmt.Errorf("Error Creating Instance Action: %s\n%s", err, response)
+		}
+		_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
+		if err != nil {
+			return err
 		}
 
 	}

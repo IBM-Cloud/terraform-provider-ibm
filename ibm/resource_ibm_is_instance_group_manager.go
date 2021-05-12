@@ -197,10 +197,11 @@ func resourceIBMISInstanceGroupManagerCreate(d *schema.ResourceData, meta interf
 		InstanceGroupManagerPrototype: &instanceGroupManagerPrototype,
 	}
 	instanceGroupManagerIntf, response, err := sess.CreateInstanceGroupManager(&createInstanceGroupManagerOptions)
-	instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
-	if err != nil || instanceGroupManager == nil {
+	if err != nil || instanceGroupManagerIntf == nil {
 		return fmt.Errorf("Error creating InstanceGroup manager: %s\n%s", err, response)
 	}
+	instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
+
 	d.SetId(fmt.Sprintf("%s/%s", instanceGroupID, *instanceGroupManager.ID))
 
 	return resourceIBMISInstanceGroupManagerRead(d, meta)
@@ -293,14 +294,14 @@ func resourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interfac
 		InstanceGroupID: &instanceGroupID,
 	}
 	instanceGroupManagerIntf, response, err := sess.GetInstanceGroupManager(&getInstanceGroupManagerOptions)
-	instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
-	if err != nil || instanceGroupManager == nil {
+	if err != nil || instanceGroupManagerIntf == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
 		return fmt.Errorf("Error Getting InstanceGroup Manager: %s\n%s", err, response)
 	}
+	instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
 	d.Set("name", *instanceGroupManager.Name)
 	d.Set("aggregation_window", *instanceGroupManager.AggregationWindow)
 	d.Set("cooldown", *instanceGroupManager.Cooldown)
