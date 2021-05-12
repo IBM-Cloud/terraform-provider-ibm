@@ -53,7 +53,7 @@ Review the input parameters that you can specify for your resource.
 ## Attribute reference
 Review the output parameters that you can access after your resource is created. 
 
-- `algorithm` - (String) The encryption algorithm. Valid values are `sha256WithRSAEncryption`.
+- `algorithm` - (String) The encryption algorithm. Valid values are `sha256WithRSAEncryption`. Default value is `sha256WithRSAEncryption`.
 - `begins_on` - (String) The creation date of the certificate in UNIX epoch time.
 - `expires_on` - (String) The expiration date of the certificate in UNIX epoch time.
 - `has_previous`- (Bool) Indicates whether a certificate has a previous version.
