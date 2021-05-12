@@ -25,9 +25,9 @@ resource "ibm_cm_offering" "cm_offering" {
 ## Argument reference
 Review the input parameters that you can specify for your resource. 
 
-- `catalog_identifier` - (Required, String) Catalog identifier.
-- `label` - (Optional, String) Display the name in the requested language.
-- `tags` - (Optional, List) The list of tags associated with the catalog.
+- `catalog_identifier` - (Required, Forces new resrouce, String) Catalog identifier.
+- `label` - (Optional, Forces new resrouce, String) Display the name in the requested language.
+- `tags` - (Optional, Forces new resrouce, List) The list of tags associated with the catalog.
 
 ## Attribute reference
 Review the output parameters that you can access after your resource is created. 
