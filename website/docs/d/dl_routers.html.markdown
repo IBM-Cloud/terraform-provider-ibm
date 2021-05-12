@@ -30,5 +30,6 @@ The Argument reference that you need to specify for the data source.
 Review the Attribute reference that you can access after your resource is created. 
 
 - `cross_connect_routers` - (String) List of all the cross connect router details.
+	- `capabilities` - (String) Macsec and non-macsec capabilities for the router.
 	- `router_name` - (String) The name of the router.
 	- `total_connections` - (String) Count of existing Direct Link dedicated gateways on this router account.
