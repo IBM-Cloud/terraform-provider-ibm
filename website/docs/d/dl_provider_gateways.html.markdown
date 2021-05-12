@@ -6,7 +6,7 @@ description: |-
   Manages IBM Cloud Infrastructure Direct Link Provider Gateway.
 ---
 
-## `ibm_dl_provider_gateways`
+# `ibm_dl_provider_gateways`
 
 Import the details of an existing nfrastructure Direct Link Provider Gateway as a read-only data source.  For more information, refer to [about Direct Link](https://cloud.ibm.com/docs/dl?topic=dl-dl-about#use-case-connect).
 
