@@ -43,12 +43,6 @@ Review the output parameters that you can access after your resource are exporte
 ## Import
 The `ibm_dl_gateway_vc` can be imported by using Direct Link Gateway ID and Direct Link Gateway virtual connection ID.
 
-**Syntax**
-
-```
-terraform import ibm_dl_virtual_connection.example 
-<Direct Link Gateway virtual connection ID>
-```
 
 **Example**
 
