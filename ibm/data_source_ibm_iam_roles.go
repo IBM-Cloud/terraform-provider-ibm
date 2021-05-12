@@ -58,20 +58,21 @@ func datasourceIBMIAMRoleRead(d *schema.ResourceData, meta interface{}) error {
 	var serviceName string
 	var customRoles []iampolicymanagementv1.CustomRole
 	var serviceRoles, systemRoles []iampolicymanagementv1.Role
+
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID: &userDetails.userAccount,
+	}
+
 	if service, ok := d.GetOk("service"); ok {
 		serviceName = service.(string)
-
-		listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
-			ServiceName: &serviceName,
-		}
-
-		roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
-		customRoles = roleList.CustomRoles
-		serviceRoles = roleList.ServiceRoles
-		systemRoles = roleList.SystemRoles
-		if err != nil {
-			return err
-		}
+		listRoleOptions.ServiceName = &serviceName
+	}
+	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
+	customRoles = roleList.CustomRoles
+	serviceRoles = roleList.ServiceRoles
+	systemRoles = roleList.SystemRoles
+	if err != nil {
+		return err
 	}
 
 	d.SetId(userDetails.userAccount)

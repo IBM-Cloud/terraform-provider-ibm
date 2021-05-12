@@ -2141,20 +2141,6 @@ func getSubjectAttribute(name string, s iampolicymanagementv1.PolicySubject) *st
 	return core.StringPtr("")
 }
 
-func generatePolicyTags(d *schema.ResourceData) []iampolicymanagementv1.ResourceTag {
-	var policyResourceTags []iampolicymanagementv1.ResourceTag
-	tags := expandStringList(d.Get("tags").([]interface{}))
-	for _, tag := range tags {
-		policyResourceTag := iampolicymanagementv1.ResourceTag{
-			Name:     core.StringPtr(tag),
-			Value:    core.StringPtr(tag),
-			Operator: core.StringPtr("stringEquals"),
-		}
-		policyResourceTags = append(policyResourceTags, policyResourceTag)
-	}
-	return policyResourceTags
-}
-
 func setResourceAttribute(name *string, value *string, r []iampolicymanagementv1.ResourceAttribute) []iampolicymanagementv1.ResourceAttribute {
 	for _, a := range r {
 		if *a.Name == *name {

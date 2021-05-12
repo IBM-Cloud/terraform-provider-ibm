@@ -101,9 +101,10 @@ func resourceIBMIAMUserPolicy() *schema.Resource {
 			},
 
 			"tags": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
 			},
 		},
 	}
@@ -151,11 +152,8 @@ func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) er
 		Operator: core.StringPtr("stringEquals"),
 	}
 
-	policyResourceTags := generatePolicyTags(d)
-
 	policyResources := iampolicymanagementv1.PolicyResource{
 		Attributes: append(policyOptions.Resources[0].Attributes, *accountIDResourceAttribute),
-		Tags:       policyResourceTags,
 	}
 
 	createPolicyOptions := iamPolicyManagementClient.NewCreatePolicyOptions(
@@ -283,11 +281,8 @@ func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) er
 			Operator: core.StringPtr("stringEquals"),
 		}
 
-		policyResourceTags := generatePolicyTags(d)
-
 		policyResources := iampolicymanagementv1.PolicyResource{
 			Attributes: append(createPolicyOptions.Resources[0].Attributes, *accountIDResourceAttribute),
-			Tags:       policyResourceTags,
 		}
 
 		subjectAttribute := &iampolicymanagementv1.SubjectAttribute{
