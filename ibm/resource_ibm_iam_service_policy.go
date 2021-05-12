@@ -8,22 +8,32 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 )
 
 func resourceIBMIAMServicePolicy() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMIAMServicePolicyCreate,
-		Read:     resourceIBMIAMServicePolicyRead,
-		Update:   resourceIBMIAMServicePolicyUpdate,
-		Delete:   resourceIBMIAMServicePolicyDelete,
-		Exists:   resourceIBMIAMServicePolicyExists,
-		Importer: &schema.ResourceImporter{},
+		Create: resourceIBMIAMServicePolicyCreate,
+		Read:   resourceIBMIAMServicePolicyRead,
+		Update: resourceIBMIAMServicePolicyUpdate,
+		Delete: resourceIBMIAMServicePolicyDelete,
+		Exists: resourceIBMIAMServicePolicyExists,
+		Importer: &schema.ResourceImporter{
+			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				resources, resourceAttributes, err := importServicePolicy(d, meta)
+				if err != nil {
+					return nil, fmt.Errorf("Error reading resource ID: %s", err)
+				}
+				d.Set("resources", resources)
+				d.Set("resource_attributes", resourceAttributes)
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 
 		Schema: map[string]*schema.Schema{
 			"iam_service_id": {
@@ -50,9 +60,8 @@ func resourceIBMIAMServicePolicy() *schema.Resource {
 			"resources": {
 				Type:          schema.TypeList,
 				Optional:      true,
-				Computed:      true,
 				MaxItems:      1,
-				ConflictsWith: []string{"account_management"},
+				ConflictsWith: []string{"account_management", "resource_attributes"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"service": {
@@ -101,12 +110,38 @@ func resourceIBMIAMServicePolicy() *schema.Resource {
 				},
 			},
 
+			"resource_attributes": {
+				Type:          schema.TypeSet,
+				Optional:      true,
+				Description:   "Set resource attributes.",
+				ConflictsWith: []string{"resources", "account_management"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Name of attribute.",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Value of attribute.",
+						},
+						"operator": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "stringEquals",
+							Description: "Operator of attribute.",
+						},
+					},
+				},
+			},
 			"account_management": {
 				Type:          schema.TypeBool,
 				Default:       false,
 				Optional:      true,
 				Description:   "Give access to all account management services",
-				ConflictsWith: []string{"resources"},
+				ConflictsWith: []string{"resources", "resource_attributes"},
 			},
 
 			"tags": {
@@ -254,7 +289,13 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 		roles[i] = *role.DisplayName
 	}
 	d.Set("roles", roles)
-	d.Set("resources", flattenPolicyResource(servicePolicy.Resources))
+
+	if _, ok := d.GetOk("resources"); ok {
+		d.Set("resources", flattenPolicyResource(servicePolicy.Resources))
+	}
+	if _, ok := d.GetOk("resource_attributes"); ok {
+		d.Set("resource_attributes", flattenPolicyResourceAttributes(servicePolicy.Resources))
+	}
 	if len(servicePolicy.Resources) > 0 {
 		if *getResourceAttribute("serviceType", servicePolicy.Resources[0]) == "service" {
 			d.Set("account_management", false)
@@ -269,7 +310,7 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 
 func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("account_management") {
+	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") {
 
 		parts, err := idParts(d.Id())
 		if err != nil {
@@ -415,4 +456,27 @@ func resourceIBMIAMServicePolicyExists(d *schema.ResourceData, meta interface{})
 	tempID := fmt.Sprintf("%s/%s", serviceIDUUID, *servicePolicy.ID)
 
 	return tempID == d.Id(), nil
+}
+
+func importServicePolicy(d *schema.ResourceData, meta interface{}) (interface{}, interface{}, error) {
+
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
+	if err != nil {
+		return nil, nil, err
+	}
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return nil, nil, err
+	}
+	servicePolicyID := parts[1]
+	getPolicyOptions := iamPolicyManagementClient.NewGetPolicyOptions(
+		servicePolicyID,
+	)
+	servicePolicy, _, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Error retrieving servicePolicy: %s", err)
+	}
+	resources := flattenPolicyResource(servicePolicy.Resources)
+	resource_attributes := flattenPolicyResourceAttributes(servicePolicy.Resources)
+	return resources, resource_attributes, nil
 }
