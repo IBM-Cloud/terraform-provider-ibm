@@ -17,10 +17,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -37,8 +39,6 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 )
 
 const (
@@ -1197,6 +1197,22 @@ func flattenPolicyResource(list []iampolicymanagementv1.PolicyResource) []map[st
 	}
 	return result
 }
+func flattenPolicyResourceAttributes(list []iampolicymanagementv1.PolicyResource) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0)
+	for _, i := range list {
+		for _, a := range i.Attributes {
+			if *a.Name != "accountId" {
+				l := map[string]interface{}{
+					"name":     a.Name,
+					"value":    a.Value,
+					"operator": a.Operator,
+				}
+				result = append(result, l)
+			}
+		}
+	}
+	return result
+}
 
 // Cloud Internet Services
 func flattenHealthMonitors(list []datatypes.Network_LBaaS_Listener) []map[string]interface{} {
@@ -2287,6 +2303,20 @@ func generatePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 					resourceAttributes = setResourceAttribute(core.StringPtr(k), core.StringPtr(v.(string)), resourceAttributes)
 				}
 			}
+		}
+	}
+	if r, ok := d.GetOk("resource_attributes"); ok {
+		for _, attribute := range r.(*schema.Set).List() {
+			a := attribute.(map[string]interface{})
+			name := a["name"].(string)
+			value := a["value"].(string)
+			operator := a["operator"].(string)
+			at := iampolicymanagementv1.ResourceAttribute{
+				Name:     &name,
+				Value:    &value,
+				Operator: &operator,
+			}
+			resourceAttributes = append(resourceAttributes, at)
 		}
 	}
 
