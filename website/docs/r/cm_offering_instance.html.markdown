@@ -34,7 +34,7 @@ Review the input parameters that you can specify for your resource.
 - `cluster_region` - (Required, String) The cluster region for example, `us-south`.
 - `cluster_namespaces`- (Required, List) The list of target namespaces to install into.
 - `cluster_all_namespaces`- (Required, Bool) Designate to install into all namespaces.
-- `kind_format` - (Required, String) The format an instance such as `helm`, `operator`.
+- `kind_format` - (Required, String) The format an instance such as `helm`, `operator`, `ova`. **Note** Currently the only supported formate is `operator`.
 - `label` - (Required, String) The label for this instance.
 - `offering_id` - (Required, String) The offering ID an instance is created .
 - `version` - (Required, String) The version an instance was installed from (but not from the version ID).
