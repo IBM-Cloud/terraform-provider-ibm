@@ -6,45 +6,45 @@ description: |-
   Reads Endpoint and its subscriptions.
 ---
 
-# ibm\_api_gateway
+# `ibm_api_gateway`
 
-Import the details of an existing IBM Cloud API Gateway instance as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.Configuration of an api gateway data source requires the region parameter to be set for the IBM provider in the provider.tf.  If not specified, endpoint will default to us-south.
+Retrieve information about an existing API Gateway instance. For more information, about API Gateway, see [Getting started with API Gateway](https://cloud.ibm.com/docs/api-gateway?topic=api-gateway-getting-started).
 
-## Example Usage for a single Api doc as input
+**Note**
 
-```hcl
+Configuration of an API Gateway data source requires the region parameter to be set for the IBM provider in the `provider.tf.`  If not specified, endpoint will default to `us-south`.
 
+## Example usage
+
+```
 data "ibm_api_gateway" "apigateway" {
     service_instance_crn = ibm_resource_instance.apigateway.id
     
 }
-
 ```
 
-## Argument Reference
+## Argument reference
+Review the input parameters that you can specify for your resource. 
 
-The following arguments are supported:
-
-* `service_instance_crn` - (Required,string) The CRN-based API Gateway service instance ID.
+- `service_instance_crn` - (Required, String) The CRN of the API Gateway service instance.
 
 
-## Attribute Reference
+## Attribute reference
+Review the output parameters that you can access after your resource is created. 
 
-In addition to all arguments above, the following attributes are exported:
-
-* `endpoints` - List of all endpoints of the API Gateway Instance. Each endpoint block in a list has following structure.
-  * `endpoint_id` - The Id of the Endpoint
-  * `name` - The display name for the Endpoint.
-  * `managed` - Managed indicates if endpoint is online or offline.
-  * `shared` -  The Shared status of an endpoint
-  * `base_path` - Base path of an endpoint
-  * `routes` -Invokable routes for an endpoint
-  * `provider_id` - Provider ID of an endpoint.
-  * `managed_url` -Managed URL for an endpoint
-  * `alias_url` - Alias URL of an endpoint.
-  * `open_api_doc` - APi Document of the endpoint
-  * `subscriptions` - List of all subscriptions of an endpoint. Each subscription block in a list has following structure.
-    * `client_id` -ClientID or ID of a subscription
-    * `name` - Name of Subscription
-    * `type` - Type of subscription. [internal],[external]
-    * `secret_provided` - It denotes if client secret is provided to Subscription or not.
+- `endpoints`- (List) A list of API Gateway endpoints that are associated with the service instance.
+	- `alias_url` - (String) The alias URL of an endpoint.
+	- `base_path` - (String) The base path of the endpoint.
+	- `endpoint_id` - (String) The ID of the endpoint.
+	- `managed`- (Boolean) If set to **true**, the endpoint is online. If set to **false**, the endpoint is offline.
+	- `managed_url` - (String) The managed URL of an endpoint.
+	- `name` - (String) The name of the endpoint.
+	- `open_api_doc` - (String) The Open API document of the endpoint.
+	- `provider_id` - (String) The provider ID of the endpoint.
+	- `routes` - (Strings) Invokable routes for an endpoint.
+	- `shared` - (String) The shared status of the endpoint.
+    	- `subscriptions`- (List of endpoint subscriptions) A list of subscriptions that you created for your endpoint.
+		- `client_id` - (String) The client ID of a subscription.
+	   	- `name` - (String) The name of the subscription.
+		- `secret_provided`- (Boolean) If set to **true**, the client secret is provided. If set to **false**, the client secret is not provided.
+		- `type` - (String) The type of subscription. Supported values are `bluemix` and `external`.

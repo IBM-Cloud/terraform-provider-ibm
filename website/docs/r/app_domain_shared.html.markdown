@@ -1,37 +1,38 @@
 ---
-
 subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: app_domain_shared"
 description: |-
-  Manages IBM Shared Domain.
+  Manages IBM shared domain.
 ---
 
-# ibm\_app_domain_shared
+# `ibm_app_domain_shared`
 
-Provides a shared domain resource. This allows shared domains to be created, updated, and deleted.
+Create, update, or delete a shared domain for your Cloud Foundry app. For more information, about an app domain shared, see [Managing your domains](https://cloud.ibm.com/docs/cloud-foundry-public?topic=cloud-foundry-public-custom-domains).
 
-## Example Usage
 
-```hcl
+## Example usage
+The following example creates the `example.com` shared domain. 
+
+```
 resource "ibm_app_domain_shared" "domain" {
-  name              = "foo.com"
+  name              = "example.com"
   router_group_guid = "3hG5jkjk4k34JH5666"
   tags              = ["tag1", "tag2"]
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the input parameters that you can specify for your resource. 
 
-The following arguments are supported:
+- `name` - (Required, String) The name of the domain.
+- `router_group_guid` - (Optional, String) The GUID of the router group.
+- `tags` (Optional, Array of Strings) The tags that you want to add to the shared domain. Tags can help you find the domain more easily later.
 
-* `name` - (Required, string) The name of the domain.
-* `router_group_guid` - (Optional, string) The GUID of the router group.
-* `tags` - (Optional, array of strings) Tags associated with the application shared domain instance.  
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-## Attribute Reference
+## Attribute reference
+Review the output parameters that you can access after your resource is created. 
 
-In addition to all arguments above, the following attributes are exported:
+- `id` - (String) The unique identifier of the shared domain.
 
-* `id` - The unique identifier of the shared domain.
+

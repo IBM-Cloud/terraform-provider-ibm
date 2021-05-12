@@ -1,41 +1,43 @@
 ---
-
 subcategory: "Cloud Foundry"
 layout: "ibm"
 page_title: "IBM: app_domain_private"
 description: |-
-  Manages IBM Application private domain.
+  Manages IBM application private domain.
 ---
 
-# ibm\_app_domain_private
+# `ibm_app_domain_private`
 
-Provides a private domain resource. This allows private domains to be created, updated, and deleted.
+Create, update, or delete a private domain for your Cloud Foundry app. For more information, about an app domain, see [getting started with app private domain,](https://cloud.ibm.com/docs/cloud-foundry-public?topic=cloud-foundry-public-getting-started).
 
-## Example Usage
 
-```hcl
+## Example usage
+The following example creates the `example.com` private domain. 
+
+```
 data "ibm_org" "orgdata" {
-  org = "someexample.com"
+  org = "example.com"
 }
 
 resource "ibm_app_domain_private" "domain" {
-  name     = "foo.com"
+  name     = "example.com"
   org_guid = data.ibm_org.orgdata.id
   tags     = ["tag1", "tag2"]
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the input parameters that you can specify for your resource. 
 
-The following arguments are supported:
+- `name`- (Required, String) The name of the private domain.
+- `org_guid` - (Required, String) The GUID of the Cloud Foundry organization where you want to create the domain. You can retrieve the value from data source `ibm_org` or by running the `ibmcloud iam orgs guid` command in the IBM Cloud CLI.
+- `tags`- (Array of Strings, Optional) The tags that you want to add to your private domain.
 
-* `name` - (Required, string) The name of the domain.
-* `org_guid` - (Required, string) The GUID of the organization that owns the domain. You can retrieve the value from data source `ibm_org` or by running the `ibmcloud iam orgs --guid` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
-* `tags` - (Optional, array of strings) Tags associated with the application private domain instance.  
-  **NOTE**: `Tags` are managed locally and are currently not stored on the IBM Cloud service endpoint.
+## Attribute reference
+Review the output parameters that you can access after your resource is created.
 
-## Attribute Reference
+- `id` - (String) The unique identifier of the private domain.
 
-In addition to all arguments above, the following attributes are exported:
 
-* `id` - The unique identifier of the private domain.
+
+
