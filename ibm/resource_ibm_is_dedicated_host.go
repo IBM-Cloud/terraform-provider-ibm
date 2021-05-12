@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/go-sdk-core/v4/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 

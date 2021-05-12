@@ -185,11 +185,26 @@ resource "ibm_is_instance" "instance2" {
   primary_network_interface {
     subnet = ibm_is_subnet.subnet2.id
   }
-
+  dedicated_host = ibm_is_dedicated_host.is_dedicated_host.id
   vpc       = ibm_is_vpc.vpc2.id
   zone      = var.zone2
   keys      = [ibm_is_ssh_key.sshkey.id]
 }
+
+resource "ibm_is_instance" "instance3" {
+  name    = "instance3"
+  image   = var.image
+  profile = var.profile
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet2.id
+  }
+  dedicated_host_group = ibm_is_dedicated_host_group.dh_group01.id
+  vpc       = ibm_is_vpc.vpc2.id
+  zone      = var.zone2
+  keys      = [ibm_is_ssh_key.sshkey.id]
+}
+
 
 resource "ibm_is_floating_ip" "floatingip2" {
   name   = "fip2"
