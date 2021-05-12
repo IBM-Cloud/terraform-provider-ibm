@@ -40,10 +40,10 @@ Review the output parameters that you can access after your resource is created.
 - `id` - (String) The ID of the certificate that is managed in certificate manager. The ID is composed of `<certificate_manager_instance_ID>:<certificate_ID>`.
 - `issuer` - (String) The issuer of the certificate.
 - `issuance_info` - (String) The issuance information of a certificate.
-  - `additional_info` - (String) The extra information of a certificate.
-	- `status` - (String) The status of a certificate.
-	- `ordered_on` - (String) The certificate ordered date.
-	- `code` - (String) The code of a certificate.
+	-  `additional_info` - (String) The extra information of a certificate.
+	-   `status` - (String) The status of a certificate.
+	-   `ordered_on` - (String) The certificate ordered date.
+	-   `code` - (String) The code of a certificate.
 - `imported` - (String) Indicates whether a certificate has imported or not.
 - `key_algorithm` - (String) The key algorithm of a certificate.
 - `name` - (String) The display name of the certificate.
