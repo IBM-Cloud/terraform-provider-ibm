@@ -3,47 +3,37 @@ subcategory: "Catalog Management"
 layout: "ibm"
 page_title: "IBM : cm_version"
 description: |-
-  Get information about cm_version
+  Get information about Catalog Management version.
 ---
 
-# ibm\_cm_version
+# `ibm_cm_version`
 
-Provides a read-only data source for cm_version. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Create, modify, or delete an `cm_version` data source. For more information, about managing catalog version, refer to [updating your software](https://cloud.ibm.com/docs/account?topic=account-update-private).
 
-## Example Usage
 
-```hcl
+## Example usage
+
+```
 data "cm_version" "cm_version" {
 	version_loc_id = "version_loc_id"
 }
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the input parameters that you can specify for your data source. 
 
-* `version_loc_id` - (Required, string) A dotted value of `catalogID`.`versionID`.
+- `version_loc_id` - (Required, String) A dotted value of `catalogID.versionID`. 
 
-## Attribute Reference
+## Attribute reference
+Review the output parameters that you can access after your data source is created. 
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the cm_version.
-
-* `crn` - Version's CRN.
-
-* `version` - Version of content type.
-
-* `sha` - hash of the content.
-
-* `offering_id` - Offering ID.
-
-* `catalog_id` - Catalog ID.
-
-* `repo_url` - Content's repo URL.
-
-* `source_url` - Content's source URL (e.g git repo).
-
-* `tgz_url` - File used to on-board this version.
-
-
+- `catalog_id` - (String) The catalog ID.
+- `crn` - (String) The CRN version.
+- `id` - (String) The unique identifier of the `cm_version`.
+- `offering_id` - (String) The offering ID.
+- `repo_url` - (String) The URL of the content repository.
+- `sha` - (String) The hash of the content.
+- `source_url` - (String) The source URL of the content repository, for example, Git repository.
+- `tgz_url` - (String) File used to onboard the version.
+- `version` - (String) Version of the content type.

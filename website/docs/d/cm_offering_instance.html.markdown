@@ -3,52 +3,41 @@ subcategory: "Catalog Management"
 layout: "ibm"
 page_title: "IBM : cm_offering_instance"
 description: |-
-  Get information about cm_offering_instance
+  Get information about cm_offering_instance.
 ---
 
-# ibm\_cm_offering_instance
 
-Provides a read-only data source for cm_offering_instance. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+# `ibm_cm_offering_instance`
 
-## Example Usage
+Create, modify, or delete an `ibm_cm_offering_instance` data source.  For more information, about managing catalog, refer to [catalog management settings](https://cloud.ibm.com/docs/account?topic=account-account-getting-started).
 
-```hcl
+
+## Example usage
+
+```
 data "cm_offering_instance" "cm_offering_instance" {
 	instance_identifier = "instance_identifier"
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the input parameters that you can specify for your data source. 
 
-The following arguments are supported:
+- `instance_identifier` - (Required, String) The version instance identifier.
 
-* `instance_identifier` - (Required, string) Version Instance identifier.
+## Attribute reference
+Review the output parameters that you can access after your data source is created. 
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the cm_offering_instance.
-
-* `url` - url reference to this object.
-
-* `crn` - platform CRN for this instance.
-
-* `label` - the label for this instance.
-
-* `catalog_id` - Catalog ID this instance was created from.
-
-* `offering_id` - Offering ID this instance was created from.
-
-* `kind_format` - the format this instance has (helm, operator, ova...).
-
-* `version` - The version this instance was installed from (not version id).
-
-* `cluster_id` - Cluster ID.
-
-* `cluster_region` - Cluster region (e.g., us-south).
-
-* `cluster_namespaces` - List of target namespaces to install into.
-
-* `cluster_all_namespaces` - designate to install into all namespaces.
+- `catalog_id` - (String) The catalog ID the instance that is created from.
+- `cluster_id` - (String) The cluster ID.
+- `cluster_region` - (String) The cluster region for example, `us-south`.
+- `cluster_namespaces` - (String) The list of target namespaces to install.
+- `cluster_all_namespaces` - (String) Designate to install into all namespaces.
+- `crn` - (String) The platform CRN for an instance.
+- `id` - (String) The unique identifier of the `cm_offering_instance`.
+- `kind_format` - (String) The format this instance has such as `helm`, `operator`.
+- `label` - (String) The label for an instance.
+- `offering_id` - (String) The offering ID the instance that is created from.
+- `url` - (String) The URL reference to an object.
+- `version` - (String) The version an instance is installed from (but not from the version ID).
 

@@ -3,16 +3,17 @@ subcategory: "Certificate Manager"
 layout: "ibm"
 page_title: "IBM: certificate_manager_certificate"
 description: |-
-  Reads details of a certificate from a Certificate Manager Instance
+  Reads details of a certificate from a Certificate Manager instance
 ---
 
-# ibm\_certificate_manager_certificate
+# `ibm_certificate_manager_certificate`
 
-Imports a read only copy of an existing Certificate Instance resource and lists all the certificates for the given name.
+Retrieve the details of an existing certificate instance resource and lists all the certificates. For more information, about Certificate Manager, see [Getting started with Certificate Manager](https://cloud.ibm.com/docs/certificate-manager?topic=certificate-manager-getting-started).
 
-## Example Usage
 
-```hcl
+## Example usage
+
+```
 data "ibm_resource_instance" "cm" {
     name     = "testname"
     location = "us-south"
@@ -24,37 +25,36 @@ data "ibm_certificate_manager_certificate" "source_certificate"{
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the input parameters that you can specify for your resource. 
+ 
+- `certificate_manager_instance_id` - (Required, String) The CRN of the certificate manager service instance.
+- `name` - (Required, String) The display name for the certificate.
 
-The following arguments are supported:
+## Attribute reference
+Review the output parameters that you can access after your resource is created. 
 
-* `certificate_manager_instance_id` - (Required,string) The CRN-based service instance ID.
-* `name` - (Required,string) The display name for the certificate.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The Id of the Certificate. It is a combination of <`name`>:<`certificate_manager_instance_id`>
-* `certificate_details` - List of certificates for the given name.
-    * `cert_id` -  The CRN-based Certificate ID.
-    * `name` - The display name for the certificate.
-    * `domains` -  An array of valid domains for the issued certificate. The first domain is the primary domain. Additional domains are secondary domains.
-    * `data` -  The certificate data.
-        * `content` -  The content of certificate data, escaped.
-        * `priv_key` -  The private key data, escaped.
-        * `intermediate` -  The intermediate certificate data, escaped.
-    * `issuer` - The issuer of the certificate.
-    * `begins_on` - The creation date of the certificate in Unix epoch time.
-    * `expires_on` - The expiration date of the certificate in Unix epoch time.
-    * `imported` - Indicates whether a certificate has imported or not.
-    * `status` - The status of certificate.
-    * `has_previous` - Indicates whether a certificate has a previous version.
-    * `key_algorithm` - Key Algorithm of a certificate.
-    * `algorithm` - Algorithm of a certificate.
-    * `serial_number` - The certificate serial number
-    * `issuance_info` - Issuance Info of Certificate.
-        * `status` - The status of certificate.
-        * `ordered_on` - The date the certificate was ordered.
-        * `code` - Code of Certificate.
-        * `additional_info` - The Additional Info of certificate.
+- `certificate_details` - (String) List of certificates for the provided name.
+	- `algorithm` - (String) The algorithm that is used for the certificate. 
+	- `begins_on`- (Timestamp) The timestamp when the certificate was created in UNIX epoch time format. 
+	- `cert_id` - (String) The CRN based certificate ID. 
+    - `domains` - (Array) A list of domains that the certificate is associated with. The first domain is referred to as the primary domain. Any more domains are referred to as secondary domains.
+	- `data` - (String) The certificate data.
+	   - `content` - (String) The content of certificate data, escaped.
+	   - `priv_key` - (String) The private key data, escaped.
+	   - `intermediate` - (String) The intermediate certificate data, escaped.
+	- `expires_on`- (Date) The date when the certificate expires in UNIX epoch time format.	
+	- `has_previous`- (Bool) If set to **true**, the certificate has a previous version. 
+	- `issuer` - (String) The issuer of the certificate.
+	- `issuance_info` - (List of Objects) The issuance information of the certificate. 
+		- `additional_info` - (String) Any more information for the certificate. 
+		- `code` - (String) The code of the certificate.
+		- `ordered_on`- (Date) The date when the certificate was ordered.
+		- `status` - (String) The status of the certificate.
+	- `imported`- (Bool) If set to **true**, indicates whether a certificate is imported.
+	- `key_algorithm` - (String) The key algorithm of the certificate.
+	- `name` - (String) The name of the certificate.
+	- `serial_number` - (String) The serial number of the certificate.
+	- `status` - (String) The status of the certificate.
+- `id` - (String) The ID of the certificate that is managed in Certificate Manager. The ID is composed of `<certificate_manager_instance_ID>:<certificate_ID>`.

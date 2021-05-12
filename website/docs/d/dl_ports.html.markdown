@@ -6,34 +6,32 @@ description: |-
   Manages IBM Cloud Infrastructure Direct Link Ports.
 ---
 
-# ibm\_dl_ports
+# `ibm_dl_ports`
 
-Import the details of an existing IBM Cloud Infrastructure direct link ports as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Import the details of an existing IBM Cloud infrastructure Direct Link  ports. For more information, about Direct Link Offering Port, see [Megaport ordering considerations](https://cloud.ibm.com/docs/dl?topic=dl-megaport).
 
 
-## Example Usage
+## Example usage
 
-```hcl
+```
 data "ibm_dl_ports" "ds_dlports" {
 }
 ```
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Retrieve the Argument reference that you need to specify for the data source. 
 
-* `location_name` - (Optional, string) Direct Link location short name.
+- `location_name` - (Optional, string) Direct Link location short name.
 
-## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
+Review the Attribute reference that you can access after your resource is created. 
 
-* `ports` - List of all Direct Link ports in the IBM Cloud Infrastructure.
-  * `direct_link_count` - Count of existing Direct Link gateways in this account on this port.
-  * `label` - Port Label.
-  * `location_display_name` - Port location long name.
-  * `location_name` - Port location name identifier.
-  * `port_id` - Port identifier.
-  * `provider_name` - Port's provider name.
-  * `supported_link_speeds` - Port's supported speeds in megabits per second.
-  
-
+- `ports` - (String) List of all the Direct Link Ports.
+    - `direct_link_count` - (String) Count of the existing Direct Link gateways in this port account.
+    - `label` - (String) The port label.
+    - `location_display_name` - (String) The port location long name.
+    - `location_name` - (String) The port location name.
+    - `port_id` - (String) The port identifier.
+    - `provider_name` - (String) The port's provider name.
+    - `supported_link_speeds` - (String) The port supported speeds in megabits per second.
