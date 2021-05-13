@@ -1,23 +1,24 @@
 ---
-
 subcategory: "Cloud Databases"
 layout: "ibm"
 page_title: "IBM : Cloud Database instance"
 description: |-
-  Manages IBM Cloud Database Instance.
+  Manages IBM Cloud database instance.
 ---
 
-# ibm\_database
+# `ibm_database`
 
-Creates an IBM Cloud Database (ICD) instance resource. This resource allows database instances to be created, updated, and deleted. The ibmcloud_api_key used by Terraform must have been granted sufficient IAM rights to create and modify IBM Cloud Databases and have access to the Resource Group the ICD instance will be associated with. See https://cloud.ibm.com/docs/services/databases-for-postgresql/reference-access-management.html#identity-and-access-management for more details on setting IAM and Access Group rights to manage ICD instances.  
+Create, update, or delete a IBM Cloud Database (ICD) instance. The `ibmcloud_api_key` that are used by  Terraform should grant IAM rights to create and modify IBM Cloud Databases and have access to the resource group the ICD instance is associated with. For more information, see [documentation](https://cloud.ibm.com/docs/services/databases-for-postgresql/reference-access-management.html#identity-and-access-management) to manage ICD instances.  
 
-If no resource_group_id is specified, the ICD instance is created under the default resource group. The API_KEY must have been assigned permissions for this group.  
+If `resource_group_id` is not specified, the ICD instance is created in the default resource group. The `API_KEY` must be assigned permissions for this group.  
 
-Configuration of an ICD resource requires that the `region` parameter is set for the IBM provider in the `provider.tf` to be the same as the target ICD `location/region`. If not specified it will default to `us-south`. A `terraform apply` will fail if the ICD `location` is set differently. If the Terraform configuration needs to deploy resources into multiple regions, provider alias' can be used. https://www.terraform.io/docs/configuration/providers.html#multiple-provider-instances
+Configuration of an ICD resource requires that the `region` parameter is set for the IBM provider in the `provider.tf` to be the same as the target ICD `location/region`. If not specified it default to `us-south`. A `terraform apply`  fails if the ICD `location` is set differently. If the Terraform configuration needs to deploy resources into multiple regions, provider alias can be used. For more information, see [Terraform provider configuration](https://www.terraform.io/docs/configuration/providers.html#multiple-provider-instances).
 
-## Example Usage
 
-```hcl
+## Example usage
+To find an example for configuring a virtual server instance that connects to a PostgreSQL database, see [here](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-database).
+
+```
 data "ibm_resource_group" "group" {
   name = "<your_group>"
 }
@@ -49,11 +50,10 @@ output "ICD Etcd database connection string" {
 
 ```
 
-## Example Usage using node_ attributes
+### Sample database instance by using `node_` attributes
+An example to configure and deploy database by using `node_` attributes instead of `memory_`.
 
-This will deploy database as above using the `node_` attributes instead of `memory_`
-
-```hcl
+```
 data "ibm_resource_group" "group" {
   name = "<your_group>"
 }
@@ -85,9 +85,12 @@ output "ICD Etcd database connection string" {
 }
 
 ```
-## Example Usage using point_in_time_recovery time
 
-```hcl
+### Sample database instance by using `point_in_time_recovery`
+An example for configuring `point_in_time_recovery` time by using `ibm_database` resource.
+
+
+```
 data "ibm_resource_group" "group" {
   name = "<your_group>"
 }
@@ -102,9 +105,11 @@ resource "ibm_database" "test_acc" {
   point_in_time_recovery_deployment_id = "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/4448261269a14562b839e0a3019ed980:0b8c37b0-0f01-421a-bb32-056c6565b461::"
 }
 ```
-## Example Usage using  auto_scaling
 
-```hcl
+
+### Sample database instance by using auto_scaling
+
+```
 resource "ibm_database" "autoscale" {
     resource_group_id            = data.ibm_resource_group.group.id
     name                         = "redis"
@@ -143,128 +148,114 @@ resource "ibm_database" "autoscale" {
 }
 ```
 
-provider.tf
 
-```hcl
+**provider.tf**
 
+```
 provider "ibm" {
   ibmcloud_api_key = var.ibmcloud_api_key
   region           = "eu-gb"
 }
 ```
 
-See https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-database for an example of a VSI configured to connect to a PostgreSQL DB.  
+
+For more information, about an example that are related to a VSI configuration to connect to a PostgreSQL database, refer to [VSI configured connection](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-database){: external}.
 
 
 ## Timeouts
+The following timeouts are defined for this resource. 
 
-ibm_database provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+* `Create` The creation of an instance is considered failed when no response is received for 60 minutes.
+* `Update` The update of an instance is considered failed when no response is received for 20 minutes.
+* `Delete` The deletion of an instance is considered failed when no response is received for 10 minutes.
 
-* `create` - (Default 60 minutes) Used for Creating Instance.
-* `update` - (Default 60 minutes) Used for Updating Instance.
-* `delete` - (Default 10 minutes) Used for Deleting Instance.
-
-ICD instance create and update typically takes between 10 to 20 minutes. Delete in minutes. Provisioning time can be unpredictable. If the apply fails due to a timeout, import the database resource after it has finished creation.  
-
-
-## Argument Reference
-
-The following arguments are supported:
-
-* `name` - (Required, string) A descriptive name used to identify the database instance. The name must not include spaces. 
-* `plan` - (Required, string) The name of the plan type for an IBM Cloud Database. The only currently supported value is "standard"
-* `location` - (Required, string) Any of the currently supported ICD regions. The IBM provider `location` in the provider definition also needs to be set to the same region as the target ICD region. The default provider region is `us-south`. The following regions are currently supported: `us-south`, `us-east`, `eu-gb`, `eu-de`, `au-syd`, `jp-tok`, `oslo01`.  
-* `resource_group_id` - (Optional, Forces New Resource, string) The ID of the resource group where you want to create the service. You can retrieve the value from data source `ibm_resource_group`. If not provided it creates the service in default resource group.
-* `tags` - (Optional, array of strings) Tags associated with the instance.
-* `service` - (Required, string) The ICD database type to be created. Only the following services are currently accepted: 
-`databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`, `databases-for-mongodb`
-* `version` - (Optional, Forces new resource, string)  The version of the database to be provisioned. If omitted, the database is created with the most recent major and minor version.
-* `adminpassword` - (Optional, string) If not specified the password is uninitialized and the id unusable. In this case additional users must be specified in a user block.   
-* `members_memory_allocation_mb` - (Optional) The memory size for the database, split across all members. If not specified defaults to the database default. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-provisioning.html#list-of-additional-parameters
-* `members_disk_allocation_mb`  - (Optional) The disk size of the database, split across all members. As above.
-* `members_cpu_allocation_count` - (Optional, int) Enables and allocates the number of specified dedicated cores to your deployment.
-* `node_count` - (Optional) The total number of nodes in the cluster. If not specified defaults to the database minimum node count. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-provisioning.html#list-of-additional-parameters
-* `node_memory_allocation_mb` - (Optional) The memory size for the database per node. If not specified defaults to the database default. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-provisioning.html#list-of-additional-parameters
-* `node_disk_allocation_mb`  - (Optional) The disk size of the database per node. As above.
-* `node_cpu_allocation_count` - (Optional, int) Enables and allocates the number of specified dedicated cores to your deployment per node.
-* `plan_validation` - (Optional, bool) Enable or disable validating the database parameters for elasticsearch and postgres (more coming soon) during the plan phase. If not specified defaults to true.
-* `backup_id` - (Optional, string) A CRN of a backup resource to restore from. The backup must have been created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format crn:v1:<...>:backup:<uuid>. If omitted, the database is provisioned empty.
-* `remote_leader_id` - (Optional, string) A CRN of the leader database to make the replica(read-only) deployment. The leader database must have been created by a database deployment with the same service ID. A read-only replica is set up to replicate all of your data from the leader deployment to the replica deployment using asynchronous replication. See the documentation related to Read-only Replicas here. https://cloud.ibm.com/docs/services/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas
-* `key_protect_key` - (Optional, Force new resource, string) The CRN of a Key Protect key, which is then used for disk encryption. A key protect CRN is in the format crn:v1:<...>:key:<id>. No update support available. `key_protect_key` can be added only at the time of creation. See the documentation related to Disk encryption here.https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect#using-the-key-protect-key
-* `backup_encryption_key_crn` - (Optional, Force new resource, string) The CRN of a Key Protect key, which is then used to encrypt disk that holds deployment backups. A key protect CRN is in the format crn:v1:<...>:key:<id>. No update support available. `backup_encryption_key_crn` can be added only at the time of creation.
-* `key_protect_instance` - (Optional, Force new resource, string) The CRN of a Key Protect instance, which is then used for disk encryption. A key protect CRN is in the format crn:v1:<...>::.No update support available. `key_protect_instance` can be added only at the time of creation.
-* `point_in_time_recovery_deployment_id` - (Optional, string) The source deployment's ID.
-* `point_in_time_recovery_time` - (Optional, string) The timestamp in UTC you want to restore to. PITR time stamp can be retrieved using [`ibmcloud cdb postgresql earliest-pitr-timestamp <deployment name or CRN>`] For more info on how to get PITR time refer [point-in-time-recovery-docs](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-pitr)
-* `service_endpoints` - (Optional, string) Selects the types Service Endpoints supported on your deployment. Options are public, private, or public-and-private. The default is `public`.
-
-* `users` - (Optional) - Multiple blocks allowed       
-  * `name` - Name of the userid to add to the database instance, Minimum of 5 characters up to 32.  
-  * `password` - Password for the userid, minimum of 10 characters up to 32. 
-            
-* `whitelist` - (Optional) - Multiple blocks allowed             
-  * `address` - IP address or range of db client addresses to be whitelisted in CIDR format, `172.168.1.2/32`
-  * `description` -  Unique description for white list range
-* `guid` - Unique identifier of resource instance.
-
-* `auto_scaling` - (Optional, List) Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
-  * `cpu` - (Optional, List) CPU AutoScaling. Single block of cpu is allowed at once.
-    * `rate_increase_percent` - (Optional,int) Auto Scaling Rate: Increase Percent
-    * `rate_limit_count_per_member` - (Optional,int) Auto Scaling Rate: Limit count per number
-    * `rate_period_seconds` - (Optional,int) Auto Scaling Rate: Period Seconds
-    * `rate_units` - (Optional,string) Auto Scaling Rate: Units
-  * `disk` - (Optional, List) Disk Auto Scaling. Single block of disk is allowed at once.
-    * `capacity_enabled` - (Optional,bool) Auto Scaling Scalar: Enables or disable the capacity scalar
-    * `free_space_less_than_percent` - (Optional,int) Auto Scaling Scalar: Capacity Free Space Less Than Percent
-    * `io_above_percent` - (Optional,int) Auto Scaling Scalar: IO Utilization Above Percent
-    * `io_enabled` - (Optional,bool) Auto Scaling Scalar: IO Utilization Enabled
-    * `io_over_period` - (Optional,string) Auto Scaling Scalar: IO Utilization Over Period
-    * `rate_increase_percent` -  (Optional,int) Auto Scaling Rate: Increase Percent
-    * `rate_limit_mb_per_member` - (Optional,int) Auto Scaling Rate: Limit mb per member
-    * `rate_period_seconds` - (Optional,int) Auto Scaling Rate: Period Seconds
-    * `rate_units` -  (Optional,string) Auto Scaling Rate: Units
-  * `memory` -(Optional, List) Memory Auto Scaling. Single block of memory is allowed at once.
-    * `io_above_percent` - (Optional,int) Auto Scaling Scalar: IO Utilization Above Percent
-    * `io_enabled` - (Optional,bool) Auto Scaling Scalar: IO Utilization Enabled
-    * `io_over_period` - (Optional,string) Auto Scaling Scalar: IO Utilization Over Period
-    * `rate_increase_percent` -(Optional,int) Auto Scaling Rate: Increase Percent
-    * `rate_limit_mb_per_member` - (Optional,int) Auto Scaling Rate: Limit mb per member
-    * `rate_period_seconds` - (Optional,int) Auto Scaling Rate: Period Seconds
-    * `rate_units` - (Optional,string) Auto Scaling Rate: Units
+ICD create instance typically takes between 30 minutes to 45 minutes. Delete and update takes a minute. Provisioning time are unpredictable, if the apply fails due to a timeout, import the database resource once the create is completed.
 
 
-## Attribute Reference
+## Argument reference
+Review the input parameters that you can specify for your resource. 
 
-The following attributes are exported:
+- `adminpassword` - (Optional, String)  The password for the database administrator. If not specified, an empty string is provided for the password and the user ID cannot be used. In this case, more users must be specified in a `user` block.
+- `auto_scaling` (List , Optional) Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
+  - `cpu` (List , Optional) Single block of CPU is allowed at once by CPU autoscaling.
+	  - `rate_increase_percent` - (Optional, Integer) Auto scaling rate in increase percent.
+	  - `rate_limit_count_per_member` - (Optional, Integer) Auto scaling rate limit in count per number.
+	  - `rate_period_seconds` - (Optional, Integer) Period seconds of the auto scaling rate.
+	  - `rate_units` - (Optional, String) Auto scaling rate in units.
+  - `disk` (List , Optional) Single block of disk is allowed at once in disk auto scaling.
+    - `capacity_enabled`-Bool-Optional-Auto scaling scalar enables or disables the scalar capacity.
+	  - `free_space_less_than_percent` - (Optional, Integer) Auto scaling scalar capacity free space less than percent.
+	  - `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
+    - `io_enabled`-Bool-Optional-Auto scaling scalar I/O utilization enabled.
+	  - `rate_increase_percent` - (Optional, Integer) Auto scaling rate increase percent.
+	  - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
+	  - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
+	  - `rate_units` - (Optional, String) Auto scaling rate in units.
+  - `memory` (List , Optional) Memory Auto Scaling in single block of memory is allowed at once.
+	  - `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
+    - `io_enabled`-Bool-Optional-Auto scaling scalar I/O utilization enabled.
+	  - `io_over_period` - (Optional, String) Auto scaling scalar I/O utilization over period.
+	  - `rate_increase_percent` - (Optional, Integer) Auto scaling rate in increase percent.
+	  - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
+	  - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
+	  - `rate_units` - (Optional, String) Auto scaling rate in units.
+- `backup_id` - (Optional, String) The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format `crn:v1:<…>:backup:`. If omitted, the database is provisioned empty.
+- `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
+- `guid` - (Optional, String) The unique identifier of the database instance.
+- `key_protect_key` - (Optional, Forces new resource, String) The CRN of a Key Protect root key that you want to use for disk encryption. A key protect CRN is in the format `crn:v1:<…>:key:`. You can specify the root key during the database creation only. After the database is created, you cannot update the root key. For more information, refer [Disk encryption](/docs/cloud-databases?topic=cloud-databases-key-protect#using-the-key-protect-key) documentation.
+- `key_protect_instance` - (Optional, Forces new resource, String) The CRN of a key protect instance that you want to use for disk encryption. A key protect CRN is in the format `crn:v1:<…>::`.
+- `location` - (Required, String) The location where you want to deploy your instance. The location must match the `region` parameter that you specify in the `provider` block of your  Terraform configuration file. The default value is `us-south`. Currently, supported regions are `us-south`, `us-east`, `eu-gb`, `eu-de`, `au-syd`, `jp-tok`, `oslo01`.
+- `members_memory_allocation_mb` - (Optional, Integer) The amount of memory in megabytes for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
+- `members_disk_allocation_mb` - (Optional, Integer) The amount of disk space for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
+- `members_cpu_allocation_count` - (Optional, Integer) Enables and allocates the number of specified dedicated cores to your deployment.
+- `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
+- `plan` - (Required, String) The name of the service plan that you choose for your instance. Supported values are `standard`.
+- `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
+- `point_in_time_recovery_time` - (Optional, String) The timestamp in UTC format that you want to restore to. To retrieve the timestamp, run the `ibmcloud cdb postgresql earliest-pitr-timestamp <deployment name or CRN>` command. For more information, see [Point-in-time Recovery](/docs/databases-for-postgresql?topic=databases-for-postgresql-pitr).
+- `remote_leader_id` - (Optional, String) A CRN of the leader database to make the replica(read-only) deployment. The leader database is created by a database deployment with the same service ID. A read-only replica is set up to replicate all of your data from the leader deployment to the replica deployment by using asynchronous replication. For more information, see [Configuring Read-only Replicas](/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
+- `resource_group_id` - (Optional, Forces new resource, String)  The ID of the resource group where you want to create the instance. To retrieve this value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
+- `service` - (Required, String) The type of {{site.data.keyword.databases-for}} that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`, and `databases-for-mongodb`.
+- `service_endpoints` - (Optional, String) Specify whether you want to enable the public, private, or both service endpoints. Supported values are `public`, `private`, or `public-and-private`. The default is `public`.
+- `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance.
+- `version` - (Optional, Forces new resource, String) The version of the database to be provisioned. If omitted, the database is created with the most recent major and minor version.
+- `users` - (List of Objects) Optional-A list of users that you want to create on the database. Multiple blocks are allowed.
+	- `name` - (Optional, String) The user ID to add to the database instance. The user ID must be in the range 5 - 32 characters.
+	- `password` - (Optional, String) The password for the user ID. The password must be in the range 10 - 32 characters.
+- `whitelist` - (List of Objects) Optional-A list of allowed IP addresses for the database. Multiple blocks are allowed.
+	- `address` - (Optional, String) The IP address or range of database client addresses to be whitelisted in CIDR format. Example, `172.168.1.2/32`.
+	- `description` - (Optional, String) A description for the allowed IP addresses range.
 
-* `id` - The unique identifier of the new database instance (CRN).
-* `status` - Status of resource instance.
-* `adminuser` - userid of the default administration user for the database, usually `admin` or `root`.
-* `version` - Database version. 
-* `connectionstrings` - List of connection strings by userid for the database. See the IBM Cloud documentation for more details of how to use connection strings in ICD for database access: https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-getting-connection-strings.html#getting-your-connection-strings. The results are returned in pairs of the userid and string:
-  `connectionstrings.1.name = admin`
-  `connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full`
-Individual string parameters can be retrieved using TF vars and outputs  `connectionstrings.x.hosts.x.port` and `connectionstrings.x.hosts.x.host` 
 
+## Attribute reference
+Review the output parameters that you can access after your resource is created. 
 
-## Import
+- `adminuser` - (String) The user ID of the database administrator. Example, `admin` or `root`.
+- `connectionstrings` - (Array) A list of connection strings for the database for each user ID. For more information, about how to use connection strings, see the [documentation](/docs/databases-for-postgresql?topic=databases-for-postgresql-connection-strings). The results are returned in pairs of the userid and string: `connectionstrings.1.name = admin connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full` Individual string parameters can be retrieved by using  Terraform variables and outputs `connectionstrings.x.hosts.x.port` and `connectionstrings.x.hosts.x.host`.
+- `id` - (String) The CRN of the database instance.
+- `status` - (String) The status of the instance.
+- `version` - (String) The database version.
 
-The `ibm_database` resource can be imported using the `ID`. The ID is formed from the `CRN` (Cloud Resource Name) from the **Overview** page of the Cloud Database instance. It can be found under the heading **Deployment Details**
-* CRN is a 120 digit character string of the form: `crn:v1:bluemix:public:databases-for-postgresql:us-south:a/4ea1882a2d3401ed1e459979941966ea:79226bd4-4076-4873-b5ce-b1dba48ff8c4::`
+### Import
+The database instance can be imported by using the ID, that is formed from the CRN. To import the resource, you must specify the `region` parameter in the `provider` block of your  Terraform configuration file. If the region is not specified, `us-south` is used by default. An  Terraform refresh or apply fails, if the database instance is not in the same region as configured in the provider or its alias.
 
-The `region` parameter must be set for the IBM provider in `provider.tf` to be the same as the ICD service `location(region)`. If not specified it will default to `us-south`. A `terraform refresh/apply` of the data_source will fail if the ICD instance is not in the same region as specified for the provider or its alias.  
+CRN is a 120 digit character string of the form -  `crn:v1:bluemix:public:databases-for-postgresql:us-south:a/4ea1882a2d3401ed1e459979941966ea:79226bd4-4076-4873-b5ce-b1dba48ff8c4::`
+
+**Syntax**
 
 ```
-$ terraform import ibm_database.my_db <crn>
-
-$ terraform import ibm_database.my_db crn:v1:bluemix:public:databases-for-postgresql:us-south:a/4ea1882a2d3401ed1e459979941966ea:79226bd4-4076-4873-b5ce-b1dba48ff8c4::
+terraform import ibm_database.my_db <crn>
 ```
 
-Import requires a minimal Terrform config file to allow importing. 
+**Example**
+```
+terraform import ibm_database.my_db crn:v1:bluemix:public:databases-for-postgresql:us-south:a/4ea1882a2d3401ed1e459979941966ea:79226bd4-4076-4873-b5ce-b1dba48ff8c4::
+```
 
-```hcl
+Import requires a minimal  Terraform config file to allow importing.
+
+```
 resource "ibm_database" "<your_database>" {
   name              = "<your_database_name>"
 ```
 
-Run `terraform state show ibm_database.<your_database>` after import to retrieve the additional values to be included in the resource config file. Note that ICD only exports the admin userid. It does not export any additional userids and passwords configured on the instance. These values must be retrieved from an alternative source. If new passwords need to be configured or the connection string retrieved to use the service, a new `users` block must be defined to create new users. This limitation is due to a lack of ICD functionality.  
-
+Run `terraform state show ibm_database.<your_database>` after import to retrieve the more values to be included in the resource config file. Observe the ICD exports the admin userid. It does not export any more user IDs and passwords that are configured on the instance. These values must be retrieved from an alternative source. If new passwords need to be configured or the connection string that is retrieved to use the service, a new users block must be defined to create new users. This limitation is due to a lack of ICD functionality.

@@ -6,13 +6,19 @@ description: |-
   Get information about an IBM Cloud account.
 ---
 
-# ibm\_account
+# `ibm_account`
+
+Retrieve information about an existing IBM Cloud account. For more information, about IBM account, see [How do I create an IBM Cloud account?](https://cloud.ibm.com/docs/account?topic=account-accountfaqs).
+
+**Important**
 
 Import the details of an existing IBM Cloud account as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
-## Example Usage
 
-```hcl
+## Example usage
+The following example retrieves information about an IBM Cloud account that belongs to the `myorg` Cloud Foundry organization. 
+
+```
 data "ibm_org" "orgData" {
   org = "example.com"
 }
@@ -22,19 +28,19 @@ data "ibm_account" "accountData" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the input parameters that you can specify for your data source.
 
-The following arguments are supported:
+- `org_guid` - (Required, String) The GUID of the IBM Cloud organization. You can retrieve the value from the `ibm_org` data source or by running the `ibmcloud iam orgs --guid` command.
 
-* `org_guid` - (Required, string) The GUID of the IBM Cloud organization. You can retrieve the value from the `ibm_org` data source or by running the `ibmcloud iam orgs --guid` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
+## Attribute reference
+Review the output parameters that you can access after you retrieved your data source. 
 
-## Attribute Reference
+- `account_users` - (List of Objects) The list of account user's in the account. The nested `account_users` has the following structure:
+	- `email` - (String) The email address of the account user.
+	- `id` - (String) The user ID of the account user.
+	- `role` -  (String) The Cloud Foundry account role that is assigned to the account user.
+	- `state` - (String) The state of the account user.
+- `id` - (String) The unique identifier of the IBM Cloud account.
 
-In addition to all arguments above, the following attributes are exported:
 
-* `id` - The unique identifier of the account.  
-* `account_users` - The list of account user's in the account. Nested `account_users` blocks have the following structure:
-  * `id` -  The account user Id.
-  * `email` - The account user email.
-  * `state` -  The account user state.
-  * `role` -  The account user role.

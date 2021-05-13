@@ -14,9 +14,8 @@ import (
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
-	"github.com/IBM-Cloud/bluemix-go/models"
-	"github.com/IBM-Cloud/bluemix-go/utils"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 )
 
 func resourceIBMResourceKey() *schema.Resource {
@@ -241,12 +240,12 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error creating resource key when get role: %s", err)
 	}
 
-	keyParameters.SetProperty("role_crn", serviceRole.Crn)
+	keyParameters.SetProperty("role_crn", serviceRole.RoleID)
 
 	resourceKeyCreate := rc.CreateResourceKeyOptions{
 		Name:       &name,
 		Source:     sourceCRN,
-		Role:       &serviceRole.Crn,
+		Role:       serviceRole.RoleID,
 		Parameters: &keyParameters,
 	}
 	resourceKey, resp, err := rsContClient.CreateResourceKey(&resourceKeyCreate)
@@ -287,8 +286,9 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 		roleCrn := *resourceKey.Credentials.IamRoleCRN
 		roleName := roleCrn[strings.LastIndex(roleCrn, ":")+1:]
 
+		// TODO.S: update client
 		if strings.Contains(roleCrn, ":customRole:") {
-			iampapv2Client, err := meta.(ClientSession).IAMPAPAPIV2()
+			iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 			if err == nil {
 				var resourceCRN string
 				if resourceKey.CRN != nil {
@@ -297,10 +297,15 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 						resourceCRN = serviceName[4]
 					}
 				}
-				roles, err := iampapv2Client.IAMRoles().ListCustomRoles(*resourceKey.AccountID, resourceCRN)
+				listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+					AccountID:   resourceKey.AccountID,
+					ServiceName: &resourceCRN,
+				}
+				roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
+				roles := roleList.CustomRoles
 				if err == nil && len(roles) > 0 {
 					for _, role := range roles {
-						if role.Name == roleName {
+						if *role.Name == roleName {
 							customRoleName := role.DisplayName
 							d.Set("role", customRoleName)
 						}
@@ -433,59 +438,63 @@ func getResourceInstanceAndCRN(d *schema.ResourceData, meta interface{}) (*rc.Re
 
 }
 
-func getRoleFromName(roleName, serviceName string, meta interface{}) (iampapv2.Role, error) {
+func getRoleFromName(roleName, serviceName string, meta interface{}) (iampolicymanagementv1.PolicyRole, error) {
 
-	iamClient, err := meta.(ClientSession).IAMPAPAPIV2()
+	role := iampolicymanagementv1.PolicyRole{}
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
-		return iampapv2.Role{}, err
+		return role, err
 	}
-
-	iamRepo := iamClient.IAMRoles()
-
-	var roles []iampapv2.Role
 
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
-		return iampapv2.Role{}, err
-	}
-	query := iampapv2.RoleQuery{
-		AccountID:   userDetails.userAccount,
-		ServiceName: serviceName,
-	}
-	if serviceName == "" {
-		roles, err = iamRepo.ListSystemDefinedRoles()
-	} else {
-		roles, err = iamRepo.ListAll(query)
-	}
-	if err != nil {
-		return iampapv2.Role{}, err
+		return role, err
 	}
 
-	role, err := utils.FindRoleByNameV2(roles, roleName)
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID:   &userDetails.userAccount,
+		ServiceName: &serviceName,
+	}
+
+	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
 	if err != nil {
-		return iampapv2.Role{}, err
+		return role, err
+	}
+
+	roles := mapRoleListToPolicyRoles(*roleList)
+
+	role, err = findRoleByName(roles, roleName)
+	if err != nil {
+		return iampolicymanagementv1.PolicyRole{}, err
 	}
 	return role, nil
 
 }
 
-func findRoleByName(supported []models.PolicyRole, name string) (models.PolicyRole, error) {
+func findRoleByName(supported []iampolicymanagementv1.PolicyRole, name string) (iampolicymanagementv1.PolicyRole, error) {
 	for _, role := range supported {
-		if role.DisplayName == name {
-			return role, nil
+		if role.DisplayName != nil {
+			if *role.DisplayName == name {
+				role.DisplayName = nil
+				return role, nil
+			}
 		}
 	}
+	supportedRoles := getSupportedRolesStr(supported)
+	return iampolicymanagementv1.PolicyRole{}, bmxerror.New("RoleDoesnotExist",
+		fmt.Sprintf("%s was not found. Valid roles are %s", name, supportedRoles))
 
-	return models.PolicyRole{}, fmt.Errorf("Role [%s] was not found. Valid roles are %s", name, getSupportedRolesString(supported))
 }
 
-func getSupportedRolesString(supported []models.PolicyRole) string {
+func getSupportedRolesStr(supported []iampolicymanagementv1.PolicyRole) string {
 	rolesStr := ""
 	for index, role := range supported {
 		if index != 0 {
 			rolesStr += ", "
 		}
-		rolesStr += role.DisplayName
+		if role.DisplayName != nil {
+			rolesStr += *role.DisplayName
+		}
 	}
 	return rolesStr
 }

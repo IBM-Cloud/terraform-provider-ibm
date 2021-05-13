@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
-	"github.com/IBM-Cloud/bluemix-go/utils"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -540,7 +540,7 @@ func resourceIBMIAMGetUsers(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	Client := userManagement.UserInvite()
-	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
@@ -572,11 +572,12 @@ func resourceIBMIAMGetUsers(d *schema.ResourceData, meta interface{}) error {
 		            > acees group level policies
 		********************************************/
 		//Get User level IAM policies
-		policies, err := iampapClient.V1Policy().List(iampapv1.SearchParams{
-			AccountID: accountID,
-			IAMID:     user.IamID,
-			Type:      iampapv1.AccessPolicyType,
+		policyList, _, err := iamPolicyManagementClient.ListPolicies(&iampolicymanagementv1.ListPoliciesOptions{
+			AccountID: core.StringPtr(accountID),
+			IamID:     core.StringPtr(user.IamID),
+			Type:      core.StringPtr("access"),
 		})
+		policies := policyList.Policies
 
 		if err != nil {
 			return fmt.Errorf("Error retrieving user policies: %s", err)
@@ -586,7 +587,7 @@ func resourceIBMIAMGetUsers(d *schema.ResourceData, meta interface{}) error {
 			//populate ploicy Roles
 			roles := make([]string, len(policy.Roles))
 			for i, role := range policy.Roles {
-				roles[i] = role.Name
+				roles[i] = *role.DisplayName
 			}
 			//populate policy resources
 			resources := flattenPolicyResource(policy.Resources)
@@ -607,10 +608,11 @@ func resourceIBMIAMGetUsers(d *schema.ResourceData, meta interface{}) error {
 		accGroupList := make([]map[string]interface{}, 0, len(retreivedGroups))
 		//Get the policies for each access group
 		for _, grpData := range retreivedGroups {
-			accgrpPolicy, err := iampapClient.V1Policy().List(iampapv1.SearchParams{
-				AccountID:     accountID,
-				AccessGroupID: grpData.ID,
+			policyList, _, err := iamPolicyManagementClient.ListPolicies(&iampolicymanagementv1.ListPoliciesOptions{
+				AccountID:     core.StringPtr(accountID),
+				AccessGroupID: core.StringPtr(user.IamID),
 			})
+			accgrpPolicy := policyList.Policies
 			if err != nil {
 				return fmt.Errorf("Error retrieving access group policy: %s", err)
 			}
@@ -621,7 +623,7 @@ func resourceIBMIAMGetUsers(d *schema.ResourceData, meta interface{}) error {
 				//populate ploicy Roles
 				roles := make([]string, len(policy.Roles))
 				for i, role := range policy.Roles {
-					roles[i] = role.Name
+					roles[i] = *role.DisplayName
 				}
 				//populate policy resources
 				resources := flattenPolicyResource(policy.Resources)
@@ -873,107 +875,176 @@ func getPolicies(d *schema.ResourceData, meta interface{}, policies []interface{
 	for _, policy := range policies {
 		p := policy.(map[string]interface{})
 		var serviceName string
-		policyResource := iampapv1.Resource{}
+		resourceAttributes := []iampolicymanagementv1.ResourceAttribute{}
+		policyResource := iampolicymanagementv1.PolicyResource{}
+
 		if res, ok := p["resources"]; ok {
 			resources := res.([]interface{})
 			for _, resource := range resources {
 				r, _ := resource.(map[string]interface{})
 				serviceName = r["service"].(string)
-				if r, ok := r["service"]; ok {
+				if r, ok := r["service"]; ok && r != nil {
+					serviceName = r.(string)
 					if r.(string) != "" {
-						policyResource.SetServiceName(r.(string))
+						resourceAttr := iampolicymanagementv1.ResourceAttribute{
+							Name:     core.StringPtr("serviceName"),
+							Value:    core.StringPtr(r.(string)),
+							Operator: core.StringPtr("stringEquals"),
+						}
+						resourceAttributes = append(resourceAttributes, resourceAttr)
 					}
 				}
+
 				if r, ok := r["resource_instance_id"]; ok {
 					if r.(string) != "" {
-						policyResource.SetServiceInstance(r.(string))
+						resourceAttr := iampolicymanagementv1.ResourceAttribute{
+							Name:     core.StringPtr("serviceInstance"),
+							Value:    core.StringPtr(r.(string)),
+							Operator: core.StringPtr("stringEquals"),
+						}
+						resourceAttributes = append(resourceAttributes, resourceAttr)
 					}
-
 				}
+
 				if r, ok := r["region"]; ok {
 					if r.(string) != "" {
-						policyResource.SetRegion(r.(string))
+						resourceAttr := iampolicymanagementv1.ResourceAttribute{
+							Name:     core.StringPtr("region"),
+							Value:    core.StringPtr(r.(string)),
+							Operator: core.StringPtr("stringEquals"),
+						}
+						resourceAttributes = append(resourceAttributes, resourceAttr)
 					}
-
 				}
+
 				if r, ok := r["resource_type"]; ok {
 					if r.(string) != "" {
-						policyResource.SetResourceType(r.(string))
+						resourceAttr := iampolicymanagementv1.ResourceAttribute{
+							Name:     core.StringPtr("resourceType"),
+							Value:    core.StringPtr(r.(string)),
+							Operator: core.StringPtr("stringEquals"),
+						}
+						resourceAttributes = append(resourceAttributes, resourceAttr)
 					}
-
 				}
+
 				if r, ok := r["resource"]; ok {
 					if r.(string) != "" {
-						policyResource.SetResource(r.(string))
+						resourceAttr := iampolicymanagementv1.ResourceAttribute{
+							Name:     core.StringPtr("resource"),
+							Value:    core.StringPtr(r.(string)),
+							Operator: core.StringPtr("stringEquals"),
+						}
+						resourceAttributes = append(resourceAttributes, resourceAttr)
 					}
-
 				}
+
 				if r, ok := r["resource_group_id"]; ok {
 					if r.(string) != "" {
-						policyResource.SetResourceGroupID(r.(string))
+						resourceAttr := iampolicymanagementv1.ResourceAttribute{
+							Name:     core.StringPtr("resourceGroupId"),
+							Value:    core.StringPtr(r.(string)),
+							Operator: core.StringPtr("stringEquals"),
+						}
+						resourceAttributes = append(resourceAttributes, resourceAttr)
 					}
-
 				}
+
 				if r, ok := r["attributes"]; ok {
 					for k, v := range r.(map[string]interface{}) {
-						policyResource.SetAttribute(k, v.(string))
+						resourceAttributes = setResourceAttribute(core.StringPtr(k), v.(*string), resourceAttributes)
 					}
-
 				}
 
 			}
 		}
 
 		if accountManagement, ok := p["account_management"]; ok && accountManagement.(bool) {
-			policyResource.SetServiceType("platform_service")
+			serviceTypeResourceAttribute := iampolicymanagementv1.ResourceAttribute{
+				Name:     core.StringPtr("serviceType"),
+				Value:    core.StringPtr("platform_service"),
+				Operator: core.StringPtr("stringEquals"),
+			}
+			resourceAttributes = append(resourceAttributes, serviceTypeResourceAttribute)
 		}
 
-		if len(policyResource.Attributes) == 0 {
-			policyResource.SetServiceType("service")
+		if len(resourceAttributes) == 0 {
+			serviceTypeResourceAttribute := iampolicymanagementv1.ResourceAttribute{
+				Name:     core.StringPtr("serviceType"),
+				Value:    core.StringPtr("service"),
+				Operator: core.StringPtr("stringEquals"),
+			}
+			resourceAttributes = append(resourceAttributes, serviceTypeResourceAttribute)
 		}
 
 		accountID, err := getAccountID(d, meta)
 		if err != nil {
 			return policyList, err
 		}
-		policyResource.SetAccountID(accountID)
 
-		iamClient, err := meta.(ClientSession).IAMPAPAPIV2()
+		accountIDResourceAttribute := iampolicymanagementv1.ResourceAttribute{
+			Name:     core.StringPtr("accountId"),
+			Value:    core.StringPtr(accountID),
+			Operator: core.StringPtr("stringEquals"),
+		}
+
+		resourceAttributes = append(resourceAttributes, accountIDResourceAttribute)
+
+		policyResource.Attributes = resourceAttributes
+
+		iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 		if err != nil {
 			return policyList, err
 		}
 
-		iamRepo := iamClient.IAMRoles()
-
-		var roles []iampapv2.Role
 		userDetails, err := meta.(ClientSession).BluemixUserDetails()
 		if err != nil {
 			return policyList, err
 		}
 
-		query := iampapv2.RoleQuery{
-			AccountID:   userDetails.userAccount,
-			ServiceName: serviceName,
+		listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+			AccountID:   &userDetails.userAccount,
+			ServiceName: &serviceName,
 		}
-		if serviceName == "" {
-			roles, err = iamRepo.ListSystemDefinedRoles()
-		} else {
-			roles, err = iamRepo.ListAll(query)
-		}
+
+		roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
+		roles := mapRoleListToPolicyRoles(*roleList)
+
 		if err != nil {
 			return policyList, err
 		}
-		var policyRoles = make([]iampapv2.Role, 0)
+		var policyRoles = make([]iampolicymanagementv1.PolicyRole, 0)
 		if userRoles, ok := p["roles"]; ok {
-			policyRoles, err = utils.GetRolesFromRoleNamesV2(expandStringList(userRoles.([]interface{})), roles)
+			policyRoles, err = getRolesFromRoleNames(expandStringList(userRoles.([]interface{})), roles)
 			if err != nil {
 				return policyList, err
 			}
 		}
 
-		policyList = append(policyList, v2.UserPolicy{Roles: iampapv1.ConvertV2RoleModels(policyRoles), Resources: []iampapv1.Resource{policyResource}, Type: ACCESS})
+		policyList = append(policyList, v2.UserPolicy{Roles: convertIPMRolesToV1(policyRoles), Resources: convertIPMResourcesToV1(policyResource), Type: ACCESS})
 	}
 	return policyList, nil
+}
+
+func convertIPMRolesToV1(roles []iampolicymanagementv1.PolicyRole) []iampapv1.Role {
+	results := make([]iampapv1.Role, len(roles))
+	for i, r := range roles {
+		results[i] = iampapv1.Role{
+			RoleID: *r.RoleID,
+		}
+	}
+	return results
+}
+
+func convertIPMResourcesToV1(resource iampolicymanagementv1.PolicyResource) []iampapv1.Resource {
+	attributes := make([]iampapv1.Attribute, len(resource.Attributes))
+	for i, a := range resource.Attributes {
+		attributes[i] = iampapv1.Attribute{
+			Name:  *a.Name,
+			Value: *a.Value,
+		}
+	}
+	return []iampapv1.Resource{iampapv1.Resource{Attributes: attributes}}
 }
 
 // getCloudFoundryRoles ...

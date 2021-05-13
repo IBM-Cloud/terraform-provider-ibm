@@ -29,12 +29,16 @@ func resourceIBMIAMAuthorizationPolicyDetach() *schema.Resource {
 }
 
 func resourceIBMIAMAuthorizationPolicyDetachCreate(d *schema.ResourceData, meta interface{}) error {
-	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	iampapClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
 	policyID := d.Get("authorization_policy_id").(string)
-	err = iampapClient.V1Policy().Delete(policyID)
+
+	deletePolicyOptions := iampapClient.NewDeletePolicyOptions(
+		policyID,
+	)
+	_, err = iampapClient.DeletePolicy(deletePolicyOptions)
 	if err != nil {
 		return fmt.Errorf("Error detaching authorization policy: %s", err)
 	}

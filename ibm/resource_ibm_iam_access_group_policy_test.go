@@ -5,18 +5,16 @@ package ibm
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 )
 
 func TestAccIBMIAMAccessGroupPolicy_Basic(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -46,7 +44,7 @@ func TestAccIBMIAMAccessGroupPolicy_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Service(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -76,7 +74,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Service(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_ResourceInstance(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -98,7 +96,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_ResourceInstance(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Resource_Group(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -120,7 +118,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Group(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Resource_Type(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -141,7 +139,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Type(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_import(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_access_group_policy.policy"
 
@@ -168,7 +166,7 @@ func TestAccIBMIAMAccessGroupPolicy_import(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_account_management(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_access_group_policy.policy"
 
@@ -191,7 +189,7 @@ func TestAccIBMIAMAccessGroupPolicy_account_management(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Attributese(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -213,7 +211,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Attributese(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_WithCustomRole(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	crName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	displayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
@@ -236,7 +234,7 @@ func TestAccIBMIAMAccessGroupPolicy_WithCustomRole(t *testing.T) {
 }
 
 func testAccCheckIBMIAMAccessGroupPolicyDestroy(s *terraform.State) error {
-	iampapClient, err := testAccProvider.Meta().(ClientSession).IAMPAPAPI()
+	iampapClient, err := testAccProvider.Meta().(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
@@ -252,9 +250,13 @@ func testAccCheckIBMIAMAccessGroupPolicyDestroy(s *terraform.State) error {
 
 		accgrpPolicyID := parts[1]
 
-		err = iampapClient.V1Policy().Delete(accgrpPolicyID)
+		deletePolicyOptions := &iampolicymanagementv1.DeletePolicyOptions{
+			PolicyID: &accgrpPolicyID,
+		}
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		response, err := iampapClient.DeletePolicy(deletePolicyOptions)
+
+		if err != nil && response.StatusCode != 404 {
 			return fmt.Errorf("Error waiting for access group policy (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}
@@ -262,7 +264,7 @@ func testAccCheckIBMIAMAccessGroupPolicyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMAccessGroupPolicyExists(n string, obj iampapv1.Policy) resource.TestCheckFunc {
+func testAccCheckIBMIAMAccessGroupPolicyExists(n string, obj iampolicymanagementv1.Policy) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -270,7 +272,7 @@ func testAccCheckIBMIAMAccessGroupPolicyExists(n string, obj iampapv1.Policy) re
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		iampapClient, err := testAccProvider.Meta().(ClientSession).IAMPAPAPI()
+		iampapClient, err := testAccProvider.Meta().(ClientSession).IAMPolicyManagementV1API()
 		if err != nil {
 			return err
 		}
@@ -284,8 +286,15 @@ func testAccCheckIBMIAMAccessGroupPolicyExists(n string, obj iampapv1.Policy) re
 
 		accgrpPolicyID := parts[1]
 
-		policy, err := iampapClient.V1Policy().Get(accgrpPolicyID)
-		obj = policy
+		getPolicyOptions := &iampolicymanagementv1.GetPolicyOptions{
+			PolicyID: &accgrpPolicyID,
+		}
+
+		policy, _, err := iampapClient.GetPolicy(getPolicyOptions)
+		if err != nil {
+			return fmt.Errorf("Error retrieving Policy %s err: %s", accgrpPolicyID, err)
+		}
+		obj = *policy
 		return nil
 	}
 }

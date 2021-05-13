@@ -5,11 +5,11 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/IBM/go-sdk-core/v4/core"
 	"log"
 	"strings"
 	"time"
 
+	"github.com/IBM/go-sdk-core/v4/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -308,6 +308,9 @@ func resourceIBMISVPCRoutingTableExists(d *schema.ResourceData, meta interface{}
 	}
 
 	idSet := strings.Split(d.Id(), "/")
+	if len(idSet) < 2 {
+		return false, fmt.Errorf("Incorrect ID %s: ID should be a Combination of vpcID/routingTableID", d.Id())
+	}
 	getVpcRoutingTableOptions := sess.NewGetVPCRoutingTableOptions(idSet[0], idSet[1])
 	_, response, err := sess.GetVPCRoutingTable(getVpcRoutingTableOptions)
 	if err != nil {

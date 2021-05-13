@@ -6,9 +6,10 @@ package ibm
 import (
 	"context"
 	"fmt"
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"log"
 
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
@@ -106,6 +107,11 @@ func dataSourceIBMIAMAccountSettings() *schema.Resource {
 				Computed:    true,
 				Description: "Defines the period of time in seconds in which a session will be invalidated due  to inactivity. Valid values:   * Any whole number between '900' and '7200'   * NOT_SET - To unset account setting and use service default.",
 			},
+			"max_sessions_per_identity": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Defines the max allowed sessions per identity required by the account. Value values: * Any whole number greater than '0'   * NOT_SET - To unset account setting and use service default.",
+			},
 		},
 	}
 }
@@ -117,7 +123,7 @@ func dataSourceIbmIamAccountSettingsRead(context context.Context, d *schema.Reso
 	}
 
 	getAccountSettingsOptions := &iamidentityv1.GetAccountSettingsOptions{}
-	//getAccountSettingsOptions.SetIncludeHistory(d.Get("include_history").(bool))
+	getAccountSettingsOptions.SetIncludeHistory(d.Get("include_history").(bool))
 
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
@@ -164,6 +170,9 @@ func dataSourceIbmIamAccountSettingsRead(context context.Context, d *schema.Reso
 	}
 	if err = d.Set("session_invalidation_in_seconds", accountSettingsResponse.SessionInvalidationInSeconds); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting session_invalidation_in_seconds: %s", err))
+	}
+	if err = d.Set("max_sessions_per_identity", accountSettingsResponse.MaxSessionsPerIdentity); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting max_sessions_per_identity: %s", err))
 	}
 
 	return nil

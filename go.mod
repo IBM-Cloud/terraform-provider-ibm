@@ -1,6 +1,6 @@
 module github.com/IBM-Cloud/terraform-provider-ibm
 
-go 1.15
+go 1.16
 
 require (
 	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
@@ -11,12 +11,12 @@ require (
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.3.1
 	github.com/IBM/go-sdk-core/v4 v4.10.0
-	github.com/IBM/go-sdk-core/v5 v5.3.0
+	github.com/IBM/go-sdk-core/v5 v5.4.0
 	github.com/IBM/ibm-cos-sdk-go v1.6.1
 	github.com/IBM/ibm-cos-sdk-go-config v1.1.0
 	github.com/IBM/keyprotect-go-client v0.7.0
-	github.com/IBM/networking-go-sdk v0.13.0
-	github.com/IBM/platform-services-go-sdk v0.18.7
+	github.com/IBM/networking-go-sdk v0.14.0
+	github.com/IBM/platform-services-go-sdk v0.18.11
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/schematics-go-sdk v0.0.2
 	github.com/IBM/secrets-manager-go-sdk v0.1.19

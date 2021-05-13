@@ -3,82 +3,81 @@ subcategory: "Cloud Databases"
 layout: "ibm"
 page_title: "IBM : Cloud Databases instance"
 description: |-
-  Get information on an IBM Cloud Database Instance.
+  Get information on an IBM Cloud database instance.
 ---
 
-# ibm\_database
+# `ibm_database`
 
-Creates a read only copy of an existing IBM Cloud Databases resource.  
+Create a read-only copy of an existing IBM Cloud database service. For more information, about an IBM Cloud datbase service instance, see [provisioning databases](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-provisioning).
 
-Configuration of an ICD data_source requires that the `region` parameter is set for the IBM provider in the `provider.tf` to be the same as the ICD service `location/region` that the service will be deployed in. If not specified it will default to `us-south`. A `terraform refresh` of the data_source will fail if the ICD `location` is  different to that specified on the provider.  
+**Note**
+Configuration of an IBM Cloud Databases `data_source` requires that the `region` parameter is set for the IBM provider in the `provider.tf`. The region must be the same as the `location` that the IBM Cloud Databases instance is deployed into. If not specified, `us-south` is used by default. A `terraform refresh` of the `data_source` fails if the region and the location differ.
 
-## Example Usage
 
-```hcl
-data "ibm_database" "<your_database>" {
-  name = "<your_database>"
-  location = "<your-db-location>"
+## Example usage
+The following example creates a read-only copy of the `mydatabase` instance in `us-east`.  
+
+
+```
+data "ibm_database" "database" {
+  name = "mydatabase"
+  location = "us-east"
 }
 ```
 
-## Argument Reference
 
-The following arguments are required:
+## Argument reference
+Review the input parameters that you can specify for your data source. 
 
-* `name` - (Required, string) The name used to identify the IBM Cloud Database instance in the IBM Cloud UI. IBM Cloud does not enforce that service names are unique and it is possible that duplicate service names exist. The first located service instance is used by Terraform. The name must not include spaces.
+- `name` - (Required, String) The name of the IBM Cloud Databases instance. IBM Cloud does not enforce that service names are unique and it is possible that duplicate service names exist. The first located service instance is used by  Terraform. The name must not include spaces.
+- `location` - (Optional, String) The location where the IBM Cloud Databases instance is deployed into.
+- `resource_group_id`- (Optional, String) The ID of the resource group where the IBM Cloud Databases instance is deployed into. The default is `default`.
+- `service` - (Optional, String) The service type of the instance. To retrieve this value, run `ibmcloud catalog service-marketplace` or `ibmcloud catalog search`.
 
-* `resource_group_id` - (Optional, string) The id of the resource group where the resource instance exists. If not provided it takes the default resource group.
 
-* `location` - (Optional, string) The location or the environment in which instance exists.
+## Attribute reference
+Review the output parameters that you can access after you retrieved your data source. 
 
-* `service` - (Optional, string) The service type of the instance. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
+- `adminuser` - (String)  The user ID of the default administration user for the database, such as `admin` or `root`.
+- `cert_file_path` - (String)  The absolute path to certificate PEM file.
+- `connectionstrings`  (List) List of connection strings by userid for the database. For information about how to use connection strings, see the [documentation](/docs/databases-for-postgresql?topic=databases-for-postgresql-connection-strings). The results are returned in pairs of the userid and string: `connectionstrings.1.name = admin connectionstrings.1.string = postgres://admin:$PASSWORD@12345aa1-1111-1111-a1aa-a1aaa11aa1a1.a1a1a111a1a11a1a111a111a1a111a111.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full`.
+- `id` - (String) The CRN of the IBM Cloud Databases instance.
+- `guid` - (String) The unique identifier of the IBM Cloud Databases instance.
+- `plan` - (String)  The service plan of the IBM Cloud Databases instance.
+- `location` - (String)  The location where the IBM Cloud Databases instance is deployed into.
+- `status` - (String)  The status of the IBM Cloud Databases instance.
+- `status` - (String)  The status of resource instance.
+- `version` - (String) The database version.
+- `platform_options`-  (String) The CRN of key protect key.
+	- `key_protect_key_id`-  (String) The CRN of key protect key.
+	- `disk_encryption_key_crn`-  (String) The CRN of disk encryption key.
+	- `backup_encryption_key_crn`-  (String) The CRN of backup encryption key.
+- `auto_scaling` (List)Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
+	- `cpu` (List)Autoscaling CPU.
+		- `rate_increase_percent`- (Integer) Auto scaling rate in increase percent.
+		- `rate_limit_count_per_member`- (Integer) Auto scaling rate limit in count per number.
+		- `rate_period_seconds`- (Integer) Auto scaling rate in period seconds.
+		- `rate_units` - (String) Auto scaling rate in units.
+	- `disk` (List)Disk auto scaling.
+		- `capacity_enabled`- (Boolean) Auto scaling scalar enables or disables the scalar capacity.
+		- `free_space_less_than_percent`- (Integer) Auto scaling scalar capacity free space less than percent.
+		- `io_above_percent`- (Integer) Auto scaling scalar I/O utilization above percent.
+		- `io_enabled`- (Boolean) Auto scaling scalar I/O utilization enabled.
+		- `io_over_period`- (Boolean) Auto scaling scalar I/O utilization over period.
+		- `rate_increase_percent`- (Integer) Auto scaling rate increase percent.
+		- `rate_limit_mb_per_member`- (Integer) Auto scaling rate limit in megabytes per member.
+		- `rate_period_seconds`- (Integer) Auto scaling rate period in seconds.
+		- `rate_units` - (String) Auto scaling rate in units.
+	- `memory` (List) Memory Auto Scaling.
+		- `io_above_percent`- (Integer) Auto scaling scalar I/O utilization above percent.
+		- `io_enabled`- (Boolean) Auto scaling scalar I/O utilization enabled.
+		- `io_over_period` - (String) Auto scaling scalar I/O utilization over period.
+		- `rate_increase_percent`- (Integer) Auto scaling rate in increase percent.
+		- `rate_limit_mb_per_member`- (Integer) Auto scaling rate limit in megabytes per member.
+		- `rate_period_seconds`- (Integer) Auto scaling rate period in seconds.
+		- `rate_units` - (String) Auto scaling rate in units.
+- `whitelist` (List) A list of allowed IP addresses or ranges.
 
-## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of this ICD instance.
-* `plan` - The service plan for this ICD instance
-* `location` - The location or region for this ICD instance. This will be the same as defined for the provider or its alias.
-* `status` - Status of the ICD instance.
-* `id` - The unique identifier of the new database instance (CRN).
-* `status` - Status of resource instance.
-* `adminuser` - userid of the default administration user for the database, usually `admin` or `root`.
-* `version` - Database version.
-* `platform_options` - Platform-specific options for this deployment.
-  * `key_protect_key_id` - The CRN of Key protect key.
-  * `disk_encryption_key_crn` - The CRN of Disk encryption Key.
-  * `backup_encryption_key_crn` - The CRN of Backup encryption Key.
-* `cert_file_path` - The absolute path to certificate PEM file.
-* `connectionstrings` - List of connection strings by userid for the database. See the IBM Cloud documentation for more details of how to use connection strings in ICD for database access: https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-getting-connection-strings.html#getting-your-connection-strings. The results are returned in pairs of the userid and string:
-  `connectionstrings.1.name = admin`
-  `connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full`
-* `whitelist` - List of whitelisted IP addresses or ranges.
-* `guid` - Unique identifier of resource instance.
-* `auto_scaling` -  Configure rules to allow your database to automatically increase its resources.
-  * `cpu` - CPU AutoScaling
-    * `rate_increase_percent` - Auto Scaling Rate: Increase Percent
-    * `rate_limit_count_per_member` - Auto Scaling Rate: Limit count per number
-    * `rate_period_seconds` - Auto Scaling Rate: Period Seconds
-    * `rate_units` - Auto Scaling Rate: Units
-  * `disk` - Disk AutoScaling
-    * `capacity_enabled` - Auto Scaling Scalar: Enables or disable the capacity scalar
-    * `free_space_less_than_percent` - Auto Scaling Scalar: Capacity Free Space Less Than Percent
-    * `io_above_percent` - Auto Scaling Scalar: IO Utilization Above Percent
-    * `io_enabled` - Auto Scaling Scalar: IO Utilization Enabled
-    * `io_over_period` - Auto Scaling Scalar: IO Utilization Over Period
-    * `rate_increase_percent` - Auto Scaling Rate: Increase Percent
-    * `rate_limit_mb_per_member` - Auto Scaling Rate: Limit mb per member
-    * `rate_period_seconds` - Auto Scaling Rate: Period Seconds
-    * `rate_units` - Auto Scaling Rate: Units
-  * `memory` - Memory AutoScaling
-    * `io_above_percent` - Auto Scaling Scalar: IO Utilization Above Percent
-    * `io_enabled` - Auto Scaling Scalar: IO Utilization Enabled
-    * `io_over_period` - Auto Scaling Scalar: IO Utilization Over Period
-    * `rate_increase_percent` - Auto Scaling Rate: Increase Percent
-    * `rate_limit_mb_per_member` - Auto Scaling Rate: Limit mb per member
-    * `rate_period_seconds` - Auto Scaling Rate: Period Seconds
-    * `rate_units` - Auto Scaling Rate: Units
-
-Note that the provider only exports the admin userid and associated connectionstring. It does not export any userids additionally configured for the instance. This is due to a lack of ICD function.
-
+**Note**
+The provider only exports the admin user ID and associated connection string. It does not export any user IDs that are configured for the instance in addition. 

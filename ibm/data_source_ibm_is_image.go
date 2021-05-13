@@ -159,10 +159,14 @@ func imageGet(d *schema.ResourceData, meta interface{}, name, visibility string)
 			break
 		}
 	}
+
 	for _, image := range allrecs {
 		if *image.Name == name {
 			d.SetId(*image.ID)
 			d.Set("status", *image.Status)
+			if *image.Status == "deprecated" {
+				return fmt.Errorf("Given image %s is deprecated", name)
+			}
 			d.Set("name", *image.Name)
 			d.Set("visibility", *image.Visibility)
 			d.Set("os", *image.OperatingSystem.Name)
@@ -180,5 +184,6 @@ func imageGet(d *schema.ResourceData, meta interface{}, name, visibility string)
 			return nil
 		}
 	}
-	return nil
+
+	return fmt.Errorf("No image found with name  %s", name)
 }
