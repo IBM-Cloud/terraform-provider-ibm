@@ -72,7 +72,7 @@ resource "cr_retention_policy" "cr_retention_policy_instance" {
 | name | The name of the namespace. | `string` | true |
 | resource_group_id | The ID of the resource group that the namespace will be created within. | `string` | false |
 | namespace | The namespace to which the retention policy is attached. | `string` | true |
-| images_per_repo | Determines how many images will be retained for each repository when the retention policy is executed. The value -1 denotes 'Unlimited' (all images are retained). | `number` | false |
+| images_per_repo | Determines how many images will be retained for each repository when the retention policy is executed. The value -1 denotes 'Unlimited' (all images are retained). | `number` | true |
 | retain_untagged | Determines if untagged images are retained when executing the retention policy. This is false by default meaning untagged images will be deleted when the policy is executed. | `bool` | false |
 
 ## Outputs
