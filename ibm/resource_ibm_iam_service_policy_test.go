@@ -7,16 +7,14 @@ import (
 	"fmt"
 	"testing"
 
-	"strings"
-
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMIAMServicePolicy_Basic(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -46,7 +44,7 @@ func TestAccIBMIAMServicePolicy_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMServicePolicy_With_Service(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -77,7 +75,7 @@ func TestAccIBMIAMServicePolicy_With_Service(t *testing.T) {
 }
 
 func TestAccIBMIAMServicePolicy_With_ResourceInstance(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -99,7 +97,7 @@ func TestAccIBMIAMServicePolicy_With_ResourceInstance(t *testing.T) {
 }
 
 func TestAccIBMIAMServicePolicy_With_Resource_Group(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -121,7 +119,7 @@ func TestAccIBMIAMServicePolicy_With_Resource_Group(t *testing.T) {
 }
 
 func TestAccIBMIAMServicePolicy_With_Resource_Type(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -142,7 +140,7 @@ func TestAccIBMIAMServicePolicy_With_Resource_Type(t *testing.T) {
 }
 
 func TestAccIBMIAMServicePolicy_import(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_service_policy.policy"
 
@@ -169,7 +167,7 @@ func TestAccIBMIAMServicePolicy_import(t *testing.T) {
 }
 
 func TestAccIBMIAMServicePolicy_account_management(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_service_policy.policy"
 
@@ -192,7 +190,7 @@ func TestAccIBMIAMServicePolicy_account_management(t *testing.T) {
 }
 
 func TestAccIBMIAMServicePolicyWithCustomRole(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	crName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	displayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
@@ -215,7 +213,7 @@ func TestAccIBMIAMServicePolicyWithCustomRole(t *testing.T) {
 }
 
 func testAccCheckIBMIAMServicePolicyDestroy(s *terraform.State) error {
-	rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPAPAPI()
+	rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
@@ -230,18 +228,24 @@ func testAccCheckIBMIAMServicePolicyDestroy(s *terraform.State) error {
 		}
 		servicePolicyID := parts[1]
 
-		// Try to find the key
-		err = rsContClient.V1Policy().Delete(servicePolicyID)
+		getPolicyOptions := rsContClient.NewGetPolicyOptions(
+			servicePolicyID,
+		)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
-			return fmt.Errorf("Error waiting for service policy (%s) to be destroyed: %s", rs.Primary.ID, err)
+		// Try to find the key
+		destroyedPolicy, response, err := rsContClient.GetPolicy(getPolicyOptions)
+
+		if err == nil && *destroyedPolicy.State != "deleted" {
+			return fmt.Errorf("User policy still exists: %s\n", rs.Primary.ID)
+		} else if response.StatusCode != 404 && *destroyedPolicy.State != "deleted" {
+			return fmt.Errorf("Error waiting for user policy (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMIAMServicePolicyExists(n string, obj iampapv1.Policy) resource.TestCheckFunc {
+func testAccCheckIBMIAMServicePolicyExists(n string, obj iampolicymanagementv1.Policy) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -249,7 +253,7 @@ func testAccCheckIBMIAMServicePolicyExists(n string, obj iampapv1.Policy) resour
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPAPAPI()
+		rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPolicyManagementV1API()
 		if err != nil {
 			return err
 		}
@@ -262,9 +266,16 @@ func testAccCheckIBMIAMServicePolicyExists(n string, obj iampapv1.Policy) resour
 		}
 		servicePolicyID := parts[1]
 
+		getPolicyOptions := rsContClient.NewGetPolicyOptions(
+			servicePolicyID,
+		)
+
 		// Try to find the key
-		policy, err := rsContClient.V1Policy().Get(servicePolicyID)
-		obj = policy
+		policy, _, err := rsContClient.GetPolicy(getPolicyOptions)
+		if err != nil {
+			return err
+		}
+		obj = *policy
 		return nil
 	}
 }

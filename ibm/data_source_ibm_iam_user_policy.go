@@ -6,7 +6,8 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -88,7 +89,7 @@ func dataSourceIBMIAMUserPolicy() *schema.Resource {
 }
 
 func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
@@ -107,17 +108,18 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	query := iampapv1.SearchParams{
-		AccountID: accountID,
-		IAMID:     ibmUniqueID,
-		Type:      iampapv1.AccessPolicyType,
+	listPoliciesOptions := &iampolicymanagementv1.ListPoliciesOptions{
+		AccountID: core.StringPtr(accountID),
+		IamID:     core.StringPtr(ibmUniqueID),
+		Type:      core.StringPtr("access"),
 	}
 
 	if v, ok := d.GetOk("sort"); ok {
-		query.Sort = v.(string)
+		listPoliciesOptions.Sort = core.StringPtr(v.(string))
 	}
 
-	policies, err := iampapClient.V1Policy().List(query)
+	policyList, _, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
+	policies := policyList.Policies
 	if err != nil {
 		return err
 	}
@@ -130,11 +132,11 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 	for _, policy := range policies {
 		roles := make([]string, len(policy.Roles))
 		for i, role := range policy.Roles {
-			roles[i] = role.Name
+			roles[i] = *role.DisplayName
 		}
 		resources := flattenPolicyResource(policy.Resources)
 		p := map[string]interface{}{
-			"id":        fmt.Sprintf("%s/%s", userEmail, policy.ID),
+			"id":        fmt.Sprintf("%s/%s", userEmail, *policy.ID),
 			"roles":     roles,
 			"resources": resources,
 		}

@@ -50,6 +50,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
@@ -75,8 +76,6 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/hpcs"
 	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
@@ -197,8 +196,7 @@ type ClientSession interface {
 	GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error)
 	ICDAPI() (icdv4.ICDServiceAPI, error)
 	IAMAPI() (iamv1.IAMServiceAPI, error)
-	IAMPAPAPI() (iampapv1.IAMPAPAPI, error)
-	IAMPAPAPIV2() (iampapv2.IAMPAPAPIV2, error)
+	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
 	IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error)
 	IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
@@ -303,12 +301,6 @@ type clientSession struct {
 
 	globalTaggingConfigErrV1  error
 	globalTaggingServiceAPIV1 globaltaggingv1.GlobalTaggingV1
-
-	iamPAPConfigErr  error
-	iamPAPServiceAPI iampapv1.IAMPAPAPI
-
-	iamPAPConfigErrv2  error
-	iamPAPServiceAPIv2 iampapv2.IAMPAPAPIV2
 
 	iamUUMConfigErr  error
 	iamUUMServiceAPI iamuumv1.IAMUUMServiceAPI
@@ -499,6 +491,10 @@ type clientSession struct {
 	//Satellite service
 	satelliteClient    *kubernetesserviceapiv1.KubernetesServiceApiV1
 	satelliteClientErr error
+
+	//IAM Policy Management
+	iamPolicyManagementErr error
+	iamPolicyManagementAPI *iampolicymanagement.IamPolicyManagementV1
 }
 
 func (session clientSession) CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error) {
@@ -585,14 +581,9 @@ func (sess clientSession) UserManagementAPI() (usermanagementv2.UserManagementAP
 	return sess.userManagementAPI, sess.userManagementErr
 }
 
-// IAMPAPAPI provides IAM PAP APIs ...
-func (sess clientSession) IAMPAPAPI() (iampapv1.IAMPAPAPI, error) {
-	return sess.iamPAPServiceAPI, sess.iamPAPConfigErr
-}
-
-// IAMPAPAPIV2 provides IAM PAP APIs ...
-func (sess clientSession) IAMPAPAPIV2() (iampapv2.IAMPAPAPIV2, error) {
-	return sess.iamPAPServiceAPIv2, sess.iamPAPConfigErrv2
+// IAM Policy Management
+func (sess clientSession) IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error) {
+	return sess.iamPolicyManagementAPI, sess.iamPolicyManagementErr
 }
 
 // IAMUUMAPI provides IAM UUM APIs ...
@@ -945,8 +936,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.globalTaggingConfigErr = errEmptyBluemixCredentials
 		session.hpcsEndpointErr = errEmptyBluemixCredentials
 		session.iamConfigErr = errEmptyBluemixCredentials
-		session.iamPAPConfigErr = errEmptyBluemixCredentials
-		session.iamPAPConfigErrv2 = errEmptyBluemixCredentials
 		session.iamUUMConfigErr = errEmptyBluemixCredentials
 		session.iamUUMConfigErrV2 = errEmptyBluemixCredentials
 		session.icdConfigErr = errEmptyBluemixCredentials
@@ -1328,18 +1317,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.globalTaggingServiceAPIV1 = *globalTaggingAPIV1
 		session.globalTaggingServiceAPIV1.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
-
-	iampap, err := iampapv1.New(sess.BluemixSession)
-	if err != nil {
-		session.iamPAPConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAMPAP Service: %q", err)
-	}
-	session.iamPAPServiceAPI = iampap
-
-	iampapv2, err := iampapv2.New(sess.BluemixSession)
-	if err != nil {
-		session.iamPAPConfigErrv2 = fmt.Errorf("Error occured while configuring Bluemix IAMPAP Service: %q", err)
-	}
-	session.iamPAPServiceAPIv2 = iampapv2
 
 	iam, err := iamv1.New(sess.BluemixSession)
 	if err != nil {
@@ -1940,6 +1917,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.iamIdentityAPI = iamIdentityClient
 
+	iamPolicyManagementURL := iampolicymanagement.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			iamPolicyManagementURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+		} else {
+			iamPolicyManagementURL = contructEndpoint("private.iam", cloudEndpoint)
+		}
+	}
+	iamPolicyManagementOptions := &iampolicymanagement.IamPolicyManagementV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamPolicyManagementURL),
+	}
+	iamPolicyManagementClient, err := iampolicymanagement.NewIamPolicyManagementV1(iamPolicyManagementOptions)
+	if err != nil {
+		session.vpcErr = fmt.Errorf("Error occured while configuring IAM Policy Management service: %q", err)
+	}
+	if iamPolicyManagementClient != nil && iamPolicyManagementClient.Service != nil {
+		iamPolicyManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+	session.iamPolicyManagementAPI = iamPolicyManagementClient
+
 	rmURL := resourcemanager.DefaultServiceURL
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
@@ -2130,7 +2128,7 @@ func newSession(c *Config) (*Session, error) {
 		bmxConfig := &bluemix.Config{
 			BluemixAPIKey: c.BluemixAPIKey,
 			//Comment out debug mode for v0.12
-			//Debug:         os.Getenv("TF_LOG") != "",
+			Debug:         os.Getenv("TF_LOG") != "",
 			HTTPTimeout:   c.BluemixTimeout,
 			Region:        c.Region,
 			ResourceGroup: c.ResourceGroup,
