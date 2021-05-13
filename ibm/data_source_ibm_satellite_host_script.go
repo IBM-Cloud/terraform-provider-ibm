@@ -123,9 +123,10 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 				lines[i] = fmt.Sprintf(`
 					#Grow the base volume group first
 					echo -e "r\ne\ny\nw\ny\ny\n" | gdisk /dev/sda
-					echo -e "n\n\n\n\n\nw\n" | fdisk /dev/sda
-					partx -l /dev/sda
-					partx -v -a /dev/sda
+					#mark result as true as this returns a non-0 RC when syncing disks
+					echo -e "n\n\n\n\n\nw\n" | fdisk /dev/sda || true
+					partx -l /dev/sda || true
+					partx -v -a /dev/sda || true
 					pvcreate /dev/sda5
 					vgextend rootvg /dev/sda5
 					# Grow the TMP LV
