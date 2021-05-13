@@ -6,7 +6,6 @@ package ibm
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -89,13 +88,8 @@ func dataIBMContainerRegistryNamespacesRead(context context.Context, d *schema.R
 
 	listNamespaceDetailsOptions := &containerregistryv1.ListNamespaceDetailsOptions{}
 
-	namespaceDetailsList, response, err := containerRegistryClient.ListNamespaceDetails(listNamespaceDetailsOptions)
+	namespaceDetailsList, _, err := containerRegistryClient.ListNamespaceDetails(listNamespaceDetailsOptions)
 	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
-		}
-		log.Printf("[DEBUG] ListNamespaceDetailsWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
 
