@@ -165,7 +165,7 @@ func imageGet(d *schema.ResourceData, meta interface{}, name, visibility string)
 			d.SetId(*image.ID)
 			d.Set("status", *image.Status)
 			if *image.Status == "deprecated" {
-				return fmt.Errorf("Given image %s is deprecated", name)
+				fmt.Printf("[WARN] Given image %s is deprecated and soon will be obsolete.", name)
 			}
 			d.Set("name", *image.Name)
 			d.Set("visibility", *image.Visibility)
