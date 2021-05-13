@@ -31,6 +31,25 @@ resource "ibm_is_ssh_key" "sshkey" {
   public_key = "SSH KEY"
 }
 
+data "ibm_resource_group" "default" {
+  name = "Default" ///give your resource grp
+}
+
+resource "ibm_is_dedicated_host_group" "dh_group01" {
+  family = "compute"
+  class = "cx2"
+  zone = "us-south-1"
+  name = "my-dh-group-01"
+  resource_group = data.ibm_resource_group.default.id
+}
+
+resource "ibm_is_dedicated_host" "is_dedicated_host" {
+  profile = "bx2d-host-152x608"
+  name = "my-dedicated-host-01"
+	host_group = ibm_is_dedicated_host_group.dh_group01.id
+  resource_group = data.ibm_resource_group.default.id
+}
+
 resource "ibm_is_instance_template" "instancetemplate1" {
   name    = "testtemplate"
   image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
@@ -51,6 +70,48 @@ resource "ibm_is_instance_template" "instancetemplate1" {
   }
 }
 
+resource "ibm_is_instance_template" "instancetemplate1" {
+  name    = "testtemplate1"
+  image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
+  profile = "bx2-8x32"
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet2.id
+    allow_ip_spoofing = true
+  }
+
+  dedicated_host_group = ibm_is_dedicated_host_group.dh_group01.id
+  vpc  = ibm_is_vpc.vpc2.id
+  zone = "us-south-2"
+  keys = [ibm_is_ssh_key.sshkey.id]
+
+  boot_volume {
+    name                             = "testbootvol"
+    delete_volume_on_instance_delete = true
+  }
+}
+
+resource "ibm_is_instance_template" "instancetemplate2" {
+  name    = "testtemplat2"
+  image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
+  profile = "bx2-8x32"
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet2.id
+    allow_ip_spoofing = true
+  }
+
+  dedicated_host = "7eb4e35b-4257-56f8-d7da-326d85452592"
+  vpc  = ibm_is_vpc.vpc2.id
+  zone = "us-south-2"
+  keys = [ibm_is_ssh_key.sshkey.id]
+
+  boot_volume {
+    name                             = "testbootvol"
+    delete_volume_on_instance_delete = true
+  }
+}
+
 ```
 
 ## Argument Reference
@@ -60,6 +121,8 @@ The following arguments are supported:
 * `name` - (Required, string) The name of the instance template.
 * `image` - (Required, string) The ID of the image to used to create the template.
 * `profile` - (Required, string) The number of instances to be created under the instance group.
+* `dedicated_host` - (Optional, string, ForceNew) The placement restrictions to use for the virtual server instance. Unique Identifier of the Dedicated Host where the instance will be placed
+* `dedicated_host_group` - (Optional, string, ForceNew) The placement restrictions to use for the virtual server instance. Unique Identifier of the Dedicated Host Group where the instance will be placed
 * `vpc` - (Required, string) The ID of VPC in which the instance templates needs to be created.
 * `zone` - (Required, string) Name of the zone
 * `keys` - (Required, list) List of ssh-key ids used to allow login user to the instances.
@@ -93,6 +156,36 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - Id of the instance template
+* `name` - Instance Template name
+* `volume_attachments` - Collection of volume attachments. Nested `volume_attachments` blocks have the following structure:
+	* `delete_volume_on_instance_delete` - If set to true, when deleting the instance the volume will also be deleted.
+	* `name` - The user-defined name for this volume attachment.
+	* `volume` - The identity of the volume to attach to the instance, or a prototype object for a newvolume.
+* `primary_network_interfaces` - A nested block describing the primary network interface for the template
+  * `allow_ip_spoofing` - Indicates whether source IP spoofing is allowed on this interface.
+  * `subnet` - The VPC subnet to assign to the interface. 
+  * `name` - Name of the interface.
+  * `primary_ipv4_address` - Pv4 address assigned to the primary network interface.
+  * `security_groups` - List of security groups under the subnet.
+* `network_interfaces` - A nested block describing the network interfaces for the template.
+  * `allow_ip_spoofing` - Indicates whether source IP spoofing is allowed on this interface.
+  * `subnet` - The VPC subnet to assign to the interface. 
+  * `name` - Name of the interface.
+  * `primary_ipv4_address` - IPv4 address assigned to the network interface.
+  * `security_groups` - List of security groups under the subnet.
+* `boot_volume` - A nested block describing the boot volume configuration for the template.
+  * `encryption` - encryption key CRN to encrypt the boot volume attached. 
+  * `name` - Name of the boot volume.
+  * `size` - Boot volume size to configured in GB.
+  * `profile` - Profile for the boot volume configured.
+  * `delete_volume_on_instance_delete` - Configured to delete the boot volume to be deleted upon instance deletion.
+* `resource_group` - Resource group ID.
+* `user_data` - User data provided for the instance.
+* `image` - The ID of the image to used to create the template.
+* `placement_target` - The placement restrictions to use for the virtual server instance.
+  * `id` - The unique identifier for this dedicated host
+  * `crn` - The CRN for this dedicated host.
+  * `href` - The URL for this dedicated host.
 
 ## Import
 
