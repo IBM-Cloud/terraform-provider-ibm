@@ -135,7 +135,7 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 					# Grow the var LV
 					lvextend -L+20G /dev/rootvg/varlv
 					xfs_growfs /dev/rootvg/varlv
-					yum update -y
+					yum update --disablerepo=* --enablerepo="*microsoft*" -y
 					yum-config-manager --enable '*'
 					yum repolist all
 					yum install container-selinux -y
