@@ -158,9 +158,10 @@ func TestAccIBMIAMServicePolicy_import(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"resources", "resource_attributes"},
 			},
 		},
 	})
@@ -212,6 +213,34 @@ func TestAccIBMIAMServicePolicyWithCustomRole(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMServicePolicy_With_Resource_Attributes(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMServicePolicyResourceAttributes(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_service_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMServicePolicyResourceAttributesUpdate(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_service_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+		},
+	})
+}
 func testAccCheckIBMIAMServicePolicyDestroy(s *terraform.State) error {
 	rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -479,4 +508,46 @@ func testAccCheckIBMIAMServicePolicyWithCustomRole(name, crName, displayName str
 	  	}
 
 	`, name, crName, displayName)
+}
+
+func testAccCheckIBMIAMServicePolicyResourceAttributes(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_iam_service_id" "serviceID" {
+		name = "%s"
+	  }
+  
+	  resource "ibm_iam_service_policy" "policy" {
+		iam_service_id     = ibm_iam_service_id.serviceID.id
+		roles              = ["Viewer"]
+		resource_attributes {
+			name     = "resource"
+			value    = "test*"
+			operator = "stringMatch"
+		}
+		resource_attributes {
+			name     = "serviceName"
+			value    = "messagehub"
+		}
+	  }
+	`, name)
+}
+func testAccCheckIBMIAMServicePolicyResourceAttributesUpdate(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_iam_service_id" "serviceID" {
+		name = "%s"
+	  }
+  
+	  resource "ibm_iam_service_policy" "policy" {
+		iam_service_id     = ibm_iam_service_id.serviceID.id
+		roles              = ["Viewer"]
+		resource_attributes {
+			name     = "resource"
+			value    = "test*"
+		}
+		resource_attributes {
+			name     = "serviceName"
+			value    = "messagehub"
+		}
+	  }
+	`, name)
 }

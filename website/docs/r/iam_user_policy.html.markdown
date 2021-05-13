@@ -118,6 +118,24 @@ resource "ibm_iam_user_policy" "policy" {
 
 ```
 
+### User Policy using resource_attributes
+
+```hcl
+resource "ibm_iam_user_policy" "policy" {
+  ibm_id = "test@in.ibm.com"
+  roles           = ["Viewer"]
+  resource_attributes {
+    name  = "resource"
+    value = "test123*"
+    operator = "stringMatch"
+  }
+  resource_attributes {
+    name  = "serviceName"
+    value = "messagehub"
+  }
+}
+```
+
 
 ## Argument Reference
 
@@ -134,9 +152,15 @@ Nested `resources` blocks have the following structure:
   * `resource` - (Optional, string) Resource of the policy definition.
   * `resource_group_id` - (Optional, string) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`. 
   * `attributes` - (Optional, map) Set resource attributes in the form of `'name=value,name=value...`.
- **NOTE**: Conflicts with `account_management`.
+ **NOTE**: Conflicts with `account_management` and `resource_attributes`.
+* `resource_attributes` - (Optional, list) A nested block describing the resource of this policy.
+Nested `resource_attributes` blocks have the following structure:
+  * `name` - (Required, string) Name of the Attribute. Supported values are`serviceName` , `serviceInstance` , `region` ,`resourceType` , `resource` , `resourceGroupId` and other service specific resource attributes.
+  * `value` - (Required, string) Value of the Attribute.
+  * `operator` - (Optional, string) Operator of the Attribute. Default Value: `stringEquals`
+ **NOTE**: Conflicts with `account_management` and `resources`.
 * `account_management` - (Optional, bool) Gives access to all account management services if set to `true`. Default value `false`. 
- **NOTE**: Conflicts with `resources`.
+  **NOTE**: Conflicts with `resources`and `resource_attributes`.
 * `tags` - (Optional, array of strings) Tags associated with the user policy instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
