@@ -40,13 +40,13 @@ const (
 	keyAlgorithm = "AES256"
 )
 
-func resourceIBMCOS() *schema.Resource {
+func resourceIBMCOSBucket() *schema.Resource {
 	return &schema.Resource{
-		Read:     resourceIBMCOSRead,
-		Create:   resourceIBMCOSCreate,
-		Update:   resourceIBMCOSUpdate,
-		Delete:   resourceIBMCOSDelete,
-		Exists:   resourceIBMCOSExists,
+		Read:     resourceIBMCOSBucketRead,
+		Create:   resourceIBMCOSBucketCreate,
+		Update:   resourceIBMCOSBucketUpdate,
+		Delete:   resourceIBMCOSBucketDelete,
+		Exists:   resourceIBMCOSBucketExists,
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -402,7 +402,7 @@ func expireRuleList(expireList []interface{}) []*s3.LifecycleRule {
 	return rules
 }
 
-func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
 	rsConClient, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
@@ -623,10 +623,10 @@ func resourceIBMCOSUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	return resourceIBMCOSRead(d, meta)
+	return resourceIBMCOSBucketRead(d, meta)
 }
 
-func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
 	rsConClient, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
@@ -793,7 +793,7 @@ func resourceIBMCOSRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceIBMCOSCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
 	rsConClient, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
@@ -876,11 +876,11 @@ func resourceIBMCOSCreate(d *schema.ResourceData, meta interface{}) error {
 	bucketID := fmt.Sprintf("%s:%s:%s:meta:%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName, apiType, bLocation, endpointType)
 	d.SetId(bucketID)
 
-	return resourceIBMCOSUpdate(d, meta)
+	return resourceIBMCOSBucketUpdate(d, meta)
 
 }
 
-func resourceIBMCOSDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
 	rsConClient, _ := meta.(ClientSession).BluemixSession()
 	bucketName := parseBucketId(d.Id(), "bucketName")
@@ -973,7 +973,7 @@ func resourceIBMCOSDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceIBMCOSExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	var s3Conf *aws.Config
 	rsConClient, err := meta.(ClientSession).BluemixSession()
 	if err != nil {
