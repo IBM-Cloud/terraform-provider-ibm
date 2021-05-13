@@ -95,27 +95,30 @@ func dataSourceIBMContainerClusterConfig() *schema.Resource {
 				Sensitive: true,
 			},
 			"admin_certificate": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 			"ca_certificate": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 			"host": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"token": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 		},
 	}
 }
 
 func dataSourceIBMContainerClusterConfigRead(d *schema.ResourceData, meta interface{}) error {
-	csClient, err := meta.(ClientSession).ContainerAPI()
+	csClient, err := meta.(ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
 	}
@@ -145,7 +148,7 @@ func dataSourceIBMContainerClusterConfigRead(d *schema.ResourceData, meta interf
 		d.Set("config_file_path", configPath)
 
 	} else {
-		targetEnv, err := getClusterTargetHeader(d, meta)
+		targetEnv, err := getVpcClusterTargetHeader(d, meta)
 		if err != nil {
 			return err
 		}
