@@ -96,6 +96,8 @@ github.com/IBM/go-sdk-core/v5 v5.3.0 h1:ZDqawFURQ1nlNhy4SE9Q+0AOlpa/TrsbVC7TnoSi
 github.com/IBM/go-sdk-core/v5 v5.3.0/go.mod h1:+MNa5Jbqb9FO7KEevo982Pb/YXr4adkyEffJlPs2TGc=
 github.com/IBM/go-sdk-core/v5 v5.4.0 h1:iP6xpatSLqQ29WSZkI7x2tcNHuFds2lZhW/G+bJaj7M=
 github.com/IBM/go-sdk-core/v5 v5.4.0/go.mod h1:+MNa5Jbqb9FO7KEevo982Pb/YXr4adkyEffJlPs2TGc=
+github.com/IBM/go-sdk-core/v5 v5.4.2 h1:yGPpVYYLdOb7w2tIAMoleLh2iEvTzmOnYdyLtRHx564=
+github.com/IBM/go-sdk-core/v5 v5.4.2/go.mod h1:Sn+z+qTDREQvCr+UFa22TqqfXNxx3o723y8GsfLV8e0=
 github.com/IBM/ibm-cos-sdk-go v1.3.1 h1:6SHueqFpznp7S/9b39/WiJ9mt3TgD322j2pArzyd/c8=
 github.com/IBM/ibm-cos-sdk-go v1.3.1/go.mod h1:YLBAYobEA8bD27P7xpMwSQeNQu6W3DNBtBComXrRzRY=
 github.com/IBM/ibm-cos-sdk-go v1.6.1 h1:2XG/fsXno8228gBEwxf0u2AFI/Nii3wpk17lkpF0IvA=
@@ -124,6 +126,8 @@ github.com/IBM/schematics-go-sdk v0.0.2 h1:IFdM73VL3xwf/KaTh1IY99hkiTfFRYg5F1JNj
 github.com/IBM/schematics-go-sdk v0.0.2/go.mod h1:ymN1+3uEaWNT0RthwHzExxMiN0AnTh6W3piSY8canjs=
 github.com/IBM/secrets-manager-go-sdk v0.1.19 h1:0GPs5EoTaWNsjo4QPj64GNxlWfN8VHJy4RDFLqddSe8=
 github.com/IBM/secrets-manager-go-sdk v0.1.19/go.mod h1:eO3dBhzPrHkkt+yPex/jB2xD6qHZxBko+Aw+0tfqHeA=
+github.com/IBM/vpc-go-sdk v0.6.0 h1:acJIYIsdjasCabSQlDJ+LZz62R4Q9WDqPIlwWec3u9Y=
+github.com/IBM/vpc-go-sdk v0.6.0/go.mod h1:wxicPDnSTPXt1eNxSO/9KNGqOW9RMgxPoSh4gd8KJY4=
 github.com/IBM/vpc-go-sdk v1.0.0 h1:YsCFKFu/DNryaidUOpH7/Y9J0RtWZl4aP1cve/cfh2A=
 github.com/IBM/vpc-go-sdk v1.0.0/go.mod h1:bhd7r482lV30UJz46r2oRgYGawGEo+TuS41ZLIY65y0=
 github.com/IBM/vpc-go-sdk v1.0.1 h1:D2cu4KRsM8Q8bLWz/uxp8m7nzUm33mcgDv1sD0w/E8M=
@@ -266,6 +270,8 @@ github.com/fatih/structs v1.1.0/go.mod h1:9NiDSp5zOcgEDl+j00MP/WkGVPOlPRLejGD8Ga
 github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568 h1:BHsljHzVlRcyQhjrss6TZTdY2VfCqZPbv5k3iBFa2ZQ=
 github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568/go.mod h1:xEzjJPgXI435gkrCt3MPfRiAkVrwSbHsst4LCFVfpJc=
 github.com/form3tech-oss/jwt-go v3.2.1+incompatible/go.mod h1:pbq4aXjuKjdthFRnoDwaVPLA+WlJuPGy+QneDUgJi2k=
+github.com/form3tech-oss/jwt-go v3.2.2+incompatible h1:TcekIExNqud5crz4xD2pavyTgWiPvpYe4Xau31I0PRk=
+github.com/form3tech-oss/jwt-go v3.2.2+incompatible/go.mod h1:pbq4aXjuKjdthFRnoDwaVPLA+WlJuPGy+QneDUgJi2k=
 github.com/fortytw2/leaktest v1.3.0 h1:u8491cBMTQ8ft8aeV+adlcytMZylmA5nnwwkRZjI8vw=
 github.com/fortytw2/leaktest v1.3.0/go.mod h1:jDsjWgpAGjm2CA7WthBh/CdZYEPF31XHquHwclZch5g=
 github.com/frankban/quicktest v1.10.2 h1:19ARM85nVi4xH7xPXuc5eM/udya5ieh7b/Sv+d844Tk=

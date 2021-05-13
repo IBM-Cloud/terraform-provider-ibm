@@ -243,6 +243,47 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 				},
 			},
 
+			isPlacementTargetDedicatedHost: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{isPlacementTargetDedicatedHostGroup},
+				Description:   "Unique Identifier of the Dedicated Host where the instance will be placed",
+			},
+
+			isPlacementTargetDedicatedHostGroup: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{isPlacementTargetDedicatedHost},
+				Description:   "Unique Identifier of the Dedicated Host Group where the instance will be placed",
+			},
+
+			isInstanceTemplatePlacementTarget: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The placement restrictions to use for the virtual server instance.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this dedicated host.",
+						},
+						"crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this dedicated host.",
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this dedicated host.",
+						},
+					},
+				},
+			},
+
 			isInstanceTemplateResourceGroup: {
 				Type:        schema.TypeString,
 				ForceNew:    true,
@@ -326,6 +367,22 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 		VPC: &vpcv1.VPCIdentity{
 			ID: &vpcID,
 		},
+	}
+
+	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
+		dHostIdStr := dHostIdInf.(string)
+		dHostPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
+			ID: &dHostIdStr,
+		}
+		instanceproto.PlacementTarget = dHostPlaementTarget
+	}
+
+	if dHostGrpIdInf, ok := d.GetOk(isPlacementTargetDedicatedHostGroup); ok {
+		dHostGrpIdStr := dHostGrpIdInf.(string)
+		dHostGrpPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostGroupIdentity{
+			ID: &dHostGrpIdStr,
+		}
+		instanceproto.PlacementTarget = dHostGrpPlaementTarget
 	}
 
 	// BOOT VOLUME ATTACHMENT for instance template
@@ -542,6 +599,14 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 		d.Set(isInstanceTemplateProfile, *identity.Name)
 	}
 
+	var placementTargetMap map[string]interface{}
+	if instance.PlacementTarget != nil {
+		placementTargetMap = resourceIbmIsInstanceTemplateInstancePlacementTargetPrototypeToMap(*instance.PlacementTarget.(*vpcv1.InstancePlacementTargetPrototype))
+	}
+	if err = d.Set(isInstanceTemplatePlacementTarget, []map[string]interface{}{placementTargetMap}); err != nil {
+		return fmt.Errorf("Error setting placement_target: %s", err)
+	}
+
 	if instance.PrimaryNetworkInterface != nil {
 		primaryNicList := make([]map[string]interface{}, 0)
 		currentPrimNic := map[string]interface{}{}
@@ -656,6 +721,16 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 		d.Set(isInstanceTemplateResourceGroup, instance.ResourceGroup.ID)
 	}
 	return nil
+}
+
+func resourceIbmIsInstanceTemplateInstancePlacementTargetPrototypeToMap(instancePlacementTargetPrototype vpcv1.InstancePlacementTargetPrototype) map[string]interface{} {
+	instancePlacementTargetPrototypeMap := map[string]interface{}{}
+
+	instancePlacementTargetPrototypeMap["id"] = instancePlacementTargetPrototype.ID
+	instancePlacementTargetPrototypeMap["crn"] = instancePlacementTargetPrototype.CRN
+	instancePlacementTargetPrototypeMap["href"] = instancePlacementTargetPrototype.Href
+
+	return instancePlacementTargetPrototypeMap
 }
 
 func instanceTemplateUpdate(d *schema.ResourceData, meta interface{}) error {
