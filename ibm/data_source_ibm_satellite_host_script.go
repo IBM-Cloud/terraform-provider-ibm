@@ -139,7 +139,7 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 					yum-config-manager --enable '*'
 					yum repolist all
 					yum install container-selinux -y
-				)`)
+				`)
 			}
 		}
 	}
