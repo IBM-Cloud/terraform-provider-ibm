@@ -1,14 +1,11 @@
-# Example for Container Registry resources
+# Example for ContainerRegistryV1
 
-This example illustrates how to use the Container Registry resources to create a namespace on to an account
+This example illustrates how to use the ContainerRegistryV1
 
 These types of resources are supported:
 
-* [ Namespace ](https://cloud.ibm.com/docs/Registry?topic=container-registry-cli-plugin-containerregcli#bx_cr_namespace_add)
-
-## Terraform versions
-
-Terraform 0.12. Pin module version to `~> v1.18.0`. Branch - `master`.
+* cr_namespace
+* cr_retention_policy
 
 ## Usage
 
@@ -23,31 +20,38 @@ $ terraform apply
 Run `terraform destroy` when you don't need these resources.
 
 
-## Container Registry Resources
+## ContainerRegistryV1 resources
 
-`Creating Namespace`:
+cr_namespace resource:
 
 ```hcl
-resource "ibm_cr_namespace" "namespace" {
-  name              = var.name
-  resource_group_id = data.ibm_resource_group.rg.id
+resource "cr_namespace" "cr_namespace_instance" {
+  name = var.cr_namespace_name
+  resource_group_id = data.ibm_resource_group.default_group.id
+  tags = var.cr_namespace_tags
 }
 ```
-##  Container Registry Data Source
-`List all Namespaces:`
+cr_retention_policy resource:
 
 ```hcl
-
-data "ibm_cr_namespaces" "namespaces"{}
-
+resource "cr_retention_policy" "cr_retention_policy_instance" {
+  namespace = var.cr_retention_policy_namespace
+  images_per_repo = var.cr_retention_policy_images_per_repo
+  retain_untagged = var.cr_retention_policy_retain_untagged
+}
 ```
 
-## Examples
-
-* [ Container Registry ](./main.tf)
+## ContainerRegistryV1 Data sources
 
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+## Assumptions
+
+1. TODO
+
+## Notes
+
+1. TODO
+
 ## Requirements
 
 | Name | Version |
@@ -58,19 +62,22 @@ data "ibm_cr_namespaces" "namespaces"{}
 
 | Name | Version |
 |------|---------|
-| ibm | n/a |
+| ibm | 1.13.1 |
 
 ## Inputs
 
-| Name | Description | Type | Required | Default |
+| Name | Description | Type | Required |
 |------|-------------|------|---------|
-| name | Name Space Name. Force New Attribute| `string` | yes | N/A |
-| resource_group_id | The Id of resource group to which the namespace has to be imported. Force New attribute | `string` | No | Default RG|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| name | The name of the namespace. | `string` | true |
+| resource_group_id | The ID of the resource group that the namespace will be created within. | `string` | false |
+| namespace | The namespace to which the retention policy is attached. | `string` | true |
+| images_per_repo | Determines how many images will be retained for each repository when the retention policy is executed. The value -1 denotes 'Unlimited' (all images are retained). | `number` | true |
+| retain_untagged | Determines if untagged images are retained when executing the retention policy. This is false by default meaning untagged images will be deleted when the policy is executed. | `bool` | false |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| namespace_crn | CRN of namespace resource. |
-
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+| cr_namespace | cr_namespace object |
+| cr_retention_policy | cr_retention_policy object |
