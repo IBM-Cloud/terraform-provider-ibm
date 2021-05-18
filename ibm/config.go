@@ -17,6 +17,7 @@ import (
 	// Added code for the Power Colo Offering
 
 	apigateway "github.com/IBM/apigateway-go-sdk"
+	"github.com/IBM/container-registry-go-sdk/containerregistryv1"
 	"github.com/IBM/go-sdk-core/v4/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
@@ -46,12 +47,14 @@ import (
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
+	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
+	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
@@ -91,9 +94,6 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
-	"github.com/IBM/container-registry-go-sdk/containerregistryv1"
-	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
-	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -1262,6 +1262,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 	containerRegistryClientURL, err := containerregistryv1.GetServiceURLForRegion(c.Region)
 	if err != nil {
 		containerRegistryClientURL = containerregistryv1.DefaultServiceURL
+	}
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		containerRegistryClientURL, err = GetPrivateServiceURLForRegion(c.Region)
+		if err != nil {
+			containerRegistryClientURL, _ = GetPrivateServiceURLForRegion("us-south")
+		}
 	}
 	containerRegistryClientOptions := &containerregistryv1.ContainerRegistryV1Options{
 		Authenticator: authenticator,
