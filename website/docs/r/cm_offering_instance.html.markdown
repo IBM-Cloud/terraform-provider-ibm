@@ -46,6 +46,5 @@ Review the output parameters that you can access after your resource is created.
 - `crn` - (String) The platform CRN for an instance.
 - `id` - (String) The unique identifier of the `cm_offering_instance`.
 - `url` - (String) The URL reference to an object.
-
-
-
+- `_rev` - (String) The cloudant revision of this object
+- `schematics_workspace_id` - (String) The ID of the schematics workspace used to install this offering, if applicable

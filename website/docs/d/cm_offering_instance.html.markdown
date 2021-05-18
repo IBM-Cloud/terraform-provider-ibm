@@ -34,10 +34,12 @@ Review the output parameters that you can access after your data source is creat
 - `cluster_namespaces` - (String) The list of target namespaces to install.
 - `cluster_all_namespaces` - (String) Designate to install into all namespaces.
 - `crn` - (String) The platform CRN for an instance.
+- `_rev` - (string) The cloudant revisionn of this object
 - `id` - (String) The unique identifier of the `cm_offering_instance`.
 - `kind_format` - (String) The format this instance has such as `helm`, `operator`.
 - `label` - (String) The label for an instance.
 - `offering_id` - (String) The offering ID the instance that is created from.
 - `url` - (String) The URL reference to an object.
 - `version` - (String) The version an instance is installed from (but not from the version ID).
-
+- `schematics_workspace_id` - (String) The ID of the schematics workspace, for offering instances installed through schematics
+- `resource_group_id` - (String) The ID of the resource group this instance was installed into
