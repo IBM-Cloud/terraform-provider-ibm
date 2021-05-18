@@ -3,48 +3,51 @@ subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_gateways"
 description: |-
-  Manages IBM Cloud Infrastructure Direct Link Gateway.
+  Manages IBM Cloud Infrastructure Direct Link Gateways.
 ---
 
-# ibm\_dl_gateways
+# `ibm_dl_gateways`
 
-Import the details of an existing IBM Cloud Infrastructure direct link gateway as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Import the details of an existing IBM Cloud Infrastructure Direct Link Gateways.  For more information, about IBM Cloud Direct Link, see [Getting started with IBM Cloud Direct Link](https://cloud.ibm.com/docs/dl?topic=dl-get-started-with-ibm-cloud-dl).
 
 
-## Example Usage
+## Example usage
 
-```hcl
+```
 data "ibm_dl_gateways" "ds_dlgateways" {
 }
+     
 ```
 
-## Attribute Reference
+## Argument reference
+There is no Argument reference that you need to specify for the data source. 
 
-In addition to all arguments above, the following attributes are exported:
 
-* `gateways` - List of all Direct Link gateways in the IBM Cloud Infrastructure.
-  * `bgp_asn` - Customer BGP ASN.
-  * `created_at` - The date and time resource was created.
-  * `crn` - The CRN (Cloud Resource Name) of this gateway.
-  * `global` - Gateways with global routing (true) can connect to networks outside their associated region.
-  * `id` - The unique identifier of this gateway.
-  * `location_display_name` - Gateway location long name.
-  * `location_name` - Gateway location.
-  * `metered` - Metered billing option. When true gateway usage is billed per gigabyte. When false there is no per gigabyte usage charge, instead a flat rate is charged for the gateway.
-  * `name` - The unique user-defined name for this gateway.
-  * `operational_status` - Gateway operational status.
-  * `resource_group` - Resource group identifier.
-  * `speed_mbps` - Gateway speed in megabits per second.
-  * `type` - Gateway type.
-  * `bgp_base_cidr` - (DEPRECATED) BGP base CIDR is deprecated and no longer recognized the Direct Link APIs. See bgp_cer_cidr and bgp_ibm_cidr fields instead for IP related information. Deprecated field bgp_base_cidr will be removed from the API specificiation after 15-MAR-2021.
-  * `bgp_cer_cidr` - BGP customer edge router CIDR.
-  * `bgp_ibm_asn` - IBM BGP ASN.
-  * `bgp_ibm_cidr` - BGP IBM CIDR.
-  * `bgp_status` - Gateway BGP status.
-  * `completion_notice_reject_reason` - Reason for completion notice rejection. Only included on type=dedicated gateways with a rejected completion notice.
-  * `cross_connect_router` - Cross connect router. Only included on type=dedicated gateways.
-  * `link_status` - Gateway link status. Only included on type=dedicated gateways.
-  * `port` - Port Identifier.
-  * `provider_api_managed` - Indicates whether gateway was created through a provider portal. If true, gateway can only be changed or deleted through the corresponding provider portal.
-  * `vlan` - VLAN allocated for this gateway. Only set for type=connect gateways created directly through the IBM portal.
+## Attribute reference
+Review the Attribute reference that you can access after your resource is created. 
 
+- `gateways` - (String) List of all the Direct Link Gateways in the IBM Cloud infrastructure.
+    - `bgp_asn` - (String) Customer BGP ASN.
+    - `bgp_base_cidr` - (String) The BGP base CIDR.
+    - `bgp_cer_cidr` - (String) The BGP customer edge router CIDR.
+    - `bgp_ibm_asn` - (String) The IBM BGP ASN.
+    - `bgp_ibm_cidr` - (String) The IBM BGP  CIDR.
+    - `bgp_status` - (String) The gateway BGP status.
+    - `completion_notice_reject_reason` - (String) The reason for completion notice rejection. Only included on a dedicated gateways type with a rejected completion notice.
+    - `cross_connect_router` - (String) The cross connect router. Only included on a dedicated gateways type..
+    |`link_status` |String| The gateway link status. Only included on a dedicated gateways type.
+    - `created_at` - (String) The date and time resource is created.
+    - `crn` - (String) The CRN of the gateway.
+    - `global` - (Bool) Gateway with global routing as **true** can connect networks outside your associated region.
+    - `id` - (String) The unique identifier of the gateway.
+    - `location_display_name` - (String) Long name of the gateway location.
+    - `location_name` - (String) The location name of the gateway.
+    - `metered` - (String) Metered billing option. If set **true** gateway usage is billed per GB. Otherwise, flat rate is charged for the gateway.
+    - `name` - (String) The unique user defined name of the gateway.
+    - `operational_status` - (String) The gateway operational status.
+    - `port` - (Integer) The port identifier.
+    - `provider_api_managed` - (Bool) Indicates the gateway is created through a provider portal. If set **true**, gateway can only be changed. If set **false**, gateway is deleted through the corresponding provider portal.
+    - `resource_group` - (String) The resource group identifier.
+    - `speed_mbps` - (String) The gateway speed in MBPS.
+    - `type` - (String) The gateway type.
+    - `vlan` - (String) The VLAN allocated for the gateway. Only set for `type=connect` gateways created directly through the IBM portal.

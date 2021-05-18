@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_provider_gateway"
@@ -7,15 +6,15 @@ description: |-
   Manages IBM Direct Link Provider Gateway.
 ---
 
-# ibm\_dl_provider_gateway
+# `ibm_dl_provider_gateway`
 
-Provides a direct link provider gateway resource. This allows direct link provider gateway to be created, and updated and deleted.
+Create, update, or delete a Direct Link Provider Gateway by using the Direct Link Provider Gateway resource. For more information, refer to [about Direct Link](https://cloud.ibm.com/docs/dl?topic=dl-dl-about#use-case-connect).
 
-## Example Usage
-In the following example, you can create Direct link Provider gateway:
 
-```hcl
+## Example usage to create Direct Link of dedicated type
+In the following example, you can create Direct Link provider gateway:
 
+```
 resource ibm_dl_provider_gateway test_dl_provider_gateway {
   bgp_asn =  64999
   bgp_ibm_cidr =  "169.254.0.29/30"
@@ -24,44 +23,49 @@ resource ibm_dl_provider_gateway test_dl_provider_gateway {
   speed_mbps = 1000 
   port = "434-c749-4f1d-b190-22"
   customer_account_id = "0c474da-c749-4f1d-b190-2333"
-}   
+} 
 ```
 
-## Argument Reference
+## Argument reference
+Review the input parameters that you can specify for your resource. 
 
-The following arguments are supported:
-
-* `bgp_asn` - (Required, Forces new resource, integer) The BGP ASN of the Gateway to be created. Example: 64999
-* `name` - (Required, boolean) The unique user-defined name for this gateway. Example: myGateway
-* `speed_mbps` - (Required, integer) Gateway speed in megabits per second. Example: 1000
-* `bgp_cer_cidr` - (Optional, Forces new resource, string) BGP customer edge router CIDR. Specify a value within bgp_base_cidr. If bgp_base_cidr is 169.254.0.0/16, this field can be ommitted and a CIDR will be selected automatically. Example: 10.254.30.78/30
-* `bgp_ibm_cidr` - (Optional, Forces new resource, string) BGP IBM CIDR. Specify a value within bgp_base_cidr. If bgp_base_cidr is 169.254.0.0/16, this field can be ommitted and a CIDR will be selected automatically. Example: 10.254.30.77/30 
-* `customer_account_id` - (Required,Forces new resource, string) Customer IBM Cloud account ID for the new gateway. A gateway object containing the pending create request will become available in the specified account.
-* `port` - (Required , Forces new resource, string) gateway port
-
+- `bgp_asn`- (Required, Forces new resource, Integer) The BGP ASN of the gateway to be created. For example, `64999`.
+- `bgp_cer_cidr` - (Optional, Forces new resource, String) The BGP customer edge router CIDR. Specify a value within bgp_base_cidr. If bgp_base_cidr is `169.254.0.0/16`, this parameter can exclude and a CIDR is selected automatically. For example, `10.254.30.78/30`.
+- `bgp_ibm_cidr` - (Optional, Forces new resource, String) The IBM BGP CIDR. Specify a value within bgp_base_cidr. If bgp_base_cidr is `169.254.0.0/16`, this parameter can exclude and a CIDR is selected automatically. For example, `10.254.30.77/30`.
+- `customer_account_id` - (Required, Forces new resource, String) The customer IBM Cloud account ID for the new gateway. A gateway object contains the pending create request to be available in the specified account.
+- `name` - (Required, String) The unique user-defined name for this gateway. Example: `myGateway`.
+- `port` - (Required, Forces new resource, String) The gateway port for type to connect gateway.
+- `speed_mbps`- (Required, Integer) The gateway speed in megabits per second. For example, `10.254.30.78/30`.
 
 
-## Attribute Reference
+## Attribute reference
+Review the output parameters that you can access after your resource is created. 
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of this gateway. 
-* `name` - The unique user-defined name for this gateway. 
-* `crn` - The CRN (Cloud Resource Name) of this gateway. 
-* `created_at` - The date and time resource was created.
-* `bgp_asn` - IBM BGP ASN.
-* `bgp_status` - Gateway BGP status.
-* `customer_account_id` - Customer IBM Cloud account ID for the new gateway. A gateway object containing the pending create request will become available in the specified account.
-* `port` - gateway port for type=connect gateways
-* `vlan` - VLAN allocated for this gateway. Only set for type=connect gateways created directly through the IBM portal. 
-* `provider_api_managed` - Indicates whether gateway changes must be made via a provider portal.
-* `operational_status` - Gateway operational status.
-Possible values:[configuring, create_pending, create_rejected, delete_pending, provisioned ]
+- `bgp_asn` - (String) The IBM BGP ASN.
+- `bgp_status` - (String) The gateway BGP status.
+- `crn` - (String) The CRN of the gateway.
+- `created_at` - (String) The date and time resource created.
+- `customer_account_id` - (String) The customer IBM Cloud account ID for the new gateway. A gateway object contains the pending create request to be available in the specified account.
+- `id` - (String) The unique ID of the gateway.
+- `name` - (String) The unique user-defined name for the gateway.
+- `operational_status` - (String) The gateway operational status. Supported values are`configuring`, `create_pending`, `create_rejected`, `delete_pending`, `provisioned`.
+- `port` - (String) The gateway port for `type=connect` gateways.
+- `provider_api_managed` - (String) Indicates whether the gateway changes need to be made via a provider portal.
+- `vlan` - (String) The VLAN allocated for the gateway. You can set only for `type=connect` gateways created directly through the IBM portal.
 
 ## Import
+The `ibm_dl_provider_gateway` can be imported by using gateway ID. 
 
-ibm_dl_provider_gateway can be imported using gateway id, eg
+**Syntax**
 
 ```
-$ terraform import ibm_dl_provider_gateway.test_dl_provider_gateway 5ffda12064634723b079acdb018ef308
+terraform import ibm_dl_provider_gateway.<gateway_ID>
 ```
+
+**Example**
+
+```
+terraform import ibm_dl_provider_gateway.test_dl_provider_gateway 5ffda12064634723b079acdb018ef308
+```
+
+

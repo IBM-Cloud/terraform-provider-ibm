@@ -6,13 +6,14 @@ description: |-
   Manages cm_offering_instance.
 ---
 
-# ibm\_cm_offering_instance
+# `ibm_cm_offering_instance`
 
-Provides a resource for cm_offering_instance. This allows cm_offering_instance to be created, updated and deleted.
+Create, modify, or delete an `ibm_cm_offering_instance` resources. You can manage the settings for all catalogs across your account. Management tasks include setting the visibility of the IBM Cloud catalog and controlling access to products in the public catalog and private catalogs for users in your account. For more information, about managing catalog, refer to [catalog management settings](https://cloud.ibm.com/docs/account?topic=account-account-getting-started).
 
-## Example Usage
 
-```hcl
+## Example usage
+
+```
 resource "ibm_cm_offering_instance" "cm_offering_instance" {
   catalog_id = "catalog_id"
   label = "placeholder"
@@ -25,25 +26,26 @@ resource "ibm_cm_offering_instance" "cm_offering_instance" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the input parameters that you can specify for your resource. 
 
-The following arguments are supported:
+- `catalog_id` - (Required, String) The catalog ID an instance  is created.
+- `cluster_id` - (Required, String) The cluster ID.
+- `cluster_region` - (Required, String) The cluster region for example, `us-south`.
+- `cluster_namespaces`- (Required, List) The list of target namespaces to install into.
+- `cluster_all_namespaces`- (Required, Bool) Designate to install into all namespaces.
+- `kind_format` - (Required, String) The format an instance such as `helm`, `operator`, `ova`. **Note** Currently the only supported formate is `operator`.
+- `label` - (Required, String) The label for this instance.
+- `offering_id` - (Required, String) The offering ID an instance is created .
+- `version` - (Required, String) The version an instance was installed from (but not from the version ID).
 
-* `label` - (Required, string) the label for this instance.
-* `catalog_id` - (Required, string) Catalog ID this instance was created from.
-* `offering_id` - (Required, string) Offering ID this instance was created from.
-* `kind_format` - (Required, string) the format this instance has (helm, operator, ova...).
-  **NOTE**: currently the only supported format is `operator`
-* `version` - (Required, string) The version this instance was installed from (not version id).
-* `cluster_id` - (Required, string) Cluster ID.
-* `cluster_region` - (Required, string) Cluster region (e.g., us-south).
-* `cluster_namespaces` - (Required, List) List of target namespaces to install into.
-* `cluster_all_namespaces` - (Required, bool) designate to install into all namespaces.
 
-## Attribute Reference
+## Attribute reference
+Review the output parameters that you can access after your resource is created. 
 
-In addition to all arguments above, the following attributes are exported:
+- `crn` - (String) The platform CRN for an instance.
+- `id` - (String) The unique identifier of the `cm_offering_instance`.
+- `url` - (String) The URL reference to an object.
 
-* `id` - The unique identifier of the cm_offering_instance.
-* `url` - Url reference to this object.
-* `crn` - Platform CRN for this instance.
+
+

@@ -3,43 +3,38 @@ subcategory: "Catalog Management"
 layout: "ibm"
 page_title: "IBM : cm_catalog"
 description: |-
-  Get information about cm_catalog
+  Get information about cm_catalog.
 ---
 
-# ibm\_cm_catalog
+# `ibm_cm_catalog`
 
-Provides a read-only data source for cm_catalog. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Create, modify, or delete an `cm_catalog` resources. You can manage the settings for all catalogs across your account. For more information, about managing catalog, refer to [catalog management settings](https://cloud.ibm.com/docs/account?topic=account-account-getting-started).
 
-## Example Usage
 
-```hcl
+## Example usage
+
+```
 data "cm_catalog" "cm_catalog" {
 	catalog_identifier = "catalog_identifier"
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the input parameters that you can specify for your data source. 
+ 
+- `catalog_identifier` - (Required, String) The catalog identifier.
 
-The following arguments are supported:
 
-* `catalog_identifier` - (Required, string) Catalog identifier.
+## Attribute reference
+Review the output parameters that you can access after your data source is created. 
 
-## Attribute Reference
+- `catalog_icon_url` - (String) The URL for an icon associated with the catalog.
+- `crn` - (String) The CRN associated with the catalog.
+- `id` - (String) The unique identifier of the `cm_catalog`.
+- `label` - (String) Display the name in the requested language.
+- `offerings_url` - (String) URL path to the offerings.
+- `short_description` - (String) The description in the requested language.
+- `tags` - (String) The list of tags associated with this catalog.
+- `url` - (String) The URL for the specific catalog.
 
-In addition to all arguments above, the following attributes are exported:
 
-* `id` - The unique identifier of the cm_catalog.
-
-* `label` - Display Name in the requested language.
-
-* `short_description` - Description in the requested language.
-
-* `catalog_icon_url` - URL for an icon associated with this catalog.
-
-* `tags` - List of tags associated with this catalog.
-
-* `url` - The url for this specific catalog.
-
-* `crn` - CRN associated with the catalog.
-
-* `offerings_url` - URL path to offerings.
