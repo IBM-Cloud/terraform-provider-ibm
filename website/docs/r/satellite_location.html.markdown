@@ -39,10 +39,18 @@ resource "ibm_satellite_location" "create_location" {
 
   cos_config {
     bucket  = var.cos_bucket
-    region  = var.ibm_region
   }
 }
 ```
+
+## Timeouts
+
+ibm_satellite_location provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 30 minutes) Used for creating Instance.
+* `update` - (Default 10 minutes) Used for updating Instance.
+* `delete` - (Default 60 minutes) Used for deleting Instance.
+
 
 ## Argument Reference
 
@@ -62,6 +70,7 @@ The following arguments are supported:
     * `secret_access_key` - The HMAC secret access key. 
 * `zones` - (Optional, array of strings) The names for the host zones. For high availability, allocate your hosts across these three zones based on your infrastructure provider zones. ex: [ us-east-1, us-east-2, us-east-3 ]
 * `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`.
+* `tags` - (Optional, array of strings) Tags associated with the resource instance.  
 
 ## Attributes Reference
 
@@ -69,6 +78,13 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the location.
 * `crn` - The CRN for this satellite location.
+* `resource_group_name` - The name of the resource group.
+* `host_attached_count` - The total number of hosts that are attached to the Satellite location.
+* `host_available_count` - The available number of hosts that can be assigned to a cluster resource in the Satellite location.
+* `created_on` - The created time of the satellite location.
+* `ingress_hostname` - The Ingress hostname.
+* `ingress_secret` - The Ingress secret.
+
 
 ## Import
 

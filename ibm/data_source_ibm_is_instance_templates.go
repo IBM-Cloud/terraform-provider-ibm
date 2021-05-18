@@ -238,6 +238,30 @@ func dataSourceIBMISInstanceTemplates() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"placement_target": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The placement restrictions to use for the virtual server instance.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this dedicated host.",
+									},
+									"crn": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this dedicated host.",
+									},
+									"href": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this dedicated host.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -278,6 +302,14 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			identity := instanceProfileIntf.(*vpcv1.InstanceProfileIdentity)
 			template[isInstanceTemplateProfile] = identity.Name
 		}
+
+		if instance.PlacementTarget != nil {
+			placementTargetList := []map[string]interface{}{}
+			placementTargetMap := dataSourceInstanceTemplateCollectionTemplatesPlacementTargetToMap(*instance.PlacementTarget.(*vpcv1.InstancePlacementTargetPrototype))
+			placementTargetList = append(placementTargetList, placementTargetMap)
+			template["placement_target"] = placementTargetList
+		}
+
 		if instance.PrimaryNetworkInterface != nil {
 			interfaceList := make([]map[string]interface{}, 0)
 			currentPrimNic := map[string]interface{}{}
@@ -396,4 +428,20 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 // dataSourceIBMISInstanceTemplatesID returns a reasonable ID for a instance templates list.
 func dataSourceIBMISInstanceTemplatesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
+}
+
+func dataSourceInstanceTemplateCollectionTemplatesPlacementTargetToMap(placementTargetItem vpcv1.InstancePlacementTargetPrototype) (placementTargetMap map[string]interface{}) {
+	placementTargetMap = map[string]interface{}{}
+
+	if placementTargetItem.ID != nil {
+		placementTargetMap["id"] = placementTargetItem.ID
+	}
+	if placementTargetItem.CRN != nil {
+		placementTargetMap["crn"] = placementTargetItem.CRN
+	}
+	if placementTargetItem.Href != nil {
+		placementTargetMap["href"] = placementTargetItem.Href
+	}
+
+	return placementTargetMap
 }

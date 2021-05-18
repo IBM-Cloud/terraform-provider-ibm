@@ -7,16 +7,14 @@ import (
 	"regexp"
 	"testing"
 
-	"strings"
-
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -43,7 +41,7 @@ func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Service(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -71,7 +69,7 @@ func TestAccIBMIAMUserPolicy_With_Service(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_ResourceInstance(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -92,7 +90,7 @@ func TestAccIBMIAMUserPolicy_With_ResourceInstance(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Resource_Group(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -112,7 +110,7 @@ func TestAccIBMIAMUserPolicy_With_Resource_Group(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Resource_Type(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -131,7 +129,7 @@ func TestAccIBMIAMUserPolicy_With_Resource_Type(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_import(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_user_policy.policy"
 
@@ -148,16 +146,41 @@ func TestAccIBMIAMUserPolicy_import(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"resources", "resource_attributes"},
 			},
 		},
 	})
 }
+func TestAccIBMIAMUserPolicy_With_Resource_Attributes(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
 
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyResourceAttributes(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMUserPolicyResourceAttributesUpdate(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMIAMUserPolicy_account_management(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_user_policy.policy"
 
@@ -193,7 +216,7 @@ func TestAccIBMIAMUserPolicy_Invalid_User(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicyWithCustomRole(t *testing.T) {
-	var conf iampapv1.Policy
+	var conf iampolicymanagementv1.Policy
 	crName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	displayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 
@@ -206,7 +229,7 @@ func TestAccIBMIAMUserPolicyWithCustomRole(t *testing.T) {
 				Config: testAccCheckIBMIAMUserPolicyWithCustomRole(crName, displayName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
-					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resources.0.service", "kms"),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "2"),
 				),
 			},
@@ -215,7 +238,7 @@ func TestAccIBMIAMUserPolicyWithCustomRole(t *testing.T) {
 }
 
 func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
-	rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPAPAPI()
+	rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
@@ -231,12 +254,16 @@ func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
 
 		userPolicyID := parts[1]
 
-		// Try to find the key
-		_, err = rsContClient.V1Policy().Get(userPolicyID)
+		getPolicyOptions := rsContClient.NewGetPolicyOptions(
+			userPolicyID,
+		)
 
-		if err == nil {
-			return fmt.Errorf("User policy still exists: %s", rs.Primary.ID)
-		} else if !strings.Contains(err.Error(), "404") {
+		// Try to find the key
+		destroyedPolicy, response, err := rsContClient.GetPolicy(getPolicyOptions)
+
+		if err == nil && *destroyedPolicy.State != "deleted" {
+			return fmt.Errorf("User policy still exists: %s\n", rs.Primary.ID)
+		} else if response.StatusCode != 404 && *destroyedPolicy.State != "deleted" {
 			return fmt.Errorf("Error waiting for user policy (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}
@@ -244,7 +271,7 @@ func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMUserPolicyExists(n string, obj iampapv1.Policy) resource.TestCheckFunc {
+func testAccCheckIBMIAMUserPolicyExists(n string, obj iampolicymanagementv1.Policy) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -252,7 +279,7 @@ func testAccCheckIBMIAMUserPolicyExists(n string, obj iampapv1.Policy) resource.
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPAPAPI()
+		rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPolicyManagementV1API()
 		if err != nil {
 			return err
 		}
@@ -264,12 +291,15 @@ func testAccCheckIBMIAMUserPolicyExists(n string, obj iampapv1.Policy) resource.
 		}
 		userPolicyID := parts[1]
 
-		policy, err := rsContClient.V1Policy().Get(userPolicyID)
+		getPolicyOptions := rsContClient.NewGetPolicyOptions(
+			userPolicyID,
+		)
+
+		policy, _, err := rsContClient.GetPolicy(getPolicyOptions)
 		if err != nil {
 			return err
 		}
-
-		obj = policy
+		obj = *policy
 		return nil
 	}
 }
@@ -395,6 +425,7 @@ func testAccCheckIBMIAMUserPolicyResourceType() string {
 	`, IAMUser)
 }
 
+// TODO: do we need this test? It follows pattern of other policies, but has conflict with existing policy
 func testAccCheckIBMIAMUserPolicyImport(name string) string {
 	return fmt.Sprintf(`
 
@@ -444,11 +475,47 @@ func testAccCheckIBMIAMUserPolicyWithCustomRole(crName, displayName string) stri
 		resource "ibm_iam_user_policy" "policy" {
 			ibm_id = "%s"
 			roles  = [ibm_iam_custom_role.customrole.display_name,"Viewer"]
-			tags   = ["tag1"]
 			resources {
 				service = "kms"
 			  }
 	  	}
 
 	`, crName, displayName, IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyResourceAttributes() string {
+	return fmt.Sprintf(`
+  
+	  resource "ibm_iam_user_policy" "policy" {
+		ibm_id = "%s"
+		roles  = ["Viewer"]
+		resource_attributes {
+			name     = "resource"
+			value    = "test*"
+			operator = "stringMatch"
+		}
+		resource_attributes {
+			name     = "serviceName"
+			value    = "messagehub"
+		}
+	  }
+	  
+`, IAMUser)
+}
+func testAccCheckIBMIAMUserPolicyResourceAttributesUpdate() string {
+	return fmt.Sprintf(`
+	resource "ibm_iam_user_policy" "policy" {
+		ibm_id = "%s"
+		roles  = ["Viewer"]
+		resource_attributes {
+			name     = "resource"
+			value    = "test*"
+			operator = "stringMatch"
+		}
+		resource_attributes {
+			name     = "serviceName"
+			value    = "messagehub"
+		}
+	  }
+	`, IAMUser)
 }

@@ -7,9 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -123,7 +121,7 @@ func resourceIBMIAMCustomRoleValidator() *ResourceValidator {
 }
 
 func resourceIBMIAMCustomRoleCreate(d *schema.ResourceData, meta interface{}) error {
-	iampapv2Client, err := meta.(ClientSession).IAMPAPAPIV2()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
@@ -139,40 +137,43 @@ func resourceIBMIAMCustomRoleCreate(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	createRoleReq := iampapv2.CreateRoleRequest{
-		Name:        name,
-		DisplayName: displayName,
-		Description: description,
-		ServiceName: serviceName,
+	roleOptions := &iampolicymanagementv1.CreateRoleOptions{
+		DisplayName: &displayName,
 		Actions:     actionList,
-		AccountID:   userDetails.userAccount,
+		Name:        &name,
+		AccountID:   &userDetails.userAccount,
+		ServiceName: &serviceName,
+		Description: &description,
 	}
 
-	response, err := iampapv2Client.IAMRoles().Create(createRoleReq)
-	if err != nil {
-		return fmt.Errorf("Error creating Custom Roles: %s", err)
+	role, response, err := iamPolicyManagementClient.CreateRole(roleOptions)
+	if err != nil || role == nil {
+		return fmt.Errorf("Error creating Custom Roles: %s\n%s", err, response)
 	}
 
-	d.SetId(response.ID)
+	d.SetId(*role.ID)
 
 	return resourceIBMIAMCustomRoleRead(d, meta)
 }
 
 func resourceIBMIAMCustomRoleRead(d *schema.ResourceData, meta interface{}) error {
-	iampapv2Client, err := meta.(ClientSession).IAMPAPAPIV2()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
 
 	roleID := d.Id()
+	roleOptions := &iampolicymanagementv1.GetRoleOptions{
+		RoleID: &roleID,
+	}
 
-	role, _, err := iampapv2Client.IAMRoles().Get(roleID)
-	if err != nil && !strings.Contains(err.Error(), "404") {
-		return fmt.Errorf("Error retrieving Custom Roles: %s", err)
-	} else if err != nil && strings.Contains(err.Error(), "404") {
-		d.SetId("")
-
-		return nil
+	role, response, err := iamPolicyManagementClient.GetRole(roleOptions)
+	if err != nil || role == nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error retrieving Custom Roles: %s\n%s", err, response)
 	}
 
 	d.Set(iamCRDisplayName, role.DisplayName)
@@ -180,10 +181,10 @@ func resourceIBMIAMCustomRoleRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set(iamCRDescription, role.Description)
 	d.Set(iamCRServiceName, role.ServiceName)
 	d.Set(iamCRActions, role.Actions)
-	d.Set("crn", role.Crn)
+	d.Set("crn", role.CRN)
 
 	d.Set(ResourceName, role.Name)
-	d.Set(ResourceCRN, role.Crn)
+	d.Set(ResourceCRN, role.CRN)
 	rcontroller, err := getBaseController(meta)
 	if err != nil {
 		return err
@@ -196,27 +197,42 @@ func resourceIBMIAMCustomRoleRead(d *schema.ResourceData, meta interface{}) erro
 
 func resourceIBMIAMCustomRoleUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	iampapv2Client, err := meta.(ClientSession).IAMPAPAPIV2()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
 	roleID := d.Id()
 
-	updateReq := iampapv2.UpdateRoleRequest{
-		Description: d.Get(iamCRDescription).(string),
-		Actions:     expandStringList(d.Get(iamCRActions).([]interface{})),
-		DisplayName: d.Get(iamCRDisplayName).(string),
-	}
+	updatedDescription := d.Get(iamCRDescription).(string)
+	updatedActions := expandStringList(d.Get(iamCRActions).([]interface{}))
+	updatedDisplayName := d.Get(iamCRDisplayName).(string)
 
 	if d.HasChange("display_name") || d.HasChange("desciption") || d.HasChange("actions") {
-		_, etag, err := iampapv2Client.IAMRoles().Get(roleID)
-		if err != nil {
-			return fmt.Errorf("Error retrieving Custom Role: %s", err)
+		roleGetOptions := &iampolicymanagementv1.GetRoleOptions{
+			RoleID: &roleID,
 		}
 
-		_, err = iampapv2Client.IAMRoles().Update(updateReq, roleID, etag)
+		role, response, err := iamPolicyManagementClient.GetRole(roleGetOptions)
+		if err != nil || role == nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			return fmt.Errorf("Error retrieving Custom Roles: %s\n%s", err, response)
+		}
+
+		roleETag := response.Headers.Get("ETag")
+		roleUpdateOptions := &iampolicymanagementv1.UpdateRoleOptions{
+			RoleID:      &roleID,
+			IfMatch:     &roleETag,
+			DisplayName: &updatedDisplayName,
+			Description: &updatedDescription,
+			Actions:     updatedActions,
+		}
+
+		_, response, err = iamPolicyManagementClient.UpdateRole(roleUpdateOptions)
 		if err != nil {
-			return fmt.Errorf("Error updating Custom Role: %s", err)
+			return fmt.Errorf("Error updating Custom Roles: %s\n%s", err, response)
 		}
 	}
 
@@ -224,16 +240,19 @@ func resourceIBMIAMCustomRoleUpdate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMIAMCustomRoleDelete(d *schema.ResourceData, meta interface{}) error {
-	iampapv2Client, err := meta.(ClientSession).IAMPAPAPIV2()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
 
 	roleID := d.Id()
+	roleDeleteOptions := &iampolicymanagementv1.DeleteRoleOptions{
+		RoleID: &roleID,
+	}
 
-	err = iampapv2Client.IAMRoles().Delete(roleID)
+	response, err := iamPolicyManagementClient.DeleteRole(roleDeleteOptions)
 	if err != nil && !strings.Contains(err.Error(), "404") {
-		return fmt.Errorf("Error deleting Custom Roles: %s", err)
+		return fmt.Errorf("Error deleting Custom Roles: %s\n%s", err, response)
 	}
 
 	d.SetId("")
@@ -242,21 +261,23 @@ func resourceIBMIAMCustomRoleDelete(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMIAMCustomRoleExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	iampapv2Client, err := meta.(ClientSession).IAMPAPAPIV2()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return false, err
 	}
 	roleID := d.Id()
 
-	role, _, err := iampapv2Client.IAMRoles().Get(roleID)
-	if err != nil {
-		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
-				return false, nil
-			}
-		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+	roleGetOptions := &iampolicymanagementv1.GetRoleOptions{
+		RoleID: &roleID,
 	}
 
-	return role.ID == roleID, nil
+	role, response, err := iamPolicyManagementClient.GetRole(roleGetOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error retrieving Custom Roles: %s\n%s", err, response)
+	}
+
+	return *role.ID == roleID, nil
 }

@@ -8,22 +8,32 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 func resourceIBMIAMServicePolicy() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMIAMServicePolicyCreate,
-		Read:     resourceIBMIAMServicePolicyRead,
-		Update:   resourceIBMIAMServicePolicyUpdate,
-		Delete:   resourceIBMIAMServicePolicyDelete,
-		Exists:   resourceIBMIAMServicePolicyExists,
-		Importer: &schema.ResourceImporter{},
+		Create: resourceIBMIAMServicePolicyCreate,
+		Read:   resourceIBMIAMServicePolicyRead,
+		Update: resourceIBMIAMServicePolicyUpdate,
+		Delete: resourceIBMIAMServicePolicyDelete,
+		Exists: resourceIBMIAMServicePolicyExists,
+		Importer: &schema.ResourceImporter{
+			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				resources, resourceAttributes, err := importServicePolicy(d, meta)
+				if err != nil {
+					return nil, fmt.Errorf("Error reading resource ID: %s", err)
+				}
+				d.Set("resources", resources)
+				d.Set("resource_attributes", resourceAttributes)
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 
 		Schema: map[string]*schema.Schema{
 			"iam_service_id": {
@@ -50,9 +60,8 @@ func resourceIBMIAMServicePolicy() *schema.Resource {
 			"resources": {
 				Type:          schema.TypeList,
 				Optional:      true,
-				Computed:      true,
 				MaxItems:      1,
-				ConflictsWith: []string{"account_management"},
+				ConflictsWith: []string{"account_management", "resource_attributes"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"service": {
@@ -101,12 +110,38 @@ func resourceIBMIAMServicePolicy() *schema.Resource {
 				},
 			},
 
+			"resource_attributes": {
+				Type:          schema.TypeSet,
+				Optional:      true,
+				Description:   "Set resource attributes.",
+				ConflictsWith: []string{"resources", "account_management"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Name of attribute.",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Value of attribute.",
+						},
+						"operator": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "stringEquals",
+							Description: "Operator of attribute.",
+						},
+					},
+				},
+			},
 			"account_management": {
 				Type:          schema.TypeBool,
 				Default:       false,
 				Optional:      true,
 				Description:   "Give access to all account management services",
-				ConflictsWith: []string{"resources"},
+				ConflictsWith: []string{"resources", "resource_attributes"},
 			},
 
 			"tags": {
@@ -114,11 +149,6 @@ func resourceIBMIAMServicePolicy() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
-			},
-
-			"version": {
-				Type:     schema.TypeString,
-				Computed: true,
 			},
 		},
 	}
@@ -149,47 +179,62 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	var policy iampapv1.Policy
-
-	policy, err = generateAccountPolicyV2(d, meta)
+	policyOptions, err := generatePolicyOptions(d, meta)
 	if err != nil {
 		return err
 	}
-	policy.Resources[0].SetAccountID(userDetails.userAccount)
 
-	policy.Subjects = []iampapv1.Subject{
-		{
-			Attributes: []iampapv1.Attribute{
-				{
-					Name:  "iam_id",
-					Value: iamID,
-				},
-			},
-		},
+	subjectAttribute := &iampolicymanagementv1.SubjectAttribute{
+		Name:  core.StringPtr("iam_id"),
+		Value: &iamID,
 	}
 
-	policy.Type = iampapv1.AccessPolicyType
+	policySubjects := &iampolicymanagementv1.PolicySubject{
+		Attributes: []iampolicymanagementv1.SubjectAttribute{*subjectAttribute},
+	}
 
-	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	accountIDResourceAttribute := &iampolicymanagementv1.ResourceAttribute{
+		Name:     core.StringPtr("accountId"),
+		Value:    core.StringPtr(userDetails.userAccount),
+		Operator: core.StringPtr("stringEquals"),
+	}
+
+	policyResources := iampolicymanagementv1.PolicyResource{
+		Attributes: append(policyOptions.Resources[0].Attributes, *accountIDResourceAttribute),
+	}
+
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
-	servicePolicy, err := iampapClient.V1Policy().Create(policy)
+
+	createPolicyOptions := iamPolicyManagementClient.NewCreatePolicyOptions(
+		"access",
+		[]iampolicymanagementv1.PolicySubject{*policySubjects},
+		policyOptions.Roles,
+		[]iampolicymanagementv1.PolicyResource{policyResources},
+	)
+
+	servicePolicy, _, err := iamPolicyManagementClient.CreatePolicy(createPolicyOptions)
 
 	if err != nil {
 		return fmt.Errorf("Error creating servicePolicy: %s", err)
 	}
 	if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
 		serviceIDUUID := v.(string)
-		d.SetId(fmt.Sprintf("%s/%s", serviceIDUUID, servicePolicy.ID))
+		d.SetId(fmt.Sprintf("%s/%s", serviceIDUUID, *servicePolicy.ID))
 	} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
 		iamID := v.(string)
-		d.SetId(fmt.Sprintf("%s/%s", iamID, servicePolicy.ID))
+		d.SetId(fmt.Sprintf("%s/%s", iamID, *servicePolicy.ID))
 	}
+
+	getPolicyOptions := iamPolicyManagementClient.NewGetPolicyOptions(
+		*servicePolicy.ID,
+	)
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		_, err = iampapClient.V1Policy().Get(servicePolicy.ID)
+		_, _, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 
 		if err != nil {
 			if apiErr, ok := err.(bmxerror.RequestFailure); ok {
@@ -203,7 +248,7 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 	})
 
 	if isResourceTimeoutError(err) {
-		_, err = iampapClient.V1Policy().Get(servicePolicy.ID)
+		_, _, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	}
 	if err != nil {
 		return fmt.Errorf("error fetching service  policy: %w", err)
@@ -214,7 +259,7 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 
 func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) error {
 
-	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
@@ -226,7 +271,10 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 	serviceIDUUID := parts[0]
 	servicePolicyID := parts[1]
 
-	servicePolicy, err := iampapClient.V1Policy().Get(servicePolicyID)
+	getPolicyOptions := iamPolicyManagementClient.NewGetPolicyOptions(
+		servicePolicyID,
+	)
+	servicePolicy, _, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	if err != nil {
 		return fmt.Errorf("Error retrieving servicePolicy: %s", err)
 	}
@@ -238,16 +286,21 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 
 	roles := make([]string, len(servicePolicy.Roles))
 	for i, role := range servicePolicy.Roles {
-		roles[i] = role.Name
+		roles[i] = *role.DisplayName
 	}
 	d.Set("roles", roles)
-	d.Set("version", servicePolicy.Version)
-	d.Set("resources", flattenPolicyResource(servicePolicy.Resources))
+
+	if _, ok := d.GetOk("resources"); ok {
+		d.Set("resources", flattenPolicyResource(servicePolicy.Resources))
+	}
+	if _, ok := d.GetOk("resource_attributes"); ok {
+		d.Set("resource_attributes", flattenPolicyResourceAttributes(servicePolicy.Resources))
+	}
 	if len(servicePolicy.Resources) > 0 {
-		if servicePolicy.Resources[0].GetAttribute("serviceType") == "service" {
+		if *getResourceAttribute("serviceType", servicePolicy.Resources[0]) == "service" {
 			d.Set("account_management", false)
 		}
-		if servicePolicy.Resources[0].GetAttribute("serviceType") == "platform_service" {
+		if *getResourceAttribute("serviceType", servicePolicy.Resources[0]) == "platform_service" {
 			d.Set("account_management", true)
 		}
 	}
@@ -257,7 +310,7 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 
 func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("account_management") {
+	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") {
 
 		parts, err := idParts(d.Id())
 		if err != nil {
@@ -287,34 +340,57 @@ func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{})
 		if err != nil {
 			return err
 		}
-		var policy iampapv1.Policy
 
-		policy, err = generateAccountPolicyV2(d, meta)
+		createPolicyOptions, err := generatePolicyOptions(d, meta)
 		if err != nil {
 			return err
 		}
 
-		policy.Resources[0].SetAccountID(userDetails.userAccount)
-
-		policy.Subjects = []iampapv1.Subject{
-			{
-				Attributes: []iampapv1.Attribute{
-					{
-						Name:  "iam_id",
-						Value: iamID,
-					},
-				},
-			},
+		accountIDResourceAttribute := &iampolicymanagementv1.ResourceAttribute{
+			Name:     core.StringPtr("accountId"),
+			Value:    core.StringPtr(userDetails.userAccount),
+			Operator: core.StringPtr("stringEquals"),
 		}
 
-		policy.Type = iampapv1.AccessPolicyType
+		policyResources := iampolicymanagementv1.PolicyResource{
+			Attributes: append(createPolicyOptions.Resources[0].Attributes, *accountIDResourceAttribute),
+		}
 
-		iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+		subjectAttribute := &iampolicymanagementv1.SubjectAttribute{
+			Name:  core.StringPtr("iam_id"),
+			Value: &iamID,
+		}
+		policySubjects := &iampolicymanagementv1.PolicySubject{
+			Attributes: []iampolicymanagementv1.SubjectAttribute{*subjectAttribute},
+		}
+
+		iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 		if err != nil {
 			return err
 		}
 
-		_, err = iampapClient.V1Policy().Update(servicePolicyID, policy, d.Get("version").(string))
+		getPolicyOptions := iamPolicyManagementClient.NewGetPolicyOptions(
+			servicePolicyID,
+		)
+		policy, response, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+		if err != nil || policy == nil {
+			if response != nil && response.StatusCode == 404 {
+				return nil
+			}
+			return fmt.Errorf("Error retrieving Policy: %s\n%s", err, response)
+		}
+
+		servicePolicyETag := response.Headers.Get("ETag")
+		updatePolicyOptions := iamPolicyManagementClient.NewUpdatePolicyOptions(
+			servicePolicyID,
+			servicePolicyETag,
+			"access",
+			[]iampolicymanagementv1.PolicySubject{*policySubjects},
+			createPolicyOptions.Roles,
+			[]iampolicymanagementv1.PolicyResource{policyResources},
+		)
+
+		_, _, err = iamPolicyManagementClient.UpdatePolicy(updatePolicyOptions)
 		if err != nil {
 			return fmt.Errorf("Error updating service policy: %s", err)
 		}
@@ -326,7 +402,7 @@ func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceIBMIAMServicePolicyDelete(d *schema.ResourceData, meta interface{}) error {
-	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
@@ -337,7 +413,11 @@ func resourceIBMIAMServicePolicyDelete(d *schema.ResourceData, meta interface{})
 	}
 	servicePolicyID := parts[1]
 
-	err = iampapClient.V1Policy().Delete(servicePolicyID)
+	deletePolicyOptions := iamPolicyManagementClient.NewDeletePolicyOptions(
+		servicePolicyID,
+	)
+
+	_, err = iamPolicyManagementClient.DeletePolicy(deletePolicyOptions)
 	if err != nil {
 		return fmt.Errorf("Error deleting service policy: %s", err)
 	}
@@ -348,7 +428,7 @@ func resourceIBMIAMServicePolicyDelete(d *schema.ResourceData, meta interface{})
 }
 
 func resourceIBMIAMServicePolicyExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return false, err
 	}
@@ -359,7 +439,11 @@ func resourceIBMIAMServicePolicyExists(d *schema.ResourceData, meta interface{})
 	serviceIDUUID := parts[0]
 	servicePolicyID := parts[1]
 
-	servicePolicy, err := iampapClient.V1Policy().Get(servicePolicyID)
+	getPolicyOptions := iamPolicyManagementClient.NewGetPolicyOptions(
+		servicePolicyID,
+	)
+
+	servicePolicy, _, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
@@ -369,72 +453,30 @@ func resourceIBMIAMServicePolicyExists(d *schema.ResourceData, meta interface{})
 		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
 
-	tempID := fmt.Sprintf("%s/%s", serviceIDUUID, servicePolicy.ID)
+	tempID := fmt.Sprintf("%s/%s", serviceIDUUID, *servicePolicy.ID)
 
 	return tempID == d.Id(), nil
 }
 
-// func generatePolicy(d *schema.ResourceData, meta interface{}, accountID string) (models.Policy, error) {
+func importServicePolicy(d *schema.ResourceData, meta interface{}) (interface{}, interface{}, error) {
 
-// 	policyResources := []models.PolicyResource{}
-// 	var resources []interface{}
-// 	var serviceName string
-
-// 	if res, ok := d.GetOk("resources"); ok {
-// 		resources = res.([]interface{})
-// 		for _, resource := range resources {
-// 			r, _ := resource.(map[string]interface{})
-// 			serviceName = r["service"].(string)
-// 			resourceParam := models.PolicyResource{
-// 				ServiceName:     r["service"].(string),
-// 				ServiceInstance: r["resource_instance_id"].(string),
-// 				Region:          r["region"].(string),
-// 				ResourceType:    r["resource_type"].(string),
-// 				Resource:        r["resource"].(string),
-// 				AccountID:       accountID,
-// 				ResourceGroupID: r["resource_group_id"].(string),
-// 			}
-// 			policyResources = append(policyResources, resourceParam)
-// 		}
-// 	} else {
-// 		policyResources = append(policyResources, models.PolicyResource{AccountID: accountID})
-// 	}
-
-// 	iamClient, err := meta.(ClientSession).IAMAPI()
-// 	if err != nil {
-// 		return models.Policy{}, err
-// 	}
-
-// 	iamRepo := iamClient.ServiceRoles()
-
-// 	var roles []models.PolicyRole
-
-// 	if serviceName == "" {
-// 		roles, err = iamRepo.ListSystemDefinedRoles()
-// 	} else {
-// 		roles, err = iamRepo.ListServiceRoles(serviceName)
-// 	}
-// 	if err != nil {
-// 		return models.Policy{}, err
-// 	}
-
-// 	policyRoles, err := getRolesFromRoleNames(expandStringList(d.Get("roles").([]interface{})), roles)
-// 	if err != nil {
-// 		return models.Policy{}, err
-// 	}
-
-// 	return models.Policy{Roles: policyRoles, Resources: policyResources}, nil
-// }
-
-func getRolesFromRoleNames(roleNames []string, roles []models.PolicyRole) ([]models.PolicyRole, error) {
-
-	filteredRoles := []models.PolicyRole{}
-	for _, roleName := range roleNames {
-		role, err := findRoleByName(roles, roleName)
-		if err != nil {
-			return []models.PolicyRole{}, err
-		}
-		filteredRoles = append(filteredRoles, role)
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
+	if err != nil {
+		return nil, nil, err
 	}
-	return filteredRoles, nil
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return nil, nil, err
+	}
+	servicePolicyID := parts[1]
+	getPolicyOptions := iamPolicyManagementClient.NewGetPolicyOptions(
+		servicePolicyID,
+	)
+	servicePolicy, _, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Error retrieving servicePolicy: %s", err)
+	}
+	resources := flattenPolicyResource(servicePolicy.Resources)
+	resource_attributes := flattenPolicyResourceAttributes(servicePolicy.Resources)
+	return resources, resource_attributes, nil
 }

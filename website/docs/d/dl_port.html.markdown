@@ -6,34 +6,30 @@ description: |-
   Manages IBM Cloud Infrastructure Direct Link Port.
 ---
 
-# ibm\_dl_port
+# `ibm_dl_port`
 
-Import the details of an existing IBM Cloud Infrastructure direct link port as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Import the details of an existing IBM Cloud Infrastructure Direct Link Offering Port. For more information, about Direct Link Offering Port, see [Megaport ordering considerations](https://cloud.ibm.com/docs/dl?topic=dl-megaport).
 
 
-## Example Usage
+## Example usage
 
-```hcl
-data "ibm_dl_port" "ds_dlport" {
-    port_id = "dl_port_id"
-}
+```
+  data "ibm_dl_port" "ds_dlport" {
+      port_id = "dl_port_id"
+   }
 ```
 
-## Argument Reference
+## Argument reference
+Retrieve the Argument reference that you need to specify for the data source. 
 
-The following arguments are supported:
+- `port_id` - (Required, String) The unique ID for the Direct Link port.
 
-* `port_id` - (Required, string) The unique port_id for this dl port.
+## Attribute reference
+Review the Attribute reference that you can access after your resource is created. 
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `direct_link_count` - Count of existing Direct Link gateways in this account on this port.
-* `label` - Port Label.
-* `location_display_name` - Port location long name.
-* `location_name` - Port location name identifier.
-* `provider_name` - Port's provider name.
-* `supported_link_speeds` - Port's supported speeds in megabits per second.
-  
-
+- `direct_link_count` - (String) The count of the existing Direct Link gateways on the port.
+- `label` - (String) The port label.
+- `location_display_name` - (String) The port location long name.
+- `location_name` - (String) The port location name.
+- `provider_name` - (String) The port's provider name.
+- `supported_link_speeds` - (String) The port supported speeds in megabits per second.

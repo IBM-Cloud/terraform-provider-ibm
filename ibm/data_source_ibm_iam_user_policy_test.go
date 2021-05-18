@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
+// TODO: test fails locally using test env because it returns 3 policies (even existing test)
 func TestAccIBMIAMUserPolicyDataSource_Basic(t *testing.T) {
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 

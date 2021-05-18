@@ -1,214 +1,223 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	registryv1 "github.com/IBM-Cloud/bluemix-go/api/container/registryv1"
+	"github.com/IBM/container-registry-go-sdk/containerregistryv1"
 )
 
-func resourceIBMContainerRegistryNamespace() *schema.Resource {
+func resourceIBMCrNamespace() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMContainerRegistryNamespaceCreate,
-		Read:     resourceIBMContainerRegistryNamespaceRead,
-		Delete:   resourceIBMContainerRegistryNamespaceDelete,
-		Exists:   resourceIBMContainerRegistryNamespaceExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMCrNamespaceCreate,
+		ReadContext:   resourceIBMCrNamespaceRead,
+		UpdateContext: resourceIBMCrNamespaceUpdate,
+		DeleteContext: resourceIBMCrNamespaceDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"name": {
+			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				Description:  "Container Registry Namespace",
 				ValidateFunc: InvokeValidator("ibm_cr_namespace", "name"),
+				Description:  "The name of the namespace.",
 			},
-			"resource_group_id": {
+			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Resource Group to which namespace has to be assigned",
 				ForceNew:    true,
+				Description: "The ID of the resource group that the namespace will be created within.",
 			},
-			"crn": {
+			"tags": &schema.Schema{
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Optional:    true,
+				Description: "List of tags",
+			},
+			"account": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "CRN of the Namespace",
+				Description: "The IBM Cloud account that owns the namespace.",
 			},
-			"created_on": {
+			"created_date": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Created Date",
+				Description: "When the namespace was created.",
 			},
-			"updated_on": {
+			"crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Updated Date",
+				Description: "If the namespace has been assigned to a resource group, this is the IBM Cloud CRN representing the namespace.",
 			},
-			ResourceControllerURL: {
+			"resource_created_date": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
+				Description: "When the namespace was assigned to a resource group.",
 			},
-			ResourceName: {
+			"updated_date": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The name of the resource",
+				Description: "When the namespace was last updated.",
+			},
+			// HAND-ADDED DEPRECATED FIELDS, TO BE DELETED IN FUTURE
+			"created_on": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "When the namespace was created.",
+				Deprecated:  "This field is deprecated",
+			},
+			"updated_on": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "When the namespace was last updated.",
+				Deprecated:  "This field is deprecated",
 			},
 		},
 	}
 }
+
 func resourceIBMCrNamespaceValidator() *ResourceValidator {
-
 	validateSchema := make([]ValidateSchema, 1)
-
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "name",
 			ValidateFunctionIdentifier: ValidateRegexpLen,
 			Type:                       TypeString,
 			Required:                   true,
-			Regexp:                     `^[a-z0-9]+[a-z0-9\-\_]+[a-z0-9]+$`,
+			Regexp:                     `^[a-z0-9]+[a-z0-9_-]+[a-z0-9]+$`,
 			MinValueLength:             4,
-			MaxValueLength:             30})
+			MaxValueLength:             30,
+		},
+	)
 
-	ibmCrNamespaceResourceValidator := ResourceValidator{ResourceName: "ibm_cr_namespace", Schema: validateSchema}
-	return &ibmCrNamespaceResourceValidator
+	resourceValidator := ResourceValidator{ResourceName: "ibm_cr_namespace", Schema: validateSchema}
+	return &resourceValidator
 }
-func resourceIBMContainerRegistryNamespaceCreate(d *schema.ResourceData, meta interface{}) error {
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return err
-	}
-	accountID := userDetails.userAccount
-	log.Print("accountID", accountID)
 
-	crClient, err := meta.(ClientSession).ContainerRegistryAPI()
+func resourceIBMCrNamespaceCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	containerRegistryClient, err := meta.(ClientSession).ContainerRegistryV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	crAPI := crClient.Namespaces()
-	namespace := d.Get("name").(string)
-	target := registryv1.NamespaceTargetHeader{
-		AccountID: accountID,
-	}
-	if rg, ok := d.GetOk("resource_group_id"); ok {
-		target.ResourceGroup = rg.(string)
+
+	createNamespaceOptions := &containerregistryv1.CreateNamespaceOptions{}
+
+	createNamespaceOptions.SetName(d.Get("name").(string))
+	if _, ok := d.GetOk("resource_group_id"); ok {
+		createNamespaceOptions.SetXAuthResourceGroup(d.Get("resource_group_id").(string))
 	} else {
 		defaultRg, err := defaultResourceGroup(meta)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
-		target.ResourceGroup = defaultRg
+		createNamespaceOptions.SetXAuthResourceGroup(defaultRg)
 	}
 
-	response, err := crAPI.AddNamespace(namespace, target)
+	namespace, response, err := containerRegistryClient.CreateNamespaceWithContext(context, createNamespaceOptions)
 	if err != nil {
-		return err
-	}
-	d.SetId(response.Namespace)
-	return resourceIBMContainerRegistryNamespaceRead(d, meta)
-}
-func resourceIBMContainerRegistryNamespaceDelete(d *schema.ResourceData, meta interface{}) error {
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return err
-	}
-	accountID := userDetails.userAccount
-
-	crClient, err := meta.(ClientSession).ContainerRegistryAPI()
-	if err != nil {
-		return err
-	}
-	crAPI := crClient.Namespaces()
-	namespace := d.Id()
-	target := registryv1.NamespaceTargetHeader{
-		AccountID: accountID,
+		log.Printf("[DEBUG] CreateNamespaceWithContext failed %s\n%s", err, response)
+		return diag.FromErr(err)
 	}
 
-	err = crAPI.DeleteNamespace(namespace, target)
-	if err != nil && !strings.Contains(err.Error(), "404") {
-		return err
-	}
-	return nil
+	d.SetId(*namespace.Namespace)
+
+	return resourceIBMCrNamespaceRead(context, d, meta)
 }
 
-func resourceIBMContainerRegistryNamespaceRead(d *schema.ResourceData, meta interface{}) error {
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+func resourceIBMCrNamespaceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	containerRegistryClient, err := meta.(ClientSession).ContainerRegistryV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	accountID := userDetails.userAccount
 
-	crClient, err := meta.(ClientSession).ContainerRegistryAPI()
+	listNamespaceDetailsOptions := &containerregistryv1.ListNamespaceDetailsOptions{}
+
+	namespaceDetailsList, response, err := containerRegistryClient.ListNamespaceDetailsWithContext(context, listNamespaceDetailsOptions)
+
 	if err != nil {
-		return err
-	}
-	namespace := d.Id()
-	target := registryv1.NamespaceTargetHeader{
-		AccountID: accountID,
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[DEBUG] ListNamespaceDetailsWithContext failed %s\n%s", err, response)
+		return diag.FromErr(err)
 	}
 
-	crAPI := crClient.Namespaces()
-
-	response, err := crAPI.GetDetailedNamespaces(target)
-	if err != nil {
-		return err
-	}
-	found := false
-	for _, ns := range response {
-		if ns.Name == namespace {
-			found = true
-			d.Set("name", ns.Name)
-			d.Set("resource_group_id", ns.ResourceGroup)
-			d.Set("crn", ns.CRN)
-			d.Set("created_on", ns.CreatedDate)
-			d.Set("updated_on", ns.UpdatedDate)
-			d.Set(ResourceControllerURL, ns.CRN)
-			d.Set(ResourceName, ns.Name)
-
+	var namespaceDetails containerregistryv1.NamespaceDetails
+	for _, namespaceDetails = range namespaceDetailsList {
+		if *namespaceDetails.Name == d.Id() {
+			break
 		}
 	}
-	if !found {
+	if namespaceDetails.Name == nil || *namespaceDetails.Name != d.Id() {
 		d.SetId("")
+		return nil
+	}
+
+	if err = d.Set("name", namespaceDetails.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	}
+	if err = d.Set("resource_group_id", namespaceDetails.ResourceGroup); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
+	}
+	if err = d.Set("account", namespaceDetails.Account); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting account: %s", err))
+	}
+	if err = d.Set("created_date", namespaceDetails.CreatedDate); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting created_date: %s", err))
+	}
+	if err = d.Set("crn", namespaceDetails.CRN); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+	}
+	if err = d.Set("resource_created_date", namespaceDetails.ResourceCreatedDate); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting resource_created_date: %s", err))
+	}
+	if err = d.Set("updated_date", namespaceDetails.UpdatedDate); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting updated_date: %s", err))
+	}
+	// HAND-ADDED DEPRECATED FIELDS, TO BE DELETED IN FUTURE
+	if err = d.Set("updated_on", namespaceDetails.UpdatedDate); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting updated_date: %s", err))
+	}
+	if err = d.Set("created_on", namespaceDetails.CreatedDate); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting created_date: %s", err))
 	}
 
 	return nil
 }
 
-func resourceIBMContainerRegistryNamespaceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return false, err
-	}
-	accountID := userDetails.userAccount
+// Dummy update method just for local tags
+func resourceIBMCrNamespaceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return resourceIBMCrNamespaceRead(context, d, meta)
+}
 
-	crClient, err := meta.(ClientSession).ContainerRegistryAPI()
+func resourceIBMCrNamespaceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	containerRegistryClient, err := meta.(ClientSession).ContainerRegistryV1()
 	if err != nil {
-		return false, err
-	}
-	namespace := d.Id()
-	target := registryv1.NamespaceTargetHeader{
-		AccountID: accountID,
+		return diag.FromErr(err)
 	}
 
-	crAPI := crClient.Namespaces()
+	deleteNamespaceOptions := &containerregistryv1.DeleteNamespaceOptions{}
 
-	response, err := crAPI.GetDetailedNamespaces(target)
+	deleteNamespaceOptions.SetName(d.Id())
+
+	response, err := containerRegistryClient.DeleteNamespaceWithContext(context, deleteNamespaceOptions)
 	if err != nil {
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		log.Printf("[DEBUG] DeleteNamespaceWithContext failed %s\n%s", err, response)
+		return diag.FromErr(err)
 	}
-	found := false
-	for _, ns := range response {
-		if ns.Name == namespace {
-			found = true
-		}
-	}
-	return found, nil
+
+	d.SetId("")
+
+	return nil
 }

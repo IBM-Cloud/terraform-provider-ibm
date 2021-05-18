@@ -18,6 +18,7 @@ var cisDomainStatic string
 var cisDomainTest string
 var cisInstance string
 var cisResourceGroup string
+var cosCRN string
 var ibmid1 string
 var ibmid2 string
 var IAMUser string
@@ -56,6 +57,7 @@ var ISAddressPrefixCIDR string
 var instanceProfileName string
 var instanceProfileNameUpdate string
 var dedicatedHostProfileName string
+var dedicatedHostGroupID string
 var instanceDiskProfileName string
 var dedicatedHostGroupFamily string
 var dedicatedHostGroupClass string
@@ -175,6 +177,12 @@ func init() {
 	if cisResourceGroup == "" {
 		cisResourceGroup = ""
 		fmt.Println("[WARN] Set the environment variable IBM_CIS_RESOURCE_GROUP with the resource group for the CIS Instance ")
+	}
+
+	cosCRN = os.Getenv("IBM_COS_CRN")
+	if cosCRN == "" {
+		cosCRN = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_CRN with a VALID COS instance CRN for testing ibm_cos_* resources")
 	}
 
 	trustedMachineType = os.Getenv("IBM_TRUSTED_MACHINE_TYPE")
@@ -358,6 +366,18 @@ func init() {
 	if instanceProfileNameUpdate == "" {
 		instanceProfileNameUpdate = "cx2-4x8"
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE_UPDATE for testing ibm_is_instance resource else it is set to default value 'cx2-4x8'")
+	}
+
+	dedicatedHostName = os.Getenv("IS_DEDICATED_HOST_NAME")
+	if dedicatedHostName == "" {
+		dedicatedHostName = "tf-dhost-01" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_NAME for testing ibm_is_instance resource else it is set to default value 'tf-dhost-01'")
+	}
+
+	dedicatedHostGroupID = os.Getenv("IS_DEDICATED_HOST_GROUP_ID")
+	if dedicatedHostGroupID == "" {
+		dedicatedHostGroupID = "0717-9104e7b5-77ad-44ad-9eaa-091e6b6efce1" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_GROUP_ID for testing ibm_is_instance resource else it is set to default value '0717-9104e7b5-77ad-44ad-9eaa-091e6b6efce1'")
 	}
 
 	dedicatedHostProfileName = os.Getenv("IS_DEDICATED_HOST_PROFILE")
@@ -600,6 +620,13 @@ func testAccPreCheckCis(t *testing.T) {
 	}
 	if cisDomainTest == "" {
 		t.Fatal("IBM_CIS_DOMAIN_TEST must be set for acceptance tests")
+	}
+}
+
+func testAccPreCheckCOS(t *testing.T) {
+	testAccPreCheck(t)
+	if cosCRN == "" {
+		t.Fatal("IBM_COS_CRN must be set for acceptance tests")
 	}
 }
 

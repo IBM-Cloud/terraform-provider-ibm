@@ -62,6 +62,7 @@ data "ibm_iam_account_settings" "iam_account_settings_source" {
 | mfa | Defines the MFA trait for the account. | `string` | false |
 | session_expiration_in_seconds | Defines the session expiration in seconds for the account. | `string` | false |
 | session_invalidation_in_seconds | Defines the period of time in seconds in which a session will be invalidated due  to inactivity. | `string` | false |
+| max_sessions_per_identity | Defines the max allowed sessions per identity required by the account. | `string` | false |
 
 
 

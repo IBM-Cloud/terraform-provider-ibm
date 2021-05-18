@@ -7,7 +7,7 @@ description: |-
   Manages Dynamic Rule for IBM IAM Access Group.
 ---
 
-# ibm\_iam_access_group
+# ibm\_iam_access_group_dynamic_rule
 
 Provides a resource for Dynamic Rule of an IAM access group. This allows rules to be created, updated and deleted.
 

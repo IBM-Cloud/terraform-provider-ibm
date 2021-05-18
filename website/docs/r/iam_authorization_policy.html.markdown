@@ -7,7 +7,7 @@ description: |-
   Manages IBM IAM Service Authorizations.
 ---
 
-# ibm\_authorization_policy
+# ibm\_iam_authorization_policy
 
 Provides a resource for IAM Service Authorizations. This allows authorization policy to be created and deleted.
 

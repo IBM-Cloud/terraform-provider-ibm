@@ -27,6 +27,7 @@ func TestAccIBMIAMAccountSettingsDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "history.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "session_expiration_in_seconds"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "session_invalidation_in_seconds"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "max_sessions_per_identity"),
 				),
 			},
 		},

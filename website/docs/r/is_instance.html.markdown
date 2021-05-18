@@ -139,6 +139,73 @@ resource "ibm_is_instance" "testacc_instance" {
   }
 }
 
+data "ibm_resource_group" "default" {
+  name = "Default" ///give your resource grp
+}
+
+resource "ibm_is_dedicated_host_group" "dh_group01" {
+  family = "compute"
+  class = "cx2"
+  zone = "us-south-1"
+  name = "my-dh-group-01"
+  resource_group = data.ibm_resource_group.default.id
+}
+
+resource "ibm_is_dedicated_host" "is_dedicated_host" {
+  profile = "bx2d-host-152x608"
+  name = "my-dedicated-host-01"
+	host_group = ibm_is_dedicated_host_group.dh_group01.id
+  resource_group = data.ibm_resource_group.default.id
+}
+
+// Example to provision instance in a dedicated host
+resource "ibm_is_instance" "testacc_instance1" {
+  name    = "testinstance1"
+  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+  profile = "cx2-2x4"
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.testacc_subnet.id
+    security_groups = [ibm_is_security_group.testacc_security_group.id]
+  }
+  dedicated_host = ibm_is_dedicated_host.is_dedicated_host.id
+  vpc  = ibm_is_vpc.testacc_vpc.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+
+  //User can configure timeouts
+  timeouts {
+    create = "15m"
+    update = "15m"
+    delete = "15m"
+  }
+}
+
+// Example to provision instance in a dedicated host that belongs to the provided dedicated host group 
+resource "ibm_is_instance" "testacc_instance2" {
+  name    = "testinstance2"
+  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+  profile = "cx2-2x4"
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.testacc_subnet.id
+    security_groups = [ibm_is_security_group.testacc_security_group.id]
+  }
+  dedicated_host_group = ibm_is_dedicated_host_group.dh_group01.id
+  vpc  = ibm_is_vpc.testacc_vpc.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+
+  //User can configure timeouts
+  timeouts {
+    create = "15m"
+    update = "15m"
+    delete = "15m"
+  }
+}
+
 
 ```  
 
@@ -159,6 +226,8 @@ The following arguments are supported:
 * `zone` - (Required, Forces new resource, string) Name of the zone. 
 * `profile` - (Required, string) The profile name. 
   * * Updating profile requires instance to be in stopped status, running instance will be stopped on update profile action.  * `image` - (Required, string) ID of the image.
+* `dedicated_host` - (Optional, string, ForceNew) The placement restrictions to use for the virtual server instance. Unique Identifier of the Dedicated Host where the instance will be placed
+* `dedicated_host_group` - (Optional, string, ForceNew) The placement restrictions to use for the virtual server instance. Unique Identifier of the Dedicated Host Group where the instance will be placed
 * `boot_volume` - (Optional, list) A block describing the boot volume of this instance.  
 `boot_volume` block have the following structure:
   * `name` - (Optional, string) The name of the boot volume.
