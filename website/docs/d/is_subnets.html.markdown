@@ -18,7 +18,50 @@ Import the details of an existing IBM Cloud Infrastructure subnets as a read-onl
 data "ibm_is_subnets" "ds_subnets" {
 }
 
+resource "ibm_resource_group" "resourceGroup" {
+  name     = "prod"
+}
+
+resource "ibm_is_vpc" "testacc_vpc" {
+  name = "test"
+}
+
+resource "ibm_is_vpc_routing_table" "test_cr_route_table1" {
+  name   = "test-cr-route-table1"
+  vpc    = data.ibm_is_vpc.testacc_vpc.id
+}
+
+
+resource "ibm_is_subnet" "testacc_subnet" {
+  name            = "test_subnet"
+  vpc             = ibm_is_vpc.testacc_vpc.id
+  zone            = "us-south-1"
+  ipv4_cidr_block = "192.168.0.0/1"
+  routing_table   = ibm_is_vpc_routing_table.test_cr_route_table1.routing_table
+  resource_group = ibm_resource_group.resourceGroup.id
+}
+
+data "ibm_is_subnets" "ds_subnets" {
+  resource_group = ibm_resource_group.resourceGroup.id
+}
+
+data "ibm_is_subnets" "ds_subnets" {
+  routing_table_name = "my-routing-table"
+}
+
+data "ibm_is_subnets" "ds_subnets" {
+  routing_table = ibm_is_vpc_routing_table.test_cr_route_table1.id
+}
+
+
 ```
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `identifier` - (Optional, string) The id of the subnet.
+* `name` - (Optional, string) The name of the subnet.
 
 ## Attribute Reference
 
