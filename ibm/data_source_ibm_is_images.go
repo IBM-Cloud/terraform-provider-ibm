@@ -21,6 +21,17 @@ func dataSourceIBMISImages() *schema.Resource {
 		Read: dataSourceIBMISImagesRead,
 
 		Schema: map[string]*schema.Schema{
+			isImageName: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: InvokeValidator("ibm_is_image", isImageName),
+				Description:  "The name of the image",
+			},
+			isImageVisibility: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Whether the image is publicly visible or private to the account",
+			},
 
 			isImages: {
 				Type:        schema.TypeList,
@@ -152,8 +163,19 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 	}
 	start := ""
 	allrecs := []vpcv1.Image{}
+	listImagesOptions := &vpcv1.ListImagesOptions{}
+
+	if v, ok := d.GetOk(isImageName); ok {
+		imageName := v.(string)
+		listImagesOptions.SetName(imageName)
+	}
+
+	if v, ok := d.GetOk(isImageVisibility); ok {
+		visibility := v.(string)
+		listImagesOptions.SetVisibility(visibility)
+	}
+
 	for {
-		listImagesOptions := &vpcv1.ListImagesOptions{}
 		if start != "" {
 			listImagesOptions.Start = &start
 		}

@@ -18,6 +18,23 @@ Import the details of an existing IBM Cloud Infrastructure images as a read-only
 data "ibm_is_images" "ds_images" {
 }
 
+resource "ibm_is_image" "test_is_images" {
+ name                   = "test_image"
+ href                   = "cos://us-south/buckettesttest/livecd.ubuntu-cpc.azure.vhd"
+ operating_system       = "my-image-ubuntu-16-04-amd64"
+ visibility = "private"
+ encrypted_data_key     = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
+ encryption_key         = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
+}
+
+data "ibm_is_images" "ds_images" {
+  name = "my-image-ubuntu-16-04-amd64"
+}
+
+data "ibm_is_images" "ds_images" {
+  visibility = "private"
+}
+
 ```
 
 ## Attribute Reference
