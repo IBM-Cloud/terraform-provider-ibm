@@ -60,8 +60,9 @@ data "ibm_is_subnets" "ds_subnets" {
 
 The following arguments are supported:
 
-* `identifier` - (Optional, string) The id of the subnet.
-* `name` - (Optional, string) The name of the subnet.
+* `resource_group` - (Optional, string) The id of the resource group.
+* `routing_table` - (Optional, string) The id of the routing table.
+* `routing_table_name` - (Optional, string) The name of the routing table.
 
 ## Attribute Reference
 
