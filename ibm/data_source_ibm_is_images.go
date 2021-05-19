@@ -13,7 +13,8 @@ import (
 )
 
 const (
-	isImages = "images"
+	isImages                = "images"
+	isImagesResourceGroupID = "resource_group"
 )
 
 func dataSourceIBMISImages() *schema.Resource {
@@ -21,6 +22,11 @@ func dataSourceIBMISImages() *schema.Resource {
 		Read: dataSourceIBMISImagesRead,
 
 		Schema: map[string]*schema.Schema{
+			isImagesResourceGroupID: {
+				Type:        schema.TypeString,
+				Description: "The id of the resource group",
+				Optional:    true,
+			},
 			isImageName: {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -164,6 +170,10 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 	start := ""
 	allrecs := []vpcv1.Image{}
 	listImagesOptions := &vpcv1.ListImagesOptions{}
+	if v, ok := d.GetOk(isImagesResourceGroupID); ok {
+		resourceGroupID := v.(string)
+		listImagesOptions.SetResourceGroupID(resourceGroupID)
+	}
 
 	if v, ok := d.GetOk(isImageName); ok {
 		imageName := v.(string)
