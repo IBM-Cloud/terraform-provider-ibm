@@ -469,6 +469,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var vpcName, vpcID string
+	listInstancesOptions := &vpcv1.ListInstancesOptions{}
 
 	if vpc, ok := d.GetOk("vpc_name"); ok {
 		vpcName = vpc.(string)
@@ -478,10 +479,25 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		vpcID = vpc.(string)
 	}
 
+	if n, ok := d.GetOk("name"); ok {
+		name := n.(string)
+		listInstancesOptions.SetName(name)
+	}
+
+	if rid, ok := d.GetOk("resource_group"); ok {
+		resourceGroupID := rid.(string)
+		listInstancesOptions.SetResourceGroupID(resourceGroupID)
+	}
+
+	if crn, ok := d.GetOk("vpc_crn"); ok {
+		vpcCRN := crn.(string)
+		listInstancesOptions.SetResourceGroupID(vpcCRN)
+	}
+
 	start := ""
 	allrecs := []vpcv1.Instance{}
 	for {
-		listInstancesOptions := &vpcv1.ListInstancesOptions{}
+
 		if start != "" {
 			listInstancesOptions.Start = &start
 		}

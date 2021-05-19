@@ -27,12 +27,30 @@ data "ibm_is_instances" "ds_instances1" {
 }
 
 ```
+
+```hcl
+data "ibm_is_instances" "ds_instances1" {
+  name = "my-instance"
+}
+```
+
+```hcl
+resource "ibm_is_vpc" "testacc_vpc" {
+  name = "test"
+}
+
+data "ibm_is_instances" "ds_instances1" {
+  vpc_crn = ibm_is_vpc.testacc_vpc.crn
+}
+```
 ## Argument Reference
 
 The following arguments are supported:
 
 * `vpc_name` - (optional, string) Name of the vpc to filter the instances attached to it.
 * `vpc` - (optional, string) VPC ID to filter the instances attached to it.
+* `name` - (optional, string) Name of the image to filter the instances attached to it.
+* `vpc.crn` - (optional, string) VPC CRN to filter the instances attached to it.
 
 ## Attribute Reference
 
