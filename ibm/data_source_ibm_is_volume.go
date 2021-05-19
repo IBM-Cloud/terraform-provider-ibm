@@ -237,6 +237,11 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 	if err != nil {
 		return err
 	}
+	listVolumesOptions := &vpcv1.ListVolumesOptions{}
+	if v, ok := d.GetOk(isVolumeName); ok {
+		name := v.(string)
+		listVolumesOptions.SetName(name)
+	}
 	zone := ""
 	if zname, ok := d.GetOk(isVolumeZone); ok {
 		zone = zname.(string)
