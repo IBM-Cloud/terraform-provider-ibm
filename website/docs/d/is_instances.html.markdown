@@ -49,7 +49,7 @@ The following arguments are supported:
 
 * `vpc_name` - (optional, string) Name of the vpc to filter the instances attached to it.
 * `vpc` - (optional, string) VPC ID to filter the instances attached to it.
-* `name` - (optional, string) Name of the image to filter the instances attached to it.
+* `name` - (optional, string) Name of the instance to filter the instances attached to it.
 * `vpc.crn` - (optional, string) VPC CRN to filter the instances attached to it.
 
 ## Attribute Reference
