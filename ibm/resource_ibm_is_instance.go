@@ -38,36 +38,36 @@ const (
 	isInstanceVPC                     = "vpc"
 	isInstanceZone                    = "zone"
 	isInstanceBootVolume              = "boot_volume"
-	isInstanceBootVolumeId            = "volume"
-	isInstanceBootVolumeSnapshot      = "source_snapshot"
-	isInstanceBootVolType             = "boot_volume_type"
-	isInstanceBootVolTemplate         = "source_template"
-	isInstanceVolAttSnapshot          = "snapshots"
-	isInstanceVolAttName              = "name"
-	isInstanceVolAttVolume            = "volume"
-	isInstanceVolAttVolAutoDelete     = "auto_delete_volume"
-	isInstanceVolAttVolCapacity       = "capacity"
-	isInstanceVolAttVolIops           = "iops"
-	isInstanceVolAttVolName           = "name"
-	isInstanceVolAttVolBillingTerm    = "billing_term"
-	isInstanceVolAttVolEncryptionKey  = "encryption_key"
-	isInstanceVolAttVolType           = "type"
-	isInstanceVolAttVolProfile        = "profile"
-	isInstanceImage                   = "image"
-	isInstanceCPU                     = "vcpu"
-	isInstanceCPUArch                 = "architecture"
-	isInstanceCPUCores                = "cores"
-	isInstanceCPUCount                = "count"
-	isInstanceGpu                     = "gpu"
-	isInstanceGpuCores                = "cores"
-	isInstanceGpuCount                = "count"
-	isInstanceGpuManufacturer         = "manufacturer"
-	isInstanceGpuMemory               = "memory"
-	isInstanceGpuModel                = "model"
-	isInstanceMemory                  = "memory"
-	isInstanceDisks                   = "disks"
-	isInstanceDedicatedHost           = "dedicated_host"
-	isInstanceStatus                  = "status"
+	// isInstanceBootVolumeId            = "volume"
+	isInstanceBootVolumeSnapshot     = "source_snapshot"
+	isInstanceBootVolType            = "boot_volume_type"
+	isInstanceBootVolTemplate        = "source_template"
+	isInstanceVolAttSnapshot         = "snapshots"
+	isInstanceVolAttName             = "name"
+	isInstanceVolAttVolume           = "volume"
+	isInstanceVolAttVolAutoDelete    = "auto_delete_volume"
+	isInstanceVolAttVolCapacity      = "capacity"
+	isInstanceVolAttVolIops          = "iops"
+	isInstanceVolAttVolName          = "name"
+	isInstanceVolAttVolBillingTerm   = "billing_term"
+	isInstanceVolAttVolEncryptionKey = "encryption_key"
+	isInstanceVolAttVolType          = "type"
+	isInstanceVolAttVolProfile       = "profile"
+	isInstanceImage                  = "image"
+	isInstanceCPU                    = "vcpu"
+	isInstanceCPUArch                = "architecture"
+	isInstanceCPUCores               = "cores"
+	isInstanceCPUCount               = "count"
+	isInstanceGpu                    = "gpu"
+	isInstanceGpuCores               = "cores"
+	isInstanceGpuCount               = "count"
+	isInstanceGpuManufacturer        = "manufacturer"
+	isInstanceGpuMemory              = "memory"
+	isInstanceGpuModel               = "model"
+	isInstanceMemory                 = "memory"
+	isInstanceDisks                  = "disks"
+	isInstanceDedicatedHost          = "dedicated_host"
+	isInstanceStatus                 = "status"
 
 	isEnableCleanDelete        = "wait_before_delete"
 	isInstanceProvisioning     = "provisioning"
@@ -350,11 +350,11 @@ func resourceIBMISInstance() *schema.Resource {
 							ConflictsWith: []string{isInstanceImage, "boot_volume.0.volume"},
 							Optional:      true,
 						},
-						isInstanceBootVolumeId: {
-							Type:          schema.TypeString,
-							ConflictsWith: []string{isInstanceImage, "boot_volume.0.source_snapshot"},
-							Optional:      true,
-						},
+						/*						isInstanceBootVolumeId: {
+												Type:          schema.TypeString,
+												ConflictsWith: []string{isInstanceImage, "boot_volume.0.source_snapshot"},
+												Optional:      true,
+											},*/
 						isInstanceBootEncryption: {
 							Type:     schema.TypeString,
 							Optional: true,
@@ -1186,38 +1186,38 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
 		bootvol := boot.([]interface{})[0].(map[string]interface{})
 		var volTemplate = &vpcv1.VolumeAttachmentVolumePrototypeInstanceByVolumeContext{}
-		volId, _ := bootvol[isInstanceBootVolumeId]
-		volIdStr := volId.(string)
-		if ok && volIdStr != "" {
-			volTemplate.ID = &volIdStr
-		} else {
-			name, ok := bootvol[isInstanceBootName]
-			namestr := name.(string)
-			if ok {
-				volTemplate.Name = &namestr
-			}
-			enc, ok := bootvol[isInstanceBootEncryption]
-			encstr := enc.(string)
-			if ok && encstr != "" {
-				volTemplate.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
-					CRN: &encstr,
-				}
-			}
-			volcap := 100
-			volcapint64 := int64(volcap)
-			volprof := "general-purpose"
-			volTemplate.Capacity = &volcapint64
-			volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
-				Name: &volprof,
-			}
-			snapshotId, ok := bootvol[isInstanceBootVolumeSnapshot]
-			snapshotIdStr := snapshotId.(string)
-			if ok {
-				volTemplate.SourceSnapshot = &vpcv1.SnapshotIdentity{
-					ID: &snapshotIdStr,
-				}
+		// volId, _ := bootvol[isInstanceBootVolumeId]
+		// volIdStr := volId.(string)
+		// if ok && volIdStr != "" {
+		// volTemplate.ID = &volIdStr
+		// } else {
+		name, ok := bootvol[isInstanceBootName]
+		namestr := name.(string)
+		if ok {
+			volTemplate.Name = &namestr
+		}
+		enc, ok := bootvol[isInstanceBootEncryption]
+		encstr := enc.(string)
+		if ok && encstr != "" {
+			volTemplate.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
+				CRN: &encstr,
 			}
 		}
+		volcap := 100
+		volcapint64 := int64(volcap)
+		volprof := "general-purpose"
+		volTemplate.Capacity = &volcapint64
+		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
+			Name: &volprof,
+		}
+		snapshotId, ok := bootvol[isInstanceBootVolumeSnapshot]
+		snapshotIdStr := snapshotId.(string)
+		if ok {
+			volTemplate.SourceSnapshot = &vpcv1.SnapshotIdentity{
+				ID: &snapshotIdStr,
+			}
+		}
+		// }
 		deletebool := true
 		volNameBoot := "general-purpose-volume"
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByVolumeContext{
@@ -2182,7 +2182,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			for i := range add {
 				createvolattoptions := &vpcv1.CreateInstanceVolumeAttachmentOptions{
 					InstanceID: &id,
-					Volume: &vpcv1.VolumeIdentity{
+					Volume: &vpcv1.VolumeAttachmentPrototypeVolume{
 						ID: &add[i],
 					},
 					DeleteVolumeOnInstanceDelete: &volautoDelete,
