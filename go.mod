@@ -56,5 +56,6 @@ require (
 )
 
 replace github.com/softlayer/softlayer-go v0.0.0-20190814165317-b9062a914a22 => ./common/github.com/softlayer/softlayer-go
+replace github.com/IBM/vpc-go-sdk v0.6.0 => ./common/github.com/IBM/vpc-go-sdk
 
 replace github.ibm.com/ibmcloud/kubernetesservice-go-sdk => ./common/github.ibm.com/ibmcloud/kubernetesservice-go-sdk
