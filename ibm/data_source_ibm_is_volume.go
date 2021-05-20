@@ -102,6 +102,12 @@ func dataSourceIBMISVolume() *schema.Resource {
 				Description: "Tags for the volume instance",
 			},
 
+			isVolumeSourceSnapshot: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Identifier of the snapshot from which this volume was cloned",
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -270,6 +276,7 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 		if vol.EncryptionKey != nil {
 			d.Set(isVolumeEncryptionKey, vol.EncryptionKey.CRN)
 		}
+		d.Set(isVolumeSourceSnapshot, *vol.SourceSnapshot.ID)
 		d.Set(isVolumeIops, *vol.Iops)
 		d.Set(isVolumeCapacity, *vol.Capacity)
 		d.Set(isVolumeCrn, *vol.CRN)
