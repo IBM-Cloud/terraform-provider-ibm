@@ -347,7 +347,7 @@ func resourceIBMISInstance() *schema.Resource {
 						isInstanceBootVolumeSnapshot: {
 							Type:          schema.TypeString,
 							RequiredWith:  []string{"boot_volume.0.name", isInstanceZone, isInstancePrimaryNetworkInterface},
-							ConflictsWith: []string{isInstanceImage, "boot_volume.0.volume"},
+							ConflictsWith: []string{isInstanceImage},
 							Optional:      true,
 						},
 						/*						isInstanceBootVolumeId: {
