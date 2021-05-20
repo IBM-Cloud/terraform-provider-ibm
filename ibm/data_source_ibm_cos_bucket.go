@@ -220,6 +220,21 @@ func dataSourceIBMCosBucket() *schema.Resource {
 					},
 				},
 			},
+			"versioning": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Enables object versioning.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enable": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Enable or suspend the versioning for objects in the bucket",
+						},
+					},
+				},
+			},
 		},
 	}
 }

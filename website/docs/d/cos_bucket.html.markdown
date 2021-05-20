@@ -84,3 +84,5 @@ In addition to all arguments above, the following attributes are exported:
 	*	`maximum` : (Required, int) Specifies maximum duration of time an object can be kept unmodified in the bucket.
 	*	`minimum` : (Required, int) Specifies minimum duration of time an object must be kept unmodified in the bucket.
 	*	`permanent` : (Optional, bool) Specifies a permanent retention status either enable or disable for a bucket.
+* Nested `Object Versioning` block have the following structure:
+    *   `enable` : (Required, bool) Specifies Versioning status either enable or Suspended for the objectsin the bucket.

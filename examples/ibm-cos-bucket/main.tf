@@ -67,3 +67,12 @@ resource "ibm_cos_bucket" "lifecycle_rule_cos" {
     permanent = false
   }
 }
+resource "ibm_cos_bucket" "objectversioning" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.storage
+  versioning {
+    enable  = true
+  }
+}

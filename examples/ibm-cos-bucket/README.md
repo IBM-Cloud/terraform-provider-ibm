@@ -92,6 +92,48 @@ data "ibm_cos_bucket" "standard-ams03" {
   bucket_type = "region_location"
   bucket_region = "us-south"
 }
+
+resource “ibm_cos_bucket” “archive_expire_rule_cos” {
+  bucket_name          = “a-bucket-archive-expire”
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = “us-south”
+  storage_class        = “standard”
+  force_delete         = true
+  archive_rule {
+    rule_id = “a-bucket-arch-rule”
+    enable  = true
+    days    = 0
+    type    = “GLACIER”
+  }
+  expire_rule {
+    rule_id = “a-bucket-expire-rule”
+    enable  = true
+    days    = 30
+    prefix  = “logs/”
+  }
+}
+resource “ibm_cos_bucket” “retention_cos” {
+  bucket_name          = “a-bucket-retention”
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = “jp-tok”
+  storage_class        = standard
+  force_delete        = true
+  retention_rule {
+    default = 1
+    maximum = 1
+    minimum = 1
+    permanent = false
+  }
+}
+resource “ibm_cos_bucket” “objectversioning” {
+  bucket_name           = “a-bucket-versioning”
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = “us-east”
+  storage_class         = var.storage
+  versioning {
+    enable  = true
+  }
+}
 ```
 
 ## Examples
@@ -136,3 +178,5 @@ data "ibm_cos_bucket" "standard-ams03" {
 | maximum | Specifies maximum duration of time an object can be kept unmodified in the bucket. | `int` | yes
 | minimum | Specifies minimum duration of time an object must be kept unmodified in the bucket. | `int` | yes
 | permanent | Specifies a permanent retention status either enable or disable for a bucket. | `bool` | no
+| enable | Specifies Versioning status either enable or Suspended for the objectsin the bucket. | `bool` | no
+

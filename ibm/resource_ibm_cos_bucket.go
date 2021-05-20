@@ -294,6 +294,22 @@ func resourceIBMCOSBucket() *schema.Resource {
 					},
 				},
 			},
+			"versioning": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Enables object versioning.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enable": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Enable or suspend the versioning for objects in the bucket",
+						},
+					},
+				},
+			},
 			"force_delete": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -528,6 +544,43 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 			_, err := s3Client.PutBucketProtectionConfiguration(pInput)
 			if err != nil {
 				return fmt.Errorf("failed to update the retention rule on COS bucket %s, %v", bucketName, err)
+			}
+		}
+	}
+
+	//update the object versioning (object versioning)
+	if d.HasChange("versioning") {
+		var versioning, versioning_ok = d.GetOk("versioning")
+		if versioning_ok {
+			versioningList := versioning.([]interface{})
+
+			var object_versioningStatus string
+
+			for _, l := range versioningList {
+				versioningMap, _ := l.(map[string]interface{})
+
+				//Status Enable/Disable
+				if object_versioning_statusSet, exist1 := versioningMap["enable"]; exist1 {
+					versioningStatusEnabled := object_versioning_statusSet.(bool)
+					if versioningStatusEnabled == true {
+						object_versioningStatus = "Enabled"
+					} else {
+						object_versioningStatus = "Suspended"
+					}
+				}
+				// PUT BUCKET Object Versioning
+
+				input := &s3.PutBucketVersioningInput{
+					Bucket: aws.String(bucketName),
+					VersioningConfiguration: &s3.VersioningConfiguration{
+						Status: aws.String(object_versioningStatus),
+					},
+				}
+				result, err := s3Client.PutBucketVersioning(input)
+				fmt.Println(result)
+				if err != nil {
+					return fmt.Errorf("failed to update the object versioning on COS bucket %s, %v", bucketName, err)
+				}
 			}
 		}
 	}
@@ -788,6 +841,20 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		if len(retentionRules) > 0 {
 			d.Set("retention_rule", retentionRules)
 		}
+	}
+
+	// Get Bucket Versioning
+	versionInput := &s3.GetBucketVersioningInput{
+		Bucket: aws.String(bucketName),
+	}
+	versionPtr, err := s3Client.GetBucketVersioning(versionInput)
+
+	if err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
+		return err
+	}
+	versioningData := flattenCOSObjectVersioning(versionPtr)
+	if versioningData != nil {
+		d.Set("versioning", versioningData)
 	}
 
 	return nil

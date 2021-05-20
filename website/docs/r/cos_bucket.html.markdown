@@ -171,6 +171,18 @@ resource "ibm_cos_bucket" "retention_cos" {
   }
 }
 
+### Configure object versioning on COS bucket
+
+resource "ibm_cos_bucket" "objectversioning" {
+  bucket_name           = "a-bucket-versioning"
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = "us-east"
+  storage_class         = var.storage
+  versioning {
+    enable  = true
+  }
+}
+
 ```
 
 ## Argument Reference
@@ -225,6 +237,20 @@ The following arguments are supported:
      - The minimum retention period must be less than or equal to the default retention period, which in turn must be less than or equal to the maximum retention period.
      - Permanent retention can only be enabled at a IBM Cloud Object Storage bucket level with retention policy enabled and users are able to select the permanent retention period option during object uploads. Once enabled, this process can't be reversed and objects uploaded that use a permanent retention period cannot be deleted. It's the responsibility of the users to validate at their end if there's a legitimate need to permanently store objects by using Object Storage buckets with a retention policy.
      - force deleting the bucket will not work if any object is still under retention. As Objects cannot be deleted or overwritten until the retention period has expired and all the legal holds have been removed.
+
+  * Nested `Object Versioning` block have the following structure:
+    * `enable` : (Required, bool) Specifies Versioning status either enable or Suspended for the objectsin the bucket.
+    
+      * **Note**
+       - For now object versioining support is enabled only through API/SDK - NO UI support yet. Later we will add the support for UI(Notified soon).
+       - Versioning allows multiple revisions of a single object to exist in the same bucket. Each version of an object can be queried, read, restored from an archived state, or deleted.
+       - Versioning can only be suspended, we cannot disabled once after it is enabled.
+       - To permanently delete individual versions of an object, a delete request must specify a version ID.
+       - Containers with object expiry cannot have versioning enabled/suspended, and containers with versioning enabled/suspended can’t have expiry lifecycle actions enabled to them. 
+       - S3 versioning and COS Bucket Protection(WORM) cannot be used together.
+       - Containers with proxy configuration cannot use versioning and vice versa.
+       - SoftLayer accounts cannot use versioning.
+       - We don’t support MFA_Delete as of now, which is a feature to add additional security to version delete.
 
 ## Attribute Reference
 
