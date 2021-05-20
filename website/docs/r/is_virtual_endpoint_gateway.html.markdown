@@ -25,6 +25,7 @@ resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway1" {
   }
   vpc = ibm_is_vpc.testacc_vpc.id
   resource_group = data.ibm_resource_group.test_acc.id
+  security_groups = [ibm_is_security_group.testacc_security_group.id]
 }
 
 resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway2" {
@@ -39,6 +40,7 @@ resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway2" {
 		name        = "test-reserved-ip1"
 	}
 	resource_group = data.ibm_resource_group.test_acc.id
+	security_groups = [ibm_is_security_group.testacc_security_group.id]
 }
 
 resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway3" {
@@ -52,6 +54,7 @@ resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway3" {
 		id   = "0737-5ab3c18e-6f6c-4a69-8f48-20e3456647b5"
 	}
 	resource_group = data.ibm_resource_group.test_acc.id
+	security_groups = [ibm_is_security_group.testacc_security_group.id]
 }
 ```
 
@@ -71,6 +74,7 @@ The following arguments are supported:
   - `subnet` - (Optional, string)Endpoint gateway resource group Subnet id
   - `resource_type` - (Computed, string)Endpoint gateway resource group VPC Resource Type
 - `resource_group` - (Optional, string,ForceNew)The resource group id
+- `security_groups` - (Optional, list) The security groups to use for this endpoint gateway.
 - `tags` - (Optional, array of strings) Tags associated with the instance.
 
 ## Attribute Reference

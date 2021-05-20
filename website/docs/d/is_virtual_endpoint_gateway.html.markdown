@@ -40,3 +40,5 @@ In addition to all arguments above, the following attributes are exported:
   - `name` - TThe target name
   - `resource_type` - The resource type(subnet_reserved_ip)
 - `vpc` - The VPC id
+- `security_groups` - The security groups to use for this endpoint gateway.
+

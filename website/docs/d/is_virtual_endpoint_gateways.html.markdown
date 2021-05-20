@@ -38,3 +38,5 @@ In addition to all arguments above, the following attributes are exported:
   - `name` - Endpoint gateway target name
   - `resource_type` - Endpoint gateway target resource type
 - `vpc` - The VPC id
+- `security_groups` - The security groups to use for this endpoint gateway.
+
