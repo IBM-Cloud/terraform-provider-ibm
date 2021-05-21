@@ -33,6 +33,7 @@ resource "ibm_is_volume" "testacc_volume" {
   zone     = "us-south-1"
   iops     = 1000
   capacity = 200
+  encryption_key = "crn:v1:bluemix:public:kms:us-south:a/dffc98a0f1f0f95f6613b3b752286b87:e4a29d1a-2ef0-42a6-8fd2-350deb1c647e:key:5437653b-c4b1-447f-9646-b2a2a4cd6179"
 }
 
 ```
@@ -54,7 +55,7 @@ The following arguments are supported:
 * `zone` - (Required, Forces new resource, string) The location of the volume.
 * `iops` - (Optional, Forces new resource, int) The bandwidth for the volume. This is required only for the `custom` profile volume.
 * `capacity` - (Optional, Forces new resource, int) The capacity of the volume in gigabytes. This defaults to `100`.
-* `encryption_key` - (Optional, Forces new resource, string) The key to use for encrypting this volume.
+* `encryption_key` - (Optional, Forces new resource, string) The CRN of the root key to use to wrap the data encryption key for the volume. If this property is not provided, the encryption type for the volume will be `provider_managed`.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID for this volume.
 * `tags` - (Optional, array of strings) Tags associated with the volume.
 
