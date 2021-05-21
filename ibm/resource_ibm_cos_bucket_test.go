@@ -287,6 +287,35 @@ func TestAccIBMCosBucket_Retention(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMCosBucket_Object_Versioning(t *testing.T) {
+
+	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-east"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	enable := true
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_object_versioning(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, enable),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_versioning.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMCosBucket_Smart_Type(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
@@ -905,4 +934,30 @@ func testAccCheckIBMCosBucket_retention(cosServiceName string, bucketName string
 		}
 	}
 	`, cosServiceName, bucketName, region, storageClass, default_retention, maximum_retention, minimum_retention)
+}
+
+func testAccCheckIBMCosBucket_object_versioning(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, enable bool) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    region_location       = "%s"
+		storage_class         = "%s"
+		object_versioning {
+			enable  = true
+		}
+	}
+	`, cosServiceName, bucketName, region, storageClass)
 }
