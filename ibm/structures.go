@@ -763,6 +763,25 @@ func retentionRuleGet(in *s3.ProtectionConfiguration) []interface{} {
 	return rules
 }
 
+func flattenCosObejctVersioning(in *s3.GetBucketVersioningOutput) []interface{} {
+	out, err := json.Marshal(in)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(string(out))
+	att := make(map[string]interface{})
+	if in != nil {
+		if in.Status != nil {
+			if *in.Status == "Enabled" {
+				att["enable"] = true
+			} else {
+				att["enable"] = false
+			}
+		}
+	}
+	return []interface{}{att}
+}
+
 func flattenLimits(in *whisk.Limits) []interface{} {
 	att := make(map[string]interface{})
 	if in.Timeout != nil {
