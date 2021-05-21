@@ -111,16 +111,16 @@ resource "ibm_container_cluster" "cluster" {
 Create the Openshift Cluster with default worker Pool entitlement:
 
 ```hcl
-resource "ibm_container_cluster" "cluster" {
-  name              = "test-openshift-cluster"
-  datacenter        = "dal10"
-  default_pool_size = 3
-  machine_type      = "b3c.4x16"
-  hardware          = "shared"
-  kube_version      = "4.3_openshift"
-  public_vlan_id    = "2863614"
-  private_vlan_id   = "2863616"
-  entitlement       = "cloud_pak"
+resource "ibm_container_cluster" "cluster" {
+  name              = "test-openshift-cluster"
+  datacenter        = "dal10"
+  default_pool_size = 3
+  machine_type      = "b3c.4x16"
+  hardware          = "shared"
+  kube_version      = "4.3_openshift"
+  public_vlan_id    = "2863614"
+  private_vlan_id   = "2863616"
+  entitlement       = "cloud_pak"
 }
 ```
 
