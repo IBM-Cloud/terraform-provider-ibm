@@ -6,7 +6,7 @@ description: |-
   Manages IBM Direct Link Gateway Virtual Connection.
 ---
 
-# `ibm_dl_virtual_connection`
+# ibm_dl_virtual_connection
 
 Create, update, or delete a Direct Link Gateway Virtual Connection by using the Direct Link Gateway resource. For more information, about Direct Link Gateway Virtual Connection, see [Adding virtual connections to a Direct Link gateway](https://cloud.ibm.com/docs/dl?topic=dl-add-virtual-connection).
 
@@ -23,7 +23,7 @@ resource "ibm_dl_virtual_connection" "test_dl_gateway_vc"{
 ```
 
 ## Argument reference
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
 
 - `gateway` - (Required, Forces new resource, String) The Direct Link Gateway ID. 
 - `name` - (Required, String) The user-defined name for this virtual connection. The virtual connection names are unique within a gateway. This is the name of the virtual connection itself, the network being connected may have its own name attribute. For `type=vpc` virtual connections it is the CRN of the target VPC. This parameter does not apply for `type=classic` connections. For example, `crn:v1:bluemix:public:is:us-east:a/28e4d90ac7504be69447111122223333::vpc:aaa81ac8-5e96-42a0-a4b7-6c2e2d1bb`.
@@ -32,7 +32,7 @@ Review the input parameters that you can specify for your resource.
 
 
 ## Attribute reference
-Review the output parameters that you can access after your resource are exported. 
+In addition to all argument references list, you can access the following attribute references after your resource is created.
 
 - `created_at` - (String) The date and time resource created.
 - `id` - (String) The unique ID of the resource with combination of gateway / virtual_connection_id.
@@ -41,12 +41,18 @@ Review the output parameters that you can access after your resource are exporte
 - `network_account` - (String) The virtual connections across two different IBM Cloud accounts network_account indicates the account that owns the target network. For example, `00aa14a2e0fb102c8995ebeff65555`.
 
 ## Import
-The `ibm_dl_gateway_vc` can be imported by using Direct Link Gateway ID and Direct Link Gateway virtual connection ID.
+The `ibm_dl_gateway_vc` resource can be imported by using Direct Link Gateway ID and Direct Link Gateway virtual connection ID.
 
+**Syntax**
+
+```
+$ terraform import ibm_dl_virtual_connection.example 
+<direct_link_gateway_ID>/<direct_link_gateway_virtual_connection_ID>
+```
 
 **Example**
 
 ```
-terraform import ibm_dl_virtual_connection.example 
+$ terraform import ibm_dl_virtual_connection.example 
 d7bec597-4726-451f-8a53-e62e6f19c32c/cea6651a-bd0a-4438-9f8a-a0770bbf3ebb
 ```

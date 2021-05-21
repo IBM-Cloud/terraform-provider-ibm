@@ -6,9 +6,9 @@ description: |-
   Lists certificates of a Certificate Manager instance
 ---
 
-# `ibm_certificate_manager_certificates`
+# ibm_certificate_manager_certificates
 
-Retrieve the details of one or lists all certificates that are managed by your Certificate Manager service instance resource. For more information, about Certificate Manager, see [Managing certificates from the dashboard](https://cloud.ibm.com/docs/certificate-manager?topic=certificate-manager-managing-certificates-from-the-dashboard).
+Retrieve the details of one or lists all certificates that are managed by your Certificate Manager service instance resource. For more information, about Certificate Manager, see [managing certificates from the dashboard](https://cloud.ibm.com/docs/certificate-manager?topic=certificate-manager-managing-certificates-from-the-dashboard).
 
 
 ## Example usage
@@ -25,12 +25,12 @@ data "ibm_certificate_manager_certificates" "certs"{
 ```
 
 ## Argument reference
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
 
 - `certificate_manager_instance_id` - (Required, String) The CRN based of the certificate manager service instance ID.
 
 ## Attribute reference
-Review the output parameters that you can access after your resource is created. 
+In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
 - `algorithm` - (String) The Algorithm of a certificate.
 - `begins_on` - (String) The creation date of the certificate in UNIX epoch time.
@@ -40,10 +40,13 @@ Review the output parameters that you can access after your resource is created.
 - `id` - (String) The ID of the certificate that is managed in certificate manager. The ID is composed of `<certificate_manager_instance_ID>:<certificate_ID>`.
 - `issuer` - (String) The issuer of the certificate.
 - `issuance_info` - (String) The issuance information of a certificate.
-	-  `additional_info` - (String) The extra information of a certificate.
-	-   `status` - (String) The status of a certificate.
-	-   `ordered_on` - (String) The certificate ordered date.
-	-   `code` - (String) The code of a certificate.
+  
+  Nested scheme for `issuance_info`:
+  - `additional_info` - (String) The extra information of a certificate.
+  - `status` - (String) The status of a certificate.
+  - `ordered_on` - (String) The certificate ordered date.
+  - `code` - (String) The code of a certificate.
+  
 - `imported` - (String) Indicates whether a certificate has imported or not.
 - `key_algorithm` - (String) The key algorithm of a certificate.
 - `name` - (String) The display name of the certificate.

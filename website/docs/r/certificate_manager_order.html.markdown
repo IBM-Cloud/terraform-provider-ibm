@@ -6,9 +6,9 @@ description: |-
   Orders and manages ordered certificate.
 ---
 
-# `ibm_certificate_manager_order`
+# ibm_certificate_manager_order
 
-Order, renew, update, or delete a certificate in Certificate Manager. For more information, about an IBM Certificate Manager order, see [Ordering certificates](https://cloud.ibm.com/docs/certificate-manager?topic=certificate-manager-ordering-certificates).
+Order, renew, update, or delete a certificate in Certificate Manager. For more information, about an IBM Certificate Manager order, see [ordering certificates](https://cloud.ibm.com/docs/certificate-manager?topic=certificate-manager-ordering-certificates).
 
 
 ## Example usage
@@ -46,7 +46,7 @@ The following [timeouts](https://www.terraform.io/docs/configuration/resources.h
 - **Update**: The renewal or update of the certificate is considered failed if no response is received for 10 minutes.
 
 ## Argument reference
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
 
 - `auto_renew_enabled` - (Optional, Bool) Determines the certificate is auto that is renewed. Default is **false**. 
  **Note** 
@@ -63,7 +63,7 @@ Review the input parameters that you can specify for your resource.
 
 
 ## Attribute reference
-Review the output parameters that you can access after your resource is created. 
+In addition to all argument references list, you can access the following attribute references after your resource is created.
 
 - `algorithm` - (String) The encryption algorithm. Valid values are `sha256WithRSAEncryption`.
 - `begins_on` - (String) The creation date of the certificate in UNIX epoch time.

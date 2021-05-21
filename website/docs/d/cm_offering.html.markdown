@@ -6,7 +6,7 @@ description: |-
   Get information about cm_offering.
 ---
 
-# `ibm_cm_offering`
+# ibm_cm_offering
 
 Create, modify, or delete an `cm_offering` data source. You can manage the settings for all catalogs across your account. For more information, about managing catalog, refer to [catalog management settings](https://cloud.ibm.com/docs/account?topic=account-account-getting-started).
 
@@ -22,14 +22,14 @@ data "cm_offering" "cm_offering" {
 
 
 ## Argument reference
-Review the input parameters that you can specify for your data source. 
+Review the argument reference that you can specify for your data source. 
 
 - `catalog_identifier` - (Required, String) The catalog identifier.
 - `offering_id` - (Required, String) The offering identification.
 
 
 ## Attribute reference
-Review the output parameters that you can access after your data source is created. 
+In addition to all argument references list, you can access the following attribute references after your data source is created.
 
 - `catalog_id` - (String) The ID of the catalog containing this offering.
 - `catalog_name` - (String) The name of the catalog.
@@ -52,8 +52,11 @@ Review the output parameters that you can access after your data source is creat
 - `portal_ui_url` - (String) The portal console URL.
 - `provider` - (String) Provider of this offering.
 - `repo_info` - (List) Repository information for offerings. Nested `repo_info` blocks have the following structure.
-	- `token` - (String) The token for the private repository.
-	- `type` - (String) The public or enterprise GitHub.
+  
+  Nested scheme for `rep_info`:
+  - `token` - (String) The token for the private repository.
+  - `type` - (String) The public or enterprise GitHub.
+
 - `short_description` - (String) The short description in the requested language.
 - `url` - (String) The URL for the specific offering.
 

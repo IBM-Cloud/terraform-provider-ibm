@@ -6,7 +6,7 @@ description: |-
   Manages cm_offering.
 ---
 
-# `ibm_cm_offering`
+# ibm_cm_offering
 
 Create, modify, or delete an `cm_offering` resources. You can manage the settings for all catalogs across your account. For more information, about managing catalog, refer to [catalog management settings](https://cloud.ibm.com/docs/account?topic=account-account-getting-started).
 
@@ -23,14 +23,14 @@ resource "ibm_cm_offering" "cm_offering" {
 
 
 ## Argument reference
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
 
 - `catalog_identifier` - (Required, Forces new resrouce, String) Catalog identifier.
 - `label` - (Optional, Forces new resrouce, String) Display the name in the requested language.
 - `tags` - (Optional, Forces new resrouce, List) The list of tags associated with the catalog.
 
 ## Attribute reference
-Review the output parameters that you can access after your resource is created. 
+In addition to all argument references list, you can access the following attribute references after your resource is created.
 
 - `catalog_id` - (String) The ID of the catalog containing this offering.
 - `catalog_name` - (String) The name of the catalog.
@@ -47,6 +47,8 @@ Review the output parameters that you can access after your resource is created.
 - `portal_approval_record` - (String) The portal's approval record ID.
 - `portal_ui_url` - (String) The portal console URL.
 - `repo_info` - (String) Repository information for an offerings.
+  
+  Nested scheme for `repo_info`:
   - `token` - (String) Token for the private repository.
   - `type` - (String) The public or enterprise GitHub.
 - `short_description` - (String) The short description in the requested language.

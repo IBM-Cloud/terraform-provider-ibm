@@ -6,9 +6,9 @@ description: |-
   Manages IBM Direct Link Provider Gateway.
 ---
 
-# `ibm_dl_provider_gateway`
+# ibm_dl_provider_gateway
 
-Create, update, or delete a Direct Link Provider Gateway by using the Direct Link Provider Gateway resource. For more information, refer to [about Direct Link](https://cloud.ibm.com/docs/dl?topic=dl-dl-about#use-case-connect).
+Create, update, or delete a Direct Link Provider Gateway by using the Direct Link Provider Gateway resource. For more information, about Direct Link Provider Gateway, see [about Direct Link](https://cloud.ibm.com/docs/dl?topic=dl-dl-about#use-case-connect).
 
 
 ## Example usage to create Direct Link of dedicated type
@@ -27,7 +27,7 @@ resource ibm_dl_provider_gateway test_dl_provider_gateway {
 ```
 
 ## Argument reference
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
 
 - `bgp_asn`- (Required, Forces new resource, Integer) The BGP ASN of the gateway to be created. For example, `64999`.
 - `bgp_cer_cidr` - (Optional, Forces new resource, String) The BGP customer edge router CIDR. Specify a value within bgp_base_cidr. If bgp_base_cidr is `169.254.0.0/16`, this parameter can exclude and a CIDR is selected automatically. For example, `10.254.30.78/30`.
@@ -39,7 +39,7 @@ Review the input parameters that you can specify for your resource.
 
 
 ## Attribute reference
-Review the output parameters that you can access after your resource is created. 
+In addition to all argument reference list, you can access the following attribute references after your resource is created. 
 
 - `bgp_asn` - (String) The IBM BGP ASN.
 - `bgp_status` - (String) The gateway BGP status.
@@ -54,18 +54,18 @@ Review the output parameters that you can access after your resource is created.
 - `vlan` - (String) The VLAN allocated for the gateway. You can set only for `type=connect` gateways created directly through the IBM portal.
 
 ## Import
-The `ibm_dl_provider_gateway` can be imported by using gateway ID. 
+The `ibm_dl_provider_gateway` resource can be imported by using gateway ID. 
 
 **Syntax**
 
 ```
-terraform import ibm_dl_provider_gateway.<gateway_ID>
+$ terraform import ibm_dl_provider_gateway.<gateway_ID>
 ```
 
 **Example**
 
 ```
-terraform import ibm_dl_provider_gateway.test_dl_provider_gateway 5ffda12064634723b079acdb018ef308
+$ terraform import ibm_dl_provider_gateway.test_dl_provider_gateway 5ffda12064634723b079acdb018ef308
 ```
 
 

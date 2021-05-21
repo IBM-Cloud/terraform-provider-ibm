@@ -6,7 +6,7 @@ description: |-
   Manages cm_version.
 ---
 
-# `ibm_cm_version`
+# ibm_cm_version
 
 Create, modify, or delete an `cm_version` resources. For more information, about managing catalog version, refer to [updating your software](https://cloud.ibm.com/docs/account?topic=account-update-private).
 
@@ -23,7 +23,7 @@ resource "cm_version" "cm_version" {
 
 
 ## Argument reference
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
  
 - `catalog_identifier` - (Required, Forces new resource, String) Catalog identifier.
 - `content` - (Optional, Forces new resource, String) The byte array representing the content to import. Currently supports only `OVA` images.
@@ -35,7 +35,7 @@ Review the input parameters that you can specify for your resource.
 
 
 ## Attribute reference
-Review the output parameters that you can access after your resource is created. 
+In addition to all argument references list, you can access the following attribute references after your resource is created.
 
 - `catalog_id` - (String) The catalog ID.
 - `crn` - (String) The CRN version.

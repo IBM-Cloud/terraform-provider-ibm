@@ -6,9 +6,9 @@ description: |-
   Get information about Catalog Management version.
 ---
 
-# `ibm_cm_version`
+# ibm_cm_version
 
-Create, modify, or delete an `cm_version` data source. For more information, about managing catalog version, refer to [updating your software](https://cloud.ibm.com/docs/account?topic=account-update-private).
+Create, modify, or delete an `cm_version` data source. For more information, about managing catalog version, see [updating your software](https://cloud.ibm.com/docs/account?topic=account-update-private).
 
 
 ## Example usage
@@ -21,12 +21,12 @@ data "cm_version" "cm_version" {
 
 
 ## Argument reference
-Review the input parameters that you can specify for your data source. 
+Review the argument reference that you can specify for your data source. 
 
 - `version_loc_id` - (Required, String) A dotted value of `catalogID.versionID`. 
 
 ## Attribute reference
-Review the output parameters that you can access after your data source is created. 
+In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
 - `catalog_id` - (String) The catalog ID.
 - `crn` - (String) The CRN version.
