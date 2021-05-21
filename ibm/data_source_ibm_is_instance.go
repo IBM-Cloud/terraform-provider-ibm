@@ -441,6 +441,54 @@ func dataSourceIBMISInstance() *schema.Resource {
 					},
 				},
 			},
+			"placement_target": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The placement restrictions for the virtual server instance.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this dedicated host group.",
+						},
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this dedicated host group.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this dedicated host group.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique user-defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly-selected words.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of resource referenced.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -495,15 +543,17 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			}
 			d.Set(isInstanceCPU, cpuList)
 
+			if instance.PlacementTarget != nil {
+				placementTargetMap := resourceIbmIsInstanceInstancePlacementToMap(*instance.PlacementTarget.(*vpcv1.InstancePlacementTarget))
+				d.Set("placement_target", []map[string]interface{}{placementTargetMap})
+			}
+
 			d.Set(isInstanceMemory, *instance.Memory)
 			gpuList := make([]map[string]interface{}, 0)
 			d.Set(isInstanceGpu, gpuList)
 
 			if instance.Disks != nil {
-				err = d.Set(isInstanceDisks, dataSourceInstanceFlattenDisks(instance.Disks))
-				if err != nil {
-					return fmt.Errorf("Error setting disks %s", err)
-				}
+				d.Set(isInstanceDisks, dataSourceInstanceFlattenDisks(instance.Disks))
 			}
 
 			if instance.PrimaryNetworkInterface != nil {
