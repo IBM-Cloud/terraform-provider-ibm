@@ -6,7 +6,7 @@ description: |-
   Get information on an IBM Cloud database instance.
 ---
 
-# `ibm_database`
+# ibm_database
 
 Create a read-only copy of an existing IBM Cloud database service. For more information, about an IBM Cloud datbase service instance, see [provisioning databases](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-provisioning).
 
@@ -27,7 +27,7 @@ data "ibm_database" "database" {
 
 
 ## Argument reference
-Review the input parameters that you can specify for your data source. 
+Review the argument reference that you can specify for your data source. 
 
 - `name` - (Required, String) The name of the IBM Cloud Databases instance. IBM Cloud does not enforce that service names are unique and it is possible that duplicate service names exist. The first located service instance is used by  Terraform. The name must not include spaces.
 - `location` - (Optional, String) The location where the IBM Cloud Databases instance is deployed into.
@@ -36,7 +36,7 @@ Review the input parameters that you can specify for your data source.
 
 
 ## Attribute reference
-Review the output parameters that you can access after you retrieved your data source. 
+In addition to all argument references list, you can access the following attribute references after your data source is created. 
 
 - `adminuser` - (String)  The user ID of the default administration user for the database, such as `admin` or `root`.
 - `cert_file_path` - (String)  The absolute path to certificate PEM file.
@@ -49,33 +49,46 @@ Review the output parameters that you can access after you retrieved your data s
 - `status` - (String)  The status of resource instance.
 - `version` - (String) The database version.
 - `platform_options`-  (String) The CRN of key protect key.
-	- `key_protect_key_id`-  (String) The CRN of key protect key.
-	- `disk_encryption_key_crn`-  (String) The CRN of disk encryption key.
-	- `backup_encryption_key_crn`-  (String) The CRN of backup encryption key.
+   
+   Nested scheme for `platform_options`:
+   - `key_protect_key_id`-  (String) The CRN of key protect key.
+   - `disk_encryption_key_crn`-  (String) The CRN of disk encryption key.
+   - `backup_encryption_key_crn`-  (String) The CRN of backup encryption key.
+   
 - `auto_scaling` (List)Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
-	- `cpu` (List)Autoscaling CPU.
-		- `rate_increase_percent`- (Integer) Auto scaling rate in increase percent.
-		- `rate_limit_count_per_member`- (Integer) Auto scaling rate limit in count per number.
-		- `rate_period_seconds`- (Integer) Auto scaling rate in period seconds.
-		- `rate_units` - (String) Auto scaling rate in units.
-	- `disk` (List)Disk auto scaling.
-		- `capacity_enabled`- (Boolean) Auto scaling scalar enables or disables the scalar capacity.
-		- `free_space_less_than_percent`- (Integer) Auto scaling scalar capacity free space less than percent.
-		- `io_above_percent`- (Integer) Auto scaling scalar I/O utilization above percent.
-		- `io_enabled`- (Boolean) Auto scaling scalar I/O utilization enabled.
-		- `io_over_period`- (Boolean) Auto scaling scalar I/O utilization over period.
-		- `rate_increase_percent`- (Integer) Auto scaling rate increase percent.
-		- `rate_limit_mb_per_member`- (Integer) Auto scaling rate limit in megabytes per member.
-		- `rate_period_seconds`- (Integer) Auto scaling rate period in seconds.
-		- `rate_units` - (String) Auto scaling rate in units.
-	- `memory` (List) Memory Auto Scaling.
-		- `io_above_percent`- (Integer) Auto scaling scalar I/O utilization above percent.
-		- `io_enabled`- (Boolean) Auto scaling scalar I/O utilization enabled.
-		- `io_over_period` - (String) Auto scaling scalar I/O utilization over period.
-		- `rate_increase_percent`- (Integer) Auto scaling rate in increase percent.
-		- `rate_limit_mb_per_member`- (Integer) Auto scaling rate limit in megabytes per member.
-		- `rate_period_seconds`- (Integer) Auto scaling rate period in seconds.
-		- `rate_units` - (String) Auto scaling rate in units.
+
+  Nested scheme for `auto_scaling`:
+  - `cpu` (List)Autoscaling CPU.
+  
+     Nested scheme for `cpu`:
+     - `rate_increase_percent`- (Integer) Auto scaling rate in increase percent.
+     - `rate_limit_count_per_member`- (Integer) Auto scaling rate limit in count per number.
+     - `rate_period_seconds`- (Integer) Auto scaling rate in period seconds.
+     - `rate_units` - (String) Auto scaling rate in units.
+  
+  - `disk` (List) Disk auto scaling.
+  
+    Nested scheme for `disk`:
+    - `capacity_enabled`- (Boolean) Auto scaling scalar enables or disables the scalar capacity.
+    - `free_space_less_than_percent`- (Integer) Auto scaling scalar capacity free space less than percent.
+    - `io_above_percent`- (Integer) Auto scaling scalar I/O utilization above percent.
+    - `io_enabled`- (Boolean) Auto scaling scalar I/O utilization enabled.
+    - `io_over_period`- (Boolean) Auto scaling scalar I/O utilization over period.
+    - `rate_increase_percent`- (Integer) Auto scaling rate increase percent.
+    - `rate_limit_mb_per_member`- (Integer) Auto scaling rate limit in megabytes per member.
+    - `rate_period_seconds`- (Integer) Auto scaling rate period in seconds.
+    - `rate_units` - (String) Auto scaling rate in units.
+	
+- `memory` (List) Memory Auto Scaling.
+
+  Nested scheme for `memory`:
+  - `io_above_percent`- (Integer) Auto scaling scalar I/O utilization above percent.
+  - `io_enabled`- (Boolean) Auto scaling scalar I/O utilization enabled.
+  - `io_over_period` - (String) Auto scaling scalar I/O utilization over period.
+  - `rate_increase_percent`- (Integer) Auto scaling rate in increase percent.
+  - `rate_limit_mb_per_member`- (Integer) Auto scaling rate limit in megabytes per member.
+  - `rate_period_seconds`- (Integer) Auto scaling rate period in seconds.
+  - `rate_units` - (String) Auto scaling rate in units.
 - `whitelist` (List) A list of allowed IP addresses or ranges.
 
 

@@ -6,9 +6,9 @@ description: |-
   Manages IBM Cloud Infrastructure Direct Link Port.
 ---
 
-# `ibm_dl_port`
+# ibm_dl_port
 
-Import the details of an existing IBM Cloud Infrastructure Direct Link Offering Port. For more information, about Direct Link Offering Port, see [Megaport ordering considerations](https://cloud.ibm.com/docs/dl?topic=dl-megaport).
+Import the details of an existing IBM Cloud Infrastructure Direct Link Offering Port. For more information, about Direct Link Offering Port, see [megaport ordering considerations](https://cloud.ibm.com/docs/dl?topic=dl-megaport).
 
 
 ## Example usage
@@ -20,12 +20,12 @@ Import the details of an existing IBM Cloud Infrastructure Direct Link Offering 
 ```
 
 ## Argument reference
-Retrieve the Argument reference that you need to specify for the data source. 
+Retrieve the argument reference that you need to specify for the data source. 
 
 - `port_id` - (Required, String) The unique ID for the Direct Link port.
 
 ## Attribute reference
-Review the Attribute reference that you can access after your resource is created. 
+In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
 - `direct_link_count` - (String) The count of the existing Direct Link gateways on the port.
 - `label` - (String) The port label.

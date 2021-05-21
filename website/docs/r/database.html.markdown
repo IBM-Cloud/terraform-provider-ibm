@@ -6,7 +6,7 @@ description: |-
   Manages IBM Cloud database instance.
 ---
 
-# `ibm_database`
+# ibm_database
 
 Create, update, or delete a IBM Cloud Database (ICD) instance. The `ibmcloud_api_key` that are used by  Terraform should grant IAM rights to create and modify IBM Cloud Databases and have access to the resource group the ICD instance is associated with. For more information, see [documentation](https://cloud.ibm.com/docs/services/databases-for-postgresql/reference-access-management.html#identity-and-access-management) to manage ICD instances.  
 
@@ -173,32 +173,40 @@ ICD create instance typically takes between 30 minutes to 45 minutes. Delete and
 
 
 ## Argument reference
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
 
 - `adminpassword` - (Optional, String)  The password for the database administrator. If not specified, an empty string is provided for the password and the user ID cannot be used. In this case, more users must be specified in a `user` block.
 - `auto_scaling` (List , Optional) Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
+  
+  Nested scheme for `auto_scaling`:
   - `cpu` (List , Optional) Single block of CPU is allowed at once by CPU autoscaling.
-	  - `rate_increase_percent` - (Optional, Integer) Auto scaling rate in increase percent.
-	  - `rate_limit_count_per_member` - (Optional, Integer) Auto scaling rate limit in count per number.
-	  - `rate_period_seconds` - (Optional, Integer) Period seconds of the auto scaling rate.
-	  - `rate_units` - (Optional, String) Auto scaling rate in units.
+    
+    Nested scheme for `cpu`:
+    - `rate_increase_percent` - (Optional, Integer) Auto scaling rate in increase percent.
+    - `rate_limit_count_per_member` - (Optional, Integer) Auto scaling rate limit in count per number.
+    - `rate_period_seconds` - (Optional, Integer) Period seconds of the auto scaling rate.
+    - `rate_units` - (Optional, String) Auto scaling rate in units.
   - `disk` (List , Optional) Single block of disk is allowed at once in disk auto scaling.
-    - `capacity_enabled`-Bool-Optional-Auto scaling scalar enables or disables the scalar capacity.
-	  - `free_space_less_than_percent` - (Optional, Integer) Auto scaling scalar capacity free space less than percent.
-	  - `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
-    - `io_enabled`-Bool-Optional-Auto scaling scalar I/O utilization enabled.
-	  - `rate_increase_percent` - (Optional, Integer) Auto scaling rate increase percent.
-	  - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
-	  - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
-	  - `rate_units` - (Optional, String) Auto scaling rate in units.
+  
+    Nested scheme for `disk`:
+    - `capacity_enabled` - (Optional, Bool) Auto scaling scalar enables or disables the scalar capacity.
+    - `free_space_less_than_percent` - (Optional, Integer) Auto scaling scalar capacity free space less than percent.
+    -  `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
+    - `io_enabled` - (Optional, Bool) Auto scaling scalar I/O utilization enabled.`
+    - `rate_increase_percent` - (Optional, Integer) Auto scaling rate increase percent.
+    - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
+    - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
+    - `rate_units` - (Optional, String) Auto scaling rate in units.
   - `memory` (List , Optional) Memory Auto Scaling in single block of memory is allowed at once.
-	  - `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
+	  
+    Nested scheme for `memory`:
+    - `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
     - `io_enabled`-Bool-Optional-Auto scaling scalar I/O utilization enabled.
-	  - `io_over_period` - (Optional, String) Auto scaling scalar I/O utilization over period.
-	  - `rate_increase_percent` - (Optional, Integer) Auto scaling rate in increase percent.
-	  - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
-	  - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
-	  - `rate_units` - (Optional, String) Auto scaling rate in units.
+    - `io_over_period` - (Optional, String) Auto scaling scalar I/O utilization over period.
+    - `rate_increase_percent` - (Optional, Integer) Auto scaling rate in increase percent.
+    - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
+    - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
+    - `rate_units` - (Optional, String) Auto scaling rate in units.
 - `backup_id` - (Optional, String) The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format `crn:v1:<…>:backup:`. If omitted, the database is provisioned empty.
 - `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
 - `guid` - (Optional, String) The unique identifier of the database instance.
@@ -218,16 +226,20 @@ Review the input parameters that you can specify for your resource.
 - `service_endpoints` - (Optional, String) Specify whether you want to enable the public, private, or both service endpoints. Supported values are `public`, `private`, or `public-and-private`. The default is `public`.
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance.
 - `version` - (Optional, Forces new resource, String) The version of the database to be provisioned. If omitted, the database is created with the most recent major and minor version.
-- `users` - (List of Objects) Optional-A list of users that you want to create on the database. Multiple blocks are allowed.
-	- `name` - (Optional, String) The user ID to add to the database instance. The user ID must be in the range 5 - 32 characters.
-	- `password` - (Optional, String) The password for the user ID. The password must be in the range 10 - 32 characters.
-- `whitelist` - (List of Objects) Optional-A list of allowed IP addresses for the database. Multiple blocks are allowed.
-	- `address` - (Optional, String) The IP address or range of database client addresses to be whitelisted in CIDR format. Example, `172.168.1.2/32`.
-	- `description` - (Optional, String) A description for the allowed IP addresses range.
+- `users` - (Optional, List of Objects) A list of users that you want to create on the database. Multiple blocks are allowed.
+
+  Nested scheme for `users`:
+  - `name` - (Optional, String) The user ID to add to the database instance. The user ID must be in the range 5 - 32 characters.
+  - `password` - (Optional, String) The password for the user ID. The password must be in the range 10 - 32 characters.
+- `whitelist` - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
+  
+  Nested scheme for `whitelist`:
+  - `address` - (Optional, String) The IP address or range of database client addresses to be whitelisted in CIDR format. Example, `172.168.1.2/32`.
+  - `description` - (Optional, String) A description for the allowed IP addresses range.
 
 
 ## Attribute reference
-Review the output parameters that you can access after your resource is created. 
+In addition to all argument references list, you can access the following attribute references after your resource is created. 
 
 - `adminuser` - (String) The user ID of the database administrator. Example, `admin` or `root`.
 - `connectionstrings` - (Array) A list of connection strings for the database for each user ID. For more information, about how to use connection strings, see the [documentation](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-connection-strings). The results are returned in pairs of the userid and string: `connectionstrings.1.name = admin connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full` Individual string parameters can be retrieved by using  Terraform variables and outputs `connectionstrings.x.hosts.x.port` and `connectionstrings.x.hosts.x.host`.
@@ -235,7 +247,7 @@ Review the output parameters that you can access after your resource is created.
 - `status` - (String) The status of the instance.
 - `version` - (String) The database version.
 
-### Import
+## Import
 The database instance can be imported by using the ID, that is formed from the CRN. To import the resource, you must specify the `region` parameter in the `provider` block of your  Terraform configuration file. If the region is not specified, `us-south` is used by default. An  Terraform refresh or apply fails, if the database instance is not in the same region as configured in the provider or its alias.
 
 CRN is a 120 digit character string of the form -  `crn:v1:bluemix:public:databases-for-postgresql:us-south:a/4ea1882a2d3401ed1e459979941966ea:79226bd4-4076-4873-b5ce-b1dba48ff8c4::`
@@ -243,15 +255,16 @@ CRN is a 120 digit character string of the form -  `crn:v1:bluemix:public:databa
 **Syntax**
 
 ```
-terraform import ibm_database.my_db <crn>
+$ terraform import ibm_database.my_db <crn>
 ```
 
 **Example**
+
 ```
-terraform import ibm_database.my_db crn:v1:bluemix:public:databases-for-postgresql:us-south:a/4ea1882a2d3401ed1e459979941966ea:79226bd4-4076-4873-b5ce-b1dba48ff8c4::
+$ terraform import ibm_database.my_db crn:v1:bluemix:public:databases-for-postgresql:us-south:a/4ea1882a2d3401ed1e459979941966ea:79226bd4-4076-4873-b5ce-b1dba48ff8c4::
 ```
 
-Import requires a minimal  Terraform config file to allow importing.
+Import requires a minimal Terraform config file to allow importing.
 
 ```
 resource "ibm_database" "<your_database>" {

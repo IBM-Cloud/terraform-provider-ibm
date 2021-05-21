@@ -7,7 +7,7 @@ description: |-
 ---
 
 
-# `ibm_cm_offering_instance`
+# ibm_cm_offering_instance
 
 Create, modify, or delete an `ibm_cm_offering_instance` data source.  For more information, about managing catalog, refer to [catalog management settings](https://cloud.ibm.com/docs/account?topic=account-account-getting-started).
 
@@ -21,12 +21,12 @@ data "cm_offering_instance" "cm_offering_instance" {
 ```
 
 ## Argument reference
-Review the input parameters that you can specify for your data source. 
+Review the argument reference that you can specify for your data source. 
 
 - `instance_identifier` - (Required, String) The version instance identifier.
 
 ## Attribute reference
-Review the output parameters that you can access after your data source is created. 
+In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
 - `catalog_id` - (String) The catalog ID the instance that is created from.
 - `cluster_id` - (String) The cluster ID.

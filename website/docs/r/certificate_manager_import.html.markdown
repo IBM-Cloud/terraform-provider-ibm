@@ -6,9 +6,9 @@ description: |-
   Imports and manages imported certificate.
 ---
 
-# `ibm_certificate_manager_import`
+# ibm_certificate_manager_import
 
-Upload or delete a certificate in Certificate Manager. For more information, about IBM Cloud certificate manager, see [Managing certificates](https://cloud.ibm.com/docs/certificate-manager?topic=certificate-manager-managing-certificates-from-the-dashboard).
+Upload or delete a certificate in Certificate Manager. For more information, about IBM Cloud certificate manager, see [managing certificates](https://cloud.ibm.com/docs/certificate-manager?topic=certificate-manager-managing-certificates-from-the-dashboard).
 
 
 ## Example usage
@@ -39,19 +39,21 @@ resource "ibm_certificate_manager_import" "cert" {
 
 
 ## Argument reference
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
 
 - `certificate_manager_instance_id` - (Required, String) The CRN-based service instance ID.
 - `description` - (Optional, String) The description of the certificate.
 - `name` - (Required, String) The display name for the imported certificate.
 - `data`- (Required, Map) The certificate data.
-	- `content` - (Required, String) The content of certificate data, escaped.
-	- `intermediate` - (Optional, String) The intermediate certificate data, escaped.
+  
+  Nested scheme for `data`:
+  - `content` - (Required, String) The content of certificate data, escaped.
+  - `intermediate` - (Optional, String) The intermediate certificate data, escaped.
   - `priv_key` - (Optional, String) The private key data, escaped.
 
 
 ## Attribute reference
-Review the output parameters that you can access after your resource is created. 
+In addition to all argument references list, you can access the following attribute references after your resource is created.
 
 - `algorithm` - (String) The encryption algorithm. Valid values are `sha256WithRSAEncryption`. Default value is `sha256WithRSAEncryption`.
 - `begins_on` - (String) The creation date of the certificate in UNIX epoch time.
