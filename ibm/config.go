@@ -17,6 +17,7 @@ import (
 	// Added code for the Power Colo Offering
 
 	apigateway "github.com/IBM/apigateway-go-sdk"
+	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	"github.com/IBM/container-registry-go-sdk/containerregistryv1"
 	"github.com/IBM/go-sdk-core/v4/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
@@ -209,6 +210,7 @@ type ClientSession interface {
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
 	PushServiceV1() (*pushservicev1.PushServiceV1, error)
+	AppConfigurationV1() (*appconfigurationv1.AppConfigurationV1, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
 	keyManagementAPI() (*kp.Client, error)
@@ -355,6 +357,9 @@ type clientSession struct {
 
 	pushServiceClient    *pushservicev1.PushServiceV1
 	pushServiceClientErr error
+
+	appConfigurationClient    *appconfigurationv1.AppConfigurationV1
+	appConfigurationClientErr error
 
 	vpcClassicErr error
 	vpcClassicAPI *vpcclassic.VpcClassicV1
@@ -650,6 +655,10 @@ func (session clientSession) PushServiceV1() (*pushservicev1.PushServiceV1, erro
 	return session.pushServiceClient, session.pushServiceClientErr
 }
 
+func (session clientSession) AppConfigurationV1() (*appconfigurationv1.AppConfigurationV1, error) {
+	return session.appConfigurationClient, session.appConfigurationClientErr
+}
+
 func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
 	return sess.kpAPI, sess.kpErr
 }
@@ -927,6 +936,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.containerRegistryClientErr = errEmptyBluemixCredentials
 		session.kpErr = errEmptyBluemixCredentials
 		session.pushServiceClientErr = errEmptyBluemixCredentials
+		session.appConfigurationClientErr = errEmptyBluemixCredentials
 		session.kmsErr = errEmptyBluemixCredentials
 		session.stxConfigErr = errEmptyBluemixCredentials
 		session.cfConfigErr = errEmptyBluemixCredentials
@@ -1243,7 +1253,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	pnurl := fmt.Sprintf("https://%s.imfpush.cloud.ibm.com/imfpush/v1", c.Region)
 	if c.Visibility == "private" {
-		session.pushServiceClientErr = fmt.Errorf("Push Service API doesnot support private endpoints")
+		session.pushServiceClientErr = fmt.Errorf("Push Notifications Service API doesnot support private endpoints")
 	}
 	pushNotificationOptions := &pushservicev1.PushServiceV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_PUSH_API_ENDPOINT"}, pnurl),
@@ -1257,7 +1267,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 	} else {
 		session.pushServiceClientErr = fmt.Errorf("Error occured while configuring push notification service: %q", err)
 	}
-
+	if c.Visibility == "private" {
+		session.appConfigurationClientErr = fmt.Errorf("App Configuration Service API doesnot support private endpoints")
+	}
+	appConfigurationClientOptions := &appconfigurationv1.AppConfigurationV1Options{
+		Authenticator: authenticator,
+	}
+	appConfigClient, err := appconfigurationv1.NewAppConfigurationV1(appConfigurationClientOptions)
+	if appConfigClient != nil {
+		// Enable retries for API calls
+		appConfigClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.appConfigurationClient = appConfigClient
+	} else {
+		session.appConfigurationClientErr = fmt.Errorf("Error occurred while configuring App Configuration service: %q", err)
+	}
 	// Construct an "options" struct for creating the service client.
 	containerRegistryClientURL, err := containerregistryv1.GetServiceURLForRegion(c.Region)
 	if err != nil {
