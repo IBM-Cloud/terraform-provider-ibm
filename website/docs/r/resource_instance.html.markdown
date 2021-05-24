@@ -35,6 +35,8 @@ resource "ibm_resource_instance" "resource_instance" {
 }
 ```
 
+### Example: Provisioning a Hyper Protect DBaaS PostgreSQL Service
+
 The following is an example to create a service instance of IBM Cloud Hyper Protect DBaaS for PostgreSQL. For detailed argument reference, see the tables in the [Hyper Protect DBaaS for PostgreSQL documentation](/docs/hyper-protect-dbaas-for-postgresql?topic=hyper-protect-dbaas-for-postgresql-create-service#cli-create-service) (or the [Hyper Protect DBaaS for MongoDB documentation](/docs/hyper-protect-dbaas-for-mongodb?topic=hyper-protect-dbaas-for-monbgodb-create-service#cli-create-service) if you want to create MongoDB service instances).
 
 ```
