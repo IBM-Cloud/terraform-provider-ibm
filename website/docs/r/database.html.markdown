@@ -18,7 +18,7 @@ Configuration of an ICD resource requires that the `region` parameter is set for
 ## Example usage
 To find an example for configuring a virtual server instance that connects to a PostgreSQL database, see [here](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-database).
 
-```
+```terraform
 data "ibm_resource_group" "group" {
   name = "<your_group>"
 }
@@ -53,7 +53,7 @@ output "ICD Etcd database connection string" {
 ### Sample database instance by using `node_` attributes
 An example to configure and deploy database by using `node_` attributes instead of `memory_`.
 
-```
+```terraform
 data "ibm_resource_group" "group" {
   name = "<your_group>"
 }
@@ -90,7 +90,7 @@ output "ICD Etcd database connection string" {
 An example for configuring `point_in_time_recovery` time by using `ibm_database` resource.
 
 
-```
+```terraform
 data "ibm_resource_group" "group" {
   name = "<your_group>"
 }
@@ -109,7 +109,7 @@ resource "ibm_database" "test_acc" {
 
 ### Sample database instance by using auto_scaling
 
-```
+```terraform
 resource "ibm_database" "autoscale" {
     resource_group_id            = data.ibm_resource_group.group.id
     name                         = "redis"
@@ -151,7 +151,7 @@ resource "ibm_database" "autoscale" {
 
 **provider.tf**
 
-```
+```terraform
 provider "ibm" {
   ibmcloud_api_key = var.ibmcloud_api_key
   region           = "eu-gb"
@@ -266,7 +266,7 @@ $ terraform import ibm_database.my_db crn:v1:bluemix:public:databases-for-postgr
 
 Import requires a minimal Terraform config file to allow importing.
 
-```
+```terraform
 resource "ibm_database" "<your_database>" {
   name              = "<your_database_name>"
 ```

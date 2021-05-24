@@ -14,7 +14,7 @@ Provides a floatingip resource. This allows floatingip to be created, updated, a
 
 ## Example Usage
 
-```hcl
+```terraform
 
 resource "ibm_is_instance" "testacc_instance" {
   name    = "testinstance"

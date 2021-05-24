@@ -13,7 +13,7 @@ Create, modify, or delete an `cm_catalog` resources. You can manage the settings
 
 ## Example usage
 
-```
+```terraform
 data "cm_catalog" "cm_catalog" {
 	catalog_identifier = "catalog_identifier"
 }

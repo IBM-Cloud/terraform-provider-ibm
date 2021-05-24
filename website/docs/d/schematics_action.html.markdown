@@ -13,7 +13,7 @@ Provides a read-only data source for ibm_schematics_action. You can then referen
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_schematics_action" "schematics_action" {
 	action_id = "action_id"
 }

@@ -13,7 +13,7 @@ Import the details of an existing IBM VPN Gateways as a read-only data source. Y
 
 ## Example Usage
 
-```hcl
+```terraform
 
 data "ibm_is_vpn_gateways" "ds_vpn_gateways" {
   

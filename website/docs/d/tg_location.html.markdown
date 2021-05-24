@@ -14,7 +14,7 @@ Import the details of an existing IBM Cloud Infrastructure transit location as a
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_tg_location" "ds_tg_location" {
   name = "us-south"
 }

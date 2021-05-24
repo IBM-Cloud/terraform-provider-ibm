@@ -15,7 +15,7 @@ Provides a resource for IAM Service Policy. This allows service policy  to be cr
 
 ### Service Policy for All Identity and Access enabled services 
 
-```hcl
+```terraform
 resource "ibm_iam_service_id" "serviceID" {
   name = "test"
 }
@@ -29,7 +29,7 @@ resource "ibm_iam_service_policy" "policy" {
 
 ### Service Policy using service with region
 
-```hcl
+```terraform
 resource "ibm_iam_service_id" "serviceID" {
   name = "test"
 }
@@ -46,7 +46,7 @@ resource "ibm_iam_service_policy" "policy" {
 ```
 ### Service Policy using resource instance 
 
-```hcl
+```terraform
 resource "ibm_iam_service_id" "serviceID" {
   name = "test"
 }
@@ -73,7 +73,7 @@ resource "ibm_iam_service_policy" "policy" {
 
 ### Service Policy using resource group 
 
-```hcl
+```terraform
 resource "ibm_iam_service_id" "serviceID" {
   name = "test"
 }
@@ -96,7 +96,7 @@ resource "ibm_iam_service_policy" "policy" {
 
 ### Service Policy using resource and resource type 
 
-```hcl
+```terraform
 resource "ibm_iam_service_id" "serviceID" {
   name = "test"
 }
@@ -119,7 +119,7 @@ resource "ibm_iam_service_policy" "policy" {
 
 ### Service Policy using attributes 
 
-```hcl
+```terraform
 resource "ibm_iam_service_id" "serviceID" {
   name = "test"
 }
@@ -144,7 +144,7 @@ resource "ibm_iam_service_policy" "policy" {
 ```
 ### Cross account Service policy using iam_id
 
-```hcl
+```terraform
 provider "ibm" {
     alias             = "accA"
     ibmcloud_api_key  = "Account A Api Key"
@@ -171,7 +171,7 @@ resource "ibm_iam_service_policy" "policy" {
 
 ### Service Policy using resource_attributes
 
-```hcl
+```terraform
 resource "ibm_iam_service_id" "serviceID" {
   name = "test"
 }

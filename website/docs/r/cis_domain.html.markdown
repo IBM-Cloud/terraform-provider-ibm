@@ -13,7 +13,7 @@ Creates a DNS Domain resource that represents a DNS domain assigned to CIS. A do
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_cis_domain" "example" {
   domain = "example.com"
   cis_id = ibm_cis.instance.id

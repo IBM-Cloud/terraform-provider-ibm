@@ -12,7 +12,7 @@ Provides a resource for iam_account_settings. This allows iam_account_settings t
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_iam_account_settings" "iam_account_settings_instance" {
   mfa = "LEVEL3"
   session_expiration_in_seconds = "40000"

@@ -15,7 +15,7 @@ Create, update, or delete a Cloud Foundry space. For more information, about Clo
 The following example creates the `myspace` Cloud Foundry space. 
 
 
-```
+```terraform
 resource "ibm_space" "space" {
   name        = "myspace"
   org         = "myorg"

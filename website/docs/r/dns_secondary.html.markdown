@@ -13,7 +13,7 @@ The `ibm_dns_secondary` resource represents a single secondary DNS zone managed 
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_dns_secondary" "dns-secondary-test" {
     zone_name = "dns-secondary-test.com"
     master_ip_address = "127.0.0.10"

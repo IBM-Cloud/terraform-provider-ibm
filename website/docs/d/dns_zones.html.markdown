@@ -13,7 +13,7 @@ Retrieve details about a zone that you added to your private DNS service instanc
 
 ## Example usage
 
-```
+```terraform
 data "ibm_resource_instance" "dns" { }
 
 data "ibm_dns_zones" "ds_pdnszones" {

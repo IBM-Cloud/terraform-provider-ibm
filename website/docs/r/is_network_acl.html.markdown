@@ -14,7 +14,7 @@ Provides a network ACL resourcewith icmp protocol. This allows network ACL to be
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_network_acl" "isExampleACL" {
   name = "is-example-acl"
   rules {
@@ -46,7 +46,7 @@ Provides a network ACL resource with tcp/udp protocol. This allows network ACL t
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_network_acl" "isExampleACL" {
   name = "is-example-acl"
   rules {
@@ -83,7 +83,7 @@ Provides a NextGen VPC Network ACL resource with icmp protocol. This allows netw
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "vpctest"
 }

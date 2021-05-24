@@ -12,7 +12,7 @@ Provides a read-only data source for secrets_manager_secret. You can then refere
 
 ## Example Usage
 
-```hcl
+```terraform
 data "secrets_manager_secret" "secrets_manager_secret" {
 	instance_id = "36401ffc-6280-459a-ba98-456aba10d0c7"
 	secret_type = "arbitrary"

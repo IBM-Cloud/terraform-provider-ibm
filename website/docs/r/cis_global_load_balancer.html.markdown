@@ -13,7 +13,7 @@ Provides a IBM CIS Global Load Balancer resource. This sits in front of a number
 
 ## Example Usage
 
-```hcl
+```terraform
 # Define a global load balancer which directs traffic to defined origin pools
 # In normal usage different pools would be set for data centers/availability zones and/or for different regions
 # Within each availability zone or region we can define multiple pools in failover order

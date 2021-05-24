@@ -12,7 +12,7 @@ Import the details of all IAM (Identity and Access Management) users profile on 
 
 ## Example Usage
 
-```hcl
+```terraform
 
 	data "ibm_iam_users" "users_profiles"{
   

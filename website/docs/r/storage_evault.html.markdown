@@ -14,7 +14,7 @@ Provides a evault storage resource. This allows [Evault Backup](https://cloud.ib
 
 In the following example, you can create 20G of evault storage 
 
-```hcl
+```terraform
 resource "ibm_storage_evault" "test" {
   datacenter          = "dal05"
   capacity            = "20"

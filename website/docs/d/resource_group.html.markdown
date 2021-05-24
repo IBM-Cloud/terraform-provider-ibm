@@ -15,7 +15,7 @@ Import the details of an existing IBM resource Group as a read-only data source.
 
 Import the resource group by name
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
   name = "test"
 }
@@ -23,7 +23,7 @@ data "ibm_resource_group" "group" {
 
 Import the default resource group
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
   is_default = "true"
 }

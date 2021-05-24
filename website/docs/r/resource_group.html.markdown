@@ -13,7 +13,7 @@ Provides a resource group resource. This allows resource groups to be created, a
 
 ## Example Usage
 
-```hcl
+```terraform
 
 resource "ibm_resource_group" "resourceGroup" {
   name     = "prod"

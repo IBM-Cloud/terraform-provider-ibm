@@ -13,7 +13,7 @@ If you're using IBM's Cloud Internet Services Global Load Balancing to load-bala
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_cis_healthcheck" "test" {
   cis_id         = ibm_cis.instance.id
   expected_body  = "alive"

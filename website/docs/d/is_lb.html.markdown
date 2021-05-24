@@ -13,7 +13,7 @@ Import the details of an existing IBM VPC Load Balancer as a read-only data sour
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "testvpc"
 }

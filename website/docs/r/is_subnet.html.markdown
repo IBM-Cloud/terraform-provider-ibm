@@ -14,7 +14,7 @@ Provides a subnet resource. This allows subnet to be created, updated, and cance
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "test"
 }

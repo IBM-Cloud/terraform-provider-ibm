@@ -17,7 +17,7 @@ For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) AP
 
 In the following example, you can create a local load balancer service group:
 
-```hcl
+```terraform
 resource "ibm_lb_service_group" "test_service_group" {
     port = 82
     routing_method = "CONSISTENT_HASH_IP"

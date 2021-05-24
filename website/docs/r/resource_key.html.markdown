@@ -13,7 +13,7 @@ Provides a resource key resource. This allows resource keys to be created, and d
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_resource_instance" "resource_instance" {
   name = "myobjectsotrage"
 }
@@ -35,7 +35,7 @@ resource "ibm_resource_key" "resourceKey" {
 
 ## Example Usage with serviceID 
 
-```hcl
+```terraform
 data "ibm_resource_instance" "resource_instance" {
   name = "myobjectsotrage"
 }
@@ -62,7 +62,7 @@ resource "ibm_resource_key" "resourceKey" {
 ```
 ## Example Usage with HMAC 
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
     name ="Default"
 }

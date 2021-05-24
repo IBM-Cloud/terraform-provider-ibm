@@ -13,7 +13,7 @@ Provides a read-only data source for iam_api_key. You can then reference the fie
 
 ## Example Usage
 
-```hcl
+```terraform
 data "iam_api_key" "iam_api_key" {
 	apikey_id = "id"
 }

@@ -15,7 +15,7 @@ Provides a SSH key resource. This allows SSH Keys to be created, updated, and ca
 
 In the following example, you can create a ssh key to be used during creation of a pvminstance:
 
-```hcl
+```terraform
 resource "ibm_pi_key" "testacc_sshkey" {
   pi_key_name          = "testkey"
   pi_ssh_key           = "ssh-rsa <value>"
@@ -28,7 +28,7 @@ resource "ibm_pi_key" "testacc_sshkey" {
   * `region` - `lon`
   * `zone` - `lon04`
   Example Usage:
-  ```hcl
+  ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"

@@ -17,7 +17,7 @@ For additional details, see the [IBM Cloud (SoftLayer) ipsec vpn Request docs](h
 
 In the following example, you can create an IPSec VPN:
 
-```hcl
+```terraform
 resource "ibm_ipsec_vpn" "ipsec" {
 	datacenter = "tok02"
 	Customer_Peer_IP = "192.168.32.2"

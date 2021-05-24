@@ -15,7 +15,7 @@ Provides a Virtual endpoint gateway resource. This allows Virtual endpoint gatew
 
 In the following example, you can create a VPN gateway:
 
-```hcl
+```terraform
 resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway1" {
 
   name = "my-endpoint-gateway-1"

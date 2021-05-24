@@ -13,7 +13,7 @@ Provides a IBM CIS Page Rule resource. This resource is associated with an IBM C
 
 ## Example Usage
 
-```hcl
+```terraform
 # Add a page rule to the domain
 
 resource "ibm_cis_page_rule" "page_rule" {

@@ -13,7 +13,7 @@ Provides an application chrome web resource. This allows to configure chrome web
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_pn_application_chrome" "application_chrome" {
   guid = "guid"
   server_key = "server_key"

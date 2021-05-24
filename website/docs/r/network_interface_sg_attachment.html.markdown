@@ -15,7 +15,7 @@ For additional details, see the [IBM Cloud Classic Infrastructure  (SoftLayer) A
 
 ## Example Usage
 
-```
+```terraform
 data "ibm_security_group" "allowssh" {
   name = "allow_ssh"
 }

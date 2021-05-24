@@ -13,7 +13,7 @@ Retrieve information about an existing private domain for an app. For more infor
 ## Example usage
 The following example retrieves information about the `example.com` domain. 
 
-```
+```terraform
 data "ibm_app_domain_private" "private_domain" {
   name = "foo.com"
 }

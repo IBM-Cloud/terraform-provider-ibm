@@ -15,7 +15,7 @@ Create, update, or delete a Cloud Foundry service instance. For more information
 The following example creates the `speech_to_text` Cloud Foundry service instance. 
 
 
-```
+```terraform
 data "ibm_space" "spacedata" {
   space = "prod"
   org   = "myorg.com"

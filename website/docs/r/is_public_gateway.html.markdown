@@ -14,7 +14,7 @@ Provides a public gateway resource. This allows gateway to be created, updated, 
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "test"
 }

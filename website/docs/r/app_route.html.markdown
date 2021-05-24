@@ -15,7 +15,7 @@ Create, update, or delete a route for your Cloud Foundry app. For more informati
 The following example creates a route for the `example.com` shared domain. 
 
 
-```
+```terraform
 data "ibm_space" "spacedata" {
   space = "space"
   org   = "myorg.com"

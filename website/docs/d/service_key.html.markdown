@@ -15,7 +15,7 @@ Retrieve information about existing service credentials that a Cloud Foundry ser
 The following example retrieves service key information for the `mycloudantdb` service instance. 
 
 
-```
+```terraform
 data "ibm_space" "space" {
   org   = "example.com"
   space = "dev"

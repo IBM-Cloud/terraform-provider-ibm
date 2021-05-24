@@ -16,7 +16,7 @@ Provides a ipsec policy resource. This allows ipsec policy to be created, update
 
 In the following example, you can create a ip sec policy:
 
-```hcl
+```terraform
 resource "ibm_is_ipsec_policy" "example" {
   name                     = "test"
   authentication_algorithm = "md5"

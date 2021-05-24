@@ -15,7 +15,7 @@ Provides a resource for IAM Service Authorizations. This allows authorization po
 
 ### Authorization policy between two services
 
-```hcl
+```terraform
 resource "ibm_iam_authorization_policy" "policy" {
   source_service_name = "cloud-object-storage"
   target_service_name = "kms"
@@ -26,7 +26,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 
 ### Authorization policy between two services with Authorize dependent services enabled
 
-```hcl
+```terraform
 resource "ibm_iam_authorization_policy" "policy" {
   source_service_name         = "databases-for-postgresql"
   target_service_name         = "kms"
@@ -36,7 +36,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 
 ### Authorization policy between two services with specific resource type
 
-```hcl
+```terraform
 resource "ibm_iam_authorization_policy" "policy" {
   source_service_name  = "is"
   source_resource_type = "image"
@@ -47,7 +47,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 ```
 ### Authorization policy between two specific instances
 
-```hcl
+```terraform
 resource "ibm_resource_instance" "instance1" {
   name     = "mycos"
   service  = "cloud-object-storage"
@@ -73,7 +73,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 ```
 ### Authorization policy between two specific resource group
 
-```hcl
+```terraform
 resource "ibm_resource_group" "source_resource_group" {
   name     = "123123"
 }

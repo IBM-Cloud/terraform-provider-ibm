@@ -17,7 +17,7 @@ For more information about how to configure a firewall, see the [docs](https://k
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_firewall" "testfw" {
   firewall_type  = "HARDWARE_FIREWALL_DEDICATED"
   ha_enabled     = false

@@ -13,7 +13,7 @@ Provides a IBM CIS WAF Rule Group resource. This resource is associated with an 
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_cis_waf_group" "test" {
   cis_id     = data.ibm_cis.cis.id
   domain_id  = data.ibm_cis_domain.cis_domain.domain_id

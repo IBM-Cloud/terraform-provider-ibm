@@ -18,7 +18,7 @@ Import the details of an existing IBM Cloud account as a read-only data source. 
 ## Example usage
 The following example retrieves information about an IBM Cloud account that belongs to the `myorg` Cloud Foundry organization. 
 
-```
+```terraform
 data "ibm_org" "orgData" {
   org = "example.com"
 }

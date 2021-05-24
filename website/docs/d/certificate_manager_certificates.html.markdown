@@ -13,7 +13,7 @@ Retrieve the details of one or lists all certificates that are managed by your C
 
 ## Example usage
 
-```
+```terraform
 data "ibm_resource_instance" "cm" {
     name     = "testname"
     location = "us-south"

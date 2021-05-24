@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud Infrastructure Direct Link Gateway a
 
 ## Example usage
 
-```
+```terraform
 data "ibm_dl_gateway" "test_dl_gateway_vc" {
     name = "mygateway"
 }

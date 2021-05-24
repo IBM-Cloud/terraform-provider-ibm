@@ -15,7 +15,7 @@ Enable, update or Disable a single AddOn or a Set of AddOns.
 
 In the following example, you can configure a Addons:
 
-```hcl
+```terraform
 resource "ibm_container_addons" "addons" {
   cluster = ibm_container_vpc_cluster.cluster.name
   addons {

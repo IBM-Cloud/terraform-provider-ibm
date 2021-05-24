@@ -16,7 +16,7 @@ Provides a load balancer pool resource. This allows load balancer pool to be cre
 
 In the following example, you can create a load balancer pool:
 
-```hcl
+```terraform
 resource "ibm_is_lb_pool" "testacc_pool" {
   name           = "test_pool"
   lb             = "addfd-gg4r4-12345"
@@ -33,7 +33,7 @@ resource "ibm_is_lb_pool" "testacc_pool" {
 
 In the following example, you can create a load balancer pool with `https` protocol:
 
-```hcl
+```terraform
 resource "ibm_is_lb_pool" "testacc_pool" {
   name           = "test_pool"
   lb             = "addfd-gg4r4-12345"

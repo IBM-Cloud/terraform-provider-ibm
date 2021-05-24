@@ -15,7 +15,7 @@ Upload or delete a certificate in Certificate Manager. For more information, abo
 A Example usage to create a certificate manager service instance that enables customer managed keys and imports a certificate.
 
 
-```
+```terraform
 resource "ibm_resource_instance" "cm" {
   name     = "test"
   location = "us-south"

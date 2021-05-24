@@ -13,7 +13,7 @@ Create and update an enterprise. Delete operation is not supported. For more inf
 
 ## Example Usage
 
-```
+```terraform
 resource "ibm_enterprise" "enterprise" {
   source_account_id = "source_account_id"
   name = "name"

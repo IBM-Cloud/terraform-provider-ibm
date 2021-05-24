@@ -16,7 +16,7 @@ Provides a VPN gateway connection resource. This allows VPN gateway connection t
 
 In the following example, you can create a VPN gateway:
 
-```hcl
+```terraform
 resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection" {
   name          = "test2"
   vpn_gateway   = ibm_is_vpn_gateway.testacc_VPNGateway2.id

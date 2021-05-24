@@ -16,7 +16,7 @@ Create or delete a worker pool. The worker pool will be attached to the specifie
 
 In the following example, you can create a worker pool for a vpc cluster:
 
-```hcl
+```terraform
 resource "ibm_container_vpc_worker_pool" "test_pool" {
   cluster          = "my_vpc_cluster"
   worker_pool_name = "my_vpc_pool"
@@ -32,7 +32,7 @@ resource "ibm_container_vpc_worker_pool" "test_pool" {
 ```
 
 In the follwoing example, you can create a worker pool for openshift cluster type with entitlement.
-```hcl
+```terraform
 resource "ibm_container_vpc_worker_pool" "test_pool" {
   cluster          = "my_openshift_cluster"
   worker_pool_name = "my_openshift_vpc_pool"

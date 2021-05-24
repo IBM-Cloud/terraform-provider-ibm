@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud infrastructure Direct Link  ports. F
 
 ## Example usage
 
-```
+```terraform
 data "ibm_dl_ports" "ds_dlports" {
 }
 ```

@@ -14,7 +14,7 @@ Create, modify, or delete an `ibm_cm_offering_instance` data source.  For more i
 
 ## Example usage
 
-```
+```terraform
 data "cm_offering_instance" "cm_offering_instance" {
 	instance_identifier = "instance_identifier"
 }

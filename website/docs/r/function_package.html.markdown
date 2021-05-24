@@ -16,7 +16,7 @@ The sample example provides the usage of package and to bind the package by usin
 ### Create a package
 The following example creates the `mypackage` package. 
 
-```
+```terraform
 resource "ibm_function_package" "package" {
   name = "mypackage"  user_defined_annotations = <<EOF
         [
@@ -49,7 +49,7 @@ EOF
 ### Create a package by using a binding
 
 
-```
+```terraform
 resource "ibm_function_package" "bindpackage" {
   name              = "bindalaram"
   bind_package_name = "/whisk.system/alarms/alarm"  user_defined_parameters = <<EOF

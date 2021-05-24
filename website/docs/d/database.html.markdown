@@ -18,7 +18,7 @@ Configuration of an IBM Cloud Databases `data_source` requires that the `region`
 The following example creates a read-only copy of the `mydatabase` instance in `us-east`.  
 
 
-```
+```terraform
 data "ibm_database" "database" {
   name = "mydatabase"
   location = "us-east"

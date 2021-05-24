@@ -14,7 +14,7 @@ Provides a key Protect resource. This allows standard as well as root keys to be
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_resource_instance" "kp_instance" {
   name     = "instance-name"
   service  = "kms"

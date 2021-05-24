@@ -15,7 +15,7 @@ Retrieve information about an existing [IBM Cloud Functions trigger](https://clo
 ## Example usage
 The following example retrieves information about the `mytrigger` trigger. 
 
-```
+```terraform
 data "ibm_function_trigger" "trigger" {
 	name      = "trigger-name"		  
 	namespace = "function-namespace-name"

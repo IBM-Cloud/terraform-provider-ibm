@@ -16,7 +16,7 @@ Provides a security group rule resource. This allows security group rule to be c
 
 In the following example, you can create a different types of protocol rules `ALL`, `ICMP`, `UDP` and `TCP`.
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "test"
 }

@@ -15,7 +15,7 @@ For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) AP
 
 ## Example Usage
 
-```
+```terraform
 resource "ibm_security_group" "sg1" {
     name = "sg1"
     description = "allow my app traffic"

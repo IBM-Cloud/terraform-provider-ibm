@@ -14,7 +14,7 @@ Provides a subnet network ACL attachment resource. This allows subnet network AC
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_network_acl" "isExampleACL" {
   name = "is-example-acl"
   rules {

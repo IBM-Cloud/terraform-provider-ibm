@@ -13,7 +13,7 @@ Import the details of an existing IBM Virtual Private cloud as a read-only data 
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "test"
 }

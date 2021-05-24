@@ -13,7 +13,7 @@ Create, modify, or delete an `cm_version` data source. For more information, abo
 
 ## Example usage
 
-```
+```terraform
 data "cm_version" "cm_version" {
 	version_loc_id = "version_loc_id"
 }

@@ -13,7 +13,7 @@ Provides a IBM CIS Ratelimiting resource. This resource is associated with an IB
 
 ## Example Usage
 
-```hcl
+```terraform
 # Add a rate limit to the domain
 
 resource "ibm_cis_rate_limit" "ratelimit" {

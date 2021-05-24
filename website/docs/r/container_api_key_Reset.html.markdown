@@ -15,7 +15,7 @@ Resets Kubernetes API Key
 
 In the following example, you can reset kubernetes api key:
 
-```hcl
+```terraform
 resource "ibm_container_api_key_reset" "reset" {
     region ="us-east"
     resource_group_id = "766f3584b2c840ee96d856bc04551da8"

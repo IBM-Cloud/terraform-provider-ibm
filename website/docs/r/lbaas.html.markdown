@@ -15,7 +15,7 @@ Cloud load balancer creation takes 5 to 10 minutes. Destroy can take up to 30 mi
  
 ## Example Usage
 
-```hcl
+```terraform
 
 resource "ibm_lbaas" "lbaas" {
   name        = "terraformLB"

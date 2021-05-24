@@ -15,7 +15,7 @@ Endpoint subscriptions can be added only if the endpoint is online. Make sure to
 Configuration of an api gateway data resource requires the region parameter to be set for the IBM provider in the `provider.tf`.  If not specified, endpoint to which subscription is being created will default to `us-south`. 
 
 ## Example usage
-```
+```terraform
 data "ibm_api_gateway" "endpoint"{
     service_instance_crn =ibm_resource_instance.apigateway.id
 }

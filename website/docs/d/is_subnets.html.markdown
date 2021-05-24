@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud Infrastructure subnets as a read-onl
 
 ## Example Usage
 
-```hcl
+```terraform
 
 data "ibm_is_subnets" "ds_subnets" {
 }

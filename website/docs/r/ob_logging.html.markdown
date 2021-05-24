@@ -15,7 +15,7 @@ Create, update, or delete a logging instance. This resource creates a logging co
 
 In the following example, we can create a logging configuration:
 
-```hcl
+```terraform
 
 data "ibm_resource_group" "testacc_ds_resource_group" {
   name = "Default"

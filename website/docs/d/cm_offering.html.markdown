@@ -13,7 +13,7 @@ Create, modify, or delete an `cm_offering` data source. You can manage the setti
 
 ## Example usage
 
-```
+```terraform
 data "cm_offering" "cm_offering" {
 	catalog_identifier = "catalog_identifier"
 	offering_id = "offering_id"

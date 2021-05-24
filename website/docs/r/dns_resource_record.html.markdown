@@ -13,7 +13,7 @@ Create, update, or delete a DNS record. For more information, see [managing DNS 
 
 ## Example usage
 
-```
+```terraform
 resource "ibm_dns_resource_record" "test-pdns-resource-record-a" {
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   zone_id     = ibm_dns_zone.test-pdns-zone.zone_id

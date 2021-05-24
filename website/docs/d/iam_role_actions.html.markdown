@@ -12,7 +12,7 @@ Import the details of an action(actionID) regarding a specific service  on IBM C
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_iam_role_actions" "test" {
   service = "kms"
 }

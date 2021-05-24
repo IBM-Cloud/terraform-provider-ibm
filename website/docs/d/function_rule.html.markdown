@@ -14,7 +14,7 @@ Retrieve the information about an existing [IBM Cloud Functions rule](https://cl
 ## Example usage
 The following example retrieves information about the `myrule` rule. 
 
-```
+```terraform
 data "ibm_function_rule" "rule" {
 	name      = "rule-name"
 	namespace = "function-namespace-name"

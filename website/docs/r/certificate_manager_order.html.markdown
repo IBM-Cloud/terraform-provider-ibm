@@ -15,7 +15,7 @@ Order, renew, update, or delete a certificate in Certificate Manager. For more i
 A Example usage to create a Certificate Manager service instance that enables customer managed keys and orders a certificate.
 
 
-```
+```terraform
 resource "ibm_resource_instance" "cm" {
   name     = "test"
   location = "us-south"

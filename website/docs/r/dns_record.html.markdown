@@ -21,7 +21,7 @@ The SOA and NS records are automatically created by IBM Cloud Classic Infrastruc
 
 Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_AType) to properly implement the `A` record.
 
-```hcl
+```terraform
 resource "ibm_dns_domain" "main" {
     name = "main.example.com"
 }
@@ -40,7 +40,7 @@ resource "ibm_dns_record" "www" {
 
 Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_AaaaType) to properly implement the `AAAA` record.
 
-```hcl
+```terraform
 resource "ibm_dns_record" "aaaa" {
     data = "fe80:0000:0000:0000:0202:b3ff:fe1e:8329"
     domain_id = ibm_dns_domain.main.id
@@ -55,7 +55,7 @@ resource "ibm_dns_record" "aaaa" {
 
 Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs] to properly implement the `CNAME` record.
 
-```hcl
+```terraform
 resource "ibm_dns_record" "cname" {
     data = "real-host.example.com."
     domain_id = ibm_dns_domain.main.id
@@ -70,7 +70,7 @@ resource "ibm_dns_record" "cname" {
 
 Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_NsType) to properly implement the `NS` record.
 
-```hcl
+```terraform
 resource "ibm_dns_record" "recordNS" {
     data = "ns.example.com."
     domain_id = ibm_dns_domain.main.id
@@ -85,7 +85,7 @@ resource "ibm_dns_record" "recordNS" {
 
 Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_MxType) to properly implement the `MX` record.
 
-```hcl
+```terraform
 resource "sibm_dns_record" "recordMX-1" {
     data = "mail-1"
     domain_id = ibm_dns_domain.main.id
@@ -101,7 +101,7 @@ resource "sibm_dns_record" "recordMX-1" {
 
 Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_SoaType) to properly implement the `SOA` record.
 
-```hcl
+```terraform
 resource "ibm_dns_record" "recordSOA" {
     data = "ns1.example.com. abuse.example.com. 2018101002 7200 600 1728000 43200"
     domain_id = ibm_dns_domain.main.id
@@ -116,7 +116,7 @@ resource "ibm_dns_record" "recordSOA" {
 
 Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_SpfType) to properly implement the `SPF` record.
 
-```hcl
+```terraform
 resource "ibm_dns_record" "recordSPF" {
     data = "v=spf1 mx:mail.example.org ~all"
     domain_id = ibm_dns_domain.main.id
@@ -131,7 +131,7 @@ resource "ibm_dns_record" "recordSPF" {
 
 Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_TxtType/) to properly implement the `TXT` record.
 
-```hcl
+```terraform
 resource "ibm_dns_record" "recordTXT" {
     data = "host"
     domain_id = ibm_dns_domain.main.id
@@ -146,7 +146,7 @@ resource "ibm_dns_record" "recordTXT" {
 
 Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_SrvType) to properly implement the `SRV` record.
 
-```hcl
+```terraform
 resource "ibm_dns_record" "recordSRV" {
     data = "ns1.example.org"
     domain_id = ibm_dns_domain.main.id
@@ -166,7 +166,7 @@ resource "ibm_dns_record" "recordSRV" {
 
 Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord_PtrType/) to properly implement the `PTR` record.
 
-```hcl
+```terraform
 resource "ibm_dns_record" "recordPTR" {
     data = "ptr.example.com"
     domain_id = ibm_dns_domain.main.id

@@ -15,7 +15,7 @@ Retrieve information about an existing app route. For more information, about an
 The following example retrieves information about an app route. 
 
 
-```
+```terraform
 data "ibm_app_route" "route" {
   domain_guid = data.ibm_app_domain_shared.domain.id
   space_guid  = data.ibm_space.spacedata.id

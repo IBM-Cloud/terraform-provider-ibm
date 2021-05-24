@@ -13,7 +13,7 @@ Provides a IBM CIS Custom Page resource. This resource is associated with an IBM
 
 ## Example Usage
 
-```hcl
+```terraform
 # Change Custom Page of the domain
 
 resource "ibm_cis_custom_page" "custom_page" {

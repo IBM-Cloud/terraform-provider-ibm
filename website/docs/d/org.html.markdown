@@ -13,7 +13,7 @@ Retrieve information about an existing Cloud Foundry organization. For more info
 ## Example usage
 The following example retrieves information about the `myorg` Cloud Foundry organization. 
 
-```
+```terraform
 data "ibm_org" "orgdata" {
   org = "example.com"
 }

@@ -16,7 +16,7 @@ Configuration of an API Gateway data source requires the region parameter to be 
 
 ## Example usage
 
-```
+```terraform
 data "ibm_api_gateway" "apigateway" {
     service_instance_crn = ibm_resource_instance.apigateway.id
     

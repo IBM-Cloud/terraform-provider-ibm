@@ -15,7 +15,7 @@ For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) AP
 
 ## Example Usage
 
-```
+```terraform
 resource "ibm_security_group_rule" "allow_port_8080" {
     direction = "ingress"
     ether_type = "IPv4"

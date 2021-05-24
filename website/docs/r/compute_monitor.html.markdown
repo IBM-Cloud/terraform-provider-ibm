@@ -18,7 +18,7 @@ For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) AP
 
 In the following example, you can create a monitor:
 
-```hcl
+```terraform
 resource "ibm_compute_monitor" "test_monitor" {
     guest_id = ibm_compute_vm_instance.test_server.id
     ip_address = ibm_compute_vm_instance.test_server.id.ipv4_address

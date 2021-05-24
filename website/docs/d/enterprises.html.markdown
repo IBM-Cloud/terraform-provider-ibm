@@ -13,7 +13,7 @@ Retrieve an information from an `ibm_enterprise` data source. For more informati
 
 ## Example usage
 
-```
+```terraform
 data "ibm_enterprises" "enterprises" {
 }
 ```

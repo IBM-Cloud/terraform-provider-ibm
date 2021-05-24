@@ -15,7 +15,7 @@ Create, update, or delete a Cloud Foundry organization. For more information, ab
 The following example create the `myorg` Cloud Foundry organization and assigns users access to the organization. 
 
 
-```
+```terraform
 resource "ibm_org" "testacc_org" {
     name = "myorg"
     org_quota_definition_guid = "myorgquotaguid"

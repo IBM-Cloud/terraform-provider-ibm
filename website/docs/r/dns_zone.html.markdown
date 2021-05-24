@@ -14,7 +14,7 @@ Create, update, or delete a DNS zone. For more information, see [Managing DNS zo
 
 ## Example usage
 
-```
+```terraform
 resource "ibm_dns_zone" "pdns-1-zone" {
     name = "test.com"
     instance_id = p-dns-instance-id

@@ -16,7 +16,7 @@ Create, update, or delete an [IBM Cloud Functions trigger](https://cloud.ibm.com
 The following example creates the `mytrigger` trigger. 
 
 
-```
+```terraform
 resource "ibm_function_trigger" "trigger" {
   name = "mytrigger"  user_defined_parameters = <<EOF
                         [
@@ -41,7 +41,7 @@ resource "ibm_function_trigger" "trigger" {
 The following example creates a feed for the `alarmFeed` trigger.
 
 
-```
+```terraform
 resource "ibm_function_trigger" "feedtrigger" {
   name = "alarmFeed"  feed = [
     {

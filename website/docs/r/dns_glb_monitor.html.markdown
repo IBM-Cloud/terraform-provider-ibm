@@ -13,7 +13,7 @@ Provides a private DNS GLB (GLB) monitor resource. This allows DNS (GLB)) monito
 
 ## Example usage
 
-```
+```terraform
 resource "ibm_dns_glb_monitor" "test-pdns-monitor" {
   depends_on     = [ibm_dns_zone.test-pdns-zone]
   name           = "test-pdns-glb-monitor"

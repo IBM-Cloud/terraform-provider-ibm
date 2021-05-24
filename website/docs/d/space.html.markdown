@@ -14,7 +14,7 @@ Retrieve information about an existing Cloud Foundry space. For more information
 ## Example usage
 The following example retrieves information about the `prod` Cloud Foundry space.
 
-```
+```terraform
 data "ibm_space" "spaceData" {
   space = "prod"
   org   = "myorg.com"
@@ -23,7 +23,7 @@ data "ibm_space" "spaceData" {
 
 The following example shows how you can use the data source to reference the space ID in the `ibm_service_instance` resource.
 
-```
+```terraform
 resource "ibm_service_instance" "service_instance" {
   name       = "test"
   space_guid = data.ibm_space.spaceData.id

@@ -13,7 +13,7 @@ Provides a read-only data source for platform chrome web. You can then reference
 
 ## Example Usage
 
-```hcl
+```terraform
 data "pn_application_chrome" "pn_application_chrome" {
 	guid = "guid"
 }

@@ -14,7 +14,7 @@ Create, update or delete a instance group on VPC
 ## Example Usage
 
 In the following example, you can create a instance group on VPC gen-2 infrastructure.
-```hcl
+```terraform
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2test"
 }

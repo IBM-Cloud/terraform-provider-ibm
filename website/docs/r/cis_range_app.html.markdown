@@ -12,7 +12,7 @@ Provides a IBM CIS Range Application resource. This resource is associated with 
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_cis_range_app" "app" {
 	cis_id         = data.ibm_cis.cis.id
 	domain_id      = data.ibm_cis_domain.cis_domain.id

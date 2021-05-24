@@ -14,7 +14,7 @@ Create, update, or delete a Direct Link Gateway by using the Direct Link Gateway
 ## Example usage to create Direct Link of dedicated type
 In the following example, you can create Direct Link of dedicated type:
 
-```
+```terraform
 data "ibm_dl_routers" "test_dl_routers" {
 		offering_type = "dedicated"
 		location_name = "dal10"
@@ -40,7 +40,7 @@ resource ibm_dl_gateway test_dl_gateway {
 In the following example, you can create Direct Link of connect type:
 
 
-```
+```terraform
 data "ibm_dl_ports" "test_ds_dl_ports" {
  
  }

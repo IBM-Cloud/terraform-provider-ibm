@@ -12,7 +12,7 @@ Imports a read only copy of an existing Internet Services Edge Function Triggers
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_cis_edge_functions_triggers" "test_triggers" {
     cis_id    = data.ibm_cis.cis.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id

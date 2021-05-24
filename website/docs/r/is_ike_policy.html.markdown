@@ -16,7 +16,7 @@ Provides a ike policy resource. This allows ike policy to be created, updated, a
 
 In the following example, you can create a ike policy:
 
-```hcl
+```terraform
 resource "ibm_is_ike_policy" "example" {
   name                     = "test"
   authentication_algorithm = "md5"

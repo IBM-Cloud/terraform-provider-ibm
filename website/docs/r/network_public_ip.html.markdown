@@ -15,7 +15,7 @@ For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) AP
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_network_public_ip" "test_public_ip " {
     routes_to = "119.81.82.163"
     notes     = "public ip notes"

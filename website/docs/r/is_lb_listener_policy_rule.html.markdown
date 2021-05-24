@@ -15,7 +15,7 @@ Provides a load balancer listener policy rule resource. This allows load balance
 
 In the following example, you can create a load balancer listener policy rule, along with lb and lb listener:
 
-```hcl
+```terraform
 resource "ibm_is_lb" "lb2"{
   name    = "mylb"
   subnets = ["35860fed-c911-4936-8c94-f0d8577dbe5b"]

@@ -14,7 +14,7 @@ Provides a vpc route resource. This allows vpc route to be created, updated, and
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "testvpc"
 }

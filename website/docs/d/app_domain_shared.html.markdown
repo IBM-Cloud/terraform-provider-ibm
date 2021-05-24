@@ -15,7 +15,7 @@ Retrieve information about an existing shared domain for an app. For more inform
 The following example retrieves information about the `example.com` domain. 
 
 
-```
+```terraform
 data "ibm_app_domain_shared" "shared_domain" {
   name = "foo.com"
 }

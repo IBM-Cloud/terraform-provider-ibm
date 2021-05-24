@@ -12,7 +12,7 @@ Import the details of an IAM (Identity and Access Management) servicID  on IBM C
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_iam_service_id" "ds_serviceID" {
   name = "sample"
 }

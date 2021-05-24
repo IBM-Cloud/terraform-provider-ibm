@@ -16,7 +16,7 @@ The two NetScaler VPXs use the same password in HA mode. When you create this re
 
 ## Example Usage
 
-```hcl
+```terraform
 # Create a primary NetScaler VPX
 resource "ibm_lb_vpx" "test_pri" {
     datacenter = "lon02"

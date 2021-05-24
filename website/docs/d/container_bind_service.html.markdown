@@ -14,7 +14,7 @@ Import the details of a service attached to IBM Cloud cluster as a read-only dat
 
 In the following example, you can get service info attached to a cluster:
 
-```hcl
+```terraform
 data "ibm_container_bind_service" "bind_service" {
   cluster_name_id       = "cluster_name"
   service_instance_name = "service_name"

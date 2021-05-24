@@ -14,7 +14,7 @@ Create and update the Event Streams. For more information, about Event Streams t
 
 ### Sample 1 create an Event Streams service instance and topic
 
-```
+```terraform
 resource "ibm_resource_instance" "es_instance_1" {
   name              = "terraform-integration-1"
   service           = "messagehub"
@@ -59,7 +59,7 @@ resource "ibm_event_streams_topic" "es_topic_1" {
 
 Create topic on an existing Event Streams instance.The owner of the `ibmcloud_api_key` has permission to create Event Streams instance in a specified resource group. However, you need the manager role to create the instance in order to create topic.
  
-```
+```terraform
 data "ibm_resource_instance" "es_instance_2" {
   name              = "terraform-integration-2"
   resource_group_id = data.ibm_resource_group.group.id
@@ -82,7 +82,7 @@ resource "ibm_event_streams_topic" "es_topic_2" {
 ### Sample 3 create a Kafka consumer application connection to an Event Streams instance and its topics
 
 
-```
+```terraform
 data "ibm_resource_instance" "es_instance_3" {
   name              = "terraform-integration-3"
   resource_group_id = data.ibm_resource_group.group.id

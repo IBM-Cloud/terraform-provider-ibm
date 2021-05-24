@@ -13,7 +13,7 @@ Create, modify, or delete an `cm_version` resources. For more information, about
 
 ## Example usage
 
-```
+```terraform
 resource "cm_version" "cm_version" {
   catalog_identifier = "catalog_identifier"
   offering_id = "offering_id"

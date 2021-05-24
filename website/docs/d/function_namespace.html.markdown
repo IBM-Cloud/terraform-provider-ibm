@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud Functions namespace. For more inform
 ## Example usage
 The following example creates the namespace and package at a specific location.
 
-```
+```terraform
 data "ibm_function_namespace" "test_namespace" {
 	name = var.namespace
 }

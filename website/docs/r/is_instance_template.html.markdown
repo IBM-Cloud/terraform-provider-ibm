@@ -14,7 +14,7 @@ Create, Update or delete an instance template on VPC
 ## Example Usage
 
 In the following example, you can create a instance template VPC gen-2 infrastructure.
-```hcl
+```terraform
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2test"
 }

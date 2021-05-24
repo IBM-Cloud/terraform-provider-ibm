@@ -18,7 +18,7 @@ The sample provides the usage of JavaScript, Node.js, Docker, action sequences, 
 The following example creates a JavaScript action. 
 
 
-```
+```terraform
 resource "ibm_function_action" "nodehello" {
   name      = "action-name"
   namespace = "function-namespace-name"  
@@ -35,7 +35,7 @@ resource "ibm_function_action" "nodehello" {
 The following example shows how to pass parameters to an action. 
 
 
-```
+```terraform
 resource "ibm_function_action" "nodehellowithparameter" {
   name      = "hellonodeparam"
   namespace = "function-namespace-name"

@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud Infrastructure images as a read-only
 
 ## Example Usage
 
-```hcl
+```terraform
 
 data "ibm_is_images" "ds_images" {
 }

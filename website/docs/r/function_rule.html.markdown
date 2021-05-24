@@ -14,7 +14,7 @@ Create, update, or delete an IBM Cloud Functions rule. Events from external and 
 ## Example usage
 The following example creates a rule for an action. 
 
-```
+```terraform
 resource "ibm_function_action" "action" {
   name = "hello"  exec {
     kind = "nodejs:10"

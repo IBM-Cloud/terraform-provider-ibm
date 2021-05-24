@@ -12,7 +12,7 @@ Provides a resource for cr_namespace. This allows cr_namespace to be created, up
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "cr_namespace" "cr_namespace" {
   name = "name"
 }

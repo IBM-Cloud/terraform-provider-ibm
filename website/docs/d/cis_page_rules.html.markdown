@@ -12,7 +12,7 @@ Imports a read only copy of an existing Internet Services Page Rules resource.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_cis_page_rules" "rules" {
   cis_id    = ibm_cis.instance.id
   domain_id = ibm_cis_domain.example.id

@@ -12,7 +12,7 @@ Import the details of vpc floating ip on IBM Cloud as a read-only data source. Y
 
 ## Example Usage
 
-```hcl
+```terraform
 
     data "ibm_is_floating_ip" "test" {
         name   = "test-fp"
