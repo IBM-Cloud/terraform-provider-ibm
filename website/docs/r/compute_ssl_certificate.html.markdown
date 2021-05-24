@@ -17,7 +17,7 @@ For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) se
 
 In the following example, you can use a certificate on file:
 
-```hcl
+```terraform
 resource "ibm_compute_ssl_certificate" "test_cert" {
   certificate = file("cert.pem")
   private_key = file("key.pem")
@@ -26,7 +26,7 @@ resource "ibm_compute_ssl_certificate" "test_cert" {
 
 You can also use an in-line certificate:
 
-```hcl
+```terraform
 resource "ibm_compute_ssl_certificate" "test_cert" {
   certificate = <<EOF
 [......] # cert contents

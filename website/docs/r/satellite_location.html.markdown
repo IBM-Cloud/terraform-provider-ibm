@@ -15,7 +15,7 @@ Create, update, or delete [IBM Cloud Satellite Location](https://cloud.ibm.com/d
 
 ###  Create location
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
     name = "Default"
 }
@@ -31,7 +31,7 @@ resource "ibm_satellite_location" "create_location" {
 
 ###  Create location using COS bucket
 
-```hcl
+```terraform
 resource "ibm_satellite_location" "create_location" {
   location      = var.location
   zones         = var.location_zones

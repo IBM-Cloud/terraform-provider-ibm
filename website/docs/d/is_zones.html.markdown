@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud zones in a particular region as a re
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_is_zones" "ds_zones" {
   region = "us-south"
 }

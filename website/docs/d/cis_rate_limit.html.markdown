@@ -12,7 +12,7 @@ Imports a read only copy of an existing Internet Services Ratelimiting resource.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get a rate limit to the domain
 
 data "ibm_cis_rate_limit" "ratelimit" {

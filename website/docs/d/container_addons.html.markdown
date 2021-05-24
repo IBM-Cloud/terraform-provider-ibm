@@ -14,7 +14,7 @@ Reads all the addOns that are enabled on a cluster
 
 In the following example, you can get details of Addons:
 
-```hcl
+```terraform
 data "ibm_container_addons" "addons" {
   cluster= ibm_container_addons.addons.cluster
 }

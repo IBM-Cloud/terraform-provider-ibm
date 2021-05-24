@@ -13,7 +13,7 @@ Provides a IBM CIS Edge Functions Trigger resource. This resource is associated 
 
 ## Example Usage
 
-```hcl
+```terraform
 # Add a Edge Functions Trigger to the domain
 resource "ibm_cis_edge_functions_trigger" "test_trigger" {
   cis_id      = ibm_cis_edge_functions_action.test_action.cis_id

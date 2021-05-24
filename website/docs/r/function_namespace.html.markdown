@@ -13,7 +13,7 @@ Create, update, or delete an IBM Cloud Functions namespace. For more information
 ## Example usage
 The following example creates an IAM based namespace and package at a specific location.
 
-```
+```terraform
 provider "ibm" {
   ibmcloud_api_key   = var.ibmcloud_api_key
   region = var.region

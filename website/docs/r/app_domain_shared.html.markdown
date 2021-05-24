@@ -14,7 +14,7 @@ Create, update, or delete a shared domain for your Cloud Foundry app. For more i
 ## Example usage
 The following example creates the `example.com` shared domain. 
 
-```
+```terraform
 resource "ibm_app_domain_shared" "domain" {
   name              = "example.com"
   router_group_guid = "3hG5jkjk4k34JH5666"

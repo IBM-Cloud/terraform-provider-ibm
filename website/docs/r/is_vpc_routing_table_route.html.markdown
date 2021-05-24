@@ -14,7 +14,7 @@ Provides a vpc routing tables resource. This allows vpc routing tables to be cre
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" {
   vpc = ""
   routing_table = ""
@@ -26,7 +26,7 @@ resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" 
 }
 ```
 
-```hcl
+```terraform
 resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" {
   vpc = ""
   routing_table = ""

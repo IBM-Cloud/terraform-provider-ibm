@@ -12,7 +12,7 @@ Create, update, or delete a Direct Link Gateway Virtual Connection by using the 
 
 
 ## Example usage
-```
+```terraform
 resource "ibm_dl_virtual_connection" "test_dl_gateway_vc"{
 		gateway = ibm_dl_gateway.test_dl_gateway.id
 		name = "my_dl_vc"

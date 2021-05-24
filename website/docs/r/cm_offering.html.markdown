@@ -13,7 +13,7 @@ Create, modify, or delete an `cm_offering` resources. You can manage the setting
 
 ## Example usage
 
-```
+```terraform
 resource "ibm_cm_offering" "cm_offering" {
   catalog_id = "catalog_id"
   label = "placeholder"

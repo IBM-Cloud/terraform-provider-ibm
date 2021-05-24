@@ -13,7 +13,7 @@ Retrieve details about permitted networks for a zone that is associated with the
 
 ## Example usage
 
-```
+```terraform
 data "ibm_resource_group" "rg" {
   name = "default"
 }

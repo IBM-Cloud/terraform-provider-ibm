@@ -16,7 +16,7 @@ For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) AP
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_compute_placement_group" "test_placement_group" {
     name = "test"
     pod = "pod01"

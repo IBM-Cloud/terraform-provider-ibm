@@ -13,7 +13,7 @@ Provides a resource for ibm_schematics_action. This allows ibm_schematics_action
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_schematics_action" "schematics_action" {
   name = "<action_name>"
   description = "<action_description>"

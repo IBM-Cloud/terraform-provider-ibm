@@ -14,7 +14,7 @@ Provides a vpc address prefix resource. This allows vpc address prefix to be cre
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "testvpc"
 }

@@ -12,7 +12,7 @@ Import the name of an existing dns secondary zone as a read-only data source. Yo
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_dns_secondary" "secondary_id" {
     name = "test-secondary.com"
 }

@@ -12,7 +12,7 @@ Import the details of valid locations for the specified Direct Link Offering Loc
 
 ## Example usage
 
-```
+```terraform
 data "ibm_dl_locations" "test_dl_locations"{
 	offering_type = "dedicated"
 }

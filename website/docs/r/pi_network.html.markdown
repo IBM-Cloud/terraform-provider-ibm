@@ -15,7 +15,7 @@ Provides a network resource. This allows network to be created, updated and dele
 
 In the following example, you can create a network:
 
-```hcl
+```terraform
 resource "ibm_pi_network" "power_networks" {
   count                = 1
   pi_network_name      = "power-network"
@@ -31,7 +31,7 @@ resource "ibm_pi_network" "power_networks" {
   * `region` - `lon`
   * `zone` - `lon04`
   Example Usage:
-  ```hcl
+  ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"

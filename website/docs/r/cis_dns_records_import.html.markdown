@@ -13,7 +13,7 @@ Provides a IBM CIS DNS Records Import resource. This resource is associated with
 
 ## Example Usage
 
-```hcl
+```terraform
 # Import DNS Records of the domain
 
 resource "ibm_cis_dns_records_import" "test" {

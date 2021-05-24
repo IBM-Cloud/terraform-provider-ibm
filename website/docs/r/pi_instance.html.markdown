@@ -15,7 +15,7 @@ Provides an instance resource. This allows instances to be created or updated in
 
 In the following example, you can create an instance:
 
-```hcl
+```terraform
 resource "ibm_pi_instance" "test-instance" {
     pi_memory             = "4"
     pi_processors         = "2"
@@ -36,7 +36,7 @@ resource "ibm_pi_instance" "test-instance" {
   * `region` - `lon`
   * `zone` - `lon04`
   Example Usage:
-  ```hcl
+  ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"

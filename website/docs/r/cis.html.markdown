@@ -15,7 +15,7 @@ If no resource_group_id is specified, the CIS instance is created under the defa
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
   name = "test"
 }

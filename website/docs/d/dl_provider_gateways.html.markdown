@@ -13,7 +13,7 @@ Import the details of an existing nfrastructure Direct Link Provider Gateway as 
 
 ## Example usage
 
-```
+```terraform
 data "ibm_dl_provider_gateways" "ds_dlproviderGateways" {
 }
 ```

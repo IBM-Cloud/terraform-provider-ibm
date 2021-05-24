@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud infrastructure Direct Link Location 
 
 ## Example usage
 
-```
+```terraform
 data "ibm_dl_routers" "test_dl_routers" {
 	offering_type = "dedicated"
 	location_name = "dal09"

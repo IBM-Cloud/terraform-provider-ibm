@@ -13,7 +13,7 @@ Retrieve the details of an existing IBM Cloud infrastructure private DNS Global 
 
 ## Example usage
 
-```
+```terraform
 data "ibm_dns_glb_monitors" "ds_pdns_glb_monitors" {
   instance_id = "resource_instance_guid"
 }

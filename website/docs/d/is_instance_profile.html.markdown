@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud virtual server instance profile as a
 
 ## Example Usage
 
-```hcl
+```terraform
 
 data "ibm_is_instance_profile" "profile" {
   name = "b-2x8"

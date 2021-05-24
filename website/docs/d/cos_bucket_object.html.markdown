@@ -12,7 +12,7 @@ Retrieves information of an object in IBM Cloud Object Storage bucket.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_resource_group" "cos_group" {
   name = "cos-resource-group"
 }

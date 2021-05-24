@@ -24,7 +24,7 @@ If the SoftLayer API [getBlueIdAuthenticationRequiredFlag](https://api.softlayer
 
 The following example shows how to use this resource with SoftLayer accounts:
 
-```hcl
+```terraform
 resource "ibm_compute_user" "joe" {
   address1     = "12345 Any Street"
   address2     = "Suite #99"
@@ -66,7 +66,7 @@ returns `true`, the account is an IBMid.
 
 The following example shows how to use this resource with IBMid accounts:
 
-```hcl
+```terraform
 resource "ibm_compute_user" "joe" {
   address1     = "12345 Any Street"
   address2     = "Suite #99"

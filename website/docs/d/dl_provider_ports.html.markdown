@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud Infrastructure Direct Link Provider 
 
 ## Example usage
 
-```
+```terraform
 data "ibm_dl_provider_ports" "ds_dl_provider_ports" {
 }
 ```

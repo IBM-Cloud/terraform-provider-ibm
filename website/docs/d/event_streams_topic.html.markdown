@@ -13,8 +13,7 @@ Review the [Event Streams](https://cloud.ibm.com/docs/EventStreams?topic=EventSt
 
 ## Example Usage
 
-```
-
+```terraform
 data "ibm_resource_instance" "es_instance" {
   name              = "terraform-integration"
   resource_group_id = data.ibm_resource_group.group.id

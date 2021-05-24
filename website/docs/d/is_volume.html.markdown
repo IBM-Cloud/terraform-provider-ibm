@@ -13,7 +13,7 @@ Provides a vpc volume datasource. This allows to fetch an existing volume.
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_volume" "testacc_volume"{
     name = "testvol"
     profile = "10iops-tier"

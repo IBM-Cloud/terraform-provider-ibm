@@ -15,7 +15,7 @@ Retrieve information about an action. Import the details of an existing [IBM Clo
 The following example retrieves information about the `myaction` action. 
 
 
-```
+```terraform
 data "ibm_function_action" "nodehello" {
     name      = "action-name"		  
     namespace = "function-namespace-name"

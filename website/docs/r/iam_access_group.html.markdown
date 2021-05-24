@@ -13,7 +13,7 @@ Provides a resource for IAM access group. This allows access group to be created
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name        = "test"
   description = "New access group"

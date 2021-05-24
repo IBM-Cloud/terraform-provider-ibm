@@ -17,7 +17,7 @@ Provides a resource for VPX load balancer virtual IP addresses. This allows VPX 
 
 The following example configuration supports NetScaler VPX 10.1 and 10.5:
 
-```hcl
+```terraform
 resource "ibm_lb_vpx_vip" "testacc_vip" {
     name = "test_load_balancer_vip"
     nad_controller_id = 1234567
@@ -30,7 +30,7 @@ resource "ibm_lb_vpx_vip" "testacc_vip" {
 
 The following example configuration supports only NetScaler VPX 10.5. Additional options for the `load_balancing_method` and `persistence` arguments are shown. A private IP address can be used for the `virtual_ip_address` argument.
 
-```hcl
+```terraform
 resource "ibm_lb_vpx_vip" "testacc_vip" {
     name = "test_load_balancer_vip"
     nad_controller_id = "1234567"
@@ -44,7 +44,7 @@ resource "ibm_lb_vpx_vip" "testacc_vip" {
 
 NetScaler VPX 10.5 also supports SSL offload. If you set the `type` argument to `SSL` and configure the `security_certificate_id` argument, then the `virtual_ip_address` argument provides the `HTTPS` protocol. The following example shows an SSL-offload configuration:
 
-```hcl
+```terraform
 # Create a NetScaler VPX 10.5
 resource "ibm_lb_vpx" "test" {
     datacenter = "lon02"

@@ -12,7 +12,7 @@ Import an existing domain registration from the IBM DNS Domain Registration Serv
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_dns_domain_registration" "dnstestdomain" {
     name = "dnstestdomain.com"
 }
@@ -20,7 +20,7 @@ data "ibm_dns_domain_registration" "dnstestdomain" {
 
 The following example shows how you can use this data source to reference the domain ID in the `ibm_dns_registration_nameservers` resource, since the numeric IDs are often unknown.
 
-```hcl
+```terraform
 resource "ibm_dns_domain_registration_nameservers" "dnstestdomain" {
   dns_registration_id = data.ibm_dns_domain_registration.dnstestdomain.id
 }

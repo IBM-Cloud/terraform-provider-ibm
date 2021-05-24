@@ -13,7 +13,7 @@ Retrieve details about existing IBM Cloud private domain name service records. F
 
 ## Example usage
 
-```
+```terraform
 data "ibm_dns_resource_records" "ds_pdns_resource_records" {
   instance_id = "resource_instance_guid"
   zone_id = "resource_dns_resource_records_zone_id"

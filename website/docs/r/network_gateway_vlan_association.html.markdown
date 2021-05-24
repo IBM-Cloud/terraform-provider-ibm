@@ -17,7 +17,7 @@ For more information about getting started, see the [IBM Virtual Router Applianc
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_network_gateway" "gateway" {
   name = "gateway"
 

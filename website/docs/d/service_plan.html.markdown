@@ -14,7 +14,7 @@ Retrieve information about a service plan for a Cloud Foundry service. For more 
 ## Example usage
 The following example retrieves information about the `Lite` service plan for the `CloudantNOSQLDB` service. 
 
-```
+```terraform
 data "ibm_service_plan" "service_plan" {
   service = "cloudantNoSQLDB"
   plan    = "Lite"

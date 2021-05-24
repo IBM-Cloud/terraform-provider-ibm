@@ -14,7 +14,7 @@ Import the details of an existing IBM Cloud Infrastructure Public Gateways as a 
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_is_public_gateways" "testacc_dspgw"{
 }
 

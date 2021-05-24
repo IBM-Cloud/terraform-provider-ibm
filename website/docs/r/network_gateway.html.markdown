@@ -21,7 +21,7 @@ For more information about getting started, see the [IBM Virtual Router Applianc
 
 ### Standalone configuration
 
-```hcl
+```terraform
 resource "ibm_network_gateway" "gateway" {
   name = "my-gateway"
 
@@ -47,7 +47,7 @@ resource "ibm_network_gateway" "gateway" {
 ```
 ### HA configuration
 
-```hcl
+```terraform
 resource "ibm_network_gateway" "gateway" {
   name = "my-ha-gateway"
 

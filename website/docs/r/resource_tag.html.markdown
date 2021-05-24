@@ -16,7 +16,7 @@ Add tags to a resource.
 
 ###  Attach resource tags
 
-```hcl
+```terraform
 data "ibm_satellite_location" "location" {
 location  = var.location
 }

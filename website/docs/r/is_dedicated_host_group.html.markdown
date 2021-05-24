@@ -12,7 +12,7 @@ Provides a resource for DedicatedHostGroup. This allows DedicatedHostGroup to be
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_dedicated_host_group" "is_dedicated_host_group" {
   class = "mx2"
   family = "balanced"

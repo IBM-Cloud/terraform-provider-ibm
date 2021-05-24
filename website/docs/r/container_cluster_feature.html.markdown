@@ -15,7 +15,7 @@ Enables or disables a container cluster feature.
 
 In the following example, you can enable a private service endpoint:
 
-```hcl
+```terraform
 resource "ibm_container_cluster_feature" "feature" {
   cluster                  = "test1"
   private_service_endpoint = "true"

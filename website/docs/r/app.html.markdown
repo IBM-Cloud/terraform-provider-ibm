@@ -17,7 +17,7 @@ Create, update, or delete a Cloud Foundry app. For more information, about IBM C
 The following example creates the `my-app` Node.js Cloud Foundry app. 
 
 
-```
+```terraform
 data "ibm_space" "space" {
   org   = "example.com"
   space = "dev"

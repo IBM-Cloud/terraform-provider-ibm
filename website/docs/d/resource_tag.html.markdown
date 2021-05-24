@@ -15,7 +15,7 @@ Import the details of an existing resource tags as a read-only data source. You 
 
 ###  Attach resource tags
 
-```hcl
+```terraform
 
 data "ibm_satellite_location" "location" {
   location  = var.location

@@ -12,7 +12,7 @@ Import the details of an IAM (Identity and Access Management) user policy on IBM
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
   roles  = ["Viewer"]

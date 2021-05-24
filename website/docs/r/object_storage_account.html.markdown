@@ -15,7 +15,7 @@ Do not use this resource for managing the lifecycle of an Object Storage instanc
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_object_storage_account" "foo" {
 }
 ```

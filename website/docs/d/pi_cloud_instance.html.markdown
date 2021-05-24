@@ -12,7 +12,7 @@ Import the details of an existing IBM Power Virtual Server Cloud Instance as a r
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_pi_cloud_instance" "ds_cloud_instance" {
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
@@ -23,7 +23,7 @@ data "ibm_pi_cloud_instance" "ds_cloud_instance" {
   * `region` - `lon`
   * `zone` - `lon04`
   Example Usage:
-  ```hcl
+  ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"

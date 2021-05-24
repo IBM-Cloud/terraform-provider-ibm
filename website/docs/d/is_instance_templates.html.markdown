@@ -13,7 +13,7 @@ Retrives all the instance template in an account
 ## Example Usage
 
 In the following example, you can get info of list of instance templates VPC gen-2 infrastructure.
-```hcl	
+```terraform	
 data "ibm_is_instance_templates" "instancetemplates" {	   
 }
 

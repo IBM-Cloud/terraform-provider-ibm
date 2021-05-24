@@ -14,7 +14,7 @@ Import the details of a Kubernetes cluster ALB certificate on IBM Cloud as a rea
 
 In the following example, you can retrive a alb cert :
 
-```hcl
+```terraform
 data "ibm_container_alb_cert" "cert" {
   secret_name = "test-sec"
   cluster_id  = "myCluster"

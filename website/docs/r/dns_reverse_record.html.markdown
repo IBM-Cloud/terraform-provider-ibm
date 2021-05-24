@@ -14,7 +14,7 @@ Provides a single DNS reverse record managed on IBM Cloud Classic Infrastructure
 The IBM Cloud Classic Infrastructure (SoftLayer) object  [SoftLayer_Dns_Domain_ResourceRecord](https://sldn.softlayer.com/reference/datatypes/SoftLayer_Dns_Domain_ResourceRecord) is used for most CRUD operations.
 
 ## Example Usage
-```hcl
+```terraform
 resource "ibm_dns_reverse_record" "testreverserecord" {
     ipaddress="123.123.123.123"
     hostname="www.example.com"

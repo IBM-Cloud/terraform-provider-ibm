@@ -13,7 +13,7 @@ Create, modify, or delete an `ibm_cm_offering_instance` resources. You can manag
 
 ## Example usage
 
-```
+```terraform
 resource "ibm_cm_offering_instance" "cm_offering_instance" {
   catalog_id = "catalog_id"
   label = "placeholder"

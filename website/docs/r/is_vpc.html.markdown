@@ -16,7 +16,7 @@ Provides a vpc resource. This allows VPC to be created, updated, and cancelled.
 
 In the following example, you can create a VPC:
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "test"
 }

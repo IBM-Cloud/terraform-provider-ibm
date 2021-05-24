@@ -13,7 +13,7 @@ Provides a private DNS Global Load Balancer (GLB) resource. This allows DNS GLB 
 
 ## Example usage
 
-```
+```terraform
 resource "ibm_dns_glb" "test_pdns_glb" {
   depends_on    = [ibm_dns_glb_pool.test_pdns_glb_pool]
   name          = "testglb"

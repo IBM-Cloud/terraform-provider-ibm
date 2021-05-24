@@ -17,7 +17,7 @@ For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) AP
 
 In the following example, you can create a local load balancer service:
 
-```hcl
+```terraform
 resource "ibm_lb_service" "test_lb_local_service" {
     port = 80
     enabled = true

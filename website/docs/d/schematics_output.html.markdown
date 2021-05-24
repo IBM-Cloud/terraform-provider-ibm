@@ -14,7 +14,7 @@ Provides a read-only data source for ibm_schematics_output. You can then referen
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_schematics_output" "schematics_output" {
 	workspace_id = "workspace_id"
   template_id = "template_id"

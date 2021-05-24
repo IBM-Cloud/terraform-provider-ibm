@@ -13,7 +13,7 @@ Provides a IBM CIS Cache Settings resource. This resource is associated with an 
 
 ## Example Usage
 
-```hcl
+```terraform
 # Change Cache Settings of the domain
 
 resource "ibm_cis_cache_settings" "cache_settings" {

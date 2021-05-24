@@ -15,7 +15,7 @@ Retrieve information about a quota for a Cloud Foundry organization. For more in
 The following example retrieves information for an existing quota plan. 
 
 
-```
+```terraform
 data "ibm_org_quota" "orgquotadata" {
   name = "quotaname"
 }

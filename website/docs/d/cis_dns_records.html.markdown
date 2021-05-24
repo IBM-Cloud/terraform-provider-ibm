@@ -12,7 +12,7 @@ Import the details of an existing IBM Cloud Internet Service domain name service
 
 ## Example Usage
 
-```hcl
+```terraform
 
 data "ibm_cis_dns_records" "test" {
   cis_id    = var.cis_crn

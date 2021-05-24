@@ -12,7 +12,7 @@ Creates an IBM Cloud Object Storage bucket. It also allows object storage bucket
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_resource_group" "cos_group" {
   name = "cos-resource-group"
 }

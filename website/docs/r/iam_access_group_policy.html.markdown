@@ -15,7 +15,7 @@ Provides a resource for IAM Access Group Policy. This allows access group policy
 
 ### Access Group Policy for All Identity and Access enabled services 
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
@@ -29,7 +29,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 ### Access Group Policy for All Identity and Access enabled services within a resource group
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
@@ -50,7 +50,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 ### Access Group Policy using service with region
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
@@ -67,7 +67,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 ```
 ### Access Group Policy using resource instance 
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
@@ -93,7 +93,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 ### Access Group Policy using resource group 
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
@@ -117,7 +117,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 ### Access Group Policy using resource and resource type 
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
@@ -140,7 +140,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 ### Access Group Policy using attributes
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
@@ -168,7 +168,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 ### Access Group Policy using resource_attributes
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name = "access_group"
 }

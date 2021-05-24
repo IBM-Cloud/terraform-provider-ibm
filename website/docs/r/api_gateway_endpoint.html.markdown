@@ -15,7 +15,7 @@ Create, update, or delete an API endpoint for an API gateway. For more informati
 
 ### Example for a single  API Documentation as input
 
-```
+```terraform
 resource "ibm_resource_instance" "apigateway"{
     name     = "testname"
     location = "global"
@@ -32,7 +32,7 @@ resource "ibm_resource_instance" "apigateway"{
 
 ### Example for a directory of  API Documentation as input
 
-```
+```terraform
 resource "ibm_resource_instance" "apigateway"{
     name     = "testname"
     location = "global"

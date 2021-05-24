@@ -12,7 +12,7 @@ Import the lists of all IP addresses used by the CIS proxy. The CIS proxy uses o
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_cis_ip_addresses" "ip_addresses" {}
 ```
 

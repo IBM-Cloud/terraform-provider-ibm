@@ -12,7 +12,7 @@ Import the details of existing keyprotect keys as a read-only data source. You c
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_kp_key" "test" {
   key_protect_id = "id-of-keyprotect-instance"
 }

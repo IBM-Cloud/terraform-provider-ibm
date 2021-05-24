@@ -12,7 +12,7 @@ Import the details of an IAM roles regarding a specific service or account on IB
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_iam_roles" "test" {
   service = "kms"
 }

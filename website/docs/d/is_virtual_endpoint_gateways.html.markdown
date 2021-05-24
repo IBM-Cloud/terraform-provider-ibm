@@ -12,7 +12,7 @@ Import the details of an existing IBM Cloud Infrastructure virtual endpoint gate
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_is_virtual_endpoint_gateways" "data_test" {}
 ```
 

@@ -14,7 +14,7 @@ Import the details of an existing VLAN as a read-only data source. You can then 
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_network_vlan" "vlan_foo" {
     name = "FOO"
 }
@@ -23,7 +23,7 @@ data "ibm_network_vlan" "vlan_foo" {
 
 The following example shows how you can use this data source to reference a VLAN ID in the _ibm_compute_bare_metal_ resource because the numeric IDs are often unknown.
 
-```hcl
+```terraform
 resource "ibm_compute_bare_metal" "bm1" {
     public_vlan_id = data.ibm_network_vlan.vlan_foo.id
 }

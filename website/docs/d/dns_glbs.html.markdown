@@ -13,7 +13,7 @@ Retrieve the details of an existing IBM Cloud infrastructure private DNS Global 
 
 ## Example usage
 
-```
+```terraform
 data "ibm_dns_glbs" "test1" {
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   zone_id     = ibm_dns_zone.test-pdns-zone.zone_id

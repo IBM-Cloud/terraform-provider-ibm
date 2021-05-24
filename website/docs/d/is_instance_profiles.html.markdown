@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud virtual server instance profiles as 
 
 ## Example Usage
 
-```hcl
+```terraform
 
 data "ibm_is_instance_profiles" "ds_instance_profiles" {
 }

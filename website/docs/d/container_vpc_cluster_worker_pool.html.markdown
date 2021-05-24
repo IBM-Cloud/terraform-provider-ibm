@@ -14,7 +14,7 @@ Import the details of a Kubernetes cluster worker pool on IBM Cloud as a read-on
 
 In the following example, you can create a worker pool for a vpc cluster:
 
-```hcl
+```terraform
 data "ibm_container_vpc_worker_pool" "testacc_ds_worker_pool" {
     cluster = "cluster_name"
     worker_pool_name = i"worker_pool_name

@@ -15,7 +15,7 @@ Provides a resource for IAM User Policy. This allows user policy to be created, 
 
 ### User Policy for All Identity and Access enabled services 
 
-```hcl
+```terraform
 resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
   roles  = ["Viewer"]
@@ -25,7 +25,7 @@ resource "ibm_iam_user_policy" "policy" {
 
 ### User Policy using service with region
 
-```hcl
+```terraform
 resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
   roles  = ["Viewer"]
@@ -38,7 +38,7 @@ resource "ibm_iam_user_policy" "policy" {
 ```
 ### User Policy using resource instance 
 
-```hcl
+```terraform
 resource "ibm_resource_instance" "instance" {
   name     = "test"
   service  = "kms"
@@ -60,7 +60,7 @@ resource "ibm_iam_user_policy" "policy" {
 
 ### User Policy using resource group 
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
   name = "default"
 }
@@ -79,7 +79,7 @@ resource "ibm_iam_user_policy" "policy" {
 
 ### User Policy using resource and resource type 
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
   name = "default"
 }
@@ -98,7 +98,7 @@ resource "ibm_iam_user_policy" "policy" {
 
 ### User Policy using attributes 
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
   name = "default"
 }
@@ -120,7 +120,7 @@ resource "ibm_iam_user_policy" "policy" {
 
 ### User Policy using resource_attributes
 
-```hcl
+```terraform
 resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
   roles           = ["Viewer"]

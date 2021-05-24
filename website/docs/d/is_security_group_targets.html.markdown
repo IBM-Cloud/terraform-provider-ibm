@@ -15,7 +15,7 @@ This request lists all targets associated with a security group, to which the ru
 
 In the following example, you can create a security group target:
 
-```hcl
+```terraform
 data "ibm_is_security_group_targets" "testacc_security_group_targets" {
     security_group = ibm_is_security_group.testacc_security_group.id
   }

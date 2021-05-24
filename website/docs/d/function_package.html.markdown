@@ -15,7 +15,7 @@ Retrieve the information about an existing [IBM Cloud Functions package](https:/
 The following example retrieves information about the `mypackage` package. 
 
 
-```
+```terraform
 data "ibm_function_package" "package" {
   name      = "package_name"
   namespace = "function_namespace_name"

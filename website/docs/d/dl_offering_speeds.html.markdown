@@ -13,10 +13,10 @@ Import the details of an existing IBM Cloud Infrastructure Direct Link offering 
 
 ## Example usage
 
-```
-  data "ibm_dl_offering_speeds" "ds_dlspeedoptions" {
-    offering_type="dedicated"
-  }
+```terraform
+data "ibm_dl_offering_speeds" "ds_dlspeedoptions" {
+  offering_type="dedicated"
+}
 ```
 
 ## Argument reference

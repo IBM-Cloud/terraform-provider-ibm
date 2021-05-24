@@ -15,7 +15,7 @@ You can add a VPC as a permitted network to a DNS entry only.
 
 ## Example usage
 
-```
+```terraform
 resource "ibm_dns_permitted_network" "test-pdns-permitted-network-nw" {
     instance_id = ibm_resource_instance.test-pdns-instance.guid
     zone_id = ibm_dns_zone.test-pdns-zone.zone_id

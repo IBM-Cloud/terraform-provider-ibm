@@ -13,10 +13,10 @@ Import the details of an existing IBM Cloud Infrastructure Direct Link Offering 
 
 ## Example usage
 
-```
-  data "ibm_dl_port" "ds_dlport" {
-      port_id = "dl_port_id"
-   }
+```terraform
+data "ibm_dl_port" "ds_dlport" {
+  port_id = "dl_port_id"
+}
 ```
 
 ## Argument reference

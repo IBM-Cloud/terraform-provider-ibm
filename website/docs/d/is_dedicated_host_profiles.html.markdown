@@ -12,7 +12,7 @@ Provides a read-only data source for DedicatedHostProfileCollection. You can the
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_is_dedicated_host_profiles" "is_dedicated_host_profiles" {
 }
 ```

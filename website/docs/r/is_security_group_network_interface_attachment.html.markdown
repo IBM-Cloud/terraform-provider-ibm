@@ -14,7 +14,7 @@ Provides a security group network interface attachment resource. This allows sec
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_security_group_network_interface_attachment" "sgnic" {
   security_group    = "2d364f0a-a870-42c3-a554-000001352417"
   network_interface = "6d6128aa-badc-45c4-bb0e-7c2c1c47be55"

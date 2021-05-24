@@ -16,7 +16,7 @@ Provides a volume resource. This allows volume to be created, updated, and cance
 
 In the following example, you can create a `10iops-tier` volume:
 
-```hcl
+```terraform
 resource "ibm_is_volume" "testacc_volume" {
   name     = "test_volume"
   profile  = "10iops-tier"
@@ -26,7 +26,7 @@ resource "ibm_is_volume" "testacc_volume" {
 ```
 In the following example, you can create a `custom` volume:
 
-```hcl
+```terraform
 resource "ibm_is_volume" "testacc_volume" {
   name     = "test_volume"
   profile  = "custom"

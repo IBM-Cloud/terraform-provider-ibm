@@ -13,7 +13,7 @@ Import the details of an existing IBM VPN Gateway connections as a read-only dat
 
 ## Example Usage
 
-```hcl
+```terraform
 
 data "ibm_is_vpn_gateway_connections" "ds_vpn_gateway_connections" {
   vpn_gateway = ibm_is_vpn_gateway.testacc_vpnGateway.id

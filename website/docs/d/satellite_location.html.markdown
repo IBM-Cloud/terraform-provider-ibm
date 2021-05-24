@@ -13,7 +13,7 @@ Import the details of an existing satellite location as a read-only data source.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_satellite_location" "location" {
   location  = var.location
 }

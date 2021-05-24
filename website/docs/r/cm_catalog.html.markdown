@@ -13,7 +13,7 @@ Create, modify, or delete an `cm_catalog` resources. You can manage the settings
 
 ## Example usage
 
-```
+```terraform
 resource "ibm_cm_catalog" "cm_catalog" {
   label = "placeholder"
   short_description = "placeholder"

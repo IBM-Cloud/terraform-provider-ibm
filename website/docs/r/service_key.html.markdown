@@ -15,7 +15,7 @@ Create, update, or delete a service key for your Cloud Foundry service instance.
 The following example creates the `mycloudantkey` service key. 
 
 
-```
+```terraform
 data "ibm_service_instance" "service_instance" {
   name = "mycloudant"
 }

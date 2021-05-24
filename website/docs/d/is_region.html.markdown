@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud region as a read-only data source. Y
 
 ## Example Usage
 
-```hcl
+```terraform
 
 data "ibm_is_region" "ds_region" {
   name = "us-south"

@@ -15,7 +15,7 @@ For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) AP
 
 ## Example Usage
 
-```
+```terraform
 resource "ibm_compute_ssh_key" "test_ssh_key" {
     label = "test_ssh_key_name"
     notes = "test_ssh_key_notes"

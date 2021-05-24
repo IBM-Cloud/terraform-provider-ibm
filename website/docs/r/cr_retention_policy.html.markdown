@@ -12,7 +12,7 @@ Provides a resource for cr_retention_policy. This allows cr_retention_policy to 
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "cr_retention_policy" "cr_retention_policy" {
   namespace = "birds"
   images_per_repo = 10

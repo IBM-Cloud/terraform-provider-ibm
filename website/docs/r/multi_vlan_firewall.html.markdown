@@ -17,7 +17,7 @@ For additional details, see the [IBM Cloud (SoftLayer) multivlan firewall Reques
 
 In the following example, you can create a multi-vlan firewall:
 
-```hcl
+```terraform
 resource "ibm_multi_vlan_firewall" "firewall_first" {
   datacenter          = "dal13"
   pod                 = "pod01"

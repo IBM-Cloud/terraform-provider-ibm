@@ -14,7 +14,7 @@ Provides a instance resource. This allows instance to be created, updated, and c
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "testvpc"
 }
@@ -68,7 +68,7 @@ resource "ibm_is_instance" "testacc_instance" {
 
 Here is an example of creating virtual server instance with security group, security group rule. Here, the security group, security group rule, and virtual server instance must be created sequentially as security group rule depends on security group creation and virtual server instance depends on security group, security group rule creation. The sequential creation of resources like security group, security rule, virtual server instance is achieved using "depends_on" attribute. You can find more information about depends_on attribute in [terraform documentation](https://www.terraform.io/docs/configuration/resources.html). Creating security group, security group rule, virtual server instance without depends_on attribute will create the resources in parallel and virtual server instance creation may fail with "Error: The security group to attach to is not available" as security group or security group rule creation is not complete and security group may be in Pending state.
 
-```hcl
+```terraform
 
 resource "ibm_is_vpc" "testacc_vpc" {
     name = "test"

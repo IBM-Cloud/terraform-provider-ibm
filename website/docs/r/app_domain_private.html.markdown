@@ -14,7 +14,7 @@ Create, update, or delete a private domain for your Cloud Foundry app. For more 
 ## Example usage
 The following example creates the `example.com` private domain. 
 
-```
+```terraform
 data "ibm_org" "orgdata" {
   org = "example.com"
 }

@@ -16,7 +16,7 @@ Individual records, such as `A`, `AAAA`, `CTYPE`, and `MX` records, are stored i
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_dns_domain" "dns-domain-test" {
     name = "dns-domain-test.com"
     target = "127.0.0.10"

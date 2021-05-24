@@ -14,7 +14,7 @@ Import the details of an existing IBM Cloud Infrastructure transit gateway as a 
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_tg_gateway" "new_tg_gw" {
   name           = "transit-gateway-1"
   location       = "us-south"

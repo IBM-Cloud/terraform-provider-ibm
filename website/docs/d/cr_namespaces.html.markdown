@@ -12,7 +12,7 @@ Lists IBM Cloud Container Registry namespaces of an account in the targeted regi
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_cr_namespaces" "test" {}
 
 ```

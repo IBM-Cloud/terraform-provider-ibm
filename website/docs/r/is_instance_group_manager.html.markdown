@@ -15,7 +15,7 @@ Create, Update or delete a instance group manager on of an instance group
 
 In the following example, you can create a instance group manager.
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2test"
 }

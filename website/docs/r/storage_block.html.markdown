@@ -18,7 +18,7 @@ To access block storage, see the KnowledgeLayer docs [for Linux](https://knowled
 
 In the following example, you can create 20G of Endurance block storage with 10G snapshot capacity and 0.25 IOPS/GB.
 
-```hcl
+```terraform
 resource "ibm_storage_block" "test1" {
         type = "Endurance"
         datacenter = "dal05"
@@ -36,7 +36,7 @@ resource "ibm_storage_block" "test1" {
 
 In the following example, you can create 20G of Performance block storage and 100 IOPS.
 
-```hcl
+```terraform
 resource "ibm_storage_block" "test2" {
         type = "Performance"
         datacenter = "dal05"

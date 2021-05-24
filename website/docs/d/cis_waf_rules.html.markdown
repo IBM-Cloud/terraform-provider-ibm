@@ -12,7 +12,7 @@ Imports a read only copy of an existing Internet Services WAF Rules resource.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_cis_waf_rules" "rules" {
 		cis_id    = data.ibm_cis.cis.id
 		domain_id = data.ibm_cis_domain.cis_domain.id

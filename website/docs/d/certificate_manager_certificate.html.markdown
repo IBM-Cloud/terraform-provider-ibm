@@ -13,7 +13,7 @@ Retrieve the details of an existing certificate instance resource and lists all 
 
 ## Example usage
 
-```
+```terraform
 data "ibm_resource_instance" "cm" {
     name     = "testname"
     location = "us-south"

@@ -15,7 +15,7 @@ Retrieve information about a Cloud Foundry service instance. For more informatio
 The following example retrieves information about the `mycloudantdb` instance. 
 
 
-```
+```terraform
 data "ibm_space" "space" {
   org   = "myorg"
   space = "dev"

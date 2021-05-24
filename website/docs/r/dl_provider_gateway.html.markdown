@@ -14,7 +14,7 @@ Create, update, or delete a Direct Link Provider Gateway by using the Direct Lin
 ## Example usage to create Direct Link of dedicated type
 In the following example, you can create Direct Link provider gateway:
 
-```
+```terraform
 resource ibm_dl_provider_gateway test_dl_provider_gateway {
   bgp_asn =  64999
   bgp_ibm_cidr =  "169.254.0.29/30"

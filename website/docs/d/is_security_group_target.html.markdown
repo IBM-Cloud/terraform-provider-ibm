@@ -15,7 +15,7 @@ This request retrieves a single target for a given security group, The target mu
 
 In the following example, you can create a security group target:
 
-```hcl
+```terraform
 data "ibm_is_security_group_target" "testacc_security_group_target" {
     security_group = "r006-5b77aa07-7dfb-4c74-a1bd-904b23cbe198"
     name = "securitygrouptargetname"

@@ -13,14 +13,14 @@ Import the details of an existing IBM Cloud virtual server instances as a read-o
 
 ## Example Usage
 
-```hcl
+```terraform
 
 data "ibm_is_instances" "ds_instances" {
 }
 
 ```
 
-```hcl
+```terraform
 
 data "ibm_is_instances" "ds_instances1" {
   vpc_name = "testacc_vpc"

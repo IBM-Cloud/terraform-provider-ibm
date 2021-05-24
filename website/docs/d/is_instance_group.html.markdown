@@ -13,7 +13,7 @@ Retrieves the instance group info.
 ## Example Usage
 
 In the following example, you can get the instance group info.
-```hcl
+```terraform
 data "ibm_is_instance_group" "instance_group_data" {
 	name =  ibm_is_instance_group.instance_group.name
 }

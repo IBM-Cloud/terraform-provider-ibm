@@ -13,7 +13,7 @@ Create and update an `enterprise_account_group`resource. Delete operation is not
 
 ## Example usage
 
-```
+```terraform
 resource "ibm_enterprise_account_group" "enterprise_account_group" {
   parent = "parent"
   name = "name"

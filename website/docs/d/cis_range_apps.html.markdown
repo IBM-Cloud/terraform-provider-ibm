@@ -12,7 +12,7 @@ Imports a read only copy of an existing Internet Services Range Applications.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_cis_range_apps" "apps" {
   cis_id    = ibm_cis.instance.id
   domain_id = ibm_cis_domain.example.id

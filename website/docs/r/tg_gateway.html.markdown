@@ -13,7 +13,7 @@ Provides a transit gateway resource. This allows transit gateway to be created, 
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_tg_gateway" "new_tg_gw"{
 name="transit-gateway-1"
 location="us-south"
