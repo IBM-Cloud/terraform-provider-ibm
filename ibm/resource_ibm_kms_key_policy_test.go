@@ -166,6 +166,6 @@ func testAccCheckIBMKmsKeyPolicyRotationCheck(instanceName, KeyName string, rota
 			interval_month = %d
 		  }
 	  }
-	  
+
 `, instanceName, KeyName, rotation_interval)
 }
