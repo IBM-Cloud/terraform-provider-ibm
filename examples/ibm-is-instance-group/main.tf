@@ -35,6 +35,16 @@ resource "ibm_is_instance_group" "instance_group" {
   subnets           = [ibm_is_subnet.subnet2.id]
 }
 
+data "ibm_is_instance_group_memberships" "is_instance_group_memberships" {
+	instance_group = ibm_is_instance_group.instance_group.id
+}
+
+resource "ibm_is_instance_group_membership" "is_instance_group_membership" {
+	instance_group = ibm_is_instance_group.instance_group.id
+	instance_group_membership = data.ibm_is_instance_group_memberships.is_instance_group_memberships.memberships.0.instance_group_membership
+	name = var.instance_group_membership
+}
+
 resource "ibm_is_instance_group_manager" "instance_group_manager" {
   name                 = var.instance_group_manager_name
   aggregation_window   = var.aggregation_window
@@ -68,4 +78,9 @@ data "ibm_is_instance_group_manager_policy" "instance_group_manager_policy" {
   instance_group         = ibm_is_instance_group_manager_policy.cpuPolicy.instance_group
   instance_group_manager = ibm_is_instance_group_manager_policy.cpuPolicy.instance_group_manager
   name                   = ibm_is_instance_group_manager_policy.cpuPolicy.name
+}
+
+data "ibm_is_instance_group_membership" "is_instance_group_membership" {
+	instance_group = ibm_is_instance_group.instance_group.id
+	name = var.instance_group_membership
 }

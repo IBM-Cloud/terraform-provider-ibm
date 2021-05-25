@@ -10,6 +10,22 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+const (
+	isInstanceGroupMembership                                = "instance_group_membership"
+	isInstanceGroup                                          = "instance_group"
+	isInstanceGroupMembershipName                            = "name"
+	isInstanceGroupMemershipActionDelete                     = "action_delete"
+	isInstanceGroupMemershipDeleteInstanceOnMembershipDelete = "delete_instance_on_membership_delete"
+	isInstanceGroupMemershipInstance                         = "instance"
+	isInstanceGroupMemershipInstanceName                     = "name"
+	isInstanceGroupMemershipInstanceTemplate                 = "instance_template"
+	isInstanceGroupMemershipInstanceTemplateName             = "name"
+	isInstanceGroupMembershipCrn                             = "crn"
+	isInstanceGroupMembershipVirtualServerInstance           = "virtual_server_instance"
+	isInstanceGroupMembershipLoadBalancerPoolMember          = "load_balancer_pool_member"
+	isInstanceGroupMembershipStatus                          = "status"
+)
+
 func resourceIBMISInstanceGroupMembership() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMISInstanceGroupMembershipUpdate,
@@ -20,51 +36,52 @@ func resourceIBMISInstanceGroupMembership() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 
-			"instance_group": {
+			isInstanceGroup: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: InvokeValidator("ibm_is_instance_group_membership", "instance_group"),
+				ForceNew:     true,
+				ValidateFunc: InvokeValidator("ibm_is_instance_group_membership", isInstanceGroup),
 				Description:  "The instance group identifier.",
 			},
-			"instance_group_membership": {
+			isInstanceGroupMembership: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: InvokeValidator("ibm_is_instance_group_membership", "instance_group_membership"),
+				ValidateFunc: InvokeValidator("ibm_is_instance_group_membership", isInstanceGroupMembership),
 				Description:  "The unique identifier for this instance group membership.",
 			},
-			"name": {
+			isInstanceGroupMembershipName: {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: InvokeValidator("ibm_is_instance_group_membership", "name"),
+				ValidateFunc: InvokeValidator("ibm_is_instance_group_membership", isInstanceGroupMembershipName),
 				Description:  "The user-defined name for this instance group membership. Names must be unique within the instance group.",
 			},
-			"action_delete": {
+			isInstanceGroupMemershipActionDelete: {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
 				Description: "The delete flag for this instance group membership. Must be set to true to delete instance group membership.",
 			},
-			"delete_instance_on_membership_delete": {
+			isInstanceGroupMemershipDeleteInstanceOnMembershipDelete: {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "If set to true, when deleting the membership the instance will also be deleted.",
 			},
-			"instance": {
+			isInstanceGroupMemershipInstance: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"crn": {
+						isInstanceGroupMembershipCrn: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The CRN for this virtual server instance.",
 						},
-						"virtual_server_instance": {
+						isInstanceGroupMembershipVirtualServerInstance: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique identifier for this virtual server instance.",
 						},
-						"name": {
+						isInstanceGroupMemershipInstanceName: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The user-defined name for this virtual server instance (and default system hostname).",
@@ -72,22 +89,22 @@ func resourceIBMISInstanceGroupMembership() *schema.Resource {
 					},
 				},
 			},
-			"instance_template": {
+			isInstanceGroupMemershipInstanceTemplate: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"crn": {
+						isInstanceGroupMembershipCrn: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The CRN for this instance template.",
 						},
-						"instance_template": {
+						isInstanceGroupMemershipInstanceTemplate: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique identifier for this instance template.",
 						},
-						"name": {
+						isInstanceGroupMemershipInstanceTemplateName: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique user-defined name for this instance template.",
@@ -95,12 +112,12 @@ func resourceIBMISInstanceGroupMembership() *schema.Resource {
 					},
 				},
 			},
-			"load_balancer_pool_member": {
+			isInstanceGroupMembershipLoadBalancerPoolMember: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier for this load balancer pool member.",
 			},
-			"status": {
+			isInstanceGroupMembershipStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The status of the instance group membership- `deleting`: Membership is deleting dependent resources- `failed`: Membership was unable to maintain dependent resources- `healthy`: Membership is active and serving in the group- `pending`: Membership is waiting for dependent resources- `unhealthy`: Membership has unhealthy dependent resources.",
@@ -114,7 +131,7 @@ func resourceIBMISInstanceGroupMembershipValidator() *ResourceValidator {
 	validateSchema := make([]ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
-			Identifier:                 "name",
+			Identifier:                 isInstanceGroupMembershipName,
 			ValidateFunctionIdentifier: ValidateRegexpLen,
 			Type:                       TypeString,
 			Required:                   true,
@@ -123,7 +140,7 @@ func resourceIBMISInstanceGroupMembershipValidator() *ResourceValidator {
 			MaxValueLength:             63})
 	validateSchema = append(validateSchema,
 		ValidateSchema{
-			Identifier:                 "instance_group",
+			Identifier:                 isInstanceGroup,
 			ValidateFunctionIdentifier: ValidateRegexpLen,
 			Type:                       TypeString,
 			Required:                   true,
@@ -132,7 +149,7 @@ func resourceIBMISInstanceGroupMembershipValidator() *ResourceValidator {
 			MaxValueLength:             64})
 	validateSchema = append(validateSchema,
 		ValidateSchema{
-			Identifier:                 "instance_group_membership",
+			Identifier:                 isInstanceGroupMembership,
 			ValidateFunctionIdentifier: ValidateRegexpLen,
 			Type:                       TypeString,
 			Required:                   true,
@@ -149,8 +166,8 @@ func resourceIBMISInstanceGroupMembershipUpdate(d *schema.ResourceData, meta int
 		return err
 	}
 
-	instanceGroupID := d.Get("instance_group").(string)
-	instanceGroupMembershipID := d.Get("instance_group_membership").(string)
+	instanceGroupID := d.Get(isInstanceGroup).(string)
+	instanceGroupMembershipID := d.Get(isInstanceGroupMembership).(string)
 
 	getInstanceGroupMembershipOptions := vpcv1.GetInstanceGroupMembershipOptions{
 		ID:              &instanceGroupMembershipID,
@@ -159,23 +176,20 @@ func resourceIBMISInstanceGroupMembershipUpdate(d *schema.ResourceData, meta int
 
 	instanceGroupMembership, response, err := sess.GetInstanceGroupMembership(&getInstanceGroupMembershipOptions)
 	if err != nil || instanceGroupMembership == nil {
-		if response != nil && response.StatusCode == 404 {
-			return nil
-		}
 		return fmt.Errorf("Error Getting InstanceGroup Membership: %s\n%s", err, response)
 	}
+	d.SetId(fmt.Sprintf("%s/%s", instanceGroupID, instanceGroupMembershipID))
 
-	if v, ok := d.GetOk("action_delete"); ok {
+	if v, ok := d.GetOk(isInstanceGroupMemershipActionDelete); ok {
 		actionDelete := v.(bool)
 		if actionDelete {
 			return resourceIBMISInstanceGroupMembershipDelete(d, meta)
 		}
 	}
 
-	if v, ok := d.GetOk("name"); ok {
+	if v, ok := d.GetOk(isInstanceGroupMembershipName); ok {
 		name := v.(string)
 		if name != *instanceGroupMembership.Name {
-			d.SetId(fmt.Sprintf("%s/%s", instanceGroupID, instanceGroupMembershipID))
 
 			updateInstanceGroupMembershipOptions := vpcv1.UpdateInstanceGroupMembershipOptions{}
 			instanceGroupMembershipPatchModel := &vpcv1.InstanceGroupMembershipPatch{}
@@ -222,34 +236,34 @@ func resourceIBMISInstanceGroupMembershipRead(d *schema.ResourceData, meta inter
 		}
 		return fmt.Errorf("Error Getting InstanceGroup Membership: %s\n%s", err, response)
 	}
-	d.Set("delete_instance_on_membership_delete", *instanceGroupMembership.DeleteInstanceOnMembershipDelete)
-	d.Set("instance_group_membership", *instanceGroupMembership.ID)
-	d.Set("status", *instanceGroupMembership.Status)
+	d.Set(isInstanceGroupMemershipDeleteInstanceOnMembershipDelete, *instanceGroupMembership.DeleteInstanceOnMembershipDelete)
+	d.Set(isInstanceGroupMembership, *instanceGroupMembership.ID)
+	d.Set(isInstanceGroupMembershipStatus, *instanceGroupMembership.Status)
 
 	instances := make([]map[string]interface{}, 0)
 	if instanceGroupMembership.Instance != nil {
 		instance := map[string]interface{}{
-			"crn":                     *instanceGroupMembership.Instance.CRN,
-			"virtual_server_instance": *instanceGroupMembership.Instance.ID,
-			"name":                    *instanceGroupMembership.Instance.Name,
+			isInstanceGroupMembershipCrn:                   *instanceGroupMembership.Instance.CRN,
+			isInstanceGroupMembershipVirtualServerInstance: *instanceGroupMembership.Instance.ID,
+			isInstanceGroupMemershipInstanceName:           *instanceGroupMembership.Instance.Name,
 		}
 		instances = append(instances, instance)
 	}
-	d.Set("instance", instances)
+	d.Set(isInstanceGroupMemershipInstance, instances)
 
 	instance_templates := make([]map[string]interface{}, 0)
 	if instanceGroupMembership.InstanceTemplate != nil {
 		instance_template := map[string]interface{}{
-			"crn":               *instanceGroupMembership.InstanceTemplate.CRN,
-			"instance_template": *instanceGroupMembership.InstanceTemplate.ID,
-			"name":              *instanceGroupMembership.InstanceTemplate.Name,
+			isInstanceGroupMembershipCrn:                 *instanceGroupMembership.InstanceTemplate.CRN,
+			isInstanceGroupMemershipInstanceTemplate:     *instanceGroupMembership.InstanceTemplate.ID,
+			isInstanceGroupMemershipInstanceTemplateName: *instanceGroupMembership.InstanceTemplate.Name,
 		}
 		instance_templates = append(instance_templates, instance_template)
 	}
-	d.Set("instance_template", instance_templates)
+	d.Set(isInstanceGroupMemershipInstanceTemplate, instance_templates)
 
 	if instanceGroupMembership.PoolMember != nil && instanceGroupMembership.PoolMember.ID != nil {
-		d.Set("load_balancer_pool_member", *instanceGroupMembership.PoolMember.ID)
+		d.Set(isInstanceGroupMembershipLoadBalancerPoolMember, *instanceGroupMembership.PoolMember.ID)
 	}
 	return nil
 }

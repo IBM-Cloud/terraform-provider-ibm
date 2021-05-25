@@ -1,9 +1,9 @@
 ---
+subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_instance_group_memberships"
 description: |-
   Get information about InstanceGroupMembershipCollection
-subcategory: "Virtual Private Cloud API"
 ---
 
 # ibm\_is_instance_group_memberships
@@ -12,9 +12,9 @@ Retrive all the instance group memership info of an instance group
 
 ## Example Usage
 
-```hcl
+```
 data "is_instance_group_memberships" "is_instance_group_memberships" {
-	instance_group = "r006-76740f94-fcc4-11e9-96e7-a77723715315"
+  instance_group = "r006-76740f94-fcc4-11e9-96e7-a77723715315"
 }
 ```
 

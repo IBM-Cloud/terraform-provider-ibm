@@ -16,42 +16,42 @@ func dataSourceIBMISInstanceGroupMembership() *schema.Resource {
 		Read: dataSourceIBMISInstanceGroupMembershipRead,
 
 		Schema: map[string]*schema.Schema{
-			"instance_group": {
+			isInstanceGroup: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The instance group identifier.",
 			},
-			"name": {
+			isInstanceGroupMembershipName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The user-defined name for this instance group membership. Names must be unique within the instance group.",
 			},
-			"delete_instance_on_membership_delete": {
+			isInstanceGroupMemershipDeleteInstanceOnMembershipDelete: {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "If set to true, when deleting the membership the instance will also be deleted.",
 			},
-			"instance_group_membership": {
+			isInstanceGroupMembership: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier for this instance group membership.",
 			},
-			"instance": {
+			isInstanceGroupMemershipInstance: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"crn": {
+						isInstanceGroupMembershipCrn: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The CRN for this virtual server instance.",
 						},
-						"virtual_server_instance": {
+						isInstanceGroupMembershipVirtualServerInstance: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique identifier for this virtual server instance.",
 						},
-						"name": {
+						isInstanceGroupMemershipInstanceName: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The user-defined name for this virtual server instance (and default system hostname).",
@@ -59,22 +59,22 @@ func dataSourceIBMISInstanceGroupMembership() *schema.Resource {
 					},
 				},
 			},
-			"instance_template": {
+			isInstanceGroupMemershipInstanceTemplate: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"crn": {
+						isInstanceGroupMembershipCrn: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The CRN for this instance template.",
 						},
-						"instance_template": {
+						isInstanceGroupMemershipInstanceTemplate: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique identifier for this instance template.",
 						},
-						"name": {
+						isInstanceGroupMemershipInstanceTemplateName: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique user-defined name for this instance template.",
@@ -82,12 +82,12 @@ func dataSourceIBMISInstanceGroupMembership() *schema.Resource {
 					},
 				},
 			},
-			"load_balancer_pool_member": {
+			isInstanceGroupMembershipLoadBalancerPoolMember: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier for this load balancer pool member.",
 			},
-			"status": {
+			isInstanceGroupMembershipStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The status of the instance group membership- `deleting`: Membership is deleting dependent resources- `failed`: Membership was unable to maintain dependent resources- `healthy`: Membership is active and serving in the group- `pending`: Membership is waiting for dependent resources- `unhealthy`: Membership has unhealthy dependent resources.",
@@ -101,7 +101,7 @@ func dataSourceIBMISInstanceGroupMembershipRead(d *schema.ResourceData, meta int
 	if err != nil {
 		return err
 	}
-	instanceGroupID := d.Get("instance_group").(string)
+	instanceGroupID := d.Get(isInstanceGroup).(string)
 	// Support for pagination
 	start := ""
 	allrecs := []vpcv1.InstanceGroupMembership{}
@@ -124,38 +124,38 @@ func dataSourceIBMISInstanceGroupMembershipRead(d *schema.ResourceData, meta int
 
 	}
 
-	instanceGroupMembershipName := d.Get("name").(string)
+	instanceGroupMembershipName := d.Get(isInstanceGroupMembershipName).(string)
 	for _, instanceGroupMembership := range allrecs {
 		if instanceGroupMembershipName == *instanceGroupMembership.Name {
 			d.SetId(fmt.Sprintf("%s/%s", instanceGroupID, *instanceGroupMembership.Instance.ID))
-			d.Set("delete_instance_on_membership_delete", *instanceGroupMembership.DeleteInstanceOnMembershipDelete)
-			d.Set("instance_group_membership", *instanceGroupMembership.ID)
-			d.Set("status", *instanceGroupMembership.Status)
+			d.Set(isInstanceGroupMemershipDeleteInstanceOnMembershipDelete, *instanceGroupMembership.DeleteInstanceOnMembershipDelete)
+			d.Set(isInstanceGroupMembership, *instanceGroupMembership.ID)
+			d.Set(isInstanceGroupMembershipStatus, *instanceGroupMembership.Status)
 
 			instances := make([]map[string]interface{}, 0)
 			if instanceGroupMembership.Instance != nil {
 				instance := map[string]interface{}{
-					"crn":                     *instanceGroupMembership.Instance.CRN,
-					"virtual_server_instance": *instanceGroupMembership.Instance.ID,
-					"name":                    *instanceGroupMembership.Instance.Name,
+					isInstanceGroupMembershipCrn:                   *instanceGroupMembership.Instance.CRN,
+					isInstanceGroupMembershipVirtualServerInstance: *instanceGroupMembership.Instance.ID,
+					isInstanceGroupMemershipInstanceName:           *instanceGroupMembership.Instance.Name,
 				}
 				instances = append(instances, instance)
 			}
-			d.Set("instance", instances)
+			d.Set(isInstanceGroupMemershipInstance, instances)
 
 			instance_templates := make([]map[string]interface{}, 0)
 			if instanceGroupMembership.InstanceTemplate != nil {
 				instance_template := map[string]interface{}{
-					"crn":               *instanceGroupMembership.InstanceTemplate.CRN,
-					"instance_template": *instanceGroupMembership.InstanceTemplate.ID,
-					"name":              *instanceGroupMembership.InstanceTemplate.Name,
+					isInstanceGroupMembershipCrn:                 *instanceGroupMembership.InstanceTemplate.CRN,
+					isInstanceGroupMemershipInstanceTemplate:     *instanceGroupMembership.InstanceTemplate.ID,
+					isInstanceGroupMemershipInstanceTemplateName: *instanceGroupMembership.InstanceTemplate.Name,
 				}
 				instance_templates = append(instance_templates, instance_template)
 			}
-			d.Set("instance_template", instance_templates)
+			d.Set(isInstanceGroupMemershipInstanceTemplate, instance_templates)
 
 			if instanceGroupMembership.PoolMember != nil && instanceGroupMembership.PoolMember.ID != nil {
-				d.Set("load_balancer_pool_member", *instanceGroupMembership.PoolMember.ID)
+				d.Set(isInstanceGroupMembershipLoadBalancerPoolMember, *instanceGroupMembership.PoolMember.ID)
 			}
 			return nil
 		}

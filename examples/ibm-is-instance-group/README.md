@@ -131,6 +131,7 @@ data "ibm_is_instance_group_manager_policy" "instance_group_manager_policy" {
 | profile | Instance profile type. | `string` | no |
 | zone | VPC Zone name where instance template is created. | `string` | no |
 | instance\_group\_name | Name of the vpc instance group. | `string` | no |
+| instance\_group\_membership | Name of the vpc instance group membership. | `string` | no |
 | instance\_count | The number of instances managed in the instance group. | `integer` | no |
 | instance\_group\_manager\_name | The manager name under instance group. | `string` | no |
 | aggregation\_window | The time window in seconds to aggregate metrics prior to evaluation | `integer` | no |
