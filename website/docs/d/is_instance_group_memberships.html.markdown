@@ -12,7 +12,7 @@ Retrive all the instance group memership info of an instance group
 
 ## Example Usage
 
-```
+```terraform
 data "is_instance_group_memberships" "is_instance_group_memberships" {
   instance_group = "r006-76740f94-fcc4-11e9-96e7-a77723715315"
 }
