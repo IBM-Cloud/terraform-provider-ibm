@@ -1,20 +1,19 @@
 ---
-
 subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : dns_resource_record"
 description: |-
-  Manages IBM Private DNS Resource Records.
+  Manages IBM Private DNS Resource records.
 ---
 
-# ibm\_dns_resource_record
+# ibm_dns_resource_record
 
-Provides a private dns resource record resource. This allows dns resource records to be created, and updated and deleted.
+Create, update, or delete a DNS record. For more information, see [managing DNS records](https://cloud.ibm.com/docs/dns-svcs?topic=dns-svcs-managing-dns-records). 
 
-## Example Usage
 
-```hcl
+## Example usage
 
+```terraform
 resource "ibm_dns_resource_record" "test-pdns-resource-record-a" {
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   zone_id     = ibm_dns_zone.test-pdns-zone.zone_id
@@ -78,39 +77,45 @@ resource "ibm_dns_resource_record" "test-pdns-resource-record-txt" {
   rdata       = "textinformation"
   ttl         = 900
 }
-
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the argument reference that you can specify for your resource. 
 
-* `instance_id` - (Required, string) The guid of the private DNS instance.
-* `zone_id` - (Required, string)  The ID of the DNS zone.
-* `type` - (Required, string) The type of the DNS resource record to be created. Supported Resource Record types are: A, AAAA, CNAME, PTR, TXT, MX, SRV. Update is not allowed for this attribute.
-* `name` -  (Required, string) The name of a DNS resource record.
-* `rdata` -  (Required, string) The resource data of a DNS resource record.
-* `ttl` - (Optional, int) The time-to-live value of the DNS record to be created.
-* `preference` - (Optional, int) The preference of the MX record. Mandatory field for MX record type.
-* `priority` - (Optional, int) The priority of the record. Mandatory field for SRV record type.
-* `weight` - (Optional, int) The weight of distributing queries among multiple target servers. Mandatory field for SRV record
-* `port` - (Optional, int) The port number of the target server. Mandatory field for SRV record.
-* `service` - (Optional, int) The symbolic name of the desired service, start with an underscore (_). Mandatory field for SRV record.
-* `protocol` - (Optional, int) The symbolic name of the desired protocol. Madatory field for SRV record.
+- `instance_id` - (Required, String) The GUID of the private DNS instance.
+- `name` - (Required, String) The name of the DNS record. 
+- `preference` - (Optional, Integer) Required for `MX` records. If you create an `MX` record, enter the preference of the record.
+- `priority` - (Optional, Integer) Required for `SRV` records-If you create an `SRV` record, enter the priority of the record.
+- `port` - (Optional, Integer) Required for `SRV` records. If you create an `SRV` record, enter the TCP or UDP port of the target server.
+- `protocol` - (Optional, Integer) Required for `SRV` records. If you create an `SRV` record, enter the name of the protocol that you want.
+- `service` - (Optional, Integer) Required for `SRV` records. If you create an `SRV` record, enter the name of the service that you want. The name must start with an underscore (`_`).
+- `rdata` - (Required, String) The resource data of a DNS resource record.
+- `ttl` - (Optional, Integer) The time to live (TTL) value of the DNS record to be created.
+- `type` - (Required, String) The type of DNS record that you want to create. Supported values are `A`, `AAAA`, `CNAME`, `PTR`, `TXT`, `MX`, and `SRV`.
+- `weight` - (Optional, Integer) Required for `SRV` records. If you create an `SRV` record, enter the weight of the record. The weight of distributing queries among multiple target servers.
+- `zone_id` - (Required, String) The ID of the DNS zone where you want to create a DNS record.
 
-## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
+In addition to all arguments listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the private DNS resource record. The id is composed of <instance_id>/<zone_id>/<resource_record_id>.
-* `zone_id` - The unique identifier of the private DNS zone.
-* `resource_record_id` - The unique identifier of the private DNS resource record.
-* `created_on` - The time (Created On) of the DNS resource record.
-* `modified_on` - The time (Modified On) of the DNS rsource record.
+- `created_on` - (Timestamp) The time when the DNS record was created. 
+- `id` - (String) The unique identifier of the DNS record. The ID is composed of `<instance_id>/<zone_id>/<dns_record_id>`.
+- `modified_on` - (Timestamp) The time when the DNS record was modified.
+- `resource_record_id` - (String) The ID of the DNS record. 
+- `zone_id` - (String) The ID of the zone where the DNS record was created. 
 
 ## Import
+The `ibm_dns_resource_record` resource can be imported by using the DNS record ID, zone ID and resource record ID. 
 
-ibm_dns_resource_record can be imported using private DNS instance ID, zone ID and resource record ID, eg
+**Syntax**
+
+```
+$ terraform import ibm_dns_resource_record.example <instance_id>/<zone_id>/<dns_record_id>
+```
+
+**Example**
 
 ```
 $ terraform import ibm_dns_resource_record.example 6ffda12064634723b079acdb018ef308/5ffda12064634723b079acdb018ef308/6463472064634723b079acdb018a1206

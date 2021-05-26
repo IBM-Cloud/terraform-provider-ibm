@@ -14,7 +14,7 @@ Provides a load balancer listener policy resource. This allows load balancer lis
 
 In the following example, you can create a load balancer listener policy when action is redirect, along with lb and lb listener:
 
-```hcl
+```terraform
 resource "ibm_is_lb" "lb2"{
   name    = "mylb"
   subnets = ["35860fed-c911-4936-8c94-f0d8577dbe5b"]
@@ -43,7 +43,7 @@ resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
 ```
 In the following example, you can create a load balancer listener policy when action is forward, along with lb and lb listener:
 
-```hcl
+```terraform
 resource "ibm_is_lb" "lb2"{
   name    = "mylb"
   subnets = ["35860fed-c911-4936-8c94-f0d8577dbe5b"]

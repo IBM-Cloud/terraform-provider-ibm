@@ -12,7 +12,7 @@ Imports a read only copy of an existing Internet Services custom certificates re
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get custom certificates of the domain
 
 data "ibm_cis_custom_certificates" "custom_certificates" {

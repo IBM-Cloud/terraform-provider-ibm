@@ -22,7 +22,7 @@ Both the public portable IPv6 subnet and the public static IP only accept `64` a
 ## Example Usage of portable subnet
 The following example creates a private portable subnet which has one available IPv4 address:
 
-```hcl
+```terraform
 resource "ibm_subnet" "portable_subnet" {
   type       = "Portable"
   private    = true
@@ -40,7 +40,7 @@ resource "ibm_subnet" "portable_subnet" {
 
 Users can use Terraform built-in functions to get IP addresses from `portable subnet`. The following example returns the first usable IP address of the portable subnet `test`.:
 
-```hcl
+```terraform
 resource "ibm_subnet" "test" {
   type = "Portable"
   private = true
@@ -59,7 +59,7 @@ output "first_ip_address" {
 ## Example Usage of static subnet
 The following example creates a public static subnet which has four available IPv4 address:
 
-```hcl
+```terraform
 resource "ibm_subnet" "static_subnet" {
   type = "Static"
   private = false
@@ -72,7 +72,7 @@ resource "ibm_subnet" "static_subnet" {
 
 Users can use Terraform built-in functions to get IP addresses from `subnet`. The following example returns the first usable IP address in the static subnet `test`:
 
-```hcl
+```terraform
 resource "ibm_subnet" "test" {
   type        = "Static"
   private     = false

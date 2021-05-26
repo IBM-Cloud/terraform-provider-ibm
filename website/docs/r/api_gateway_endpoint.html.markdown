@@ -7,15 +7,15 @@ description: |-
 ---
 
 
-# `ibm_api_gateway_endpoint`
+# ibm_api_gateway_endpoint
 
-Create, update, or delete an API endpoint for an API gateway. For more information, about API Gateway custom endpoint, see [Customizing the domain for an API endpoint](https://cloud.ibm.com/docs/api-gateway?topic=api-gateway-getting-started).
+Create, update, or delete an API endpoint for an API gateway. For more information, about API Gateway custom endpoint, see [customizing the domain for an API endpoint](https://cloud.ibm.com/docs/api-gateway?topic=api-gateway-getting-started).
 
 ## Example usage
 
-#### Example for a single  API Documentation as input
+### Example for a single  API Documentation as input
 
-```
+```terraform
 resource "ibm_resource_instance" "apigateway"{
     name     = "testname"
     location = "global"
@@ -30,9 +30,9 @@ resource "ibm_resource_instance" "apigateway"{
 }
 ```
 
-#### Example for a directory of  API Documentation as input
+### Example for a directory of  API Documentation as input
 
-```
+```terraform
 resource "ibm_resource_instance" "apigateway"{
     name     = "testname"
     location = "global"
@@ -46,13 +46,12 @@ resource "ibm_api_gateway_endpoint" "endpoint"{
     managed="true"
     name=replace("endpoint-${each.key}",".json","")
     open_api_doc_name=format("%s%s",var.dir_path,each.key)
-    type="share" //optional while creating endpoint  required during updating actions of an endpoint
-}
+    type="share" //optional while creating endpoint  required during updating actions of an endpoint}
 }
 ```
 
 ## Argument reference 
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
 
 - `managed` - (Optional, Boolean) If set to **true**, the endpoint is online. If set to **false**, the endpoint is offline. The default value is false. The API endpoint cannot be shared if this value is set to **false**.
 - `name` - (Required, String) The name of the API Gateway endpoint. This value is optional when you create an API Gateway endpoint, but required when you update the endpoint.
@@ -63,7 +62,6 @@ Review the input parameters that you can specify for your resource.
 - `type` - (Optional, String) The type of action that is performed on the API endpoint. Supported values are `share`, `unshare`, `manage`, and `unmanage`. The default value is `unshare`. The endpoint actions are performed by using the `type` parameter after the endpoint is created. As a consequence, endpoint actions are invoked during an endpoint update only.
 
 **Note**
-
 * Endpoint actions are performed using `type` argument to manage the actions, only after the endpoint is created. The endpoint actions are invoked during endpoint update function.
 
 * Basepath of the endpoint provided should be unique.
@@ -72,7 +70,7 @@ Review the input parameters that you can specify for your resource.
 
 
 ## Attribute reference
-Review the output parameters that you can access after your resource is created. 
+In addition to all argument reference list, you can access the following attribute references after your resource is created. 
 
 - `base_path` - (String) The base path of an endpoint. The base paths must be unique.
 - `endpoint_id` - (String) The ID of the endpoint, also referred to as the artifact ID.
@@ -80,7 +78,7 @@ Review the output parameters that you can access after your resource is created.
 - `shared` - (String) The shared status of an endpoint.
 
 
-### Import
+## Import
 The `ibm_api_gateway_endpoint` resource can be imported by using the ID. The ID is composed of `<service_instance_crn>//<endpoint_ID>`.
 
 The CRN will be located on the **Overview** page of the API Gateway Service.

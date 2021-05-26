@@ -15,7 +15,7 @@ Create, update, or delete [IBM Cloud Satellite Host](https://cloud.ibm.com/docs/
 
 ###  Assign satellite host to satellite control plane using IBM VPC
 
-```hcl
+```terraform
 resource "ibm_satellite_host" "assign_host" {
   count         = 3
 
@@ -31,7 +31,7 @@ resource "ibm_satellite_host" "assign_host" {
 
 ###  Assign satellite host to satellite control plane using AWS EC2
 
-```hcl
+```terraform
 resource "ibm_satellite_host" "assign_host" {
   count         = 3
 
@@ -46,7 +46,7 @@ resource "ibm_satellite_host" "assign_host" {
 
 ###  Assign satellite host to openshift satellite cluster
 
-```hcl
+```terraform
 resource "ibm_satellite_host" "assign_host" {
   count         = 3
 

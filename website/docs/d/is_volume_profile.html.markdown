@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud virtual server volume profile as a r
 
 ## Example Usage
 
-```hcl
+```terraform
 
 data "ibm_is_volume_profile" "volprofile"{
   name = "general-purpose"

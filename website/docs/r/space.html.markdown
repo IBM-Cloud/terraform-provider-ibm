@@ -6,16 +6,16 @@ description: |-
   Manages IBM space.
 ---
 
-# `ibm_space`
+# ibm_space
 
-Create, update, or delete a Cloud Foundry space. For more information, about Cloud Foundry space, see [Getting started with IBM Cloud Foundry Enterprise Environment](https://cloud.ibm.com/docs/cloud-foundry?topic=cloud-foundry-getting-started).
+Create, update, or delete a Cloud Foundry space. For more information, about Cloud Foundry space, see [getting started with IBM Cloud Foundry Enterprise Environment](https://cloud.ibm.com/docs/cloud-foundry?topic=cloud-foundry-getting-started).
 
 
 ## Example usage
 The following example creates the `myspace` Cloud Foundry space. 
 
 
-```
+```terraform
 resource "ibm_space" "space" {
   name        = "myspace"
   org         = "myorg"
@@ -27,7 +27,7 @@ resource "ibm_space" "space" {
 ```
 
 ## Argument reference
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
 
 - `auditors`(Optional, Sets)  The email addresses (associated with IBM IDs) of the users to whom you want to give an auditor role in this space. Users with the auditor role can view logs, reports, and settings in the given space.
 - `developers`(Optional, Sets) The email addresses (associated with IBM IDs) of the users to whom you want to give a developer role in this space. Users with the developer role can create apps and services, manage apps and services, and see logs and reports in the given space.
@@ -41,6 +41,6 @@ Review the input parameters that you can specify for your resource.
  By default, the newly created space has no user associated with it. Add your own email address to the `managers` or `developers` field in order to be able to use the space correctly for the first time.
 
 ## Attribute reference
-Review the output parameters that you can access after your resource is created. 
+In addition to all argument references list, you can access the following attribute references after your resource is created. 
 
 - `id` - (String) The unique identifier of the new space.

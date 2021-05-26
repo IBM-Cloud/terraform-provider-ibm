@@ -12,7 +12,7 @@ Imports a read only copy of an existing Internet Services WAF Package resource.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_cis_rate_limit" "ratelimit" {
     cis_id = data.ibm_cis.cis.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id

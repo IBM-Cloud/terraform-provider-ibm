@@ -14,7 +14,7 @@ Import the details of an existing IBM satellite location registration script as 
 
 ###  Create satellite host script to attach IBM host to satellite control plane
 
-```hcl
+```terraform
 data "ibm_satellite_attach_host_script" "script" {
   location          = var.location
   labels            = var.labels
@@ -24,7 +24,7 @@ data "ibm_satellite_attach_host_script" "script" {
 
 ###  Create satellite host script to attach AWS EC2 host to satellite control plane
 
-```hcl
+```terraform
 data "ibm_satellite_attach_host_script" "script" {
   location          = var.location
   labels            = var.labels

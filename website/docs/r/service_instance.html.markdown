@@ -6,16 +6,16 @@ description: |-
   Manages IBM service instance.
 ---
 
-# `ibm_service_instance`
+# ibm_service_instance
 
-Create, update, or delete a Cloud Foundry service instance. For more information, about creating organization, spaces, and an instance, see [Getting started with IBM Cloud Foundry Enterprise Environment](https://cloud.ibm.com/docs/cloud-foundry?topic=cloud-foundry-getting-started).
+Create, update, or delete a Cloud Foundry service instance. For more information, about creating organization, spaces, and an instance, see [getting started with IBM Cloud Foundry Enterprise Environment](https://cloud.ibm.com/docs/cloud-foundry?topic=cloud-foundry-getting-started).
 
 
 ## Example usage
 The following example creates the `speech_to_text` Cloud Foundry service instance. 
 
 
-```
+```terraform
 data "ibm_space" "spacedata" {
   space = "prod"
   org   = "myorg.com"
@@ -32,7 +32,7 @@ resource "ibm_service_instance" "service_instance" {
 
 
 ## Argument reference
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
 
 - `name` - (Required, String) A descriptive name for the service instance.
 - `parameters` (Optional, Map)  Arbitrary parameters to pass to the service broker. The value must be a JSON object.
@@ -44,7 +44,7 @@ Review the input parameters that you can specify for your resource.
 
 
 ## Attribute reference
-Review the output parameters that you can access after your resource is created. 
+In addition to all argument references list, you can access the following attribute references after your resource is created.
 
 - `credentials` - (Map) The credentials provided by the service broker to use the service.
 - `dashboard_url`- (String) The dashboard URL of the new service instance.

@@ -16,7 +16,7 @@ Provides a bare metal resource. This allows bare metal servers to be created, up
 When the `ibm_compute_bare_metal` resource definition has a `fixed_config_preset` attribute, Terraform creates an hourly bare metal server. Hardware specifications are predefined in the `fixed_config_preset` attribute and cannot be modified. The following example shows you how to create a new hourly bare metal server.
 
 ### Example of an hourly bare metal server
-```hcl
+```terraform
 resource "ibm_compute_bare_metal" "hourly-bm1" {
   hostname             = "hourly-bm1"
   domain               = "example.com"
@@ -40,7 +40,7 @@ resource "ibm_compute_bare_metal" "hourly-bm1" {
 When the `fixed_config_preset` attribute is not configured, Terraform creates a monthly bare metal server resource. The monthly bare metal server resource provides options to configure process, memory, network, disk, and RAID. You can also can assign VLANs and subnets for the target monthly bare metal server. To configure the monthly bare metal server, you must provide additional attributes such as `package_key_name`, `proecss_key_name`, `disk_key_names`, and `os_key_name`. The following example shows you how to create a new monthly bare metal server.
 
 ### Example of a monthly bare metal server
-```hcl
+```terraform
 resource "ibm_compute_bare_metal" "monthly_bm1" {
   # Mandatory fields
   package_key_name = "DUAL_E52600_V4_12_DRIVES"
@@ -89,7 +89,7 @@ resource "ibm_compute_bare_metal" "monthly_bm1" {
 If you already have a quote ID for the bare metal server, you can create a new bare metal server with the quote ID. The following example shows you how to create a new bare metal server with a quote ID.
 
 ### Example of a quote based ordering
-```hcl
+```terraform
 resource "ibm_compute_bare_metal" "quote_test" {
   # Mandatory fields
   hostname = "quote-bm-test"

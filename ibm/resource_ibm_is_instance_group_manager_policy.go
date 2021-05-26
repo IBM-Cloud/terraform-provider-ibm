@@ -128,6 +128,16 @@ func resourceIBMISInstanceGroupManagerPolicyCreate(d *schema.ResourceData, meta 
 		InstanceGroupManagerID:              &instanceGroupManagerID,
 		InstanceGroupManagerPolicyPrototype: &instanceGroupManagerPolicyPrototype,
 	}
+
+	isInsGrpKey := "Instance_Group_Key_" + instanceGroupID
+	ibmMutexKV.Lock(isInsGrpKey)
+	defer ibmMutexKV.Unlock(isInsGrpKey)
+
+	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutCreate))
+	if healthError != nil {
+		return healthError
+	}
+
 	data, response, err := sess.CreateInstanceGroupManagerPolicy(&createInstanceGroupManagerPolicyOptions)
 	if err != nil || data == nil {
 		return fmt.Errorf("Error Creating InstanceGroup Manager Policy: %s\n%s", err, response)
@@ -179,6 +189,15 @@ func resourceIBMISInstanceGroupManagerPolicyUpdate(d *schema.ResourceData, meta 
 		updateInstanceGroupManagerPolicyOptions.ID = &instanceGroupManagerPolicyID
 		updateInstanceGroupManagerPolicyOptions.InstanceGroupID = &instanceGroupID
 		updateInstanceGroupManagerPolicyOptions.InstanceGroupManagerID = &instanceGroupManagerID
+
+		isInsGrpKey := "Instance_Group_Key_" + instanceGroupID
+		ibmMutexKV.Lock(isInsGrpKey)
+		defer ibmMutexKV.Unlock(isInsGrpKey)
+
+		_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
+		if healthError != nil {
+			return healthError
+		}
 
 		_, response, err := sess.UpdateInstanceGroupManagerPolicy(&updateInstanceGroupManagerPolicyOptions)
 		if err != nil {
@@ -245,6 +264,16 @@ func resourceIBMISInstanceGroupManagerPolicyDelete(d *schema.ResourceData, meta 
 		InstanceGroupManagerID: &instanceGroupManagerID,
 		InstanceGroupID:        &instanceGroupID,
 	}
+
+	isInsGrpKey := "Instance_Group_Key_" + instanceGroupID
+	ibmMutexKV.Lock(isInsGrpKey)
+	defer ibmMutexKV.Unlock(isInsGrpKey)
+
+	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutDelete))
+	if healthError != nil {
+		return healthError
+	}
+
 	response, err := sess.DeleteInstanceGroupManagerPolicy(&deleteInstanceGroupManagerPolicyOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {

@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud Infrastructure image as a read-only 
 
 ## Example Usage
 
-```hcl
+```terraform
 
 data "ibm_is_image" "ds_image" {
   name = "centos-7.x-amd64"

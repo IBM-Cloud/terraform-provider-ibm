@@ -13,7 +13,7 @@ This resource is used to order a cdn domain mapping.
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_cdn" "test_cdn1" {
   hostname = "www.default.com"
   vendor_name = "akamai"

@@ -8,11 +8,12 @@ description: |-
 
 # ibm_event_streams_topic
 
-Import the name of an existing Event Streams topic as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+
+Review the [Event Streams](https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-about) resource that you can connect, administer, developed with Event Streams and integrate with the other services. 
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_resource_instance" "es_instance" {
   name              = "terraform-integration"
   resource_group_id = data.ibm_resource_group.group.id
@@ -25,16 +26,15 @@ data "ibm_event_streams_topic" "es_topic" {
 ```
 
 ## Argument Reference
+Review the argument parameters that you can specify for your data source. 
 
-The following arguments are supported:
-- `resource_instance_id` - (Required, string) The ID/CRN of the Event Streams service instance.
 - `name` - (Required, string) The name of the topic.
+- `resource_instance_id` - (Required, string) The ID or CRN of the Event Streams service instance.
 
 ## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all argument reference list, you can access the following attribute reference after your data source is created. 
 
-- `id` (string) - The ID of the topic in CRN format. eg. `crn:v1:bluemix:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:cb5a0252-8b8d-4390-b017-80b743d32839:topic:my-es-topic`.
-- `kafka_http_url` (string) - The API endpoint for interacting with Event Streams REST API.
-- `kafka_brokers_sasl` (array of strings) - Kafka brokers addresses for interacting with Kafka native API.
-
+- `id` - (String) The ID of the topic in CRN format. For example, `crn:v1:bluemix:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:cb5a0252-8b8d-4390-b017-80b743d32839:topic:my-es-topic`.
+- `kafka_http_url` - (String) The API endpoint for interacting with Event Streams REST API.
+- `kafka_brokers_sasl` - (Array of strings) Kafka brokers uses for interacting with Kafka native API.

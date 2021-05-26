@@ -16,7 +16,7 @@ Provides a load balancer listener resource. This allows load balancer listener t
 
 In the following example, you can create a load balancer listener along with pool and pool member:
 
-```hcl
+```terraform
 resource "ibm_is_lb_listener" "testacc_lb_listener" {
   lb       = "8898e627-f61f-4ac8-be85-9db9d8bfd345"
   port     = "9080"

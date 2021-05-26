@@ -12,7 +12,7 @@ Imports a read only copy of an existing Internet Services custom pages resource.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get custom pages of the domain
 
 data "ibm_cis_custom_pages" "custom_pages" {

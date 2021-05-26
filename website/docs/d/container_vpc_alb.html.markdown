@@ -14,7 +14,7 @@ Import the details of a Kubernetes cluster ALB on IBM Cloud as a read-only data 
 
 In the following example, you can configure a alb:
 
-```hcl
+```terraform
 data "ibm_container_vpc_alb" "alb" {
   alb_id = "public-cr083d810e501d4c73b42184eab5a7ad56-alb"
 }

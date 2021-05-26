@@ -6,29 +6,29 @@ description: |-
   Get information on an IBM Cloud Functions namespace.
 ---
 
-# ibm\_function_namespace
+# ibm_function_namespace
 
-Import the details of an existing [IBM Cloud Functions namespace](https://cloud.ibm.com/docs/openwhisk/openwhisk_namespaces.html#openwhisk_namespaces) as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration using interpolation syntax.
+Import the details of an existing IBM Cloud Functions namespace. For more information, about managing namespace, see [managing namespace](https://cloud.ibm.com/docs/openwhisk?topic=openwhisk-namespaces). 
 
-## Example Usage
+## Example usage
+The following example creates the namespace and package at a specific location.
 
-```hcl
+```terraform
 data "ibm_function_namespace" "test_namespace" {
 	name = var.namespace
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument reference that you can specify for your resource. 
 
-The following arguments are supported:
+- `name` - (Required, String) The name of the namespace.
 
-* `name` - (Required, string) The name of the namespace.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your data source is created.
 
-## Attributes Reference
+- `id` - (String) The ID of the namespace.
+- `location` - (String) The target location of the namespace.
+- `resource_group_id` - (String) The ID of the resource group.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The ID of the namespace.
-* `resource_group_id` - The ID of the resource group.
-* `location` - Target location of the namespace.
 

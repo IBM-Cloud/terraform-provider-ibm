@@ -15,7 +15,7 @@ Use the navigation menu on the left to read about the available data sources and
 ## Example Usage of Provider
 
 Terraform 0.13 and later:
-```hcl
+```terraform
 terraform {
   required_providers {
     ibm = {
@@ -38,7 +38,7 @@ resource "ibm_is_vpc" "testacc_vpc" {
 ```
 
 Terraform 0.12 and earlier:
-```hcl
+```terraform
 # Configure the IBM Provider
 
 provider "ibm" {
@@ -52,7 +52,7 @@ resource "ibm_is_vpc" "testacc_vpc" {
 }
 ```
 Visiblity support:
-```hcl
+```terraform
 # Configure the IBM Provider
 
 provider "ibm" {
@@ -66,7 +66,7 @@ resource "ibm_is_vpc" "testacc_vpc" {
 ```
 ## Example Usage of Resources:
 
-```hcl
+```terraform
 
 # Create an IBM Cloud infrastructure SSH key. You can find the SSH key surfaces in the infrastructure console under Devices > Manage > SSH Keys
 resource "ibm_compute_ssh_key" "test_key_1" {
@@ -163,7 +163,7 @@ You can provide your static credentials by adding the `ibmcloud_api_key`, `iaas_
 
 Usage:
 
-```hcl
+```terraform
 provider "ibm" {
     ibmcloud_api_key = ""
     iaas_classic_username = ""
@@ -175,7 +175,7 @@ provider "ibm" {
 
 You can provide your credentials by exporting the `IC_API_KEY`, `IAAS_CLASSIC_USERNAME`, and `IAAS_CLASSIC_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud Classic Infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.
 
-```hcl
+```terraform
 provider "ibm" {}
 ```
 

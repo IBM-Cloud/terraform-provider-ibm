@@ -13,7 +13,7 @@ Provides a IBM CIS Certificate upload resource. This resource is associated with
 
 ## Example Usage
 
-```hcl
+```terraform
 # Upload a certificate for a domain
 
 resource "ibm_cis_certificate_upload" "cert" {

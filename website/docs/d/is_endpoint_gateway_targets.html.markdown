@@ -12,7 +12,7 @@ Import the details of endpoint gateway targets on IBM Cloud as a read-only data 
 
 ## Example Usage
 
-```hcl
+```terraform
 
     data "ibm_is_endpoint_gateway_targets" "endpointGatewayTargets" {
     }

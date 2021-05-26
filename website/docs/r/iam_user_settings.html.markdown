@@ -15,7 +15,7 @@ Provides a resource for IAM User Settings. The IP addresses configured here are 
 
 ### Configuraing allowed_ip list for a particular user
 
-```hcl
+```terraform
 resource "ibm_iam_user_settings" "user_setting" {
   iam_id = "example@in.ibm.com"
   allowed_ip_addresses = ["192.168.0.2","192.168.0.3","192.168.0.4"]

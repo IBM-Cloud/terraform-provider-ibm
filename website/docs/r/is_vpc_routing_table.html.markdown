@@ -14,7 +14,7 @@ Provides a vpc routing tables resource. This allows vpc routing tables to be cre
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "testvpc"
 }

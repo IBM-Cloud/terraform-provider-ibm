@@ -4,16 +4,16 @@ layout: "ibm"
 page_title: "IBM : enterprise_account"
 sidebar_current: "docs-ibm-resource-enterprise-account"
 description: |-
-  Manages enterprise_account.
+  Manages an enterprise account.
 ---
 
-# ibm\_enterprise_account
+# ibm_enterprise_account
 
-Provides a resource for enterprise_account. This allows enterprise_account to be created, updated and imported. Delete operation is not supported.
+Create and update an `enterprise_account` resource. Delete operation is not supported. For more information, about enterprise account, refer to [setting up accounts to an enterprise](https://cloud.ibm.com/docs/account?topic=account-enterprise-add).
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_enterprise_account" "enterprise_account" {
   parent = "parent"
   name = "name"
@@ -27,45 +27,45 @@ resource "ibm_enterprise_account" "enterprise_import_account"{
 }
 ```
 
+## Argument reference
 
-## Argument Reference
+Review the argument reference that you can specify to create a new account in an enterprise resource.
 
-The following arguments are supported to create a new account in enterprise:
+- `name` - (Required, String) The name of an enterprise. The minimum and maximum character should be from `3 to 60` characters.
+- `owneriam_id` - (Required, String) The IAM ID of an account owner, such as `IBMid-0123ABC.` The IAM ID must already exist.
+- `parent` - (Required, String) The CRN of the parent in which the account is created. The parent can be an existing account group or an enterprise itself.
 
-* `parent` - (Required, string) The CRN of the parent under which the account will be created. The parent can be an existing account group or the enterprise itself.
-* `name` - (Required, string) The name of the account. This field must have 3 - 60 characters.
-* `owner_iam_id` - (Required, string) The IAM ID of the account owner, such as `IBMid-0123ABC`. The IAM ID must already exist.
+Review the argument reference that you can specify to import a new account in an enterprise resource. 
 
-The following arguments are supported to import an existing standalone account in enterprise:
+- `account_id` - (Required, String) The stand-alone account ID that needs to be imported, such as `521ac39afd1b40aaad96fde2c6ad97xx`.
+- `enterprise_id` - (Required, String) The enterprise ID where the account is imported.
+- `parent` - (Required, String) The CRN of the parent in which the account is created. The parent can be an existing account group or an enterprise itself.
 
-* `parent` - (Required, string) The CRN of the parent under which the account will be created. The parent can be an existing account group or the enterprise itself.
-* `enterprise_id` - (Required, string) The enterprise ID where the account should be imported to.
-* `account_id` - (Required, string) The standalone account ID which needs to be imported, such as `521ac39afd1b40aaad96fde2c6ad97xx`
+## Attribute reference
 
+In addition to all argument reference list, you can access the following attribute references after your resource is created. 
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the enterprise_account.
-* `account_id` - The source account ID.
-* `url` - The URL of the account.
-* `crn` - The Cloud Resource Name (CRN) of the account.
-* `enterprise_account_id` - The enterprise account ID.
-* `enterprise_id` - The enterprise ID that the account is a part of.
-* `enterprise_path` - The path from the enterprise to this particular account.
-* `state` - The state of the account.
-* `paid` - The type of account - whether it is free or paid.
-* `owner_email` - The email address of the owner of the account.
-* `is_enterprise_account` - The flag to indicate whether the account is an enterprise account or not.
-* `created_at` - The time stamp at which the account was created.
-* `created_by` - The IAM ID of the user or service that created the account.
-* `updated_at` - The time stamp at which the account was last updated.
-* `updated_by` - The IAM ID of the user or service that updated the account.
+- `account_id` - (String) The source account ID.
+- `crn` - (String) The Cloud Resource Name (CRN) of an account.
+- `created_at` - (Timestamp) The time stamp at which an account is created.
+- `created_by` - (String) The IAM ID of an user or service that created an account.
+- `enterprise_account_id` - (String) The enterprise account ID.
+- `enterprise_id` - (String) The enterprise ID that the account is a part of.
+- `enterprise_path` - (String) The path from the enterprise to the particular account.
+- `id` - (String) The unique identifier of an enterprise account.
+- `is_enterprise_account` - (String) The flag to indicate whether the account is an enterprise account or not.
+- `owner_email` - (String) The Email address of the owner of an account.
+- `paid` - (String) The type of account, whether it is `free`, or `paid`.
+- `state` - (String) The state of an account.
+- `updated_at` - (Timestamp) The time stamp at which an account was last updated.
+- `updated_by` - (String) The IAM ID of the user or service that updated an account.
+- `url` - (String) The URL of an account.
 
 ## Import
 
-ibm_enterprise_account can be imported using account_id, eg.
+The `ibm_enterprise_account` resource can be imported by using account_group_id.
+
+**Example**
 
 ```
 $ terraform import ibm_enterprise_account.example 907ec1a69a354afc94d3a7b499d6784f

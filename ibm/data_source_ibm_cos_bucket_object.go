@@ -69,6 +69,10 @@ func dataSourceIBMCosBucketObject() *schema.Resource {
 				Computed:    true,
 				Description: "COS object last modified date",
 			},
+			"version_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -143,6 +147,6 @@ func dataSourceIBMCosBucketObjectRead(ctx context.Context, d *schema.ResourceDat
 
 	objectID := getObjectId(bucketCRN, objectKey, bucketLocation)
 	d.SetId(objectID)
-
+	d.Set("version_id", out.VersionId)
 	return nil
 }

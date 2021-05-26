@@ -4,16 +4,16 @@ layout: "ibm"
 page_title: "IBM : enterprise_account_group"
 sidebar_current: "docs-ibm-resource-enterprise-account-group"
 description: |-
-  Manages enterprise_account_group.
+  Manages an enterprise account group.
 ---
 
-# ibm\_enterprise_account_group
+# ibm_enterprise_account_group
 
-Provides a resource for enterprise_account_group. This allows enterprise_account_group to be created and updated. Delete operation is not supported.
+Create and update an `enterprise_account_group`resource. Delete operation is not supported. For more information, about enterprise account group, refer to [setting up access groups](https://cloud.ibm.com/docs/account?topic=account-groups).
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_enterprise_account_group" "enterprise_account_group" {
   parent = "parent"
   name = "name"
@@ -21,34 +21,34 @@ resource "ibm_enterprise_account_group" "enterprise_account_group" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument reference that you can specify for your resource. 
 
-The following arguments are supported:
+- `name` - (Required, String) The name of an enterprise. The minimum and maximum character should be from `3 to 60` characters.
+- `parent` - (Required, String) The CRN of the parent in which the account group is created. The parent can be an existing account group or an enterprise itself.
+- `primary_contact_iam_id` - (Required, String) The IAM ID of an enterprise primary contact, such as `IBMid-0123ABC.` The IAM ID must already exist.
 
-* `parent` - (Required, string) The CRN of the parent under which the account group will be created. The parent can be an existing account group or the enterprise itself.
-* `name` - (Required, string) The name of the account group. This field must have 3 - 60 characters.
-* `primary_contact_iam_id` - (Required, string) The IAM ID of the primary contact for this account group, such as `IBMid-0123ABC`. The IAM ID must already exist.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your resource is created. 
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the enterprise_account_group.
-* `url` - The URL of the account group.
-* `crn` - The Cloud Resource Name (CRN) of the account group.
-* `enterprise_account_id` - The enterprise account ID.
-* `enterprise_id` - The enterprise ID that the account group is a part of.
-* `enterprise_path` - The path from the enterprise to this particular account group.
-* `state` - The state of the account group.
-* `primary_contact_email` - The email address of the primary contact of the account group.
-* `created_at` - The time stamp at which the account group was created.
-* `created_by` - The IAM ID of the user or service that created the account group.
-* `updated_at` - The time stamp at which the account group was last updated.
-* `updated_by` - The IAM ID of the user or service that updated the account group.
+- `created_at` - (Timestamp) The time stamp at which an account group is created.
+- `created_by` - (String) The IAM ID of an user or service that created an account group.
+- `crn` - (String) The Cloud Resource Name (CRN) of an account group.
+- `enterprise_account_id` - (String) The enterprise account ID.
+- `enterprise_id` - (String) The enterprise ID that the account group is a part of.
+- `enterprise_path` - (String) The path from the enterprise to the particular account group.
+- `id` - (String) The unique identifier of an enterprise account group.
+- `state` - (String) The state of an account group.
+- `primary_contact_email` - (String) The Email address of the primary contact of an account group.
+- `updated_at` - (Timestamp) The time stamp at which an account group was last updated.
+- `updated_by` - (String) The IAM ID of the user or service that updated an account group.
+- `url` - (String) The URL of an account group.
 
 ## Import
 
-ibm_enterprise_account_group can be imported using account_group_id, eg.
+The `ibm_enterprise_account_group` resource can be imported by using account_group_id.
+
+**Example**
 
 ```
 $ terraform import ibm_enterprise_account_group.example ae337d0b6cf6485a918a47e289ab4628

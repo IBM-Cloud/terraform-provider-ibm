@@ -11,6 +11,7 @@ variable "location" {
 variable "managed_from" {
   description = "The IBM Cloud region to manage your Satellite location from. Choose a region close to your on-prem data center for better performance."
   type         = string
+  default = "wdc"
 }
 
 variable "location_zones" {
@@ -41,7 +42,6 @@ variable "ibmcloud_api_key" {
 
 variable "resource_group" {
   description = "Name of the resource group on which location has to be created"
-
 }
 
 variable "ibm_region" {
@@ -52,5 +52,11 @@ variable "ibm_region" {
 variable "host_provider" {
     description  = "The cloud provider of host|vms"
     type         = string
-    default      = "aws"
+    default      = "ibm"
+}
+
+variable "tags" {
+  description = "List of tags associated with this satellite."
+  type        = list(string)
+  default     = [ "env:dev" ]
 }

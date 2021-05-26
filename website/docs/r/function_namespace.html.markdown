@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function-namespace"
@@ -7,15 +6,14 @@ description: |-
   Manages IBM Cloud Functions namespace.
 ---
 
-# ibm\_function_namespace
+# ibm_function_namespace
 
-Create, update, or delete [IBM Cloud Functions namespace](https://cloud.ibm.com/docs/openwhisk?topic=openwhisk-namespaces). You can create Identity and Access (IAM) managed namespaces to group entities, such as actions or triggers, together.
+Create, update, or delete an IBM Cloud Functions namespace. For more information, about managing namespace, see [managing namespace](https://cloud.ibm.com/docs/openwhisk?topic=openwhisk-namespaces). Then, you can create IAM managed namespaces to group entities such as actions, triggers or both.
 
-## Example Usage
+## Example usage
+The following example creates an IAM based namespace and package at a specific location.
 
-In the following example, you can create a IAM based namespace and package at specified location :
-
-```hcl
+```terraform
 provider "ibm" {
   ibmcloud_api_key   = var.ibmcloud_api_key
   region = var.region
@@ -36,33 +34,40 @@ resource "ibm_function_package" "package" {
 }
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the argument reference that you can specify for your resource. 
 
-* `name` - (Required, string) The name of the namespace.
-* `description` - (Optional, string) Description of the namespace.
-* `resource_group_id` - (Required, ForceNew, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`.
+- `description` - (Optional, String) The description of the namespace.
+- `name` - (Required, String) The name of the namespace.
+- `resource_group_id` - (Required, Forces new resource, String) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`.
 
-## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the namespace.
-* `location` - Target location of the namespace.
+- `id` - (String) The unique ID of the new namespace.
+- `location` - (String) Target locations of the namespace.
 
 ## Import
+The `ibm_function_namespace` resource can be imported by using the namespace ID.
 
-`ibm_function_namespace` can be imported using the namespace ID.
+**Note** 
+Namespace import will not return the value for `resource_group_id` attribute.
 
-**NOTE:**: Namespace import will not return value for `resource_group_id` attribute.
 
-Example:
+**Syntax**
 
 ```
 $ terraform import ibm_function_namespace.namespace <namespaceID>
 
+```
+
+**Example**
+
+```
 $ terraform import ibm_function_namespace.namespace 4cf78bb1-2298-413f-8575-2464948a344b
 
 ```
+
 

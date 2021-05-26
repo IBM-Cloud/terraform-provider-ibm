@@ -15,7 +15,7 @@ Provides a snapshot resource. This allows snapshots to be created, updated, and 
 
 In the following example, you can create a snapshot:
 
-```hcl
+```terraform
 resource "ibm_pi_snapshot" "testacc_snapshot"{
   pi_instance_name       = test-instance
   pi_snap_shot_name       = test-snapshot
@@ -30,7 +30,7 @@ resource "ibm_pi_snapshot" "testacc_snapshot"{
   * `region` - `lon`
   * `zone` - `lon04`
   Example Usage:
-  ```hcl
+  ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"

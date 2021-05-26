@@ -19,7 +19,7 @@ See [Mounting File Storage](https://cloud.ibm.com/docs/infrastructure/FileStorag
 
 In the following example, you can create 20G of Endurance file storage with a 10G snapshot capacity and 0.25 IOPS/GB.
 
-```hcl
+```terraform
 resource "ibm_storage_file" "fs_endurance" {
   type       = "Endurance"
   datacenter = "dal06"
@@ -56,7 +56,7 @@ resource "ibm_storage_file" "fs_endurance" {
 
 In the following example, you can create 20G of Performance file storage with 100 IOPS.
 
-```hcl
+```terraform
 resource "ibm_storage_file" "fs_performance" {
   type       = "Performance"
   datacenter = "dal06"

@@ -13,7 +13,7 @@ Creates an IBM Cloud Object Storage bucket. It also allows object storage bucket
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_resource_group" "cos_group" {
   name = "cos-resource-group"
 }
@@ -157,6 +157,7 @@ resource "ibm_cos_bucket" "expire_rule_cos" {
 }
 
 ### Configure retention rule on COS bucket
+
 resource "ibm_cos_bucket" "retention_cos" {
   bucket_name          = "a-bucket-retention"
   resource_instance_id = ibm_resource_instance.cos_instance.id
@@ -168,6 +169,18 @@ resource "ibm_cos_bucket" "retention_cos" {
     maximum = 1
     minimum = 1
     permanent = false
+  }
+}
+
+### Configure object versioning on COS bucket
+
+resource "ibm_cos_bucket" "objectversioning" {
+  bucket_name           = "a-bucket-versioning"
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = "us-east"
+  storage_class         = var.storage
+  object_versioning {
+    enable  = true
   }
 }
 
@@ -192,7 +205,7 @@ The following arguments are supported:
 	*	`usage_metrics_enabled` : (Optional,bool) If set to true, all usage metrics (i.e. bytes_used) will be sent to the monitoring service.
 	*	`request_metrics_enabled` : (Optional,bool) If set to true, all request metrics (i.e. ibm_cos_bucket_all_request) will be sent to the monitoring service @1mins granulatiy.
   *	`metrics_monitoring_crn` : (Required, string) Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics.
-* **Note** - For now request metrics support is enabled only in SJC04 (single_site_location) (only through API/SDK - NO UI support yet). Later we will add the support for other regions(Notified soon).The bucket-level request metrics monitoring service is disabled in the container vault for each region except sjc04.
+* **Note** - request metrics are supported in all regions and UI has the support. For more details check the cloud docs :- https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-mm-cos-integration 
 
 * **Note** - One of the location option must be present.
 * `storage_class` - (Required, string) Storage class of the bucket. Accepted values: 'standard', 'vault', 'cold', 'flex', 'smart'.
@@ -225,6 +238,18 @@ The following arguments are supported:
      - The minimum retention period must be less than or equal to the default retention period, which in turn must be less than or equal to the maximum retention period.
      - Permanent retention can only be enabled at a IBM Cloud Object Storage bucket level with retention policy enabled and users are able to select the permanent retention period option during object uploads. Once enabled, this process can't be reversed and objects uploaded that use a permanent retention period cannot be deleted. It's the responsibility of the users to validate at their end if there's a legitimate need to permanently store objects by using Object Storage buckets with a retention policy.
      - force deleting the bucket will not work if any object is still under retention. As Objects cannot be deleted or overwritten until the retention period has expired and all the legal holds have been removed.
+
+* Nested `object_versioning` block have the following structure:
+  * `enable` : (Optional, bool) Specifies Versioning status either enable or Suspended for the objects in the bucket.Default value set to true.
+    * **Note**
+      - Versioning allows multiple revisions of a single object to exist in the same bucket. Each version of an object can be queried, read, restored from an archived state, or deleted.
+      - Versioning can only be suspended, we cannot disabled once after it is enabled.
+      - To permanently delete individual versions of an object, a delete request must specify a version ID.
+      - Containers with object expiry cannot have versioning enabled/suspended, and containers with versioning enabled/suspended can’t have expiry lifecycle actions enabled to them.
+      - COS Object versioning and COS Bucket Protection(WORM) cannot be used together.
+      - Containers with proxy configuration cannot use versioning and vice versa.
+      - SoftLayer accounts cannot use versioning.
+      - We don’t support MFA_Delete as of now, which is a feature to add additional security to version delete.
 
 ## Attribute Reference
 

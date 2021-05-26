@@ -13,7 +13,7 @@ Provides a resource for ibm_schematics_workspace. This allows ibm_schematics_wor
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_schematics_workspace" "schematics_workspace" {
   name = "<workspace_name>"
   description = "<workspace_description>"

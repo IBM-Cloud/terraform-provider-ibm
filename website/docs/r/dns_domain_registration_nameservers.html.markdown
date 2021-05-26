@@ -16,7 +16,7 @@ This resource is typically used in conjunction with IBM Cloud Internet Services 
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_dns_domain_registration_nameservers" "dnstestdomain" {
     dns_registration_id = data.ibm_dns_domain_registration.dnstestdomain.id
     name_servers = ibm_cis_domain.dnstestdomain.name_servers 
@@ -31,7 +31,7 @@ resource "ibm_cis_domain" "dnstestdomain" {
 
 Or 
 
-```hcl
+```terraform
 resource "ibm_dns_domain_registration_nameservers" "dns-domain-test" {
   dns_registration_id = data.ibm_dns_domain_registration.dns-domain-test.id
   name_servers        = ["ns006.name.ibm.cloud.com", "ns017.name.ibm.cloud.com"]

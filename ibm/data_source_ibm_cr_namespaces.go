@@ -1,19 +1,22 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package ibm
 
 import (
+	"context"
+	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	registryv1 "github.com/IBM-Cloud/bluemix-go/api/container/registryv1"
+	"github.com/IBM/container-registry-go-sdk/containerregistryv1"
 )
 
 func dataIBMContainerRegistryNamespaces() *schema.Resource {
 	return &schema.Resource{
-		Read: dataIBMContainerRegistryNamespacesRead,
+		ReadContext: dataIBMContainerRegistryNamespacesRead,
 
 		Schema: map[string]*schema.Schema{
 			"namespaces": {
@@ -37,15 +40,38 @@ func dataIBMContainerRegistryNamespaces() *schema.Resource {
 							Computed:    true,
 							Description: "CRN of the Namespace",
 						},
+						"created_date": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Created Date",
+						},
+						"updated_date": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Updated Date",
+						},
+						"resource_created_date": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "When the namespace was assigned to a resource group.",
+						},
+						"account": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IBM Cloud account that owns the namespace.",
+						},
+						// DEPRECATED FIELDS TO BE REMOVED IN FUTURE
 						"created_on": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Created Date",
+							Deprecated:  "This field is deprecated",
 						},
 						"updated_on": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Updated Date",
+							Deprecated:  "This field is deprecated",
 						},
 					},
 				},
@@ -54,38 +80,37 @@ func dataIBMContainerRegistryNamespaces() *schema.Resource {
 	}
 }
 
-func dataIBMContainerRegistryNamespacesRead(d *schema.ResourceData, meta interface{}) error {
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+func dataIBMContainerRegistryNamespacesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	containerRegistryClient, err := meta.(ClientSession).ContainerRegistryV1()
 	if err != nil {
-		return err
-	}
-	accountID := userDetails.userAccount
-
-	crClient, err := meta.(ClientSession).ContainerRegistryAPI()
-	if err != nil {
-		return err
-	}
-	target := registryv1.NamespaceTargetHeader{
-		AccountID: accountID,
+		return diag.FromErr(err)
 	}
 
-	crAPI := crClient.Namespaces()
+	listNamespaceDetailsOptions := &containerregistryv1.ListNamespaceDetailsOptions{}
 
-	response, err := crAPI.GetDetailedNamespaces(target)
+	namespaceDetailsList, _, err := containerRegistryClient.ListNamespaceDetails(listNamespaceDetailsOptions)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
+
 	namespaces := []map[string]interface{}{}
-	for _, ns := range response {
+	for _, namespaceDetails := range namespaceDetailsList {
 		namespace := map[string]interface{}{}
-		namespace["name"] = ns.Name
-		namespace["resource_group_id"] = ns.ResourceGroup
-		namespace["crn"] = ns.CRN
-		namespace["created_on"] = ns.CreatedDate
-		namespace["updated_on"] = ns.UpdatedDate
+		namespace["name"] = namespaceDetails.Name
+		namespace["resource_group_id"] = namespaceDetails.ResourceGroup
+		namespace["crn"] = namespaceDetails.CRN
+		namespace["created_date"] = namespaceDetails.CreatedDate
+		namespace["updated_date"] = namespaceDetails.UpdatedDate
+		namespace["account"] = namespaceDetails.Account
+		namespace["resource_created_date"] = namespaceDetails.ResourceCreatedDate
+		// DEPRECATED FIELDS TO BE REMOVED IN FUTURE
+		namespace["created_on"] = namespaceDetails.CreatedDate
+		namespace["updated_on"] = namespaceDetails.UpdatedDate
 		namespaces = append(namespaces, namespace)
 	}
-	d.Set("namespaces", namespaces)
+	if err = d.Set("namespaces", namespaces); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting namespaces: %s", err))
+	}
 	d.SetId(time.Now().UTC().String())
 	return nil
 }

@@ -14,7 +14,7 @@ Provides a read-only data source for ibm_schematics_state. You can then referenc
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_schematics_state" "schematics_state" {
 	workspace_id = "workspace_id"
 	template_id = "template_id"

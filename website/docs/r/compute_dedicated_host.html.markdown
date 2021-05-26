@@ -17,7 +17,7 @@ For additional details please refer to the [SoftLayer API docs](http://sldn.soft
 
 In the following example, you can create a dedicated host:
 
-```hcl
+```terraform
 resource "ibm_compute_dedicated_host" "dedicatedhost" {
   hostname        = "host"
   domain          = "example.com"

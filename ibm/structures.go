@@ -763,6 +763,25 @@ func retentionRuleGet(in *s3.ProtectionConfiguration) []interface{} {
 	return rules
 }
 
+func flattenCosObejctVersioning(in *s3.GetBucketVersioningOutput) []interface{} {
+	out, err := json.Marshal(in)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(string(out))
+	att := make(map[string]interface{})
+	if in != nil {
+		if in.Status != nil {
+			if *in.Status == "Enabled" {
+				att["enable"] = true
+			} else {
+				att["enable"] = false
+			}
+		}
+	}
+	return []interface{}{att}
+}
+
 func flattenLimits(in *whisk.Limits) []interface{} {
 	att := make(map[string]interface{})
 	if in.Timeout != nil {
@@ -1959,6 +1978,34 @@ func resourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 	return nil
 }
 
+func resourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
+
+	if volsintf, ok := diff.GetOk("volume_attachments"); ok {
+		vols := volsintf.([]interface{})
+		for volAttIdx := range vols {
+			volumeid := "volume_attachments." + strconv.Itoa(volAttIdx) + "." + isInstanceTemplateVolAttVol
+			volumePrototype := "volume_attachments." + strconv.Itoa(volAttIdx) + "." + isInstanceTemplateVolAttVolPrototype
+			var volIdnterpolated = false
+			var volumeIdFound = false
+			if _, volumeIdFound = diff.GetOk(volumeid); !volumeIdFound {
+				if !diff.NewValueKnown(volumeid) {
+					volIdnterpolated = true
+				}
+			}
+			_, volPrototypeFound := diff.GetOk(volumePrototype)
+
+			if volPrototypeFound && (volumeIdFound || volIdnterpolated) {
+				return fmt.Errorf("InstanceTemplate - volume_attachments[%d]: Cannot provide both 'volume' and 'volume_prototype' together.", volAttIdx)
+			}
+			if !volPrototypeFound && !volumeIdFound && !volIdnterpolated {
+				return fmt.Errorf("InstanceTemplate - volume_attachments[%d]: Volume details missing. Provide either 'volume' or 'volume_prototype'.", volAttIdx)
+			}
+		}
+	}
+
+	return nil
+}
+
 func flattenRoleData(object []iampolicymanagementv1.Role, roleType string) []map[string]string {
 	var roles []map[string]string
 
@@ -2144,6 +2191,37 @@ func flatterSatelliteZones(zones *schema.Set) []string {
 	}
 
 	return zoneList
+}
+
+// error object
+type ServiceErrorResponse struct {
+	Message    string
+	StatusCode int
+	Result     interface{}
+}
+
+func beautifyError(err error, response *core.DetailedResponse) *ServiceErrorResponse {
+	var (
+		statusCode int
+		result     interface{}
+	)
+	if response != nil {
+		statusCode = response.StatusCode
+		result = response.Result
+	}
+	return &ServiceErrorResponse{
+		Message:    err.Error(),
+		StatusCode: statusCode,
+		Result:     result,
+	}
+}
+
+func (response *ServiceErrorResponse) String() string {
+	output, err := json.MarshalIndent(response, "", "    ")
+	if err == nil {
+		return fmt.Sprintf("%+v\n", string(output))
+	}
+	return fmt.Sprintf("Error : %#v", response)
 }
 
 // IAM Policy Management
@@ -2399,4 +2477,21 @@ func getIBMUniqueId(accountID, userEmail string, meta interface{}) (string, erro
 		}
 	}
 	return "", fmt.Errorf("User %s is not found under account %s", userEmail, accountID)
+}
+
+func immutableResourceCustomizeDiff(resourceList []string, diff *schema.ResourceDiff) error {
+
+	for _, rName := range resourceList {
+		if diff.Id() != "" && diff.HasChange(rName) {
+			o, n := diff.GetChange(rName)
+			old := o.(string)
+			new := n.(string)
+			if len(old) > 0 && old != new {
+				if !(rName == sateLocZone && strings.Contains(old, new)) {
+					return fmt.Errorf("'%s' attribute is immutable and can't be changed from %s to %s.", rName, old, new)
+				}
+			}
+		}
+	}
+	return nil
 }

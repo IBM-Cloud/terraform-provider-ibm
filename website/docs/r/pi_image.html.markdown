@@ -15,7 +15,7 @@ Provides a image resource. This allows image to be created, updated, and cancell
 
 In the following example, you can create a image:
 
-```hcl
+```terraform
 resource "ibm_pi_image" "testacc_image  "{
   pi_image_name       = "7200-03-02"
   pi_image_id         = [ "image id obtained from the datasource"]
@@ -28,7 +28,7 @@ resource "ibm_pi_image" "testacc_image  "{
   * `region` - `lon`
   * `zone` - `lon04`
   Example Usage:
-  ```hcl
+  ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"

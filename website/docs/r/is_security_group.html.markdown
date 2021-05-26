@@ -14,7 +14,7 @@ Provides a security group resource. This allows security group to be created, up
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "test"
 }

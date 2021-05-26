@@ -15,7 +15,7 @@ Provides a resource for IAM Service Authorizations policy to be detached. This a
 
 ### Authorization policy detach
 
-```hcl
+```terraform
 resource "ibm_iam_authorization_policy_detach" "policy" {
   authorization_policy_id = "971164c3-add8-4ac3-bcb4-7376fd2a505e"
 }

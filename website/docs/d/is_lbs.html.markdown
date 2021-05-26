@@ -13,7 +13,7 @@ Import the details of existing IBM VPC Load Balancers as a read-only data source
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_is_lbs" "ds_lbs" {
  }
 ```

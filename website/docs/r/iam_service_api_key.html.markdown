@@ -13,7 +13,7 @@ Provides a resource for IAM Service API Key. This allows Service API Key to be c
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_iam_service_id" "serviceID" {
   name = "servicetest"
 }

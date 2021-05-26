@@ -15,7 +15,7 @@ Provides a resource for local load balancers. This allows local load balancers t
 
 In the following example, you can create a local load balancer:
 
-```hcl
+```terraform
 resource "ibm_lb" "test_lb_local" {
   connections = 1500
   datacenter  = "tok02"

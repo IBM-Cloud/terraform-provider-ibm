@@ -14,7 +14,7 @@ Import the details of a Kubernetes cluster on IBM Cloud as a read-only data sour
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_container_cluster" "cluster_foo" {
   name = "FOO"
 }

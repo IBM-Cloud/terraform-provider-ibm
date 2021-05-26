@@ -15,7 +15,7 @@ Create, update, or delete a monitoring instance. This resource creates a monitor
 
 In the following example, you can create a monitoring configuration:
 
-```hcl
+```terraform
 
 data "ibm_resource_group" "testacc_ds_resource_group" {
   name = "Default"

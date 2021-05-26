@@ -15,7 +15,7 @@ Provides a volume resource. This allows volume to be created, updated, and cance
 
 In the following example, you can create a volume:
 
-```hcl
+```terraform
 resource "ibm_pi_volume" "testacc_volume"{
   pi_volume_size       = 20
   pi_volume_name       = test-volume
@@ -30,7 +30,7 @@ resource "ibm_pi_volume" "testacc_volume"{
   * `region` - `lon`
   * `zone` - `lon04`
   Example Usage:
-  ```hcl
+  ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"

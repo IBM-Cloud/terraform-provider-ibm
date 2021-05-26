@@ -13,7 +13,7 @@ Import the details of an existing quota for an IBM Cloud as a read-only data sou
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_resource_quota" "rsquotadata" {
   name = "Trial Quota"
 }

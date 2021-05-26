@@ -1,44 +1,39 @@
 ---
-
 subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : Private DNS Resource Records"
 description: |-
-  Manages IBM Cloud Infrastructure Private Domain Name Service Resource Records.
+  Manages IBM Cloud infrastructure private domain name service resource records.
 ---
 
-# ibm\_dns_resource_records
+# ibm_dns_resource_records
 
-Import the details of an existing IBM Cloud Infrastructure private domain name service resource records as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Retrieve details about existing IBM Cloud private domain name service records. For more information, about DNS records, see [managing DNS record](https://cloud.ibm.com/docs/dns-svcs?topic=dns-svcs-managing-dns-records).
 
 
-## Example Usage
+## Example usage
 
-```hcl
-
+```terraform
 data "ibm_dns_resource_records" "ds_pdns_resource_records" {
   instance_id = "resource_instance_guid"
   zone_id = "resource_dns_resource_records_zone_id"
 }
-
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument reference that you can specify for your data source. 
 
-The following arguments are supported:
+- `instance_id` - (Required, String) The ID of the private DNS service instance.
+- `zone_id` - (Required, String) The ID of the zone that you added to the private DNS service instance.
 
-* `instance_id` - (Required, string) The resource instance id of the private DNS on which zones were created.
-* `zone_id` - (Required, string) The unique identifier of the private DNS zone.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
+- `dns_resource_records`- (List) A list of all private domain name service resource records.
 
-
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `dns_resource_records` - List of all private domain name service resource records in the IBM Cloud Infrastructure.
-  * `id` - The unique identifier of the private DNS resource record.
-  * `name` - The name of a DNS resource record.
-  * `type` - The type of the DNS resource record. Supported Resource Record types are: A, AAAA, CNAME, PTR, TXT, MX, SRV.
-  * `rdata` - The resource data of a DNS resource record.
-  * `ttl` - The time-to-live value of the DNS resource record.
+  Nested scheme for `dns_resource_records`:
+  - `id` - (String) The unique identifier of the private DNS resource record.
+  - `name` - (String) The name of a private DNS resource record.
+  - `type` - (String) The type of the private DNS resource record. Supported values are `A`, `AAAA`, `CNAME`, `PTR`, `TXT`, `MX`, and `SRV`.
+  - `rdata` - (String) The resource data of a private DNS resource record.
+  - `ttl`- (Integer) The time-to-live value of the DNS resource record.

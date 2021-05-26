@@ -13,7 +13,7 @@ Retrive all the policies info of an instance group manager
 ## Example Usage
 
 In the following example, you can retrieve a policy info of an instance group manager.
-```hcl
+```terraform
 data "ibm_is_instance_group_manager_policy" "instance_group_manager_policy" {
   instance_group = "r006-76770f94-f7654-11e9-96e7-a77724435315"
   instance_group_manager = "r006-76770f94-f8764-11e9-96e7-a77726534315"

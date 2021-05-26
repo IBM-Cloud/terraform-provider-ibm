@@ -12,7 +12,7 @@ Provides a resource for DedicatedHost Disk Management. This allows DedicatedHost
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_dedicated_host_group" "dh_group01" {
   family = "memory"
   class = "beta"

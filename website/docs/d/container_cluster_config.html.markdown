@@ -14,14 +14,14 @@ Download a configuration for Kubernetes clusters on IBM Cloud. You can then refe
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_container_cluster_config" "cluster_foo" {
   cluster_name_id = "FOO"
   config_dir      = "/home/foo_config"
 }
 ```
 ## Example Usage for connecting to kubernetes provider for classic or vpc kubernetes cluster with admin certificates
-```hcl
+```terraform
 data "ibm_container_cluster_config" "cluster_foo" {
   cluster_name_id = "FOO"
   admin           = true
@@ -42,7 +42,7 @@ resource "kubernetes_namespace" "example" {
 }
 ```
 ## Example Usage for connecting to kubernetes provider for classic or vpc kubernetes cluster with host and token
-```hcl
+```terraform
 data "ibm_container_cluster_config" "cluster_foo" {
   cluster_name_id = "FOO"
 }
@@ -61,7 +61,7 @@ resource "kubernetes_namespace" "example" {
 }
 ```
 ## Example Usage for connecting to kubernetes provider for classic openshift cluster with admin certificates
-```hcl
+```terraform
 data "ibm_container_cluster_config" "cluster_foo" {
   cluster_name_id = "FOO"
   admin           = true
@@ -81,7 +81,7 @@ resource "kubernetes_namespace" "example" {
 }
 ```
 ## Example Usage for connecting to kubernetes provider for classic openshift cluster with host and token
-```hcl
+```terraform
 data "ibm_container_cluster_config" "cluster_foo" {
   cluster_name_id = "FOO"
 }

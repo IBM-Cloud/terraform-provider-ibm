@@ -13,7 +13,7 @@ Provides a resource for the health monitors of IBM Lbaas. This allows to update 
  
 ## Example Usage
 
-```hcl
+```terraform
 
 resource "ibm_lbaas" "lbaas" {
   name        = "terraformLB"

@@ -6,16 +6,16 @@ description: |-
   Get information about an IBM Cloud route.
 ---
 
-# `ibm_app_route`
+# ibm_app_route
 
-Retrieve information about an existing app route. For more information, about an app route, see [Updating your domain](https://cloud.ibm.com/docs/cloud-foundry-public?topic=cloud-foundry-public-update-domain).
+Retrieve information about an existing app route. For more information, about an app route, see [updating your domain](https://cloud.ibm.com/docs/cloud-foundry-public?topic=cloud-foundry-public-update-domain).
 
 
 ## Example usage
 The following example retrieves information about an app route. 
 
 
-```
+```terraform
 data "ibm_app_route" "route" {
   domain_guid = data.ibm_app_domain_shared.domain.id
   space_guid  = data.ibm_space.spacedata.id
@@ -26,7 +26,7 @@ data "ibm_app_route" "route" {
 
 
 ## Argument reference
-Review the input parameters that you can specify for your data source. 
+Review the argument reference that you can specify for your data source. 
 
 - `domain_guid`- (Required, String) The GUID of the domain that the route belongs to. You can retrieve the value from the `ibm_app_domain_shared` data source.
 - `host` - (Optional, String)  The host name of the route. Required for shared domains.
@@ -37,7 +37,7 @@ Review the input parameters that you can specify for your data source.
 
 
 ## Attribute reference
-Review the output parameters that you can access after you retrieved your data source. 
+In addition to all argument references list, you can access the following attribute references after your data source is created. 
 
 - `id` - (String) The unique identifier of the route.
 

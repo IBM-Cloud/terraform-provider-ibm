@@ -14,23 +14,25 @@ import (
 func TestAccIBMCmOfferingInstanceDataSource(t *testing.T) {
 	clusterId := os.Getenv("CATMGMT_CLUSTERID")
 	clusterRegion := os.Getenv("CATMGMT_CLUSTERREGION")
+	resourceGroupID := os.Getenv("CATMGMT_RGID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCmOfferingInstanceDataSourceConfig(clusterId, clusterRegion),
+				Config: testAccCheckIBMCmOfferingInstanceDataSourceConfig(clusterId, clusterRegion, resourceGroupID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cm_offering_instance.cm_offering_instance_data", "label"),
 					resource.TestCheckResourceAttrSet("data.ibm_cm_offering_instance.cm_offering_instance_data", "url"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering_instance.cm_offering_instance_data", "resource_group_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMCmOfferingInstanceDataSourceConfig(clusterId string, clusterRegion string) string {
+func testAccCheckIBMCmOfferingInstanceDataSourceConfig(clusterId string, clusterRegion string, resourceGroupID string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_cm_catalog" "cm_catalog" {
@@ -60,11 +62,12 @@ func testAccCheckIBMCmOfferingInstanceDataSourceConfig(clusterId string, cluster
 			cluster_region = "%s"
 			cluster_namespaces = ["tf-cm-data-test"]
 			cluster_all_namespaces = false
+			resource_group_id = "%s"
 		}
 
 		data "ibm_cm_offering_instance" "cm_offering_instance_data" {
 			instance_identifier = ibm_cm_offering_instance.cm_offering_instance.id
 		}
 		  
-		`, clusterId, clusterRegion)
+		`, clusterId, clusterRegion, resourceGroupID)
 }

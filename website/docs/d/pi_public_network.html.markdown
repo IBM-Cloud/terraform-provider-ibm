@@ -13,7 +13,7 @@ Import the details of an existing IBM Power Virtual Server Cloud public network 
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_pi_public_network" "ds_public_network" {
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
@@ -24,7 +24,7 @@ data "ibm_pi_public_network" "ds_public_network" {
   * `region` - `lon`
   * `zone` - `lon04`
   Example Usage:
-  ```hcl
+  ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"

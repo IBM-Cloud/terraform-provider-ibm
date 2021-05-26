@@ -12,7 +12,7 @@ Provides a resource for Instance Disk Management. This allows Instance disk name
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "testvpc"
 }

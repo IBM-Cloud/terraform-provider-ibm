@@ -16,7 +16,7 @@ For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) AP
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_compute_provisioning_hook" "test_provisioning_hook" {
     name = "test_provisioning_hook_name"
     uri  = "https://raw.githubusercontent.com/test/slvm/master/test-script.sh"

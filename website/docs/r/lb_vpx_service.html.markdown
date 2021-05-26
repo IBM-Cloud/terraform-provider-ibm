@@ -17,7 +17,7 @@ Provides a resource for VPX load balancer services. This allows VPX load balance
 
 In the following example, you can create a VPX load balancer:
 
-```hcl
+```terraform
 resource "ibm_lb_vpx_service" "test_service" {
   name = "test_load_balancer_service"
   vip_id = ibm_lb_vpx_vip.testacc_vip.id

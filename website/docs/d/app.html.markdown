@@ -6,7 +6,7 @@ description: |-
   Get information about an IBM Application.
 ---
 
-# `ibm_app`
+# ibm_app
 
 Retrieve information about an existing Cloud Foundry app. For more information, about a Cloud Foundry application, see [getting started with Cloud Foundry Public](https://cloud.ibm.com/docs/cloud-foundry-public?topic=cloud-foundry-public-getting-started).
 
@@ -15,7 +15,7 @@ Retrieve information about an existing Cloud Foundry app. For more information, 
 The following example retrieves information about the `my-app` Cloud Foundry app.  
 
 
-```
+```terraform
 data "ibm_app" "testacc_ds_app" {
   name       = "my-app"
   space_guid = ibm_app.app.space_guid
@@ -23,14 +23,14 @@ data "ibm_app" "testacc_ds_app" {
 ```
 
 ## Argument reference
-Review the input parameters that you can specify for your data source. 
+Review the argument reference that you can specify for your data source. 
 
 - `name` - (Required, String) The name of the app. You can retrieve the value by running the `ibmcloud app list` command in the IBM Cloud CLI.
 - `space_guid` - (Required, String) The GUID of the IBM Cloud space where the app is deployed. You can retrieve the value with the `ibm_space` data source or by running the `ibmcloud iam space <space-name> guid` command in the IBM Cloud CLI.
 
 
 ## Attribute reference
-Review the output parameters that you can access after you retrieved your data source. 
+In addition to all argument references list, you can access the following attribute references after your data source is created.
 
 - `buildpack` - (String) The buildpack that is used by the app. Supported values are: <ul><li>Blank, indicates auto-detection</li><li>A Git URL that points to a buildpack</li><li>The name of an installed buildpack</li></ul>.
 - `disk_quota`- (Integer) The maximum amount of disk space that an app instance can use, specified in megabytes.

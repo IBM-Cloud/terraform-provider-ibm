@@ -19,7 +19,7 @@ For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) AP
 
 In the following example, you can create a VM instance using a Debian image:
 
-```hcl
+```terraform
 resource "ibm_compute_vm_instance" "twc_terraform_sample" {
   hostname                   = "twc-terraform-sample-name"
   domain                     = "bar.example.com"
@@ -42,7 +42,7 @@ resource "ibm_compute_vm_instance" "twc_terraform_sample" {
 
 In the following example, you can create a VM instance using a block device template:
 
-```hcl
+```terraform
 resource "ibm_compute_vm_instance" "terraform-sample-BDTGroup" {
   hostname   = "terraform-sample-blockDeviceTemplateGroup"
   domain     = "bar.example.com"
@@ -65,7 +65,7 @@ resource "ibm_compute_vm_instance" "terraform-sample-BDTGroup" {
 
 In the following example, you can create a VM instance using a flavor:
 
-```hcl
+```terraform
 resource "ibm_compute_vm_instance" "terraform-sample-flavor" {
   hostname             = "terraform-sample-flavor"
   domain               = "bar.example.com"
@@ -91,7 +91,7 @@ resource "ibm_compute_vm_instance" "terraform-sample-flavor" {
 ```
 In the following example, you can create multiple vm's
 
-```hcl
+```terraform
 resource "ibm_compute_vm_instance" "terraform-bulk-vms" {
   bulk_vms {
     hostname = "vm1"
@@ -119,7 +119,7 @@ resource "ibm_compute_vm_instance" "terraform-bulk-vms" {
 
 In the following example, you can retry to create a VM instance using a datacenter_choice. If VM fails to place order on first datacenter or vlans it retries to place order on subsequent datacenters and vlans untill place order is successfull:
 
-```hcl
+```terraform
 resource "ibm_compute_vm_instance" "terraform-retry" {
   hostname          = "vmretry"
   domain            = "example.com"
@@ -172,7 +172,7 @@ resource "ibm_compute_vm_instance" "terraform-retry" {
 ```  
 
 ### Example of a quote based ordering
-```hcl
+```terraform
 resource "ibm_compute_vm_instance" "vm1" {
   # Mandatory fields
   hostname             = "terraformquote"

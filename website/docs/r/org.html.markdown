@@ -6,16 +6,16 @@ description: |-
   Manages IBM organization.
 ---
 
-# `ibm_org`
+# ibm_org
 
-Create, update, or delete a Cloud Foundry organization. For more information, about organization, see [Updating orgs and spaces](https://cloud.ibm.com/docs/account?topic=account-orgupdates).
+Create, update, or delete a Cloud Foundry organization. For more information, about organization, see [updating organization and spaces](https://cloud.ibm.com/docs/account?topic=account-orgupdates).
 
 
 ## Example usage
 The following example create the `myorg` Cloud Foundry organization and assigns users access to the organization. 
 
 
-```
+```terraform
 resource "ibm_org" "testacc_org" {
     name = "myorg"
     org_quota_definition_guid = "myorgquotaguid"
@@ -28,7 +28,7 @@ resource "ibm_org" "testacc_org" {
 
 
 ## Argument reference
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
 
 - `auditors`(Optional, Sets) The email addresses of the users that you want to assign Cloud Foundry **Auditor** access to. The email address needs to be associated with an IBMID. Auditors have the following permissions within the org: <ul><li>View users and their assigned roles.</li><li>View quota information.</li></ul>.
 - `billing_managers`(Optional, Sets) The email addresses of the users that you want to assign the **Billing manager** access to. The email address needs to be associated with an IBMID. Billing managers have the following permissions within the org: <ul><li>View runtime and service usage information on the usage dashboard.</li></ul>.
@@ -44,7 +44,7 @@ By default, the user that creates this resource is assigned the **Manager** Clou
 
 
 ## Attribute reference
-Review the output parameters that you can access after your resource is created. 
+In addition to all argument references list, you can access the following attribute references after your resource is created.
 
 - `id` - (String) The unique identifier of the Cloud Foundry organization.
 
@@ -55,13 +55,13 @@ The Cloud Foundry organization can be imported by using the `id`.
 **Syntax**
 
 ```
-terraform import ibm_org.myorg <id>
+$ terraform import ibm_org.myorg <id>
 ```
 
 **Example**
 
 ```
-terraform import ibm_org.myorg abde-12345
+$ terraform import ibm_org.myorg abde-12345
 ```
 
 If you bring your current organization in Terraform management, you can perform others operations such as adding a user or assigning users with the required roles.

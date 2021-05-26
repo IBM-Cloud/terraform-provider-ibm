@@ -18,7 +18,7 @@ When a target is added to a security group, the security group rules are applied
 
 In the following example, you can create a security group target:
 
-```hcl
+```terraform
 resource "ibm_is_security_group_target" "testacc_security_group_target" {
     security_group = ibm_is_security_group.testacc_security_group.id
     target = "r006-5b77aa07-7dfb-4c74-a1bd-904b23cbe198"

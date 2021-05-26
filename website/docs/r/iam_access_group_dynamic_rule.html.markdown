@@ -13,7 +13,7 @@ Provides a resource for Dynamic Rule of an IAM access group. This allows rules t
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_iam_access_group_dynamic_rule" "rule1" {
   name              = "newrule"
   access_group_id   = "AccessGroupId-dsnd4bvsaf"

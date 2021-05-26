@@ -12,7 +12,7 @@ Provides a read-only data source for InstanceDiskCollection. You can then refere
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "testvpc"
 }

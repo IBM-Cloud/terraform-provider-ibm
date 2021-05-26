@@ -12,7 +12,7 @@ Import the name of an existing domain as a read-only data source. You can then r
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_dns_domain" "domain_id" {
     name = "test-domain.com"
 }
@@ -20,7 +20,7 @@ data "ibm_dns_domain" "domain_id" {
 
 The following example shows how you can use this data source to reference the domain ID in the `ibm_dns_record` resource, since the numeric IDs are often unknown.
 
-```hcl
+```terraform
 resource "ibm_dns_record" "www" {
     domain_id = data.ibm_dns_domain.domain_id.id
 }

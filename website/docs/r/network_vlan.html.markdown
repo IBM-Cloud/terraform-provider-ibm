@@ -21,7 +21,7 @@ For additional details please refer to the [SoftLayer API docs](http://sldn.soft
 
 In the following example, you can create a VLAN:
 
-```hcl
+```terraform
 resource "ibm_network_vlan" "test_vlan" {
   name            = "test_vlan"
   datacenter      = "dal06"

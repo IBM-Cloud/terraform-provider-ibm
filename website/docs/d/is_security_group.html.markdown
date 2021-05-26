@@ -15,7 +15,7 @@ Import the details of a security group as a read-only data source. You can then 
 
 In the following example, you can create a different types of protocol rules `ALL`, `ICMP`, `UDP`, `TCP` and read the security group.
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "test"
 }

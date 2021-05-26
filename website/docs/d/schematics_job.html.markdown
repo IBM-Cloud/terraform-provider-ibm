@@ -13,7 +13,7 @@ Provides a read-only data source for ibm_schematics_job. You can then reference 
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_schematics_job" "schematics_job" {
 	job_id = "job_id"
 }

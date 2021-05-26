@@ -13,7 +13,7 @@ Provides a IBM CIS Edge Functions Action resource. This resource is associated w
 
 ## Example Usage
 
-```hcl
+```terraform
 # Add a Edge Functions Action to the domain
 resource "ibm_cis_edge_functions_action" "test_action" {
   cis_id      = data.ibm_cis.cis.id

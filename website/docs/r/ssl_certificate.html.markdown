@@ -17,7 +17,7 @@ For additional details, see the [IBM Cloud Classic Infrastructure(SoftLayer) sec
 
 In the following example, you can use a certificate on file:
 
-```hcl
+```terraform
 resource "ibm_ssl_certificate" "my_ssllllll" {
   certificate_signing_request = "-----BEGIN CERTIFICATE REQUEST-----\nCERTIFICATE CONTENT\n-----END CERTIFICATE REQUEST-----"
   organization_information {

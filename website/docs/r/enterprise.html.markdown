@@ -7,13 +7,13 @@ description: |-
   Manages enterprise.
 ---
 
-# ibm\_enterprise
+# ibm_enterprise
 
-Provides a resource for enterprise. This allows enterprise to be created and updated. Delete operation is not supported.
+Create and update an enterprise. Delete operation is not supported. For more information, about enterprise management, refer to [setting up an enterprise](https://cloud.ibm.com/docs/account?topic=account-create-enterprise).
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_enterprise" "enterprise" {
   source_account_id = "source_account_id"
   name = "name"
@@ -21,33 +21,36 @@ resource "ibm_enterprise" "enterprise" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument reference that you can specify for your resource. 
 
-* `source_account_id` - (Required, string) The ID of the account that is used to create the enterprise.
-* `name` - (Required, string) The name of the enterprise. This field must have 3 - 60 characters.
-* `primary_contact_iam_id` - (Required, string) The IAM ID of the enterprise primary contact, such as `IBMid-0123ABC`. The IAM ID must already exist.
-* `domain` - (Optional, string) A domain or subdomain for the enterprise, such as `example.com` or `my.example.com`.
+- `domain` - (Optional, String) A domain or subdomain for an enterprise, such as `example.com`, or `my.example.com`.
+- `name` - (Required, String) The name of an enterprise. The minimum and maximum character should be from `3 to 60` characters.
+- `primary_contact_iam_id` - (Required, String) The IAM ID of an enterprise primary contact, such as `IBMid-0123ABC.` The IAM ID must already exist.
+- `source_account_id` - (Required, String) The ID of an account that is used to create the enterprise.
 
-## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
 
-* `id` - The unique identifier of the enterprise.
-* `url` - The URL of the enterprise.
-* `enterprise_account_id` - The enterprise account ID.
-* `crn` - The Cloud Resource Name (CRN) of the enterprise.
-* `state` - The state of the enterprise.
-* `primary_contact_email` - The email of the primary contact of the enterprise.
-* `created_at` - The time stamp at which the enterprise was created.
-* `created_by` - The IAM ID of the user or service that created the enterprise.
-* `updated_at` - The time stamp at which the enterprise was last updated.
-* `updated_by` - The IAM ID of the user or service that updated the enterprise.
+In addition to all argument reference list, you can access the following attribute references after your resource is created. 
+
+- `crn` - (String) The Cloud Resource Name (CRN) of an enterprise.
+- `created_at`  - (Timestamp) The time stamp at which an enterprise is created.
+- `created_by` - (String) The IAM ID of an user or service that created an enterprise.
+- `enterprise_account_id` - (String) The enterprise account ID.
+- `id` - (String) The unique identifier of an enterprise.
+- `state` - (String) The state of an enterprise.
+- `primary_contact_email` - (String) The Email of the primary contact of an enterprise.
+- `updated_at` - (Timestamp) The time stamp at which an enterprise was last updated.
+- `updated_by` - (String) The IAM ID of the user or service that updated an enterprise.
+- `url` - (String) The URL of an enterprise.
 
 ## Import
 
-ibm_enterprise can be imported using enterprise_id, eg.
+The `ibm_enterprise` resource can be imported by using enterprise_id.
+
+**Example**
 
 ```
 $  terraform import ibm_enterprise.enterprise_example c117bf3cb7a448fca830645865e3f1f2

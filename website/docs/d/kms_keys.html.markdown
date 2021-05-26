@@ -12,7 +12,7 @@ Import the details of existing hs-crypto or key-protect keys as a read-only data
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_kms_keys" "test" {
   instance_id = "guid-of-keyprotect-or hs-crypto-instance"
 }

@@ -15,7 +15,7 @@ Provides a resource for IAM User Invite. This allows batch of users or single us
 
 ### Inviting batch of Users
 
-```hcl
+```terraform
 resource "ibm_iam_user_invite" "invite_user" {
   users = ["test@in.ibm.com"]
 }
@@ -24,7 +24,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ### Inviting batch of Users with access groups
 
-```hcl
+```terraform
 resource "ibm_iam_user_invite" "invite_user" {
   users         = ["test@in.ibm.com"]
   access_groups = ["accessgroup-id-9876543210"]
@@ -36,7 +36,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 #### Inviting batch of Users with Classic Infrastructure permissions
 
-```hcl
+```terraform
 resource "ibm_iam_user_invite" "invite_user" {
   users = ["test@in.ibm.com"]
   classic_infra_roles {
@@ -48,7 +48,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 #### Inviting batch of Users with Classic Infrastructure permission set
 
-```hcl
+```terraform
 resource "ibm_iam_user_invite" "invite_user" {
   users = ["test@in.ibm.com"]
   classic_infra_roles {
@@ -63,7 +63,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 #### Inviting batch of Users with User Policy for All Identity and Access enabled services
 
-```hcl
+```terraform
 resource "ibm_iam_user_invite" "invite_user" {
   users = ["test@in.ibm.com"]
   iam_policy {
@@ -75,7 +75,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 #### Inviting batch of Users with User Policy using service with region
 
-```hcl
+```terraform
 resource "ibm_iam_user_invite" "invite_user" {
   users = ["test@in.ibm.com"]
   iam_policy {
@@ -90,7 +90,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 #### Inviting batch of Users with User Policy using resource instance
 
-```hcl
+```terraform
 resource "ibm_resource_instance" "instance" {
   name     = "test"
   service  = "kms"
@@ -113,7 +113,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 #### Inviting batch of Users with User Policy using resource group
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
   name = "default"
 }
@@ -133,7 +133,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 #### Inviting batch of Users with User Policy using resource and resource type
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
   name = "default"
 }
@@ -153,7 +153,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 #### Inviting batch of Users with User Policy using attributes
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
   name = "default"
 }
@@ -175,7 +175,7 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ### User invite with access cloud foundry roles
 
-```
+```terraform
 provider "ibm" {
 }
 

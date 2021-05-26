@@ -3,17 +3,17 @@ subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : Private DNS Permitted Networks"
 description: |-
-  Manages IBM Cloud Infrastructure Private Domain Name Service Zones Permitted Networks.
+  Manages IBM Cloud infrastructure private domain name service zones permitted networks.
 ---
 
-# ibm_pdns_permitted_networks
+# ibm_dns_permitted_networks
 
-Import the details of an existing IBM Cloud Infrastructure private domain name service zones permitted networks as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Retrieve details about permitted networks for a zone that is associated with the private DNS service instance. For more information, see [managing permitted networks](https://cloud.ibm.com/docs/dns-svcs?topic=dns-svcs-managing-permitted-networks).
 
-## Example Usage
 
-```hcl
+## Example usage
 
+```terraform
 data "ibm_resource_group" "rg" {
   name = "default"
 }
@@ -50,24 +50,26 @@ data "ibm_dns_permitted_networks" "test" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument reference that you can specify for your data source.
 
-The following arguments are supported:
+- `instance_id` - (Required, String) The ID of the private DNS service instance where you created permitted networks.
+- `zone_id` - (Required, String) The ID of the zone where you added the permitted networks.
 
-* `instance_id` - (Required, string) The resource instance id of the private DNS on which permitted networks were created.
-* `zone_id` - (Required, string) The resource zone id of the private DNS on which permitted networks were created.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
+- `permitted_networks`- (List) List of permitted networks-A list of all permitted networks that were created for a zone in your private DNS instance.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `permitted_networks` - List of all private domain name service zones permitted networks in the IBM Cloud Infrastructure.
-  * `created_on` - The created time of the Private DNS zone.
-  * `instance_id` - The resource instance id of the Private DNS on which zones were created.
-  * `modified_on` - The modified time of the Private DNS zone.
-  * `permitted_network` - The permitted networks crn detail.
-    * `vpc_crn` - The VPC CRN number.
-  * `permitted_network_id` - The unique identifier for this instance
-  * `state` - The state of the Private DNS zone.
-  * `type` - The type of Private DNS.
-  * `zone_id` - The unique identifier of the private DNS zone.
+  Nested scheme for `permitted_networks`:
+  - `created_on`- (Timestamp) The date and time when the permitted network was created.
+  - `instance_id` - (String) The ID of the private DNS service instance where you created permitted networks.
+  - `modified_on`- (Timestamp) The date and time when the permitted network was updated.
+  - `permitted_network`- (List of VPCs) A list of VPC CRNs that are associated with the permitted network.
+    
+     Nested scheme for `permitted_network`:
+     - `vpc_crn` - (String) The CRN of the VPC that the permitted network belongs to. 
+- `permitted_network_id` - (String) The ID of the permitted network.
+- `state` - (String) The state of the permitted network. 
+- `type` - (String) The type of the permitted network.
+- `zone_id` - (String) The ID of the zone where you added the permitted network.

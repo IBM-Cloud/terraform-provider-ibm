@@ -13,7 +13,7 @@ Provides a resource for IAM custom role. This allows custom_role to be created, 
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_iam_custom_role" "customrole" {
   name         = "Role1"
   display_name = "Role1"

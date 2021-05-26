@@ -13,7 +13,7 @@ Provides a public gateway datasource. This allows to fetch an existing gateway.
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "test"
 }

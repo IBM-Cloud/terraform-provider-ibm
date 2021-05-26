@@ -14,7 +14,7 @@ Create update or delete a policy of an instance group manager
 ## Example Usage
 
 In the following example, you can create a policy for instance group manager.
-```hcl
+```terraform
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2test"
 }

@@ -15,7 +15,7 @@ Provides a Virtual endpoint gateway resource. This allows Virtual endpoint gatew
 
 In the following example, you can create a endpoint gateway IP:
 
-```hcl
+```terraform
 resource "ibm_is_virtual_endpoint_gateway_ip" "virtual_endpoint_gateway_ip" {
 	gateway     = ibm_is_virtual_endpoint_gateway.endpoint_gateway.id
 	reserved_ip = "0737-5ab3c18e-6f6c-4a69-8f48-20e3456647b5"

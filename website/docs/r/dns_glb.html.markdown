@@ -1,20 +1,19 @@
 ---
-
 subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : ibm_dns_glb"
 description: |-
-  Manages IBM Private DNS global load balancer.
+  Manages IBM Private DNS GLB.
 ---
 
 # ibm_dns_glb
 
-Provides a private dns Global load balancer resource. This allows dns Global load balancer to be created,updated and deleted.
+Provides a private DNS Global Load Balancer (GLB) resource. This allows DNS GLB to create, update, and delete. For more information, see [Working with GLBs](https://cloud.ibm.com/docs/dns-svcs?topic=dns-svcs-global-load-balancers). 
 
-## Example Usage
 
-```hcl
+## Example usage
 
+```terraform
 resource "ibm_dns_glb" "test_pdns_glb" {
   depends_on    = [ibm_dns_glb_pool.test_pdns_glb_pool]
   name          = "testglb"
@@ -29,37 +28,37 @@ resource "ibm_dns_glb" "test_pdns_glb" {
     pools             = [ibm_dns_glb_pool.test_pdns_glb_pool.pool_id]
   }
 }
-
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument reference that you can specify for your resource. 
 
-The following arguments are supported:
+- `az_pools` - (Optional, Set)  Map availability zones to pool ID's.
 
-- `instance_id` - (Required, string,ForceNew) The GUID of the private DNS.
-- `name` - (Required, string) The name of the load balancer.
-- `description` - (Optional,string) Descriptive text of the load balancer.
-- `zone_id` - (Required, string,ForceNew) The ID of the private DNS Zone.
-- `ttl` - (Optional, int) Time to live in second.
-- `fallback_pool` - (Required, string) The pool ID to use when all other pools are detected as unhealthy.
-- `default_pools` - (Required, list of strings) TA list of pool IDs ordered by their failover priority.
-- `az_pools` - (Optional, set) Map availability zones to pool ID's.
-  - `availability_zone` - (Required, string) Availability zone..
-  - `pools` - (Required, list of string) List of load balancer pools.
+  Nested scheme for `az_pools`:
+  - `availability_zone` - (Required, String) Availability of the zone.
+  - `pools`- (Required, List of string) List of Load Balancer pools.
+- `default_pools`- (Required, List of string) TA list of pool IDs ordered by their failover priority.
+- `description` - (Optional, String)  Descriptive text of the Load Balancer.
+- `fallback_pool`- (Required, Integer) The pool ID to use when all other pools are detected as unhealthy.
+- `instance_id` - (Required, Forces new resource, String) The GUID of the private DNS.
+- `name` - (Required, String) The name of the Load Balancer.
+- `ttl` - (Optional, Integer) The time to live (TTL) in seconds.
+- `zone_id` - (Required, Forces new resource, String) The ID of the private DNS Zone.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your resource is created. 
 
-In addition to all arguments above, the following attributes are exported:
-
-- `id` - The unique identifier of the private DNS Global load balancer. The id is composed of <instance_id>/<zone_id>/<glb_id>.
-- `created_on` - Load Balancer creation date.
-- `modified_on` - Load Balancer Modification date.
-- `glb_id` - Load balancer Id.
-- `health` - Healthy state of the load balancer.Possible values: [DOWN,UP,DEGRADED]
+- `created_on` - (Timestamp) The time when the Load Balancer was created. 
+- `glb_id` - (String) The Load Balancer ID. 
+- `health` - (String) Healthy state of the Load Balancer. Possible values are `DOWN`, `UP`, or `DEGRADED`. 
+- `id` - (String) The unique identifier of the DNS record. The ID is composed of `<instance_id>/<zone_id>/<glb_id>`.
+- `modified_on` - (Timestamp) The time when the Load Balancer was modified.
 
 ## Import
+The `ibm_dns_glb` can be imported by using private DNS instance ID, zone ID, and GLB ID.
 
-ibm_dns_glb can be imported using private DNS instance ID,zone ID and global load balancer ID, eg
+**Example**
 
 ```
 $ terraform import ibm_dns_glb.example 6ffda12064634723b079acdb018ef308/5ffda12064634723b079acdb018ef308/435da12064634723b079acdb018ef308

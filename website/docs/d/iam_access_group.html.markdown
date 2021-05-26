@@ -13,7 +13,7 @@ Import the details of an existing [IAM Access Group](https://cloud.ibm.com/iam/g
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_iam_access_group" "accgroup" {
   access_group_name = ibm_iam_access_group.accgroup.name
 }

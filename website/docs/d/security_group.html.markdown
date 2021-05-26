@@ -13,7 +13,7 @@ Import the details of an existing security group as a read-only data source. You
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_security_group" "allow_ssh" {
     name = "allow_ssh"
 }
@@ -21,7 +21,7 @@ data "ibm_security_group" "allow_ssh" {
 
 The following example shows how you can use this data source to reference the security group IDs in the `ibm_compute_vm_instance` resource because the numeric IDs are often unknown.
 
-```hcl
+```terraform
 resource "ibm_compute_vm_instance" "vm1" {
   # TF-UPGRADE-TODO: In Terraform v0.10 and earlier, it was sometimes necessary to
   # force an interpolation expression to be interpreted as a list by wrapping it

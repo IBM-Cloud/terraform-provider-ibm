@@ -12,7 +12,7 @@ Provides a read-only data source for DedicatedHostProfile. You can then referenc
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_is_dedicated_host_profile" "is_dedicated_host_profile" {
 	name = "dh2-56x464"
 }

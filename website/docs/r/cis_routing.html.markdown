@@ -13,7 +13,7 @@ Provides a IBM CIS Routing resource. This resource is associated with an IBM Clo
 
 ## Example Usage
 
-```hcl
+```terraform
 # Change Routing of the domain
 
 resource "ibm_cis_routing" "routing" {

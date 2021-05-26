@@ -16,7 +16,7 @@ Provides a load balancer pool member resource. This allows load balancer pool me
 
 In the following example, you can create a load balancer pool member for application load balancer:
 
-```hcl
+```terraform
 resource "ibm_is_lb_pool_member" "testacc_lb_mem" {
   lb             = "daac2b08-fe8a-443b-9b06-1cef79922dce"
   pool           = "f087d3bd-3da8-452d-9ce4-c1010c9fec04"
@@ -29,7 +29,7 @@ resource "ibm_is_lb_pool_member" "testacc_lb_mem" {
 
 In the following example, you can create a load balancer pool member for network load balancer:
 
-```hcl
+```terraform
 resource "ibm_is_lb_pool_member" "testacc_lb_mem" {
   lb             = "daac2b08-fe8a-443b-9b06-1cef79922dce"
   pool           = "f087d3bd-3da8-452d-9ce4-c1010c9fec04"

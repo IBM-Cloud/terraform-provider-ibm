@@ -15,7 +15,7 @@ For additional details, see the [IBM Cloud Docs: Virtual Private Cloud - IBM Clo
 
 ## Example Usage
 
-```
+```terraform
 resource "ibm_is_image" "test_is_images" {
  name                   = "test_image"
  href                   = "cos://us-south/buckettesttest/livecd.ubuntu-cpc.azure.vhd"

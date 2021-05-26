@@ -12,7 +12,7 @@ Provides a read-only data source for DedicatedHostGroupCollection. You can then 
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_is_dedicated_host_groups" "is_dedicated_host_groups" {
 }
 ```

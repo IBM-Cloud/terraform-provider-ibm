@@ -8,7 +8,7 @@ description: |-
 ---
 
 
-# `ibm_app`
+# ibm_app
 
 Create, update, or delete a Cloud Foundry app. For more information, about IBM Cloud Pak for application, see [about IBM applications](https://cloud.ibm.com/docs/cloud-pak-applications?topic=cloud-pak-applications-about).
 
@@ -17,7 +17,7 @@ Create, update, or delete a Cloud Foundry app. For more information, about IBM C
 The following example creates the `my-app` Node.js Cloud Foundry app. 
 
 
-```
+```terraform
 data "ibm_space" "space" {
   org   = "example.com"
   space = "dev"
@@ -34,7 +34,7 @@ resource "ibm_app" "app" {
 
 
 ## Argument reference
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
 
 - `app_path`- (Required, String) The path to the compressed file of the app. The compressed file must contain all the app files without subdirectories. To create the compressed file, go to the directory where your app files are and run `zip -r myapplication.zip *`.
 - `app_version`	 (Optional, String) The version of the app. If you make changes to the content in the app compressed file specified by _app_path_,  Terraform can't detect the changes. You can let  Terraform know that your file content has changed by either changing the application compressed file name or by using this argument to indicate the version of the file.
@@ -56,6 +56,6 @@ Review the input parameters that you can specify for your resource.
 
 
 ## Attribute reference
-Review the output parameters that you can access after your resource is created. 
+In addition to all argument references list, you can access the following attribute references after your resource is created. 
 
 - `id` - (String) The unique identifier of the application.
