@@ -6,7 +6,7 @@ description: |-
   Manages IBM shared domain.
 ---
 
-# `ibm_app_domain_shared`
+# ibm_app_domain_shared
 
 Create, update, or delete a shared domain for your Cloud Foundry app. For more information, about an app domain shared, see [Managing your domains](https://cloud.ibm.com/docs/cloud-foundry-public?topic=cloud-foundry-public-custom-domains).
 
@@ -14,7 +14,7 @@ Create, update, or delete a shared domain for your Cloud Foundry app. For more i
 ## Example usage
 The following example creates the `example.com` shared domain. 
 
-```
+```terraform
 resource "ibm_app_domain_shared" "domain" {
   name              = "example.com"
   router_group_guid = "3hG5jkjk4k34JH5666"
@@ -23,7 +23,7 @@ resource "ibm_app_domain_shared" "domain" {
 ```
 
 ## Argument reference
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
 
 - `name` - (Required, String) The name of the domain.
 - `router_group_guid` - (Optional, String) The GUID of the router group.
@@ -31,8 +31,6 @@ Review the input parameters that you can specify for your resource.
 
 
 ## Attribute reference
-Review the output parameters that you can access after your resource is created. 
+In addition to all argument references list, you can access the following attribute references after your resource is created.
 
 - `id` - (String) The unique identifier of the shared domain.
-
-

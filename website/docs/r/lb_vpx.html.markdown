@@ -23,7 +23,7 @@ https://<userName>:<apiKey>@api.softlayer.com/rest/v3/SoftLayer_Product_Package/
 
 Review the [IBM Cloud Classic Infrastructure (SoftLayer) docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_Application_Delivery_Controller) for more information.
 
-```hcl
+```terraform
 resource "ibm_lb_vpx" "test_vpx" {
     datacenter = "dal06"
     speed = 10

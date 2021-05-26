@@ -12,7 +12,7 @@ Imports a read only copy of an existing Internet Services domain resource. This 
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_cis_domain" "cis_instance_domain" {
   domain = "example.com"
   cis_id = ibm_cis.instance.id

@@ -12,7 +12,7 @@ Import the details of an existing IBM Cloud load balancer as a read-only data so
  
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_lbaas" "lbaas" {
   name        = "test"
   description = "updated desc-used for terraform uat"

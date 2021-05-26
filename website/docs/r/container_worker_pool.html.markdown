@@ -16,7 +16,7 @@ Create, update, or delete a worker pool. The worker pool will be attached to the
 
 In the following example, you can create a worker pool:
 
-```hcl
+```terraform
 resource "ibm_container_worker_pool" "testacc_workerpool" {
   worker_pool_name = "terraform_test_pool"
   machine_type     = "u2c.2x4"
@@ -39,7 +39,7 @@ resource "ibm_container_worker_pool" "testacc_workerpool" {
 
 Create the Openshift cluster worker Pool with entitlement:
 
-```hcl
+```terraform
 resource "ibm_container_worker_pool" "test_pool" {
   worker_pool_name = "test_openshift_wpool"
   machine_type     = "b3c.4x16"

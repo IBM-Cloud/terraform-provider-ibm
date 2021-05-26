@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
@@ -52,6 +53,43 @@ func dataSourceIBMSatelliteLocation() *schema.Resource {
 				Computed:    true,
 				Description: "ID of the resource group",
 			},
+			ResourceGroupName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Name of the resource group",
+			},
+			"tags": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      resourceIBMVPCHash,
+			},
+			"host_attached_count": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "The total number of hosts that are attached to the Satellite location.",
+			},
+			"host_available_count": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "The available number of hosts that can be assigned to a cluster resource in the Satellite location.",
+			},
+			"created_on": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Created Date",
+			},
+			"ingress_hostname": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"ingress_secret": {
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
+			},
 		},
 	}
 }
@@ -70,7 +108,7 @@ func dataSourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}
 
 	instance, resp, err := satClient.GetSatelliteLocation(getSatLocOptions)
 	if err != nil || instance == nil {
-		return fmt.Errorf("Error retrieving IBM Cloud satellite location %s : %s\n%s", name, err, resp)
+		return fmt.Errorf("Error retrieving IBM cloud satellite location %s : %s\n%s", name, err, resp)
 
 	}
 
@@ -81,6 +119,24 @@ func dataSourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}
 	d.Set("managed_from", *instance.Datacenter)
 	d.Set("crn", *instance.Crn)
 	d.Set("resource_group_id", *instance.ResourceGroup)
+	d.Set(ResourceGroupName, *instance.ResourceGroupName)
+	d.Set("created_on", *instance.CreatedDate)
+	if instance.Hosts != nil {
+		d.Set("host_attached_count", *instance.Hosts.Total)
+		d.Set("host_available_count", *instance.Hosts.Available)
+	}
+
+	if instance.Ingress != nil {
+		d.Set("ingress_hostname", *instance.Ingress.Hostname)
+		d.Set("ingress_secret", *instance.Ingress.SecretName)
+	}
+
+	tags, err := GetTagsUsingCRN(meta, *instance.Crn)
+	if err != nil {
+		log.Printf(
+			"An error occured during reading of instance (%s) tags : %s", d.Id(), err)
+	}
+	d.Set("tags", tags)
 
 	return nil
 }

@@ -14,7 +14,7 @@ Import the details of an existing IBM Cloud Infrastructure transit gateways as a
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_tg_gateways" "ds_tggateways" {
 }
 ```

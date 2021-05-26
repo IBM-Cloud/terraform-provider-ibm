@@ -14,7 +14,7 @@ Import the details of an existing IBM Cloud Infrastructure transit locations as 
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_tg_locations" "ds_tg_locations" {
 }
 ```

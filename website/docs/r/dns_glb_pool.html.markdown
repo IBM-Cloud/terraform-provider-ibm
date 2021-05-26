@@ -1,20 +1,19 @@
 ---
-
 subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : dns_glb_pool"
 description: |-
-  Manages IBM Private DNS glb pool.
+  Manages IBM Private DNS GLB pool.
 ---
 
 # ibm_dns_glb_pool
 
-Provides a private dns glb pool resource. This allows dns glb pool to be created,updated and deleted.
+Provides a private DNS Global Load Balancer (GLB) pool resource. This allows DNS GLB pool to  create, update, and delete. For more information, see [Viewing GLB events](https://cloud.ibm.com/docs/dns-svcs?topic=dns-svcs-health-check-events#health-check-event-properties)
 
-## Example Usage
 
-```hcl
+## Example usage
 
+```terraform
 resource "ibm_dns_glb_pool" "test-pdns-pool-nw" {
   depends_on                = [ibm_dns_zone.test-pdns-glb-pool-zone]
   name                      = "testpool"
@@ -33,44 +32,46 @@ resource "ibm_dns_glb_pool" "test-pdns-pool-nw" {
   healthcheck_region   = "us-south"
   healthcheck_subnets  = [ibm_is_subnet.test-pdns-glb-subnet.resource_crn]
 }
-
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument reference that you can specify for your resource. 
 
-The following arguments are supported:
+- `description` - (Optional, String) Descriptive text of the origin server.
+- `enabled`- (Required, Bool) Whether the origin server is enabled.
+- `healthy_origins_threshold`- (Required, Integer) The minimum number of origins that must be healthy for this pool to serve traffic. If the number of healthy origins falls below this number, the pool will be marked unhealthy and will failover to the next available pool.
+- `healthcheck_region` - (Optional, String) Health check region of VSIs. Allowable values are `us-south`,`us-east`, `eu-gb`, `eu-du`, `au-syd`, `jp-tok`.
+- `healthcheck_subnets` - (List, Optional) The health check subnet CRN of VSIs.
+- `instance_id` - (Required, Forces new resource, String) The GUID of the private DNS on which zone has to be created.
+- `monitor` - (Optional, String) The ID of the Load Balancer monitor to be associated to this pool.
+- `name` - (Required, String) The name of the origin server.
+- `notification_channel` - (Optional, String) The webhook URL as a notification channel.
+- `origins`- (Required, Set) The list of origins within this pool. Traffic directed at this pool is balanced across all currently healthy origins, provided the pool itself is healthy.
+  
+  Nested scheme for `origins`:
+  - `address` - (Required, String) The address of the origin server. It can be a hostname or an IP address.
+  - `description` - (Optional, String)  Descriptive text of the origin server.
+  - `enabled`- (Required, Bool) Whether the origin server is enabled.
+  - `name` - (Required, String) The name of the origin server.
 
-- `instance_id` - (Required, string,ForceNew) The guid of the private DNS on which zone has to be created.
-- `name` - (Required, string) Name of the load balancer pool.
-- `description` - (Optional,string) Descriptive text of the load balancer pool.
-- `enabled` - (Optional,bool) Whether the load balancer pool is enabled.
-- `healthy_origins_threshold` - (Optional,int) The minimum number of origins that must be healthy for this pool to serve traffic. If the number of healthy origins falls below this number, the pool will be marked unhealthy and we will failover to the next available pool.
-- `origins` - (Required, set) The list of origins within this pool. Traffic directed at this pool is balanced across all currently healthy origins, provided the pool itself is healthy.
-  - `name` - (Required,string) The name of the origin server.
-  - `description` - (Optional,string) Description of the origin server.
-  - `address` - (Required,string) The address of the origin server. It can be a hostname or an IP address.
-  - `enabled` - (Required,bool) Whether the origin server is enabled.
-- `monitor` - (Optional,string) The ID of the load balancer monitor to be associated to this pool.
-- `notification_channel` - (Optional,string) The notification channel,It is a webhook url.
-- `healthcheck_region` - (Optional,string) Health check region of VSIs.Allowable values: [,us-south,us-east,eu-gb,eu-du,au-syd,jp-tok]
-- `healthcheck_subnets` - (Optional,List) Health check subnet crn of VSIs.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your resource is created. 
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-- `id` - The unique identifier of the private DNS zone. The id is composed of <instance_id>/<glb_pool_id>.
-- `pool_id` - Pool Id.
-- `created_on` - The time (Created On) of the DNS glb pool.
-- `modified_on` - The time (Modified On) of the DNS glb pool.
-- `health` - The status of GLB Pool's health.Possible values: [DOWN,UP,DEGRADED]
+- `created_on` - (Timestamp) The time (created On) of the DNS GLB pool. 
+- `id` - (String) The unique ID of the private DNS zone. The ID is composed of `<instance_id>/<glb_pool_id>`. 
+- `pool_id`- (String) The pool ID.
+- `modified_on` - (Timestamp) The time (modified On) of the DNS GLB pool.
+- `health`- (String) The status of DNS GLB pool's health. Possible values are `DOWN`, `UP`, `DEGRADED`.
 - `origins`
-  - `health` - Whether the health is `true` or `false`.
-  - `health_failure_reason` - The Reason for health check failure.
+  
+  Nested scheme for `origins`:
+  - `health`- (String) Whether the health is **true** or **false**.
+  - `health_failure_reason`- (String) The reason for health check failure.
 
 ## Import
+The `ibm_dns_glb_pool` can be imported by using private DNS instance ID, GLB pool ID.
 
-ibm_dns_glb_pool can be imported using private DNS instance ID,glb pool ID, eg
+**Example**
 
 ```
 $ terraform import ibm_dns_glb_pool.example 6ffda12064634723b079acdb018ef308/435da12064634723b079acdb018ef308

@@ -13,7 +13,7 @@ Provides a resource for iam_api_key. This allows iam_api_key to be created, upda
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "iam_api_key" "iam_api_key" {
   name = "name"
 }

@@ -12,7 +12,7 @@ Import the details of an existing bare metal as a read-only data source. You can
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_compute_bare_metal" "bare_metal" {
   hostname    = "jumpbox"
   domain      = "example.com"

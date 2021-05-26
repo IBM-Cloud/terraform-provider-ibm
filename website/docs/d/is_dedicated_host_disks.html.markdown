@@ -12,7 +12,7 @@ Provides a read-only data source for DedicatedHostDiskCollection. You can then r
 
 ## Example Usage
 
-```hcl
+```terraform
 data "is_dedicated_host_disks" "is_dedicated_host_disks" {
 	dedicated_host = "dedicatedhost id"
 }

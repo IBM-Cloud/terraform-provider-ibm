@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud Infrastructure flow logs as a read-o
 
 ## Example Usage
 
-```hcl
+```terraform
 
 data "ibm_is_flow_logs" "ds_flow_logs" {
 }

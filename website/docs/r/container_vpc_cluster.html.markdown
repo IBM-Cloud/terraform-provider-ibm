@@ -12,7 +12,7 @@ description: |-
 Create or delete a Kubernetes VPC cluster.
 
 In the following example, you can create a Gen-2 VPC cluster with a default worker pool with one worker:
-```hcl
+```terraform
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = "my_vpc_cluster"
   vpc_id            = "r006-abb7c7ea-aadf-41bd-94c5-b8521736fadf"
@@ -28,7 +28,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 ```
 
 Create the Openshift Cluster with default worker Pool entitlement with one worker node:
-```hcl
+```terraform
 resource "ibm_resource_instance" "cos_instance" {
   name     = "my_cos_instance"
   service  = "cloud-object-storage"
@@ -54,7 +54,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 
 Create a Kms Enabled Kubernetes cluster:
 
-```hcl
+```terraform
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = "cluster2"
   vpc_id            = ibm_is_vpc.vpc1.id

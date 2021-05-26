@@ -13,7 +13,7 @@ Provides a resource to manage key rings for hs-crypto and key-protect services. 
 
 ## Example usage to create a Key Ring and associate a kms key.
 
-```hcl
+```terraform
 resource "ibm_resource_instance" "kms_instance" {
   name     = "instance-name"
   service  = "kms"

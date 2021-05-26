@@ -18,6 +18,60 @@ resource "ibm_is_subnet" "subnet1" {
   ipv4_cidr_block = "10.240.0.0/28"
 }
 
+resource "ibm_is_instance_template" "instancetemplate1" {
+  name    = "testtemplate"
+  image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
+  profile = "bx2-8x32"
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet2.id
+    allow_ip_spoofing = true
+  }
+
+  vpc  = ibm_is_vpc.vpc2.id
+  zone = "us-south-2"
+  keys = [ibm_is_ssh_key.sshkey.id]
+
+  boot_volume {
+    name                             = "testbootvol"
+    delete_volume_on_instance_delete = true
+  }
+   volume_attachments {
+        delete_volume_on_instance_delete = true
+        name                             = "volatt-01"
+        volume_prototype {
+            iops = 3000
+            profile = "general-purpose"
+            capacity = 200
+        }
+    }
+}
+
+resource "ibm_is_instance_template" "instancetemplate2" {
+  name    = "testtemplate1"
+  image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
+  profile = "bx2-8x32"
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet2.id
+    allow_ip_spoofing = true
+  }
+
+  vpc  = ibm_is_vpc.vpc2.id
+  zone = "us-south-2"
+  keys = [ibm_is_ssh_key.sshkey.id]
+
+  boot_volume {
+    name                             = "testbootvol"
+    delete_volume_on_instance_delete = true
+  }
+   volume_attachments {
+        delete_volume_on_instance_delete = true
+        name                             = "volatt-01"
+        volume                           = ibm_is_volume.vol1.id
+    }
+}
+
 resource "ibm_is_lb" "lb2" {
   name    = "mylb"
   subnets = [ibm_is_subnet.subnet1.id]
@@ -185,11 +239,26 @@ resource "ibm_is_instance" "instance2" {
   primary_network_interface {
     subnet = ibm_is_subnet.subnet2.id
   }
-
+  dedicated_host = ibm_is_dedicated_host.is_dedicated_host.id
   vpc       = ibm_is_vpc.vpc2.id
   zone      = var.zone2
   keys      = [ibm_is_ssh_key.sshkey.id]
 }
+
+resource "ibm_is_instance" "instance3" {
+  name    = "instance3"
+  image   = var.image
+  profile = var.profile
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet2.id
+  }
+  dedicated_host_group = ibm_is_dedicated_host_group.dh_group01.id
+  vpc       = ibm_is_vpc.vpc2.id
+  zone      = var.zone2
+  keys      = [ibm_is_ssh_key.sshkey.id]
+}
+
 
 resource "ibm_is_floating_ip" "floatingip2" {
   name   = "fip2"

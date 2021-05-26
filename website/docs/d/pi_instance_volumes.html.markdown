@@ -13,7 +13,7 @@ Import the details of existing IBM Power Virtual Server Cloud instance volumes a
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_pi_instance_volumes" "ds_volumes" {
   pi_instance_name     = "volume_1"
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
@@ -25,7 +25,7 @@ data "ibm_pi_instance_volumes" "ds_volumes" {
   * `region` - `lon`
   * `zone` - `lon04`
   Example Usage:
-  ```hcl
+  ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"

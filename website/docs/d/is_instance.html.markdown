@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud virtual server instance  as a read-o
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "testvpc"
 }

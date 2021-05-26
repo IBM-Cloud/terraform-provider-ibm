@@ -13,7 +13,7 @@ Provides a Resource Instance resource. This allows Resource Instances to be crea
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
   name = "test"
 }

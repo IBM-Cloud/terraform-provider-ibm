@@ -12,7 +12,7 @@ Provides a resource for DedicatedHost. This allows DedicatedHost to be created, 
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_dedicated_host_group" "dh_group01" {
   family = "memory"
   class = "beta"

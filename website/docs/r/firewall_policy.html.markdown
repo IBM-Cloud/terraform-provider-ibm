@@ -21,7 +21,7 @@ Firewalls should have at least one rule. If Terraform destroys the rules resourc
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_firewall" "demofw" {
   ha_enabled     = false
   public_vlan_id = 1234567

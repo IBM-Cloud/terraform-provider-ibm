@@ -23,7 +23,7 @@ Note: The Cluster doesnt support ALB's for kube_version-4.3.0_openshift.
 
 In the following example, you can create a Kubernetes cluster with a default worker pool with one worker:
 
-```hcl
+```terraform
 resource "ibm_container_cluster" "testacc_cluster" {
   name            = "test"
   datacenter      = "dal10"
@@ -49,7 +49,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
 
 Create the Kubernetes cluster with a default worker pool with 2 workers and one standalone worker as mentioned by worker_num:
 
-```hcl
+```terraform
 resource "ibm_container_cluster" "testacc_cluster" {
   name            = "test"
   datacenter      = "dal10"
@@ -75,7 +75,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
 
 Create a Gateway Enabled Kubernetes cluster:
 
-```hcl
+```terraform
 resource "ibm_container_cluster" "testacc_cluster" {
   name            = "testgate"
   gateway_enabled = true 
@@ -89,7 +89,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
 ```
 Create a Kms Enabled Kubernetes cluster:
 
-```hcl
+```terraform
 resource "ibm_container_cluster" "cluster" {
   name              = "myContainerClsuter"
   datacenter        = "dal10"
@@ -110,17 +110,17 @@ resource "ibm_container_cluster" "cluster" {
 
 Create the Openshift Cluster with default worker Pool entitlement:
 
-```hcl
-resource "ibm_container_cluster" "cluster" {
-  name              = "test-openshift-cluster"
-  datacenter        = "dal10"
-  default_pool_size = 3
-  machine_type      = "b3c.4x16"
-  hardware          = "shared"
-  kube_version      = "4.3_openshift"
-  public_vlan_id    = "2863614"
-  private_vlan_id   = "2863616"
-  entitlement       = "cloud_pak"
+```terraform
+resource "ibm_container_cluster" "cluster" {
+  name              = "test-openshift-cluster"
+  datacenter        = "dal10"
+  default_pool_size = 3
+  machine_type      = "b3c.4x16"
+  hardware          = "shared"
+  kube_version      = "4.3_openshift"
+  public_vlan_id    = "2863614"
+  private_vlan_id   = "2863616"
+  entitlement       = "cloud_pak"
 }
 ```
 

@@ -15,7 +15,7 @@ Provides a key management resource for hs-crypto and key-protect services. This 
 
 ## Example usage to provision Key Protect service and Key Management
 
-```hcl
+```terraform
 resource "ibm_resource_instance" "kms_instance" {
   name     = "instance-name"
   service  = "kms"
@@ -43,7 +43,7 @@ Below steps explains how to provision a HPCS service , intialize the service and
 
 Step 1: Provision the service using `ibm_resource_instance`
 
-```hcl
+```terraform
 resource "ibm_resource_instance" "hpcs"{
   name = "hpcsservice"
   service = "hs-crypto"
@@ -61,7 +61,7 @@ To manage your keys, you need to initialize your service instance first. Two opt
 
 Step 3: Manage your keys using `ibm_kms_key`
 
-```hcl
+```terraform
 resource "ibm_kms_key" "key" {
   instance_id  = ibm_resource_instance.hpcs.guid
   key_name     = var.key_name
@@ -73,7 +73,7 @@ resource "ibm_kms_key" "key" {
 
 Set policies for a key, such as an automatic rotation policy or a dual authorization policy to protect against the accidental deletion of keys.
 
-```hcl
+```terraform
 resource "ibm_resource_instance" "kp_instance" {
   name     = "test_kp"
   service  = "kms"
@@ -98,7 +98,7 @@ resource "ibm_kms_key" "key" {
 
 ## Example usage to provision Key Management Service and Import a Key
 
-```hcl
+```terraform
 resource "ibm_resource_instance" "kp_instance" {
   name     = "test_kp"
   service  = "kms"

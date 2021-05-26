@@ -13,7 +13,7 @@ Provides a key management resource for hs-crypto and key-protect services. This 
 
 ## Example usage to provision Key Protect service and Key Management With Alias
 
-```hcl
+```terraform
 resource "ibm_resource_instance" "kms_instance" {
   name     = "instance-name"
   service  = "kms"

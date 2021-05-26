@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud Infrastructure Virtual Private Cloud
 
 ## Example Usage
 
-```hcl
+```terraform
 
 resource "ibm_is_vpc" "test_vpc" {
   name = "test-vpc"

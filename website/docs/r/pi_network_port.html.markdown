@@ -17,7 +17,7 @@ Provides an network_port resource. This allows network_port to be created or upd
 
 In the following example, you can create an network_port:
 
-```hcl
+```terraform
 resource "ibm_pi_network_port" "test-network-port" {
     pi_network_name             = "Zone1-CFN"
     pi_cloud_instance_id  = "51e1879c-bcbe-4ee1-a008-49cdba0eaf60"
@@ -31,7 +31,7 @@ resource "ibm_pi_network_port" "test-network-port" {
   * `region` - `lon`
   * `zone` - `lon04`
   Example Usage:
-  ```hcl
+  ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"

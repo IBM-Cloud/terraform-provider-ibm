@@ -6,28 +6,29 @@ description: |-
   Get information about an IBM Cloud organization quota.
 ---
 
-# `ibm_org_quota`
+# ibm_org_quota
 
-Retrieve information about a quota for a Cloud Foundry organization. For more information, about organization and usage of quote, see [Updating orgs and spaces](https://cloud.ibm.com/docs/account?topic=account-orgupdates).
+Retrieve information about a quota for a Cloud Foundry organization. For more information, about organization and usage of quote, see [updating orgs and spaces](https://cloud.ibm.com/docs/account?topic=account-orgupdates).
 
 
 ## Example usage
 The following example retrieves information for an existing quota plan. 
 
 
-```
+```terraform
 data "ibm_org_quota" "orgquotadata" {
   name = "quotaname"
 }
 ```
 
 ## Argument reference
-Review the input parameters that you can specify for your data source. 
+Review the argument reference that you can specify for your data source. 
 
 - `name` - (Required, String) The name of the quota plan for the Cloud Foundry organization. You can retrieve the value by running the `ibmcloud cf quotas` command in the IBM Cloud CLI.
 
 
-## Attribute referenceReview the output parameters that you can access after you retrieved your data source. 
+## Attribute reference
+In addition to the argument reference, you can access the following attribute references after your data source is created.
 
 - `app_instance_limit`- (Integer) Defines the total number of app instances that are allowed for the Cloud Foundry organization.
 - `app_tasks_limit`- (Integer) Defines the total number of app tasks for a Cloud Foundry organization.

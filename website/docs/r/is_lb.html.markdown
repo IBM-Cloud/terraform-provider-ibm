@@ -16,7 +16,7 @@ Provides a load balancer resource. This allows load balancer to be created, upda
 
 In the following example, you can create an application load balancer:
 
-```hcl
+```terraform
 resource "ibm_is_lb" "lb" {
   name    = "loadbalancer1"
   subnets = ["04813493-15d6-4150-9948-6cc646cb67f2"]
@@ -26,7 +26,7 @@ resource "ibm_is_lb" "lb" {
 
 In the following example, you can create a network load balancer:
 
-```hcl
+```terraform
 resource "ibm_is_lb" "lb" {
   name    = "loadbalancer1"
   subnets = ["04813493-15d6-4150-9948-6cc646cb67f2"]

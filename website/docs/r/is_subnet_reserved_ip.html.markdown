@@ -14,7 +14,7 @@ Provides a subnet reserved IP resource. This allows Subnet reserved IP to be cre
 
 In the following example, you can create a Reserved IP:
 
-```hcl
+```terraform
     // Create a VPC
     resource "ibm_is_vpc" "vpc1" {
         name = "my-vpc"
@@ -96,6 +96,6 @@ The following arguments are supported:
 
 ibm_is_subnet_reserved_ip can be imported using subnet ID and reserved IP ID seperated by '/' eg
 
-```hcl
+```terraform
 terraform import ibm_is_subnet_reserved_ip.example 0716-13315ad8-d355-4041-bb60-67430d393607/0716-617de4d8-5e2f-4d4a-b0d6-d221bc230c04
 ```

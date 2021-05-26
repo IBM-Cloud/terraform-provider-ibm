@@ -13,7 +13,7 @@ Provides a IBM CIS TLS Settings resource. This resource is associated with an IB
 
 ## Example Usage
 
-```hcl
+```terraform
 # Change TLS Settings of the domain
 
 resource "ibm_cis_tls_settings" "tls_settings" {

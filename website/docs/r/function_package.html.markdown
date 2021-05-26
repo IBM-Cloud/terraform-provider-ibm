@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function-package"
@@ -7,20 +6,19 @@ description: |-
   Manages IBM Cloud Functions package.
 ---
 
-# ibm\_function_package
+# ibm_function_package
 
-Create, update, or delete [IBM Cloud Functions packages](https://cloud.ibm.com/docs/openwhisk/openwhisk_packages.html#openwhisk_packages). You can use packages to bundle together a set of related actions, and share them with others. To create actions, use the `function_action` resource.
+Create, update, or delete an [IBM Cloud functions package](https://cloud.ibm.com/docs/openwhisk/openwhisk_packages.html#openwhisk_packages). You can use the packages to bundle together a set of related actions, and share with other resources. To create actions, use the `function_action` resource.
 
-## Example Usage
+## Example usage
+The sample example provides the usage of package and to bind the package by using `ibm_function_package` resource.
 
 ### Create a package
+The following example creates the `mypackage` package. 
 
-```hcl
+```terraform
 resource "ibm_function_package" "package" {
-  name      = "package-name"
-  namespace = "function-namespace-name"
-
-  user_defined_annotations = <<EOF
+  name = "mypackage"  user_defined_annotations = <<EOF
         [
     {
         "key":"description",
@@ -44,20 +42,17 @@ resource "ibm_function_package" "package" {
     }
 ]
 EOF
-
 }
 ```
 
-### Create a package using a binding
 
-``` hcl
+### Create a package by using a binding
+
+
+```terraform
 resource "ibm_function_package" "bindpackage" {
   name              = "bindalaram"
-  namespace         = "function-namespace-name"
-
-  bind_package_name = "/whisk.system/alarms/alarm"
-
-  user_defined_parameters = <<EOF
+  bind_package_name = "/whisk.system/alarms/alarm"  user_defined_parameters = <<EOF
         [
     {
         "key":"cron",
@@ -77,42 +72,43 @@ resource "ibm_function_package" "bindpackage" {
     }
 ]
 EOF
-
 }
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument reference that you can specify for your resource. 
 
-The following arguments are supported:
+- `bind_package_name` - (Optional, Forces new resource,String)  Name of package to be bound.
+- `name` - (Required, Forces new resource, String) The name of the package.
+- `namespace` - (Required, String) The name of the function namespace.
+- `publish` - (Optional, Bool) Package visibility.
+- `user_defined_annotations` - (Optional, String) Annotations defined in key value format.
+- `user_defined_parameters` - (Optional, String) Parameters defined in key value format. Parameter bindings included in the context passed to the package.
 
-* `name` - (Required,  Forces new resource, string) The name of the package.
-* `namespace` - (Required, string) The name of the function namespace.
-* `publish` - (Optional, boolean) Package visibility.
-* `user_defined_annotations` - (Optional, string) Annotations defined in key value format.
-* `user_defined_parameters` - (Optional, string) Parameters defined in key value format. Parameter bindings included in the context passed to the package.
-* `bind_package_name` - (Optional,  Forces new resource, string) Name of package to be binded.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your resource is created.
 
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the package.The id is combination of namespace and packageID delimited by `:`.
-* `namespace` - The name of the function namespace.
-* `version` - Semantic version of the item.
-* `annotations` - All annotations to describe the package, including those set by you or by IBM Cloud Functions.
-* `parameters` - All parameters passed to the package, including those set by you or by IBM Cloud Functions.
-* `package_id` - Package ID
+- `annotations` - (String) All annotations to describe the package, including those you set or by IBM Cloud Functions.
+- `id` - (String) The ID of the new package. The ID is a combination of namespace and package ID delimited by `:`.
+- `namespace` - (String) The name of the function namespace.
+- `package_id` - (String) The package ID.
+- `parameters` - (String) All parameters passed to the package, including those you set or by IBM Cloud Functions.
+- `version` - (String) Semantic version of the item.
 
 ## Import
 
-`ibm_function_package` can be imported using the namespace and packageID.
+The `ibm_function_package` resource can be imported by using the namespace and packageID.
 
-Example:
+**Syntax**
 
 ```
 $ terraform import ibm_function_package.sample <namespace>:<package_id>
+```
 
+**Example**
+
+```
 $ terraform import ibm_function_package.sample Namespace-01:util
 
 ```

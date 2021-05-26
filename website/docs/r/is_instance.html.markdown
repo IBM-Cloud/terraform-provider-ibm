@@ -14,7 +14,7 @@ Provides a instance resource. This allows instance to be created, updated, and c
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "testvpc"
 }
@@ -35,6 +35,10 @@ resource "ibm_is_instance" "testacc_instance" {
   name    = "testinstance"
   image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
   profile = "bc1-2x8"
+
+  boot_volume {
+    encryption = "crn:v1:bluemix:public:kms:us-south:a/dffc98a0f1f0f95f6613b3b752286b87:e4a29d1a-2ef0-42a6-8fd2-350deb1c647e:key:5437653b-c4b1-447f-9646-b2a2a4cd6179"
+  }
 
   primary_network_interface {
     subnet = ibm_is_subnet.testacc_subnet.id
@@ -62,9 +66,9 @@ resource "ibm_is_instance" "testacc_instance" {
 
 ```
 
-Here is an example of creating virtual server instance with security group, security group rule. Here, the security group, security group rule, and virtual server instance must be created sequentially as security group rule depends on security group creation and virtual server instance depends on security group, security group rule creation. The sequential creation of resources like security group, security rule, virtual server instance is achieved using "depends_on" attribute. You can find more information about depends_on attribute in [terraform documentation](https://www.terraform.io/docs/configuration/resources.html). Creating security group, security group rule, virtual server instance without depends_on attribute will create the resources in parallel and virtual server instance creation may fail with "Error: The security group to attach to is not available" as security group or security group rule creation is not complete and security group may be in Pending state.         
+Here is an example of creating virtual server instance with security group, security group rule. Here, the security group, security group rule, and virtual server instance must be created sequentially as security group rule depends on security group creation and virtual server instance depends on security group, security group rule creation. The sequential creation of resources like security group, security rule, virtual server instance is achieved using "depends_on" attribute. You can find more information about depends_on attribute in [terraform documentation](https://www.terraform.io/docs/configuration/resources.html). Creating security group, security group rule, virtual server instance without depends_on attribute will create the resources in parallel and virtual server instance creation may fail with "Error: The security group to attach to is not available" as security group or security group rule creation is not complete and security group may be in Pending state.
 
-```hcl
+```terraform
 
 resource "ibm_is_vpc" "testacc_vpc" {
     name = "test"
@@ -139,8 +143,75 @@ resource "ibm_is_instance" "testacc_instance" {
   }
 }
 
+data "ibm_resource_group" "default" {
+  name = "Default" ///give your resource grp
+}
 
-```  
+resource "ibm_is_dedicated_host_group" "dh_group01" {
+  family = "compute"
+  class = "cx2"
+  zone = "us-south-1"
+  name = "my-dh-group-01"
+  resource_group = data.ibm_resource_group.default.id
+}
+
+resource "ibm_is_dedicated_host" "is_dedicated_host" {
+  profile = "bx2d-host-152x608"
+  name = "my-dedicated-host-01"
+	host_group = ibm_is_dedicated_host_group.dh_group01.id
+  resource_group = data.ibm_resource_group.default.id
+}
+
+// Example to provision instance in a dedicated host
+resource "ibm_is_instance" "testacc_instance1" {
+  name    = "testinstance1"
+  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+  profile = "cx2-2x4"
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.testacc_subnet.id
+    security_groups = [ibm_is_security_group.testacc_security_group.id]
+  }
+  dedicated_host = ibm_is_dedicated_host.is_dedicated_host.id
+  vpc  = ibm_is_vpc.testacc_vpc.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+
+  //User can configure timeouts
+  timeouts {
+    create = "15m"
+    update = "15m"
+    delete = "15m"
+  }
+}
+
+// Example to provision instance in a dedicated host that belongs to the provided dedicated host group
+resource "ibm_is_instance" "testacc_instance2" {
+  name    = "testinstance2"
+  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+  profile = "cx2-2x4"
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.testacc_subnet.id
+    security_groups = [ibm_is_security_group.testacc_security_group.id]
+  }
+  dedicated_host_group = ibm_is_dedicated_host_group.dh_group01.id
+  vpc  = ibm_is_vpc.testacc_vpc.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+
+  //User can configure timeouts
+  timeouts {
+    create = "15m"
+    update = "15m"
+    delete = "15m"
+  }
+}
+
+
+```
 
 ## Timeouts
 
@@ -155,15 +226,17 @@ ibm_is_instance provides the following [Timeouts](https://www.terraform.io/docs/
 The following arguments are supported:
 
 * `name` - (Optional, string) The instance name.
-* `vpc` - (Required, Forces new resource, string) The vpc id. 
-* `zone` - (Required, Forces new resource, string) Name of the zone. 
-* `profile` - (Required, string) The profile name. 
+* `vpc` - (Required, Forces new resource, string) The vpc id.
+* `zone` - (Required, Forces new resource, string) Name of the zone.
+* `profile` - (Required, string) The profile name.
   * * Updating profile requires instance to be in stopped status, running instance will be stopped on update profile action.  * `image` - (Required, string) ID of the image.
-* `boot_volume` - (Optional, list) A block describing the boot volume of this instance.  
+* `dedicated_host` - (Optional, string, ForceNew) The placement restrictions to use for the virtual server instance. Unique Identifier of the Dedicated Host where the instance will be placed
+* `dedicated_host_group` - (Optional, string, ForceNew) The placement restrictions to use for the virtual server instance. Unique Identifier of the Dedicated Host Group where the instance will be placed
+* `boot_volume` - (Optional, list) A block describing the boot volume of this instance.
 `boot_volume` block have the following structure:
   * `name` - (Optional, string) The name of the boot volume.
-  * `encryption` -(Optional, string) The encryption of the boot volume.
-* `keys` - (Required, list) Comma separated IDs of ssh keys.  
+  * `encryption` -(Optional, string) 	The CRN of the root key to use to wrap the data encryption key for the volume. If this property is not provided but the image is encrypted, the image's encryption_key will be used. Otherwise, the encryption type for the volume will be `provider_managed`.
+* `keys` - (Required, list) Comma separated IDs of ssh keys.
 * `primary_network_interface` - (Required, list) A nested block describing the primary network interface of this instance. We can have only one primary network interface.
 Nested `primary_network_interface` block have the following structure:
   * `name` - (Optional, string) The name of the network interface.
@@ -179,8 +252,8 @@ Nested `network_interfaces` block have the following structure:
   * `subnet` -  (Required, string) ID of the subnet.
   * `security_groups` - (Optional, list) Comma separated IDs of security groups.
   * `allow_ip_spoofing` - (Optional, bool) Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If true, IP spoofing is allowed on this interface.
-* `volumes` - (Optional, list) Comma separated IDs of volumes. 
-* `auto_delete_volume` - (Optional, bool) If set to true, automatically deletes volumes attached to the instance.  
+* `volumes` - (Optional, list) Comma separated IDs of volumes.
+* `auto_delete_volume` - (Optional, bool) If set to true, automatically deletes volumes attached to the instance.
 **Note** Setting this argument may bring some inconsistency in volume resources since the volumes will be destroyed along with instances.
 * `user_data` - (Optional, string) User data to transfer to the server instance.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID for this instance.
@@ -228,7 +301,7 @@ Nested `boot_volume` blocks have the following structure:
   * `iops` -  Input/Output Operations Per Second for the volume.
   * `profile` - The profile of the volume.
   * `encryption` - The encryption of the boot volume.
-* `volume_attachments` - A nested block describing the volume attachments.  
+* `volume_attachments` - A nested block describing the volume attachments.
 Nested `volume_attachments` block have the following structure:
   * `id` - The id of the volume attachment
   * `name` -  The name of the volume attachment

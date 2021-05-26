@@ -7,9 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
-
-	"strings"
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -17,7 +15,7 @@ import (
 )
 
 func TestAccIBMIAMCustomRole_Basic(t *testing.T) {
-	var conf iampapv2.Role
+	var conf iampolicymanagementv1.CustomRole
 	name := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	displayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	updateDisplayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
@@ -56,7 +54,7 @@ func TestAccIBMIAMCustomRole_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMCustomRole_import(t *testing.T) {
-	var conf iampapv2.Role
+	var conf iampolicymanagementv1.CustomRole
 	name := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	displayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_custom_role.customrole"
@@ -84,7 +82,7 @@ func TestAccIBMIAMCustomRole_import(t *testing.T) {
 }
 
 func testAccCheckIBMIAMCustomRoleDestroy(s *terraform.State) error {
-	accClient, err := testAccProvider.Meta().(ClientSession).IAMPAPAPIV2()
+	roleClient, err := testAccProvider.Meta().(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
@@ -95,20 +93,23 @@ func testAccCheckIBMIAMCustomRoleDestroy(s *terraform.State) error {
 
 		roleID := rs.Primary.ID
 
-		// Try to find the role
-		_, _, err := accClient.IAMRoles().Get(roleID)
+		getRoleOptions := &iampolicymanagementv1.GetRoleOptions{
+			RoleID: &roleID,
+		}
 
+		// Try to find the role
+		_, response, err := roleClient.GetRole(getRoleOptions)
 		if err == nil {
 			return fmt.Errorf("Custom Role still exists: %s", rs.Primary.ID)
-		} else if !strings.Contains(err.Error(), "404") {
-			return fmt.Errorf("Error waiting for Custom Role (%s) to be destroyed: %s", roleID, err)
+		} else if response.StatusCode != 404 {
+			return fmt.Errorf("Error waiting for Custom Role (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMIAMCustomRoleExists(n string, obj iampapv2.Role) resource.TestCheckFunc {
+func testAccCheckIBMIAMCustomRoleExists(n string, obj iampolicymanagementv1.CustomRole) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -116,20 +117,21 @@ func testAccCheckIBMIAMCustomRoleExists(n string, obj iampapv2.Role) resource.Te
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		roleClient, err := testAccProvider.Meta().(ClientSession).IAMPAPAPIV2()
+		roleClient, err := testAccProvider.Meta().(ClientSession).IAMPolicyManagementV1API()
 		if err != nil {
 			return err
 		}
 
-		roleID := rs.Primary.ID
-
-		customrole, _, err := roleClient.IAMRoles().Get(roleID)
-
-		if err != nil {
-			return fmt.Errorf("Error retrieving Custom Role %s err: %s", roleID, err)
+		getRoleOptions := &iampolicymanagementv1.GetRoleOptions{
+			RoleID: &rs.Primary.ID,
 		}
 
-		obj = customrole
+		customrole, _, err := roleClient.GetRole(getRoleOptions)
+		if err != nil {
+			return fmt.Errorf("Error retrieving Custom Role %s err: %s", rs.Primary.ID, err)
+		}
+
+		obj = *customrole
 		return nil
 	}
 }

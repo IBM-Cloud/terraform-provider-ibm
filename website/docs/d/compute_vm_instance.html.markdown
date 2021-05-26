@@ -12,7 +12,7 @@ Import the details of an existing VM instance as a read-only data source. You ca
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_compute_vm_instance" "vm_instance" {
   hostname    = "jumpbox"
   domain      = "example.com"

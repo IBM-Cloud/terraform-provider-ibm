@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Event Streams"
 layout: "ibm"
 page_title: "IBM: event_streams_topic"
@@ -9,10 +8,13 @@ description: |-
 
 # ibm_event_streams_topic
 
-The `event_streams_topic` resource represents a topic on an Event Streams instance.
+Create and update the Event Streams. For more information, about Event Streams topics, see [Event Streams](https://cloud.ibm.com/docs/openwhisk?topic=openwhisk-pkg_event_streams).
 
-## Example Usage 1: Create Event Streams service instance and topic
-```hcl
+## Example usage
+
+### Sample 1 create an Event Streams service instance and topic
+
+```terraform
 resource "ibm_resource_instance" "es_instance_1" {
   name              = "terraform-integration-1"
   service           = "messagehub"
@@ -21,20 +23,20 @@ resource "ibm_resource_instance" "es_instance_1" {
   resource_group_id = data.ibm_resource_group.group.id
 
   # parameters = {
-  #   service-endpoints    = "private"                   # for enterprise instance only, Options are: "public", "public-and-private", "private". Default is "public" when not specified.
-  #   private_ip_allowlist = "[10.0.0.0/32,10.0.0.1/32]" # for enterprise instance only. Specify 1 or more IP range in CIDR format
-  #   # document about using private service endpoint and IP allowlist to restrict access: https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-restrict_access
-
-  #   throughput   = "150"  # for enterprise instance only. Options are: "150", "300", "450". Default is "150" when not specified.
-  #   storage_size = "2048" # for enterprise instance only. Options are: "2048", "4096", "6144", "8192", "10240", "12288". Default is "2048" when not specified.
-  #   kms_key_crn  = "crn:v1:bluemix:public:kms:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:0aa69b09-941b-41b2-bbf9-9f9f0f6a6f79:key:dd37a0b6-eff4-4708-8459-e29ae0a8f256" # for enterprise instance only. Specify the CRN of a root key from a Key Management Service instance used to encrypt disks.
-  #   # Note: when throughput is "300", storage_size starts from "4096",  when throughput is "450", storage_size starts from "6144"
-  #   # document about supported combinations of throughput and storage_size: https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-ES_scaling_capacity#ES_scaling_combinations
+  #   service-endpoints     = "private"                    # for enterprise instance only, Options are: "public", "public-and-private", "private". Default is "public" when not specified.
+  #   private_ip_allowlist = "[10.0.0.0/32,10.0.0.1/32]" # for enterprise instance only. Specify 1 or more IP range in CIDR format.
+  #   # Refer private service endpoint and IP allow list to restrict access documentation, (
+/docs/EventStreams?topic=EventStreams-restrict_access) for more details.
+  #   throughput   = "150"  # for enterprise instance only. Options are: "150", "300", "450". Default is "150".
+  #   storage_size = "2048" # for enterprise instance only. Options are: "2048", "4096", "6144", "8192", "10240", "12288". Default is "2048".
+  #   Note: When throughput is "300", storage_size starts from "4096",  when throughput is "450", storage_size starts from "6144".
+  #   Refer support combinations of throughput and storage_size documentation (
+/docs/EventStreams?topic=EventStreams-ES_scaling_capacity#ES_scaling_combinations) for more details.
   # }
 
   # timeouts {
-  #   create = "15m" # use 3h when creating enterprise instance, add additional 1h for each level of non-default throughput, add additional 30m for each level of non-default storage_size
-  #   update = "15m" # use 1h when updating enterprise instance, add additional 1h for each level of non-default throughput, add additional 30m for each level of non-default storage_size
+  #   create = "15m" # use 3h when creating enterprise instance, add more 1h for each level of non-default throughput, add more 30m for each level of non-default storage_size
+  #   update = "15m" # use 1h when updating enterprise instance, add more 1h for each level of non-default throughput, add more 30m for each level of non-default storage_size
   #   delete = "15m"
   # }
 }
@@ -50,10 +52,14 @@ resource "ibm_event_streams_topic" "es_topic_1" {
     "segment.bytes"   = "536870912"
   }
 }
+
 ```
 
-## Example Usage 2: Create topic on an existing Event Streams instance`
-```hcl
+### Sample 2 create a topic on an existing Event Streams instance
+
+Create topic on an existing Event Streams instance.The owner of the `ibmcloud_api_key` has permission to create Event Streams instance in a specified resource group. However, you need the manager role to create the instance in order to create topic.
+ 
+```terraform
 data "ibm_resource_instance" "es_instance_2" {
   name              = "terraform-integration-2"
   resource_group_id = data.ibm_resource_group.group.id
@@ -70,10 +76,13 @@ resource "ibm_event_streams_topic" "es_topic_2" {
     "segment.bytes"   = "536870912"
   }
 }
+
 ```
 
-## Example Usage 3: Create a kafka consumer application connecting to an existing Event Streams instance and its topics
-```hcl
+### Sample 3 create a Kafka consumer application connection to an Event Streams instance and its topics
+
+
+```terraform
 data "ibm_resource_instance" "es_instance_3" {
   name              = "terraform-integration-3"
   resource_group_id = data.ibm_resource_group.group.id
@@ -89,32 +98,51 @@ resource "kafka_consumer_app" "es_kafka_app" {
   topics           = [data.ibm_event_streams_topic.es_topic_3.name]
   apikey           = var.es_reader_api_key
 }
+
 ```
 
-## Argument Reference
+## Timeouts
 
-The following arguments are supported:
+Event Streams topic provides the following timeouts:
 
-- `resource_instance_id` - (Required, string) The ID/CRN of the Event Streams service instance.
-- `name` - (Required, string) The name of the topic.
-- `partitions` - (Optional, int) The number of partitions of the topic. Default value is 1 if not specified.
-- `config` - (Optional, map) The configuration parameters of a topic. Supported configurations are: `cleanup.policy`, `retention.ms`, `retention.bytes`, `segment.bytes`, `segment.ms`, `segment.index.bytes`.
+- `create`- Defaults to 15 minutes. 
+  **Note** Use `3h` to create enterprise instance. Add more `1h` for each level of non-default through put and add extra `30m` for each level of non-default storage size.|
+- `delete` - Defaults to 15 minutes.
+- `update`- Defaults to 15 minutes. 
+  **Note** Use `1h` to update enterprise instance. Add more `1h` for each level of non-default through put and add extra `30m` for each level of non-default storage size.|
 
-## Attribute Reference
+## Argument reference
+Review the argument reference that you can specify for your resource. 
 
-In addition to all arguments above, the following attributes are exported:
+- `config` - (Optional, Map) The configuration parameters of the topic. Supported configurations are: `cleanup.policy`, `retention.ms`, `retention.bytes`, `segment.bytes`, `segment.ms`, `segment.index.bytes`.
+- `name` - (Required, String) The name of the topic.
+- `partitions` - (Optional, Integer) The number of partitions of the topic. Default value is 1.
+- `resource_instance_id` - (Required, String) The ID or the CRN of the Event Streams service instance.
 
-- `id` (string) - The ID of the topic in CRN format. eg. `crn:v1:bluemix:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:cb5a0252-8b8d-4390-b017-80b743d32839:topic:my-es-topic`
-- `kafka_http_url` (string) - The API endpoint for interacting with Event Streams REST API.
-- `kafka_brokers_sasl` (array of strings) - Kafka brokers addresses for interacting with Kafka native API.
+## Attribute reference
 
+In addition to all argument reference list, you can access the following attribute references after your resource is created. 
+
+- `id` - (String) The ID of the topic in CRN format. For example, `crn:v1:bluemix:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:cb5a0252-8b8d-4390-b017-80b743d32839:topic:my-es-topic.
+- `kafka_brokers_sasl` - (Array of Strings) Kafka brokers use for interacting with Kafka native API.
+- `kafka_http_url` - (String) The API endpoint for interacting with Event Streams REST API.
 
 ## Import
 
-The `ibm_event_streams_topic` resource can be imported using the `id`. The ID is the `CRN` (Cloud Resource Name), the `resource type` is `topic`, `resource` is the name of the topic.
+The `ibm_event_streams_topic` resource can be imported by using `CRN`. The three parameters of the `CRN` with the colon separator are
+  - ID = CRN 
+  - resource type = topic
+  - resource = name of the topic.
+  
+**Syntax**
 
 ```
 $ terraform import ibm_event_streams_topic.es_topic <crn>
 
+```
+
+**Example**
+
+```
 $ terraform import ibm_event_streams_topic.es_topic crn:v1:bluemix:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:cb5a0252-8b8d-4390-b017-80b743d32839:topic:my-es-topic
 ```

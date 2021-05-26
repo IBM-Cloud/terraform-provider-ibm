@@ -6,7 +6,7 @@ description: |-
   Manages IBM application private domain.
 ---
 
-# `ibm_app_domain_private`
+# ibm_app_domain_private
 
 Create, update, or delete a private domain for your Cloud Foundry app. For more information, about an app domain, see [getting started with app private domain,](https://cloud.ibm.com/docs/cloud-foundry-public?topic=cloud-foundry-public-getting-started).
 
@@ -14,7 +14,7 @@ Create, update, or delete a private domain for your Cloud Foundry app. For more 
 ## Example usage
 The following example creates the `example.com` private domain. 
 
-```
+```terraform
 data "ibm_org" "orgdata" {
   org = "example.com"
 }
@@ -27,17 +27,13 @@ resource "ibm_app_domain_private" "domain" {
 ```
 
 ## Argument reference
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
 
 - `name`- (Required, String) The name of the private domain.
 - `org_guid` - (Required, String) The GUID of the Cloud Foundry organization where you want to create the domain. You can retrieve the value from data source `ibm_org` or by running the `ibmcloud iam orgs guid` command in the IBM Cloud CLI.
 - `tags`- (Array of Strings, Optional) The tags that you want to add to your private domain.
 
 ## Attribute reference
-Review the output parameters that you can access after your resource is created.
+In addition to all argument references list, you can access the following attribute references after your resource is created.
 
 - `id` - (String) The unique identifier of the private domain.
-
-
-
-

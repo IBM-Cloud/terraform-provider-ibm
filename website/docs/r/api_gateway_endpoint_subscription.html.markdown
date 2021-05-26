@@ -6,16 +6,16 @@ description: |-
   Create, Update,Manage and Delete Subscription of Endpoints of a API Gateway service instance.
 ---
 
-# `ibm_api_gateway_endpoint_subscription`
+# ibm_api_gateway_endpoint_subscription
 
-Create, update, or delete a subscription for an API Gateway endpoint. For more information, about API Gateway subscription, see [Managing access for API Gateway](https://cloud.ibm.com/docs/api-gateway?topic=api-gateway-iam).
+Create, update, or delete a subscription for an API Gateway endpoint. For more information, about API Gateway subscription, see [managing access for API Gateway](https://cloud.ibm.com/docs/api-gateway?topic=api-gateway-iam).
 
 Endpoint subscriptions can be added only if the endpoint is online. Make sure to set the `managed` input parameter to **true** in the `ibm_api_gateway_endpoint` resource.
 
 Configuration of an api gateway data resource requires the region parameter to be set for the IBM provider in the `provider.tf`.  If not specified, endpoint to which subscription is being created will default to `us-south`. 
 
 ## Example usage
-```
+```terraform
 data "ibm_api_gateway" "endpoint"{
     service_instance_crn =ibm_resource_instance.apigateway.id
 }
@@ -27,14 +27,14 @@ resource "ibm_api_gateway_endpoint_subscription" "subs" {
   type        = "external"
   generate_secret = true
 }
-```
+
 data "ibm_api_gateway" "endpoint"{
     service_instance_crn =ibm_resource_instance.apigateway.id
 }
-
+```
 
 ## Argument reference 
-Review the input parameters that you can specify for your resource. 
+Review the argument reference that you can specify for your resource. 
 
 - `artifact_id` - (Required, String) The ID of an API endpoint. 
 - `client_id` - (Optional, String) The API key to generate an API key for the subscription. The generated API key represents the ID of a subscription.
@@ -43,18 +43,17 @@ Review the input parameters that you can specify for your resource.
 - `name` - (Required, String) The name for an API key.
 - `type` - (Required, String) The type of API key sharing. Supported values are `External`, and `Bluemix`.
 
-
 **Note**
 Subscriptions can be performed only if the endpoint is online that is managed attribute of an endpoint should be true.
 
 ## Attribute reference
-Review the output parameters that you can access after your resource is created. 
+In addition to all argument references list, you can access the following attribute references after your data source is created. 
 
 - `id` - (String) The ID of the subscription resource. The ID is composed of `<artifact_id>//<client_id>`.
 - `secret_provided`- (Boolean) Indicates your secrete if provided or not. If set to **true**, the client secret is provided. If set to **false**, the client secret is not provided.
 
 
-### Import
+## Import
 The `ibm_api_gateway_endpoint_subscription` resource can be imported by using the ID. The ID is composed of `<artifact_id>//<client_id>`.
 
 - **Endpoint ID**: The Endpoint ID can be retrieved programmatically via the API Gateway endpoint API.
@@ -63,17 +62,11 @@ The `ibm_api_gateway_endpoint_subscription` resource can be imported by using th
 **Syntax**
 
 ```
-terraform import ibm_api_gateway_endpoint_subscription.subscription <artifact_id>//<client_id>
+$ terraform import ibm_api_gateway_endpoint_subscription.subscription <artifact_id>//<client_id>
 ```
 
 **Example**
 
 ```
-terraform import ibm_api_gateway_endpoint_subscription.subscription 705fd456-224e-412d-833f-51ff46e27fc8//testID
+$ terraform import ibm_api_gateway_endpoint_subscription.subscription 705fd456-224e-412d-833f-51ff46e27fc8//testID
 ```
-
-
-
-
-
-

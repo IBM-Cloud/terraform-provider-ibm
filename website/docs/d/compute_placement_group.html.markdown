@@ -12,7 +12,7 @@ Import the details of an existing placement group as a read-only data source. Yo
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_compute_placement_group" "group" {
     name = "demo"
 }
@@ -20,7 +20,7 @@ data "ibm_compute_placement_group" "group" {
 
 The following example shows how you can use this data source to reference the placement group ID in the `ibm_compute_vm_instance` resource because the numeric IDs are often unknown.
 
-```hcl
+```terraform
 resource "ibm_compute_vm_instance" "vm1" {
     placement_group_id = data.ibm_compute_placement_group.group.id
 }

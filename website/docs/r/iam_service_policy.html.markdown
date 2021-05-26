@@ -7,7 +7,7 @@ description: |-
   Manages IBM IAM Service Policy.
 ---
 
-# ibm\_iam_service_id
+# ibm\_iam_service_policy
 
 Provides a resource for IAM Service Policy. This allows service policy  to be created, updated and deleted.
 
@@ -15,7 +15,7 @@ Provides a resource for IAM Service Policy. This allows service policy  to be cr
 
 ### Service Policy for All Identity and Access enabled services 
 
-```hcl
+```terraform
 resource "ibm_iam_service_id" "serviceID" {
   name = "test"
 }
@@ -29,7 +29,7 @@ resource "ibm_iam_service_policy" "policy" {
 
 ### Service Policy using service with region
 
-```hcl
+```terraform
 resource "ibm_iam_service_id" "serviceID" {
   name = "test"
 }
@@ -46,7 +46,7 @@ resource "ibm_iam_service_policy" "policy" {
 ```
 ### Service Policy using resource instance 
 
-```hcl
+```terraform
 resource "ibm_iam_service_id" "serviceID" {
   name = "test"
 }
@@ -73,7 +73,7 @@ resource "ibm_iam_service_policy" "policy" {
 
 ### Service Policy using resource group 
 
-```hcl
+```terraform
 resource "ibm_iam_service_id" "serviceID" {
   name = "test"
 }
@@ -96,7 +96,7 @@ resource "ibm_iam_service_policy" "policy" {
 
 ### Service Policy using resource and resource type 
 
-```hcl
+```terraform
 resource "ibm_iam_service_id" "serviceID" {
   name = "test"
 }
@@ -119,7 +119,7 @@ resource "ibm_iam_service_policy" "policy" {
 
 ### Service Policy using attributes 
 
-```hcl
+```terraform
 resource "ibm_iam_service_id" "serviceID" {
   name = "test"
 }
@@ -144,7 +144,7 @@ resource "ibm_iam_service_policy" "policy" {
 ```
 ### Cross account Service policy using iam_id
 
-```hcl
+```terraform
 provider "ibm" {
     alias             = "accA"
     ibmcloud_api_key  = "Account A Api Key"
@@ -169,6 +169,27 @@ resource "ibm_iam_service_policy" "policy" {
 
 ```
 
+### Service Policy using resource_attributes
+
+```terraform
+resource "ibm_iam_service_id" "serviceID" {
+  name = "test"
+}
+resource "ibm_iam_service_policy" "policy" {
+  iam_service_id = ibm_iam_service_id.serviceID.id
+  roles           = ["Viewer"]
+  resource_attributes {
+    name  = "resource"
+    value = "test123*"
+    operator = "stringMatch"
+  }
+  resource_attributes {
+    name  = "serviceName"
+    value = "messagehub"
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -185,9 +206,15 @@ Nested `resources` blocks have the following structure:
   * `resource` - (Optional, string) Resource of the policy definition.
   * `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. 
   * `attributes` - (Optional, map) Set resource attributes in the form of `'name=value,name=value...`.
- **NOTE**: Conflicts with `account_management`.
+ **NOTE**: Conflicts with `account_management` and `resource_attributes`.
+* `resource_attributes` - (Optional, list) A nested block describing the resource of this policy.
+Nested `resource_attributes` blocks have the following structure:
+  * `name` - (Required, string) Name of the Attribute. Supported values are`serviceName` , `serviceInstance` , `region` ,`resourceType` , `resource` , `resourceGroupId` and other service specific resource attributes.
+  * `value` - (Required, string) Value of the Attribute.
+  * `operator` - (Optional, string) Operator of the Attribute. Default Value: `stringEquals`
+ **NOTE**: Conflicts with `account_management` and `resources`.
 * `account_management` - (Optional, bool) Gives access to all account management services if set to `true`. Default value `false`. 
- **NOTE**: Conflicts with `resources`.
+  **NOTE**: Conflicts with `resources`and `resource_attributes`.
 * `tags` - (Optional, array of strings) Tags associated with the service policy instance.  
   **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 

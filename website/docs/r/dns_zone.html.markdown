@@ -1,5 +1,4 @@
 ---
-
 subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : dns_zone"
@@ -7,46 +6,45 @@ description: |-
   Manages IBM Private DNS Zone.
 ---
 
-# ibm\_dns_zone
 
-Provides a private dns zone resource. This allows dns zones to be created, and updated and deleted.
+# ibm_dns_zone
 
-## Example Usage
+Create, update, or delete a DNS zone. For more information, see [Managing DNS zones](https://cloud.ibm.com/docs/dns-svcs?topic=dns-svcs-managing-dns-zones).
 
-```hcl
 
+## Example usage
+
+```terraform
 resource "ibm_dns_zone" "pdns-1-zone" {
     name = "test.com"
-    instance_id = p-dns-instance-guid
+    instance_id = p-dns-instance-id
     description = "testdescription"
     label = "testlabel"
 }
-
-
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument reference that you can specify for your resource. 
 
-The following arguments are supported:
+- `description` - (Optional, String) The description of the DNS zone.
+- `instance_id` - (Required, String) The ID of the IBM Cloud DNS service instance where you want to create a DNS zone.
+- `name` - (Required, String) The name of the DNS zone that you want to create. 
+- `label` - (Optional, String) The label of the DNS zone. 
 
-* `name` - (Required, string) The name of the DNS zone to be created.
-* `instance_id` - (Required, string) The guid of the private DNS on which zone has to be created. 
-* `description` - (Optional, string) The text describing the purpose of a DNS zone.
-* `label` -  (Optional, string) The label of a DNS zone.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your resource is created. 
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the private DNS zone. The id is composed of <instance_guid>/<zone_id>.
-* `zone_id` - The unique identifier of the private DNS zone.
-* `created_on` - The time (Created On) of the DNS zone. 
-* `modified_on` - The time (Modified On) of the DNS zone.
-* `state` - The state of the DNS zone.
+- `created_on` - (Timestamp) The time when the DNS zone was created. 
+- `id` - (String) The ID of the DNS zone. The ID is composed of `<instance_id>/<zone_id>`.
+- `modified_on` - (Timestamp) The time when the DNS zone was updated. 
+- `state` - (String) The state of the DNS zone.
+- `zone_id` - (String) The ID of the zone that is associated with the DNS zone.
 
 ## Import
 
-ibm_dns_zone can be imported using private DNS instance ID and zone ID, eg
+The `ibm_dns_zone` resource can be imported by using private DNS instance ID and zone ID.
+
+**Example**
 
 ```
 $ terraform import ibm_dns_zone.example 6ffda12064634723b079acdb018ef308/5ffda12064634723b079acdb018ef308

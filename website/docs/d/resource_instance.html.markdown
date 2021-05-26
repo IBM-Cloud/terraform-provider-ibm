@@ -13,7 +13,7 @@ Import the details of an existing IBM resource instance from IBM Cloud as a read
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
   name = "default"
 }

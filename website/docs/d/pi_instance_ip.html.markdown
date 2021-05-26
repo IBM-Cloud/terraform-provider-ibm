@@ -13,7 +13,7 @@ Import the details of an existing IBM Power Virtual Server instance as a read-on
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_pi_instance_ip" "ds_instance_ip" {
   pi_instance_name     = "terraform-test-instance"
   pi_network_name = "APP"
@@ -26,7 +26,7 @@ data "ibm_pi_instance_ip" "ds_instance_ip" {
   * `region` - `lon`
   * `zone` - `lon04`
   Example Usage:
-  ```hcl
+  ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"

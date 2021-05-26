@@ -14,7 +14,7 @@ Provides a read-only data source for ibm_schematics_workspace. You can then refe
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_schematics_workspace" "schematics_workspace" {
 	workspace_id = "workspace_id"
 }

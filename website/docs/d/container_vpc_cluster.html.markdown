@@ -11,7 +11,7 @@ description: |-
 Import the details of a Kubernetes VPC cluster on IBM Cloud as a read-only data source.
 ​
 ## Example Usage
-```hcl
+```terraform
 data "ibm_container_vpc_cluster" "cluster" {
   name  = "no-zones-tf"
   resource_group_id = data.ibm_resource_group.group.id

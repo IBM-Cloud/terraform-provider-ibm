@@ -12,7 +12,7 @@ Imports a read only copy of an existing Internet Services Cache Settings.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_cis_cache_settings" "test" {
   cis_id    = data.ibm_cis_cache_settings.test.cis_id
   domain_id = data.ibm_cis_cache_settings.test.domain_id

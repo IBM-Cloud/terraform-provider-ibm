@@ -12,7 +12,7 @@ Import the details of an existing Reserved IP in a Subnet as a read-only data so
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_is_subnet_reserved_ip" "data_reserved_ip" {
   subnet = ibm_is_subnet.test_subnet.id
   reserved_ip = ibm_is_subnet_reserved_ip.resource_res_ip.reserved_ip

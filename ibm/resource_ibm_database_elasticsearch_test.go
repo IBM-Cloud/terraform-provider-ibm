@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccIBMDatabaseInstance_Elasticsearch_Basic(t *testing.T) {
-	t.Parallel()
+	//t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
 	rnd := fmt.Sprintf("tf-Es-%d", acctest.RandIntRange(10, 100))
@@ -84,7 +84,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Basic(t *testing.T) {
 }
 
 func TestAccIBMDatabaseInstance_Elasticsearch_Node(t *testing.T) {
-	t.Parallel()
+	//t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
 	rnd := fmt.Sprintf("tf-Es-%d", acctest.RandIntRange(10, 100))
@@ -182,7 +182,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Node(t *testing.T) {
 // TestAccIBMDatabaseInstance_CreateAfterManualDestroy not required as tested by resource_instance tests
 
 func TestAccIBMDatabaseInstanceElasticsearchImport(t *testing.T) {
-	t.Parallel()
+	//t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
 	serviceName := fmt.Sprintf("tf-Es-%d", acctest.RandIntRange(10, 100))

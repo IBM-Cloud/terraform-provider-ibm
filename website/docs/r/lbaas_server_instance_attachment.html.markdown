@@ -15,7 +15,7 @@ Provides a resource for attaching the server instance to IBM cloud load balancer
  
 ## Example Usage
 
-```hcl
+```terraform
 
 resource "ibm_compute_vm_instance" "vm_instances" {
   count = "2"

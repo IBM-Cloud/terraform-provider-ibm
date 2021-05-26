@@ -12,7 +12,7 @@ Import the details of an IAM (Identity and Access Management) service policy on 
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_iam_service_policy" "policy" {
   iam_service_id = "ServiceId-d7bec597-4726-451f-8a63-e62e6f19c32c"
   roles          = ["Manager", "Viewer", "Administrator"]

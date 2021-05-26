@@ -33,14 +33,76 @@ func dataSourceIBMISInstanceProfiles() *schema.Resource {
 							Computed: true,
 						},
 						"family": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The product family this virtual server instance profile belongs to.",
 						},
 						"architecture": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default OS architecture for an instance with this profile.",
 						},
-						isInstanceDisks: &schema.Schema{
+						"architecture_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for the OS architecture.",
+						},
+
+						"architecture_values": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The supported OS architecture(s) for an instance with this profile.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"bandwidth": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The value for this profile field.",
+									},
+									"default": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The default value for this profile field.",
+									},
+									"max": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The maximum value for this profile field.",
+									},
+									"min": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The minimum value for this profile field.",
+									},
+									"step": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The increment step value for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted values for this profile field.",
+										Elem: &schema.Schema{
+											Type: schema.TypeInt,
+										},
+									},
+								},
+							},
+						},
+						"disks": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Collection of the instance profile's disks.",
@@ -167,6 +229,144 @@ func dataSourceIBMISInstanceProfiles() *schema.Resource {
 								},
 							},
 						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this virtual server instance profile.",
+						},
+						"memory": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The value for this profile field.",
+									},
+									"default": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The default value for this profile field.",
+									},
+									"max": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The maximum value for this profile field.",
+									},
+									"min": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The minimum value for this profile field.",
+									},
+									"step": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The increment step value for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted values for this profile field.",
+										Elem: &schema.Schema{
+											Type: schema.TypeInt,
+										},
+									},
+								},
+							},
+						},
+						"port_speed": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The value for this profile field.",
+									},
+								},
+							},
+						},
+						"vcpu_architecture": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The default VCPU architecture for an instance with this profile.",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The VCPU architecture for an instance with this profile.",
+									},
+								},
+							},
+						},
+						"vcpu_count": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The value for this profile field.",
+									},
+									"default": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The default value for this profile field.",
+									},
+									"max": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The maximum value for this profile field.",
+									},
+									"min": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The minimum value for this profile field.",
+									},
+									"step": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The increment step value for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted values for this profile field.",
+										Elem: &schema.Schema{
+											Type: schema.TypeInt,
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -246,8 +446,56 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 			"name":   *profile.Name,
 			"family": *profile.Family,
 		}
-		if profile.OsArchitecture != nil && profile.OsArchitecture.Default != nil {
-			l["architecture"] = *profile.OsArchitecture.Default
+		if profile.OsArchitecture != nil {
+			if profile.OsArchitecture.Default != nil {
+				l["architecture"] = *profile.OsArchitecture.Default
+			}
+			if profile.OsArchitecture.Type != nil {
+				l["architecture_type"] = profile.OsArchitecture.Type
+			}
+			if profile.OsArchitecture.Values != nil {
+				l["architecture_values"] = profile.OsArchitecture.Values
+			}
+		}
+		if profile.Bandwidth != nil {
+			bandwidthList := []map[string]interface{}{}
+			bandwidthMap := dataSourceInstanceProfileBandwidthToMap(*profile.Bandwidth.(*vpcv1.InstanceProfileBandwidth))
+			bandwidthList = append(bandwidthList, bandwidthMap)
+			l["bandwidth"] = bandwidthList
+		}
+		if profile.Disks != nil {
+			disksList := []map[string]interface{}{}
+			for _, disksItem := range profile.Disks {
+				disksList = append(disksList, dataSourceInstanceProfileDisksToMap(disksItem))
+			}
+			l["disks"] = disksList
+		}
+		if profile.Href != nil {
+			l["href"] = profile.Href
+		}
+		if profile.Memory != nil {
+			memoryList := []map[string]interface{}{}
+			memoryMap := dataSourceInstanceProfileMemoryToMap(*profile.Memory.(*vpcv1.InstanceProfileMemory))
+			memoryList = append(memoryList, memoryMap)
+			l["memory"] = memoryList
+		}
+		if profile.PortSpeed != nil {
+			portSpeedList := []map[string]interface{}{}
+			portSpeedMap := dataSourceInstanceProfilePortSpeedToMap(*profile.PortSpeed.(*vpcv1.InstanceProfilePortSpeed))
+			portSpeedList = append(portSpeedList, portSpeedMap)
+			l["port_speed"] = portSpeedList
+		}
+		if profile.VcpuArchitecture != nil {
+			vcpuArchitectureList := []map[string]interface{}{}
+			vcpuArchitectureMap := dataSourceInstanceProfileVcpuArchitectureToMap(*profile.VcpuArchitecture)
+			vcpuArchitectureList = append(vcpuArchitectureList, vcpuArchitectureMap)
+			l["vcpu_architecture"] = vcpuArchitectureList
+		}
+		if profile.VcpuCount != nil {
+			vcpuCountList := []map[string]interface{}{}
+			vcpuCountMap := dataSourceInstanceProfileVcpuCountToMap(*profile.VcpuCount.(*vpcv1.InstanceProfileVcpu))
+			vcpuCountList = append(vcpuCountList, vcpuCountMap)
+			l["vcpu_count"] = vcpuCountList
 		}
 		if profile.Disks != nil {
 			l[isInstanceDisks] = dataSourceInstanceProfileFlattenDisks(profile.Disks)

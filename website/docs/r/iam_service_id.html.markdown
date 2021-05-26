@@ -13,7 +13,7 @@ Provides a resource for IAM ServiceID. This allows serviceID  to be created, upd
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_iam_service_id" "serviceID" {
   name        = "test"
   description = "New ServiceID"

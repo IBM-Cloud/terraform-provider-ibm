@@ -12,7 +12,7 @@ Import the details of an existing IBM Cloud Internet Service global load balance
 
 ## Example Usage
 
-```hcl
+```terraform
 
 data "ibm_cis_global_load_balancers" "test" {
   cis_id    = var.cis_crn

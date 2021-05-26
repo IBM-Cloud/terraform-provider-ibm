@@ -12,7 +12,7 @@ Import the details of an existing image template as a read-only data source. You
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_compute_image_template" "img_tpl" {
     name = "jumpbox"
 }
@@ -20,7 +20,7 @@ data "ibm_compute_image_template" "img_tpl" {
 
 The following example shows how you can use this data source to reference the image template ID in the `ibm_compute_vm_instance` resource because the numeric IDs are often unknown.
 
-```hcl
+```terraform
 resource "ibm_compute_vm_instance" "vm1" {
     image_id = data.ibm_compute_image_template.img_tpl.id
 }

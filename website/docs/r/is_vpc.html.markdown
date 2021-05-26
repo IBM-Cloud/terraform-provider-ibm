@@ -16,7 +16,7 @@ Provides a vpc resource. This allows VPC to be created, updated, and cancelled.
 
 In the following example, you can create a VPC:
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "test"
 }
@@ -36,8 +36,8 @@ ibm_is_vpc provides the following [Timeouts](https://www.terraform.io/docs/confi
 The following arguments are supported:
 
 * `default_network_acl` - (Deprecated, string) ID of the default network ACL.
-* `address_prefix_management` - (Optional, string) Indicates whether a default address prefix should be automatically created for each zone in this VPC. Default value `auto`
-* `classic_access` -(Optional, bool) Indicates whether this VPC should be connected to Classic Infrastructure. If true, This VPC's resources will have private network connectivity to the account's Classic Infrastructure resources. Only one VPC on an account may be connected in this way. 
+* `address_prefix_management` - (Optional, string) Indicates whether a default address prefix should be automatically created for each zone in this VPC. Value `auto`, `manual`. Default value `auto`.
+* `classic_access` -(Optional, bool) Indicates whether this VPC should be connected to Classic Infrastructure. If true, This VPC's resources will have private network connectivity to the account's Classic Infrastructure resources. Only one VPC on an account may be connected in this way.
 * `name` - (Required, string) The name of the VPC.
 * `resource_group` - (Optional, Forces new resource, string) The resource group ID where the VPC to be created
 * `tags` - (Optional, array of strings) Tags associated with the instance.
@@ -61,7 +61,7 @@ In addition to all arguments above, the following attributes are exported:
   * `status` -  Status of the subnet.
   * `zone` -  Zone of the subnet.
   * `total_ipv4_address_count` - Total IPv4 addresses under the subnet.
-  * `available_ipv4_address_count` - Available IPv4 addresses available for the usage in the subnet.  
+  * `available_ipv4_address_count` - Available IPv4 addresses available for the usage in the subnet.
 * `security_group` - A list of security groups attached to VPC. The nested security group block has the following structure:
   * `group_id` - Security group ID.
   * `group_name` - Name of the security group.
@@ -72,8 +72,8 @@ In addition to all arguments above, the following attributes are exported:
     * `remote` - Security group id, an IP address, a CIDR block, or a single security group identifier.
     * `type` - The ICMP traffic type to allow.
     * `code` - The ICMP traffic code to allow.
-    * `port_min` - The inclusive lower bound of TCP port range. 
-    * `port_max` - The inclusive upper bound of TCP port range. 
+    * `port_min` - The inclusive lower bound of TCP port range.
+    * `port_max` - The inclusive upper bound of TCP port range.
 
 
 ## Import

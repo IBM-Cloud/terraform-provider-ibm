@@ -15,7 +15,7 @@ Create, update, or delete a zone. This resource creates the zone and attaches it
 
 In the following example, you can create a zone:
 
-```hcl
+```terraform
 resource "ibm_container_worker_pool" "test_pool" {
   worker_pool_name = "my_pool"
   machine_type     = "u2c.2x4"

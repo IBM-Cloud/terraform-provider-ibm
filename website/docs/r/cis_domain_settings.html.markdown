@@ -13,7 +13,7 @@ Provides a resource which customizes IBM Cloud Internet Services domain settings
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_cis_domain_settings" "test_domain_settings" {
   cis_id    = data.ibm_cis.cis.id
   domain_id = data.ibm_cis_domain.cis_domain.domain_id

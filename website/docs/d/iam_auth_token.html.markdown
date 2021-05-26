@@ -12,7 +12,7 @@ Import the details of an existing IBM Cloud authentication tokens as a read-only
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_iam_auth_token" "tokendata" {}
 ```
 

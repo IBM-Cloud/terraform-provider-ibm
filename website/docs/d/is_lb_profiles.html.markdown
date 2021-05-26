@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud Infrastructure load balancer profile
 
 ## Example Usage
 
-```hcl
+```terraform
 
 data "ibm_is_lb_profiles" "ds_lb_profiles" {
 }

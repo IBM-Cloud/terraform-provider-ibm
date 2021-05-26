@@ -13,7 +13,7 @@ Provides a IBM CIS DNS Record resource. This resource is associated with an IBM 
 
 ## Example Usage 1 : Create A Record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_a_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -30,7 +30,7 @@ output "a_record_output" {
 
 ## Example Usage 2 : Create AAAA record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_aaaa_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -47,7 +47,7 @@ output "aaaa_record_output" {
 
 ## Example Usage 3 : Create CNAME record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_cname_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -64,7 +64,7 @@ output "cname_record_output" {
 
 ## Example Usage 4 : Create MX record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_mx_record" {
   cis_id   = var.cis_crn
   domain_id  = var.zone_id
@@ -82,7 +82,7 @@ output "mx_record_output" {
 
 ## Example Usage 5 : Create LOC record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_loc_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -112,7 +112,7 @@ output "loc_record_output" {
 
 ## Example Usage 6 : Create CAA record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_caa_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -132,7 +132,7 @@ output "caa_record_output" {
 
 ## Example Usage 7 : Create SRV record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_srv_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -156,7 +156,7 @@ output "srv_record_output" {
 
 ## Example Usage 8 : Create SPF record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_spf_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -172,7 +172,7 @@ output "spf_record_output" {
 
 ## Example Usage 9 : Create TXT record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_txt_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -188,7 +188,7 @@ output "txt_record_output" {
 
 ## Example Usage 10 : Create NS record
 
-````hcl
+````terraform
 resource "ibm_cis_dns_record" "test_dns_ns_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -207,7 +207,7 @@ output "caa_record_output" {
 
 ## Example Usage 7 : Create SRV record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_srv_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -231,7 +231,7 @@ output "srv_record_output" {
 
 ## Example Usage 8 : Create SPF record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_spf_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -247,7 +247,7 @@ output "spf_record_output" {
 
 ## Example Usage 9 : Create TXT record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_txt_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -263,7 +263,7 @@ output "txt_record_output" {
 
 ## Example Usage 10 : Create NS record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_ns_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -279,7 +279,7 @@ output "ns_record_output" {
 
 ## Example Usage 11 : Create PTR record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_ptr_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id

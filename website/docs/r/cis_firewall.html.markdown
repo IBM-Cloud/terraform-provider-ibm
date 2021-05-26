@@ -13,7 +13,7 @@ Provides a IBM CIS Firewall resource. This resource is associated with an IBM Cl
 
 ## Example Usage
 
-```hcl
+```terraform
 # Add a firewall to the domain
 
 resource "ibm_cis_firewall" "lockdown" {

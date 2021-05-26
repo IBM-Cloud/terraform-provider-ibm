@@ -120,7 +120,25 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 			} else if strings.ToLower(hostProvider) == "ibm" {
 				lines[i] = "subscription-manager refresh\nsubscription-manager repos --enable=*\n"
 			} else if strings.ToLower(hostProvider) == "azure" {
-				lines[i] = "# Grow the TMP LV\nlvextend -L+10G /dev/rootvg/tmplv\nxfs_growfs /dev/rootvg/tmplv\n# Grow the var LV\nlvextend -L+20G /dev/rootvg/varlv\nxfs_growfs /dev/rootvg/varlv\nyum update -y\nyum-config-manager --enable '*'\nyum repolist all\nyum install container-selinux -y"
+				lines[i] = fmt.Sprintf(`#Grow the base volume group first
+echo -e "r\ne\ny\nw\ny\ny\n" | gdisk /dev/sda
+#mark result as true as this returns a non-0 RC when syncing disks
+echo -e "n\n\n\n\n\nw\n" | fdisk /dev/sda || true
+partx -l /dev/sda || true
+partx -v -a /dev/sda || true
+pvcreate /dev/sda5
+vgextend rootvg /dev/sda5
+# Grow the TMP LV
+lvextend -L+10G /dev/rootvg/tmplv
+xfs_growfs /dev/rootvg/tmplv
+# Grow the var LV
+lvextend -L+20G /dev/rootvg/varlv
+xfs_growfs /dev/rootvg/varlv
+yum update --disablerepo=* --enablerepo="*microsoft*" -y
+yum-config-manager --enable '*'
+yum repolist all
+yum install container-selinux -y
+				`)
 			}
 		}
 	}

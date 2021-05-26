@@ -13,7 +13,7 @@ Provides a IBM CIS WAF Package resource. This resource is associated with an IBM
 
 ## Example Usage
 
-```hcl
+```terraform
 # Change WAF Package settings of the domain
 
 resource "ibm_cis_waf_package" "waf_package" {

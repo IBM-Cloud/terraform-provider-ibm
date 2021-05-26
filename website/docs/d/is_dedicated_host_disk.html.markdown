@@ -12,7 +12,7 @@ Provides a read-only data source for DedicatedHostDisk. You can then reference t
 
 ## Example Usage
 
-```hcl
+```terraform
 data "is_dedicated_host_disk" "is_dedicated_host_disk" {
 	dedicated_host = "dedicatedhost id"
 	disk = "id"

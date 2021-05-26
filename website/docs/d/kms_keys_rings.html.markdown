@@ -12,7 +12,7 @@ Retreives a list of key rings from the hs-crypto or key-protect instance. Import
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_kms_key_rings" "test" {
   instance_id = "guid-of-keyprotect-or hs-crypto-instance"
 }

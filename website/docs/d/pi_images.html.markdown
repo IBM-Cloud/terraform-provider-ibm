@@ -12,7 +12,7 @@ Import the details of existing IBM Power Virtual Server Cloud images as a read-o
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_pi_images" "ds_images" {
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
@@ -23,7 +23,7 @@ data "ibm_pi_images" "ds_images" {
   * `region` - `lon`
   * `zone` - `lon04`
   Example Usage:
-  ```hcl
+  ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"

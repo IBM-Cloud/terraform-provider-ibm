@@ -13,7 +13,7 @@ Provides a IBM Cloud Internet Services origin pool resource. This provides a poo
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_cis_origin_pool" "example" {
   cis_id = ibm_cis.instance.id
   name   = "example-pool"

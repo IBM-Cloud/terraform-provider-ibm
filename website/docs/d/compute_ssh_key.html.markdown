@@ -12,7 +12,7 @@ Import the details of an existing SSH key as a read-only data source. You can th
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_compute_ssh_key" "public_key" {
     label = "Terraform Public Key"
 }
@@ -20,7 +20,7 @@ data "ibm_compute_ssh_key" "public_key" {
 
 The following example shows how you can use this data source to reference the SSH key IDs in the `ibm_compute_vm_instance` resource because the numeric IDs are often unknown.
 
-```hcl
+```terraform
 resource "ibm_compute_vm_instance" "vm1" {
   # TF-UPGRADE-TODO: In Terraform v0.10 and earlier, it was sometimes necessary to
   # force an interpolation expression to be interpreted as a list by wrapping it

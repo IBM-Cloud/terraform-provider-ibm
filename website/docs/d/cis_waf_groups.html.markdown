@@ -12,7 +12,7 @@ Import the details of an existing IBM Cloud Internet Service WAF Rule Groups as 
 
 ## Example Usage
 
-```hcl
+```terraform
 data "ibm_cis_waf_groups" "waf_groups" {
   cis_id     = data.ibm_cis.cis.id
   domain_id  = data.ibm_cis_domain.cis_domain.id

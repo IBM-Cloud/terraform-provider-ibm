@@ -19,7 +19,7 @@ VRF at an IaaS account level can be used as an alternative to VLAN Spanning and 
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_network_vlan_spanning" "spanning" {
    "vlan_spanning" = "on"
    

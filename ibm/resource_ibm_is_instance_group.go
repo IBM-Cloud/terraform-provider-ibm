@@ -239,7 +239,7 @@ func resourceIBMISInstanceGroupCreate(d *schema.ResourceData, meta interface{}) 
 	}
 	d.SetId(*instanceGroup.ID)
 
-	_, healthError := waitForHealthyInstanceGroup(d, meta, d.Timeout(schema.TimeoutCreate))
+	_, healthError := waitForHealthyInstanceGroup(d.Id(), meta, d.Timeout(schema.TimeoutCreate))
 	if healthError != nil {
 		return healthError
 	}
@@ -339,7 +339,7 @@ func resourceIBMISInstanceGroupUpdate(d *schema.ResourceData, meta interface{}) 
 		}
 
 		// wait for instance group health update with update timeout configured.
-		_, healthError := waitForHealthyInstanceGroup(d, meta, d.Timeout(schema.TimeoutUpdate))
+		_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
 		if healthError != nil {
 			return healthError
 		}
@@ -445,7 +445,7 @@ func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return fmt.Errorf("Error updating instanceGroup's instance count to 0 : %s\n%s", err, response)
 	}
-	_, healthError := waitForHealthyInstanceGroup(d, meta, d.Timeout(schema.TimeoutUpdate))
+	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
 	if healthError != nil {
 		return healthError
 	}
@@ -511,13 +511,12 @@ func resourceIBMISInstanceGroupExists(d *schema.ResourceData, meta interface{}) 
 	return true, nil
 }
 
-func waitForHealthyInstanceGroup(d *schema.ResourceData, meta interface{}, timeout time.Duration) (interface{}, error) {
+func waitForHealthyInstanceGroup(instanceGroupID string, meta interface{}, timeout time.Duration) (interface{}, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return nil, err
 	}
 
-	instanceGroupID := d.Id()
 	getInstanceGroupOptions := vpcv1.GetInstanceGroupOptions{ID: &instanceGroupID}
 
 	healthStateConf := &resource.StateChangeConf{

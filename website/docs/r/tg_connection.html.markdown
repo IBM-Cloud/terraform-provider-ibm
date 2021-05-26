@@ -12,7 +12,7 @@ Provides a transit gateway connection resource. This allows transit gateway's co
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_tg_connection" "test_ibm_tg_connection"{
 		gateway = ibm_tg_gateway.test_tg_gateway.id
 		network_type = "vpc"

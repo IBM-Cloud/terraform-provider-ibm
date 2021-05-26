@@ -13,7 +13,7 @@ Import the details of an existing IBM Cloud virtual server volume profiles as a 
 
 ## Example Usage
 
-```hcl
+```terraform
 
 data "ibm_is_volume_profiles" "volprofiles"{
 }

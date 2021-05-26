@@ -16,7 +16,7 @@ Provides a resource for IAM access group members. This allows access group membe
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgroup" {
   name = "testgroup"
 }

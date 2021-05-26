@@ -14,7 +14,7 @@ Import the details of an existing IBM cloud subnet as a read-only data source. Y
 ## Example Usage
 
 In the following example, subnet info is retrieved by subnet name
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "test"
 }
@@ -33,7 +33,7 @@ data "ibm_is_subnet" "ds_subnet" {
 ```
 
 In the following example, subnet info is retrieved by subnet ID
-```hcl
+```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "test"
 }

@@ -13,7 +13,7 @@ Provides a resource for ibm_schematics_job. This allows ibm_schematics_job to be
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "ibm_schematics_job" "schematics_job" {
   command_object = "action"
   command_object_id = "<action_id>"

@@ -11,7 +11,7 @@ description: |-
 Import the details of a Kubernetes cluster on IBM Cloud as a read-only data source.
 ​
 ## Example Usage
-```hcl
+```terraform
 data "ibm_container_worker_pool" "testacc_ds_worker_pool"{
   worker_pool_name = ibm_container_worker_pool.test_pool.worker_pool_name
   cluster          = ibm_container_cluster.testacc_cluster.id

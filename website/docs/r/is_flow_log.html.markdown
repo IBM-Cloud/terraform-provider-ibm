@@ -14,7 +14,7 @@ Provides a flow log resource. This allows flow log to be created, updated, delet
 
 ## Example Usage
 
-```hcl
+```terraform
 
 resource "ibm_is_instance" "testacc_instance" {
   name    = "testinstance"
@@ -91,4 +91,3 @@ ibm_is_flow_log can be imported using VPC Flow log ID, eg
 ```
 $ terraform import ibm_is_flow_log.example d7bec597-4726-451f-8a53-e62e6f19c32c
 ```
- 
