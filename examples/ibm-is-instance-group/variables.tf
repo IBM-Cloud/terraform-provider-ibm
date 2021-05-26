@@ -32,6 +32,10 @@ variable "instance_group_name" {
   default = "myinstancegroup"
 }
 
+variable "instance_group_membership" {
+  default = "myinstancegroupmembership"
+}
+
 variable "instance_count" {
   default = 2
 }
