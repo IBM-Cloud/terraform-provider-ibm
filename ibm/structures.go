@@ -24,6 +24,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/apache/openwhisk-client-go/whisk"
+	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
@@ -887,6 +888,20 @@ func intValue(i64 *int64) (i int) {
 func float64Value(f32 *float32) (f float64) {
 	if f32 != nil {
 		f = float64(*f32)
+	}
+	return
+}
+
+func dateToString(d *strfmt.Date) (s string) {
+	if d != nil {
+		s = d.String()
+	}
+	return
+}
+
+func dateTimeToString(dt *strfmt.DateTime) (s string) {
+	if dt != nil {
+		s = dt.String()
 	}
 	return
 }
