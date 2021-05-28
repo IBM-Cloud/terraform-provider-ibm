@@ -256,7 +256,7 @@ func testAccCheckIBMDatabaseInstanceCassandraFullyspecified(databaseResourceGrou
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
 		service                      = "databases-for-cassandra"
-		plan                    updateMessageSendTo     = "enterprise"
+		plan                         = "enterprise"
 		location                     = "us-south"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 38400
