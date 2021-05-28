@@ -34,6 +34,35 @@ resource "ibm_resource_instance" "resource_instance" {
   }
 }
 ```
+### Example: Provisioning a Hyper Protect DBaaS PostgreSQL Service
+
+The following is an example to create a service instance of IBM Cloud Hyper Protect DBaaS for PostgreSQL. For detailed argument reference, see the tables in the [Hyper Protect DBaaS for PostgreSQL documentation](/docs/hyper-protect-dbaas-for-postgresql?topic=hyper-protect-dbaas-for-postgresql-create-service#cli-create-service) (or the [Hyper Protect DBaaS for MongoDB documentation](/docs/hyper-protect-dbaas-for-mongodb?topic=hyper-protect-dbaas-for-monbgodb-create-service#cli-create-service) if you want to create MongoDB service instances).
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "default"
+}
+resource "ibm_resource_instance" "myhpdbcluster" {
+  name = "0001-postgresql"
+  service = "hyperp-dbaas-postgresql"
+  plan = "postgresql-free"
+  location = "us-south"
+  resource_group_id = data.ibm_resource_group.group.id
+  timeouts {
+    create = "15m"
+    update = "15m"
+    delete = "15m"
+  }
+  parameters = {
+    "name": "cluster01",
+    "admin_name": "admin",
+    "password": "Hyperprotectdbaas0001"
+    "confirm_password": "Hyperprotectdbaas0001",
+    "db_version": "10"
+  }
+}
+```
+
 
 ## Timeouts
 
