@@ -7,11 +7,18 @@ description: |-
   Manages IBM VPC container cluster.
 ---
 
-# ibm\_container_vpc_cluster
+# ibm_container_vpc_cluster
+Create, update, or delete a VPC cluster. To create a VPC cluster, make sure to include the VPC infrastructure generation in the `provider` block of your  Terraform configuration file. If you do not set this value, the generation is automatically set to 2. For more information, about how to configure the `provider` block, see [Overview of required input parameters for each resource category](https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform?topic=ibm-cloud-provider-for-terraform-provider-reference#required-parameters).
+You cannot create a free cluster in IBM Cloud Schematics.
 
-Create or delete a Kubernetes VPC cluster.
+If you want to delete a VPC cluster and their associated load balancer. The following order is followed by the resource.
+1. Invokes the cluster deletion.
+2. Waits for the cluster deletion to complete.
+3. Verifies for the load balancer that is associated with the cluster and waits for the associated load balancer to delete successfully.
 
+## Example usage
 In the following example, you can create a Gen-2 VPC cluster with a default worker pool with one worker:
+
 ```terraform
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = "my_vpc_cluster"
@@ -27,7 +34,9 @@ resource "ibm_container_vpc_cluster" "cluster" {
 }
 ```
 
-Create the Openshift Cluster with default worker Pool entitlement with one worker node:
+### VPC Generation 2 Red Hat OpenShift on IBM Cloud cluster with existing OpenShift entitlement
+Create the Openshift Cluster with default worker pool entitlement with one worker node:
+
 ```terraform
 resource "ibm_resource_instance" "cos_instance" {
   name     = "my_cos_instance"
@@ -52,7 +61,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 }
 ```
 
-Create a Kms Enabled Kubernetes cluster:
+### Create a KMS Enabled Kubernetes cluster:
 
 ```terraform
 resource "ibm_container_vpc_cluster" "cluster" {
@@ -75,83 +84,130 @@ resource "ibm_container_vpc_cluster" "cluster" {
 }
 ```
 
-## Argument Reference
+### VPC Generation 2 IBM Cloud Kubernetes Service cluster
+The following example creates a VPC Generation 2 cluster that is spread across two zones.
 
-The following arguments are supported:
+```
+provider "ibm" {
+  generation = 2
+}
 
-* `flavor` - (Required, Forces new resource, string) The flavor of the VPC worker node.
-* `name` - (Required, Forces new resource, string) The name of the cluster.
-* `vpc_id` - (Required, Forces new resource, string) The ID of the VPC in which to create the worker nodes. To list available IDs, run 'ibmcloud ks vpcs'.
-* `zones` - (Required, set) A nested block describing the zones of this VPC cluster. Nested zones blocks have the following structure:
-  * `subnet-id` - (Required, string) The VPC subnet to assign the cluster. 
-  * `name` - (Required, string) Name of the zone.
-* `disable_public_service_endpoint` - (Optional,Bool) Disable the public service endpoint to prevent public access to the master. Default Value 'false'.
-* `kube_version` - (Optional,String) Specify the Kubernetes version, including at least the major.minor version. If you do not include this flag, the default version is used. To see available versions, run 'ibmcloud ks versions'.
-* `update_all_workers` - (Optional, bool)  Set to `true` if you want to update workers kube version.
-* `wait_for_worker_update` - (Optional, bool) Set to `true` to wait for kube version of woker nodes to update during the wokrer node kube version update.
-  **NOTE**: setting `wait_for_worker_update` to `false` is not recommended. This results in upgradign all the worker nodes in the cluster at the same time causing the cluster downtime
-* `pod_subnet` - (Optional, Forces new resource,String) Specify a custom subnet CIDR to provide private IP addresses for pods. The subnet must be at least '/23' or larger. For more info, refer [here](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#pod-subnet).
-* `service_subnet` - (Optional, Forces new resource,String) Specify a custom subnet CIDR to provide private IP addresses for services. The subnet must be at least '/24' or larger. For more info, refer [here](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#service-subnet).
-* `worker_count` - (Optional, Int) The number of worker nodes per zone in the default worker pool. Default value '1'.
-* `worker_labels` - (Optional, map) Labels on all the workers in the default worker pool.
-* `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
-* `tags` - (Optional, array of strings) Tags associated with the container cluster instance.
-* `kms_config` -  (Optional, list) Used to attach a key protect instance to a cluster. Nested `kms_config` block has the following structure:
-	* `instance_id` - The guid of the key protect instance.
-	* `crk_id` - Id of the customer root key (CRK).
-	* `private_endpoint` - Set this to true to configure the KMS private service endpoint. Default is false.
-* `entitlement` - (Optional, String) The openshift cluster entitlement avoids the OCP licence charges incurred. Use cloud paks with OCP Licence entitlement to create the Openshift cluster.
-  **NOTE**:
-  1. It is set only for the first time creation of the cluster, modification in the further runs will not have any impacts.
-  2. Set this argument to 'cloud_pak' only if you use this cluster with a Cloud Pak that has an OpenShift entitlement
-* `cos_instance_crn` - (Optional, String) Required for OpenShift clusters only. The standard cloud object storage instance CRN to back up the internal registry in your OpenShift on VPC Gen 2 cluster.
-* `wait_till` - (Optional, String) The cluster creation happens in multi-stages. To avoid the longer wait times for resource execution, this field is introduced.
-Resource will wait for only the specified stage and complete execution. The supported stages are
-  - *MasterNodeReady*: resource will wait till the master node is ready
-  - *OneWorkerNodeReady*: resource will wait till atleast one worker node becomes to ready state
-  - *IngressReady*: resource will wait till the ingress-host and ingress-secret are available.
+resource "ibm_is_vpc" "vpc1" {
+  name = "myvpc"
+}
 
-  Default value: IngressReady
-* `force_delete_storage` - (Optional, bool) If set to true, force the removal of persistent storage associated with the cluster during cluster deletion. Default: false
-    **NOTE**: Before doing terraform destroy if force_delete_storage param is introduced after provisioning the cluster, a terraform apply must be done before terraform destroy for force_delete_storage param to take effect.
-* `patch_version` - (Optional, string) Set this to update the worker nodes with the required patch version. 
-   The patch_version should be in the format - `patch_version_fixpack_version`. Learn more about the Kuberentes version [here](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions).
-    **NOTE**: To update the patch/fixpack versions of the worker nodes, Run the command `ibmcloud ks workers -c <cluster_name_or_id> --output json`, fetch the required patch & fixpack versions from `kubeVersion.target` and set the patch_version parameter.
-* `retry_patch_version` - (Optional, int) This argument helps to retry the update of patch_version if the previous update fails. Increment the value to retry the update of patch_version on worker nodes.
+resource "ibm_is_subnet" "subnet1" {
+  name                     = "mysubnet1"
+  vpc                      = ibm_is_vpc.vpc1.id
+  zone                     = "us_south-1"
+  total_ipv4_address_count = 256
+}
 
-**NOTE**:
-1. For users on account to add tags to a resource, they must be assigned the appropriate access. Learn more about tags permission [here](https://cloud.ibm.com/docs/resources?topic=resources-access)
-2. `wait_till` is set only for the first time creation of the resource, modification in the further runs will not any impacts.
+resource "ibm_is_subnet" "subnet2" {
+  name                     = "mysubnet2"
+  vpc                      = ibm_is_vpc.vpc1.id
+  zone                     = "us-south-2"
+  total_ipv4_address_count = 256
+}
 
+data "ibm_resource_group" "resource_group" {
+  name = var.resource_group
+}
 
-## Attribute Reference
+resource "ibm_container_vpc_cluster" "cluster" {
+  name              = "mycluster"
+  vpc_id            = ibm_is_vpc.vpc1.id
+  flavor            = "bx2.4x16"
+  worker_count      = 3
+  resource_group_id = data.ibm_resource_group.resource_group.id
+  kube_version      = 1.17.5  zones {
+    subnet_id = ibm_is_subnet.subnet1.id
+    name      = "us-south-1"
+  }
+}
 
-In addition to all arguments above, the following attributes are exported:
+resource "ibm_container_vpc_worker_pool" "cluster_pool" {
+  cluster           = ibm_container_vpc_cluster.cluster.id
+  worker_pool_name  = "mywp"
+  flavor            = "bx2.2x8"
+  vpc_id            = ibm_is_vpc.vpc1.id
+  worker_count      = 3
+  resource_group_id = data.ibm_resource_group.resource_group.id
+  zones {
+    name      = "us-south-2"
+    subnet_id = ibm_is_subnet.subnet2.id
+  }
+}
+```
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-* `id` - Id of the cluster
-* `crn` - CRN of the cluster.
-* `ingress_hostname` - The Ingress hostname.
-* `ingress_secret` - The Ingress secret.
-* `master_status` - Status of kubernetes master.
-* `master_url` - The Master server URL.
-* `private_service_endpoint_url` - Private service endpoint url.
-* `public_service_endpoint_url` - Public service endpoint url.
-* `state` - State.
-* `albs` - Application load balancer (ALB)'s attached to the cluster
-  * `id` - The application load balancer (ALB) id.
-  * `name` - The name of the application load balancer (ALB).
-  * `alb_type` - The application load balancer (ALB) type public or private.
-  * `enable` -  Enable (true) or disable(false) application load balancer (ALB).
-  * `state` - The status of the application load balancer (ALB)(enabled or disabled).
-  * `resize` - Indicate whether resizing should be done.
-  * `disable_deployment` - Indicate whether to disable deployment only on disable application load balancer (ALB).
-  * `load_balancer_hostname` - The host name of the application load balancer (ALB).
+- `cos_instance_crn` - (Optional, String) Required for OpenShift clusters only. The standard IBM Cloud Object Storage instance CRN to back up the internal registry in your OpenShift on VPC Generation 2 cluster.
+- `disable_public_service_endpoint` - (Optional, Bool) Disable the public service endpoint to prevent public access to the Kubernetes master. Default value is `false`.
+- `entitlement` - (Optional, String) The OpenShift cluster entitlement avoids the OCP license charges incurred. Use Cloud Pak with OCP Licence entitlement to create the OpenShift cluster. **Note** <ul><li> It is set only the first time creation of the cluster, further modifications are not impacted. </li></ul> <ul><li> Set this argument to `cloud_pak` only if you use the cluster with a Cloud Pak that has an OpenShift entitlement.</li></ul>.
+- `force_delete_storage` - (Optional, Bool) If set to **true**,force the removal of persistent storage associated with the cluster during cluster deletion. Default value is **false**. **Note** If `force_delete_storage` parameter is used after provisioning the cluster, then, you need to execute `terraform apply` before `terraform destroy` for `force_delete_storage` parameter to take effect.
+- `flavor` - (Required, Forces new resource, String) The flavor of the VPC worker node that you want to use.
+- `name` - (Required, Forces new resource, String) The name of the cluster.
+- `kms_config` - (Optional, String) Use to attach a Key Protect instance to a cluster. Nested `kms_config` block has an `instance_id`, `crk_id`, `private_endpoint`.
+
+  Nested scheme for `kms_config`:
+  - `crk_id` - (Optional, String) The ID of the customer root key (CRK).
+  - `instance_id` - (Optional, String) The GUID of the Key Protect instance.
+  - `private_endpoint` - (Optional, Bool) Set **true** to configure the KMS private service endpoint. Default value is **false**.
+- `kube_version` - (Optional, String)  Specify the Kubernetes version, including the major.minor version. If you do not include this flag, the default version is used. To see available versions, run `ibmcloud ks versions`.
+- `patch_version` - (Optional, String) Updates the worker nodes with the required patch version. The patch_version should be in the format:  `patch_version_fixpack_version`. For more information, about Kubernetes version information and update, see [Kubernetes version update](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions). **Note** To update the patch or fix pack versions of the worker nodes, run the command `ibmcloud ks workers -c <cluster_name_or_id> output json`. Fetch the required patch & fix pack versions from `kubeVersion.target` and set the `patch_version` parameter.
+- `pod_subnet` - (Optional, Forces new resource, String) Specify a custom subnet CIDR to provide private IP addresses for pods. The subnet must have a CIDR of at least `/23` or larger. For more information, see the [documentation](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#cs_subnets). Default value is `172.30.0.0/16`.
+- `retry_patch_version` - (Optional, Integer) This argument retries the update of `patch_version` if the previous update fails. Increment the value to retry the update of `patch_version` on worker nodes.
+- `service_subnet` - (Optional, Forces new resource, String) Specify a custom subnet CIDR to provide private IP addresses for services. The subnet must be at least ’/24’ or larger. For more information, see the [documentation](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#cs_messages). Default value is `172.21.0.0/16`.
+- `wait_for_worker_update` - (Optional, Bool) Set to **true** to wait and update the Kubernetes  version of worker nodes. **NOTE** Setting wait_for_worker_update to **false** is not recommended. Setting **false** results in upgrading all the worker nodes in the cluster at the same time causing the cluster downtime.
+- `wait_till` - (Optional, String) The creation of a cluster can take a few minutes (for virtual servers) or even hours (for Bare Metal servers) to complete. To avoid long wait times when you run your  Terraform code, you can specify the stage when you want  Terraform to mark the cluster resource creation as completed. Depending on what stage you choose, the cluster creation might not be fully completed and continues to run in the background. However, your  Terraform code can continue to run without waiting for the cluster to be fully created. Supported stages are: <ul><li><strong>`MasterNodeReady`</strong>:  Terraform marks the creation of your cluster complete when the cluster master is in a <code>ready</code> state.</li><li><strong>`OneWorkerNodeReady`</strong>:  Terraform marks the creation of your cluster complete when the master and at least one worker node are in a <code>ready</code> state.</li><li><strong>`IngressReady`</strong>:  Terraform marks the creation of your cluster complete when the cluster master and all worker nodes are in a <code>ready</code> state, and the Ingress subdomain is fully set up.</li></ul> If you do not specify this option, <code>`IngressReady`</code> is used by default. You can set this option only when the cluster is created. If this option is set during a cluster update or deletion, the parameter is ignored by the  Terraform provider.
+- `worker_count` - (Optional, Forces new resource, Integer) The number of worker nodes per zone in the default worker pool. Default value `1`.
+- `worker_labels` (Optional, Map)  Labels on all the workers in the default worker pool.
+- `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group. You can retrieve the value by running `ibmcloud resource groups` or by using the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
+- `tags` (Optional, Array of Strings) A list of tags that you want to associate with your VPC cluster. **Note** For users on account to add tags to a resource, they must be assigned the [appropriate permissions]/docs/account?topic=account-access).
+- `update_all_workers` - (Optional, Bool)  Set to true, if you want to update workers Kubernetes version with the cluster kube_version.
+- `vpc_id` - (Required, Forces new resource, String) The ID of the VPC that you want to use for your cluster. To list available VPCs, run `ibmcloud is vpcs`.
+- `zones` - (Required, List) A nested block describes the zones of this VPC cluster.
+
+  Nested scheme for `zones`:
+  - `name` - (Required, Forces new resource, String) The name of the zone.
+  - `subnet_id` - (Required, Forces new resource, String) The VPC subnet to assign the cluster.
+
+**Note**
+
+1. For users on account to add tags to a resource, you need to assign the right access. For more information, about tags, see [Tags permission](https://cloud.ibm.com/docs/account?topic=account-access).
+2. `wait_till` is set only for the first time creation of the resource, further modification are not impacted.
+
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `albs` - (List of Objects) A list of Application Load Balancers (ALBs) that are attached to the cluster. 
+	
+  Nested scheme for `albs`:	
+  - `alb_type` - (String) The ALB type. Valid values are `public` or `private`.
+  - `disable_deployment`- (Bool) Indicate whether to disable the deployment of the ALB.
+  - `enable`- (Bool) Enable (true) or disable (false) the ALB.
+  - `id` - (String) The ID of the ALB.
+  - `load_balancer_hostname` - (String) The host name of the ALB.
+  - `name` - (String) The name of the ALB.
+  - `state` - (String) The status of the ALB. Valid values are `enabled` or `disabled`.
+  - `resize`- (Bool) Indicates whether resizing should be done.
+- `id` - (String) The ID of the VPC cluster.
+- `crn` - (String) The CRN of the VPC cluster.
+- `ingress_hostname` - (String) The hostname that was assigned to your Ingress subdomain.
+- `ingress_secret` - (String) The name of the Ingress secret that was created for you and that the Ingress subdomain uses.
+- `master_status` - (String) The status of the Kubernetes master.
+- `master_url` - (String) The URL of the Kubernetes master.
+- `private_service_endpoint_url` - (String) The private service endpoint URL.
+- `public_service_endpoint_url` - (String) The public service endpoint URL.
+- `state` - (String) The state of the VPC cluster.
 
 
 ## Import
+The `ibm_container_vpc_cluster` can be imported by using the cluster ID. 
 
-`ibm_container_vpc_cluster` can be imported using clusterID, eg ibm_container_vpc_cluster.cluster
+**Example**
 
 ```
-$ terraform import ibm_container_vpc_cluster.cluster bmonvocd0i8m2v5dmb6g
+$ terraform import ibm_container_vpc_cluster.cluster aaaaaaaaa1a1a1a1aaa1a
 ```

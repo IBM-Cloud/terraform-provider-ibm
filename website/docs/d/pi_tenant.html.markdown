@@ -4,46 +4,51 @@ subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_tenant"
 description: |-
-  Manages a tenant in the IBM Power Virtual Server Cloud.
+  Manages a tenant in the IBM Power Virtual Server cloud.
 ---
 
-# ibm\_pi_tenant
+# ibm_pi_tenant
+Retrieve information about the tenants that are configured for your Power Systems Virtual Server instance. For more information, about power virtual server tenants, see [network security](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-network-security).
 
-Import the details of an existing IBM Power Virtual Server Cloud tenant as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-## Example Usage
+## Example usage
+The following example retrieves all tenants for the Power Systems Virtual Server instance with the ID.
 
 ```terraform
 data "ibm_pi_tenant" "ds_tenant" {
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
-## Notes:
+
+**Note**
+
 * Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 * If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   * `region` - `lon`
   * `zone` - `lon04`
-  Example Usage:
+
+  Example usage:
+  
   ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"
     }
   ```
-## Argument Reference
+  
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 
-* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
+- `creation_date` - (Timestamp) The timestamp when the tenant was created.
+- `cloudinstances` - (List) A list with the regions and Power Systems Virtual Server instance IDs that the tenant owns.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier for this tenant.
-* `creation_date` - The date on which the tenant was created.
-* `enabled` - Indicates whether the tenant is enabled.
-* `tenant_name` - The name of the tenant.
-* `cloudinstances` - Lists the regions and instance IDs this tenant owns.
-  * `cloud_instance_id` - The unique identifier of the cloud instance.
-  * `region` - The region of the cloud instance.
+  Nested scheme for `cloudinstances`:
+	- `cloud_instance_id` - (String) The unique identifier of the cloud instance.
+	- `region` - (String) The region of the cloud instance.
+- `enabled` -  (Bool) If set to **true**, the tenant is enabled for the Power Systems Virtual Server instance ID. If set to **false**, the tenant is not enabled for the instance.
+- `id` - (String) The ID of the tenant.
+- `tenantname` -  (String) The name of the tenant.

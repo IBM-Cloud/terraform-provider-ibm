@@ -8,10 +8,9 @@ description: |-
 ---
 
 # ibm_cis_edge_functions_action
+Create, update, or delete an edge functions action for a domain to include in your CIS edge functions action resource. For more information, about CIS edge functions action, see [working with Edge functions actions](https://cloud.ibm.com/docs/cis?topic=cis-edge-functions-actions).
 
-Provides a IBM CIS Edge Functions Action resource. This resource is associated with an IBM Cloud Internet Services instance and a CIS Domain resource. It allows to create, update, delete Edge Functions Action of a domain of a CIS instance
-
-## Example Usage
+## Example usage
 
 ```terraform
 # Add a Edge Functions Action to the domain
@@ -23,35 +22,41 @@ resource "ibm_cis_edge_functions_action" "test_action" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `action_name` - (Required, String) The action name of an edge functions action.
+- `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance.
+- `domain_id` - (Required, String) The ID of the domain to add the edge functions action.
+- `script` - (Required, String) The script of an edge functions action.
 
-- `cis_id` - (Required,string) The ID of the CIS service instance
-- `domain_id` - (Required,string) The ID of the domain to add the edge functions action.
-- `action_name` - (Required,string) The Action Name of the edge functions action.
-- `script` - (Required, string) The script of the edge functions action.
 
-## Attributes Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-- `id` - The Action ID. It is a combination of <`action_name`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
+- `id` - (String) The action ID with a combination of `<action_name>`,`<domain_id>`,`<cis_id>` attributes concatenate with colon (`:`).
 
 ## Import
+The `ibm_cis_edge_functions_action` resource can be imported by using the ID. The ID is composed from an edge functions action name or script name, the domain ID of the domain and the CRN (Cloud Resource Name) is concatenated with colon (`:`).
 
-The `ibm_cis_edge_functions_action` resource can be imported using the `id`. The ID is formed from the `Edge Functions Action Name/Script Name`, the `Domain ID` of the domain and the `CRN` (Cloud Resource Name) concatentated using a `:` character.
+The domain ID and CRN are located on the **overview** page of the Internet Services instance in the domain heading of the console, or by using the IBM Cloud CIS command line commands.
 
-The Domain ID and CRN will be located on the **Overview** page of the Internet Services instance under the **Domain** heading of the UI, or via using the `ibmcloud cis` CLI commands.
+- **Domain ID** is a 32 digit character string of the form: `9caf68812ae9b3f0377fdf986751a78f`.
 
-- **Domain ID** is a 32 digit character string of the form: `9caf68812ae9b3f0377fdf986751a78f`
+- **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`.
 
-- **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`
+- **Edge functions action name or script name** is a string: `sample_script`.
 
-- **Edge Functions Action Name/Script Name** is a string : `sample_script`.
+
+**Syntax**
 
 ```
 $ terraform import ibm_cis_edge_functions_action.test_action <action_name>:<domain-id>:<crn>
+```
 
+
+**Example**
+
+```
 $ terraform import ibm_cis_edge_functions_action.test_action sample_script:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
 ```

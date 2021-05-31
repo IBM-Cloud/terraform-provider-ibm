@@ -3,14 +3,14 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_roles"
 description: |-
-  Manages IBM IAM Roles.
+  Manages IBM IAM roles.
 ---
 
-# ibm\_iam_roles
+# ibm_iam_roles
 
-Import the details of an IAM roles regarding a specific service or account on IBM Cloud as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Retrieve information about supported IAM roles for an IBM Cloud service. For more information, about IAM role action, see [actions and roles for account management services](https://cloud.ibm.com/docs/account?topic=account-account-services#account-management-actions-roles).
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_iam_roles" "test" {
@@ -18,21 +18,21 @@ data "ibm_iam_roles" "test" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument references that you can specify for your data source.
 
-* `service` - (Optional, string) Name of the service.
+- `service` - (Optional, String) The name of the IBM Cloud service for which you want to list supported IAM  For account management services, you can find supported values in the [documentation](https://cloud.ibm.com/docs/account?topic=account-account-services#api-acct-mgmt). For other services, run the `ibmcloud catalog service-marketplace` command and retrieve the value from the **Name** column of your command line output.
 
-## Attribute Reference
+## Attribute reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
-* `id` - The account ID.
-* `roles` - A nested block list of IAM Roles. Nested `roles` blocks have the following structure:
-  * `name` - The display name of the role.
-  * `description` -  description of the role.
-  * `type` -  type of role, can be custom,service or platform.
+- `id` - (String) The ID of your IBM Cloud account.
+- `roles`- (List) A list of supported IAM service access, platform, and custom roles for an IBM Cloud service.
+	- `description` - (String) The description of the role.
+	- `name` - (String) The name of the role.
+	- `type` - (String) The type of the role. Supported values are `service`, `platform`, and `custom`.
 
 
 

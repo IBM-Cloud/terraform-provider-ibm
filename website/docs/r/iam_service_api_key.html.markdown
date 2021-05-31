@@ -4,14 +4,14 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_service_api_key"
 description: |-
-  Manages IBM IAM Service API Key.
+  Manages IBM IAM service API key.
 ---
 
-# ibm\_iam_service_api_key
+# ibm_iam_service_api_key
 
-Provides a resource for IAM Service API Key. This allows Service API Key to be created, updated and deleted.
+Create, update, or delete an IAM service API key by using resource group and resource type.For more information, about IAM service API key, see [managing IAM acces, API keys](https://cloud.ibm.com/docs/cli?topic=cli-ibmcloud_commands_iam).
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_iam_service_id" "serviceID" {
@@ -24,34 +24,39 @@ resource "ibm_iam_service_api_key" "testacc_apiKey" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `apikey`  (Optional, String) The API key value. This property only contains the API key value for the following cases: `create an API key`, `update a Service API key that stores the API key value as retrievable`, or `get a service API key that stores the API key value as retrievable`. All other operations do not return the API key value. For example, all user API key related operations, except for create, do not contain the API key value.
+- `description`  (Optional, String) The description of the service API key.
+- `file` - (Optional, String) The file name where API key is to be stored.
+- `iam_service_id`  - (Required, String) The IAM ID of the service.
+- `locked`- (Optional, Bool) The API key cannot be changed if set to **true**.
+- `name` - (Required, String) The name of the service API key.
+- `store_value`- (Optional, Bool) The boolean value whether API key value is retrievable in the future.
 
-* `name` - (Required, string) Name of the Service API Key.
-* `description` - (Optional, string) Description of the Service API Key.
-* `iam_service_id` - (Required, string) IAM ID of the service.
-* `apikey` - (Optional, string) The API key value.T his property only contains the API key value for the following cases: create an API key, update a Service API key that stores the API key value as retrievable, or get a Service API key that stores the API key value as retrievable. All other operations don't return the API key value, for example all user API key related operations, except for create, don't contain the API key value 
-* `locked` - (Optional, bool) The API key cannot be changed if set to true.
-* `store_value` - (Optional, bool) Boolean value deciding whether API key value is retrievable in the future.
-* `file` - (Optional, string) The File name where api key is to be stored.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the Service API Key.
-* `account_id` - The account ID of the API key.
-* `entity_tag` - Version OR Entity tag of the Service API Key.
-* `crn` - crn of the Service API Key.
-* `created_by` - IAM ID of the service which created the API key
-* `created_at` - The date and time Service API Key was created
-* `modified_at` - The date and time Service API Key was modified.
+- `account_id`  - (String) The account Id of the API key.
+- `entity_tag `-  (String) The version or entity tag of the service API key.
+- `crn`  - (String) The `CRN` of the service API key.
+- `created_at` - (Timestamp) The date and time service API key was created.
+- `created_by` - (String) The IAM ID of the service that is created by the API key.
+- `id` - (String) The unique identifier of the API key.
+- `modified_at` - (String) The date and time service API key was modified.
 
 ## Import
+The `ibm_iam_service_api_key` resource can be imported by using service API Key.
 
-ibm_iam_service_api_key can be imported using Service API Key, eg:
+**Syntax**
 
 ```
-$ terraform import ibm_iam_service_api_key.testacc_apiKey ApiKey-9d1958af-5f42-41c2-a541-7b0be37c3da0
+$ terraform import ibm_iam_service_api_key.testacc_apiKey <service API key>
+```
+
+**Example**
+
+```
+$ terraform import ibm_iam_service_api_key.testacc_apiKey ApiKey-9d12342134f-41c2-a541-7b0be37c3da0
 ```

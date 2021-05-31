@@ -4,16 +4,14 @@ subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_instance"
 description: |-
-  Manages an instance (a.k.a. VM/LPAR) in the Power Virtual Server Cloud.
+  Manages an instance also known as VM/LPAR in the Power Virtual Server cloud.
 ---
 
-# ibm\_pi_instance
+# ibm_pi_instance
+Create or update a [Power Systems Virtual Server instance](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-creating-power-virtual-server).
 
-Provides an instance resource. This allows instances to be created or updated in the Power Virtual Server Cloud.
-
-## Example Usage
-
-In the following example, you can create an instance:
+## Example usage
+The following example creates a Power Systems Virtual Server instance. 
 
 ```terraform
 resource "ibm_pi_instance" "test-instance" {
@@ -30,12 +28,15 @@ resource "ibm_pi_instance" "test-instance" {
     pi_health_status      = "WARNING"
 }
 ```
-## Notes:
+
+**Note**
 * Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 * If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   * `region` - `lon`
   * `zone` - `lon04`
-  Example Usage:
+  
+  Example usage:
+  
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -45,10 +46,11 @@ resource "ibm_pi_instance" "test-instance" {
 
 ## Timeouts
 
-ibm_pi_instance provides the following [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_pi_instance` provides the following [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
-* `create` - (Default 60 minutes) Used for creating an instance.
-* `delete` - (Default 60 minutes) Used for deleting an instance.
+- **create** - The creation of the instance is considered failed if no response is received for 60 minutes. 
+- **delete** - The deletion of the instance is considered failed if no response is received for 60 minutes. 
+
 
 ## Argument Reference
 
@@ -72,33 +74,39 @@ The following arguments are supported:
 * `pi_health_status` - (Optional,string) Specifies if terraform should poll for the Health Status to be OK or WARNING.  Default is OK. 
 * `pi_virtual_cores_assigned` - (Optional,integer) Specifies the number of virtual cores to be assigned 
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
+- `addresses` - Map of strings - A list of addresses that are assigned to the instance.
 
-* `id` - The unique identifier of the instance.The id is composed of \<power_instance_id\>/\<instance_id\>.
-* `instance_id` - The unique identifier of the instance.
-* `status` - The status of the VM.
-* `health_status` - The health status of the VM.
-* `migratable` - The state of instance migratable.
-* `min_processors` - Minimum number of processors that were allocated (for resize)
-* `min_memory` - Minimum Memory that was  allocated (for resize)
-* `max_processors` - Maximumx number of processors that can be allocated (for resize) without a shutdown/reboot of the lpar
-* `max_memory` - Maximum amount of memory that can be allocated (for resize) without a shutdown/reboot of the lpar
-* `progress` - The progress of the instance.
-* `addresses` - A list of addresses assigned to the VM. Nested `addresses` blocks have the following structure:
-	* `ip` - IP of the instance.
-  * `macaddress` - The macaddress of the instance.
-  * `networkid` - The networkID of the instance.
-  * `network_name` - The network name of the instance.
-  * `type` - The type of the network
-  * `external_ip` - The externalIP address of the instance.
-* `pin_policy` - The pin policy of the instance
-* `max_virtual_cores` - The maximum number of virtual cores
-* `min_virtual_cores` - The minimum number of virtual cores
+  Nested scheme for `addresses`:
+  - `ip` - (String) The IP address of the instance.
+  
+  Nested scheme for `ip`:
+  - `macaddress` - (String) The MAC address of the instance.
+  - `networkid` - (String) The network ID of the instance.
+  - `network_name` - (String) The network name of the instance.
+  - `type` - (String) The type of network.
+  - `externalip` - (String) The external IP address of the instance.
+- `id` - (String) The unique identifier of the instance. The ID is composed of `<power_instance_id>/<instance_id>`.
+- `instance_id` - (String) The unique identifier of the instance. 
+- `pin_policy`  - (String) The pinning policy of the instance.
+- `progress` - Float - Specifies the overall progress of the instance deployment process in percentage.
+- `status` - (String) The status of the instance.
+- `health_status` - (String) The health status of the VM.
+- `migratable`- (Bool) Indicates the VM is migrated or not.
+- `max_processors`- Integer- The maximum number of processors that can be allocated to the instance with shutting down or rebooting the `LPAR`.
+- `max_virtual_cores` - (Integer) The maximum number of virtual cores.
+- `min_processors` - Float - The minimum number of processors that the instance can have. 
+- `min_memory` - (Integer) The minimum memory that was allocated to the instance.
+- `max_memory`- (Integer) The maximum amount of memory that can be allocated to the instance without shut down or reboot the `LPAR`.
+- `min_virtual_cores` - (Integer) The minimum number of virtual cores.
+
 ## Import
 
-ibm_pi_instance can be imported using `power_instance_id` and `instance_id`, eg
+The `ibm_pi_instance` can be imported using `power_instance_id` and `instance_id`.
+
+**Example**
 
 ```
 $ terraform import ibm_pi_instance.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
