@@ -7,12 +7,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
-
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/IBM-Cloud/bluemix-go/models"
 )
 
 func resourceIBMIAMAuthorizationPolicy() *schema.Resource {
@@ -293,14 +292,15 @@ func resourceIBMIAMAuthorizationPolicyExists(d *schema.ResourceData, meta interf
 	getPolicyOptions := &iampolicymanagementv1.GetPolicyOptions{
 		PolicyID: core.StringPtr(d.Id()),
 	}
-	authorizationPolicy, _, err := iampapClient.GetPolicy(getPolicyOptions)
+	authorizationPolicy, resp, err := iampapClient.GetPolicy(getPolicyOptions)
 	if err != nil {
-		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
-				return false, nil
-			}
+		if resp.StatusCode == 404 {
+			return false, nil
 		}
 		return false, fmt.Errorf("Error communicating with the API: %s", err)
+	}
+	if authorizationPolicy != nil && *authorizationPolicy.State == "deleted" {
+		return false, nil
 	}
 
 	return *authorizationPolicy.ID == d.Id(), nil
