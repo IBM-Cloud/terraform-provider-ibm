@@ -562,6 +562,7 @@ func Provider() *schema.Provider {
 			"ibm_ssl_certificate":                                resourceIBMSSLCertificate(),
 			"ibm_cdn":                                            resourceIBMCDN(),
 			"ibm_hardware_firewall_shared":                       resourceIBMFirewallShared(),
+			"ibm_cis_filter":                                     resourceIBMCISFilter(),
 
 			//Added for Power Colo
 
@@ -707,6 +708,7 @@ func Validator() ValidatorDict {
 				"ibm_container_cluster":                 resourceIBMContainerClusterValidator(),
 				"ibm_resource_tag":                      resourceIBMResourceTagValidator(),
 				"ibm_satellite_location":                resourceIBMSatelliteLocationValidator(),
+				"ibm_cis_filter":                        resourceIBMCISFilterValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),

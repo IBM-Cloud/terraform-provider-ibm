@@ -168,6 +168,18 @@ resource "ibm_cis_rate_limit" "ratelimit" {
   }
 }
 
+
+# CIS Filter Function
+resource "ibm_cis_filter" "test" {
+  cis_id      = data.ibm_cis.cis.id
+  domain_id   = data.ibm_cis_domain.cis_domain.domain_id
+  expression         =  "(http.request.uri eq \"/test-update?number=212\")"
+  paused             =  "false"
+  description        = "Filter-creation"
+
+
+}
+
 # CIS Edge Functions action
 resource "ibm_cis_edge_functions_action" "test_action" {
   cis_id      = data.ibm_cis.cis.id

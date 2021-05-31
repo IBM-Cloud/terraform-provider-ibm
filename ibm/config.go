@@ -31,6 +31,7 @@ import (
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
 	dns "github.com/IBM/networking-go-sdk/dnssvcsv1"
 	cisedgefunctionv1 "github.com/IBM/networking-go-sdk/edgefunctionsapiv1"
+	cisfiltersv1 "github.com/IBM/networking-go-sdk/filtersv1"
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
 	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
 	cisglbv1 "github.com/IBM/networking-go-sdk/globalloadbalancerv1"
@@ -254,6 +255,7 @@ type ClientSession interface {
 	SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error)
 	SchematicsV1() (*schematicsv1.SchematicsV1, error)
 	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
+	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
 }
 
 type clientSession struct {
@@ -500,6 +502,10 @@ type clientSession struct {
 	//IAM Policy Management
 	iamPolicyManagementErr error
 	iamPolicyManagementAPI *iampolicymanagement.IamPolicyManagementV1
+
+	// CIS Filters options
+	cisFiltersClient *cisfiltersv1.FiltersV1
+	cisFiltersErr    error
 }
 
 func (session clientSession) CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error) {
@@ -914,6 +920,14 @@ func (sess clientSession) SatelliteClientSession() (*kubernetesserviceapiv1.Kube
 	return sess.satelliteClient, sess.satelliteClientErr
 }
 
+// CIS Filters
+func (sess clientSession) CisFiltersSession() (*cisfiltersv1.FiltersV1, error) {
+	if sess.cisFiltersErr != nil {
+		return sess.cisFiltersClient, sess.cisFiltersErr
+	}
+	return sess.cisFiltersClient.Clone(), nil
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -992,6 +1006,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisWAFRuleErr = errEmptyBluemixCredentials
 		session.iamIdentityErr = errEmptyBluemixCredentials
 		session.secretsManagerClientErr = errEmptyBluemixCredentials
+		session.cisFiltersErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1579,6 +1594,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisLockdownErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 		session.cisRangeAppErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 		session.cisWAFRuleErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisFiltersErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 	}
 	cisEndPoint := envFallBack([]string{"IBMCLOUD_CIS_API_ENDPOINT"}, cisURL)
 
@@ -1962,6 +1978,21 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisWAFRuleClient != nil && session.cisWAFRuleClient.Service != nil {
 		session.cisWAFRuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+
+	// IBM Network CIS Filters
+	cisFiltersOpt := &cisfiltersv1.FiltersV1Options{
+		URL:           cisEndPoint,
+		Authenticator: authenticator,
+	}
+	session.cisFiltersClient, session.cisFiltersErr = cisfiltersv1.NewFiltersV1(cisFiltersOpt)
+	if session.cisFiltersErr != nil {
+		session.cisFiltersErr =
+			fmt.Errorf("Error occured while configuring CIS Filters : %s",
+				session.cisFiltersErr)
+	}
+	if session.cisFiltersClient != nil && session.cisFiltersClient.Service != nil {
+		session.cisFiltersClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 
 	// iamIdenityURL := fmt.Sprintf("https://%s.iam.cloud.ibm.com/v1", c.Region)
