@@ -4,16 +4,16 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_user_policy"
 description: |-
-  Manages IBM IAM User Policy.
+  Manages IBM IAM user policy.
 ---
 
-# ibm\_iam_user_policy
+# ibm_iam_user_policy
 
-Provides a resource for IAM User Policy. This allows user policy to be created, updated and deleted. To assign a policy to one user, the user must exist in the account to which you assign the policy. 
+Create, update, or delete an IAM user policy. To assign a policy to one user, the user must exist in the account to which you assign the policy. For more information, about IAM role action, see [managing access to resources](https://cloud.ibm.com/docs/account?topic=account-assign-access-resources).
 
-## Example Usage
+## Example usage
 
-### User Policy for All Identity and Access enabled services 
+### User policy for all Identity and Access enabled services 
 
 ```terraform
 resource "ibm_iam_user_policy" "policy" {
@@ -23,7 +23,7 @@ resource "ibm_iam_user_policy" "policy" {
 
 ```
 
-### User Policy using service with region
+### User policy using service with region
 
 ```terraform
 resource "ibm_iam_user_policy" "policy" {
@@ -36,7 +36,7 @@ resource "ibm_iam_user_policy" "policy" {
 }
 
 ```
-### User Policy using resource instance 
+### User policy using resource instance 
 
 ```terraform
 resource "ibm_resource_instance" "instance" {
@@ -58,7 +58,7 @@ resource "ibm_iam_user_policy" "policy" {
 
 ```
 
-### User Policy using resource group 
+### User policy using resource group 
 
 ```terraform
 data "ibm_resource_group" "group" {
@@ -77,7 +77,7 @@ resource "ibm_iam_user_policy" "policy" {
 
 ```
 
-### User Policy using resource and resource type 
+### User policy using resource and resource type 
 
 ```terraform
 data "ibm_resource_group" "group" {
@@ -96,7 +96,7 @@ resource "ibm_iam_user_policy" "policy" {
 
 ```
 
-### User Policy using attributes 
+### User policy using attributes 
 
 ```terraform
 data "ibm_resource_group" "group" {
@@ -118,7 +118,7 @@ resource "ibm_iam_user_policy" "policy" {
 
 ```
 
-### User Policy using resource_attributes
+### User policy using resource_attributes
 
 ```terraform
 resource "ibm_iam_user_policy" "policy" {
@@ -136,45 +136,48 @@ resource "ibm_iam_user_policy" "policy" {
 }
 ```
 
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-## Argument Reference
+- `account_management` - (Optional, Bool) Gives access to all account management services if set to **true**. Default value **false**. If you set this option, do not set `resources` at the same time.
+- `ibm_id` - (Required, Forces new resource, String) The IBM ID or Email address of the user.
+- `roles` - (Required, List)  A comma separated list of roles. Valid roles are `Writer`, `Reader`, `Manager`, `Administrator`, `Operator`, `Viewer`, and `Editor`.
+- `resources` - (Optional, List) A nested block describes the resource of this policy.
 
-The following arguments are supported:
+  Nested scheme for `resources`:
+  - `attributes` (Optional, Map)  A set of resource attributes in the format `name=value,name=value`. If you set this option, do not specify `account_management`  and `resource_attributes` at the same time.
+  - `resource_instance_id` - (Optional, String) The ID of the resource instance of the policy definition.
+  - `region`  (Optional, String) The region of the policy definition.
+  - `resource_type` - (Optional, String) The resource type of the policy definition.
+  - `resource` - (Optional, String) The resource of the policy definition.
+  - `resource_group_id` - (Optional, String) The ID of the resource group. To retrieve the value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
+  - `service` - (Optional, String) The service name of the policy definition. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
+- `resource_attributes` - (Optional, List) A nested block describing the resource of this policy.
+  
+  Nested scheme for `resource_attributes`:
+  - `name` - (Required, String) The name of an Attribute. Supported values are `serviceName`, `serviceInstance`, `region`,`resourceType`, `resource`, `resourceGroupId`, and other service specific resource attributes.
+  - `value` - (Required, String) The value of an attribute.
+  - `operator` - (Optional, String) Operator of an attribute. The default value is `stringEquals`. **Note**: Conflicts with `account_management` and `resources`.
+- `tags`  (Optional, Array of Strings)  A list of tags that are associated with the service policy instance.  **Note** `Tags` are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
 
-* `ibm_id` - (Required, Forces new resource, string) The ibm id or email of user.
-* `roles` - (Required, list) comma separated list of roles. Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor.
-* `resources` - (Optional, list) A nested block describing the resource of this policy.
-Nested `resources` blocks have the following structure:
-  * `service` - (Optional, string) Service name of the policy definition.  You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
-  * `resource_instance_id` - (Optional, string) ID of resource instance of the policy definition.
-  * `region` - (Optional, string) Region of the policy definition.
-  * `resource_type` - (Optional, string) Resource type of the policy definition.
-  * `resource` - (Optional, string) Resource of the policy definition.
-  * `resource_group_id` - (Optional, string) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`. 
-  * `attributes` - (Optional, map) Set resource attributes in the form of `'name=value,name=value...`.
- **NOTE**: Conflicts with `account_management` and `resource_attributes`.
-* `resource_attributes` - (Optional, list) A nested block describing the resource of this policy.
-Nested `resource_attributes` blocks have the following structure:
-  * `name` - (Required, string) Name of the Attribute. Supported values are`serviceName` , `serviceInstance` , `region` ,`resourceType` , `resource` , `resourceGroupId` and other service specific resource attributes.
-  * `value` - (Required, string) Value of the Attribute.
-  * `operator` - (Optional, string) Operator of the Attribute. Default Value: `stringEquals`
- **NOTE**: Conflicts with `account_management` and `resources`.
-* `account_management` - (Optional, bool) Gives access to all account management services if set to `true`. Default value `false`. 
-  **NOTE**: Conflicts with `resources`and `resource_attributes`.
-* `tags` - (Optional, array of strings) Tags associated with the user policy instance.  
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
+- `id`  - (String) The unique identifier of the user policy. The ID is composed of `<ibm_id>/<user_policy_id>`.
+- `version` - (String) The version of the user policy.
 
-* `id` - The unique identifier of the User Policy. The id is composed of \<ibm_id\>/\<user_policy_id\>
-
-* `version` - Version of the User Policy.
 
 ## Import
+The user policy can be imported by using the IBMID and user policy ID.
 
-ibm_iam_user_policy can be imported using IBMID and User Policy id, eg
+**Syntax**
+
+```
+$ terraform import ibm_iam_user_policy.example <ibm_id>/<user_policy_ID>
+```
+
+**Example**
 
 ```
 $ terraform import ibm_iam_user_policy.example test@in.ibm.com/9ebf7018-3d0c-4965-9976-ef8e0c38a7e2

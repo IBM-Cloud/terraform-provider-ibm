@@ -4,14 +4,14 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_service_id"
 description: |-
-  Manages IBM IAM ServiceID.
+  Manages IBM IAM service ID.
 ---
 
-# ibm\_iam_service_id
+# ibm_iam_service_id
 
-Provides a resource for IAM ServiceID. This allows serviceID  to be created, updated and deleted.
+Create, update, or delete an IAM service ID by using resource group and resource type.  For more information, about IAM role action, see [managing service ID API keys](https://cloud.ibm.com/docs/account?topic=account-serviceidapikeys).
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_iam_service_id" "serviceID" {
@@ -20,20 +20,19 @@ resource "ibm_iam_service_id" "serviceID" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument references that you can specify for your resource.
 
-* `name` - (Required, string) Name of the serviceID.
-* `description` - (Optional, string) Description of the serviceID.
-* `tags` - (Optional, array of strings) Tags associated with the IAM ServiceID.  
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+- `name` - (Required, String) The name of the service ID.
+- `description`  (Optional, String) The description of the service ID.
+- `tags` (Optional, Array of Strings)  A list of tags that you want to add to the service ID. **Note** The tags are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
 
-## Attribute Reference
+## Attribute reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-* `id` - The unique identifier of the serviceID.
-* `version` - Version of the serviceID.
-* `crn` - crn of the serviceID.
-* `iam_id` - The IAM ID of the serviceID.
+- `crn`  - (String) The CRN of the service ID.
+- `iam_id`-  (String) The IAM ID of the service ID.
+- `id` - (String) The unique identifier of the service ID.
+- `version`  - (String) The version of the service ID.

@@ -6,11 +6,10 @@ description: |-
   Get information about an object in an IBM Cloud Object Storage bucket.
 ---
 
-# ibm\_cos_bucket_object
+# ibm_cos_bucket_object
+Retrieves information of an object in IBM Cloud Object Storage bucket. For more information, about an IBM Cloud Object Storage bucket, see [Create some buckets to store your data](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-getting-started-cloud-object-storage#gs-create-buckets). 
 
-Retrieves information of an object in IBM Cloud Object Storage bucket.
-
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_resource_group" "cos_group" {
@@ -36,23 +35,20 @@ data "ibm_cos_bucket_object" "cos_object" {
   key             = "object.json"
 }
 ```
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-## Argument Reference
+- `bucket_crn` - (Required, String) The CRN of the COS bucket.
+- `bucket_location` - (Required, String) The location of the COS bucket.
+- `endpoint_type` - (Optional, String) The type of endpoint used to access COS. Accepted values: `public`, `private`, or `direct`. Default value is `public`.
+- `key` - (Required, String) The name of an object in the COS bucket.
 
-The following arguments are supported:
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-* `bucket_crn` - (Required, string) The CRN of the COS bucket.
-* `bucket_location` - (Required, string) The location of the COS bucket.
-* `endpoint_type` - (Optional, string) The type of endpoint used to access COS. Accepted values: `public`, `private`, or `direct`. Default value is `public`.
-* `key` - (Required, string) The name of the object in the COS bucket.
-
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The ID of the object.
-* `body` - Literal string value of the object content. Only supported for `text/*` and `application/json` content types.
-* `content_length` - A standard MIME type describing the format of the object data.
-* `content_type` - A standard MIME type describing the format of the object data.
-* `etag` - Computed MD5 hexdigest of the object content.
-* `last_modified` - Last modified date of the object. A GMT formatted date.
+- `id` - (String) The ID of the object.
+- `body` - (String) Literal string value of an object content. Only supported for `text/*` and `application/json` content types.
+- `content_length` - (String) A standard MIME type describing the format of an object data.
+- `content_type` - (String) A standard MIME type describing the format of an object data.
+- `etag` - (String) Computed MD5 hexdigest of an object content.
+- `last_modified` - (Timestamp) Last modified date of the object. A GMT formatted date.

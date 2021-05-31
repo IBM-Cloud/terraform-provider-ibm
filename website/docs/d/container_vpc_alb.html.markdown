@@ -3,16 +3,14 @@ subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_vpc_alb"
 description: |-
-  Get information about a Kubernetes container vpc ALB.
+  Get information about a Kubernetes container VPC ALB.
 ---
 
-# ibm\_container_vpc_alb
+# ibm_container_vpc_alb
+Retrieve information about all the Kubernetes cluster ALB on IBM Cloud as a read-only data source. For more information, about Kubernets container VPC ALB, see [VPC: Exposing apps with load balancers for VPC](https://cloud.ibm.com/docs/containers?topic=containers-vpc-lbaas).
 
-Import the details of a Kubernetes cluster ALB on IBM Cloud as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-## Example Usage
-
-In the following example, you can configure a alb:
+## Example usage
+The following example retrieves information of an ALB.
 
 ```terraform
 data "ibm_container_vpc_alb" "alb" {
@@ -21,24 +19,23 @@ data "ibm_container_vpc_alb" "alb" {
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `alb_id` - (Required, String) The ID of the ALB.
 
-* `alb_id` - (Required,string) The ID of the Application Load Balancer.
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `alb_type` - The ALB type.
-* `cluster` - The name of the cluster.
-* `name` - The name of the ALB.
-* `id` - The ALB ID.
-* `load_balancer_hostname` - The name of the load balancer.
-* `resize` - Resize of the ALB.
-* `state` - ALB state.
-* `status` - The status of ALB.
-* `zone` - The name of the zone.
-* `enable` -  Enable an ALB for the cluster.
-* `disable_deployment` -  Disable the ALB deployment only details.
+- `alb_type` - (String) The ALB type.
+- `cluster` - (String) The name of the cluster.
+- `disable_deployment` - (String) Disable the ALB deployment details.
+- `enable` - (String) Enable an ALB for the cluster.
+- `id` - (String) The ALB ID.
+- `load_balancer_hostname` - (String) The name of the load balancer.
+- `resize` - (String) Resize of the ALB.
+- `state` - (String) ALB state.
+- `status` - (String) The status of ALB.
+- `name` - (String) The name of the ALB.
+- `user_ip` - (String) The IP address assigned by the user.
+- `zone` - (String) The name of the zone.

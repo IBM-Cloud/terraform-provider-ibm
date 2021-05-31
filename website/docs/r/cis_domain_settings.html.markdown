@@ -9,9 +9,9 @@ description: |-
 
 # ibm_cis_domain_settings
 
-Provides a resource which customizes IBM Cloud Internet Services domain settings.
+Customize the IBM Cloud Internet Services domain settings. For more information, about Internet Services domain settings, see [adding domains to your CIS instance](https://cloud.ibm.com/docs/cis?topic=cis-multi-domain-support).
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_cis_domain_settings" "test_domain_settings" {
@@ -62,60 +62,72 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
     strip_uri        = true
   }
 }
+
+resource "ibm_cis_domain_settings" "test" {
+  cis_id          = ibm_cis.instance.id
+  domain_id       = ibm_cis_domain.example.id
+  waf             = "on"
+  ssl             = "full"
+  min_tls_version = "1.2"
+}
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `always_use_https` - (Optional, String) Supported values are `off` and `on`.
+- `automatic_https_rewrites` - (Optional, String) Enable HTTPS rewrites. Allowed values are `off` and `on`.
+- `browser_check` - (Optional, String) Enable a client browser check to look for common HTTP headers that are used by malicious users. If HTTP headers are found,  access to your website is blocked. Supported values are `off` and `on`.
+- `brotli` - (Optional, String) Supported values are `off` and `on`.
+- `challenge_ttl` - (Optional, String) Challenge TTL values are `300`, `900`, `1800`, `2700`, `3600`, `7200`, `10800`, `14400`, `28800`, `57600`, `86400`, `604800`, `2592000`, and `31536000`.
+- `cipher` - (Optional, String) Cipher setting values are  `ECDHE-ECDSA-AES128-GCM-SHA256`, `ECDHE-ECDSA-CHACHA20-POLY1305`,`ECDHE-RSA-AES128-GCM-SHA256`, `ECDHE-RSA-CHACHA20-POLY1305`, `ECDHE-ECDSA-AES128-SHA256`, `ECDHE-ECDSA-AES128-SHA`, `ECDHE-RSA-AES128-SHA256`, `ECDHE-RSA-AES128-SHA`, `AES128-GCM-SHA256`, `AES128-SHA256`, `AES128-SHA`, `ECDHE-ECDSA-AES256-GCM-SHA384`, `ECDHE-ECDSA-AES256-SHA384`, `ECDHE-RSA-AES256-GCM-SHA384`, `ECDHE-RSA-AES256-SHA384`, `ECDHE-RSA-AES256-SHA`, `AES256-GCM-SHA384`, `AES256-SHA256`, `AES256-SHA`, `DES-CBC3-SHA`.
+- `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance.
+- `cname_flattening` - (Optional, String) Supported values are `flatten_at_root`, `flatten_all`, and `flatten_none`.
+- `domain_id` - (Required, String) The ID of the domain that you want to customize.
+- `dnssec` - (Optional, String) Can set to `active` only once. Allowed values are `active`, `disabled`.
+- `hotlink_protection` - (Optional, String) Supported values are `off` and `on`.
+- `http2` - (Optional, String) Supported values are `off` and `on`.
+- `image_load_optimization` - (Optional, String) Supported values are `off` and `on`.
+- `image_size_optimization` - (Optional, String) Supported values are `lossless`,  `off`, and `lossy`.
+- `ipv6` - (Optional, String) Supported values are `off` and `on`.
+- `ip_geolocation` - (Optional, String) Supported values are `off` and `on`.
+- `max_upload` - (Optional, String) Maximum upload values are `100`, `125`, `150`, `175`, `200`, `225`, `250`, `275`, `300`, `325`, `350`, `375`, `400`, `425`, `450`, `475`, and `500`.
+- `min_tls_version` - (Optional, String) The minimum TLS version that you want to allow. Allowed values are `1.1`, `1.2`, or `1.3`.
+- `minify`  (Optional, List) Minify the setting as stated.
 
-- `cis_id` - (Required) The ID of the CIS service instance.
-- `domain_id` - (Required) The ID of the domain.
-- `dnssec` - (Optional, string) Allowed values: "active", "disabled". It is not allowed to set to "active" more than once.
-- `waf`. (Optional, string) Allowed values: "off", "on"
-- `min_tls_version`. (Optional, string) Allowed values: 1.1", "1.2", "1.3".
-- `ssl`. (Optional, string) Allowed values: "off", "flexible", "full", "strict", "origin_pull".
-- `automatic_https_rewrites`. (Optional, string) Allowed values: "off", "on"
-- `opportunistic_encryption`. (Optional, string) Allowed values: "off", "on"
-- `cname_flattening`. (Optional, string) Allowed values: "flatten_at_root", "flatten_all", "flatten_none".
-- `always_use_https` . (Optional, string) Allowed values: "off", "on"
-- `ipv6` . (Optional, string) Allowed values: "off", "on"
-- `browser_check` . (Optional, string) Allowed values: "off", "on"
-- `hotlink_protection` . (Optional, string) Allowed values: "off", "on"
-- `http2` . (Optional, string) Allowed values: "off", "on"
-- `image_load_optimization` . (Optional, string) Allowed values: "off", "on"
-- `image_size_optimization` . (Optional, string) Allowed values: "lossless", "off", "lossy"
-- `ip_geolocation` . (Optional, string) Allowed values: "off", "on"
-- `origin_error_page_pass_thru` . (Optional, string) Allowed values: "off", "on"
-- `brotli` . (Optional, string) Allowed values: "off", "on"
-- `pseudo_ipv4` . (Optional, string) Allowed values: "overwrite_header", "off", "add_header"
-- `prefetch_preload` . (Optional, string) Allowed values: "off", "on"
-- `response_buffering` . (Optional, string) Allowed values: "off", "on"
-- `script_load_optimization` . (Optional, string) Allowed values: "off", "on"
-- `server_side_exclude` . (Optional, string) Allowed values: "off", "on"
-- `tls_client_auth` . (Optional, string) Allowed values: "off", "on"
-- `true_client_ip_header` . (Optional, string) Allowed values: "off", "on"
-- `websockets` . (Optional, string) Allowed values: "off", "on"
-- `challenge_ttl` . (Optional, string) Challenge TTL values: 300, 900, 1800, 2700, 3600, 7200, 10800, 14400, 28800, 57600, 86400, 604800, 2592000, 31536000
-- `max_upload` . (Optional, string) Maximum upload values: 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500
-- `cipher` . (Optional, string) Cipher setting values: "ECDHE-ECDSA-AES128-GCM-SHA256", "ECDHE-ECDSA-CHACHA20-POLY1305","ECDHE-RSA-AES128-GCM-SHA256", "ECDHE-RSA-CHACHA20-POLY1305", "ECDHE-ECDSA-AES128-SHA256", "ECDHE-ECDSA-AES128-SHA", "ECDHE-RSA-AES128-SHA256", "ECDHE-RSA-AES128-SHA", "AES128-GCM-SHA256", "AES128-SHA256", "AES128-SHA", "ECDHE-ECDSA-AES256-GCM-SHA384", "ECDHE-ECDSA-AES256-SHA384", "ECDHE-RSA-AES256-GCM-SHA384", "ECDHE-RSA-AES256-SHA384", "ECDHE-RSA-AES256-SHA", "AES256-GCM-SHA384", "AES256-SHA256", "AES256-SHA", "DES-CBC3-SHA"
-- `minify` . (Optional, list) Minify setting
-  - `css` - (Required, string) CSS values: "on", "off"
-  - `html` - (Required, string) HTML values: "on", "off"
-  - `js` - (Required, string) JS values: "on", "off"
-- `security_header` . (Optional, list) Security Headers
-  - `enabled` - (Required, boolean) Enabled values : true, false
-  - `include_subdomains` - (Required, boolean) Subdomain Included : true, false
-  - `max_age` - (Required, integer) Maximum age
-  - `nosniff` - (Required, boolean) No Sniff
-- `mobile_redirect` . (Optional, list) Mobile Redirect Setting
-  - `status` - (Required, boolean) Mobile redirect setting status values: true, false
-  - `mobile_subdomain` . (Optional, string) Mobile redirect subdomain. Ex. m.domain.com
-  - `strip_uri` . (Optional, boolean) Strip URI for mobile redirect.
+  Nested scheme for `minify`:
+  - `css` - (Required, String) CSS supported values are `on` and `off`.
+  - `html` - (Required, String) HTML supported values are `on` and `off`.
+  - `js` - (Required, String) JS supported values are `on` and `off`.
+- `mobile_redirect`  (Optional, List) Mobile redirect setting.
 
-Additional settings not implemented in this version of the provider.
+  Nested scheme for `mobile_redirect`:
+  - `mobile_subdomain` - (Optional, String) Mobile redirect subdomain. For example `m.domain.com`.
+  - `status`- (Bool) Required-Mobile redirect setting status values are **true** and **false**.
+  - `strip_uri` - (Optional, Bool) Strip URI for mobile redirect.
+- `origin_error_page_pass_thru` - (Optional, String) Supported values are `off` and `on`.
+- `opportunistic_encryption` - (Optional, String) Supported values are `off` and `on`.
+- `pseudo_ipv4` - (Optional, String) Supported values are `overwrite_header`, `off`, and `add_header`.
+- `prefetch_preload` - (Optional, String) Supported values are `off` and `on`.
+- `response_buffering` - (Optional, String) Supported values are `off` and `on`.
+- `script_load_optimization` - (Optional, String) Supported values are `off` and `on`.
+- `server_side_exclude` - (Optional, String) Supported values are `off` and `on`.
+- `security_header`  (Optional, List) Security headers as stated.
+- `security_header.enabled`- (Bool) Required-Supported values are **true** and **false**.
+- `security_header.include_subdomains`- (Bool) Required-Supported values are **true** and **false**.
+- `security_header.max_age`- (Required, Integer) Maximum age of the security header.
+- `security_header.nosniff`- (Bool) Required-No sniff.
+- `ssl` - (Optional, String) Allowed values: `off`, `flexible`, `full`, `strict`, `origin_pull`.
+- `tls_client_auth` - (Optional, String) Supported values are `off` and `on`.
+- `true_client_ip_header` - (Optional, String) Supported values are `off` and `on`.
+- `waf` - (Optional, String) Enable a web application firewall (WAF). Supported values are `off` and `on`.
+- `websockets` - (Optional, String) Supported values are `off` and `on`.
 
-## Attributes Reference
+**Note**
 
-In addition to all arguments above, the following attributes are exported:
+Extra settings are not implemented in this version of the provider.
+ 
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `certificate_status`. (deprecated) Value of: "none", "initializing", "authorizing", "active"
+- `certificate_status` - (String)  The value is displayed as `none`, `initializing`, `authorizing`, or `active`.
