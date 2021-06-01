@@ -44,6 +44,7 @@ func resourceIBMISInstanceGroupManager() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "autoscale",
+				ForceNew:     true,
 				ValidateFunc: InvokeValidator("ibm_is_instance_group_manager", "manager_type"),
 				Description:  "The type of instance group manager.",
 			},
@@ -243,11 +244,18 @@ func resourceIBMISInstanceGroupManagerCreate(d *schema.ResourceData, meta interf
 			InstanceGroupID:               &instanceGroupID,
 			InstanceGroupManagerPrototype: &instanceGroupManagerPrototype,
 		}
+
+		_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
+		if healthError != nil {
+			return healthError
+		}
+
 		instanceGroupManagerIntf, response, err := sess.CreateInstanceGroupManager(&createInstanceGroupManagerOptions)
-		instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
-		if err != nil || instanceGroupManager == nil {
+		if err != nil || instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager) == nil {
 			return fmt.Errorf("Error creating InstanceGroup manager: %s\n%s", err, response)
 		}
+		instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
+
 		d.SetId(fmt.Sprintf("%s/%s", instanceGroupID, *instanceGroupManager.ID))
 
 	}
@@ -262,6 +270,8 @@ func resourceIBMISInstanceGroupManagerUpdate(d *schema.ResourceData, meta interf
 		return err
 	}
 
+	managerType := d.Get("manager_type").(string)
+
 	var changed bool
 	updateInstanceGroupManagerOptions := vpcv1.UpdateInstanceGroupManagerOptions{}
 	instanceGroupManagerPatchModel := &vpcv1.InstanceGroupManagerPatch{}
@@ -271,29 +281,30 @@ func resourceIBMISInstanceGroupManagerUpdate(d *schema.ResourceData, meta interf
 		instanceGroupManagerPatchModel.Name = &name
 		changed = true
 	}
+	if managerType == "autoscale" {
+		if d.HasChange("aggregation_window") {
+			aggregationWindow := int64(d.Get("aggregation_window").(int))
+			instanceGroupManagerPatchModel.AggregationWindow = &aggregationWindow
+			changed = true
+		}
 
-	if d.HasChange("aggregation_window") {
-		aggregationWindow := int64(d.Get("aggregation_window").(int))
-		instanceGroupManagerPatchModel.AggregationWindow = &aggregationWindow
-		changed = true
-	}
+		if d.HasChange("cooldown") {
+			cooldown := int64(d.Get("cooldown").(int))
+			instanceGroupManagerPatchModel.Cooldown = &cooldown
+			changed = true
+		}
 
-	if d.HasChange("cooldown") {
-		cooldown := int64(d.Get("cooldown").(int))
-		instanceGroupManagerPatchModel.Cooldown = &cooldown
-		changed = true
-	}
+		if d.HasChange("max_membership_count") {
+			maxMembershipCount := int64(d.Get("max_membership_count").(int))
+			instanceGroupManagerPatchModel.MaxMembershipCount = &maxMembershipCount
+			changed = true
+		}
 
-	if d.HasChange("max_membership_count") {
-		maxMembershipCount := int64(d.Get("max_membership_count").(int))
-		instanceGroupManagerPatchModel.MaxMembershipCount = &maxMembershipCount
-		changed = true
-	}
-
-	if d.HasChange("min_membership_count") {
-		minMembershipCount := int64(d.Get("min_membership_count").(int))
-		instanceGroupManagerPatchModel.MinMembershipCount = &minMembershipCount
-		changed = true
+		if d.HasChange("min_membership_count") {
+			minMembershipCount := int64(d.Get("min_membership_count").(int))
+			instanceGroupManagerPatchModel.MinMembershipCount = &minMembershipCount
+			changed = true
+		}
 	}
 
 	if d.HasChange("enable_manager") {
@@ -316,6 +327,12 @@ func resourceIBMISInstanceGroupManagerUpdate(d *schema.ResourceData, meta interf
 			return fmt.Errorf("Error calling asPatch for InstanceGroupManagerPatch: %s", err)
 		}
 		updateInstanceGroupManagerOptions.InstanceGroupManagerPatch = instanceGroupManagerPatch
+
+		_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
+		if healthError != nil {
+			return healthError
+		}
+
 		_, response, err := sess.UpdateInstanceGroupManager(&updateInstanceGroupManagerOptions)
 		if err != nil {
 			return fmt.Errorf("Error updating InstanceGroup manager: %s\n%s", err, response)
@@ -342,14 +359,14 @@ func resourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interfac
 		InstanceGroupID: &instanceGroupID,
 	}
 	instanceGroupManagerIntf, response, err := sess.GetInstanceGroupManager(&getInstanceGroupManagerOptions)
-	instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
-	if err != nil || instanceGroupManager == nil {
+	if err != nil || instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager) == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
 		return fmt.Errorf("Error Getting InstanceGroup Manager: %s\n%s", err, response)
 	}
+	instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
 
 	managerType := *instanceGroupManager.ManagerType
 
@@ -359,19 +376,6 @@ func resourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interfac
 		d.Set("manager_id", instanceGroupManagerID)
 		d.Set("instance_group", instanceGroupID)
 		d.Set("manager_type", *instanceGroupManager.ManagerType)
-
-		actions := make([]map[string]interface{}, 0)
-		if instanceGroupManager.Actions != nil {
-			for _, action := range instanceGroupManager.Actions {
-				actn := map[string]interface{}{
-					"instance_group_manager_action":      *action.ID,
-					"instance_group_manager_action_name": *action.Name,
-					"resource_type":                      *action.ResourceType,
-				}
-				actions = append(actions, actn)
-			}
-			d.Set("actions", actions)
-		}
 
 	} else {
 
@@ -386,6 +390,20 @@ func resourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interfac
 		d.Set("manager_type", *instanceGroupManager.ManagerType)
 
 	}
+
+	actions := make([]map[string]interface{}, 0)
+	if instanceGroupManager.Actions != nil {
+		for _, action := range instanceGroupManager.Actions {
+			actn := map[string]interface{}{
+				"instance_group_manager_action":      *action.ID,
+				"instance_group_manager_action_name": *action.Name,
+				"resource_type":                      *action.ResourceType,
+			}
+			actions = append(actions, actn)
+		}
+	}
+	d.Set("actions", actions)
+
 	policies := make([]string, 0)
 
 	for i := 0; i < len(instanceGroupManager.Policies); i++ {
@@ -412,6 +430,12 @@ func resourceIBMISInstanceGroupManagerDelete(d *schema.ResourceData, meta interf
 		ID:              &instanceGroupManagerID,
 		InstanceGroupID: &instanceGroupID,
 	}
+
+	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
+	if healthError != nil {
+		return healthError
+	}
+
 	response, err := sess.DeleteInstanceGroupManager(&deleteInstanceGroupManagerOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {

@@ -73,7 +73,6 @@ func resourceIBMISInstanceGroupManagerAction() *schema.Resource {
 			"max_membership_count": {
 				Type:          schema.TypeInt,
 				Optional:      true,
-				Default:       1,
 				ValidateFunc:  InvokeValidator("ibm_is_instance_group_manager_action", "max_membership_count"),
 				Description:   "The maximum number of members in a managed instance group",
 				ConflictsWith: []string{"membership_count"},
@@ -87,7 +86,6 @@ func resourceIBMISInstanceGroupManagerAction() *schema.Resource {
 				ValidateFunc:  InvokeValidator("ibm_is_instance_group_manager_action", "min_membership_count"),
 				Description:   "The minimum number of members in a managed instance group",
 				ConflictsWith: []string{"membership_count"},
-				RequiredWith:  []string{"target_manager", "max_membership_count"},
 			},
 
 			"target_manager": {

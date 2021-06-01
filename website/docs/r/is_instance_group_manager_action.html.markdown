@@ -1,14 +1,14 @@
 ---
 subcategory: "VPC infrastructure"
 layout: "ibm"
-page_title: "IBM : ibm_is_instance_group_manager_action"
+page_title: "IBM : instance_group_manager_action"
 description: |-
-  Manages ibm_is_instance_group_manager_action.
+  Manages IBM VPC Instance group manager action.
 ---
 
-# ibm\_ibm_is_instance_group_manager_action
+# ibm\_is_instance_group_manager_action
 
-This allows ibm_is_instance_group_manager_action to be created, updated and deleted.
+This allows instance group manager action to be created, updated and deleted.
 
 ## Example Usage
 
@@ -83,7 +83,7 @@ The following arguments are supported:
 * `membership_count` - (Optional, int) The number of members the instance group should have at the scheduled time.
 * `target_manager` - (Optional, string) The unique identifier for this instance group manager of type autoscale.
 * `max_membership_count` - (Optional, int) The maximum number of members the instance group should have at the scheduled time.
-* `min_membership_count` - (Optional, int) The minimum number of members the instance group should have at the scheduled time. Default valeue is set to 1.
+* `min_membership_count` - (Optional, int) The minimum number of members the instance group should have at the scheduled time. Default value is set to 1.
  
 
 ## Attribute Reference
@@ -103,7 +103,7 @@ In addition to all arguments above, the following attributes are exported:
 * `cron_spec` - The cron specification for a recurring scheduled action. Actions can be applied a maximum of one time within a 5 min period.
 * `last_applied_at` - The date and time the scheduled action was last applied. If empty the action has never been applied.
 * `next_run_at` - The date and time the scheduled action will next run. If empty the system is currently calculating the next run time.
-* `target_manager_name` - (Optional, string) Name of instance group manager of type autoscale.
+* `target_manager_name` - Name of instance group manager of type autoscale.
 
 ## Import
 
