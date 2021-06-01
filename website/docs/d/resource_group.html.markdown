@@ -4,16 +4,14 @@ subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM: ibm_resource_group"
 description: |-
-  Get information about an IBM resource Group.
+  Get information about an IBM resource group.
 ---
 
-# ibm\_resource_group
+# ibm_resource_group
+Retrieve information about an existing IBM resource group as a read-only data source. For more information, about resource group, see [managing resource groups](https://cloud.ibm.com/docs/account?topic=account-rgs).
 
-Import the details of an existing IBM resource Group as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
-
-## Example Usage
-
-Import the resource group by name
+## Example usage
+The following example enables you to import the resource group by name.
 
 ```terraform
 data "ibm_resource_group" "group" {
@@ -21,7 +19,7 @@ data "ibm_resource_group" "group" {
 }
 ```
 
-Import the default resource group
+### Example to import the default resource group
 
 ```terraform
 data "ibm_resource_group" "group" {
@@ -29,18 +27,13 @@ data "ibm_resource_group" "group" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `is_default` - (Optional, Bool) Specifies whether you want to import default resource group.  **Note**: Conflicts with the  `name`.
+- `name` - (Optional, String) The name of an IBM Cloud resource group. You can retrieve the value by running the `ibmcloud resource groups` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).  **Note**: Conflicts with `is_default`.
 
-* `name` - (Optional, string) The name of the IBM Cloud resource group. You can retrieve the value by running the `ibmcloud resource groups` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).  
-  **NOTE**: Conflicts with `is_default`.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-* `is_default` - (Optional, boolean) Specifies whether you want to import default resource group.  
-  **NOTE**: Conflicts with `name`.
-
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the resource group.  
+- `id` - (String) The unique identifier of the resource group.  
