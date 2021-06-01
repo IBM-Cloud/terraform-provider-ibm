@@ -170,7 +170,7 @@ func dataSourceIBMISInstanceGroupManagerActionsRead(d *schema.ResourceData, meta
 		if err != nil {
 			return fmt.Errorf("error Getting InstanceGroup Manager Actions %s\n%s", err, response)
 		}
-		if *instanceGroupManagerActionsCollection.TotalCount == int64(0) {
+		if instanceGroupManagerActionsCollection != nil && *instanceGroupManagerActionsCollection.TotalCount == int64(0) {
 			break
 		}
 		start = GetNext(instanceGroupManagerActionsCollection.Next)

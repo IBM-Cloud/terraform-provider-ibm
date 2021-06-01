@@ -373,15 +373,14 @@ func resourceIBMISInstanceGroupManagerActionRead(d *schema.ResourceData, meta in
 	}
 
 	instanceGroupManagerActionIntf, response, err := sess.GetInstanceGroupManagerAction(getInstanceGroupManagerActionOptions)
-	instanceGroupManagerAction := instanceGroupManagerActionIntf.(*vpcv1.InstanceGroupManagerAction)
-	if err != nil || instanceGroupManagerAction == nil {
+	if err != nil || instanceGroupManagerActionIntf == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
 		return fmt.Errorf("error Getting InstanceGroup Manager Action: %s\n%s", err, response)
 	}
-
+	instanceGroupManagerAction := instanceGroupManagerActionIntf.(*vpcv1.InstanceGroupManagerAction)
 	if err = d.Set("auto_delete", *instanceGroupManagerAction.AutoDelete); err != nil {
 		return fmt.Errorf("error setting auto_delete: %s", err)
 	}
