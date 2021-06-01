@@ -119,8 +119,6 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 				lines[i] = "yum update -y\nyum-config-manager --enable '*'\nyum repolist all\nyum install container-selinux -y"
 			} else if strings.ToLower(hostProvider) == "ibm" {
 				lines[i] = "subscription-manager refresh\nsubscription-manager repos --enable=*\n"
-			} else if strings.ToLower(hostProvider) == "vmware" {
-				lines[i] = "subscription-manager refresh\nyum update-y\n"
 			} else if strings.ToLower(hostProvider) == "azure" {
 				lines[i] = fmt.Sprintf(`#Grow the base volume group first
 echo -e "r\ne\ny\nw\ny\ny\n" | gdisk /dev/sda
@@ -141,6 +139,8 @@ yum-config-manager --enable '*'
 yum repolist all
 yum install container-selinux -y
 				`)
+			} else strings.ToLower(hostProvider) == "vmware" {
+			    lines[i] = "subscription-manager refresh\nyum update -y\n"
 			}
 		}
 	}
