@@ -7,11 +7,10 @@ description: |-
   Get information about an IBM Cloud resource quota.
 ---
 
-# ibm\_resource_quota
+# ibm_resource_quota
+Retrieve information for an existing quota for an IBM Cloud as a read-only data source. For more information, about resource quote, see [ibmcloud resource quota](https://cloud.ibm.com/docs/account?topic=cli-ibmcloud_commands_resource#ibmcloud_resource_quota).
 
-Import the details of an existing quota for an IBM Cloud as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
-
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_resource_quota" "rsquotadata" {
@@ -19,21 +18,19 @@ data "ibm_resource_quota" "rsquotadata" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source.
 
-The following arguments are supported:
+- `name` - (Required, String) The name of the quota for the IBM Cloud resource. You can retrieve the value by executing the `ibmcloud resource quotas` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 
-* `name` - (Required, string) The name of the quota for the IBM Cloud resource. You can retrieve the value by running the `ibmcloud resource quotas` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the quota.
-* `type` - Type of the quota.
-* `max_apps` - Defines the total app limit.
-* `max_instances_per_app` - Defines the total instances limit per app.
-* `max_app_instance_memory` - Defines the total memory of app instance.
-* `total_app_memory` - Defines the total memory for app.
-* `max_service_instances` - Defines the total service instances limit.
-* `vsi_limit` - Defines the VSI limit.
+- `id` - (String) The unique identifier of the quota.
+- `max_apps` - (String) Defines the total app limit.
+- `max_service_instances` - (String) Defines the total service instances limit.
+- `max_instances_per_app` - (String) Defines the total instances limit per app.
+- `max_app_instance_memory` - (String) Defines the total memory of app instance.
+- `type` - (String) Type of the quota.
+- `total_app_memory` - (String) Defines the total memory for app.
+- `vsi_limit` - (String) Defines the VSI limit.
