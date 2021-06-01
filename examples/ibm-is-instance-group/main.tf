@@ -107,3 +107,4 @@ data "ibm_is_instance_group_manager_action" "instance_group_manager_action" {
   instance_group_manager = ibm_is_instance_group_manager_action.instance_group_manager_action.instance_group_manager
   name                   = ibm_is_instance_group_manager_action.instance_group_manager_action.name
 }
+
