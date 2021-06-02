@@ -125,8 +125,8 @@ yum-config-manager --enable '*'
 yum repolist all
 yum install container-selinux -y
 				`)
-			} else strings.ToLower(hostProvider) == "vmware" {
-			    lines[i] = "subscription-manager refresh\nyum update -y\n"
+			} else {
+				lines[i] = "subscription-manager refresh\nyum update-y\n"
 			}
 		}
 	}
