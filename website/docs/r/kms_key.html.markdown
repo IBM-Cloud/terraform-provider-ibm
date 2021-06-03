@@ -57,7 +57,7 @@ resource "ibm_resource_instance" "hpcs"{
 
 Step 2: Initialize your service instance manually
 
-To manage your keys, you need to initialize your service instance first. Two options are provided for initializing a service instance. You can use the IBM Hyper Protect Crypto Services Management Utilities to initialize a service instance by using master key parts stored on smart cards. This provides the highest level of security. You can also use the IBM Cloud Trusted Key Entry (TKE) command-line interface (CLI) plug-in to initialize your service instance. For more details refer [here(https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started#initialize-crypto)]
+To manage your keys, you need to initialize your service instance first. Two options are provided for initializing a service instance. You can use the IBM Hyper Protect Crypto Services Management Utilities to initialize a service instance by using master key parts stored on smart cards. This provides the highest level of security. You can also use the IBM Cloud Trusted Key Entry (TKE) command-line interface (CLI) plug-in to initialize your service instance. For more details refer [here](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started#initialize-crypto)
 
 Step 3: Manage your keys using `ibm_kms_key`
 
