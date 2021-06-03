@@ -58,12 +58,12 @@ In addition to all argument reference list, you can access the following attribu
   - `addresses` - List of objects - The address associated with this instance.
 
     Nested scheme for `addresses`:
-	- `ip` - (String) The IP address of the instance.
-  - `externalip` - (String) The external IP address of the instance.
-  - `macaddress` - (String) The MAC address of the instance.
-  - `network_id` - (String) The network ID of the instance.
-  - `network_name` - (String) The network name of the instance.
-  - `type` - (String) The type of the network.
+    - `ip` - (String) The IP address of the instance.
+    - `external_ip` - (String) The external IP address of the instance.
+    - `macaddress` - (String) The MAC address of the instance.
+    - `network_id` - (String) The network ID of the instance.
+    - `network_name` - (String) The network name of the instance.
+    - `type` - (String) The type of the network.
 - `processors` - (String) The number of processors that are allocated to the instance.
 - `proctype` - (String) The procurement type of the instance. Supported values are `shared` and `dedicated`.
 - `status` - (String) The status of the instance.

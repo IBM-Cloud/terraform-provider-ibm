@@ -52,27 +52,27 @@ The `ibm_pi_instance` provides the following [timeouts](https://www.terraform.io
 - **delete** - The deletion of the instance is considered failed if no response is received for 60 minutes. 
 
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_health_status` - (Optional, String) Specifies if Terraform should poll for the health status to be `OK` or `WARNING`. The default value is `OK`.
+- `pi_image_id` - (Required, String) The ID of the image that you want to use for your Power Systems Virtual Server instance. The image determines the operating system that is installed in your instance. To list available images, run the `ibmcloud pi images` command.
+- `pi_instance_name` - (Required, String) The name of the Power Systems Virtual Server instance. 
+- `pi_key_pair_name` - (Required, String) The name of the SSH key that you want to use to access your Power Systems Virtual Server instance. The SSH key must be uploaded to IBM Cloud.
+- `pi_memory` - (Required, Float) The amount of memory that you want to assign to your instance in gigabytes.
+- `pi_network_ids` - (Required, String) The list of network IDs that you want to assign to the instance. 
+- `pi_pin_policy` - (Optional, String) Select the pinning policy for your Power Systems Virtual Server instance. Supported values are `soft`, `hard`, and `none`.    **Note** You can choose to soft pin (`soft`) or hard pin (`hard`) a virtual server to the physical host where it runs. When you soft pin an instance for high availability, the instance automatically migrates back to the original host once the host is back to its operating state. If the instance has a licensing restriction with the host, the hard pin option restricts the movement of the instance during remote restart, automated remote restart, DRO, and live partition migration. The default pinning policy is `none`. 
+- `pi_processors` - (Required, Float) The number of vCPUs to assign to the VM as visible within the guest Operating System. 
+- `pi_proc_type` - (Required, String) The type of processor mode in which the VM will run with `shared` or `dedicated`.
+- `pi_replicants` - (Optional, Float) The number of instances that you want to provision with the same configuration. If this parameter is not set,  `1` is used by default.
+- `pi_replication_policy` - (Optional, String) The replication policy that you want to use. If this parameter is not set, `none` is used by default. 
+- `pi_replication_scheme` - (Optional, String) The replication scheme that you want to set, either `prefix` or `suffix`.
+- `pi_sys_type` - (Required, String) The type of system on which to create the VM (s922/e880/any). 
+- `pi_user_data` - (Optional, String) The base64 encoded form of the user data `cloud-init` to pass to the instance during creation. 
+- `pi_virtual_cores_assigned`  - (Optional, Integer) Specify the number of virtual cores to be assigned.
+- `pi_volume_ids` - (Required, String) The list of volume IDs that you want to attach to the instance during creation.
 
-* `pi_instance_name` - (Required, string) The name of the VM.
-* `pi_key_pair_name` - (Required, string) The name of the Power Virtual Server Cloud SSH key to used to login to the VM.
-* `pi_image_id` - (Required, string) The name of the image to deploy (e.g., 7200-03-03).
-* `pi_processors` - (Required, float) The number of vCPUs to assign to the VM (as visibile within the guest operating system).
-* `pi_proc_type` - (Required, string) The type of processor mode in which the VM will run (shared/dedicated/capped).
-* `pi_memory` - (Required, float) The amount of memory (GB) to assign to the VM.
-* `pi_sys_type` - (Required, string) The type of system on which to create the VM (s922/e880/e980).
-* `pi_volume_ids` - (Optional, list(string)) The list of volume IDs to attach to the VM at creation time.
-* `pi_network_ids` - (Required, list(string)) The list of network IDs assigned to the VM.
-* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
-* `pi_user_data` - (Optional, string) The base64-encoded form of the user data (cloud-init) to pass to the VM at creation time.
-* `pi_replicants` - (Optional, float) Specifies the number of VMs to deploy; default is 1.
-* `pi_replication_policy` - (Optional, string) Specifies the replication policy (e.g., none).
-* `pi_replication_scheme` - (Optional, string) Specifies the replicate scheme (prefix/suffix).
-* `pi_pin_policy` - (Optional,string) Specifies the pin policy for the lpar (none/soft/hard) - This is dependent on the cloud instance capabilities.
-* `pi_health_status` - (Optional,string) Specifies if terraform should poll for the Health Status to be OK or WARNING.  Default is OK. 
-* `pi_virtual_cores_assigned` - (Optional,integer) Specifies the number of virtual cores to be assigned 
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
@@ -81,19 +81,14 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `addresses`:
   - `ip` - (String) The IP address of the instance.
-  
-  Nested scheme for `ip`:
   - `macaddress` - (String) The MAC address of the instance.
   - `networkid` - (String) The network ID of the instance.
   - `network_name` - (String) The network name of the instance.
   - `type` - (String) The type of network.
-  - `externalip` - (String) The external IP address of the instance.
+  - `external_ip` - (String) The external IP address of the instance.
+- `health_status` - (String) The health status of the VM.
 - `id` - (String) The unique identifier of the instance. The ID is composed of `<power_instance_id>/<instance_id>`.
 - `instance_id` - (String) The unique identifier of the instance. 
-- `pin_policy`  - (String) The pinning policy of the instance.
-- `progress` - Float - Specifies the overall progress of the instance deployment process in percentage.
-- `status` - (String) The status of the instance.
-- `health_status` - (String) The health status of the VM.
 - `migratable`- (Bool) Indicates the VM is migrated or not.
 - `max_processors`- Integer- The maximum number of processors that can be allocated to the instance with shutting down or rebooting the `LPAR`.
 - `max_virtual_cores` - (Integer) The maximum number of virtual cores.
@@ -101,6 +96,9 @@ In addition to all argument reference list, you can access the following attribu
 - `min_memory` - (Integer) The minimum memory that was allocated to the instance.
 - `max_memory`- (Integer) The maximum amount of memory that can be allocated to the instance without shut down or reboot the `LPAR`.
 - `min_virtual_cores` - (Integer) The minimum number of virtual cores.
+- `status` - (String) The status of the instance.
+- `pin_policy`  - (String) The pinning policy of the instance.
+- `progress` - (Float) - Specifies the overall progress of the instance deployment process in percentage.
 
 ## Import
 
@@ -109,5 +107,5 @@ The `ibm_pi_instance` can be imported using `power_instance_id` and `instance_id
 **Example**
 
 ```
-$ terraform import ibm_pi_instance.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+$ terraform import ibm_pi_instance.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770b112ebb
 ```
