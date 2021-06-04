@@ -42,27 +42,31 @@ The following is an example to create a service instance of IBM Cloud Hyper Prot
 data "ibm_resource_group" "group" {
   name = "default"
 }
+
 resource "ibm_resource_instance" "myhpdbcluster" {
   name = "0001-postgresql"
   service = "hyperp-dbaas-postgresql"
   plan = "postgresql-free"
   location = "us-south"
   resource_group_id = data.ibm_resource_group.group.id
+
+  //User can increase timeouts
   timeouts {
     create = "15m"
     update = "15m"
     delete = "15m"
   }
+
   parameters = {
-    "name": "cluster01",
-    "admin_name": "admin",
-    "password": "Hyperprotectdbaas0001"
-    "confirm_password": "Hyperprotectdbaas0001",
-    "db_version": "10"
+    name: "cluster01",
+    admin_name: "admin",
+    password: "Hyperprotectdbaas0001"
+    confirm_password: "Hyperprotectdbaas0001",
+    db_version: "10"
   }
 }
-```
 
+```
 
 ## Timeouts
 
@@ -120,4 +124,3 @@ In addition to all arguments above, the following attributes are exported:
 * `scheduled_reclaim_by` - The subject who initiated the instance reclamation.
 * `restored_at` - The date when the instance under reclamation was restored.
 * `restored_by` - The subject who restored the instance back from reclamation.
-
