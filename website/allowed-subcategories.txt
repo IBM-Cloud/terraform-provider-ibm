@@ -1,4 +1,5 @@
 API Gateway
+App Configuration
 Catalog Management
 Certificate Manager
 Classic infrastructure
