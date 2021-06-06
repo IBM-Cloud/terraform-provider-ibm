@@ -2495,3 +2495,55 @@ func immutableResourceCustomizeDiff(resourceList []string, diff *schema.Resource
 	}
 	return nil
 }
+
+func flattenSatelliteWorkerPoolZones(zones *schema.Set) []kubernetesserviceapiv1.SatelliteCreateWorkerPoolZone {
+	zoneList := make([]kubernetesserviceapiv1.SatelliteCreateWorkerPoolZone, zones.Len())
+	for i, v := range zones.List() {
+		data := v.(map[string]interface{})
+		if v, ok := data["id"]; ok && v.(string) != "" {
+			zoneList[i].ID = sl.String(v.(string))
+		}
+	}
+
+	return zoneList
+}
+
+func flattenSatelliteWorkerPools(list []kubernetesserviceapiv1.GetWorkerPoolResponse) []map[string]interface{} {
+	workerPools := make([]map[string]interface{}, len(list))
+	for i, workerPool := range list {
+		l := map[string]interface{}{
+			"id":                         *workerPool.ID,
+			"name":                       *workerPool.PoolName,
+			"isolation":                  *workerPool.Isolation,
+			"flavour":                    *workerPool.Flavor,
+			"size_per_zone":              *workerPool.WorkerCount,
+			"state":                      *workerPool.Lifecycle.ActualState,
+			"default_worker_pool_labels": workerPool.Labels,
+			"host_labels":                workerPool.HostLabels,
+		}
+		zones := workerPool.Zones
+		zonesConfig := make([]map[string]interface{}, len(zones))
+		for j, zone := range zones {
+			z := map[string]interface{}{
+				"zone":         *zone.ID,
+				"worker_count": int(*zone.WorkerCount),
+			}
+			zonesConfig[j] = z
+		}
+		l["zones"] = zonesConfig
+		workerPools[i] = l
+	}
+
+	return workerPools
+}
+
+func flattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {
+	mapped := make([]string, len(hostLabels))
+	idx := 0
+	for k, v := range hostLabels {
+		mapped[idx] = fmt.Sprintf("%s:%v", k, v)
+		idx++
+	}
+
+	return newStringSet(schema.HashString, mapped)
+}

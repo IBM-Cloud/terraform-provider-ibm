@@ -3,14 +3,15 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_healthchecks"
 description: |-
-  Manages IBM Cloud Internet Services Health Check/Monitor resource.
+  Manages IBM Cloud Internet Services health check and monitor resource.
 ---
 
 # ibm_cis_healthchecks
 
-Import the details of an existing IBM Cloud Internet Service global load balancer health monitor/check as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Retrieve information about an existing IBM Cloud Internet Service Global Load Balancer health monitor and check as a read-only data source. For more information, about CIS health check, see [setting up health checks](https://cloud.ibm.com/docs/cis?topic=cis-glb-features-healthchecks).
 
-## Example Usage
+## Example usage
+The following example retrieves information about an IBM Cloud Internet Services domain.
 
 ```terraform
 
@@ -20,30 +21,28 @@ data "ibm_cis_glb_health_checks" "test" {
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `cis_id` - (Required, String) The resource CRN ID of the IBM Cloud Internet Services on which zones were created.
 
-- `cis_id` - (Required, string) The resource crn id of the CIS on which zones were created.
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-- `id` - Load balancer monitor ID and CRN. Ex. monitor_id:crn
-- `monitor_id` - Load balancer monitor ID.
-- `created_on` - The RFC3339 timestamp of when the load balancer monitor was created.
-- `modified_on` - The RFC3339 timestamp of when the load balancer monitor was last modified.
-- `expected_body` - Reqeusted nody
-- `expected_codes` - The expected HTTP response code or code range of the health check. Eg `2xx`
-- `method` - The HTTP method to use for the health check.
-- `timeout` - The timeout (in seconds) before marking the health check as failed.The Default value is 5.
-- `path` - The endpoint path to health check against.
-- `interval` - The interval between each health check. Shorter intervals may improve failover time, but will increase load on the origins as we check from multiple locations.The Default value is 60.
-- `retries` - The number of retries to attempt in case of a timeout before marking the origin as unhealthy. Retries are attempted immediately.The Default value is 2.
-- `type` - The protocol to use for the healthcheck. Currently supported protocols are 'HTTP', 'HTTPS' and 'TCP'. The Default value is 'HTTP'.
-- `follow_redirects`- Follow redirects if returned by the origin.
-- `allow_insecure`- Do not validate the certificate when healthcheck use HTTPS.
-- `description` - Free text description.
-- `port` - The TCP port to use for the health check.
-- `headers` - The health check header
+- `allow_insecure` - (String) Do not validate the certificate when health check uses `HTTPS`.
+- `created_on` - (String) The RFC3339 timestamp of when the load balancer monitor was created.
+- `description` - (String) Free text description.
+- `expected_body` - (String) The requested body.
+- `expected_codes` - (String) The expected HTTP response code or code range of the health check. For example, `2xx`.
+- `follow_redirects` - (String) Follow redirects if returned by the origin.
+- `headers` - (String) The health check header.
+- `id` - (String) The load balancer monitor ID and CRN. For example, `monitor_id:crn`.
+- `interval` - (String) The interval between each health check. Shorter intervals improve failover time, but can increase load on the origins as you check from multiple locations. The default value is `60`.
+- `modified_on` - (String) The RFC3339 timestamp of when the load balancer monitor was last modified.
+- `monitor_id` - (String) The load balancer monitor ID.
+- `method` - (String) The HTTP method to use for the health check.
+- `path` - (String) The endpoint path to health check.
+- `port` - (String) The TCP port to use for the health check.
+- `retries` - (String) The number of retries to attempt in case of a timeout before marking the origin as unhealthy. Retries are attempted immediately. The default value is `2`.
+- `timeout` - (String) The timeout (in seconds) before marking the health check as failed. The default value is `5`.
+- `type` - (String) The protocol to use for the health check. Currently supported protocols are `HTTP`, `HTTPS`, and `TCP`. The default value is `HTTP`.

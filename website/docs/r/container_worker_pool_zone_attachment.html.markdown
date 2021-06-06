@@ -7,12 +7,10 @@ description: |-
   Manages IBM container worker pool zone attachment.
 ---
 
-# ibm\_container_worker_pool_zone_attachment
+# ibm_container_worker_pool_zone_attachment
+Create, update, or delete a zone from a worker pool. For more information, about IBM container worker pool zone, see [adding worker nodes and zones to clusters](https://cloud.ibm.com/docs/containers?topic=containers-add_workers).
 
-Create, update, or delete a zone. This resource creates the zone and attaches it to the specified worker pool.
-
-## Example Usage
-
+## Example usage
 In the following example, you can create a zone:
 
 ```terraform
@@ -48,40 +46,39 @@ resource "ibm_container_worker_pool_zone_attachment" "test_zone" {
 
 ## Timeouts
 
-ibm_container_worker_pool_zone_attachment provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_container_worker_pool_zone_attachment` provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
-* `create` - (Default 90 minutes) Used for creating Instance.
-* `update` - (Default 90 minutes) Used for updating Instance.
-* `delete` - (Default 90 minutes) Used for deleting Instance.
+- **create**: The attachment of the zone is considered `failed` if no response is received for 90 minutes. 
+- **update**: The update of the zone is considered `failed` if no response is received for 90 minutes. 
+- **delete**: The detachment of the zone is considered `failed` if no response is received for 90 minutes. 
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-* `zone` - (Required, Forces new resource, string) The name of the zone. To list available zones, run `ibmcloud ks zones`
-* `cluster` - (Required, Forces new resource, string) The name or id of the cluster.
-* `worker_pool` - (Required, Forces new resource, string) The name or id of the worker pool.
-* `private_vlan_id` - (Optional, string) The private VLAN of the worker node. You can retrieve the value by running the `ibmcloud ks vlans <zone>` command in the IBM Cloud CLI.
-* `public_vlan_id` - (Optional, string) The public VLAN of the worker node. The public vlan id cannot be specified alone, it should be specified along with the private vlan id. You can retrieve the value by running the `ibmcloud ks vlans <zone>` command in the IBM Cloud CLI.
-**Note**: If you do not have a private or public VLAN in that zone, do not specify `private_vlan_id` and `public_vlan_id`. A private and a public VLAN are automatically created for you when you initially add a new zone to your worker pool.
-* `region` - (Deprecated, Forces new resource, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
-* `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
-* `wait_till_albs` - (Optional, Bool) The woker-pool zone attachment adds the zone specified to the worker-pool. Post addition of zone, resource waits for added nodes to be normal and albs to be avialbe in the added zone. To avoid the longer wait times for resource execution, this field is introduced.
-Resource will wait for ALBs to availbale in the zone added if attribute is set to true.
+- `cluster` - (Required, Forces new resource, String)The name or ID of the cluster that the worker pool belongs to.
+- `private_vlan_id` - (Optional, String) The ID of the private VLAN that you want to use for the zone. To find available zones, run `ibmcloud ks vlans <zone>`. If you do not have a private VLAN for that zone, do not specify this option. A private VLAN is automatically created for you.
+- `public_vlan_id` - (Optional, String) The ID of the public VLAN that you want to use for the zone. To find available zones, run `ibmcloud ks vlans <zone>`.  If you do not have a public VLAN for that zone, do not specify this option. A public VLAN is automatically created for you.
+- `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group where your cluster is provisioned into. To list resource groups, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
+- `wait_till_albs` - (Optional, Bool) When you add a zone to a worker pool, worker nodes are provisioned in that zone with the configuration that you defined in your worker pool. This process and enabling the ALBs on those worker nodes can take a few minutes to complete. To avoid long wait times when you run your  Terraform code, you can specify the stage when you want  Terraform to mark the zone attachment complete. Set to **true** to wait until all worker nodes are successfully provisioned in the zone that you added to your worker pool and all ALBs are available and healthy. If you want the worker node creation and ALB enablement to continue in the background, set this option to **false**. **Note**: `wait_till_albs` is set only for the first time creation of the resource, modification in the further executes will not any impacts.
+- `worker_pool` - (Required, Forces new resource, String) The name or ID of the worker pool to which you want to add a zone.
+- `zone` - (Required, Forces new resource, String) The name of the zone that you want to attach to the worker pool. To list available zones, run `ibmcloud ks zones`.
 
-**NOTE**: 
-1. `wait_till_albs` is set only for the first time creation of the resource, modification in the further runs will not any impacts.
+**Deprecated reference**
 
-## Attribute Reference
+- `region` - (Deprecated, Forces new resource, string) The region where the cluster is provisioned. If the region is not specified it defaults to provider region (`IC_REGION/IBMCLOUD_REGION`). To get the list of supported regions, see [link](https://containers.bluemix.net/v1/regions) and use the alias.
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-* `id` - The unique identifier of the worker pool zone attachment resource. The id is composed of \<cluster_name_id\>/\< worker_pool_name_id\>/\<zone/>
-* `worker_count` - Number of workers attached to this zone.
+- `id` - (String) The unique identifier of the worker pool zone attachment in the format `<cluster_name_id>/< worker_pool_name_id>/<zone>`- 
+- `worker_count` - (Integer) The number of worker nodes that are attached to this zone.
 
 ## Import
+The `ibm_container_worker_pool_zone_attachment` can be imported by using `cluster_name_id`, `worker_pool_name_id` and `zone`.
 
-ibm_container_worker_pool_zone_attachment can be imported using cluster_name_id, worker_pool_name_id and zone, eg
+**Example**
 
 ```
 $ terraform import ibm_container_worker_pool_zone_attachment.example mycluster/5c4f4d06e0dc402084922dea70850e3b-7cafe35/dal10
+```

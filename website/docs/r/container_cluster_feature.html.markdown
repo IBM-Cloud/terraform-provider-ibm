@@ -7,13 +7,14 @@ description: |-
   Manages IBM container cluster feature.
 ---
 
-# ibm\_container_cluster_feature
+# ibm_container_cluster_feature
 
-Enables or disables a container cluster feature. 
+Enable or disable a feature in your IBM Cloud Kubernetes Service cluster. For more information, about IBM container cluster feature, see [Security for IBM Cloud Kubernetes Service](https://cloud.ibm.com/docs/containers?topic=containers-security). Supported features include: 
+- Public service endpoint
+- Private service endpoint
 
-## Example Usage
-
-In the following example, you can enable a private service endpoint:
+## Example usage
+The following example enables the private service endpoint feature for a cluster that is named `mycluster`.
 
 ```terraform
 resource "ibm_container_cluster_feature" "feature" {
@@ -25,28 +26,25 @@ resource "ibm_container_cluster_feature" "feature" {
 
 ## Timeouts
 
-ibm_container_cluster_feature provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_container_cluster_feature` provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
-* `create` - (Default 90 minutes) Used for creating Instance.
-* `update` - (Default 90 minutes) Used for updating Instance.
-
-## Argument Reference
-
-The following arguments are supported:
-
-* `cluster` - (Required, Forces new resource, string) The cluster name or id.
-* `public_service_endpoint` - (Optional, bool)  Enable or disable the public service endpoint.
-* `private_service_endpoint` - (Optional, bool) Enable the private service endpoint to make the master privately accessible. Once enabled this feature cannot be disabled later.
-  **NOTE**: As a prerequisite for using Service Endpoints, Account must be enabled for Virtual Routing and Forwarding (VRF). Learn more about VRF on IBM Cloud [here](https://cloud.ibm.com/docs/infrastructure/direct-link/vrf-on-ibm-cloud.html#overview-of-virtual-routing-and-forwarding-vrf-on-ibm-cloud). Account must be enabled for connectivity to Service Endpoints.
-* `refresh_api_servers` - (Optional, bool) To apply these changes, refresh the cluster's API server. Default value is true.
-* `reload_workers` - (Optional, bool) To apply these changes, reload workers. Default value is true.
-* `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
+- **create**: The enablement of the feature is considered `failed` if no response is received for 90 minutes.
+- **update**: The update of the feature is considered `failed` if no response is received for 90 minutes. 
 
 
-## Attribute Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
+ 
+- `cluster` - (Required, Forces new resource, String) The name or ID of the cluster for which you want to enable or disabled a feature. To find the name or ID, use the `ibmcloud ks cluster ls` command.
+- `public_service_endpoint` - (Optional, Bool) Enable(**true**) or disable (**false**) the public service endpoint for your cluster. You can use the public service endpoint to access the Kubernetes master from the public network. To use service endpoints, your account must be enabled for [Virtual Routing and Forwarding (VRF)](https://cloud.ibm.com/docs/account?topic=account-vrf-service-endpoint#vrf). For more information, see [Worker-to-master and user-to-master communication: Service endpoints](https://cloud.ibm.com/docs/containers?topic=containers-plan_clusters#workeruser-master).
+- `private_service_endpoint` - (Optional, Bool) Enable (**true**) or disable (**false**) the private service endpoint for your cluster. When the private service endpoint is enabled, communication between the Kubernetes and the worker nodes is established over the private network. If you enable the private service endpoint, you cannot disable it later. To use service endpoints, your account must be enabled for [Virtual Routing and Forwarding (VRF)](https://cloud.ibm.com/docs/account?topic=account-vrf-service-endpoint#vrf). For more information, see [Worker-to-master and user-to-master communication: Service endpoints](https://cloud.ibm.com/docs/containers?topic=containers-plan_clusters#workeruser-master).
+- `refresh_api_servers` - (Optional, Bool) If set to **true**, the Kubernetes master of the cluster is refreshed to apply the changes of your feature. If set to **false**, no refresh of the Kubernetes master is performed.
+- `reload_workers` -  (Optional, Bool) If set to **true**, your worker nodes are reloaded after the feature is enabled. If set to **false**, no reload of the worker nodes is performed.
+- `resource_group_id` - (Optional, String) The ID of the resource group that your cluster belongs to. You can retrieve the resource group by using the `ibm_resource_group` data source.
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-* `id` - The cluster feature ID.
-* `public_service_endpoint_url` - Public service endpoint url.
-* `private_service_endpoint_url` - Private service endpoint url.
+- `id` - (String) The ID of the cluster feature. 
+- `public_service_endpoint_url` - (String) The URL to the public service endpoint of your cluster. 
+- `private_service_endpoint_url` - (String) The URL to the private service endpoint of your cluster. 

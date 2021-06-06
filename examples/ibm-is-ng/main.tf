@@ -449,3 +449,10 @@ resource "ibm_is_dedicated_host_disk_management" "disks" {
   
   }
 }
+
+data "ibm_is_operating_system" "os"{
+  name = "red-8-amd64"
+}
+
+data "ibm_is_operating_systems" "oslist"{
+}

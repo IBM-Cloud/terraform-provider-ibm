@@ -3,38 +3,37 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_role_actions"
 description: |-
-  Manages IBM IAM Role Actions.
+  Manages IBM IAM role actions.
 ---
 
-# ibm\_iam_role_actions
+# ibm_iam_role_actions
 
-Import the details of an action(actionID) regarding a specific service  on IBM Cloud as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Retrieve a list of actions for an IBM Cloud service that are included in an IAM service access role.  For more information, about IAM role action, see [actions and roles for account management services](https://cloud.ibm.com/docs/account?topic=account-account-services#account-management-actions-roles).
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_iam_role_actions" "test" {
   service = "kms"
 }
 
-
 ```
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument references that you can specify for your data source.
 
-* `service` - (Required, string) Name of the service.
+- `service` - (Required, String) The name of the IBM Cloud service for which you want to list supported actions. For account management services, you can find supported values in the [documentation](https://cloud.ibm.com/docs/account?topic=account-account-services#api-acct-mgmt). For other services, run the `ibmcloud catalog service-marketplace` command and retrieve the value from the **Name** column of your command line output.
 
-## Attribute Reference
+## Attribute reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the service.
-* `reader` -  reader actions bound to of the service.
-* `manager` -  manager actions bound to of the service.
-* `writer` -  writer actions bound to of the service.
-* `reader_plus` -  reader_plus actions bound to of the service.
+- `id` - (String) The unique identifier of the service.
+- `manager`- (List of strings) A list of supported actions that require the **Manager** service access role.
+- `reader`- (List of strings) A list of supported actions that require the **Reader** service access role.
+- `reader_plus`- (List of strings) A list of supported actions that require the **Reader plus** service access role.
+- `writer`- (List of strings) A list of supported actions that require the **Writer** service access role.
 
 
 

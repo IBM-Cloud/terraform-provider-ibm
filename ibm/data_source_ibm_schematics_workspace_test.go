@@ -76,6 +76,7 @@ func TestAccIBMSchematicsWorkspaceDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "tags.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "updated_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_env_settings"),
 				),
 			},
 		},
@@ -90,6 +91,11 @@ func testAccCheckIBMSchematicsWorkspaceDataSourceConfigBasic() string {
 			location = "us-east"
 			resource_group = "default"
 			template_type = "terraform_v0.13.5"
+			template_env_settings = [
+				{
+					IBMCLOUD_ENV_VAR = "ENV_VALUE",
+				}
+			]
 		}
 
 		data "ibm_schematics_workspace" "schematics_workspace" {

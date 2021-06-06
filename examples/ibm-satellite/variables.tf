@@ -1,3 +1,21 @@
+#################################################################################################
+# IBMCLOUD Authentication and Target Variables.
+# The region variable is common across zones used to setup VSI Infrastructure and Satellite host.
+#################################################################################################
+
+variable "ibmcloud_api_key" {
+  description = "IBM Cloud API Key"
+}
+
+variable "ibm_region" {
+  description = "Region of the IBM Cloud account. Currently supported regions for satellite are us-east and eu-gb region."
+  default     = "us-east"
+}
+
+variable "resource_group" {
+  description = "Name of the resource group on which location has to be created"
+}
+
 ##################################################
 # IBMCLOUD Satellite Location and Host Variables
 ##################################################
@@ -9,7 +27,7 @@ variable "location" {
 variable "managed_from" {
   description  = "The IBM Cloud region to manage your Satellite location from. Choose a region close to your on-prem data center for better performance."
   type         = string
-  default      = "wdc04"  
+  default      = "wdc"  
 }
 
 variable "location_zones" {
@@ -20,7 +38,7 @@ variable "location_zones" {
 
 variable "location_bucket" {
   description = "COS bucket name"
-  default     = ""
+  default     = null
 }
 
 variable "is_location_exist" {
@@ -43,30 +61,7 @@ variable "host_labels" {
 variable "tags" {
   description = "List of tags associated with this satellite."
   type        = list(string)
-  default     = [ "env:dev" ]
-}
-
-#################################################################################################
-# IBMCLOUD Authentication and Target Variables.
-# The region variable is common across zones used to setup VSI Infrastructure and Satellite host.
-#################################################################################################
-
-variable "ibmcloud_api_key" {
-  description = "IBM Cloud API Key"
-}
-
-variable "ibm_region" {
-  description = "Region of the IBM Cloud account. Currently supported regions for satellite are us-east and eu-gb region."
-  default     = "us-east"
-}
-
-variable "resource_group" {
-  description = "Name of the resource group on which location has to be created"
-}
-
-variable "environment" {
-  description = "Select prod or stage environemnet to run satellite templates"
-  default     = "prod"
+  default     = [ "env:prod" ]
 }
 
 ##################################################
@@ -78,6 +73,12 @@ variable "host_count" {
   default        = 3
 }
 
+variable "addl_host_count" {
+  description    = "The total number of additional host for cluster assignment"
+  type           = number
+  default        = 6
+}
+
 variable "is_prefix" {
   description = "Prefix to the Names of the VPC Infrastructure resources"
   type        = string
@@ -87,5 +88,62 @@ variable "is_prefix" {
 variable "public_key" {
   description  = "SSH Public Key. Get your ssh key by running `ssh-key-gen` command"
   type         = string
-  default      = ""
+  default      = null
+}
+
+##################################################
+# IBMCLOUD ROKS Cluster Variables
+##################################################
+variable "cluster" {
+  description = "Satellite Cluster Name"
+  type         = string
+  default      = "satellite-ibm-cluster"
+}
+
+variable "cluster_zones" {
+  description = "Allocate zones to cluster"
+  type        = list(string)
+  default     = ["us-east-1", "us-east-2", "us-east-3"]
+}
+
+variable "default_wp_labels" {
+  description = "Label to add default worker pool"
+  type        = map
+
+  default = {
+    "pool_name"  = "default-worker-pool"
+  }
+}
+
+variable "kube_version" {
+  description  = "Satellite Kube Version"
+  type         = string
+  default      = "4.6_openshift"
+}
+
+variable "worker_pool_name" {
+  description = "Worker Pool Name"
+  type         = string
+  default      = "satellite-ibm-cluster-wp"
+}
+
+variable "workerpool_labels" {
+  description = "Label to add to workerpool"
+  type        = map
+
+  default = {
+    "pool_name"  = "worker-pool"
+  }
+}
+
+variable "worker_count" {
+  description = "Worker Count for default pool"
+  type         = number
+  default      = 1
+}
+
+variable "cluster_tags" {
+  description = "List of tags associated with this resource."
+  type        = list(string)
+  default     = [ "env:cluster" ]
 }

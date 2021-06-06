@@ -3,14 +3,14 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_service_policy"
 description: |-
-  Manages IBM IAM Service Policy.
+  Manages IBM IAM service policy.
 ---
 
-# ibm\_iam_service_policy
+# ibm_iam_service_policy
 
-Import the details of an IAM (Identity and Access Management) service policy on IBM Cloud as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Retrieve information about an IAM service policy. For more information, about IAM role action, see [managing access to resources](https://cloud.ibm.com/docs/account?topic=account-assign-access-resources).
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_iam_service_policy" "policy" {
@@ -30,25 +30,29 @@ data "ibm_iam_service_policy" "testacc_ds_service_policy" {
 
 ```
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument references that you can specify for your data source.
 
-* `iam_service_id` - (Optional, string) UUID of the serviceID. Exactly one of `iam_service_id`, `iam_id` is required.
-* `iam_id` - (Optional, string) IAM ID of the serviceID. Exactly one of `iam_service_id`, `iam_id` is required. Can be used to get cross account service ID Policy.
-* `sort` - (Optional, string) Single field sort query for policies.
+- `iam_service_id` - (Required, String) The UUID of the service ID.
+- `iam_id` - (Optional, String) IAM ID of the service ID. One of the `iam_service_id` or `iam_id` is required argument. You can use to get cross account service ID policy.
+- `sort`- Optional -  (String) The single field sort query for policies.
 
-## Attribute Reference
+## Attribute reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-* `policies` - A nested block describing IAM Policies assigned to serviceID. Nested `policies` blocks have the following structure:
-  * `id` - The unique identifier of the IAM service policy.The id is composed of \<iam_service_id\>/\<service_policy_id\> if policy is created using <iam_service_id>. The id is composed of \<iam_id\>/\<service_policy_id\> if policy is created using <iam_id>. 
-  * `roles` -  Roles assigned to the policy.
-	* `resources` -  A nested block describing the resources in the policy.
-		* `service` - Service name of the policy definition. 
-		* `resource_instance_id` - ID of resource instance of the policy definition.
-		* `region` - Region of the policy definition.
-		* `resource_type` - Resource type of the policy definition.
-		* `resource` - Resource of the policy definition.
-		* `resource_group_id` - The ID of the resource group.
+- `policies` - (List) A nested block describes IAM service policies that are assigned to a service ID.
+
+  Nested scheme for `policies`:
+	- `id` - (String) The unique identifier of the IAM service policy. The ID is composed of `<iam_service_id>/<service_policy_id>`. If policy is created by using <iam_service_id>. The ID is composed of `<iam_id>/<service_policy_id>` if policy is created by using <iam_id>.
+  - `roles`-  (String) The roles that are assigned to the policy.
+  - `resources`- (List of objects) A nested block describes the resources in the policy.
+
+    Nested scheme for `resources`:
+      - `service`- (String) The service name of the policy definition.
+      - `resource_instance_id`- (String) The ID of resource instance of the policy definition.
+      - `region`-  (String) The region of the policy definition.
+      - `resource_type`- (String) The resource type of the policy definition.
+      - `resource`- (String) The resource of the policy definition.
+      - `resource_group_id`- (String) The ID of the resource group.

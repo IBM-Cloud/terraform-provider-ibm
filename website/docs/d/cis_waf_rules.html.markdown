@@ -3,14 +3,13 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_waf_rules"
 description: |-
-  Get information of IBM Cloud Internet Services WAF Rules resource.
+  Get information of IBM Cloud Internet Services WAF rules resource.
 ---
 
 # ibm_cis_waf_rule
+Retrieve information about an existing IBM Cloud Internet Services WAF rules resource. For more information, see [CIS rule sets](https://cloud.ibm.com/docs/cis?topic=cis-waf-settings#cis-ruleset-for-waf).
 
-Imports a read only copy of an existing Internet Services WAF Rules resource.
-
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_cis_waf_rules" "rules" {
@@ -20,26 +19,28 @@ data "ibm_cis_waf_rules" "rules" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services service instance.
+- `domain_id` - (Required, String) The ID of the domain to add the rate limit rule.
+- `package_id` - (Required, String) The ID of WAF rule package.
 
-- `cis_id` - (Required,string) The ID of the CIS service instance
-- `domain_id` - (Required,string) The ID of the domain to add the Rate Limit rule.
-- `package_id` - (Required,string) The ID of WAF rule package.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attributes Reference
+- `waf_rules` (List) The list of WAF rules.
 
-In addition to all arguments above, the following attributes are exported:
+  Nested scheme for `waf_rules`:
+  - `allowed_modes` - (String) The allowed modes for setting the WAF rule mode.
+  - `description` - (String) The WAF rule description.
+  - `group` - (String) The WAF rule group.
 
-- `waf_rules` - The list of waf rules.
-  - `id` - It is a combination of <`rule_id`>,<`package_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
-  - `rule_id` - The ID of waf rule.
-  - `package_id` - The ID of waf rule package.
-  - `mode` - The mode setting. This field only once can be set. Valid values: `on`, `off`, `default`, `disable`, `simulate`, `block`, `challenge`.
-  - `description` - The WAF rule description.
-  - `priority` - The WAF Rule priority.
-  - `group` - The waf rule group.
-    - `id` - The waf rule group id.
-    - `name` - The name of waf rule group.
-  - `allowed_modes` - The allowed modes for setting the waf rule mode.
+    Nested scheme for `group`:
+	- `id` - (String) The WAF rule group ID.
+	- `name` - (String) The name of the WAF rule group.
+  - `id` - (String)  It is a combination of `<rule_id>,<package_id>,<domain_id>,<cis_id>` attributes concatenated with `:` character.
+  - `mode` - (String) The mode setting that can be set only once. Valid values are `on`, `off`, `default`, `disable`, `simulate`, `block`, `challenge`.
+  - `package_id` - (String) The ID of WAF rule package.
+  - `priority` - (String) The WAF rule priority.
+  - `rule_id` - (String) The ID of WAF rule package.
