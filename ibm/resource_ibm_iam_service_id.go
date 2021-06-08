@@ -5,12 +5,8 @@ package ibm
 
 import (
 	"fmt"
-	"strings"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
-
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/IBM-Cloud/bluemix-go/crn"
+	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -20,7 +16,6 @@ func resourceIBMIAMServiceID() *schema.Resource {
 		Read:     resourceIBMIAMServiceIDRead,
 		Update:   resourceIBMIAMServiceIDUpdate,
 		Delete:   resourceIBMIAMServiceIDDelete,
-		Exists:   resourceIBMIAMServiceIDExists,
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -60,88 +55,130 @@ func resourceIBMIAMServiceID() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
+			"unique_instance_crns": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
+			"locked": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 		},
 	}
 }
 
 func resourceIBMIAMServiceIDCreate(d *schema.ResourceData, meta interface{}) error {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return err
 	}
+
 	name := d.Get("name").(string)
 
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 
-	boundTo := crn.New(userDetails.cloudName, userDetails.cloudType)
-	boundTo.ScopeType = crn.ScopeAccount
-	boundTo.Scope = userDetails.userAccount
-
-	request := models.ServiceID{
-		Name:    name,
-		BoundTo: boundTo.String(),
+	createServiceIDOptions := iamidentityv1.CreateServiceIDOptions{
+		Name:      &name,
+		AccountID: &userDetails.userAccount,
 	}
 
-	if des, ok := d.GetOk("description"); ok {
-		request.Description = des.(string)
+	if d, ok := d.GetOk("description"); ok {
+		des := d.(string)
+		createServiceIDOptions.Description = &des
+	}
+	if a, ok := d.GetOk("unique_instance_crns"); ok {
+		crns := expandStringList(a.([]interface{}))
+		createServiceIDOptions.UniqueInstanceCrns = crns
 	}
 
-	serviceID, err := iamClient.ServiceIds().Create(request)
-	if err != nil {
-		return fmt.Errorf("Error creating serviceID: %s", err)
+	serviceID, resp, err := iamIdentityClient.CreateServiceID(&createServiceIDOptions)
+	if err != nil || serviceID == nil {
+		return fmt.Errorf("Error creating serviceID: %s, %s", err, resp)
 	}
-
-	d.SetId(serviceID.UUID)
+	d.SetId(*serviceID.ID)
 
 	return resourceIBMIAMServiceIDRead(d, meta)
 }
 
 func resourceIBMIAMServiceIDRead(d *schema.ResourceData, meta interface{}) error {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return err
 	}
 	serviceIDUUID := d.Id()
-
-	serviceID, err := iamClient.ServiceIds().Get(serviceIDUUID)
-	if err != nil {
-		return fmt.Errorf("Error retrieving serviceID: %s", err)
+	getServiceIDOptions := iamidentityv1.GetServiceIDOptions{
+		ID: &serviceIDUUID,
 	}
-
-	d.Set("name", serviceID.Name)
-	d.Set("description", serviceID.Description)
-	d.Set("crn", serviceID.CRN)
-	d.Set("version", serviceID.Version)
-	d.Set("iam_id", serviceID.IAMID)
-
+	serviceID, resp, err := iamIdentityClient.GetServiceID(&getServiceIDOptions)
+	if err != nil {
+		if resp.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error retrieving serviceID: %s %s", err, resp)
+	}
+	if serviceID.Name != nil {
+		d.Set("name", *serviceID.Name)
+	}
+	if serviceID.Description != nil {
+		d.Set("description", *serviceID.Description)
+	}
+	if serviceID.CRN != nil {
+		d.Set("crn", *serviceID.CRN)
+	}
+	if serviceID.EntityTag != nil {
+		d.Set("version", serviceID.EntityTag)
+	}
+	if serviceID.IamID != nil {
+		d.Set("iam_id", serviceID.IamID)
+	}
+	if serviceID.Locked != nil {
+		d.Set("locked", serviceID.Locked)
+	}
+	if serviceID.UniqueInstanceCrns != nil && len(serviceID.UniqueInstanceCrns) > 0 {
+		d.Set("unique_instance_crns", flattenStringList(serviceID.UniqueInstanceCrns))
+	}
 	return nil
 }
 
 func resourceIBMIAMServiceIDUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return err
 	}
 	serviceIDUUID := d.Id()
 
 	hasChange := false
-	updateReq := models.ServiceID{}
+	ifMatch := "*"
+	updateServiceIDOptions := iamidentityv1.UpdateServiceIDOptions{
+		ID:      &serviceIDUUID,
+		IfMatch: &ifMatch,
+	}
 
 	if d.HasChange("name") {
-		updateReq.Name = d.Get("name").(string)
+		name := d.Get("name").(string)
+		updateServiceIDOptions.Name = &name
 		hasChange = true
 	}
 
 	if d.HasChange("description") {
-		updateReq.Description = d.Get("description").(string)
+		description := d.Get("description").(string)
+		updateServiceIDOptions.Description = &description
+		hasChange = true
+	}
+	if d.HasChange("unique_instance_crns") {
+		u := d.Get("unique_instance_crns").([]interface{})
+		updateServiceIDOptions.UniqueInstanceCrns = expandStringList(u)
 		hasChange = true
 	}
 
 	if hasChange {
-		_, err = iamClient.ServiceIds().Update(serviceIDUUID, updateReq, "*")
+		_, resp, err := iamIdentityClient.UpdateServiceID(&updateServiceIDOptions)
 		if err != nil {
-			return fmt.Errorf("Error updating serviceID: %s", err)
+			return fmt.Errorf("Error updating serviceID: %s, %s", err, resp)
 		}
 	}
 
@@ -150,84 +187,21 @@ func resourceIBMIAMServiceIDUpdate(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceIBMIAMServiceIDDelete(d *schema.ResourceData, meta interface{}) error {
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return err
 	}
 
 	serviceIDUUID := d.Id()
-
-	err = iamClient.ServiceIds().Delete(serviceIDUUID)
+	deleteServiceIDOptions := iamidentityv1.DeleteServiceIDOptions{
+		ID: &serviceIDUUID,
+	}
+	resp, err := iamIdentityClient.DeleteServiceID(&deleteServiceIDOptions)
 	if err != nil {
-		return fmt.Errorf("Error deleting serviceID: %s", err)
+		return fmt.Errorf("Error deleting serviceID: %s %s", err, resp)
 	}
 
 	d.SetId("")
 
 	return nil
-}
-
-func resourceIBMIAMServiceIDExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	iamClient, err := meta.(ClientSession).IAMAPI()
-	if err != nil {
-		return false, err
-	}
-	serviceIDUUID := d.Id()
-
-	serviceID, err := iamClient.ServiceIds().Get(serviceIDUUID)
-	if err != nil {
-		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
-				return false, nil
-			}
-		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
-	}
-
-	return serviceID.UUID == serviceIDUUID, nil
-}
-
-func CloudName(region models.Region) string {
-	regionID := region.ID
-	if regionID == "" {
-		return ""
-	}
-
-	splits := strings.Split(regionID, ":")
-	if len(splits) != 3 {
-		return ""
-	}
-
-	customer := splits[0]
-	if customer != "ibm" {
-		return customer
-	}
-
-	deployment := splits[1]
-	switch {
-	case deployment == "yp":
-		return "bluemix"
-	case strings.HasPrefix(deployment, "ys"):
-		return "staging"
-	default:
-		return ""
-	}
-}
-
-func CloudType(region models.Region) string {
-	return region.Type
-}
-
-func GenerateBoundToCRN(region models.Region, accountID string) crn.CRN {
-	var boundTo crn.CRN
-	if region.Type == "dedicated" {
-		// cname and ctype are hard coded for dedicated
-		boundTo = crn.New("bluemix", "public")
-	} else {
-		boundTo = crn.New(CloudName(region), CloudType(region))
-	}
-
-	boundTo.ScopeType = crn.ScopeAccount
-	boundTo.Scope = accountID
-	return boundTo
 }
