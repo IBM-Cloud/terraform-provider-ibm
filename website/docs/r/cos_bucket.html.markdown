@@ -232,10 +232,11 @@ Both `archive_rule` and `expire_rule` must be managed by  Terraform as they use 
 - `object_versioning` - (List) Nested block have the following structure:
 
   Nested scheme for `object_versioning`:
-  - `enable` : (Optional, Bool) Specifies Versioning status either enable or Suspended for the objects in the bucket.Default value set to true.
+  - `enable` : (Optional, Bool) Specifies Versioning status either enable or Suspended for the objects in the bucket.Default value set to false.
 
     **Note**
     - Versioning allows multiple revisions of a single object to exist in the same bucket. Each version of an object can be queried, read, restored from an archived state, or deleted.
+    - If cos bucket has versioning enabled and set to false, versioning will be suspended.
     - Versioning can only be suspended, we cannot disabled once after it is enabled.
     - To permanently delete individual versions of an object, a delete request must specify a version ID.
     - Containers with object expiry cannot have versioning enabled or suspended, and containers with versioning enabled or suspended cannot have expiry lifecycle actions enabled to them.
