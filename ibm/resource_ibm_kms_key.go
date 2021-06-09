@@ -296,7 +296,6 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 		kpAPI.URL = u
 	} else if crnData[4] == "kms" {
 		if endpointType == "private" {
-<<<<<<< HEAD
 			if !strings.Contains(kpAPI.Config.BaseURL, "private") {
 				kmsEndpURL := strings.SplitAfter(kpAPI.Config.BaseURL, "https://")
 				if len(kmsEndpURL) == 2 {
@@ -309,17 +308,6 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 				} else {
 					return fmt.Errorf("Error in Kms EndPoint URL ")
 				}
-=======
-			if !strings.HasPrefix(kpAPI.Config.BaseURL, "private") {
-				kmsEndpURL := strings.SplitAfter(kpAPI.Config.BaseURL, "https://")
-				kmsEndpointURL := kmsEndpURL[0] + "private." + kmsEndpURL[1]
-				log.Println("kmsendpoiNturl ===>", kmsEndpointURL)
-				u, err := url.Parse(kmsEndpointURL)
-				if err != nil {
-					return fmt.Errorf("Error Parsing kms EndpointURL")
-				}
-				kpAPI.URL = u
->>>>>>> KMS Private Endpoint bug fix
 			}
 		}
 	} else {
