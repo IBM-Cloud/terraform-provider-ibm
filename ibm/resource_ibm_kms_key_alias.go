@@ -39,10 +39,10 @@ func resourceIBMKmskeyAlias() *schema.Resource {
 			"endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
 				Description:  "public or private",
 				ForceNew:     true,
-				Default:      "public",
 			},
 		},
 	}
@@ -96,9 +96,12 @@ func resourceIBMKmsKeyAliasCreate(d *schema.ResourceData, meta interface{}) erro
 		kpAPI.URL = u
 	} else if crnData[4] == "kms" {
 		if endpointType == "private" {
-			if !strings.HasPrefix(kpAPI.Config.BaseURL, "private") {
-				kpAPI.Config.BaseURL = "private." + kpAPI.Config.BaseURL
+			URL, _ := updatePrivateURL(kpAPI.Config.BaseURL)
+			u, err := url.Parse(URL)
+			if err != nil {
+				return fmt.Errorf("Error Parsing kms EndpointURL")
 			}
+			kpAPI.URL = u
 		}
 	} else {
 		return fmt.Errorf("Invalid or unsupported service Instance")
@@ -160,9 +163,12 @@ func resourceIBMKmsKeyAliasRead(d *schema.ResourceData, meta interface{}) error 
 		kpAPI.URL = u
 	} else if crnData[4] == "kms" {
 		if endpointType == "private" {
-			if !strings.HasPrefix(kpAPI.Config.BaseURL, "private") {
-				kpAPI.Config.BaseURL = "private." + kpAPI.Config.BaseURL
+			URL, _ := updatePrivateURL(kpAPI.Config.BaseURL)
+			u, err := url.Parse(URL)
+			if err != nil {
+				return fmt.Errorf("Error Parsing kms EndpointURL")
 			}
+			kpAPI.URL = u
 		}
 	} else {
 		return fmt.Errorf("Invalid or unsupported service Instance")
@@ -182,7 +188,11 @@ func resourceIBMKmsKeyAliasRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("alias", id[0])
 	d.Set("key_id", key.ID)
 	d.Set("instance_id", instanceID)
-	d.Set("endpoint_type", endpointType)
+	if strings.Contains((kpAPI.URL).String(), "private") {
+		d.Set("endpoint_type", "private")
+	} else {
+		d.Set("endpoint_type", "public")
+	}
 
 	return nil
 }
@@ -226,9 +236,12 @@ func resourceIBMKmsKeyAliasDelete(d *schema.ResourceData, meta interface{}) erro
 		kpAPI.URL = u
 	} else if crnData[4] == "kms" {
 		if endpointType == "private" {
-			if !strings.HasPrefix(kpAPI.Config.BaseURL, "private") {
-				kpAPI.Config.BaseURL = "private." + kpAPI.Config.BaseURL
+			URL, _ := updatePrivateURL(kpAPI.Config.BaseURL)
+			u, err := url.Parse(URL)
+			if err != nil {
+				return fmt.Errorf("Error Parsing kms EndpointURL")
 			}
+			kpAPI.URL = u
 		}
 	} else {
 		return fmt.Errorf("Invalid or unsupported service Instance")
