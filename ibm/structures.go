@@ -2559,3 +2559,18 @@ func flattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {
 
 	return newStringSet(schema.HashString, mapped)
 }
+
+// KMS Private Endpoint
+func updatePrivateURL(kpURL string) (string, error) {
+	var kmsEndpointURL string
+	if !strings.Contains(kpURL, "private") {
+		kmsEndpURL := strings.SplitAfter(kpURL, "https://")
+		if len(kmsEndpURL) == 2 {
+			kmsEndpointURL = kmsEndpURL[0] + "private." + kmsEndpURL[1] + "/api/v2/"
+
+		} else {
+			return "", fmt.Errorf("Error in Kms EndPoint URL ")
+		}
+	}
+	return kmsEndpointURL, nil
+}
