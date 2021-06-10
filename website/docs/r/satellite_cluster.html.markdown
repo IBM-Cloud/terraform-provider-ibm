@@ -16,19 +16,29 @@ Create, update, or delete [IBM Cloud Satellite Cluster](https://cloud.ibm.com/do
 ###  Create satellite cluster
 
 ```hcl
+data "ibm_resource_group" "rg" {
+    name = var.resource_group
+}
+
 resource "ibm_satellite_cluster" "create_cluster" {
-	name                   = "%s"  
+	name                   = var.cluster
 	location               = var.location
-	enable_config_admin    = true
-	kube_version           = "4.5_openshift"
 	resource_group_id      = data.ibm_resource_group.rg.id
+	enable_config_admin    = true
+	kube_version           = var.kube_version
 	wait_for_worker_update = true
+	worker_count           = var.worker_count
+	host_labels            = var.host_labels
+
 	dynamic "zones" {
 		for_each = var.zones
 		content {
-			id	= zones.value
+			id = zones.value
 		}
 	}
+
+	default_worker_pool_labels = var.default_wp_labels
+	tags = var.cluster_tags
 }
 
 ```
