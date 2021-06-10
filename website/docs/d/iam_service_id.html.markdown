@@ -6,11 +6,11 @@ description: |-
   Manages IBM IAM Service ID.
 ---
 
-# ibm\_iam_service_id
+# ibm_iam_service_id
 
-Import the details of an IAM (Identity and Access Management) servicID  on IBM Cloud as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Retrieve information about an IAM service ID. For more information, about IAM role action, see [managing service ID API keys](https://cloud.ibm.com/docs/account?topic=account-serviceidapikeys).
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_iam_service_id" "ds_serviceID" {
@@ -19,23 +19,22 @@ data "ibm_iam_service_id" "ds_serviceID" {
 
 ```
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument references that you can specify for your data source.
 
-* `name` - (Required, string) Name of the serviceID.
+- `name` - (Required, String) The name of the service ID.
 
-## Attribute Reference
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `service_ids` - A nested block list of IAM ServiceIDs. Nested `service_ids` blocks have the following structure:
-  * `id` - The unique identifier of the serviceID.
-  * `bound_to` -  bound to of the serviceID.
-  * `crn` -  crn of the serviceID.
-  * `description` -  description of the serviceID.
-  * `version` -  version of the serviceID.
-  * `locked` -  lock state of the serviceID.
-  * `iam_id` - The IAM ID of the serviceID.
+- `service_ids` - (List of Objects)  A nested block list of IAM service IDs.
+  - `bound_to`-  (String) The service the service ID is bound to.
+  - `crn`-  (String) The CRN of the service ID.
+  - `description`-  (String) A description of the service ID.
+  - `iam_id`-  (String) The IAM ID of the service ID.
+  - `id` - (String) The unique identifier of the service ID.
+  - `locked`- (Bool) If set to **true**, the service ID is locked.
+  - `version`-  (String) The version of the service ID.
 
   

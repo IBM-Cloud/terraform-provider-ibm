@@ -6,11 +6,11 @@ description: |-
   Manages an object in an IBM Cloud Object Storage bucket.
 ---
 
-# ibm\_cos_bucket_object
+# ibm_cos_bucket_object
 
-Create, update, or delete an object in an IBM Cloud Object Storage bucket.
+Create, update, or delete an object in an IBM Cloud Object Storage bucket. For more information, about an IBM Cloud Object Storage bucket, see [Create some buckets to store your data](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-getting-started-cloud-object-storage#gs-create-buckets). 
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_resource_group" "cos_group" {
@@ -55,38 +55,42 @@ resource "ibm_cos_bucket_object" "file" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource.
 
-The following arguments are supported:
+- `bucket_crn` - (Required, Forces new resource, String) The CRN of the COS bucket.
+- `bucket_location` - (Required, Forces new resource, String) The location of the COS bucket.
+- `content` - (Optional, String) Literal string value to use as an object content, which will be uploaded as UTF-8 encoded text. Conflicts with `content_base64` and `content_file`.
+- `content_base64` - (Optional, String) Base64-encoded data that will be decoded and uploaded as raw bytes for an object content. This  safely uploads non-UTF8 binary data, but is recommended only for small content. Conflicts with `content` and `content_file`.
+- `content_file` - (Optional, String) The path to a file that will be read and uploaded as raw bytes for an object content. Conflicts with `content` and `content_base64`.
+- `endpoint_type` - (Optional, String) The type of endpoint used to access COS. Supported values are `public`, `private`, or `direct`. Default value is `public`.
+- `etag` - (Optional, String) MD5 hexdigest used to trigger updates. The only meaningful value is `filemd5("path/to/file")`.
+- `key` - (Required, Forces new resource, String) The name of an object in the COS bucket.
 
-* `bucket_crn` - (Required, Forces new resource, string) The CRN of the COS bucket.
-* `bucket_location` - (Required, Forces new resource, string) The location of the COS bucket.
-* `content` - (Optional, string) Literal string value to use as the object content, which will be uploaded as UTF-8-encoded text. Conflicts with `content_base64` and `content_file`.
-* `content_base64` - (Optional, string) Base64-encoded data that will be decoded and uploaded as raw bytes for the object content. This allows safely uploading non-UTF8 binary data, but is recommended only for small content. Conflicts with `content` and `content_file`.
-* `content_file` - (Optional, string) The path to a file that will be read and uploaded as raw bytes for the object content. Conflicts with `content` and `content_base64`.
-* `endpoint_type` - (Optional, string) The type of endpoint used to access COS. Accepted values: `public`, `private`, or `direct`. Default value is `public`.
-* `etag` - (Optional, string) MD5 hexdigest used to trigger updates. The only meaningful value is `filemd5("path/to/file")`.
-* `key` - (Required, Forces new resource, string) The name of the object in the COS bucket.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The ID of the object.
-* `body` - Literal string value of the object content. Only supported for `text/*` and `application/json` content types.
-* `content_length` - A standard MIME type describing the format of the object data.
-* `content_type` - A standard MIME type describing the format of the object data.
-* `etag` - Computed MD5 hexdigest of the object content.
-* `last_modified` - Last modified date of the object. A GMT formatted date.
+- `id` - (String) The ID of an object.
+- `body` - (String) Literal string value of an object content. Only supported for `text/*` and `application/json` content types.
+- `content_length` - (String) A standard MIME type describing the format of an object data.
+- `content_type` - (String) A standard MIME type describing the format of an object data.
+- `etag` - (String) Computed MD5 hexdigest of an object content.
+- `last_modified` - (Timestamp) Last modified date of an object. A GMT formatted date.
 
 ## Import
 
-The `ibm_cos_bucket_object` resource can be imported using the `id`. The ID is formed from the COS bucket CRN, the object key name, and the bucket location.
+The `ibm_cos_bucket_object` resource can be imported by using the `id`. The ID is formed from the COS bucket CRN, an object key name, and the bucket location.
 
 id = ${bucketCRN}:object:${objectKey}:location:${bucketLocation}
 
+**Syntax**
+
 ```
 $ terraform import ibm_cos_bucket_object.my_object <id>
+```
 
+**Example**
+
+```
 $ terraform import ibm_cos_bucket.my_object crn:v1:bluemix:public:cloud-object-storage:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3:bucket:myBucketName:object:myObject.key:location:us-east
 ```
