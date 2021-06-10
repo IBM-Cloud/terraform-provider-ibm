@@ -853,6 +853,8 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		versioningData := flattenCosObejctVersioning(versionPtr)
 		if len(versioningData) > 0 {
 			d.Set("object_versioning", versioningData)
+		} else {
+			d.Set("object_versioning", nil)
 		}
 	}
 	return nil
