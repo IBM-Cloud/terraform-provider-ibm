@@ -7,13 +7,13 @@ description: |-
   Manages IBM VPC instance group manager policy.
 ---
 
-# ibm\_is_instance_group_manager_policy
+# ibm_is_instance_group_manager_policy
 
-Create update or delete a policy of an instance group manager
+Create update or delete a policy of an instance group manager. For more information, about instance group manager policy, see [creating an instance group for auto scaling](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-auto-scale-instance-group).
 
-## Example Usage
-
+## Example usage
 In the following example, you can create a policy for instance group manager.
+
 ```terraform
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2test"
@@ -81,28 +81,26 @@ resource "ibm_is_instance_group_manager_policy" "cpuPolicy" {
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `instance_group` - (Required, String) The instance group ID.
+- `instance_group_manager` - (Required, String) The instance group manager ID for policy creation.
+- `policy_type` - (Required, String) The type of metric to evaluate.
+- `metric_type` - (Required, String) The type of metric to evaluate. The possible values for metric types are `cpu`, `memory`, `network_in`, and `network_out`.
+- `metric_value`- (Required, Integer) The metric value to evaluate.
+- `name` - (Optional, String) The name of the policy.
 
-* `name` - (Optional, string) The name of the policy.
-* `policy_type` - (Required, string) The type of metric to be evaluated.
-* `instance_group` - (Required, string) The instance group ID.
-* `instance_group_manager` - (Required, string) The instance group manager ID for policy creation.
-* `metric_type` - (Required, string) The type of metric to be evaluated. The possible values for metric types are cpu, memory, network_in and network_out
-* `metric_value` - (Required, int) The metric value to be evaluated.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - Id is the comination of the instance group ID, insatnce group manager ID and instance group manager policy ID.
-* `policy_id` - ID of the policy
+- `id` - (String) The ID in the combination of instance group ID, instance group manager ID, and instance group manager policy ID.
+- `policy_id` - (String) The policy ID.
 
 ## Import
+The `ibm_is_instance_group_manager_policy` resource can be imported by using instance group ID, instance group manager ID and instance group manager policy ID.
 
-`ibm_is_instance_group_manager_policy` can be imported using instance group ID,  insatnce group manager ID and instance group manager policy ID.
-eg; ibm_is_instance_group_manager_policy.policy
+**Example**
 
 ```
 $ terraform import ibm_is_instance_group_manager_policy.policy r006-eea6b0b7-babd-47a8-82c5-ad73d1e10bef/r006-160b9a68-58c8-4ec3-84b0-ad553ccb1e5a/r006-94d99d1d-be65-4939-9006-1a1a767245b5
