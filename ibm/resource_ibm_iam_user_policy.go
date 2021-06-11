@@ -406,7 +406,7 @@ func resourceIBMIAMUserPolicyExists(d *schema.ResourceData, meta interface{}) (b
 	userPolicy, _, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
+			if apiErr.StatusCode() == 404 || *userPolicy.State == "deleted" {
 				return false, nil
 			}
 		}

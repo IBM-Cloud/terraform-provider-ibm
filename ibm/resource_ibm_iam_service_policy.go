@@ -446,7 +446,7 @@ func resourceIBMIAMServicePolicyExists(d *schema.ResourceData, meta interface{})
 	servicePolicy, _, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
+			if apiErr.StatusCode() == 404 || *servicePolicy.State == "deleted" {
 				return false, nil
 			}
 		}

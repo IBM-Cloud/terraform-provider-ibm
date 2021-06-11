@@ -296,7 +296,7 @@ func resourceIBMIAMAuthorizationPolicyExists(d *schema.ResourceData, meta interf
 	authorizationPolicy, _, err := iampapClient.GetPolicy(getPolicyOptions)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
+			if apiErr.StatusCode() == 404 || *authorizationPolicy.State == "deleted" {
 				return false, nil
 			}
 		}
