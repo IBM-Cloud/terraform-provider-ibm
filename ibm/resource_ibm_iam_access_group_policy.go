@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"time"
 
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -385,12 +386,14 @@ func resourceIBMIAMAccessGroupPolicyExists(d *schema.ResourceData, meta interfac
 		accessGroupPolicyId,
 	)
 
-	accessGroupPolicy, res, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+	accessGroupPolicy, _, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	if err != nil {
-		if res != nil && res.StatusCode == 404 {
-			return false, nil
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() == 404 || *accessGroupPolicy.State == "deleted" {
+				return false, nil
+			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s\n%s", err, res)
+		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
 
 	tempID := fmt.Sprintf("%s/%s", *getSubjectAttribute("access_group_id", accessGroupPolicy.Subjects[0]), *accessGroupPolicy.ID)
