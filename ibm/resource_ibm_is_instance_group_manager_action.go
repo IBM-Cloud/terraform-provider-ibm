@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/go-openapi/strfmt"
@@ -19,6 +20,12 @@ func resourceIBMISInstanceGroupManagerAction() *schema.Resource {
 		Delete:   resourceIBMISInstanceGroupManagerActionDelete,
 		Exists:   resourceIBMISInstanceGroupManagerActionExists,
 		Importer: &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(5 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 
@@ -350,7 +357,7 @@ func resourceIBMISInstanceGroupManagerActionUpdate(d *schema.ResourceData, meta 
 		}
 		updateInstanceGroupManagerActionOptions.InstanceGroupManagerActionPatch = instanceGroupManagerActionPatch
 
-		_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutCreate))
+		_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
 		if healthError != nil {
 			return healthError
 		}
@@ -480,7 +487,7 @@ func resourceIBMISInstanceGroupManagerActionDelete(d *schema.ResourceData, meta 
 	deleteInstanceGroupManagerActionOptions.InstanceGroupManagerID = &instancegroupmanagerscheduledID
 	deleteInstanceGroupManagerActionOptions.ID = &instanceGroupManagerActionID
 
-	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
+	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutDelete))
 	if healthError != nil {
 		return healthError
 	}
