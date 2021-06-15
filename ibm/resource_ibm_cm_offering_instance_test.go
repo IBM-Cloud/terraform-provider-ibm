@@ -30,9 +30,10 @@ func TestAccIBMCmOfferingInstance(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_cm_offering_instance.cm_offering_instance",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "ibm_cm_offering_instance.cm_offering_instance",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"wait_until_successful"},
 			},
 		},
 	})
@@ -54,7 +55,7 @@ func testAccCheckIBMCmOfferingInstanceConfig(clusterId string, clusterRegion str
 		resource "ibm_cm_version" "cm_version" {
 			catalog_identifier = ibm_cm_catalog.cm_catalog.id
 			offering_id = ibm_cm_offering.cm_offering.id
-			zipurl = "https://raw.githubusercontent.com/operator-framework/community-operators/master/community-operators/cockroachdb/5.0.3/manifests/cockroachdb.clusterserviceversion.yaml"
+			zipurl = "https://raw.githubusercontent.com/operator-framework/community-operators/master/community-operators/flux/0.14.2/manifests/flux.v0.14.2.clusterserviceversion.yaml"
 		}
 
 		resource "ibm_cm_offering_instance" "cm_offering_instance" {
@@ -67,6 +68,7 @@ func testAccCheckIBMCmOfferingInstanceConfig(clusterId string, clusterRegion str
 			cluster_region = "%s"
 			cluster_namespaces = ["tf-cm-test"]
 			cluster_all_namespaces = false
+			install_plan = "Automatic"
 		}
 		`, clusterId, clusterRegion)
 }
