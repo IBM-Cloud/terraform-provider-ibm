@@ -1,4 +1,16 @@
+## 1.26.2 (Jun15, 2021)
+BUGFIXES
+* Fix: Rollback the ibm_resource_tag resource ([#2718](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2718))
+
+* Fixed typo that prevented host_attach_script from completing ([#2715](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2715))
+
+* Fix InvalidBucketState: Versioning cannot be enabled for a bucket with expiration lifecycle actions ([#2727](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2727))
+
+* Fix the empty ca_certificate for download of network cluster config ([#2732](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2732))
+
 ## 1.26.1 (Jun11, 2021)
+Note : Don't use this release we have an issue with checksum errors for users when attempting to download the plugin. We have a new release v1.26.2
+
 BUGFIXES
 * Fix: Rollback the ibm_resource_tag resource ([#2718](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2718))
 
