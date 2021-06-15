@@ -361,14 +361,27 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	listLoadBalancersOptions := &vpcv1.ListLoadBalancersOptions{}
-	lbs, response, err := sess.ListLoadBalancers(listLoadBalancersOptions)
-	if err != nil {
-		return fmt.Errorf("Error Fetching Load Balancers %s\n%s", err, response)
+	start := ""
+	allrecs := []vpcv1.LoadBalancer{}
+	for {
+		listLoadBalancersOptions := &vpcv1.ListLoadBalancersOptions{}
+		if start != "" {
+			listLoadBalancersOptions.Start = &start
+		}
+		lbs, response, err := sess.ListLoadBalancers(listLoadBalancersOptions)
+		if err != nil {
+			return fmt.Errorf("Error Fetching Load Balancers %s\n%s", err, response)
+		}
+		start = GetNext(lbs.Next)
+		allrecs = append(allrecs, lbs.LoadBalancers...)
+		if start == "" {
+			break
+		}
 	}
+
 	lbList := make([]map[string]interface{}, 0)
 
-	for _, lb := range lbs.LoadBalancers {
+	for _, lb := range allrecs {
 		lbInfo := make(map[string]interface{})
 		//	log.Printf("******* lb ******** : (%+v)", lb)
 		lbInfo[ID] = *lb.ID
