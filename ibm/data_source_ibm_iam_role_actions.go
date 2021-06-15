@@ -6,6 +6,7 @@ package ibm
 import (
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
 )
 
 func datasourceIBMIAMRoleAction() *schema.Resource {
@@ -66,6 +67,9 @@ func datasourceIBMIAMRoleActionRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 	serviceRoles := roleList.ServiceRoles
+
+	//TODOM: Debug
+	log.Printf("MMM2: The serviceRoles: %+v", serviceRoles)
 
 	d.Set("reader", flattenActionbyDisplayName("Reader", serviceRoles))
 	d.Set("manager", flattenActionbyDisplayName("Manager", serviceRoles))
