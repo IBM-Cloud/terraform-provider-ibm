@@ -20,7 +20,7 @@ data "ibm_is_instance_profiles" "ds_instance_profiles" {
 ```
 
 ## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+You can access the following attribute references after your data source is created. 
 
 - `disks` - (List) Collection of the instance profile's disks. Nested `disks` blocks has the following structure.
 
@@ -51,7 +51,7 @@ In addition to all argument reference list, you can access the following attribu
     - `default` - (String) The disk interface used for attaching the disk. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally, halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
     - `type` - (String) The type for this profile field.
     - `values` - (String) The supported disk interfaces used for attaching the disk.
-- `profiles` - (List of Objects) List of all server instance profiles in the region.
+- `profiles` - (List) List of all server instance profiles in the region.
 
   Nested scheme for `profiles`:
   - `architecture` - (String) The default Operating System architecture for an instance of the profile.
@@ -70,7 +70,7 @@ In addition to all argument reference list, you can access the following attribu
     - `value` - (String) The value for this profile field.
     - `values` - (String) The permitted values for this profile field.
   - `href` - (String) The URL for this virtual server instance profile.
-  - `memory` -  Nested `memory` blocks have the following structure:
+  - `memory` - (List) Nested `memory` blocks have the following structure:
     
     Nested scheme for `memory`:
     - `default` - (String) The default value for this profile field.
@@ -80,18 +80,18 @@ In addition to all argument reference list, you can access the following attribu
     - `type` - (String) The type for this profile field.
     - `value` - (String) The value for this profile field.
     - `values` - (String) The permitted values for this profile field.
-  - `port_speed`  Nested `port_speed` blocks have the following structure:
+  - `port_speed` - (List) Nested `port_speed` blocks have the following structure:
 
     Nested scheme for `port_speed`:
     - `type` - (String) The type for this profile field.
     - `value` - (String) The value for this profile field.
-  - `vcpu_architecture`  Nested `vcpu_architecture` blocks have the following structure:
+  - `vcpu_architecture` - (List) Nested `vcpu_architecture` blocks have the following structure:
 
     Nested scheme for `vcpu_architecture`:
     - `default` - (String) The default VCPU architecture for an instance with this profile.
     - `type` - (String) The type for this profile field.
     - `value` - (String) The VCPU architecture for an instance with this profile.
-  - `vcpu_count`  Nested `vcpu_count` blocks have the following structure:
+  - `vcpu_count` - (List) Nested `vcpu_count` blocks have the following structure:
 
     Nested scheme for `vcpu_count`:
     - `default` - (String) The default value for this profile field.

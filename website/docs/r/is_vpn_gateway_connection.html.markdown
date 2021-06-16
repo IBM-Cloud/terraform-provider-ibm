@@ -27,7 +27,6 @@ resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection" {
 ```
 
 ## Timeouts
-
 The `ibm_is_vpn_gateway_connection` resource provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
 - **delete** - (Default 10 minutes) Used for deleting instance.
@@ -60,7 +59,7 @@ In addition to all argument reference list, you can access the following attribu
 - `mode` -  (String) The mode of the `VPN gateway` either **policy** or **route**.
 - `resource_type` -  (String) The resource type (vpn_gateway_connection).
 - `status` -  (String) The status of a VPN gateway connection either `down` or `up`.
-- `tunnels` -  (String) The VPN tunnel configuration for the VPN gateway connection (in static route mode).
+- `tunnels` -  (List) The VPN tunnel configuration for the VPN gateway connection (in static route mode).
 
   Nested scheme for `tunnels`
   - `address`-  (String) The IP address of the VPN gateway member in which the tunnel resides.

@@ -23,20 +23,20 @@ Review the argument references that you can specify for your data source.
 * `instance_group` - (Required, String) The instance group identifier.
 
 ## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created.
+In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
-- `memberships` - (String) Collection of instance group memberships. Nested `memberships` blocks have the following structure:
+- `memberships` - (List) Collection of instance group memberships. Nested `memberships` blocks have the following structure:
 
   Nested scheme for `memberships`:
   - `delete_instance_on_membership_delete` - (String) If set to **true**, when deleting the membership the instance gets deleted.
   - `instance_group_membership` - The unique identifier for this instance group membership.
-  - `instance`  Nested `instance` blocks have the following structure:
+  - `instance`  - (List) Nested `instance` blocks have the following structure:
   
     Nested scheme for `instance`:
     - `crn` - (String) The CRN for this virtual server instance.
     - `virtual_server_instance` - (String) The unique identifier for this virtual server instance.
     - `name` - (String) The user-defined name for this virtual server instance (and default system hostname).
-  - `instance_template`  Nested `instance_template` blocks have the following structure:
+  - `instance_template` - (List) Nested `instance_template` blocks have the following structure:
   
     Nested scheme for `instance_template`:
     - `crn` - (String) The CRN for this instance template.

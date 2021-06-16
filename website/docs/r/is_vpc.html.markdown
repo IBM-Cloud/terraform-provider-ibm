@@ -21,7 +21,6 @@ resource "ibm_is_vpc" "testacc_vpc" {
 ```
 
 ## Timeouts
-
 The `ibm_is_vpc` resource provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
 - **create**: The creation of the VPC is considered `failed` when no response is received for 10 minutes. 
@@ -64,12 +63,12 @@ In addition to all argument reference list, you can access the following attribu
   - `total_ipv4_address_count`- (Integer) The total number of IPv4 addresses in the subnet.
   - `zone` - (String) The Zone of the subnet. 
 - `status` - (String) The provisioning status of your VPC. 
-- `security_group` - (String) A list of security groups attached to VPC. 
+- `security_group` - (List) A list of security groups attached to VPC. 
 
   Nested scheme for `security_group`:
   - `group_id` - (String) The security group ID.
   - `group_name` - (String) The name of the security group.
-  - `rules` - (String) Set of rules attached to a security group.
+  - `rules` - (List) Set of rules attached to a security group.
   
     Nested scheme for `rules`:
     - `code`- (String) The ICMP traffic code to allow.

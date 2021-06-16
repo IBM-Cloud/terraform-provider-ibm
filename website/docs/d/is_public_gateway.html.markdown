@@ -36,9 +36,9 @@ Review the argument references that you can specify for your data source.
 - `resource_group` - (Optional, String) The resource group ID of the public gateway. **Note** This parameter is supported only for VPC Generation 2 infrastructure.
 
 ## Attribute reference
-Review the attribute references that you can access after you retrieve your data source.
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `floating_ip` - (String) List of the nested block describes the floating IP of the gateway with the **id** and **address** details.
+- `floating_ip` - (List) List of the nested block describes the floating IP of the gateway with the **id** and **address** details.
 	
   Nested scheme for `floating_ip`:
   - `id` - (String) The ID of the floating IP that is bound to the public gateway.

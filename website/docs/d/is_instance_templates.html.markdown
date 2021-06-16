@@ -19,10 +19,10 @@ data "ibm_is_instance_templates" "instancetemplates" {
 ```
 
 ## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+You can access the following attribute references after your data source is created. 
 
 - `templates` - (List of Objects) List of templates.
-	- `boot_volume` - (String) A nested block describes the boot volume configuration for the template.
+	- `boot_volume` - (List) A nested block describes the boot volume configuration for the template.
 
 	  Nested scheme for `boot_volume`:
 		- `delete_volume_on_instance_delete` - (String) You can configure to delete the boot volume based on instance deletion.
@@ -35,7 +35,7 @@ In addition to all argument reference list, you can access the following attribu
 	- `image` - (String) The ID of the image to create the template.
 	- `keys` - (String) List of SSH key IDs used to allow log in user to the instances.
 	- `name` - (String) The name of the instance template.
-	- `network_interfaces` - (String) A nested block describes the network interfaces for the template.
+	- `network_interfaces` - (List) A nested block describes the network interfaces for the template.
 
 	  Nested scheme for `network_interfaces`:
 		- `name` - (String) The name of the interface.
@@ -43,7 +43,7 @@ In addition to all argument reference list, you can access the following attribu
 		- `subnet` - (String) The VPC subnet to assign to the interface.
 		- `security_groups` - (String) List of security groups of  the subnet.
 	- `profile` - (String) The number of instances created in the instance group.
-	- `primary_network_interfaces` - (String) A nested block describes the primary network interface for the template.
+	- `primary_network_interfaces` - (List) A nested block describes the primary network interface for the template.
 
 	  Nested scheme for `primary_network_interfaces`:
 		- `name` - (String) The name of the interface.
@@ -52,13 +52,13 @@ In addition to all argument reference list, you can access the following attribu
 		- `security_groups` - (String) List of security groups of the subnet.
 	- `resource_group` - (String) The resource group ID.	
 	- `user_data` -  (String) The user data provided for the instance.
-	- `volume_attachments` - (String) A nested block describes the storage volume configuration for the template.
+	- `volume_attachments` - (List) A nested block describes the storage volume configuration for the template.
 
 	  Nested scheme for `volume_attachments`:
 		- `delete_volume_on_instance_delete` - (Bool) You can configure to delete the storage volume to delete based on instance deletion.
 		- `name` - (String) The name of the boot volume.
 		- `volume` - (String) The storage volume ID created in VPC.
-		- `volume_prototype` A nested block describing prototype for the volume.
+		- `volume_prototype` - (List) A nested block describing prototype for the volume.
 
 		  Nested scheme for `volume_prototype`:
 		  - `capacity` - (String) The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating volumes can expand in the future.

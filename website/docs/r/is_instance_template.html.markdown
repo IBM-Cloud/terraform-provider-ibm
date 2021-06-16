@@ -209,6 +209,7 @@ Review the argument references that you can specify for your resource.
     - `profile` - (Optional, String) The global unique name for the volume profile to use for the volume.
     
     **Note** 
+    
     `volume_attachments` provides either `volume` with a storage volume ID, or `volume_prototype` to create a new volume. If you plan to use this template with instance group, provide the `volume_prototype`. Instance group does not support template with existing storage volume IDs.
 - `vpc` - (Required, String) The VPC ID that the instance templates needs to be created.
 - `user_data` -  (Optional, String) The user data provided for the instance.

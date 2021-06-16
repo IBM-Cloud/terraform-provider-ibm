@@ -29,6 +29,8 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `floating_ips` - (List of Objects) A nested block describes the floating IP's of this network interface.
+
+  Nested scheme for `floating_ips`:
 	- `address` - (String) The globally unique IP address.
 	- `crn` - (String) The CRN of this floating IP.
 	- `id` - (String) The ID of this floating IP.
@@ -42,9 +44,11 @@ In addition to all argument reference list, you can access the following attribu
 - `status` - (String) The status of the volume.
 - `subnet` - (String) The Subnet ID.
 - `security_groups` - (List of Objects) A nested block describes the security groups of this network interface.
-	- `security_groups.id` - (String) The ID of this security group.	-
-	- `security_groups.crn` - (String) The CRN of this security group.	-
-	- `security_groups.name` - (String) The name of this security group.
+
+  Nested scheme for `security_groups`:
+	- `crn` - (String) The CRN of this security group.
+	- `id` - (String) The ID of this security group.
+	- `name` - (String) The name of this security group.
 - `type` - (String) The type of this network interface as it relates to a instance.
 
 

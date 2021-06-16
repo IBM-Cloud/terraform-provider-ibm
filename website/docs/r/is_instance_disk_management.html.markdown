@@ -71,7 +71,7 @@ resource "ibm_is_instance_disk_management" "disks"{
 Review the argument references that you can specify for your resource. 
 
 - `instance` - (Required, Forces new resource, String) The unique-identifier of the instance.
-- `disks` - (Required, String) Disks that needs to be updated. Nested `disks` blocks have the following structure:
+- `disks` - (Required, List) Disks that needs to be updated. Nested `disks` blocks have the following structure:
 
   Nested scheme for `disks`:
   - `id` - (Required, String) The unique-identifier of the instance disk.

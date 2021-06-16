@@ -28,7 +28,7 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `class`-  (String) The product class this dedicated host profile belongs to.
-- `disks` - (String) Collection of the dedicated host profile's disks. 
+- `disks` - (List) Collection of the dedicated host profile's disks. 
 
   Nested scheme for `disks`:
   - `interface_type`- (List) The interface type.
@@ -54,29 +54,39 @@ In addition to all argument reference list, you can access the following attribu
 - `family`-  (String) The product family this dedicated host profile belongs to.
 - `href`-  (String) The URL for this dedicated host.
 - `id`-  (String) The unique identifier of the dedicated host profile.
-- `memory`-  (String) Nested memory blocks have the following structure.
-  - `default`-  (String) The default value for this profile field.
-  - `max`-  (String) The maximum value for this profile field.
-  - `min`-  (String) The minimum value for this profile field.
-  - `step`-  (String) The increment step value for this profile field.
-  - `type`-  (String) The type for this profile field.
-  - `value`-  (String) The value for this profile field.
-  - `values`-  (String) The permitted values for this profile field.
-- `socket_count` - (String) Nested socket_count blocks have the following structure.
-  - `type`-  (String) The type for this profile field.
-  - `value`-  (String) The value for this profile field.
-  - `default`-  (String) The default value for this profile field.
-  - `max`-  (String) The maximum value for this profile field.
-  - `min`-  (String) The minimum value for this profile field.
-  - `step`-  (String) The increment step value for this profile field.
-  - `values`-  (String) The permitted values for this profile field.
-- `supported_instance_profiles`-  (String) Array of instance profiles that can be used by instances placed on dedicated hosts with this profile Nested `supported_instance_profiles` blocks have the following structure.
+- `memory`-  (List) Nested memory blocks have the following structure.
+
+  Nested scheme for `memory`:
+  - `default` -  (String) The default value for this profile field.
+  - `max` -  (String) The maximum value for this profile field.
+  - `min` -  (String) The minimum value for this profile field.
+  - `step` -  (String) The increment step value for this profile field.
+  - `type` -  (String) The type for this profile field.
+  - `value` -  (String) The value for this profile field.
+  - `values` -  (String) The permitted values for this profile field.
+- `socket_count` - (List) Nested socket_count blocks have the following structure.
+
+  Nested scheme for `socket_count`:
+  - `type` -  (String) The type for this profile field.
+  - `value` -  (String) The value for this profile field.
+  - `default` -  (String) The default value for this profile field.
+  - `max` -  (String) The maximum value for this profile field.
+  - `min` -  (String) The minimum value for this profile field.
+  - `step` -  (String) The increment step value for this profile field.
+  - `values` -  (String) The permitted values for this profile field.
+- `supported_instance_profiles`-  (List) Array of instance profiles that can be used by instances placed on dedicated hosts with this profile Nested `supported_instance_profiles` blocks have the following structure.
+
+  Nested scheme for `supported_instance_profiles`:
   - `href`-  (String) The URL for this virtual server instance profile.
   - `name`-  (String) The globally unique name for this virtual server instance profile.
-- `vcpu_architecture`-  (String) Nested `vcpu_architecture` blocks have the following structure.
+- `vcpu_architecture`-  (List) Nested `vcpu_architecture` blocks have the following structure.
+
+  Nested scheme for `vcpu_architecture`:
   - `type`-  (String) The type for this profile field.
   - `value`-  (String) The `VCPU` architecture for a dedicated host with this profile.
-- `vcpu_count` -String - Nested `vcpu_count` blocks have the following structure. 
+- `vcpu_count` - (List) Nested `vcpu_count` blocks have the following structure.
+
+  Nested scheme for `vcpu_count`:
   - `default`-  (String) The default value for this profile field.
   - `max`-  (String) The maximum value for this profile field.
   - `min`-  (String) The minimum value for this profile field.

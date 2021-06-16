@@ -23,7 +23,6 @@ resource "ibm_is_vpn_gateway" "testacc_vpn_gateway" {
 ```
 
 ## Timeouts
-
 The `ibm_is_vpn_gateway` resource provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
 - **create**: The creation of the VPN gateway is considered `failed` when no response is received for 10 minutes. 
@@ -45,7 +44,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `created_at` -  (String) The Second IP address assigned to this VPN gateway.
 - `id` - (String) The unique identifier of the VPN gateway.
-- `members` - (String) Collection of VPN gateway members.
+- `members` - (List) Collection of VPN gateway members.
 
   Nested scheme for `members`:
   - `address` -  (String) The public IP address assigned to the VPN gateway member.

@@ -33,17 +33,17 @@ Review the argument references that you can specify for your data source.
 	    Nested scheme for `interface_type`:
 	    - `type` - (String) The type for this profile field.
 	    - `value` - (String) The interface of the disk for a dedicated host with this profileThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
-	 - `quantity` - (String) The number of disks of this type for a dedicated host with this profile. Nested `quantity` blocks have the following structure:
+	 - `quantity` - (List) The number of disks of this type for a dedicated host with this profile. Nested `quantity` blocks have the following structure:
 
 	   Nested scheme for `quantity`:
 	   - `type` - (String) The type for this profile field.
 	   - `value` - (String) The value for this profile field.
-	 - `size` - The size of the disk in GB (gigabytes). Nested `size` blocks have the following structure:
+	 - `size` - (List) The size of the disk in GB (gigabytes). Nested `size` blocks have the following structure:
 	
 	   Nested scheme for `size`:
 	   - `type` - (String) The type for this profile field.
 	   - `value` - (String) The size of the disk in GB (gigabytes).
-	 - `supported_instance_interface_types`  Nested `supported_instance_interface_types` blocks have the following structure:
+	 - `supported_instance_interface_types`  - (List) Nested `supported_instance_interface_types` blocks have the following structure:
 	  
 	    Nested scheme for `supported_instance_interface_types`:
 	    - `type` - (String) The type for this profile field.
@@ -61,7 +61,7 @@ Review the argument references that you can specify for your data source.
 	  - `value` - (String) The value for this profile field.
 	  - `values` - (String) The permitted values for this profile field.
 	- `name` - (String) The global unique name for this dedicated host profile.
-	- `socket_count`  Nested `socket_count` blocks have the following structure:
+	- `socket_count`  - (List) Nested `socket_count` blocks have the following structure:
 
 	  Nested scheme for `socket_count`:
 	  - `default` - (String) The default value for this profile field.
@@ -76,12 +76,12 @@ Review the argument references that you can specify for your data source.
 	  Nested scheme for `supported_instance_profiles`:
 	  - `href` - (String) The URL for this virtual server instance profile.
 	  - `name` - (String) The global unique name for this virtual server instance profile.
-	- `vcpu_architecture`  Nested `vcpu_architecture` blocks have the following structure:
+	- `vcpu_architecture` - (List)  Nested `vcpu_architecture` blocks have the following structure:
 
 	  Nested scheme for `vcpu_architecture`:
 	  - `type` - (String) The type for this profile field.
 	  - `value` - (String) The VCPU architecture for a dedicated host with this profile.
-	- `vcpu_count`  Nested `vcpu_count` blocks have the following structure:
+	- `vcpu_count` - (List) Nested `vcpu_count` blocks have the following structure:
 
 	  Nested scheme for `vcpu_count`:
 	  - `default` - (String) The default value for this profile field.
@@ -91,6 +91,5 @@ Review the argument references that you can specify for your data source.
 	  - `type` - (String) The type for this profile field.
 	  - `value` - (String) The value for this profile field.
 	  - `values` - (String) The permitted values for this profile field.
-
 - `total_count` - (String) The total number of resources across all pages.
 

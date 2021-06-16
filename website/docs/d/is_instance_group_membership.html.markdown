@@ -7,7 +7,6 @@ description: |-
 ---
 
 # ibm_is_instance_group_membership
-
 Retrieve information of an instance group memership. For more information, about instance group membership, see [bulk provisioning instances with instance groups](https://cloud.ibm.com/docs/vpc?topic=vpc-bulk-provisioning).
 
 ## Example usage
@@ -31,13 +30,13 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The ID is the combination of instance group ID and instance group membership ID.
 - `delete_instance_on_membership_delete` - (Bool) If set to **true**, when deleting the membership the instance will also be deleted.
 - `instance_group_membership` - (String) The unique identifier for this instance group membership.
-- `instance`  Nested `instance` blocks have the following structure:
+- `instance` - (List) Nested `instance` blocks have the following structure:
 
   Nested scheme for `instance`:
   - `crn` - (String) The CRN for this virtual server instance.
   - `virtual_server_instance` - (String) The unique identifier for this virtual server instance.
   - `name` - (String) The user-defined name for this virtual server instance (and default system hostname).
-- `instance_template`  Nested `instance_template` blocks have the following structure:
+- `instance_template` - (List) Nested `instance_template` blocks have the following structure:
  
    Nested scheme for `instance_template`:
    - `crn` - (String) The CRN for this instance template.

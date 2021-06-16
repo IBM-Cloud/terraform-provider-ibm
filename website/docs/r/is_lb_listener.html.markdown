@@ -47,7 +47,6 @@ resource "ibm_is_lb_pool_member" "webapptier-lb-pool-member-zone1" {
 ```
 
 ## Timeouts
-
 The `ibm_is_lb_listener` resource provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options.
 
 - **create** - (Default 10 minutes) Used for creating Instance.

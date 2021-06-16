@@ -27,13 +27,13 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `auto_delete`-  (String) The auto_delete boolean for reserved IP.
-- `created_at`-  (String) The creation timestamp for the reserved IP.
-- `href`-  (String) The unique reference for the reserved IP.
-- `id`-  (String) The ID for the reserved IP.
-- `name`-  (String) The name for the reserved IP.
-- `owner`-  (String) The owner of the reserved IP.
-- `reserved_ip`-  (String) The ID for the reserved IP.
-- `resource_type`-  (String) The resource type.
-- `subnet`-  (String) The ID of the subnet for the reserved IP.
+- `auto_delete` -  (String) The auto_delete boolean for reserved IP.
+- `created_at` -  (String) The creation timestamp for the reserved IP.
+- `href` -  (String) The unique reference for the reserved IP.
+- `id` -  (String) The ID for the reserved IP.
+- `name` -  (String) The name for the reserved IP.
+- `owner` -  (String) The owner of the reserved IP.
+- `reserved_ip` -  (String) The ID for the reserved IP.
+- `resource_type` -  (String) The resource type.
+- `subnet` -  (String) The ID of the subnet for the reserved IP.
 - `target` - The ID of the target for the reserved IP.

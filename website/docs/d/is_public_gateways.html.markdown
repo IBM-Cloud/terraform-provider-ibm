@@ -29,7 +29,7 @@ Review the attribute references that you can access after you retrieve your data
   - `zone` - (String) The public gateway zone name.
   - `tags` - (String) Tags associated with the public gateway.
   - `name` - (String) The name of the public gateway.
-  - `floating_ip` - A nested block describing the floating IP of the public gateway.
+  - `floating_ip` - (List) A nested block describing the floating IP of the public gateway.
   
     Nested scheme for `floating_ip`:
     - `id` - (String) ID of the floating ip bound to the public gateway.

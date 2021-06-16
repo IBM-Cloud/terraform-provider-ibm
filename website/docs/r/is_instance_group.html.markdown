@@ -12,7 +12,6 @@ description: |-
 Create, update or delete a instance group on VPC. For more information, about instance group, see [managing an instance group](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-instance-group).
 
 ## Example usage
-
 In the following example, you can create a instance group on VPC Generation-2 infrastructure.
 
 ```terraform

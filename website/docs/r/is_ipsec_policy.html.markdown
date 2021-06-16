@@ -8,12 +8,10 @@ description: |-
 ---
 
 # ibm_is_ipsec_policy
-
 Create, update, or delete an ipsec policy resource. For more information, about ipsec policy, see [creating an IPsec policy](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-ipsec-policy).
 
 
 ## Example usage
-
 In the following example, you can create a IPsec policy:
 
 ```terraform

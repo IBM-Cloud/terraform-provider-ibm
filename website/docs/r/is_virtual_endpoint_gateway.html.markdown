@@ -10,7 +10,7 @@ description: |-
 # ibm_is_virtual_endpoint_gateway
 Create, update, or delete a VPC endpoint gateway by using virtual endpoint gateway resource. For more information, about the VPC endpoint gateway, see [creating an endpoint gateway](https://cloud.ibm.com/docs/vpc?topic=vpc-ordering-endpoint-gateway).
 
-## Example Usage
+## Example usage
 The following example, creates a VPN gateway.
 
 ```terraform
