@@ -33,7 +33,9 @@ In addition to all argument reference list, you can access the following attribu
 - `name` - (String) The endpoint gateway IP name.
 - `reserved_ip` - (String) The endpoint gateway reserved IP ID.
 - `resource_type` - (String) The endpoint gateway IP resource type.
-- `target` - (String) The endpoint gateway target details.
+- `target` - (List) The endpoint gateway target details.
+
+  Nested scheme for `target`:
 	- `id` - (String) The IPs target ID.
 	- `name` - (String) The IPs target name.
 	- `resource_type` - (String) The endpoint gateway resource type.
