@@ -11,7 +11,6 @@ description: |-
 Create, update, or delete a VPC load balancer listener policy rule. For more information, about load balancer listener policy and rules, see [layer 7 load balancing policies and rules](https://cloud.ibm.com/docs/vpc?topic=vpc-layer-7-load-balancing).
 
 ## Example usage
-
 Sample to create a load balancer listener policy rule, along with `lb` and `lb listener`.
 
 ```terraform
@@ -53,7 +52,6 @@ resource "ibm_is_lb_listener_policy_rule" "lb_listener_policy_rule" {
 ```
 
 ## Timeouts
-
 The `ibm_is_lb_listener_policy` rule provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
 - **Create**: The creation of the resource is considered failed if no response is received for 10 minutes. 

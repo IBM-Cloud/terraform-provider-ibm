@@ -71,7 +71,6 @@ resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
 }
 ```
 ## Timeouts
-
 The `ibm_is_lb_listener_policy` resource provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
 - **create**: The creation of the load balancer listener policy is considered `failed` if no response is received for 10 minutes. 

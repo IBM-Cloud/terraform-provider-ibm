@@ -46,17 +46,17 @@ In addition to all argument reference list, you can access the following attribu
 - `created_at`-  (String) The date and time that the dedicated host was created.
 - `crn`-  (String) The CRN for this dedicated host.
 
-- `disks` - (String) Collection of the dedicated host's disks. Nested `disks` blocks have the following structure:
+- `disks` - (List) Collection of the dedicated host's disks. Nested `disks` blocks have the following structure:
 
   Nested scheme for `disks`:
   - `available` - (String) The remaining space left for instance placement in GB (gigabytes).
   - `created_at` - (String) The date and time that the disk was created.
   - `href` - (String) The URL for this disk.
   - `id` - (String) The unique identifier for this disk.
-  - `instance_disks` - (String) Instance disks that are on this dedicated host disk. Nested `instance_disks` blocks have the following structure:
+  - `instance_disks` - (List) Instance disks that are on this dedicated host disk. Nested `instance_disks` blocks have the following structure:
 
     Nested scheme for `instance_disks`:
-    - `deleted` - (String) If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
 			
        Nested scheme for `deleted`:
        - `more_info` - (String) Link to documentation about deleted resources.
@@ -74,13 +74,13 @@ In addition to all argument reference list, you can access the following attribu
 - `host_group`-  (String) The unique ID of the dedicated host group this dedicated host is in.
 - `href`-  (String) The URL for this dedicated host.
 - `instance_placement_enabled`-  (String) If set to **true**, instances can be placed on this dedicated host.
-- `instances`-  (String)  Array of instances that are allocated to this dedicated host.
+- `instances`-  (List)  Array of instances that are allocated to this dedicated host.
 
   Nested scheme for `instance`:
-  - `crn`-  (String) The CRN for the VSI.
+  - `crn`-  (List) The CRN for the VSI.
 
     Nested scheme for `crn`:
-    - `deleted`-  (String) If present, this property indicates the referenced resource has been deleted and provides supplementary information. Nested deleted blocks have the following structure.
+    - `deleted`-  (List) If present, this property indicates the referenced resource has been deleted and provides supplementary information. Nested deleted blocks have the following structure.
 
       Nested scheme for `deleted`:
       - `more_info`-  (String) Link to documentation about deleted resources.

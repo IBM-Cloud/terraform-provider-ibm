@@ -19,9 +19,9 @@ data "ibm_is_volume_profiles" "volprofiles"{
 ```
 
 ## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+You can access the following attribute references after your data source is created. 
 
-- `profiles` - (String)  Lists all server volume profiles in the region.
+- `profiles` - (List)  Lists all server volume profiles in the region.
 
   Nested scheme for `profiles`:
 	- `name` - (String) The name of the virtual server volume profile.

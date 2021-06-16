@@ -38,7 +38,7 @@ In addition to all argument reference list, you can access the following attribu
   - `crn` - (String) The CRN for this virtual server instance.
   - `name` - (String) The user defined name for this virtual server instance (and default system hostname).
   - `virtual_server_instance` - (String) The unique identifier for this virtual server instance.
-- `instance_template`  Nested `instance_template` blocks have the following structure:
+- `instance_template` - (List)  Nested `instance_template` blocks have the following structure:
 
   Nested scheme for `instance_template`:
   - `crn` - (String) The CRN for this instance template.

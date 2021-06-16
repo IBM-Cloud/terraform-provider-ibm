@@ -6,8 +6,7 @@ description: |-
   Manages IBM Cloud Infrastructure Flow Logs.
 ---
 
-# ibm\_is_flow_logs
-
+# ibm_is_flow_logs
 Retrieve an information of an existing IBM Cloud Infrastructure flow logs as a read-only data source. For more information, about VPC flow log, see [creating a flow log collector](https://cloud.ibm.com/docs/vpc?topic=vpc-ordering-flow-log-collector).
 
 
@@ -23,7 +22,7 @@ data "ibm_is_flow_logs" "ds_flow_logs" {
 ## Attribute reference
 Review the attribute references that you can access after you retrieve your data source. 
 
-- `flow_log_collectors` - (String) Lists all the flow logs in the IBM Cloud.
+- `flow_log_collectors` - (List) Lists all the flow logs in the IBM Cloud.
 
   Nested scheme for `flow_log_collectors`:
 	- `active` - (String) Indicates whether the collector is active.

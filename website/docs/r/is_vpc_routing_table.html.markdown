@@ -45,12 +45,12 @@ In addition to all argument reference list, you can access the following attribu
 - `lifecycle_state` - (String) The lifecycle state of the routing table.
 - `resource_type` - (String) The resource type.
 - `routing_table` - (String) The generated routing table ID.
-- `routes` - (String) The routes for the routing table.
+- `routes` - (List) The routes for the routing table.
 
   Nested scheme for `routes`:
   - `id` - (String) The unique ID of the route.
   - `name`-  (String) The user-defined name of the route.
-- `subnets` - (String) The subnets to which routing table is attached.
+- `subnets` - (List) The subnets to which routing table is attached.
 
   Nested scheme for `subnets`:
   - `id` - (String) The unique ID of the subnet.

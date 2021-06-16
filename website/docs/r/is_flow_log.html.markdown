@@ -67,9 +67,9 @@ Review the argument references that you can specify for your resource.
 - `name` - (Required, String) The unique user-defined name for the flow log collector.No.
 - `target` - (Required, Forces new resource, String) The ID of the target to collect flow logs. If the target is an instance, subnet, or VPC, flow logs is not collected for any network interfaces within the target that are more specific flow log collector.
 - `storage_bucket` - (Required, Forces new resource, String) The name of the IBM Cloud Object Storage bucket where the collected flows will be logged. The bucket must exist and an IAM service authorization must grant IBM Cloud flow logs resources of VPC infrastructure services writer access to the bucket.
-- `active` - (Optional, String) Indicates whether the collector is active. If **false**, this collector is created in inactive mode. Default value is true.No.
+- `active` - (Optional, String) Indicates whether the collector is active. If **false**, this collector is created in inactive mode. Default value is true.
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID where the flow log is created.
-- `tags` - (Optional, Array of Strings) The tags associated with the flow log.No.
+- `tags` - (Optional, Array of Strings) The tags associated with the flow log.
 
 
 ## Attribute reference

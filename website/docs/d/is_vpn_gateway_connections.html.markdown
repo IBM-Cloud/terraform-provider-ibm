@@ -44,7 +44,7 @@ In addition to all argument reference list, you can access the following attribu
 - `peer_cidrs` - (String) The VPN gateway connection peer CIDRs.
 - `resource_type` - (String) The resource type.
 - `timeout` - (String) Timeout for dead peer detection.
-- `tunnels` - (String) The VPN tunnel configuration for the VPN gateway connection (in static route mode).
+- `tunnels` - (List) The VPN tunnel configuration for the VPN gateway connection (in static route mode).
 
   Nested scheme for `tunnels`:
 	- `address` - (String) The IP address of the VPN gateway member in which the tunnel resides.

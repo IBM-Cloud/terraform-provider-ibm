@@ -10,7 +10,6 @@ description: |-
 Create, update, or delete a subnet. For more information, about associated reserved IP subnet, see [reserved IP subnet](https://cloud.ibm.com/docs/vpc?topic=vpc-troubleshoot-reserved-ip).
 
 ## Example usage
-
 Sample to create a reserved IP:
 
 ```terraform

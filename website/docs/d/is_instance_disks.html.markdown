@@ -64,7 +64,7 @@ Review the argument references that you can specify for your data source.
 - `instance` - (Required, String) The instance identifier.
 
 ## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
 - `disks` - (List) Collection of the instance's disks. 
 

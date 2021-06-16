@@ -3,7 +3,7 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : reserved_ips"
 description: |-
-  Lists all the information in reserved IP for Subnet.
+  Lists all the information in reserved IP for subnet.
 ---
 
 # ibm_is_subnet_reserved_ips
@@ -27,7 +27,7 @@ In addition to the argument reference list, you can access the following attribu
 
 - `id` -  (String) The ID for the all the reserved ID in current timestamp format.
 - `limit` -  (String) The number of reserved IPs to list.
-- `reserved_ips` -  (String) The collection of all the reserved IPs in the subnet.
+- `reserved_ips` -  (List) The collection of all the reserved IPs in the subnet.
 
   Nested scheme for `reserved_ips`:
   - `address` -  (String) The IP bound for the reserved IP.

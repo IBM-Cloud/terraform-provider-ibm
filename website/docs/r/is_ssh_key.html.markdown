@@ -38,7 +38,6 @@ In addition to all argument reference list, you can access the following attribu
 
 
 ## Import
-
 The `ibm_is_ssh_key` resource can be imported by using the SSH key ID. 
 
 **Syntax**

@@ -40,7 +40,6 @@ resource "ibm_is_subnet" "testacc_subnet" {
 ```
 
 ## Timeouts
-
 The `ibm_is_subnet` resource provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
 - **create** - (Default 10 minutes) Used for creating Instance.

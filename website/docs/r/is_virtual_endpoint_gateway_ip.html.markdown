@@ -38,7 +38,7 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the VPN gateway connection. The ID is composed of `<gateway_id>/<gateway_ip_id>`.
 - `name` - (String) The endpoint gateway IP name.
 - `resource_type` - (String) The endpoint gateway IP resource type.
-- `target` - (String) The endpoint gateway target details.
+- `target` - (List) The endpoint gateway target details.
 
   Nested scheme for `target`:
   - `id` - (String) The IPs target ID.

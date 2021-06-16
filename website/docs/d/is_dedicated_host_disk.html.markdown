@@ -31,10 +31,10 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the dedicated host disk.
 - `created_at` - (Timestamp) The date and time that the disk was created.
 - `href` - The URL for this disk.
-- `instance_disks` - (String) Instance disks that are on the dedicated host disk. 
+- `instance_disks` - (List) Instance disks that are on the dedicated host disk. 
 
   Nested scheme for `instance_disks`:
-  - `deleted` - (String) If present, this property indicates the referenced resource has been deleted and provides the supplementary information. 
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides the supplementary information. 
 
       Nested scheme for `deleted`:
       - `more_info` - (String) Link to documentation about deleted resources.

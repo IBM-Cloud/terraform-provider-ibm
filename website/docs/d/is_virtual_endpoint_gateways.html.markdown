@@ -12,7 +12,8 @@ Retrieve information of an existing IBM Cloud infrastructure virtual endpoint ga
 ## Example usage
 
 ```terraform
-data "ibm_is_virtual_endpoint_gateways" "data_test" {}
+data "ibm_is_virtual_endpoint_gateways" "data_test" {
+}
 ```
 
 ## Argument reference
@@ -21,13 +22,13 @@ Review the argument references that you can specify for your data source.
 - `gateway`- (Required, String) The endpoint gateway ID.
 
 ## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
 - `created_at` - (Timestamp) The created date and time of the endpoint gateway.
 - `health_state` - (String) The endpoint gateway health state. **ok: Healthy**, **degraded: Suffering from compromised performance, capacity, or connectivity**, **faulted: Completely unreachable, inoperative, or entirely incapacitated**, **inapplicable: The health state does not apply because of the current lifecycle state**. A resource with a lifecycle state of failed or deleting will have a health state of inapplicable. A pending resource may have this state.
 - `lifecycle_state` - (String) The endpoint gateway lifecycle state, supported values are `deleted`, `deleting`, `failed`, `pending`, `stable`, `updating`, `waiting`, `suspended`.
 - `id` - (String) The endpoint gateway ID.
-- `ips` - (String) The collection of reserved IPs bound to an endpoint gateway.
+- `ips` - (List) The collection of reserved IPs bound to an endpoint gateway.
 
   Nested scheme for `ips`:
 	- `ips.id` - (String) The unique identifier for the reserved IP.
@@ -35,7 +36,7 @@ In addition to all argument reference list, you can access the following attribu
 	- `ips.resource_type` - (String) The endpoint gateway IP resource type or the subnet reserved IP.
 - `name` - (String) The endpoint gateway name.
 - `resource_group` - (String) The unique identifier for the resource group.
-- `target` - (String) The endpoint gateway target services.
+- `target` - (List) The endpoint gateway target services.
 
   Nested scheme for `target`:
   - `name` - (String) The endpoint gateway target name.

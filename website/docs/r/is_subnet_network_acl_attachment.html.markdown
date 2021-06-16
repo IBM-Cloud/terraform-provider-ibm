@@ -71,19 +71,19 @@ In addition to all argument reference list, you can access the following attribu
 - `protocol` - (List) The protocol list to enforce.
 	
   Nested scheme for `protocol`:
-  - `icmp` - (String) The protocol ICMP.
+  - `icmp` - (List) The protocol ICMP.
 
     Nested scheme for `icmp`:
 	  - `code` - (String) The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also specified.
 	  - `type` - (String) The ICMP traffic type to allow. If unspecified, all types are allowed by this rule.
-	- `tcp` - (String) The TCP protocol.
+	- `tcp` - (List) The TCP protocol.
 
     Nested scheme for `tcp`:
 	  - `destination_port_max` - (String) The inclusive maximum bound of TCP destination port range.
 	  - `destination_port_min` - (String) The inclusive minimum bound of TCP destination port range.
 	  - `source_port_max` - (String) The inclusive maximum bound of TCP source port range.
 	  - `source_port_min` - (String) The inclusive minimum bound of TCP source port range.
-	- `udp` - (String) The UDP protocol.
+	- `udp` - (List) The UDP protocol.
 
     Nested scheme for `udp`:
 	  - `destination_port_max` - (String) The inclusive maximum bound of UDP destination port range.
@@ -93,7 +93,7 @@ In addition to all argument reference list, you can access the following attribu
 	- `subnets` - (String) The subnets to which this network ACL is attached.
 	- `vpc` - (String) The VPC to which this network ACL is a part of.
 - `resource_group` - (String) The resource group of this network ACL.
-- `rules` - (String) The ordered rules of this network ACL. If rules does not exist, all traffic will be denied. Nested rules blocks has the following structure.
+- `rules` - (List) The ordered rules of this network ACL. If rules does not exist, all traffic will be denied. Nested rules blocks has the following structure.
 
   Nested scheme for `rules`:
 	- `action` - (String) Specify to allow or deny matching traffic.

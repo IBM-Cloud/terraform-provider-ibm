@@ -7,11 +7,10 @@ description: |-
 ---
 
 # ibm_is_instance_group
-
 Retrieve information of an exisitng VPC instance group. For more information, about VPC instance group information, see [creating an instance group for auto scaling](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-auto-scale-instance-group).
 
 ## Example usage
-The following example gets an instance group info.
+The following example gets an instance group information.
 
 ```terraform
 data "ibm_is_instance_group" "instance_group_data" {
@@ -26,7 +25,7 @@ Review the argument references that you can specify for your data source.
 - `name` - (Required, String) The name of an instance group.
 
 ## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
 - `application_port` - (String) Scales an instances to supply the port for the Load Balancer pool member.
 - `id`- (Object) The ID of an instance group.

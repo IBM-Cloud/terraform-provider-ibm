@@ -24,7 +24,7 @@ Review the argument references that you can specify for your data source.
 - `name` - (Required, String) The global unique name of an operating system.
 
 ## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
 - `architecture` - (String) The Operating System architecture.
 - `dedicated_host_only` - (String) Images with the Operating System can be used on dedicated hosts or dedicated host groups.

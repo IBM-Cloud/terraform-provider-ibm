@@ -7,7 +7,6 @@ description: |-
 ---
 
 # ibm_is_instance
-
 Retrieve information of an existing IBM Cloud virtual server instance  as a read-only data source. For more information, about managing VPC instance, see [about virtual server instances for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers).
 
 ## Example usage
@@ -66,7 +65,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `boot_volume` - (Object) A list of boot volumes that were created for the instance.
+- `boot_volume` - (List of Objects) A list of boot volumes that were created for the instance.
 
   Nested scheme for `boot_volume`:
   - `id` - (String) The ID of the boot volume attachment.
@@ -84,7 +83,7 @@ In addition to all argument reference list, you can access the following attribu
   - `name` - (String) The user-defined name for this disk.
   - `resource_type` - (String) The resource type.
   - `size` - (String) The size of the disk in GB.
-- `gpu`- (Object) A list of graphics processing units that are allocated to the instance.
+- `gpu`- (List) A list of graphics processing units that are allocated to the instance.
 
   Nested scheme for `gpu`:
   - `cores`- (Integer) The number of cores that are assigned to the GPU.
@@ -94,13 +93,13 @@ In addition to all argument reference list, you can access the following attribu
   - `model` - (String) The model of the GPU. 
 - `id` - (String) The ID that was assigned to the Virtual Servers for VPC instance.
 - `image` - (String) The ID of the virtual server image that is used in the instance.
-- `keys`- (Object) A list of SSH keys that were added to the instance during creation.
+- `keys`- (List) A list of SSH keys that were added to the instance during creation.
 
   Nested scheme for `keys`:
   - `id` - (String) The ID of the SSH key.
   - `name` - (String) The name of the SSH key that you entered when you uploaded the key to IBM Cloud.
 - `memory`- (Integer) The amount of memory that was allocated to the instance.
-- `network_interfaces`- (Object) A list of more network interfaces that the instance uses.
+- `network_interfaces`- (List) A list of more network interfaces that the instance uses.
 
   Nested scheme for `network_interfaces`:
   - `id` - (String) The ID of the more network interface.
@@ -109,7 +108,7 @@ In addition to all argument reference list, you can access the following attribu
   - `subnet` - (String) The ID of the subnet that is used in the more network interface.
   - `security_groups` (List)A list of security groups that were created for the interface.
 - `password` - (String) The password that you can use to access your instance.
-- `primary_network_interface`- (Object) A list of primary network interfaces that were created for the instance. 
+- `primary_network_interface`- (List) A list of primary network interfaces that were created for the instance. 
 
   Nested scheme for `primary_network_interface`:
   - `id` - (String) The ID of the primary network interface.
@@ -121,12 +120,12 @@ In addition to all argument reference list, you can access the following attribu
 - `resource_group` - (String) The name of the resource group where the instance was created.
 - `status` - (String) The status of the instance.
 - `vpc` - (String) The ID of the VPC that the instance belongs to.
-- `vcpu`- (Object) A list of virtual CPUs that were allocated to the instance.
+- `vcpu`- (List) A list of virtual CPUs that were allocated to the instance.
 
   Nested scheme for `vcpu`:
   - `architecture` - (String) The architecture of the virtual CPU.
   - `count`- (Integer) The number of virtual CPUs that are allocated to the instance.
-- `volume_attachments`- (Object) A list of volume attachments that were created for the instance. 
+- `volume_attachments`- (List) A list of volume attachments that were created for the instance. 
 
   Nested scheme for `volume_attachments`:
   - `volume_crn` - (String) The CRN of the volume that is associated with the volume attachment.

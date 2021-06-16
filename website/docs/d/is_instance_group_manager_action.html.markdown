@@ -7,7 +7,6 @@ description: |-
 ---
 
 # ibm_is_instance_group_manager_action
-
 Retrive information about an instance group manager. For more information, about VPC instance group manager action, see [scheduled scaling](https://cloud.ibm.com/docs/vpc?topic=vpc-scheduled-scaling-vpc).
 
 ## Example usage
@@ -28,7 +27,7 @@ Review the argument references that you can specify for your data source.
 - `name` - (Required, String) The instance group manager action name.
 
 ## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
 - `action_id` - (String) The unique identifier of the ibm_is_instance_group_manager_action.
 - `auto_delete` - (String) If set to `true`, this scheduled action will be automatically deleted after it has finished and the `auto_delete_timeout` time has passed.

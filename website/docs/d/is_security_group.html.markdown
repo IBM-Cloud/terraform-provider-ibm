@@ -70,7 +70,7 @@ Review the argument references that you can specify for your resource.
 - `name` - (Required, String) The name of the security group.
 
 ## Attribute reference
-Review the attribute references that are exported. 
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `crn` - The CRN of the security group.
 - `id` - (String) The ID of the security group.

@@ -20,17 +20,17 @@ data "ibm_is_dedicated_host_groups" "is_dedicated_host_groups" {
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `id` - (String) The unique identifier of the dedicated host group collection.
-- `host_groups` - (String) Collection of dedicated host groups.
+- `host_groups` - (List) Collection of dedicated host groups.
  
   Nested scheme for `host_groups`:
   - `class` - (String) The dedicated host profile class for hosts in this group.
   - `created_at` - (Timestamp) The date and time that the dedicated host group was created.
   - `crn` - (String) The CRN for this dedicated host group.
-  - `dedicated_hosts` - (String) The dedicated hosts that are in this dedicated host group. 
+  - `dedicated_hosts` - (List) The dedicated hosts that are in this dedicated host group. 
   
     Nested scheme for `dedicated_hosts`:
     - `crn` - (String) The CRN for this dedicated host.
-    - `deleted` - (String) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
    
       Nested scheme for `deleted`:
       - `more_info` - (String) Link to documentation about deleted resources.
@@ -44,7 +44,7 @@ In addition to all argument reference list, you can access the following attribu
   - `name` - (String) The unique user defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly selected words.
   - `resource_group` - (String) The unique identifier of the resource group for this dedicated host group.
   - `resource_type` - (String) The type of resource referenced.
-  - `supported_instance_profiles` - (String) Array of instance profiles that can be used by instances placed on this dedicated host group. 
+  - `supported_instance_profiles` - (List) Array of instance profiles that can be used by instances placed on this dedicated host group. 
     
     Nested scheme for `supported_instance_profiles`:
     - `href` - (String) The URL for this virtual server instance profile.

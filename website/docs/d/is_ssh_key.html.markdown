@@ -7,9 +7,6 @@ description: |-
 ---
 
 # ibm_is_ssh_key
-
-Import the details of an existing IBM VPC SSh Key as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
 Retrieve information of an existing IBM Cloud VPC SSH key as a read only data source. For more information, see [SSH keys](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys).
 
 ## Example usage

@@ -32,7 +32,6 @@ resource "ibm_is_public_gateway" "testacc_gateway" {
 ```
 
 ## Timeouts
-
 The `ibm_is_public_gateway` resource provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
 - **create** The creation of the public gateway is considered `failed` when no response is received for 10 minutes. 
@@ -57,7 +56,6 @@ In addition to all argument reference list, you can access the following attribu
 - `status` - (String) The provisioning status of your public gateway.
 
 ## Import
-
 The `ibm_is_public_gateway` resource can be imported by using ID.
 
 **Example**

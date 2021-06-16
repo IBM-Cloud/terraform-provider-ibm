@@ -30,7 +30,7 @@ In addition to all argument reference list, you can access the following attribu
   - `created_at`- (Timestamp) The date and time the VPN gateway was created.
   - `id` - (String) The ID of the VPN gateway.
   - `name`-  (String) The VPN gateway instance name.
-  - `members` - (String) Collection of VPN gateway members.
+  - `members` - (List) Collection of VPN gateway members.
 
     Nested scheme for `members`:
 	  - `address` - (String) The public IP address assigned to the VPN gateway member.

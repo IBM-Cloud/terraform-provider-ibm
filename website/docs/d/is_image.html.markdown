@@ -3,11 +3,10 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : Image"
 description: |-
-  Manages IBM Cloud infrastructure images.
+  Manages IBM Cloud infrastructure image.
 ---
 
 # ibm_is_image
-
 Retrieve information of an existing IBM Cloud Infrastructure image as a read-only data source. For more information, about VPC custom images, see [IBM Cloud Importing and managing custom images](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-images).
 
 

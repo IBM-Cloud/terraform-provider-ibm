@@ -22,7 +22,7 @@ data "ibm_is_lb_profiles" "ds_lb_profiles" {
 ## Attribute reference
 You can access the following attribute references after your data source is created. 
 
-- `lb_profiles` - (String) List of all load balancer profiles in the IBM Cloud Infrastructure.
+- `lb_profiles` - (List) List of all load balancer profiles in the IBM Cloud Infrastructure.
 
   Nested scheme for `lb_profiles`:
 	- `family` - (String) The product family this load balancer profile belongs to.

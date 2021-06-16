@@ -47,7 +47,6 @@ resource "ibm_is_lb_pool" "testacc_pool" {
 ```
 
 ## Timeouts
-
 The `ibm_is_lb_pool` resource provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
 - **create** - (Default 10 minutes) Used for creating Instance.

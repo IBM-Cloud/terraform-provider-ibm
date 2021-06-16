@@ -7,7 +7,6 @@ description: |-
 ---
 
 # ibm_is_images
-
 Retrieve information of an existing IBM Cloud Infrastructure images as a read-only data source. For more information, about IBM Cloud infrastructure images, see [Images](https://cloud.ibm.com/docs/vpc?topic=vpc-about-images).
 
 ## Example usage
@@ -21,6 +20,8 @@ data "ibm_is_images" "ds_images" {
 You can access the following attribute references after your data source is created. 
 
 - `images` - (List) List of all images in the IBM Cloud Infrastructure.
+
+  Nested scheme for `images`:
   - `architecture` - (String) The architecture for this image.
   - `crn` - (String) The CRN for this image.
   - `checksum` - (String) TThe SHA256 checksum for this image.

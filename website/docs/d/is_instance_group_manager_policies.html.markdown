@@ -29,6 +29,8 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `instance_group_manager_policies` - (List) The list of instance group manager policies.
+
+  Nested scheme for `instance_group_manager_policies`:
   - `id`- (Object) This ID is the combination of instance group ID, instance group manager ID and instance group manager policy ID.
   - `metric_type` - (String) The type of metric to evaluate. The possible values are `cpu`, `memory`, `network_in` and `network_out`.
   - `metric_value` -  (String) The metric value to evaluate.

@@ -26,7 +26,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-- `instance_group_managers` - (List of String) Nested block with list of instance manager properties.
+- `instance_group_managers` - (List) Nested block with list of instance manager properties.
 
   Nested scheme for `instance_group_manager`:
   - `actions` - (String) The list of actions of an instance group manager.

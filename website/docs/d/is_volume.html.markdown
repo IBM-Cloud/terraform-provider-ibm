@@ -40,7 +40,8 @@ In addition to all argument reference list, you can access the following attribu
 - `resource_group` - (String) The resource group ID for this volume.
 - `status` - (String) The status of the volume. Supported values are **available**, **failed**, **pending**, **unusable**, **pending_deletion**.
 - `status_reasons` - (List) Array of reasons for the current status.
+  
   Nested scheme for `status_reasons`:
-  - `code` -(String)  A snake case string identifying the status reason.
-  - `message` -(String)  An explanation of the status reason
+  - `code` - (String)  A snake case string identifying the status reason.
+  - `message` - (String)  An explanation of the status reason
 - `tags` - (String) Tags associated with the volume.

@@ -34,7 +34,6 @@ resource "ibm_is_lb" "lb" {
 ```
 
 ## Timeouts
-
 The `ibm_is_lb` resource provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
 - **create** - (Default 30 minutes) Used for creating Instance.
