@@ -116,6 +116,46 @@ resource "ibm_is_lb_listener_policy_rule" "lb_listener_policy_rule" {
   value     = "UpdateVal"
 }
 
+resource "ibm_is_lb_pool" "testacc_pool" {
+  name           = "test_pool"
+  lb             = ibm_is_lb.lb2.id
+  algorithm      = "round_robin"
+  protocol       = "https"
+  health_delay   = 60
+  health_retries = 5
+  health_timeout = 30
+  health_type    = "https"
+  proxy_protocol = "v1"
+  session_persistence_type = "app_cookie"
+  session_persistence_app_cookie_name = "cookie1"
+}
+
+resource "ibm_is_lb_pool" "testacc_pool" {
+  name           = "test_pool"
+  lb             = ibm_is_lb.lb2.id
+  algorithm      = "round_robin"
+  protocol       = "https"
+  health_delay   = 60
+  health_retries = 5
+  health_timeout = 30
+  health_type    = "https"
+  proxy_protocol = "v1"
+  session_persistence_type = "http_cookie"
+}
+
+resource "ibm_is_lb_pool" "testacc_pool" {
+  name           = "test_pool"
+  lb             = ibm_is_lb.lb2.id
+  algorithm      = "round_robin"
+  protocol       = "https"
+  health_delay   = 60
+  health_retries = 5
+  health_timeout = 30
+  health_type    = "https"
+  proxy_protocol = "v1"
+  session_persistence_type = "source_ip"
+}
+
 resource "ibm_is_vpn_gateway" "VPNGateway1" {
   name   = "vpn1"
   subnet = ibm_is_subnet.subnet1.id

@@ -165,6 +165,123 @@ func TestAccIBMISLBPool_port(t *testing.T) {
 	})
 }
 
+func TestAccIBMISLBPool_SessionPersistence(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbp-subnet-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
+	alg1 := "round_robin"
+	protocol1 := "http"
+	proxyProtocol1 := "disabled"
+	delay1 := "45"
+	retries1 := "5"
+	timeout1 := "15"
+	healthType1 := "http"
+	port := "2554"
+	session_persistence_appcookie_type := "app_cookie"
+	session_persistence_httpcookie_type := "http_cookie"
+	app_cookie_name := "testacc_cookie"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBPoolSessionPersistenceConfig(vpcname, subnetname, ISZoneName, ISCIDR, name, poolName, alg1, protocol1, delay1, retries1, timeout1, healthType1, port, session_persistence_appcookie_type, app_cookie_name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "name", poolName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "algorithm", alg1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "protocol", protocol1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "proxy_protocol", proxyProtocol1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_delay", delay1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_retries", retries1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_timeout", timeout1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_type", healthType1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "session_persistence_type", session_persistence_appcookie_type),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "session_persistence_app_cookie_name", app_cookie_name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "session_persistence_http_cookie_name", ""),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBPoolSessionPersistenceConfigUpdate(vpcname, subnetname, ISZoneName, ISCIDR, name, poolName, alg1, protocol1, delay1, retries1, timeout1, healthType1, port, session_persistence_httpcookie_type),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "name", poolName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "algorithm", alg1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "protocol", protocol1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "proxy_protocol", proxyProtocol1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_delay", delay1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_retries", retries1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_timeout", timeout1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_type", healthType1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "session_persistence_type", session_persistence_httpcookie_type),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "session_persistence_app_cookie_name", ""),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb_pool.testacc_lb_pool", "session_persistence_http_cookie_name"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBPoolSessionPersistenceConfigRemove(vpcname, subnetname, ISZoneName, ISCIDR, name, poolName, alg1, protocol1, delay1, retries1, timeout1, healthType1, port),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "name", poolName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "algorithm", alg1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "protocol", protocol1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "proxy_protocol", proxyProtocol1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_delay", delay1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_retries", retries1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_timeout", timeout1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_type", healthType1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "session_persistence_type", ""),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "session_persistence_app_cookie_name", ""),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "session_persistence_http_cookie_name", ""),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISLBPoolDestroy(s *terraform.State) error {
 
 	sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
@@ -258,6 +375,99 @@ func testAccCheckIBMISLBPoolConfig(vpcname, subnetname, zone, cidr, name, poolNa
 }
 
 func testAccCheckIBMISLBPoolPortConfig(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, port string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+	}
+	resource "ibm_is_lb_pool" "testacc_lb_pool" {
+		name = "%s"
+		lb = "${ibm_is_lb.testacc_LB.id}"
+		algorithm = "%s"
+		protocol = "%s"
+		health_delay= %s
+		health_retries = %s
+		health_timeout = %s
+		health_type = "%s"
+		health_monitor_port = %s
+}`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, port)
+
+}
+
+func testAccCheckIBMISLBPoolSessionPersistenceConfig(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, port, session_persistence_type, app_cookie_name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+	}
+	resource "ibm_is_lb_pool" "testacc_lb_pool" {
+		name = "%s"
+		lb = "${ibm_is_lb.testacc_LB.id}"
+		algorithm = "%s"
+		protocol = "%s"
+		health_delay= %s
+		health_retries = %s
+		health_timeout = %s
+		health_type = "%s"
+		health_monitor_port = %s
+		session_persistence_type = "%s"
+		session_persistence_app_cookie_name = "%s"
+}`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, port, session_persistence_type, app_cookie_name)
+
+}
+
+func testAccCheckIBMISLBPoolSessionPersistenceConfigUpdate(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, port, session_persistence_type string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+	}
+	resource "ibm_is_lb_pool" "testacc_lb_pool" {
+		name = "%s"
+		lb = "${ibm_is_lb.testacc_LB.id}"
+		algorithm = "%s"
+		protocol = "%s"
+		health_delay= %s
+		health_retries = %s
+		health_timeout = %s
+		health_type = "%s"
+		health_monitor_port = %s
+		session_persistence_type = "%s"
+}`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, port, session_persistence_type)
+
+}
+
+func testAccCheckIBMISLBPoolSessionPersistenceConfigRemove(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, port string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
