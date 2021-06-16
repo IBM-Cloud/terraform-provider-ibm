@@ -13,7 +13,8 @@ import (
 )
 
 const (
-	isImages = "images"
+	isImages                = "images"
+	isImagesResourceGroupID = "resource_group"
 )
 
 func dataSourceIBMISImages() *schema.Resource {
@@ -21,6 +22,22 @@ func dataSourceIBMISImages() *schema.Resource {
 		Read: dataSourceIBMISImagesRead,
 
 		Schema: map[string]*schema.Schema{
+			isImagesResourceGroupID: {
+				Type:        schema.TypeString,
+				Description: "The id of the resource group",
+				Optional:    true,
+			},
+			isImageName: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: InvokeValidator("ibm_is_image", isImageName),
+				Description:  "The name of the image",
+			},
+			isImageVisibility: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Whether the image is publicly visible or private to the account",
+			},
 
 			isImages: {
 				Type:        schema.TypeList,
@@ -152,8 +169,34 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 	}
 	start := ""
 	allrecs := []vpcv1.Image{}
+
+	var resourceGroupID string
+	if v, ok := d.GetOk(isImagesResourceGroupID); ok {
+		resourceGroupID = v.(string)
+	}
+
+	var imageName string
+	if v, ok := d.GetOk(isImageName); ok {
+		imageName = v.(string)
+	}
+
+	var visibility string
+	if v, ok := d.GetOk(isImageVisibility); ok {
+		visibility = v.(string)
+	}
+
+	listImagesOptions := &vpcv1.ListImagesOptions{}
+	if resourceGroupID != "" {
+		listImagesOptions.SetResourceGroupID(resourceGroupID)
+	}
+	if imageName != "" {
+		listImagesOptions.SetName(imageName)
+	}
+	if visibility != "" {
+		listImagesOptions.SetVisibility(visibility)
+	}
+
 	for {
-		listImagesOptions := &vpcv1.ListImagesOptions{}
 		if start != "" {
 			listImagesOptions.Start = &start
 		}

@@ -13,12 +13,23 @@ Import the details of an existing IBM Cloud Infrastructure images as a read-only
 
 ## Example Usage
 
-```terraform
+```hcl
 
 data "ibm_is_images" "ds_images" {
 }
 
+data "ibm_is_images" "ds_images" {
+  visibility = "public"
+}
+
 ```
+## Argument Reference
+
+The following arguments are supported:
+
+* `resource_group` - (Optional, string) The id of the resource group.
+* `name` - (Optional, string) The name of the image.
+* `visibility` - (Optional, string) Visibility of the image.
 
 ## Attribute Reference
 
@@ -35,5 +46,4 @@ In addition to all arguments above, the following attributes are exported:
   * `visibility` - The visibility of the image public or private.
   * `encryption` - The type of encryption used on the image.
   * `encryption_key` - The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource.
-
 
