@@ -12,7 +12,7 @@ Retrieve the dedicated host disk. For more information, about dedicated host dis
 ## Example usage
 
 ```terraform
-data "is_dedicated_host_disk" "is_dedicated_host_disk" {
+data "ibm_is_dedicated_host_disk" "is_dedicated_host_disk" {
 	dedicated_host = "dedicatedhost id"
 	disk = "id"
 }
