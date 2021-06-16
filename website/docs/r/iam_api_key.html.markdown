@@ -1,7 +1,7 @@
 ---
 subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
-page_title: "IBM : iam_api_key"
+page_title: "IBM : ibm_iam_api_key"
 sidebar_current: "docs-ibm-resource-iam-api-key"
 description: |-
   Manages IAM API Key.
@@ -9,12 +9,12 @@ description: |-
 
 # ibm_iam_api_key
 
-Create, modify, or delete an `iam_api_key` resources.  For more information, about IAM API Key, see [managing user API keys](https://cloud.ibm.com/docs/account?topic=account-userapikey).
+Create, modify, or delete an `ibm_iam_api_key` resources.  For more information, about IAM API Key, see [managing user API keys](https://cloud.ibm.com/docs/account?topic=account-userapikey).
 
 ## Example usage
 
 ```terraform
-resource "iam_api_key" "iam_api_key" {
+resource "ibm_iam_api_key" "iam_api_key" {
   name = "name"
 }
 ```
@@ -34,7 +34,7 @@ Review the argument references that you can specify for your resource.
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `apikey_id` - (String) The unique identifier of the `iam_api_key`.
+- `apikey_id` - (String) The unique identifier of the `ibm_iam_api_key`.
 - `created_at` -  (Timestamp)If set contains a date time string of the creation date in ISO format.
 - `created_by` - (String) IAM ID of the user or service that created the API key.
 - `crn` - (String) Cloud Resource Name (CRN) of the item. For example, CRN =  `crn:v1:bluemix:public:iam-identity:us-south:a/myaccount::apikey:1234-9012-1111`.
@@ -49,5 +49,5 @@ The `ibm_iam_api_key` resource that can be imported by using user API Key.
 **Syntax**
 
 ```
-$ terraform import ibm_iam__api_key.testacc_apiKey <ApiKey-UniqueId>
+$ terraform import ibm_iam__api_key.iam_api_key <ApiKey-UniqueId>
 ```
