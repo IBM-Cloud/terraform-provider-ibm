@@ -550,8 +550,9 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 
 	d.Set(isLBSecurityGroupsSupported, false)
+	securitygroupList := make([]string, 0)
+	d.Set(isLBSecurityGroups, securitygroupList)
 	if lb.SecurityGroups != nil {
-		securitygroupList := make([]string, 0)
 		for _, SecurityGroup := range lb.SecurityGroups {
 			if SecurityGroup.ID != nil {
 				securityGroupID := *SecurityGroup.ID
@@ -561,7 +562,6 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isLBSecurityGroups, securitygroupList)
 		d.Set(isLBSecurityGroupsSupported, true)
 	}
-
 	if lb.Profile != nil {
 		profile := lb.Profile
 		if profile.Name != nil {
