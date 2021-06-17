@@ -1,7 +1,7 @@
 ---
 subcategory: "Secrets Manager"
 layout: "ibm"
-page_title: "IBM : secrets_manager_secrets"
+page_title: "IBM : ibm_secrets_manager_secrets"
 description: |-
   Get information about secrets manager secrets.
 ---
@@ -12,7 +12,7 @@ Retrieve information about the secrets manager secret data sources. For more inf
 ## Example usage
 
 ```terraform
-data "secrets_manager_secrets" "secrets_manager_secrets" {
+data "ibm_secrets_manager_secrets" "secrets_manager_secrets" {
   instance_id = "36401ffc-6280-459a-ba98-456aba10d0c7"
 }
 ```
