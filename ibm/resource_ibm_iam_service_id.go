@@ -4,19 +4,21 @@
 package ibm
 
 import (
-	"fmt"
+	"context"
+	"log"
 
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceIBMIAMServiceID() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMIAMServiceIDCreate,
-		Read:     resourceIBMIAMServiceIDRead,
-		Update:   resourceIBMIAMServiceIDUpdate,
-		Delete:   resourceIBMIAMServiceIDDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMIAMServiceIDCreate,
+		ReadContext:   resourceIBMIAMServiceIDRead,
+		UpdateContext: resourceIBMIAMServiceIDUpdate,
+		DeleteContext: resourceIBMIAMServiceIDDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -55,12 +57,6 @@ func resourceIBMIAMServiceID() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
-			"unique_instance_crns": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
-			},
 			"locked": {
 				Type:     schema.TypeBool,
 				Computed: true,
@@ -69,15 +65,18 @@ func resourceIBMIAMServiceID() *schema.Resource {
 	}
 }
 
-func resourceIBMIAMServiceIDCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMIAMServiceIDCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	name := d.Get("name").(string)
 
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	createServiceIDOptions := iamidentityv1.CreateServiceIDOptions{
 		Name:      &name,
@@ -88,36 +87,34 @@ func resourceIBMIAMServiceIDCreate(d *schema.ResourceData, meta interface{}) err
 		des := d.(string)
 		createServiceIDOptions.Description = &des
 	}
-	if a, ok := d.GetOk("unique_instance_crns"); ok {
-		crns := expandStringList(a.([]interface{}))
-		createServiceIDOptions.UniqueInstanceCrns = crns
-	}
 
 	serviceID, resp, err := iamIdentityClient.CreateServiceID(&createServiceIDOptions)
 	if err != nil || serviceID == nil {
-		return fmt.Errorf("Error creating serviceID: %s, %s", err, resp)
+		log.Printf("Error creating serviceID: %s, %s", err, resp)
+		return diag.FromErr(err)
 	}
 	d.SetId(*serviceID.ID)
 
-	return resourceIBMIAMServiceIDRead(d, meta)
+	return resourceIBMIAMServiceIDRead(context, d, meta)
 }
 
-func resourceIBMIAMServiceIDRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMIAMServiceIDRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	serviceIDUUID := d.Id()
 	getServiceIDOptions := iamidentityv1.GetServiceIDOptions{
 		ID: &serviceIDUUID,
 	}
 	serviceID, resp, err := iamIdentityClient.GetServiceID(&getServiceIDOptions)
-	if err != nil {
-		if resp.StatusCode == 404 {
+	if err != nil || serviceID == nil {
+		if resp != nil && resp.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error retrieving serviceID: %s %s", err, resp)
+		log.Printf("Error retrieving serviceID: %s %s", err, resp)
+		return diag.FromErr(err)
 	}
 	if serviceID.Name != nil {
 		d.Set("name", *serviceID.Name)
@@ -137,17 +134,14 @@ func resourceIBMIAMServiceIDRead(d *schema.ResourceData, meta interface{}) error
 	if serviceID.Locked != nil {
 		d.Set("locked", serviceID.Locked)
 	}
-	if serviceID.UniqueInstanceCrns != nil && len(serviceID.UniqueInstanceCrns) > 0 {
-		d.Set("unique_instance_crns", flattenStringList(serviceID.UniqueInstanceCrns))
-	}
 	return nil
 }
 
-func resourceIBMIAMServiceIDUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMIAMServiceIDUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	serviceIDUUID := d.Id()
 
@@ -169,27 +163,23 @@ func resourceIBMIAMServiceIDUpdate(d *schema.ResourceData, meta interface{}) err
 		updateServiceIDOptions.Description = &description
 		hasChange = true
 	}
-	if d.HasChange("unique_instance_crns") {
-		u := d.Get("unique_instance_crns").([]interface{})
-		updateServiceIDOptions.UniqueInstanceCrns = expandStringList(u)
-		hasChange = true
-	}
 
 	if hasChange {
 		_, resp, err := iamIdentityClient.UpdateServiceID(&updateServiceIDOptions)
 		if err != nil {
-			return fmt.Errorf("Error updating serviceID: %s, %s", err, resp)
+			log.Printf("Error updating serviceID: %s, %s", err, resp)
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceIBMIAMServiceIDRead(d, meta)
+	return resourceIBMIAMServiceIDRead(context, d, meta)
 
 }
 
-func resourceIBMIAMServiceIDDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMIAMServiceIDDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	serviceIDUUID := d.Id()
@@ -198,7 +188,8 @@ func resourceIBMIAMServiceIDDelete(d *schema.ResourceData, meta interface{}) err
 	}
 	resp, err := iamIdentityClient.DeleteServiceID(&deleteServiceIDOptions)
 	if err != nil {
-		return fmt.Errorf("Error deleting serviceID: %s %s", err, resp)
+		log.Printf("Error deleting serviceID: %s %s", err, resp)
+		return diag.FromErr(err)
 	}
 
 	d.SetId("")

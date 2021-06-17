@@ -27,7 +27,6 @@ Review the argument references that you can specify for your resource.
 - `name` - (Required, String) The name of the service ID.
 - `description`  (Optional, String) The description of the service ID.
 - `tags` (Optional, Array of Strings)  A list of tags that you want to add to the service ID. **Note** The tags are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
-- `unique_instance_crns` - (Optional, Array of Strings) List of CRNs  which point to the services connected to the service ID.
 
 ## Attribute reference
 
@@ -36,5 +35,5 @@ In addition to all argument reference list, you can access the following attribu
 - `crn`  - (String) The CRN of the service ID.
 - `iam_id`-  (String) The IAM ID of the service ID.
 - `id` - (String) The unique identifier of the service ID.
-- `locked`- The Service Id lock status
+- `locked`- (Bool) The Service Id lock status
 - `version`  - (String) The version of the service ID.
