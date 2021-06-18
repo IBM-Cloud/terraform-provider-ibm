@@ -103,6 +103,7 @@ resource "ibm_cos_bucket" "retention_cos" {
   region_location      = "jp-tok"
   storage_class        = standard
   force_delete        = true
+  hard_quota          = 11
   retention_rule {
     default = 1
     maximum = 1
@@ -116,6 +117,7 @@ resource "ibm_cos_bucket" "objectversioning" {
   resource_instance_id  = ibm_resource_instance.cos_instance.id
   region_location       = "us-east"
   storage_class         = var.storage
+  hard_quota            = 1024
   object_versioning {
     enable  = true
   }
@@ -181,3 +183,4 @@ data "ibm_cos_bucket" "standard-ams03" {
 | minimum | Specifies minimum duration of time an object must be kept unmodified in the bucket. | `int` | yes
 | permanent | Specifies a permanent retention status either enable or disable for a bucket. | `bool` | no
 | enable | Specifies Versioning status either enable or Suspended for the objects in the bucket. | `bool` | no
+| hard_quota | sets a maximum amount of storage (in bytes) available for a bucket. | `int` | no

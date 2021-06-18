@@ -57,3 +57,7 @@ variable "minimum_retention" {
 variable "maximum_retention" {
   default = "1"
 }
+
+variable "quota" {
+  default = "1"
+}
