@@ -94,7 +94,7 @@ func checkImageDestroy(s *terraform.State) error {
 
 func testAccCheckIBMISImageExists(n, image string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		fmt.Println("siv ", s.RootModule().Resources)
+
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
