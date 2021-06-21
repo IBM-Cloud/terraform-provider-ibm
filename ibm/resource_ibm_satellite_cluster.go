@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/jinzhu/copier"
 )
 
 const (
@@ -41,7 +42,7 @@ func resourceIBMSatelliteCluster() *schema.Resource {
 
 		CustomizeDiff: customdiff.Sequence(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return immutableResourceCustomizeDiff([]string{"name", "location", "resource_group_id"}, diff)
+				return immutableResourceCustomizeDiff([]string{"name", "location", "resource_group_id", "crn_token"}, diff)
 			},
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
@@ -228,6 +229,12 @@ func resourceIBMSatelliteCluster() *schema.Resource {
 				Set:         resourceIBMVPCHash,
 				Description: "Labels that describe a Satellite host for default workerpool",
 			},
+			"crn_token": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "The IBM Cloud Identity and Access Management (IAM) service CRN token for the service that creates the cluster.",
+			},
 		},
 	}
 }
@@ -249,7 +256,7 @@ func resourceIBMSatelliteClusterValidator() *ResourceValidator {
 }
 
 func resourceIBMSatelliteClusterCreate(d *schema.ResourceData, meta interface{}) error {
-	var resourceGrp string
+	var resourceGrp, clusterId string
 	pathParamsMap := make(map[string]string)
 	satClient, err := meta.(ClientSession).SatelliteClientSession()
 	if err != nil {
@@ -277,10 +284,13 @@ func resourceIBMSatelliteClusterCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	//Wait for location to get normal
-	_, err = waitForLocationNormal(location, d, meta)
-	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for getting location (%s) to be normal: %s", location, err)
+	_, ok := d.GetOk("crn_token")
+	if ok == false {
+		_, err = waitForLocationNormal(location, d, meta)
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for getting location (%s) to be normal: %s", location, err)
+		}
 	}
 
 	if v, ok := d.GetOk("worker_count"); ok {
@@ -332,13 +342,28 @@ func resourceIBMSatelliteClusterCreate(d *schema.ResourceData, meta interface{})
 		createClusterOptions.Labels = hostLabels
 	}
 
-	instance, response, err := satClient.CreateSatelliteCluster(createClusterOptions)
-	if err != nil {
-		return fmt.Errorf("Error Creating Satellite Cluster: %s\n%s", err, response)
+	if v, ok := d.GetOk("crn_token"); ok {
+		crnToken := v.(string)
+		createRemoteClusterOptions := &kubernetesserviceapiv1.CreateSatelliteClusterRemoteOptions{}
+		copier.Copy(createRemoteClusterOptions, createClusterOptions)
+		createRemoteClusterOptions.XAuthSupplemental = &crnToken
+
+		instance, response, err := satClient.CreateSatelliteClusterRemote(createRemoteClusterOptions)
+		if err != nil {
+			return fmt.Errorf("Error Creating Satellite Cluster for remote location: %s\n%s", err, response)
+		}
+		clusterId = *instance.ID
+		log.Printf("[INFO] Created ROKS Satellite Cluster for remote location: %s", clusterId)
+	} else {
+		instance, response, err := satClient.CreateSatelliteCluster(createClusterOptions)
+		if err != nil {
+			return fmt.Errorf("Error Creating Satellite Cluster: %s\n%s", err, response)
+		}
+		clusterId = *instance.ID
+		log.Printf("[INFO] Created ROKS Satellite Cluster : %s", clusterId)
 	}
 
-	d.SetId(*instance.ID)
-	log.Printf("[INFO] Created ROKS Satellite Cluster : %s", *instance.ID)
+	d.SetId(clusterId)
 
 	//Create zone in default workerpool
 	workerPoolName := "default"
@@ -350,7 +375,7 @@ func resourceIBMSatelliteClusterCreate(d *schema.ResourceData, meta interface{})
 				if ID := zone["id"]; ID != nil {
 					zoneId := ID.(string)
 					zoneOptions := &kubernetesserviceapiv1.CreateSatelliteWorkerPoolZoneOptions{
-						Cluster:    instance.ID,
+						Cluster:    &clusterId,
 						Workerpool: &workerPoolName,
 						ID:         &zoneId,
 					}
@@ -364,7 +389,7 @@ func resourceIBMSatelliteClusterCreate(d *schema.ResourceData, meta interface{})
 					}
 				}
 			}
-			_, err = WaitForSatelliteWorkerPoolAvailable(d, meta, *instance.ID, workerPoolName, d.Timeout(schema.TimeoutCreate), targetEnv)
+			_, err = WaitForSatelliteWorkerPoolAvailable(d, meta, clusterId, workerPoolName, d.Timeout(schema.TimeoutCreate), targetEnv)
 			if err != nil {
 				return fmt.Errorf(
 					"Error waiting for default workerpool (%s) to become ready: %s", d.Id(), err)
@@ -379,7 +404,7 @@ func resourceIBMSatelliteClusterCreate(d *schema.ResourceData, meta interface{})
 		}
 
 		wpots := &kubernetesserviceapiv1.V2SetWorkerPoolLabelsOptions{
-			Cluster:    instance.ID,
+			Cluster:    &clusterId,
 			Workerpool: &workerPoolName,
 			Labels:     labels,
 		}
@@ -397,7 +422,7 @@ func resourceIBMSatelliteClusterCreate(d *schema.ResourceData, meta interface{})
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk("tags"); ok || v != "" {
 		getSatClusterOptions := &kubernetesserviceapiv1.GetClusterOptions{
-			Cluster: ptrToString(*instance.ID),
+			Cluster: ptrToString(clusterId),
 		}
 
 		cluster, response, err := satClient.GetCluster(getSatClusterOptions)
@@ -415,10 +440,10 @@ func resourceIBMSatelliteClusterCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	//Wait for cluster to get warning state
-	_, err = waitForClusterToReady(*instance.ID, d, meta)
+	_, err = waitForClusterToReady(clusterId, d, meta)
 	if err != nil {
 		return fmt.Errorf(
-			"Error waiting for getting cluster (%s) to be warning state: %s", *instance.ID, err)
+			"Error waiting for getting cluster (%s) to be warning state: %s", clusterId, err)
 	}
 
 	return resourceIBMSatelliteClusterRead(d, meta)
