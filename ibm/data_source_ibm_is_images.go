@@ -78,6 +78,11 @@ func dataSourceIBMISImages() *schema.Resource {
 							Computed:    true,
 							Description: "The type of encryption used on the image",
 						},
+						"source_volume": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Source volume id of the image",
+						},
 					},
 				},
 			},
@@ -187,6 +192,9 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 		}
 		if image.EncryptionKey != nil {
 			l["encryption_key"] = *image.EncryptionKey.CRN
+		}
+		if image.SourceVolume != nil {
+			l["source_volume"] = *image.SourceVolume.ID
 		}
 		imagesInfo = append(imagesInfo, l)
 	}
