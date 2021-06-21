@@ -1,19 +1,19 @@
 ---
 subcategory: "Internet services"
 layout: "ibm"
-page_title: "IBM: ibm_cis_filter"
+page_title: "IBM: ibm_cis_filters"
 description: |-
   Get information on an IBM Cloud Internet Services Filters.
 ---
 
-# ibm_cis_filter
+# ibm_cis_filters
 
 Imports a read only copy of an existing Internet Services Filters resource.
 
 ## Example Usage
 
 ```terraform
-data "ibm_cis_filter" "test" {
+data "ibm_cis_filters" "test" {
   cis_id    = ibm_cis.instance.id
   domain_id = ibm_cis_domain.example.id
 }
@@ -29,8 +29,10 @@ The following arguments are supported:
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
--
-- `expression` - The expression of filter.
-- `paused` - Whether this filter is currently disabled.
-- `description` - Some useful information about this filter to help identify the purpose of it.
+- `cis_filters_list` - 
+  - `expression` - The expression of filter.
+  - `paused` - Whether this filter is currently disabled. Default: false
+  - `description` - Some useful information about this filter to help identify the purpose of it.
+  - `filter_id` - The Filter ID.
+-  `id` - The ID of resource. It is the combination of <domain_id>:<cis_id>.
 

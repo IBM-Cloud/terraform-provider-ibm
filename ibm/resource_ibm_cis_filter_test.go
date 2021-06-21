@@ -28,6 +28,28 @@ func TestAccIBMCisFilter_Basic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMCisFilter_Import(t *testing.T) {
+	name := "ibm_cis_filter." + "test"
+	filterexp := "(http.request.uri eq \"/test-update?number=5\")"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckCisFilter_basic("test", cisDomainStatic, "true", "Filter-creation", filterexp),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "expression", filterexp),
+				),
+			},
+			{
+				ResourceName:      name,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
 func testAccCheckCisFilter_basic(id, cisDomainStatic, paused, description, expression string) string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_filter" "%[1]s" {

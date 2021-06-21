@@ -198,7 +198,7 @@ func Provider() *schema.Provider {
 			"ibm_cis_custom_pages":                   dataSourceIBMCISCustomPages(),
 			"ibm_cis_page_rules":                     dataSourceIBMCISPageRules(),
 			"ibm_cis_waf_rules":                      dataSourceIBMCISWAFRules(),
-			"ibm_cis_filter":                         dataSourceIBMCISFilters(),
+			"ibm_cis_filters":                        dataSourceIBMCISFilters(),
 			"ibm_database":                           dataSourceIBMDatabaseInstance(),
 			"ibm_compute_bare_metal":                 dataSourceIBMComputeBareMetal(),
 			"ibm_compute_image_template":             dataSourceIBMComputeImageTemplate(),

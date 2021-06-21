@@ -79,7 +79,7 @@ func resourceIBMCISFilterCreate(d *schema.ResourceData, meta interface{}) error 
 
 	var newfilter filtersv1.FilterInput
 
-	if p, ok := d.GetOk(cisFilterPaused); ok {
+	if p, ok := d.GetOkExists(cisFilterPaused); ok {
 		paused := p.(bool)
 		newfilter.Paused = &paused
 	}
@@ -96,9 +96,9 @@ func resourceIBMCISFilterCreate(d *schema.ResourceData, meta interface{}) error 
 
 	opt.SetFilterInput([]filtersv1.FilterInput{newfilter})
 
-	result, _, err := cisClient.CreateFilter(opt)
-	if err != nil {
-		return fmt.Errorf("Error creating Filter for zone %q: %s", zoneID, err)
+	result, resp, err := cisClient.CreateFilter(opt)
+	if err != nil || result == nil {
+		return fmt.Errorf("Error creating Filter for zone %q: %s %s", zoneID, err, resp)
 	}
 	d.SetId(convertCisToTfThreeVar(*result.Result[0].ID, zoneID, crn))
 	return resourceIBMCISFilterRead(d, meta)
@@ -128,15 +128,16 @@ func resourceIBMCISFilterRead(d *schema.ResourceData, meta interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error finding GetFilter %q: %s", d.Id(), err)
+		return fmt.Errorf("Error finding GetFilter %q: %s %s", d.Id(), err, response)
 	}
-	d.Set(cisID, crn)
-	d.Set(cisDomainID, zoneID)
-	d.Set(cisFilterID, result.Result.ID)
-	d.Set(cisFilterPaused, result.Result.Paused)
-	d.Set(cisFilterDescription, result.Result.Description)
-	d.Set(cisFilterExpression, result.Result.Expression)
-
+	if result.Result != nil {
+		d.Set(cisID, crn)
+		d.Set(cisDomainID, zoneID)
+		d.Set(cisFilterID, result.Result.ID)
+		d.Set(cisFilterPaused, result.Result.Paused)
+		d.Set(cisFilterDescription, result.Result.Description)
+		d.Set(cisFilterExpression, result.Result.Expression)
+	}
 	return nil
 }
 func resourceIBMCISFilterUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -163,7 +164,7 @@ func resourceIBMCISFilterUpdate(d *schema.ResourceData, meta interface{}) error 
 		var updatefilter filtersv1.FilterUpdateInput
 		updatefilter.ID = &filterid
 
-		if p, ok := d.GetOk(cisFilterPaused); ok {
+		if p, ok := d.GetOkExists(cisFilterPaused); ok {
 			paused := p.(bool)
 			updatefilter.Paused = &paused
 		}
@@ -180,9 +181,9 @@ func resourceIBMCISFilterUpdate(d *schema.ResourceData, meta interface{}) error 
 
 		opt.SetFilterUpdateInput([]filtersv1.FilterUpdateInput{updatefilter})
 
-		result, _, err := cisClient.UpdateFilters(opt)
+		result, resp, err := cisClient.UpdateFilters(opt)
 		if err != nil {
-			return fmt.Errorf("Error updating Filter for zone %q: %s", zoneID, err)
+			return fmt.Errorf("Error updating Filter for zone %q: %s %s", zoneID, err, resp)
 		}
 
 		if *result.Result[0].ID == "" {

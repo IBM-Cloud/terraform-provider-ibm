@@ -35,7 +35,7 @@ func dataSourceIBMCISFilters() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						cisFilterPaused: {
 							Type:        schema.TypeBool,
-							Optional:    true,
+							Computed:    true,
 							Description: "Filter Paused",
 						},
 						cisFilterID: {
@@ -50,7 +50,7 @@ func dataSourceIBMCISFilters() *schema.Resource {
 						},
 						cisFilterDescription: {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Filter Description",
 						},
 					},
@@ -75,8 +75,8 @@ func dataIBMCISFiltersRead(d *schema.ResourceData, meta interface{}) error {
 	zoneID, _, _ := convertTftoCisTwoVar(d.Get(cisDomainID).(string))
 
 	result, resp, err := cisClient.ListAllFilters(cisClient.NewListAllFiltersOptions(xAuthtoken, crn, zoneID))
-	if err != nil {
-		return fmt.Errorf("Error Listing all filters %q: %s", d.Id(), resp)
+	if err != nil || result == nil {
+		return fmt.Errorf("Error Listing all filters %q: %s %s", d.Id(), err, resp)
 	}
 
 	filters := result.Result
@@ -84,7 +84,7 @@ func dataIBMCISFiltersRead(d *schema.ResourceData, meta interface{}) error {
 	filtersList := make([]map[string]interface{}, 0)
 	for _, filtersObj := range filters {
 		filtersOutput := map[string]interface{}{}
-		filtersOutput[cisFilterID] = convertCisToTfThreeVar(*filtersObj.ID, zoneID, crn)
+		filtersOutput[cisFilterID] = *filtersObj.ID
 		filtersOutput[cisFilterDescription] = *filtersObj.Description
 		filtersOutput[cisFilterExpression] = *filtersObj.Expression
 		filtersOutput[cisFilterPaused] = *filtersObj.Paused
