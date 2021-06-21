@@ -345,6 +345,28 @@ resource "ibm_is_network_acl" "isExampleACL" {
   }
 }
 
+resource "ibm_is_network_acl_rule" "isExampleACLRule" {
+  network_acl = ibm_is_network_acl.isExampleACL.id
+  name           = "isexample-rule"
+  action         = "allow"
+  source         = "0.0.0.0/0"
+  destination    = "0.0.0.0/0"
+  direction      = "outbound"
+  icmp {
+    code = 1
+    type = 1
+  }
+}
+
+data "ibm_is_network_acl_rule" "testacc_dsnaclrule" {
+  network_acl = ibm_is_network_acl.isExampleACL.id
+  name = ibm_is_network_acl_rule.isExampleACL.name
+}
+
+data "ibm_is_network_acl_rules" "testacc_dsnaclrules" {
+  network_acl = ibm_is_network_acl.isExampleACL.id
+}
+
 resource "ibm_is_public_gateway" "publicgateway1" {
   name = "gateway1"
   vpc  = ibm_is_vpc.vpc1.id
