@@ -32,5 +32,6 @@ You can access the following attribute references after your data source is crea
   - `os` - (String) The name of the Operating System.
   - `status` - (String) The status of this image.
   - `visibility` - (String) The visibility of the image public or private.
+  - `source_volume` - The source volume id of the image.
 
 

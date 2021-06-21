@@ -37,3 +37,4 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the image.
 - `os` - (String) The name of the operating system.
 - `status` - (String) The status of this image.
+- `source_volume` - The source volume id of the image.
