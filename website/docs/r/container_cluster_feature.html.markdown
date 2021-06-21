@@ -26,7 +26,7 @@ resource "ibm_container_cluster_feature" "feature" {
 
 ## Timeouts
 
-The `ibm_container_cluster_feature` provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_container_cluster_feature` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create**: The enablement of the feature is considered `failed` if no response is received for 90 minutes.
 - **update**: The update of the feature is considered `failed` if no response is received for 90 minutes. 

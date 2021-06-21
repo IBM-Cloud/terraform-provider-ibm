@@ -40,7 +40,7 @@ resource "ibm_pi_snapshot" "testacc_snapshot"{
   
 ## Timeouts
 
-The `ibm_pi_snapshot` provides the following [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_pi_snapshot` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 60 minutes) Used for Creating snapshot.
 - **delete** - (Default 60 minutes) Used for Deleting snapshot.

@@ -4,19 +4,18 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: compute_vm_instance"
 description: |-
-  Manages IBM VM instances.
+  Manages IBM Cloud VM instances.
 ---
 
-# ibm\_compute_vm_instance
+# ibm_compute_vm_instance
+Create, update, and delete a Virtual Machine (VM) instance. For more information, about IBM Cloud Virtual Machine instance, see [migrating VMDK or VHD images to VPC](https://cloud.ibm.com/docs/cloud-infrastructure?topic=cloud-infrastructure-migrating-images-vpc).
 
-Provides a resource for VM instances. This allows VM instances to be created, updated, and deleted.
+**Note**
 
-For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Virtual_Guest).
+- For more information, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Virtual_Guest).
+- Update is not supported when the `bulk_vms` parameter is used.
 
-**NOTE**: Update is not supported when the `bulk_vms` parameter is used.
-
-## Example Usage
-
+## Example usage
 In the following example, you can create a VM instance using a Debian image:
 
 ```terraform
@@ -40,7 +39,7 @@ resource "ibm_compute_vm_instance" "twc_terraform_sample" {
 }
 ```
 
-In the following example, you can create a VM instance using a block device template:
+### In the following example, you can create a VM instance using a block device template:
 
 ```terraform
 resource "ibm_compute_vm_instance" "terraform-sample-BDTGroup" {
@@ -63,7 +62,7 @@ resource "ibm_compute_vm_instance" "terraform-sample-BDTGroup" {
 }
 ```
 
-In the following example, you can create a VM instance using a flavor:
+### In the following example, you can create a VM instance using a flavor:
 
 ```terraform
 resource "ibm_compute_vm_instance" "terraform-sample-flavor" {
@@ -89,7 +88,8 @@ resource "ibm_compute_vm_instance" "terraform-sample-flavor" {
   notes                    = "VM notes"
 }
 ```
-In the following example, you can create multiple vm's
+
+### In the following example, you can create multiple vm's
 
 ```terraform
 resource "ibm_compute_vm_instance" "terraform-bulk-vms" {
@@ -117,7 +117,8 @@ resource "ibm_compute_vm_instance" "terraform-bulk-vms" {
 
 ```
 
-In the following example, you can retry to create a VM instance using a datacenter_choice. If VM fails to place order on first datacenter or vlans it retries to place order on subsequent datacenters and vlans untill place order is successfull:
+### Example to create a VM instance by using a datacenter_choice. 
+This example creates a VM instance by using a datacenter_choice. If VM fails to place order on first datacenter or vlans it retries to place order on subsequent datacenters and vlans untill place order is successful:
 
 ```terraform
 resource "ibm_compute_vm_instance" "terraform-retry" {
@@ -172,6 +173,7 @@ resource "ibm_compute_vm_instance" "terraform-retry" {
 ```  
 
 ### Example of a quote based ordering
+
 ```terraform
 resource "ibm_compute_vm_instance" "vm1" {
   # Mandatory fields
@@ -193,117 +195,93 @@ resource "ibm_compute_vm_instance" "vm1" {
 
 ## Timeouts
 
-ibm_is_instance provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_is_instance` resource provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-* `create` - (Default 90 minutes) Used to Wait for virtual guest creation.
-* `update` - (Default 90 minutes) Used to Wait for upgrade transactions to finish.
-* `delete` - (Default 90 minutes) Used to Wait for no active transactions.
-
-## Argument Reference
-
-The following arguments are supported:
-
-* `hostname` - (Optional, string) The hostname for the computing instance.</br>
-    **NOTE**: Conflicts with `bulk_vms`.
-* `domain` - (Optional, string)  The domain for the computing instance.</br>
-    **NOTE**: Conflicts with `bulk_vms`.
-* `bulk_vms` - (Optional, Forces new resource, list) List of hostname and domain of the computing instance. The minimum number of vm's to be defined is 2. Nested `bulk_vms` blocks must have the following structure:
-    * `hostname` - (Required, Forces new resource, string) The hostname for the computing instance.
-    * `domain` - (Required, Forces new resource, string) The domain for the computing instance.</br>
-    **NOTE**: Conflicts with `hostname` and `domain`.
-* `cores` - (Optional, integer) The number of CPU cores that you want to allocate.  
-    **NOTE**: Conflicts with `flavor_key_name`.
-* `memory` - (Optional, integer) The amount of memory, expressed in megabytes, that you want to allocate.  
-    **NOTE**: Conflicts with `flavor_key_name`.
-* `flavor_key_name` - (Optional, string) The flavor key name that you want to use to provision the instance. To see available Flavor key name, log in to the [IBM Cloud Classic Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/getCreateObjectOptions.json), using your API key as the password.  
-    **NOTE**: Conflicts with `cores` and `memory`.
-* `datacenter` - (Optional, Forces new resource, string) The datacenter in which you want to provision the instance.  
-    **NOTE**: If `dedicated_host_name` or `dedicated_host_id`
-    is provided then the datacenter should be same as the dedicated host datacenter. 
-    If `placement_group_name` or `placement_group_id`
-    is provided then the datacenter should be same as the placement group datacenter.
-    Conflicts with `datacenter_choice`. 
-* `hourly_billing` - (Optional, Forces new resource, boolean) The billing type for the instance. When set to `true`, the computing instance is billed on hourly usage. Otherwise, the instance is billed on a monthly basis. The default value is `true`.
-* `local_disk`- (Optional, Forces new resource, boolean) The disk type for the instance. When set to `true`, the disks for the computing instance are provisioned on the host that the instance runs. Otherwise, SAN disks are provisioned. The default value is `true`.
-* `dedicated_acct_host_only` - (Optional, Forces new resource, boolean) Specifies whether the instance must only run on hosts with instances from the same account. The default value is `false`. If VM is provisioned using flavorKeyName, value should be set to `false`.  
-     **NOTE**: Conflicts with `dedicated_host_name`, `dedicated_host_id`, `placement_group_name` and `placement_group_id`.
-* `dedicated_host_id` - (Optional, Forces new resource, integer) Specifies [dedicated host](https://cloud.ibm.com/docs/vsi/vsi_dedicated.html) for the instance by its id.  
-     **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_name`, `placement_group_name` and `placement_group_id`.
-* `dedicated_host_name` - (Optional, Forces new resource, string) Specifies [dedicated host](https://cloud.ibm.com/docs/vsi/vsi_dedicated.html) for the instance by its name.  
-     **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`, `placement_group_name` and `placement_group_id`.
-* `placement_group_id` - (Optional, Forces new resource, integer) Specifies [placement group](https://cloud.ibm.com/docs/vsi/vsi_dedicated.html) for the instance by its id.  
-     **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_name`, `dedicated_host_id` and `placement_group_name`.
-* `placement_group_name` - (Optional, Forces new resource, string) Specifies [placement group](https://cloud.ibm.com/docs/vsi/vsi_dedicated.html) for the instance by its name.  
-     **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`, `dedicated_host_name` and `placement_group_id`
-* `transient` - (Optional, Forces new resource, boolean) Specifies whether to provision a transient virtual server. The default value is `false`. Transient instances cannot be upgraded or downgraded. Transient instances cannot use local storage.  
-    **NOTE**: Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`, `dedicated_host_name`, `cores`, `memory`, `public_bandwidth_limited` and `public_bandwidth_unlimited`
-* `os_reference_code` - (Optional, Forces new resource, string) The operating system reference code that is used to provision the computing instance. To see available OS reference codes, log in to the [IBM Cloud Classic Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/getVhdImportSoftwareDescriptions.json?objectMask=referenceCode), using your API key as the password.  
-    **NOTE**: Conflicts with `image_id`.
-*   `image_id` - (Optional, Forces new resource, integer) The image template ID you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the IBM Cloud infrastructure customer portal, navigate to **Devices > Manage > Images**, click the desired image, and note the ID number in the resulting URL.  
-
-    **NOTE**: Conflicts with `os_reference_code`. If you don't know the ID(s) of your image templates, you can [refer to an image template ID by name using a data source](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/d/compute_image_template.html.markdown).
-*  `network_speed` - (Optional, integer) The connection speed (in Mbps) for the instance's network components. The default value is `100`.
-*  `private_network_only` - (Optional, Forces new resource, boolean) When set to `true`, a compute instance only has access to the private network. The default value is `false`.
-*  `private_security_group_ids` - (Optional, Forces new resource, array of integers) The ids of security groups to apply on the private interface.
-This attribute can't be updated. This is provided so that you can apply security groups to  your VSI right from the beginning, the first time it comes up. If you would like to add or remove security groups in the future to this VSI then you should consider using `ibm_network_interface_sg_attachment` resource. If you use this attribute in addition to `ibm_network_interface_sg_attachment` resource you might get some spurious diffs. So use one of these consistently for a particular VSI.
-*  `public_vlan_id` - (Optional, Forces new resource, integer) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/d/network_vlan.html.markdown).  
-    **NOTE**: Conflicts with `datacenter_choice`.
-* `private_vlan_id` - (Optional, Forces new resource, integer) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/d/network_vlan.html.markdown).  
-    **NOTE**: Conflicts with `datacenter_choice`.
-* `public_security_group_ids` - (Optional, Forces new resource, array of integers) The ids of security groups to apply on the public interface.
-This attribute can't be updated. This is provided so that you can apply security groups to  your VSI right from the beginning, the first time it comes up. If you would like to add or remove security groups in the future to this VSI then you should consider using `ibm_network_interface_sg_attachment` resource. If you use this attribute in addition to `ibm_network_interface_sg_attachment` resource you might get some spurious diffs. So use one of these consistently for a particular VSI.
-* `public_subnet` - (Optional, Forces new resource, string) The public subnet for the public network interface of the instance. Accepted values are primary public networks. You can find accepted values in the [subnets doc](https://cloud.ibm.com/classic/network/subnets).
-* `private_subnet` - (Optional, Forces new resource, string) The private subnet for the private network interface of the instance. Accepted values are primary private networks. You can find accepted values in the [subnets doc](https://cloud.ibm.com/classic/network/subnets).
-* `disks` - (Optional, array of integers) The numeric disk sizes (in GBs) for the instance's block device and disk image settings. The default value is the smallest available capacity for the primary disk. If you specify an image template, the template provides the disk capacity. If you specify the flavorKeyName, first disk is provided by the flavor.
-* `user_metadata` - (Optional, Forces new resource, string) Arbitrary data to be made available to the computing instance.
-*  `notes` - (Optional, string) Descriptive text of up to 1000 characters about the VM instance.
-* `ssh_key_ids` - (Optional, array of numbers) The SSH key IDs to install on the computing instance when the instance provisions.  
-    **NOTE:** If you don't know the ID(s) for your SSH keys, you can [reference your SSH keys by their labels](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/d/compute_ssh_key.html.markdown).
-* `file_storage_ids` - (Optional, array of numbers) File storage to which this computing instance should have access. File storage must be in the same data center as the bare metal server. If you use this argument to authorize access to file storage, then do not use the `allowed_virtual_guest_ids` argument in the `ibm_storage_file` resource in order to prevent the same storage being added twice.
-* `block_storage_ids` - (Optional, array of numbers) File storage to which this computing instance should have access. File storage must be in the same data center as the bare metal server. If you use this argument to authorize access to file storage, then do not use the `allowed_virtual_guest_ids` argument in the `ibm_storage_block` resource in order to prevent the same storage being added twice.
-* `post_install_script_uri` - (Optional, Forces new resource, string) The URI of the script to be downloaded and executed after installation is complete.
-* `tags` - (Optional, array of strings) Tags associated with the VM instance. Permitted characters include: A-Z, 0-9, whitespace, _ (underscore), - (hyphen), . (period), and : (colon). All other characters are removed.
-* `ipv6_enabled` - (Optional, Forces new resource, boolean) The primary public IPv6 address. The default value is `false`.
-* `ipv6_static_enabled` - (Optional, boolean) The public static IPv6 address block of `/64`. The default value is `false`.
-*  `secondary_ip_count` - (Optional, Forces new resource, integer) Specifies secondary public IPv4 addresses. Accepted values are `4` and `8`.
-*  `wait_time_minutes` - (Optional, integer) (DEPRECATED) Field is deprecated. Use Timeouts block to wait for the VM instance to become available, or while waiting for no active transactions before proceeding with an update or deletion. The default value is `90`
-* `public_bandwidth_limited` - (Optional, Forces new resource, int). Allowed public network traffic(GB) per month. It can be greater than 0 when the server is a monthly based server. Defaults to the smallest available capacity for the public bandwidth are used.  
-    **NOTE**: Conflicts with `private_network_only` and `public_bandwidth_unlimited`.
-* `public_bandwidth_unlimited` - (Optional, Forces new resource, boolean). Allowed unlimited public network traffic(GB) per month for a monthly based server. The `network_speed` should be 100 Mbps. Default value: `false`.  
-    **NOTE**: Conflicts with `private_network_only` and `public_bandwidth_limited`.
-* `evault` - (Optional, Forces new resource, int). Allowed evault(GB) per month for monthly based servers.
-* `datacenter_choice` - (Optional, list) A nested block to describe datacenter choice options to retry on different datacenters and vlans. Nested `datacenter_choice` blocks must have the following structure:
-    * `datacenter` - (Required, string) The datacenter in which you want to provision the instance.
-    * `public_vlan_id` - (Optional, string) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/d/network_vlan.html.markdown).
-    * `private_vlan_id` - (Optional, Forces new resource, string) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID number in the browser URL. You can also [refer to a VLAN by name using a data source](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/d/network_vlan.html.markdown).   
-    **NOTE**: Conflicts with `datacenter`, `private_vlan_id`, `public_vlan_id`, `placement_group_name` and `placement_group_id`.
-
-* `quote_id` - (Optional, Forces new resource, string) When you define `quote_id`, Terraform uses specifications in the quote to create a virtual server. You can find the quote ID in the [IBM Cloud portal](https://cloud.ibm.com/billing/quotes).
+- **create** - (Default 90 minutes) Used to Wait for virtual guest creation.
+- **update** - (Default 90 minutes) Used to Wait for upgrade transactions to finish.
+- **delete** - (Default 90 minutes) Used to Wait for no active transactions.
 
 
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-## Attribute Reference
+- `block_storage_ids`- (Optional, Array of Integers) File storage to which this computing instance has access. File storage must be in the same data center as the Bare Metal server. If you use this argument to authorize, access to file storage, then do not use the `allowed_virtual_guest_ids` argument in the `ibm_storage_block` resource in order to prevent the same storage be added twice.
+- `bulk_vms`- (Optional, Forces new resource, List) Hostname and domain of the computing instance. The minimum number of VM's to be defined is 2.
 
-In addition to all arguments above, the following attributes are exported:
+  Nested scheme for `bulk_vms`:
+	- `domain` - (Required, Forces new resource, String) The domain for the computing instance. If you set this option, do not specify `hostname` and `domain` at the same time.
+	- `hostname` - (Required, String) The hostname for the computing instance.
+- `cores` - (Optional, Integer) The number of CPU cores that you want to allocate. If you set this option, do not specify `flavor_key_name` at the same time.
+- `datacenter` - (Optional, Forces new resource, String) The data center in which you want to provision the instance. **Note** If `dedicated_host_name` or `dedicated_host_id` is provided then the datacenter should be same as the dedicated host datacenter. If `placement_group_name` or `placement_group_id`    is provided then the datacenter should be same as the placement group datacenter.    Conflicts with `datacenter_choice`.
+- `datacenter_choice` - (Optional, List of Objects) A nested block to describe datacenter choice options to retry on different data centers and VLANs. Nested `datacenter_choice` blocks must have the following structure:
 
-* `id` - The unique identifier of the VM instance.
-* `ipv4_address` - The public IPv4 address of the VM instance.
-* `ip_address_id_private` - The unique identifier for the private IPv4 address assigned to the VM instance.
-* `ipv4_address_private` - The private IPv4 address of the VM instance.
-* `ip_address_id` - The unique identifier for the public IPv4 address assigned to the VM instance.
-* `ipv6_address` - The public IPv6 address of the VM instance provided when `ipv6_enabled` is set to `true`.
-* `ipv6_address_id` - The unique identifier for the public IPv6 address assigned to the VM instance provided when `ipv6_enabled` is set to `true`.
-* `private_subnet_id` - The unique identifier of the subnet `ipv4_address_private` belongs to.
-* `public_ipv6_subnet` - The public IPv6 subnet provided when `ipv6_enabled` is set to `true`.
-* `public_ipv6_subnet_id` - The unique identifier of the subnet `ipv6_address` belongs to.
-* `public_subnet_id` - The unique identifier of the subnet `ipv4_address` belongs to.
-* `secondary_ip_addresses` - The public secondary IPv4 addresses of the VM instance.
-* `public_interface_id` - The ID of the primary public interface.
-* `private_interface_id` - The ID of the primary private interface.
+  Nested scheme for `datacenter_choice`:
+  - `datacenter` - (Required, String) The datacenter in which you want to provision the instance.
+  - `private_vlan_id` - (Optional, Forces new resource, String) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the VLAN that you want to use and note the ID number in the browser URL. You can also refer to a VLAN name by using a data source.  **Note** Conflicts with `datacenter`, `private_vlan_id`, `public_vlan_id`, `placement_group_name` and `placement_group_id`.
+  - `public_vlan_id` - (Optional, String) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the VLAN that you want to use and note the ID number in the browser URL. You can also refer to a VLAN name by using a data source.
+- `dedicated_acct_host_only` - (Optional, Forces new resource, Bool)  Specifies whether the instance must only run on hosts with instances from the same account. The default value is **false**. If VM is provisioned by using `flavorKeyName`, value should be set to **false**.  **Note** Conflicts with `dedicated_host_name`, `dedicated_host_id`, `placement_group_name` and `placement_group_id`.
+- `dedicated_host_id` - (Optional, Forces new resource, Integer) Specifies [dedicated host](https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-dedicated-virtual-servers) for the instance by its ID. **Note** Conflicts with `dedicated_acct_host_only`, `dedicated_host_name`, `placement_group_name` and `placement_group_id`.
+- `dedicated_host_name` - (Optional, Forces new resource, String) Specifies [dedicated host](https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-dedicated-virtual-servers) for the instance by its name. **Note** Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`, `placement_group_name` and `placement_group_id`.
+- `disks`- (Optional, Array of Integers) The numeric disk sizes in GBs for the instance's block device and disk image settings. The default value is the smallest available capacity for the primary disk. If you specify an image template, the template provides the disk capacity. If you specify the `flavorKeyName`, first disk is provided by the flavor.
+- `domain` - (Optional, String) The domain for the computing instance. If you set this option, do not specify `bulk_vms` at the same time.
+- `evault` - (Optional, Forces new resource, Integer) Allowed `Evault` in GB per month for monthly based servers.
+- `file_storage_ids`- (Optional, Array of Integers) File storage to which this computing instance has access. File storage must be in the same data center as the Bare Metal server. If you use this argument to authorize, access to file storage, then do not use the `allowed_virtual_guest_ids` argument in the `ibm_storage_file` resource in order to prevent the same storage be added twice.
+- `flavor_key_name` - (Optional, String) The flavor key name that you want to use to provision the instance. To see available key name, log in to the [IBM Cloud Classic Infrastructure API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/getCreateObjectOptions.json), that uses your API key as the password. If you set this option, do not specify `cores` and `memory` at the same time.
+- `hourly_billing` - (Optional, Forces new resource, Bool) The billing type for the instance. When set to **true**, the computing instance is billed on hourly usage. Otherwise, the instance is billed monthly. The default value is **true**.
+- `hostname` - (Optional, String) The hostname for the computing instance. If you set this option, do not specify `bulk_vms` at the same time.
+- `ipv6_enabled` - (Optional, Forces new resource, Bool) The primary public IPv6 address. The default value is **false**.
+- `ipv6_static_enabled` - (Optional, Bool) The public static IPv6 address block of `/64`. The default value is **false**.
+- `image_id` - (Optional, Forces new resource, Integer) The image template ID that you want to use to provision the computing instance. This is not the global identifier (UUID), but the image template group ID that should point to a valid global identifier. To retrieve the image template ID from the IBM Cloud infrastructure customer portal, navigate to **Devices > Manage > Images**, click the image that you want, and note the ID number in the resulting URL. **Note** Conflicts with `os_reference_code`.
+- `local_disk` - (Optional, Forces new resource, Bool) The disk type for the instance. When set to **true**, the disks for the computing instance are provisioned on the host that the instance runs. Otherwise, SAN disks are provisioned. The default value is **true**.
+- `memory` - (Optional, Integer) The amount of memory, expressed in megabytes, that you want to allocate. If you set this option, do not specify `flavor_key_name` at the same time.
+- `network_speed` - (Optional, Integer) The connection speed (in Mbps) for the instance's network components. The default value is `100`.
+- `notes` - (Optional, String)  Descriptive text of up to 1000 characters about the VM instance.
+- `os_reference_code` - (Optional, Forces new resource, String) The operating system reference code that is used to provision the computing instance. To see available OS reference codes, log in to the [IBM Cloud Classic Infrastructure API](https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/getVhdImportSoftwareDescriptions.json?objectMask=referenceCode), that uses your API key as the password. **Note** Conflicts with `image_id`.
+- `placement_group_id` - (Optional, Forces new resource, Integer) Specifies [placement group](https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-dedicated-virtual-servers) for the instance by its ID. **Note** Conflicts with `dedicated_acct_host_only`, `dedicated_host_name`, `dedicated_host_id` and `placement_group_name`.
+- `placement_group_name` - (Optional, Forces new resource, String) Specifies [placement group](https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-dedicated-virtual-servers) for the instance by its name. **Note** Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`, `dedicated_host_name` and `placement_group_id`-
+- `private_network_only` - (Optional, Forces new resource, Bool) When set to **true**, a compute instance has only access to the private network. The default value is **false**.
+- `private_security_group_ids`- (Optional, Force new resource, Array of integers) The IDs of security groups to apply on the private interface. This attribute can't be updated. You can use this parameter to add a security group to your virtual server instance when you create it. If you want to add or remove security groups later, you must use the `ibm_network_interface_sg_attachment` resource. If you use this attribute in addition to `ibm_network_interface_sg_attachment` resource you might experience errors. So use one of these consistently for a particular virtual server instance.
+- `public_vlan_id` - (Optional, Forces new resource, Integer) The public VLAN ID for the public network interface of the instance. Accepted values are in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the VLAN that you want and notes the ID number in the browser URL. You can also refer to a VLAN name by using a data source. **Note** Conflicts with `datacenter_choice`.
+- `private_vlan_id` - (Optional, Forces new resource, Integer) The private VLAN ID for the private network interface of the instance. You can find accepted values in the [VLAN doc](https://cloud.ibm.com/classic/network/vlans). Click the VLAN that you want to use and note the ID number in the browser URL. You can also refer to a VLAN name by using a data source. **Note** Conflicts with `datacenter_choice`.
+- `post_install_script_uri` - (Optional, Forces new resource, String) The URI of the script to be downloaded and executed after installation is complete.
+- `quote_id` - (Optional, Forces new resource, String) When you define the `quote_id`, Terraform uses the specification in the quote to create a virtual server. You can find the quote ID in the IBM Cloud portal.
+- `public_security_group_ids`- (Optional, Force new resource, Array of Integers) The IDs of security groups to apply on the public interface. This attribute can't be updated. You can use this parameter to add a security group to your virtual server instance when you create it. If you want to add or remove security groups later, you must use the `ibm_network_interface_sg_attachment` resource. If you use this attribute in addition to `ibm_network_interface_sg_attachment` resource, you might experience errors. So use one of these consistently for a particular virtual server instance.
+- `public_subnet` - (Optional, Forces new resource, String) The public subnet for the public network interface of the instance. Accepted values are primary public networks. You can find accepted values in the [subnets doc](https://cloud.ibm.com/classic/network/subnets).
+- `private_subnet` - (Optional, Forces new resource, String) The private subnet for the private network interface of the instance. Accepted values are primary private networks. You can find accepted values in the [subnets doc](https://cloud.ibm.com/classic/network/subnets).
+- `public_bandwidth_limited` - (Optional, Forces new resource, Integer) Allowed public network traffic in GB per month. It can be greater than 0 when the server is a monthly based server. Defaults to the smallest available capacity for the public bandwidth are used.  **Note** Conflicts with `private_network_only` and `public_bandwidth_unlimited`.
+- `public_bandwidth_unlimited` - (Optional, Forces new resource, Bool)   Allowed unlimited public network traffic in GB per month for a monthly based server. The `network_speed` should be 100 Mbps. Default value is **false**. **Note** Conflicts with `private_network_only` and `public_bandwidth_limited`.
+- `secondary_ip_count` - (Optional, Forces new resource, Integer) Specifies secondary public IPv4 addresses. Accepted values are `4` and `8`. 
+- `ssh_key_ids`- (Optional, Array of integers) The SSH key IDs to install on the computing instance when the instance provisions. **Note** If you don't know the ID(s) for your SSH keys, you can reference your SSH keys by their labels.
+- `tags` (Optional, Array of Strings) Tags associated with the VM instance. Permitted characters include: A-Z, 0-9, whitespace, `_` (underscore), `- ` (hyphen), `.` (period), and `:` (colon). All other characters are removed.
+- `transient` - (Optional, Forces new resource, Bool) Specifies whether to provision a transient virtual server. The default value is **false**. Transient instances cannot be upgraded or downgraded. Transient instances cannot use local storage. **Note** Conflicts with `dedicated_acct_host_only`, `dedicated_host_id`, `dedicated_host_name`, `cores`, `memory`, `public_bandwidth_limited` and `public_bandwidth_unlimited`.
+- `wait_time_minutes` - (Optional, Integer) The duration, expressed in minutes, to wait for the VM instance to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. The default value is `90`.
+- `wait_time_minutes`- (Deprecated, Integer) Use Timeouts block to wait for the VM instance to become available, or while waiting for non active transactions before proceeding with an update or deletion. The default value is `90`.
+- `user_metadata` - (Optional, Forces new resource, String) Arbitrary data to be made available to the computing instance.
+
+
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `id` - (String) The unique identifier of the VM instance.
+- `ipv4_address` - (String) The public IPv4 address of the VM instance.
+- `ip_address_id_private` - (String) The unique identifier for the private IPv4 address that is assigned to the VM instance.
+- `ipv4_address_private` - (String) The private IPv4 address of the VM instance.
+- `ip_address_id` - (String) The unique identifier for the public IPv4 address that is assigned to the VM instance.
+- `ipv6_address` - (String) The public IPv6 address of the VM instance provided when `ipv6_enabled` is set to **true**.
+- `ipv6_address_id` - (String) The unique identifier for the public IPv6 address assigned to the VM instance provided when `ipv6_enabled` is set to **true**.
+- `private_subnet_id` - (String) The unique identifier of the subnet `ipv4_address_private` belongs to.
+- `public_ipv6_subnet` - (String) The public IPv6 subnet provided when `ipv6_enabled` is set to **true**.
+- `public_ipv6_subnet_id` - (String) The unique identifier of the subnet `ipv6_address` belongs to.
+- `public_subnet_id` - (String) The unique identifier of the subnet `ipv4_address` belongs to.
+- `secondary_ip_addresses` - (String) The public secondary IPv4 addresses of the VM instance.
+- `public_interface_id` - (String) The ID of the primary public interface.
+- `private_interface_id` - (String) The ID of the primary private interface.
 
 ## Import
 
-ibm_compute_vm_instance can be imported using instanceID, eg
+The `ibm_compute_vm_instance` resource can be imported by using instance ID.
+
+**Example**
 
 ```
 $ terraform import ibm_compute_vm_instance.example 88205074

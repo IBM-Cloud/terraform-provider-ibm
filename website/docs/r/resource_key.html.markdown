@@ -92,7 +92,7 @@ resource "ibm_resource_key" "resourceKey" {
 
 ## Timeouts
 
-The `ibm_resource_key` provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_resource_key` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 10 minutes) Used for Creating Key.
 - **delete** - (Default 10 minutes) Used for Deleting Key.

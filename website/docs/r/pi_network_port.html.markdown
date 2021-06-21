@@ -41,7 +41,7 @@ resource "ibm_pi_network_port" "test-network-port" {
   
 ## Timeouts
 
-The `ibm_pi_network_port` provides the following [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+ibm_pi_network_port provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 60 minutes) Used for creating a network_port.
 - **delete** - (Default 60 minutes) Used for deleting a network_port.

@@ -55,7 +55,7 @@ resource "ibm_ob_logging" "test2" {
 
 ## Timeouts
 
-The `ibm_ob_logging` provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_ob_logging` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create**: The enablement of the feature is considered `failed` if no response is received for 10 minutes.
 - **delete**: The delete of the feature is considered `failed` if no response is received for 10 minutes. 

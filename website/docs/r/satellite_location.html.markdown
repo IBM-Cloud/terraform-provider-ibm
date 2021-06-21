@@ -46,7 +46,7 @@ resource "ibm_satellite_location" "create_location" {
 
 ## Timeouts
 
-The `ibm_satellite_location` provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_satellite_location` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 30 minutes) Used for creating Instance.
 - **update** - (Default 10 minutes) Used for updating Instance.

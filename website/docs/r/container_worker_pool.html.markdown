@@ -55,7 +55,7 @@ resource "ibm_container_worker_pool" "test_pool" {
 
 ## Timeouts
 
-ibm_container_worker_pool provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+ibm_container_worker_pool provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **Update**: The update of the worker pool is considered `failed` if no response is received for 90 minutes.
 

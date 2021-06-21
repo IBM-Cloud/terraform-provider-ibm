@@ -46,7 +46,7 @@ resource "ibm_container_worker_pool_zone_attachment" "test_zone" {
 
 ## Timeouts
 
-The `ibm_container_worker_pool_zone_attachment` provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_container_worker_pool_zone_attachment` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create**: The attachment of the zone is considered `failed` if no response is received for 90 minutes. 
 - **update**: The update of the zone is considered `failed` if no response is received for 90 minutes. 

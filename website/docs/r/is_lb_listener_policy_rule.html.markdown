@@ -52,7 +52,7 @@ resource "ibm_is_lb_listener_policy_rule" "lb_listener_policy_rule" {
 ```
 
 ## Timeouts
-The `ibm_is_lb_listener_policy` rule provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_is_lb_listener_policy` rule provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **Create**: The creation of the resource is considered failed if no response is received for 10 minutes. 
 - **Update**: The update of the resource is considered failed if no response is received for 10 minutes. 

@@ -4,17 +4,18 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: compute_monitor"
 description: |-
-  Manages IBM Compute monitor resources.
+  Manages IBM Cloud compute monitor resources.
 ---
 
 
-# ibm\_compute_monitor
+# ibm_compute_monitor
+Create, update, or delete a monitor for your virtual server instance. With monitors, you can verify the health of your virtual server instance by sending ping requests to the instance and checking the responsiveness of your instance. For more information, about compute monitor resource, see [viewing and managing monitors](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-virtual-server-instances).
 
-Provides a monitoring instance resource. This allows monitoring instances to be created, updated, and deleted.
+**Note**
 
-For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_Monitor_Version1_Query_Host).
+For more information, see [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_Monitor_Version1_Query_Host).
 
-## Example Usage
+## Example usage
 
 In the following example, you can create a monitor:
 
@@ -29,22 +30,19 @@ resource "ibm_compute_monitor" "test_monitor" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `guest_id` - (Required, Forces new resource, Integer) The ID of the virtual guest that you want to monitor.
+- `ip_address`- (Optional, String) The IP address that you want to monitor.
+- `notified_users`- (Optional, Array of Integers) The list of user IDs that is notified.
+- `query_type_id` - (Required, Integer) The ID of the query type.
+- `response_action_id`- (Required, Integer) The ID of the response action to take if the monitor fails. Accepted values are `1` or `2`.
+- `tags`- (Optional, Array of Integers) Tags associated with the monitoring instance. **Note** `Tags` are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
+- `wait_cycles` - (Optional, Integer)The number of 5-minute cycles to wait before the response action is taken.
 
-* `guest_id` - (Required, Forces new resource, integer) The ID of the virtual guest you want to monitor.
-* `ip_address` - (Optional, strings) The IP address you want to monitor.
-* `query_type_id` - (Required, integer) The ID of the query type.
-* `response_action_id` - (Required, integer) The ID of the response action to take if the monitor fails. Accepted values are `1` or `2`.
-* `wait_cycles` - (Optional, integer) The number of five-minute cycles to wait before the response action is taken.
-* `notified_users` - (Optional, array of integers) The list of user IDs that will be notified.
-* `tags` - (Optional, array of strings) Tags associated with the monitoring instance.  
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the monitor.
-* `notified_users` - The list of user IDs that will be notified.
+- `id`- (String) The unique identifier of the monitor.
+- `notified_users`- (String) The list of user IDs that is notified.

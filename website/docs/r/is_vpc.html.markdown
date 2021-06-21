@@ -21,7 +21,7 @@ resource "ibm_is_vpc" "testacc_vpc" {
 ```
 
 ## Timeouts
-The `ibm_is_vpc` resource provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_is_vpc` resource provides the following [[Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create**: The creation of the VPC is considered `failed` when no response is received for 10 minutes. 
 - **delete**: The deletion of the VPC is considered `failed` when no response is received for 10 minutes. 
