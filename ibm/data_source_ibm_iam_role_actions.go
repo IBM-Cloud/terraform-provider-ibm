@@ -71,6 +71,8 @@ func datasourceIBMIAMRoleActionRead(d *schema.ResourceData, meta interface{}) er
 	//TODOM: Debug
 	log.Printf("MMM2: The serviceRoles: %+v", serviceRoles)
 
+	//TODOM: Convert this into a function where we add a key based on displaynames (but convert to lowercase and underscore)
+	//TODOM: Is there any naming convention for these keys?
 	d.Set("reader", flattenActionbyDisplayName("Reader", serviceRoles))
 	d.Set("manager", flattenActionbyDisplayName("Manager", serviceRoles))
 	d.Set("reader_plus", flattenActionbyDisplayName("ReaderPlus", serviceRoles))
