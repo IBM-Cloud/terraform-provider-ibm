@@ -64,6 +64,9 @@ Review the argument references that you can specify for your resource.
   - `name` - (Optional, String) The endpoint gateway resource group IPs name.
   - `subnet` - (Optional, String) The endpoint gateway resource group subnet ID.
   - `resource_type` - (Required, String) The endpoint gateway resource group VPC resource type.
+  
+  **NOTE**: `id` and `subnet` are mutually exclusive.
+
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID.
 - `tags`- (Optional, Array of Strings) A list of tags associated with the instance.
 - `target` - (Required, List) The endpoint gateway target.
@@ -74,6 +77,7 @@ Review the argument references that you can specify for your resource.
   - `resource_type` - (Required, String) The endpoint gateway target resource type.
 - `vpc` - (Required, Forces new resource, String) The VPC ID.
 
+**NOTE**: `ips` configured inline in this resource are not modifiable. Prefer using `ibm_is_virtual_endpoint_gateway_ip` resource to bind/unbind new reserved IPs to endpoint gateways and use the resource `ibm_is_subnet_reserved_ip` to create new reserved IP.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
