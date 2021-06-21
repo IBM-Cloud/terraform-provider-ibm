@@ -23,7 +23,7 @@ const (
 	tagType      = "tag_type"
 	acccountID   = "acccount_id"
 	service      = "service"
-	crnRegex     = "^crn:.+:.+:.+:.+:.+:$"
+	crnRegex     = "^crn:v1(:[a-zA-Z0-9 \\-\\._~\\*\\+,;=!$&'\\(\\)\\/\\?#\\[\\]@]*){8}$|^[0-9]+$"
 )
 
 func resourceIBMResourceTag() *schema.Resource {
@@ -156,7 +156,7 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 	if len(add) > 0 {
 		_, resp, err := gtClient.AttachTag(AttachTagOptions)
 		if err != nil {
-			return fmt.Errorf("Error attaching resource tags >>>>  %v : %s", resp, err)
+			return fmt.Errorf("Error attaching resource tags : %v\n%s", resp, err)
 		}
 	}
 

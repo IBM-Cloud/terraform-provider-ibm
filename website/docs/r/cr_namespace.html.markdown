@@ -1,50 +1,61 @@
 ---
+subcategory: "Container Registry"
 layout: "ibm"
 page_title: "IBM : ibm_cr_namespace"
 description: |-
-  Manages ibm_cr_namespace.
-subcategory: "Container Registry"
+  Manages Container Registry namespace.
+
 ---
 
-# ibm\_cr_namespace
+# ibm_cr_namespace
+Create, update, or delete a container registry namespace. For more information, about container registry, see [About IBM Cloud Container Registry](https://cloud.ibm.com/docs/Registry?topic=Registry-registry_overview).
 
-Provides a resource for ibm_cr_namespace. This allows ibm_cr_namespace to be created, updated and deleted.
-
-## Example Usage
+## Example usage
+The following example shows how you can configure a `namespace`.
 
 ```terraform
 resource "ibm_cr_namespace" "cr_namespace" {
   name = "name"
 }
+
+data "ibm_resource_group" "rg" {
+  name = "default"
+}
+resource "ibm_cr_namespace" "rg_namespace" {
+  name              = "testaasd2312"
+  resource_group_id = data.ibm_resource_group.rg.id
+}
 ```
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument references that you can specify for your resource. 
 
-* `name` - (Required, Forces new resource, string) The name of the namespace.
-  * Constraints: The maximum length is `30` characters. The minimum length is `4` characters. The value must match regular expression `/^[a-z0-9]+[a-z0-9_-]+[a-z0-9]+$/`
-* `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group that the namespace will be created within.
-* `tags` - (Optional, array of strings) Tags associated with the ibm_cr_namespace.
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+- `name` - (Required, Forces new resource, String) The name of the namespaces to create.
+- `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group to which the namespace is assigned. If not provided, default resource group ID will be assigned.
+- `tags` - (Optional, Array of Strings) Tags associated with the `ibm_cr_namespace`. **Note*- `Tags` are managed locally and not stored on the IBM Cloud service endpoint.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the ibm_cr_namespace.
-* `account` - The IBM Cloud account that owns the namespace.
-* `created_date` - When the namespace was created.
-* `crn` - If the namespace has been assigned to a resource group, this is the IBM Cloud CRN representing the namespace.
-* `resource_created_date` - When the namespace was assigned to a resource group.
-* `updated_date` - When the namespace was last updated.
+- `id` - (String) The unique identifier of the `ibm_cr_namespace`.
+- `account` - (String) The IBM Cloud account that owns the namespace.
+- `created_date` - (Timestamp) The creation date of the namespace.
+- `crn` - (String) If the namespace has been assigned to a resource group, the IBM Cloud CRN represent the namespace.
+- `resource_created_date` - (Timestamp) The namespace assigned date to a resource group.
+- `updated_date` - (Timestamp) The last updated of the namespace.
 
 ## Import
+The `ibm_cr_namespace` resource can be imported by using the `name` of the namespace.
 
-You can import the `ibm_cr_namespace` resource by using `name`. The name of the namespace.
-
-* `name`: A string. The name of the namespace.
+**Syntax**
 
 ```
-$ terraform import ibm_cr_namespace.cr_namespace <name>
+$ terraform import ibm_cr_namespace.test <name of the namespace>
+```
+
+**Example**
+
+```
+$ terraform import ibm_cr_namespace.test namespace-name
 ```

@@ -57,7 +57,7 @@ func testAccCheckIBMPIImageDestroy(s *terraform.State) error {
 }
 func testAccCheckIBMPIImageExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		fmt.Println("siv ", s.RootModule().Resources)
+
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {

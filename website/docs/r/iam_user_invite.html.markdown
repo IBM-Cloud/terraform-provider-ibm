@@ -227,7 +227,7 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `iam_policy`:
   - `roles` - (Required, List) A comma separated list of roles. Valid roles are `Writer`, `Reader`, `Manager`, `Administrator`, `Operator`, `Viewer`, and `Editor`.
-  - `resources` - (List of Objects) Optional- A nested block describes the resource of this policy.
+  - `resources` - (List of Objects) Optional- A nested block describes the resource of this policy. For more information, about supported service specific roles, see  [IAM roles and actions](https://cloud.ibm.com/docs/account?topic=account-iam-service-roles-actions)
 
     Nested scheme for `resources`:
     - `attributes` (Optional, Map)  A set of resource attributes in the format `name=value, name=value`. If you set this option, do not specify `account_management` at the same time.

@@ -4,15 +4,14 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : vpc-routing-tables-route"
 description: |-
-  Manages IBM IS VPC Routing tables.
+  Manages IBM IS VPC routing tables.
 ---
 
-# ibm\_is_vpc_routing_table_route
+# ibm_is_vpc_routing_table_route
+Create, update, or delete of an VPC routing tables. For more information, about VPC routes, see [about routing tables and routes](https://cloud.ibm.com/docs/vpc?topic=vpc-about-custom-routes).
 
-Provides a vpc routing tables resource. This allows vpc routing tables to be created, updated, and cancelled.
 
-
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" {
@@ -39,33 +38,33 @@ resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" 
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `action` - (Optional, String) The action to perform with a packet matching the route `delegate`, `delegate_vpc`, `deliver`, `drop`.
+- `destination` - (Required, Forces new resource, String) The destination of the route. 
+- `name` - (Optional, String) The user-defined name of the route. If unspecified, the name will be a hyphenated list of randomly selected words. You need to provide unique name within the VPC routing table the route resides in.
+- `next_hop` - (Required, Forces new resource, String) The next hop of the route. It accepts IP address or a VPN connection ID. For `action` other than `deliver`, you must specify `0.0.0.0`. 
+- `routing_table` - (Required, String) The routing table ID.
+- `vpc` - (Required, Forces new resource, String) The VPC ID.
+- `zone` - (Required, Forces new resource, String)  Name of the zone. 
 
-* `name` - (Optional, string) The user-defined name for this route. If unspecified, the name will be a hyphenated list of randomly-selected words. Names must be unique within the VPC routing table the route resides in.
-* `vpc` - (Required, Forces new resource, string) The vpc id.
-* `routing_table` - (Required, Forces new resource, string) The routing table identifier
-* `action` - (Optional,string) The action to perform with a packet matching the route `delegate`, `delegate_vpc`, `deliver`, `drop`.
-* `zone` - (Required, Forces new resource, string) Name of the zone.
-* `destination` - (Required, Forces new resource, string) The destination of the route.
-* `next_hop` - (Required, Forces new resource, string) The next hop of the route. Accepts IP address or a VPN Connection ID. For `action` other than `deliver`, it must be specified as 0.0.0.0.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier for this routing table. The id is composed of \<vpc_route_table_id\>/\<vpc_route_table_route_id\>
-* `is_default` - Indicates whether this is the default routing table for this VPC
-* `lifecycle_state` - The lifecycle state of the route
-* `resource_type` - The resource type
-* `href` - The URL for this route
-
+- `href` - (String) The routing table URL.
+- `id` - (String) The routing table ID. The ID is composed of `<vpc_route_table_id>/<vpc_route_table_route_id>`.
+- `is_default` - (String) Indicates the default routing table for this VPC.
+- `lifecycle_state` - (String) The lifecycle state of the route.
+- `resource_type` - (String) The resource type.
 
 ## Import
+The `ibm_is_vpc_routing_table_route` resource  can be imported by using VPC ID, VPC Route table ID, and VPC Route table Route ID.
 
-ibm_is_vpc_routing_table_route can be imported using VPC ID, VPC Route table ID and VPC Route table Route ID , eg
+**Example**
 
 ```
-$ terraform import ibm_is_vpc_routing_table_route.example 56738c92-4631-4eb5-8938-8af9211a6ea4/4993-a0fd-cabab477c4d1-8af9211a6ea4/fc2667e0-9e6f-4993-a0fd-cabab477c4d1
+$ terraform import ibm_is_vpc_routing_table_route.example 56738c92-4631-4eb5-8938-8af90000006ea4/4993-a0fd-cabab477c4d1-8af911111a4/fc2667e0-9e6f-4993-a0fd-cabab55557c4d1
 ```
+

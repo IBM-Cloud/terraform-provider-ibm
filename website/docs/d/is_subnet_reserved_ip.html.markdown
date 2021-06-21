@@ -3,14 +3,13 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : reserved_ip"
 description: |-
-  Shows the info for a reserved IP and Subnet.
+  Shows the information for a reserved IP and subnet.
 ---
 
-# ibm\_is_subnet_reserved_ip
+# ibm_is_subnet_reserved_ip
+Retrieve information of an existing reserved IP in a subnet. For more information, about associated reserved IP subnet, see [binding and unbinding a reserved IP address](https://cloud.ibm.com/docs/vpc?topic=vpc-bind-unbind-reserved-ip).
 
-Import the details of an existing Reserved IP in a Subnet as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_is_subnet_reserved_ip" "data_reserved_ip" {
@@ -19,25 +18,22 @@ data "ibm_is_subnet_reserved_ip" "data_reserved_ip" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported as inputs/request params:
+- `subnet` - (Required, String)The ID for the subnet.
+- `reserved_ip` - (Required, String)The ID for the reserved IP.
 
-* `subnet` - (Required, string) The id for the Subnet.
-* `reserved_ip` - (Required, string) The id for the Reserved IP.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-
-## Attribute Reference
-
-The following attributes are exported as output/response:
-
-* `auto_delete` - The auto_delete boolean for reserved IP
-* `created_at` - The creation timestamp for the reserved IP
-* `href` - The unique reference for the reserved IP
-* `id` - The id for the reserved IP
-* `name` - The name for the reserved IP
-* `owner` - The owner of the reserved IP
-* `reserved_ip` - Same as `id`
-* `resource_type` - The type of resource
-* `subnet` - The id for the subnet for the reserved IP
-* `target` - The id for the target for the reserved IP
+- `auto_delete` -  (String) The auto_delete boolean for reserved IP.
+- `created_at` -  (String) The creation timestamp for the reserved IP.
+- `href` -  (String) The unique reference for the reserved IP.
+- `id` -  (String) The ID for the reserved IP.
+- `name` -  (String) The name for the reserved IP.
+- `owner` -  (String) The owner of the reserved IP.
+- `reserved_ip` -  (String) The ID for the reserved IP.
+- `resource_type` -  (String) The resource type.
+- `subnet` -  (String) The ID of the subnet for the reserved IP.
+- `target` - The ID of the target for the reserved IP.

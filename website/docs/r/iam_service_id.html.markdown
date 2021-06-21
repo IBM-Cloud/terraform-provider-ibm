@@ -35,4 +35,5 @@ In addition to all argument reference list, you can access the following attribu
 - `crn`  - (String) The CRN of the service ID.
 - `iam_id`-  (String) The IAM ID of the service ID.
 - `id` - (String) The unique identifier of the service ID.
+- `locked`- (Bool) The Service Id lock status
 - `version`  - (String) The version of the service ID.

@@ -3,14 +3,13 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_instance_disk_management"
 description: |-
-  Manages IBM Instance Disk Management.
+  Manages IBM instance disk management.
 ---
 
-# ibm\_is_instance_disk_management
+# ibm_is_instance_disk_management
+Create, update, or delete an IBM instance disk management. For more information, about instance disk management, see [managing instance storage](https://cloud.ibm.com/docs/vpc?topic=vpc-instance-storage-provisioning).
 
-Provides a resource for Instance Disk Management. This allows Instance disk names to be updated
-
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
@@ -68,26 +67,27 @@ resource "ibm_is_instance_disk_management" "disks"{
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `instance` - (Required, Forces new resource, String) The unique-identifier of the instance.
+- `disks` - (Required, List) Disks that needs to be updated. Nested `disks` blocks have the following structure:
 
+  Nested scheme for `disks`:
+  - `id` - (Required, String) The unique-identifier of the instance disk.
+  - `name` - (Required, String) The unique user defined name for the instance disk.
 
-* `instance` - (Required, string, ForceNew) The unique-identifier of the instance
-* `disks` - (Required, string) Disks that needs to be updated. Nested `disks` blocks have the following structure:
-	* `id` - (Required, string) The unique-identifier of the instance disk.
-	* `name` - (Required, string) The unique user defined name for the instance disk
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-The following attributes are exported:
-
-* `id` - The unique-identifier of the Instance disk management
+* `id` - (String) The unique-identifier of an instance disk management.
 
 ## Import
 
-ibm_is_instance_disk_management can be imported using Instance disk management ID, eg
+The `ibm_is_instance_disk_management` resource can be imported byusing Instance disk management ID.
+
+**Example**
 
 ```
-$ terraform import ibm_is_instance_disk_management.example 0716-1c372bb2-decc-4555-b1a6-5d128c62806c
+$ terraform import ibm_is_instance_disk_management.example 0716-111172bb2-decc-4555-b1a6-5d128c62806c
 ```

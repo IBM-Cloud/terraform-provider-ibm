@@ -4,14 +4,13 @@ subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM : resource_group"
 description: |-
-  Manages IBM Resource Group.
+  Manages IBM resource group.
 ---
 
-# ibm\_resource_group
+# ibm_resource_group
+Create, update, or delete an IBM Cloud resource group. For more information, about resource group, see [managing resource groups](https://cloud.ibm.com/docs/account?topic=account-rgs).
 
-Provides a resource group resource. This allows resource groups to be created, and updated and deleted.
-
-## Example Usage
+## Example usage
 
 ```terraform
 
@@ -21,34 +20,38 @@ resource "ibm_resource_group" "resourceGroup" {
 
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-* `name` - (Required, string)The name of the resource group.
-* `tags` - (Optional, array of strings) Tags associated with the resource group instance.  
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+- `name` - (Required, String) The name of the resource group.
+- `tags` (Optional, Array of strings) Tags associated with the resource group instance. **Note** Tags are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the new resource group.
-* `default` - Specifies whether its default resource group or not.
-* `state` - State of the resource group.
-* `crn` - The full CRN associated with the resource group
-* `created_at` - The date when the resource group was initially created.
-* `updated_at` - The date when the resource group was last updated.
-* `teams_url` -  The URL to access the team details that associated with the resource group.
-* `payment_methods_url` - The URL to access the payment methods details that associated with the resource group.
-* `quota_url` -  The URL to access the quota details that associated with the resource group.
-* `quota_id` - An alpha-numeric value identifying the quota ID associated with the resource group.
-* `resource_linkages` - An array of the resources that linked to the resource group
-
+- `crn` - (String) The full CRN associated with the resource group.
+- `created_at` - (Timestamp) The date when the resource group initially created.
+- `default` - (Bool) Specifies whether its default resource group or not.
+- `id` - (String) The unique identifier of the new resource group.
+- `payment_methods_url` - (String) The URL to access the payment methods details that is associated with the resource group.
+- `quota_url` - (String) The URL to access the quota details that is associated with the resource group.
+- `quota_id` - (String) An alpha-numeric value identifying the quota ID associated with the resource group.
+- `resource_linkages` - (String) An array of the resources that is linked to the resource group.
+- `state` - (String) The state of the resource group.
+- `teams_url` -  (String) The URL to access the team details that is associated with the resource group.
+- `updated_at` - (Timestamp) The date when the resource group last updated.
 
 ## Import
+The `ibm_resource_group` can be imported by using resource group ID. The `ibm_resource_group.example` is the resource block name.
 
-ibm_resource_group can be imported using resource group id, eg
+**Syntax**
+
+```
+$ terraform import ibm_resource_group.example <resource_group_ID>
+```
+
+**Example**
 
 ```
 $ terraform import ibm_resource_group.example 5ffda12064634723b079acdb018ef308

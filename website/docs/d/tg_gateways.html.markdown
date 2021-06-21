@@ -4,32 +4,35 @@ subcategory: "Transit Gateway"
 layout: "ibm"
 page_title: "IBM : tg_gateways"
 description: |-
-  Manages IBM Cloud Infrastructure Transit Gateway.
+  Manages IBM Cloud Infrastructure Transit Gateways.
 ---
 
-# ibm\_tg_gateways
+# ibm_tg_gateways
+Imports the information of an existing IBM Cloud infrastructure transit gateway as a read only data source. For more information, about transit gateways, see [managing transit gateways](https://cloud.ibm.com/docs/transit-gateway?topic=transit-gateway-edit-gateway).
 
-Import the details of an existing IBM Cloud Infrastructure transit gateways as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_tg_gateways" "ds_tggateways" {
 }
 ```
 
-## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+## Argument reference
+There is no argument reference for `ibm_tg_gateways`.
 
-* `transit_gateways` - List of all Transit gateways in the IBM Cloud Infrastructure.
-  * `created_at` - The date and time resource was created.
-  * `updated_at` - The date and time resource was last updated.
-  * `crn` - The CRN (Cloud Resource Name) of this gateway.
-  * `global` - Gateways with global routing (true) can connect to networks outside their associated region.
-  * `id` - The unique identifier of this gateway.
-  * `location` - Gateway location.
-  * `name` - The unique user-defined name for this gateway.
-  * `status` - Gateway status.
-  * `resource_group` - Resource group identifier.
+## Attribute reference
+You can access the following attribute references after your data source is created. 
+
+- `transit_gateways` - (String) List of all transit gateways.
+
+  Nested scheme for `transit_gateways`:
+   - `created_at` - (String) The date and time resource is created.
+   - `crn` - (String) The CRN of the gateway.
+   - `global` - (String) The gateways with global routing true to connect to the networks outside the associated region.
+   - `id` - (String) The unique identifier of this gateway.
+   - `location` - (String) The gateway location.
+   - `name` - (String) The user defined name for the transit gateway connection.
+   - `resource_group` - (String) The resource group identifier.
+   - `status` - (String) The gateway status.
+   - `updated_at` - (String) The date and time resource is last updated.
