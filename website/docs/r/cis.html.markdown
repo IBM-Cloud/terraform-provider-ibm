@@ -37,7 +37,7 @@ resource "ibm_cis" "cis_instance" {
 
 ## Timeouts
 
-`ibm_cis` provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+`ibm_cis` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 **Create**: The creation of the IBM Cloud Internet Services instance is considered failed if no response is received for 10 minutes.
 **Update**: The update of the IBM Cloud Internet Services instance is considered failed if no response is received for 10 minutes.

@@ -23,7 +23,7 @@ resource "ibm_is_vpn_gateway" "testacc_vpn_gateway" {
 ```
 
 ## Timeouts
-The `ibm_is_vpn_gateway` resource provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_is_vpn_gateway` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create**: The creation of the VPN gateway is considered `failed` when no response is received for 10 minutes. 
 - **delete**: The deletion of the VPN gateway is considered `failed` when no response is received for 10 minutes. 

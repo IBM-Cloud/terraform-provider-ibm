@@ -38,7 +38,7 @@ resource "ibm_pi_key" "testacc_sshkey" {
 
 ## Timeouts
 
-The `ibm_pi_key` resource provides the following [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+ibm_pi_key provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 60 minutes) Used for creating a SSH key.
 - **delete** - (Default 60 minutes) Used for deleting a SSH key.
