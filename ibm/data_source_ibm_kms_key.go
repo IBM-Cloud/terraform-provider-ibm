@@ -96,6 +96,11 @@ func dataSourceIBMKMSkey() *schema.Resource {
 													Type:     schema.TypeString,
 													Computed: true,
 												},
+												"crn": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Cloud Resource Name (CRN) that uniquely identifies your cloud resources.",
+												},
 												"updated_by": {
 													Type:     schema.TypeString,
 													Computed: true,
@@ -127,6 +132,11 @@ func dataSourceIBMKMSkey() *schema.Resource {
 												"creation_date": {
 													Type:     schema.TypeString,
 													Computed: true,
+												},
+												"crn": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Cloud Resource Name (CRN) that uniquely identifies your cloud resources.",
 												},
 												"updated_by": {
 													Type:     schema.TypeString,
@@ -265,7 +275,7 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("keys", keyMap)
 		d.Set("instance_id", instanceID)
 	} else {
-		aliasName := d.Get("alias_name").(string)
+		aliasName := d.Get("alias").(string)
 		key, err := api.GetKey(context.Background(), aliasName)
 		if err != nil {
 			return fmt.Errorf(

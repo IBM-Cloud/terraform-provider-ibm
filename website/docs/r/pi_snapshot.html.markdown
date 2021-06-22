@@ -4,16 +4,14 @@ subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_snapshot"
 description: |-
-  Manages Snapshots in the Power Virtual Server Cloud.
+  Manages snapshots in the Power Virtual Server cloud.
 ---
 
-# ibm\_pi_snapshot
+# ibm_pi_snapshot
+Creates, updates, deletes, and manages snapshots in the Power Virtual Server Cloud. For more information, about snapshots in the Power Virutal Server, see [snapshotting, cloning, and restoring](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-volume-snapshot-clone).
 
-Provides a snapshot resource. This allows snapshots to be created, updated, and deleted in the Power Virtual Server Cloud.
-
-## Example Usage
-
-In the following example, you can create a snapshot:
+## Example usage
+The following example enables you to create a snapshot:
 
 ```terraform
 resource "ibm_pi_snapshot" "testacc_snapshot"{
@@ -24,48 +22,50 @@ resource "ibm_pi_snapshot" "testacc_snapshot"{
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
 }
 ```
-## Notes:
+
+**Note**
 * Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 * If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   * `region` - `lon`
   * `zone` - `lon04`
-  Example Usage:
+
+  Example usage:
+  
   ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"
     }
   ```
+  
 ## Timeouts
 
-ibm_pi_snapshot provides the following [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_pi_snapshot` provides the following [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
-* `create` - (Default 60 minutes) Used for Creating snapshot.
-* `delete` - (Default 60 minutes) Used for Deleting snapshot.
-* `update` - (Default 60 minutes) Used for Updating snapshot.
+- **create** - (Default 60 minutes) Used for Creating snapshot.
+- **delete** - (Default 60 minutes) Used for Deleting snapshot.
+- **update** - (Default 60 minutes) Used for Updating snapshot.
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource.
+ 
+- `pi_instance_name` - (Required, String) The name of the instance you want to take a snapshot of.
+- `pi_snapshot_name` - (Required, String) The unique name of the snapshot.
+- `description` - (Optional, String) The description for the snapshot.
+- `pi_volume_ids` - (Optional, String) The volume ID, if none provided then all volumes of the instance will be part of the snapshot.
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 
-The following arguments are supported:
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-* `pi_instance_name` - (Required, string) The instance name that we want to take a snapshot of.
-* `pi_snapshot_name` - (Required, string) The name of this snasphot ( make sure it's unique) .
-* `description` - (Optional, string) Description of the snapshot.
-* `pi_volume_ids` - (Optional, List) String of volumeids. If none provided then all volumes of the instance
-will be part of the snapshot.
-* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
-
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the snapshot.The id is composed of \<power_instance_id\>/\<pi_snap_shot_id\>.
-* `volume_snapshots` - A map of the source and target volumes.
-
+- `id` - (String) The unique identifier of the snapshot. The ID is composed of <power_instance_id>/<pi_snap_shot_id>.
+- `volume_snapshots` - (String) A map of the source and target volumes.
 
 ## Import
 
-ibm_pi_snapshot can be imported using `power_instance_id` and `pi_snap_shot_id`, eg
+The `ibm_pi_snapshot` resource can be imported by using `power_instance_id` and `pi_snap_shot_id`.
+
+**Example**
 
 ```
 $ terraform import ibm_pi_snapshot.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb

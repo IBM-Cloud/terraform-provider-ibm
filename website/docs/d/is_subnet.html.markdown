@@ -3,17 +3,16 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : subnet"
 description: |-
-  Manages IBM subnet.
+  Manages IBM Cloud subnet.
 ---
 
-# ibm\_is_subnet
+# ibm_is_subnet
+Retrieve information of an existing VPC Generation 2 compute subnet as a read only data source. For more information, about the IBM Cloud subnet, see [attaching subnets to a routing table](https://cloud.ibm.com/docs/vpc?topic=vpc-attach-subnets-routing-table).
 
-Import the details of an existing IBM cloud subnet as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
+## Example usage
+Example to retrieve the subnet information by using subnet name.
 
-## Example Usage
-
-In the following example, subnet info is retrieved by subnet name
 ```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "test"
@@ -31,8 +30,8 @@ data "ibm_is_subnet" "ds_subnet" {
 }
 
 ```
+// Example to retrieve the subnet information by using subnet ID.
 
-In the following example, subnet info is retrieved by subnet ID
 ```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "test"
@@ -51,28 +50,26 @@ data "ibm_is_subnet" "ds_subnet" {
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `identifier` - (Optional, String) The ID of the subnet.
+- `name` - (Optional, String) The name of the subnet.
 
-* `identifier` - (Optional, string) The id of the subnet.
-* `name` - (Optional, string) The name of the subnet.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `ipv4_cidr_block` -  The IPv4 range of the subnet.
-* `ipv6_cidr_block` - The IPv6 range of the subnet.
-* `total_ipv4_address_count` - The total number of IPv4 addresses.
-* `ip_version` - The Ip Version.
-* `name` - The name of the subnet.
-* `network_acl` - The ID of the network ACL for the subnet.
-* `public_gateway` - The ID of the public-gateway for the subnet.
-* `status` - The status of the subnet.
-* `vpc` - The vpc id.
-* `zone` - The subnet zone name.
-* `resource_group` - The subnet Resource group.
-* `available_ipv4_address_count` - The total number of available IPv4 addresses.
-* `tags` - Tags associated with the instance.
-* `crn` - The CRN of subnet.
+- `available_ipv4_address_count` - (Integer) The total number of available IPv4 addresses.
+- `crn` - (String) The CRN of subnet.
+- `ipv4_cidr_block` -  (String) The IPv4 range of the subnet.
+- `ipv6_cidr_block` - (String) The IPv6 range of the subnet.
+- `ip_version` - (String) The IP version.
+- `name` - (String) The name of the subnet.
+- `network_acl` - (String) The ID of the network ACL for the subnet.
+- `public_gateway` - (String) The ID of the public gateway for the subnet.
+- `resource_group` - (String) The subnet resource group.
+- `status` - (String) The status of the subnet.
+- `tags`  - (String) Tags associated for the instance.
+- `total_ipv4_address_count` - (Integer) The total number of IPv4 addresses.
+- `vpc` - (String) The ID of the VPC that the subnet belongs to.
+- `zone` - (String) The subnet zone name.

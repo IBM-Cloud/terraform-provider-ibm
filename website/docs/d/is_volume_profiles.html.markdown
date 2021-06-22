@@ -6,12 +6,10 @@ description: |-
   Manages IBM Cloud virtual server volume profiles.
 ---
 
-# ibm\_is_volume_profiles
+# ibm_is_volume_profiles
+Retrieve information of an existing IBM Cloud VSI. For more information, about the volumes and profiles, see [block storage profiles](https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles).
 
-Import the details of an existing IBM Cloud virtual server volume profiles as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-
-## Example Usage
+## Example usage
 
 ```terraform
 
@@ -20,11 +18,12 @@ data "ibm_is_volume_profiles" "volprofiles"{
 
 ```
 
-## Attribute Reference
+## Attribute reference
+You can access the following attribute references after your data source is created. 
 
-In addition to all arguments above, the following attributes are exported:
+- `profiles` - (List)  Lists all server volume profiles in the region.
 
-* `profiles` - List of all server volume profiles in the region.
-  * `name` - The name for this virtual server volume profile.
-  * `family` - The family of the virtual server volume profile.
+  Nested scheme for `profiles`:
+	- `name` - (String) The name of the virtual server volume profile.
+	- `family` - (String) The family of the virtual server volume profile.
 

@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,6 +18,12 @@ func resourceIBMISInstanceGroupManager() *schema.Resource {
 		Update:   resourceIBMISInstanceGroupManagerUpdate,
 		Delete:   resourceIBMISInstanceGroupManagerDelete,
 		Importer: &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 
@@ -245,7 +252,7 @@ func resourceIBMISInstanceGroupManagerCreate(d *schema.ResourceData, meta interf
 			InstanceGroupManagerPrototype: &instanceGroupManagerPrototype,
 		}
 
-		_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
+		_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutCreate))
 		if healthError != nil {
 			return healthError
 		}
@@ -431,7 +438,7 @@ func resourceIBMISInstanceGroupManagerDelete(d *schema.ResourceData, meta interf
 		InstanceGroupID: &instanceGroupID,
 	}
 
-	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
+	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutDelete))
 	if healthError != nil {
 		return healthError
 	}

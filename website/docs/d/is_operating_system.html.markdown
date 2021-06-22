@@ -6,12 +6,10 @@ description: |-
   Manages IBM Operating System.
 ---
 
-# ibm\_is_operating_system
+# ibm_is_operating_system
+Retrieve information of an existing Operating System as a read only data source. For more information, about supported Operating System, see [Images](https://cloud.ibm.com/docs/vpc?topic=vpc-about-images).
 
-Provides a Operating System datasource. This allows to fetch an existing operating system details.
-
-
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_is_operating_system" "testacc_dsos"{
@@ -20,22 +18,20 @@ data "ibm_is_operating_system" "testacc_dsos"{
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `name` - (Required, String) The global unique name of an operating system.
 
-* `name` - (Required, string) The globally unique name for this operating system.
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The globally unique name for this operating system.
-* `architecture` - The operating system architecture.
-* `dedicated_host_only` - Images with this operating system can only be used on dedicated hosts or dedicated host groups.
-* `display_name` - A unique, display-friendly name for the operating system.
-* `family` - The name of the software family this operating system belongs to.
-* `href` - The URL for this operating system.
-* `name` - The globally unique name for this operating system.
-* `vendor` - The vendor of the operating system.
-* `version` - The major release version of this operating system.
+- `architecture` - (String) The Operating System architecture.
+- `dedicated_host_only` - (String) Images with the Operating System can be used on dedicated hosts or dedicated host groups.
+- `display_name` - (String) A unique, user friendly name for the Operating System.
+- `family` - (String) The name of the software family the Operating System belongs to.
+- `href` - (String) The URL of an Operating System.
+- `id` - (String) The globally unique name of an Operating System.
+- `name` - (String) The global unique name of an Operating System.
+- `vendor` - (String) The vendor of the Operating System.
+- `version` - (String) The major release version of an Operating System.

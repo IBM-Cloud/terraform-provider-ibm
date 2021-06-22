@@ -6,15 +6,13 @@ description: |-
   Manages resource tags.
 ---
 
-# ibm\resource_tag
+# ibm_resource_tag
 
 Create, update, or delete [IBM Cloud resource tags](https://cloud.ibm.com/apidocs/tagging).
-Add tags to a resource.
 
 
-## Example Usage
-
-###  Attach resource tags
+## Example usage
+The following example enables you to attach resource tags
 
 ```terraform
 data "ibm_satellite_location" "location" {
@@ -28,41 +26,49 @@ resource "ibm_resource_tag" "tag" {
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource.
 
-The following arguments are supported:
-
-* `resource_id` - (Required, string) CRN of the resource on which the tags should be attached.
-* `resource_type` - (Optional, string) Resource type on which the tags should be attached.
-* `tag_type` - (Optional, string) Type of the tag. Only allowed values are: user, or service or access (default value : user).
-* `tags` - (Required, array of strings) List of tags associated with resource instance.
+- `resource_id` - (Required, String) The CRN of the resource on which the tags is be attached.
+- `resource_type` - (Optional, String) The resource type on which the tags should be attached.
+- `tag_type` - (Optional, String) Type of the tag. Supported values are: `user`, `service`, or `access`. The default value is user.
+- `tags` - (Required, Array of strings) List of tags associated with resource instance.
 
 ## Attributes Reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the resource tag.
-* `acccount_id` - The ID of the account that owns the resources to be tagged (required if tag-type is set to service).
+- `id` - (String) The unique identifier of the resource tag.
+- `acccount_id` - (String) The ID of an account that owns the resources to be tagged (required if tag-type is set to service).
 
 
 ## Import
 
-`ibm_resource_tag` can be imported using the resource crn.
+The `ibm_resource_tag` resource can be imported by using the resource CRN.
 
-Example:
+**Syntax**
 
 ```
 $ terraform import ibm_resource_tag.tag resource_id
+```
 
+**Example**
+
+```
 $ terraform import ibm_resource_tag.tag  crn:v1:bluemix:public:satellite:us-east:a/ab3ed67929c2a81285fbb5f9eb22800a:c1ga7h9w0angomd44654::
 
 ```
 
 Example for importing classic infrastructure tags:
 
+**Syntax**
+
 ```
 $ terraform import ibm_resource_tag.tag resource_id/resource_type
+```
 
+**Example**
+
+```
 $ terraform import ibm_resource_tag.tag  118398132/SoftLayer_Virtual_Guest
 
 ```

@@ -3,15 +3,13 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : Subnets"
 description: |-
-  Manages IBM Cloud Infrastructure Subnets.
+  Manages IBM Cloud infrastructure subnets.
 ---
 
-# ibm\_is_subnets
+# ibm_is_subnets
+Retrieve information about of an existing VPC subnets in an IBM Cloud account. For more information, about infrastructure subnets, see [attaching subnets to a routing table](https://cloud.ibm.com/docs/vpc?topic=vpc-attach-subnets-routing-table).
 
-Import the details of an existing IBM Cloud Infrastructure subnets as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-
-## Example Usage
+## Example usage
 
 ```terraform
 
@@ -19,22 +17,22 @@ data "ibm_is_subnets" "ds_subnets" {
 }
 
 ```
+## Attribute reference
+You can access the following attribute references after your data source is created. 
 
-## Attribute Reference
+- `subnets` - (List) A list of subnets in the IBM Cloud infrastructure.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `subnets` - List of all subnets in the IBM Cloud Infrastructure.
-  * `name` - The name for this subnet.
-  * `id` - The unique identifier for this subnet.
-  * `ipv4_cidr_block` - The IPv4 CIDR block for this subnet.
-  * `ipv6_cidr_block` - The IPv6 CIDR block for this subnet when used.
-  * `status` - The status of this subnet.
-  * `crn` - The CRN for this image.
-  * `available_ipv4_address_count` - Amount of addresses available within this subnet.
-  * `total_ipv4_address_count` - Amount of addresses used within this subnet.
-  * `network_acl` - Security group attached to this subnet.
-  * `public_gateway` - Public gateway attached to this subnet.
-  * `resource_group` - Resource group where this subnet is created.
-  * `vpc` - VPC where this subnet is created.
-  * `zone` - Zone where this subnet is created.
+  Nested scheme for `subnets`:
+    - `available_ipv4_address_count`- (Integer) The number of IPv4 addresses that are available in the subnet.
+	- `crn` - (String) The CRN of the subnet.
+	- `id` - (String) The ID of the subnet.
+	- `ipv4_cidr_block` - (String) The IPv4 CIDR block of this subnet.
+	- `ipv6_cidr_block` - (String) The IPv6 CIDR block of this subnet.
+	- `name` - (String) The name of the subnet.
+	- `network_acl` - (String) The access control list (ACL) that is attached to the subnet.
+    - `public_gateway`- (Bool) If set to **true**, a public gateway is attached to the subnet. If set to **false**, no public gateway for this subnet exists.
+	- `resource_group` - (String) The resource group that the subnet belongs to.
+    - `total_ipv4_address_count`- (Integer) The total number of IPv4 addresses in the subnet.
+    - `status` - (String) The status of the subnet.
+	- `vpc` - (String) The ID of the VPC that this subnet belongs to.
+	- `zone` - (String) The zone where the subnet was created.

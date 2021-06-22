@@ -95,7 +95,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 ## Argument reference
 Review the argument references that you can specify for your resource.
 
-- `roles` - (Required, list) The comma separated list of roles.
+- `roles` - (Required, list) The comma separated list of roles. For more information, about supported service specific roles, see  [IAM roles and actions](https://cloud.ibm.com/docs/account?topic=account-iam-service-roles-actions)
 - `source_service_account` - (Optional, Forces new resource, string) The account GUID of source service.
 - `source_service_name` - (Required, Forces new resource, string) The source service name.
 - `target_service_name` - (Required, Forces new resource, string) The target service name.

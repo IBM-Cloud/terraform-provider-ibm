@@ -3,53 +3,60 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : load balancer"
 description: |-
-  Manages IBM load balancer.
+  Manages IBM load balancers.
 ---
 
-# ibm\_is_lbs
+# ibm_is_lbs
+Retrieve information of an existing IBM VPC load balancers as a read-only data source. For more information, about VPC load balancer, see [load balancers for VPC overview](https://cloud.ibm.com/docs/vpc?topic=vpc-nlb-vs-elb).
 
-Import the details of existing IBM VPC Load Balancers as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_is_lbs" "ds_lbs" {
  }
 ```
 
-## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
+Review the attribute references that you can access after you retrieve your data source. 
 
-* `load_balancers` - Collection of load balancers
-  * `name` -  Name of the loadbalancer.
-  * `subnets` - The subnets this load balancer is part of.
-    * `crn` - The CRN for this subnet.
-    * `id` - The unique identifier for this subnet.
-    * `href` - The URL for this subnet.
-    * `name` - The user-defined name for this subnet.
-  * `listeners` - The listeners of this load balancer.
-    * `id` - The unique identifier for this load balancer listener.
-    * `href` - The listener's canonical URL.
-  * `pools` - The pools of this load balancer.
-    * `href` - The pool's canonical URL.
-    * `id` - The unique identifier for this load balancer pool.
-    * `name` - The user-defined name for this load balancer pool.
-  * `profile` - The profile to use for this load balancer.
-    * `family` - The product family this load balancer profile belongs to.
-    * `href` - The URL for this load balancer profile
-    * `name` - The name for this load balancer profile
-  * `type` - The type of the load balancer.
-  * `resource_group` - The resource group where the load balancer is created.
-  * `tags` - Tags associated with the load balancer.
-  * `id` - The unique identifier of the load balancer.
-  * `public_ips` - The public IP addresses assigned to this load balancer.
-  * `private_ips` - The private IP addresses assigned to this load balancer.
-  * `status` - The status of load balancer.
-  * `operating_status` - The operating status of this load balancer.
-  * `hostname` - Fully qualified domain name assigned to this load balancer.
-  * `crn` - The load balancer's CRN.
-  * `created_at` - The date and time that this load balancer was created.
-  * `provisioning_status` - The provisioning status of this load balancer.Possible values: [active,create_pending,delete_pending,failed,maintenance_pending,update_pending]
+- `load_balancers` - (List) The Collection of load balancers.
 
+  Nested scheme for `load_balancers`:
+	- `id` - (String) The unique identifier of the load balancer.
+	- `created_at` - (String) The date and time this load balancer was created.
+	- `crn` - (String) The load balancer's CRN.
+	- `name` - (String) Name of the load balancer.
+	- `subnets` - (List) The subnets this load balancer is part of.
+
+      Nested scheme for `subnets`:
+	  - `crn` - (String) The CRN for the subnet.
+	  - `id` - (String) The unique identifier for this subnet.
+	  - `href` - (String) The URL for this subnet.
+	  - `name` - (String) The user-defined name for this subnet.
+	- `hostname` - (String) The Fully qualified domain name assigned to this load balancer.
+	- `listeners` - (List) The listeners of this load balancer.
+
+	  Nested scheme for `listeners`:
+	  - `id` - (String) The unique identifier for this load balancer listener.
+	  - `href` - (String) The listener's canonical URL.
+	- `operating_status` - (String) The operating status of this load balancer.
+	- `pools` - (List) The pools of this load balancer.
+
+	  Nested scheme for `pools`:
+	  - `href` - (String) The pool's canonical URL.
+	  - `id` - (String) The unique identifier for this load balancer pool.
+	  - `name` - (String) The user-defined name for this load balancer pool.
+	- `profile` - (List) The profile to use for this load balancer.
+
+	  Nested scheme for `profile`:
+	  - `family` - (String) The product family this load balancer profile belongs to.
+	  - `href` - (String) The URL for this load balancer profile.
+	  - `name` - (String) The name for this load balancer profile.
+	- `private_ips` - (String) The private IP addresses assigned to this load balancer.
+	- `provisioning_status` - (String) The provisioning status of this load balancer. Possible values are: **active**, **create_pending**, **delete_pending**, **failed**, **maintenance_pending**, **update_pending**-
+	- `public_ips` - (String) The public IP addresses assigned to this load balancer.
+	- `resource_group` - (String) The resource group where the load balancer is created.
+	- `status` - (String) The status of the load balancers.
+	- `type` - (String) The type of the load balancer.
+	- `tags` - (String) Tags associated with the load balancer.

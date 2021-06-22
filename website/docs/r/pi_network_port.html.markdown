@@ -4,14 +4,13 @@ subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_network_port"
 description: |-
-  Manages an Network Port  in the Power Virtual Server Cloud. A network port is equivalent to reserving an ip in the subnet
-  which can be used . When the port is created the status will be "DOWN".
-  This network port however is not attached to the instance. 
+  Manages an Network Port in the Power Virtual Server Cloud. A network port is equivalent to reserving an IP in the subnet.
+  When the port is created the status will be "DOWN". This network port however is not attached to an instance. 
 ---
 
-# ibm\_pi_network_port
-
-Provides an network_port resource. This allows network_port to be created or updated in the Power Virtual Server Cloud.
+# ibm_pi_network_port
+Creates or updates network port in the Power Virtual Server Cloud. For more information, about network in IBM power virutal server, see [adding or removing a public network
+](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-modifying-server#adding-removing-network)..
 
 ## Example Usage
 
@@ -25,46 +24,51 @@ resource "ibm_pi_network_port" "test-network-port" {
 }
 ```
 
-## Notes:
+**Note**
 * Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 * If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   * `region` - `lon`
   * `zone` - `lon04`
-  Example Usage:
+  
+  Example usage:
+
   ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"
     }
   ```
+  
 ## Timeouts
 
-ibm_pi_network_port provides the following [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_pi_network_port` provides the following [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
-* `create` - (Default 60 minutes) Used for creating a network_port.
-* `delete` - (Default 60 minutes) Used for deleting a network_port.
+- **create** - (Default 60 minutes) Used for creating a network_port.
+- **delete** - (Default 60 minutes) Used for deleting a network_port.
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `pi_network_port_description` - (Optional, String) The description for the Network Port.
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account. 
+- `pi_instance_name` - (Required, String) The name of the VM.
 
-* `pi_network_name` - (Required, string) The name of the PI Network.
-* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
-* `pi_network_port_description` - (Optional, string) The description for the Network Port
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
+- `id` - (String) The unique identifier of the instance. The ID is composed of <power_network_port_id>/<id>.
+- `ipaddress` - (String) The unique identifier of the instance.
+- `macaddress` - (String) The MAC address of the port.
+- `portid` - (String) The ID of the port.
+- `public_ip` - (String) The public IP associated with the port.
+- `status` - (String) The status of the port.
 
-* `id` - The unique identifier of the instance.The id is composed of \<power_network_port_id\>/\<id\>/<pi_network_name>.
-* `ipaddress` - The unique identifier of the instance.
-* `macaddress` - The macaddress of the port
-* `status` - The status of the port
-* `portid` - The id of the port .
-* `public_ip` - The public ip associated with the port
 
 ## Import
 
-ibm_pi_network_port can be imported using `power_instance_id`, `port_id` and `pi_network_name` eg
+The `ibm_pi_network_port` resource can be imported by using `power_instance_id`, `port_id` and `pi_network_name`.
+
+**Example**
 
 ```
 $ terraform import ibm_pi_network_port.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb/network-name

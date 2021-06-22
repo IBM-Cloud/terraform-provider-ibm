@@ -198,7 +198,7 @@ Review the argument references that you can specify for your resource.
 
 - `access_group_id` - (Required, Forces new resource, String) The ID of the access group.
 - `account_management` - (Optional, Bool) Gives access to all account management services if set to **true**. Default value **false**. If you set this option, do not specify `resources` at the same time. **Note** Conflicts with `resources` and `resource_attributes`.
-- `roles` - (Required, List)  A comma separated list of roles. Valid roles are `Writer`, `Reader`, `Manager`, `Administrator`, `Operator`, `Viewer`, and `Editor`.
+- `roles` - (Required, List)  A comma separated list of roles. Valid roles are `Writer`, `Reader`, `Manager`, `Administrator`, `Operator`, `Viewer`, and `Editor`. For more information, about supported service specific roles, see  [IAM roles and actions](https://cloud.ibm.com/docs/account?topic=account-iam-service-roles-actions)
 - `resources`  (List , Optional) A nested block describes the resource of this policy.
 
   Nested scheme for `resources`:
