@@ -30,9 +30,10 @@ data "ibm_is_instances" "ds_instances1" {
 ## Argument reference
 The input parameters that you need to specify for the data source. 
 
+- `resource_group` - (optional, string) Resource Group ID to filter the instances attached to it.
 - `vpc` - (Optional, String) The VPC ID to filter the instances attached.
+- `vpc_crn` - (optional, string) VPC CRN to filter the instances attached to it.
 - `vpc_name` - (Optional, String) The name of the VPC to filter the instances attached.
-
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.

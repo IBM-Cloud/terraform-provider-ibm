@@ -24,15 +24,28 @@ func dataSourceIBMISInstances() *schema.Resource {
 			"vpc_name": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{"vpc"},
+				ConflictsWith: []string{"vpc", "vpc_crn"},
 				Description:   "Name of the vpc to filter the instances attached to it",
 			},
 
 			"vpc": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{"vpc_name"},
+				ConflictsWith: []string{"vpc_name", "vpc_crn"},
 				Description:   "VPC ID to filter the instances attached to it",
+			},
+
+			"vpc_crn": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"vpc_name", "vpc"},
+				Description:   "VPC CRN to filter the instances attached to it",
+			},
+
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Instance resource group",
 			},
 
 			isInstances: {
@@ -468,7 +481,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	var vpcName, vpcID string
+	var vpcName, vpcID, vpcCrn, resourceGroup string
 
 	if vpc, ok := d.GetOk("vpc_name"); ok {
 		vpcName = vpc.(string)
@@ -478,19 +491,35 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		vpcID = vpc.(string)
 	}
 
+	if vpccrn, ok := d.GetOk("vpc_crn"); ok {
+		vpcCrn = vpccrn.(string)
+	}
+
+	if rg, ok := d.GetOk("resource_group"); ok {
+		resourceGroup = rg.(string)
+	}
+
+	listInstancesOptions := &vpcv1.ListInstancesOptions{}
+
+	if vpcName != "" {
+		listInstancesOptions.VPCName = &vpcName
+	}
+	if vpcID != "" {
+		listInstancesOptions.VPCID = &vpcID
+	}
+	if resourceGroup != "" {
+		listInstancesOptions.ResourceGroupID = &resourceGroup
+	}
+	if vpcCrn != "" {
+		listInstancesOptions.VPCCRN = &vpcCrn
+	}
+
 	start := ""
 	allrecs := []vpcv1.Instance{}
 	for {
-		listInstancesOptions := &vpcv1.ListInstancesOptions{}
+
 		if start != "" {
 			listInstancesOptions.Start = &start
-		}
-
-		if vpcName != "" {
-			listInstancesOptions.VPCName = &vpcName
-		}
-		if vpcID != "" {
-			listInstancesOptions.VPCID = &vpcID
 		}
 
 		instances, response, err := sess.ListInstances(listInstancesOptions)
