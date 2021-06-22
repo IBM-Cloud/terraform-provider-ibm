@@ -4,18 +4,19 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: network_gateway_vlan_association"
 description: |-
-  Manages association and dis-association of VLAN to Gateway.
+  Manages association and dis-association of VLAN to gateway.
 ---
 
-# ibm\_network_gateway_vlan_association
+# ibm_network_gateway_vlan_association
+Create, update, and delete a VLAN with a network gateway. The VLANs can be disassociated or updated later to be bypassed or routed. For more information, about association of VLAN in gateway, see [viewing gateway appliance details](https://cloud.ibm.com/docs/gateway-appliance?topic=gateway-appliance-viewing-gateway-appliance-details).
 
-Provide a resource to associate a VLAN with a network gateway. The VLANs can be disassociated or updated later to be bypassed or routed.
+**Note**
 
-For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Network_Gateway_Vlan).
+For more information, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Network_Gateway_Vlan).
 
-For more information about getting started, see the [IBM Virtual Router Appliance docs](https://cloud.ibm.com/docs/infrastructure/virtual-router-appliance/getting-started.html#getting-started).
+For more information, about getting started, see the [IBM Virtual Router Appliance docs](https://cloud.ibm.com/docs/infrastructure/virtual-router-appliance/getting-started.html#getting-started).
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_network_gateway" "gateway" {
@@ -45,18 +46,14 @@ resource "ibm_network_gateway_vlan_association" "gateway_vlan_association" {
 
 
 ```
+## Argument reference 
+Review the argument references that you can specify for your resource.
 
-## Argument Reference
+- `bypass`-  (Optional, Bool) Indicates if the VLAN should be in bypass or routed mode. Default value is **true**.
+- `gateway_id` - (Required, Forces new resource, Integer) The ID of the network gateway.
+- `network_vlan_id` - (Required, Forces new resource, Integer) The ID of the network VLAN to associate with the network gateway.
 
-The following arguments are supported:
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-* `gateway_id` - (Required, Forces new resource, integer) The ID of the network gateway.
-* `network_vlan_id` - (Required, Forces new resource, integer) The ID of the network VLAN to associate with the network gateway.
-* `bypass` - (Optional, boolean) Indicates if the VLAN should be in bypass or routed mode. Default value: `true`. 
-
-
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the gateway/VLAN association.
+- `id`- (String) The unique identifier of the gateway/VLAN association.

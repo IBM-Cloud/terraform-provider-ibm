@@ -4,14 +4,14 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_rate_limit"
 description: |-
-  Provides a IBM CIS Rate Limit resource.
+  Provides a IBM CIS rate limit resource.
 ---
 
 # ibm_cis_rate_limit
+Create, update, or delete custom rate limits for an IBM Cloud Internet Services domain. For more information, about rate limits, see [Rate limiting](https://cloud.ibm.com/docs/cis?topic=cis-cis-rate-limiting).
 
-Provides a IBM CIS Ratelimiting resource. This resource is associated with an IBM Cloud Internet Services instance and a CIS Domain resource. It allows to create, update, delete custom ratelimits of a domain of a CIS instance
-
-## Example Usage
+## Example usage
+The following example shows how you can add a rate limit to an IBM Cloud Internet Services domain.
 
 ```terraform
 # Add a rate limit to the domain
@@ -48,48 +48,64 @@ resource "ibm_cis_rate_limit" "ratelimit" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `action`- (Required, List) A list of actions that you want to perform when incoming requests exceed the specified `threshold`.
 
-- `cis_id` - (Required,string) The ID of the CIS service instance
-- `domain_id` - (Required,string) The ID of the domain to add the Rate Limit rule.
-- `threshold` - (Required,int). The threshold that triggers the rate limit mitigations, combined with period. For example, threshold per period. Min value: 2, max value: 1000000.
-- `period` - (Required,int). The time, in seconds, to count matching traffic. If the count exceeds threshold within this period the action is performed. Min value:1, max value: 3600.
-- `match` - (Optional,list). Determines which traffic the rate limiting rule counts towards the threshold.
-  - `request` - (Optional,list). Matches HTTP requests.If not provided API ll default request to \* , [_ALL_], `_ALL_` respectively.
-    - `url` - (Optional,string). The URL pattern to match comprised of the host and path, for instance, example.org/path. Wildcards are expanded to match applicable traffic, query strings are not matched. Use \* for all traffic to your zone. Max length is 1024.
-    - `schemes` - (Optional,set(string)). HTTP Schemes, can be one [HTTPS], both [HTTP,HTTPS] or all [_ALL_]. This field is not required.
-    - `methods` - (Optional,set(string)). HTTP Methods, can be a subset [POST,PUT] or all [_ALL_]. This field is not required to create a rate limit rule. Valid values are `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `_ALL_`.
-  - `response` - (Optional,list). Matches HTTP responses before they are returned to the client . If this is defined, then the entire counting of traffic occurs at this stage.
-    - `status` - (Optional,set(int)). HTTP Status codes, can be one [403], many [401,403] or indicate all by not providing this value. This field is not required. Min value: 100, max value: 999.
-    - `origin_traffic` - (Optional,bool). Orrigin traffic.
-    - `header` - (Optional,list). Array of response headers to match. If a response does not meet the header criteria then the request is not counted towards the rate limiting rule. The header matching criteria includes following properties.
-      - `name` - (Optional,string). The name of the response header to match.
-      - `op` - (Optional,string). The operator when matching, eq means equals, ne means not equals. Valid values are [`eq`] and [`ne`].
-      - `value` - (Optional,string). WThe value of the header, which is exactly matched.
-- `action` - (Required,list). The action performed when the threshold of matched traffic within the period defined is exceeded.
-  - `mode` - (Required,string). The type of action performed. Valid values are: [`simulate`], [`ban`], [`challenge`], [`js_challenge`].
-  - `timeout` - (Optional,int). The time, in seconds, as an integer to perform the mitigation action. Timeout be the same or greater than the period. This field is valid only when mode is [`simulate`] or [`ban`]. Min value: 10, max value: 86400.
-  - `response` - (Optional,list). Custom content-type and body to return. This overrides the custom error for the zone. Omission results in the default HTML error page. This field is valid only when mode is [`simulate`] or [`ban`].
-    - `content_type` - (Optional,string). The content-type of the body, which must be one of the following: [`text/plain`], [`text/xml`], [`application/json`].
-    - `body` - (Optional,string). The body to return. The content here must conform to the `content_type`. Max length is 10240.
-- `disabled` - (Optional,bool). Whether this rate limiting rule is currently disabled.
-- `description` - (Optional,string). A note that you can use to describe the reason for a rate limiting rule.
-- `correlate` - (Optional,list). Whether to enable NAT based rate limiting.
-  - `by` - (Optional,string). Valid values: [`nat`].
-- `bypass` - (Optional,list). Criteria that allows the rate limit to be bypassed. For example, to express that you shouldn’t apply a rate limit to a given set of URLs.
-  - `name` - (Optional,string). Valid values is [`url`].
-  - `value` - (Optional,string). The url to bypass.
+  Nested scheme for `action`:
+  - `mode` - (Required, String) The type of action that you want to perform. Supported values are `simulate`, `ban`, `challenge`, or `js_challenge`. For more information, about each type, see [Configure response](https://cloud.ibm.com/docs/cis?topic=cis-cis-rate-limiting#rate-limiting-configure-response).
+  - `response`- (Optional, List) A list of information that you want to return to the client, such as the `content-type` and specific body information. The information provided in this parameter overrides the default HTML error page that is returned to the client. You can use this option only for actions of type `simulate` or `ban`.
 
-**NOTE:** To create a custom rate limit rule the CIS instance should be a `enterprise` plan
+    Nested scheme for `response`:
+    - `content_type` - (Optional, String) The `content-type` of the body that you want to return. Supported values are `text/plain`, `text/xml`, and `application/json`.
+    - `body` - (Optional, String) The body of the response that you want to return to the client. The information that you provide must match the `action.response.content_type` that you specified. The value that you enter can have a maximum length of 1024.
+  - `timeout` - (Optional, Integer) The time to wait in seconds before the action is performed. The timeout must be equal or greater than the `period` and can be provided only for actions of type `simulate` or `ban`. The value that you enter must be between 10 and 86400.
+- `bypass` - (Optional, List) A list of key-value pairs that, when matched, allow the rate limiting rule to be ignored. For example, use this option if you want to ignore the rate limiting for certain URLs.
+	
+  Nested scheme for `bypass`:
+  - `name` - (Optional, String) The name of the key that you want to apply. Supported values are `url`.
+  - `value` - (Optional, String) The value of the key that you want to match. When `name` is set to `url`, `value` must be set to the URL that you want to exclude from the rate limiting rule.
+- `correlate` - (Optional, List) To enable NAT-based rate limiting.
+   
+   Nested scheme for `correlate`:
+   - `by` - (Optional, String) Enter `nat` to enable NAT-based rate limiting.
+- `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance.
+- `disabled` - (Optional, Bool) Set to **true** to disable rate limiting for a domain and **false** to enable rate limiting.
+- `description` - (Optional, String) Enter a description for your rate limiting rule.
+- `domain_id` - (Required, String) The ID of the domain where you want to add a rate limit.
+- `match`- (Optional, List) A list of characteristics that incoming network traffic must match the `threshold` count. 
 
-## Attributes Reference
+  Nested scheme for `match`:
+  - `request`- (Optional, List) A list of characteristics that the incoming request match the `threshold` count. If this list is not provided, all incoming requests are matched the count of the `threshold`.
 
-In addition to all arguments above, the following attributes are exported:
+    Nested scheme for `request`:
+    - `url` - (Optional, String) The URL that the request uses. Wildcard domains are expanded to match applicable traffic, query strings are not matched. You can use `*` to apply the rule to all URLs. The maximum length of this value can be 1024.
+    - `schemes` - (Optional, Set of strings) The scheme of the request that determines the protocol that you want. Supported values are `HTTPS`, `HTTP,HTTPS`, and `ALL`.
+    - `methods` - (Optional, Set of strings) The HTTP methods that the incoming request that match the `threshold` count. Supported values are `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, and `ALL`. You can also combine multiple methods and separate them with a comma. For example `POST,PUT`. 
+- `response`- (Optional, List) A list of HTTP responses that outgoing packets must match before they can be returned to the client. If an incoming request matches the request criteria, but the response does not match the response criteria, then the request packet is not counted with the `threshold`. 
 
-- `id` - The record ID. It is a combination of <`rule_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
-- `rule_id` - The Rate Limit Rule ID.
+  Nested scheme for `response`:
+  - `header`- (Optional, List) A list of HTTP response headers that the response packet must match so that the original request is matched with the `threshold` count.
+
+    Nested scheme for `header`:
+	  - `name` - (Optional, String) The name of the HTTP response header.
+	  - `op` - (Optional, String) The operator that you want to apply to your HTTP response header. Supported values are `eq` (equals) and `ne` (not equals).
+	  - `value` - (Optional, String) The value that the HTTP response header must match.
+   - `origin_traffic` - (Optional, Bool). The origin traffic.
+   - `status`- (Optional, Set(Integer))The HTTP status that the response must have so that the request is matched with the `threshold` count. You can specify one (`403`) or multiple (`401,403`) HTTP response codes. The value that you enter must be between 100 and 999.
+- `period`- (Required, Integer) The period of time in seconds where incoming requests to a domain are counted. If the number of requests exceeds the `threshold`, then connections to the domain are refused. The `period` value must be between 1 and 3600.    
+- `threshold`- (Required, Integer) The number of requests received within a specific time period (`period`) before connections to the domain are refused. The threshold value must be between 2 and 1000000.
+
+**Note**
+
+To create a custom rate limit rule the CIS instance should be a `enterprise` plan
+
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `id` - (String) The ID of the rate limiting rule in the format `<rule_ID>:<domain_ID>:<cis_ID>`. .
+- `rule_id` - (String) The rate limit rule ID.
 
 ## Import
 
@@ -103,8 +119,14 @@ The Domain ID and CRN will be located on the **Overview** page of the Internet S
 
 - **Rate Limit rule ID** is a 32 digit character string of the form: `489d96f0da6ed76251b475971b097205c`.
 
+**Syntax**
+
 ```
 $ terraform import ibm_cis_rate_limit.ratelimit <rule_id>:<domain-id>:<crn>
+```
 
+**Example**
+
+```
 $ terraform import ibm_cis_rate_limit.ratelimit 48996f0da6ed76251b475971b097205c:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
 ```

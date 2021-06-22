@@ -6,9 +6,8 @@ description: |-
   Manages IBM Cloud virtual server volume profile.
 ---
 
-# ibm\_is_volume_profile
-
-Import the details of an existing IBM Cloud virtual server volume profile as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+# ibm_is_volume_profile
+Retrieve information of an existing IBM Cloud virtual server volume profile as a read-only data source. For more information, about virtual server volume profile, see [restoring a volume from a snapshot](https://cloud.ibm.com/docs/vpc?topic=vpc-snapshots-vpc-restore).
 
 
 ## Example Usage
@@ -21,14 +20,12 @@ data "ibm_is_volume_profile" "volprofile"{
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `name` - (Required, String) The name for the virtual server volume profile.
 
-* `name` - (Required, string) The name for this virtual server volume profile.
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `family` - The family of the virtual server volume profile.
+- `family` - (String) The family of the virtual server volume profile.

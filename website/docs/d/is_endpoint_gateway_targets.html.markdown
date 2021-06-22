@@ -6,11 +6,10 @@ description: |-
   Fetches endpoint gateway targets information.
 ---
 
-# ibm\is_endpoint_gateway_targets
+# ibm_is_endpoint_gateway_targets
+Retrieve an information of an endpoint gateway targets on IBM Cloud as a read-only data source. For more information, about VPC endpoint gateway target, see [creating an endpoint gateway](https://cloud.ibm.com/docs/vpc?topic=vpc-ordering-endpoint-gateway).
 
-Import the details of endpoint gateway targets on IBM Cloud as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-## Example Usage
+## Example usage
 
 ```terraform
 
@@ -19,13 +18,13 @@ Import the details of endpoint gateway targets on IBM Cloud as a read-only data 
 
 ```
 
-## Attribute Reference
+## Attribute reference
+You can access the following attribute references after your data source is created. 
 
-The following attributes are exported:
-* `crn` - The crn for this specific object.	
-* `name` - Display name in the requested language.
-* `parent` - The parent for this specific object. 
-* `endpoint_type` - Data endpoint type of this offering.
-* `full_qualified_domain_names` - Fully qualified domain names.
-* `resource_type` - Resource type of this offering. 
-* `service_location` - Service location of this offering.
+- `crn` - (String) The CRN for this specific object.	
+- `endpoint_type` - (String) The data endpoint type of this offering.
+- `full_qualified_domain_names` - (String) The fully qualified domain names.
+- `name` - (String) The display name in the requested language.
+- `parent` - (String) The parent for this specific object. 
+- `resource_type` - (String) The resource type of this offering. 
+- `service_location` - (String) The service location of this offering.

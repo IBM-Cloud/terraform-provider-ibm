@@ -77,16 +77,13 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/hpcs"
 	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
-	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/catalog"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/controllerv2"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
-	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/authentication"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
@@ -198,11 +195,9 @@ type ClientSession interface {
 	ICDAPI() (icdv4.ICDServiceAPI, error)
 	IAMAPI() (iamv1.IAMServiceAPI, error)
 	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
-	IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error)
 	IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
 	ResourceCatalogAPI() (catalog.ResourceCatalogAPI, error)
-	ResourceManagementAPI() (management.ResourceManagementAPI, error)
 	ResourceManagementAPIv2() (managementv2.ResourceManagementAPIv2, error)
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
@@ -280,9 +275,6 @@ type clientSession struct {
 	containerRegistryClientErr error
 	containerRegistryClient    *containerregistryv1.ContainerRegistryV1
 
-	stxConfigErr  error
-	stxServiceAPI schematics.SchematicsServiceAPI
-
 	certManagementErr error
 	certManagementAPI certificatemanager.CertificateManagerServiceAPI
 
@@ -304,9 +296,6 @@ type clientSession struct {
 	globalTaggingConfigErrV1  error
 	globalTaggingServiceAPIV1 globaltaggingv1.GlobalTaggingV1
 
-	iamUUMConfigErr  error
-	iamUUMServiceAPI iamuumv1.IAMUUMServiceAPI
-
 	iamUUMConfigErrV2  error
 	iamUUMServiceAPIV2 iamuumv2.IAMUUMServiceAPIv2
 
@@ -316,9 +305,6 @@ type clientSession struct {
 	userManagementErr error
 	userManagementAPI usermanagementv2.UserManagementAPI
 
-	enterprise    *enterprisemanagementv1.EnterpriseManagementV1
-	enterpriseErr error
-
 	icdConfigErr  error
 	icdServiceAPI icdv4.ICDServiceAPI
 
@@ -327,9 +313,6 @@ type clientSession struct {
 
 	resourceControllerConfigErrv2  error
 	resourceControllerServiceAPIv2 controllerv2.ResourceControllerAPIV2
-
-	resourceManagementConfigErr  error
-	resourceManagementServiceAPI management.ResourceManagementAPI
 
 	resourceManagementConfigErrv2  error
 	resourceManagementServiceAPIv2 managementv2.ResourceManagementAPIv2
@@ -591,11 +574,6 @@ func (sess clientSession) IAMPolicyManagementV1API() (*iampolicymanagement.IamPo
 	return sess.iamPolicyManagementAPI, sess.iamPolicyManagementErr
 }
 
-// IAMUUMAPI provides IAM UUM APIs ...
-func (sess clientSession) IAMUUMAPI() (iamuumv1.IAMUUMServiceAPI, error) {
-	return sess.iamUUMServiceAPI, sess.iamUUMConfigErr
-}
-
 // IAMUUMAPIV2 provides IAM UUM APIs ...
 func (sess clientSession) IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error) {
 	return sess.iamUUMServiceAPIV2, sess.iamUUMConfigErrV2
@@ -614,11 +592,6 @@ func (sess clientSession) MccpAPI() (mccpv2.MccpServiceAPI, error) {
 // ResourceCatalogAPI ...
 func (sess clientSession) ResourceCatalogAPI() (catalog.ResourceCatalogAPI, error) {
 	return sess.resourceCatalogServiceAPI, sess.resourceCatalogConfigErr
-}
-
-// ResourceManagementAPI ...
-func (sess clientSession) ResourceManagementAPI() (management.ResourceManagementAPI, error) {
-	return sess.resourceManagementServiceAPI, sess.resourceManagementConfigErr
 }
 
 // ResourceManagementAPIv2 ...
@@ -938,22 +911,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.pushServiceClientErr = errEmptyBluemixCredentials
 		session.appConfigurationClientErr = errEmptyBluemixCredentials
 		session.kmsErr = errEmptyBluemixCredentials
-		session.stxConfigErr = errEmptyBluemixCredentials
 		session.cfConfigErr = errEmptyBluemixCredentials
 		session.cisConfigErr = errEmptyBluemixCredentials
 		session.functionConfigErr = errEmptyBluemixCredentials
 		session.globalSearchConfigErr = errEmptyBluemixCredentials
 		session.globalTaggingConfigErr = errEmptyBluemixCredentials
+		session.globalTaggingConfigErrV1 = errEmptyBluemixCredentials
 		session.hpcsEndpointErr = errEmptyBluemixCredentials
 		session.iamConfigErr = errEmptyBluemixCredentials
-		session.iamUUMConfigErr = errEmptyBluemixCredentials
 		session.iamUUMConfigErrV2 = errEmptyBluemixCredentials
 		session.icdConfigErr = errEmptyBluemixCredentials
 		session.resourceCatalogConfigErr = errEmptyBluemixCredentials
-		session.resourceManagementConfigErr = errEmptyBluemixCredentials
+		session.resourceManagerErr = errEmptyBluemixCredentials
 		session.resourceManagementConfigErrv2 = errEmptyBluemixCredentials
 		session.resourceControllerConfigErr = errEmptyBluemixCredentials
 		session.resourceControllerConfigErrv2 = errEmptyBluemixCredentials
+		session.enterpriseManagementClientErr = errEmptyBluemixCredentials
+		session.resourceControllerErr = errEmptyBluemixCredentials
+		session.catalogManagementClientErr = errEmptyBluemixCredentials
 		session.powerConfigErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
@@ -992,6 +967,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisWAFRuleErr = errEmptyBluemixCredentials
 		session.iamIdentityErr = errEmptyBluemixCredentials
 		session.secretsManagerClientErr = errEmptyBluemixCredentials
+		session.schematicsClientErr = errEmptyBluemixCredentials
+		session.satelliteClientErr = errEmptyBluemixCredentials
+		session.iamPolicyManagementErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1380,7 +1358,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	globalTaggingAPIV1, err := globaltaggingv1.NewGlobalTaggingV1(globalTaggingV1Options)
 	if err != nil {
-		session.globalTaggingConfigErr = fmt.Errorf("Error occured while configuring Global Tagging: %q", err)
+		session.globalTaggingConfigErrV1 = fmt.Errorf("Error occured while configuring Global Tagging: %q", err)
 	}
 	if globalTaggingAPIV1 != nil {
 		session.globalTaggingServiceAPIV1 = *globalTaggingAPIV1
@@ -1392,12 +1370,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAM Service: %q", err)
 	}
 	session.iamServiceAPI = iam
-
-	iamuum, err := iamuumv1.New(sess.BluemixSession)
-	if err != nil {
-		session.iamUUMConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAMUUM Service: %q", err)
-	}
-	session.iamUUMServiceAPI = iamuum
 
 	iamuumv2, err := iamuumv2.New(sess.BluemixSession)
 	if err != nil {
@@ -1416,12 +1388,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceCatalogConfigErr = fmt.Errorf("Error occured while configuring Resource Catalog service: %q", err)
 	}
 	session.resourceCatalogServiceAPI = resourceCatalogAPI
-
-	resourceManagementAPI, err := management.New(sess.BluemixSession)
-	if err != nil {
-		session.resourceManagementConfigErr = fmt.Errorf("Error occured while configuring Resource Management service: %q", err)
-	}
-	session.resourceManagementServiceAPI = resourceManagementAPI
 
 	resourceManagementAPIv2, err := managementv2.New(sess.BluemixSession)
 	if err != nil {
@@ -1979,7 +1945,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	iamIdentityClient, err := iamidentity.NewIamIdentityV1(iamIdentityOptions)
 	if err != nil {
-		session.vpcErr = fmt.Errorf("Error occured while configuring IAM Identity service: %q", err)
+		session.iamIdentityErr = fmt.Errorf("Error occured while configuring IAM Identity service: %q", err)
 	}
 	if iamIdentityClient != nil && iamIdentityClient.Service != nil {
 		iamIdentityClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -2000,7 +1966,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	iamPolicyManagementClient, err := iampolicymanagement.NewIamPolicyManagementV1(iamPolicyManagementOptions)
 	if err != nil {
-		session.vpcErr = fmt.Errorf("Error occured while configuring IAM Policy Management service: %q", err)
+		session.iamPolicyManagementErr = fmt.Errorf("Error occured while configuring IAM Policy Management service: %q", err)
 	}
 	if iamPolicyManagementClient != nil && iamPolicyManagementClient.Service != nil {
 		iamPolicyManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)

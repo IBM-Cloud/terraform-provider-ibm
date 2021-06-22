@@ -25,6 +25,12 @@ resource "ibm_cm_offering_instance" "cm_offering_instance" {
   cluster_all_namespaces = false
 }
 ```
+## Timeouts
+ibm_cm_offering_instance provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 4 minutes) Used for creating Instance.
+* `delete` - (Default 4 minutes) Used for deleting Instance.
+* `update` - (Default 4 minutes) Used for updating Instance.
 
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
@@ -34,7 +40,9 @@ Review the argument reference that you can specify for your resource.
 - `cluster_region` - (Required, String) The cluster region for example, `us-south`.
 - `cluster_namespaces`- (Required, List) The list of target namespaces to install into.
 - `cluster_all_namespaces`- (Required, Bool) Designate to install into all namespaces.
-- `kind_format` - (Required, String) The format an instance such as `helm`, `operator`, `ova`. **Note** Currently the only supported formate is `operator`.
+- `channel` - (Optional, String) Channel to target for the operator subscription. Required for operator bundles
+- `install_plan` - (Optional, String) Install plan for the subscription of the operator- can be either Automatic or Manual. Required for operator bundles
+- `kind_format` - (Required, String) The format an instance such as `helm`, `operator`, `operator-bundle`, `ova`. **Note** Currently the only supported formats are `operator` and `operator-bundle`.
 - `label` - (Required, String) The label for this instance.
 - `offering_id` - (Required, String) The offering ID an instance is created .
 - `version` - (Required, String) The version an instance was installed from (but not from the version ID).
@@ -46,5 +54,4 @@ In addition to all argument references list, you can access the following attrib
 - `crn` - (String) The platform CRN for an instance.
 - `id` - (String) The unique identifier of the `cm_offering_instance`.
 - `url` - (String) The URL reference to an object.
-- `_rev` - (String) The cloudant revision of this object
 - `schematics_workspace_id` - (String) The ID of the schematics workspace used to install this offering, if applicable

@@ -125,6 +125,8 @@ yum-config-manager --enable '*'
 yum repolist all
 yum install container-selinux -y
 				`)
+			} else {
+				lines[i] = "subscription-manager refresh\nyum update -y\n"
 			}
 		}
 	}

@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/go-openapi/strfmt"
@@ -19,6 +20,12 @@ func resourceIBMISInstanceGroupManagerAction() *schema.Resource {
 		Delete:   resourceIBMISInstanceGroupManagerActionDelete,
 		Exists:   resourceIBMISInstanceGroupManagerActionExists,
 		Importer: &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(5 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 
@@ -238,7 +245,7 @@ func resourceIBMISInstanceGroupManagerActionCreate(d *schema.ResourceData, meta 
 		instanceGroupManagerActionPrototype.Group = &instanceGroupManagerScheduledActionGroupPrototype
 	}
 
-	instanceGroupManagerScheduledActionByManagerManager := vpcv1.InstanceGroupManagerScheduledActionByManagerManager{}
+	instanceGroupManagerScheduledActionByManagerManager := vpcv1.InstanceGroupManagerScheduledActionManagerPrototype{}
 	if v, ok := d.GetOk("min_membership_count"); ok {
 		minmembershipCount := int64(v.(int))
 		instanceGroupManagerScheduledActionByManagerManager.MinMembershipCount = &minmembershipCount
@@ -256,6 +263,11 @@ func resourceIBMISInstanceGroupManagerActionCreate(d *schema.ResourceData, meta 
 	}
 
 	instanceGroupManagerActionOptions.InstanceGroupManagerActionPrototype = &instanceGroupManagerActionPrototype
+
+	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutCreate))
+	if healthError != nil {
+		return healthError
+	}
 
 	instanceGroupManagerActionIntf, response, err := sess.CreateInstanceGroupManagerAction(&instanceGroupManagerActionOptions)
 	if err != nil || instanceGroupManagerActionIntf == nil {
@@ -302,13 +314,13 @@ func resourceIBMISInstanceGroupManagerActionUpdate(d *schema.ResourceData, meta 
 
 	if d.HasChange("membership_count") {
 		membershipCount := int64(d.Get("membership_count").(int))
-		instanceGroupManagerScheduledActionGroupPatch := vpcv1.InstanceGroupManagerScheduledActionGroupPatch{}
+		instanceGroupManagerScheduledActionGroupPatch := vpcv1.InstanceGroupManagerActionGroupPatch{}
 		instanceGroupManagerScheduledActionGroupPatch.MembershipCount = &membershipCount
 		instanceGroupManagerActionPatchModel.Group = &instanceGroupManagerScheduledActionGroupPatch
 		changed = true
 	}
 
-	instanceGroupManagerScheduledActionByManagerPatchManager := vpcv1.InstanceGroupManagerScheduledActionByManagerPatchManager{}
+	instanceGroupManagerScheduledActionByManagerPatchManager := vpcv1.InstanceGroupManagerActionManagerPatch{}
 
 	if d.HasChange("min_membership_count") {
 		minmembershipCount := int64(d.Get("min_membership_count").(int))
@@ -344,6 +356,11 @@ func resourceIBMISInstanceGroupManagerActionUpdate(d *schema.ResourceData, meta 
 			return fmt.Errorf("error calling asPatch for instanceGroupManagerActionPatch: %s", err)
 		}
 		updateInstanceGroupManagerActionOptions.InstanceGroupManagerActionPatch = instanceGroupManagerActionPatch
+
+		_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
+		if healthError != nil {
+			return healthError
+		}
 		_, response, err := sess.UpdateInstanceGroupManagerAction(updateInstanceGroupManagerActionOptions)
 		if err != nil {
 			return fmt.Errorf("error updating InstanceGroup manager action: %s\n%s", err, response)
@@ -436,7 +453,7 @@ func resourceIBMISInstanceGroupManagerActionRead(d *schema.ResourceData, meta in
 	}
 	instanceGroupManagerScheduledActionManagerManagerInt := instanceGroupManagerAction.Manager
 	if instanceGroupManagerScheduledActionManagerManagerInt != nil {
-		instanceGroupManagerScheduledActionManagerManager := instanceGroupManagerScheduledActionManagerManagerInt.(*vpcv1.InstanceGroupManagerScheduledActionManagerManager)
+		instanceGroupManagerScheduledActionManagerManager := instanceGroupManagerScheduledActionManagerManagerInt.(*vpcv1.InstanceGroupManagerScheduledActionManager)
 		if instanceGroupManagerScheduledActionManagerManager != nil && instanceGroupManagerScheduledActionManagerManager.ID != nil {
 
 			if instanceGroupManagerScheduledActionManagerManager.MaxMembershipCount != nil {
@@ -469,6 +486,11 @@ func resourceIBMISInstanceGroupManagerActionDelete(d *schema.ResourceData, meta 
 	deleteInstanceGroupManagerActionOptions.InstanceGroupID = &instanceGroupID
 	deleteInstanceGroupManagerActionOptions.InstanceGroupManagerID = &instancegroupmanagerscheduledID
 	deleteInstanceGroupManagerActionOptions.ID = &instanceGroupManagerActionID
+
+	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutDelete))
+	if healthError != nil {
+		return healthError
+	}
 
 	response, err := sess.DeleteInstanceGroupManagerAction(deleteInstanceGroupManagerActionOptions)
 	if err != nil {

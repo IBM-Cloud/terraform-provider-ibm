@@ -3,17 +3,18 @@ subcategory: "Satellite"
 layout: "ibm"
 page_title: "IBM : satellite_location"
 description: |-
-  Manages IBM Cloud satellite location.
+  Manages IBM Cloud Satellite location.
 ---
 
-# ibm\_satellite_location
+# ibm_satellite_location
 
-Create, update, or delete [IBM Cloud Satellite Location](https://cloud.ibm.com/docs/satellite?topic=satellite-locations). Set up an IBM Cloud™ Satellite location to represent a data center that you fill with your own infrastructure resources, and start running IBM Cloud services on your own infrastructure.
+Create, update, or delete [IBM Cloud Satellite Location](https://cloud.ibm.com/docs/satellite?topic=satellite-locations). Set up an IBM Cloud Satellite location to represent a data center that you fill with your own infrastructure resources, and start running IBM Cloud services on your own infrastructure.
+Create, update, or delete [IBM Cloud Satellite Host](https://cloud.ibm.com/docs/satellite?topic=satellite-locations). Set up an IBM Cloud Satellite location to represent a data center in your infrastructure resources, and start running IBM Cloud services on your own infrastructure.
 
 
-## Example Usage
+## Example usage
 
-###  Create location
+### Sample to create location
 
 ```terraform
 data "ibm_resource_group" "group" {
@@ -29,7 +30,7 @@ resource "ibm_satellite_location" "create_location" {
 
 ```
 
-###  Create location using COS bucket
+###  Sample to create location by using COS bucket
 
 ```terraform
 resource "ibm_satellite_location" "create_location" {
@@ -45,56 +46,59 @@ resource "ibm_satellite_location" "create_location" {
 
 ## Timeouts
 
-ibm_satellite_location provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_satellite_location` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-* `create` - (Default 30 minutes) Used for creating Instance.
-* `update` - (Default 10 minutes) Used for updating Instance.
-* `delete` - (Default 60 minutes) Used for deleting Instance.
+- **create** - (Default 30 minutes) Used for creating Instance.
+- **update** - (Default 10 minutes) Used for updating Instance.
+- **delete** - (Default 60 minutes) Used for deleting Instance.
 
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `cos_config` - (Optional, List) The IBM Cloud Object Storage bucket configuration details. Nested cos_config blocks have the following structure.
 
-* `location` - (Required, string) The name of the location to be created or pass existing location name.
-* `is_location_exist` - (Optional, bool) Determines if the location has to be created or not.
-* `managed_from` - (Required, string) The IBM Cloud metro from which the Satellite location is managed. To list available multizone regions, run 'ibmcloud ks locations'. such as 'wdc04', 'wdc06' or 'lon04'.
-* `description` - (Optional, string) A description of the new Satellite location.
-* `logging_account_id` - (Optional, string) The account ID for IBM Log Analysis with LogDNA log forwarding.
-* `cos_config` - (Optional, list) IBM Cloud Object Storage bucket configuration details. Nested `cos_config` blocks have the following structure:
-    * `bucket` - The name of the IBM Cloud Object Storage bucket that you want to use to back up the control plane data.
-    * `endpoint` - COS bucket endpoint.
-    * `region` - Name of region, such as 'us-south' or 'eu-gb'.
-* `cos_credentials` - (Optional, list) IBM Cloud Object Storage authorization keys. Nested `cos_credentials` blocks have the following structure:
-    * `access_key-id` - The HMAC secret access key ID.
-    * `secret_access_key` - The HMAC secret access key. 
-* `zones` - (Optional, array of strings) The names for the host zones. For high availability, allocate your hosts across these three zones based on your infrastructure provider zones. ex: [ us-east-1, us-east-2, us-east-3 ]
-* `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`.
-* `tags` - (Optional, array of strings) Tags associated with the resource instance.  
+  Nested scheme for `cos_config`:
+  - `bucket`- (Optional, String) The name of the IBM Cloud Object Storage bucket that you want to use to back up the control plane data.
+	- `endpoint` - (Optional, String) The IBM Cloud Object Storage bucket endpoint.
+  - `region`- (Optional, String) The name of a region, such as `us-south` or `eu-gb`.
+- `cos_credentials`- (Optional, List) The IBM Cloud Object Storage authorization keys. Nested `cos_credentials` blocks have the following structure.
 
-## Attributes Reference
+  Nested scheme for `cos_credentials`:
+  - `access_key-id` - (Required, String)The `HMAC` secret access key ID.
+  - `secret_access_key`-  (Optional, String) The `HMAC` secret access key.
+- `description` - (Optional, String)  A description of the new Satellite location.
+- `is_location_exist`- (Optional, Bool) Determines the location has to be created or not.
+- `location` - (Required, String) The name of the location to be created or pass existing location name.
+- `logging_account_id` - (Optional, String) The account ID for IBM Log Analysis with LogDNA log forwarding.
+- `managed_from` - (Required, String) The IBM Cloud metro from which the Satellite location is managed. To list available multizone regions, run `ibmcloud ks locations`, such as `wdc04`, `wdc06`, or `lon04`.
+- `zones`- Array of Strings - Optional- The names for the host zones. For high availability, allocate your hosts across these three zones based on your infrastructure provider zones. For example, `us-east-1`, `us-east-2`, `us-east-3` .
 
-In addition to all arguments above, the following attributes are exported:
 
-* `id` - The unique identifier of the location.
-* `crn` - The CRN for this satellite location.
-* `resource_group_name` - The name of the resource group.
-* `host_attached_count` - The total number of hosts that are attached to the Satellite location.
-* `host_available_count` - The available number of hosts that can be assigned to a cluster resource in the Satellite location.
-* `created_on` - The created time of the satellite location.
-* `ingress_hostname` - The Ingress hostname.
-* `ingress_secret` - The Ingress secret.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `crn` - (String) The CRN for this satellite location.
+- `created_on` - (Timestamp) The created time of the satellite location.
+- `id` - (String) The unique identifier of the location.
+- `ingress_hostname` - (String) The Ingress hostname.
+- `ingress_secret` - (String) The Ingress secret.
+- `host_attached_count` - (Timestamp) The total number of hosts that are attached to the Satellite location.
+- `host_available_count` - (Timestamp) The available number of hosts that can be assigned to a cluster resource in the Satellite location.
+- `resource_group_name` - (String) The name of the resource group.
 
 ## Import
 
-`ibm_satellite_location` can be imported using the location id or name.
+The `ibm_satellite_location` resource can be imported by using the location ID or name.
 
-Example:
+**Syntax**
 
 ```
 $ terraform import ibm_satellite_location.location location
+```
 
+**Example**
+
+```
 $ terraform import ibm_satellite_location.location satellite-location
-
 ```

@@ -4,14 +4,13 @@ subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_key"
 description: |-
-  Manages an key in the Power Virtual Server Cloud.
+  Manages an key in the Power Virtual Server cloud.
 ---
 
-# ibm\_pi_key
+# ibm_pi_key
+Retrieve information about the SSH key that is used for your Power Systems Virtual Server instance. The SSH key is used to access the instance after it is created. For more information, about [configuring your IBM i virtual machine (VM)](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-configuring-ibmi).
 
-Import the details of an existing IBM Power Virtual Server key as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_pi_key" "ds_instance" {
@@ -19,29 +18,32 @@ data "ibm_pi_key" "ds_instance" {
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
-## Notes:
+
+**Notes**
+
 * Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 * If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   * `region` - `lon`
   * `zone` - `lon04`
-  Example Usage:
+
+Example usage:
+
   ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"
     }
   ```
-## Argument Reference
+  
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_key_name` - (Required, String) The name of the key.
 
-* `pi_key_name` - (Required, string) The name of the key.
-* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier for the key.
-* `creation_date` - The creation date.
-* `sshkey` - The SSH RSA key.
+- `creation_date` - Timestamp - The timestamp when the SSH key was created.
+- `id` - (String) The unique identifier of the SSH key.
+- `sshkey` - (String) The public SSH key value.

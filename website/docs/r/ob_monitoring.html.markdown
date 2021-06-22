@@ -6,14 +6,11 @@ description: |-
   Create a monitoring configuration for your cluster to automatically collect pod logs and send them to IBM Log Analysis.
 ---
 
-# ibm\_ob_monitoring
+# ibm_ob_monitoring
+Create, update, or delete a monitoring instance. This resource creates a monitoring configuration for your IBM Cloud Kubernetes Service cluster to automatically collect pod metrics, and send these metrics to your monitoring service instance. For more information, about Observability monitoring, see [setting up loggin with IBM Cloud Log Analysis](https://cloud.ibm.com/docs/containers?topic=containers-istio-health).
 
-
-Create, update, or delete a monitoring instance. This resource creates a monitoring configuration for your IBM Cloud Kubernetes Service cluster to automatically collect cluster and pod metrics, and send these metrics to your IBM Cloud Monitoring with Sysdig service instance.
-
-## Example Usage
-
-In the following example, you can create a monitoring configuration:
+## Example usage
+The following example enables you to create a monitoring configuration. 
 
 ```terraform
 
@@ -58,38 +55,39 @@ resource "ibm_ob_monitoring" "test2" {
 
 ## Timeouts
 
-ibm_ob_monitoring provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+ibm_ob_monitoring provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-* `create` - (Default 10 minutes) Used for creating Instance.
-* `update` - (Default 10 minutes) Used for updating Instance.
-* `delete` - (Default 10 minutes) Used for deleting Instance.
-
-## Argument Reference
-
-The following arguments are supported:
-
-* `cluster` - (Required, string) The name or id of the cluster. 
-* `instance_id` - (Required, string) The guid of the montoing instance.
-* `sysdig_access_key` - (Optional, string) The sysdig monitoring ingestion key that you want to use for your configuration
-* `private_endpoint` - (Optional, string) Add this option to connect to your Sysdig service instance through the private service endpoint.
+- **create**: The enablement of the feature is considered `failed` if no response is received for 10 minutes.
+- **delete**: The delete of the feature is considered `failed` if no response is received for 10 minutes. 
+- **update**: The update of the feature is considered `failed` if no response is received for 10 minutes. 
 
 
-## Attribute Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-In addition to all arguments above, the following attributes are exported:
+- `cluster` - (Required, String) The name or ID of the cluster.
+- `instance_id` - (Required, String) The GUID of the monitoring instance.
+- `sysdig_access_key` - (Optional, String) The monitoring ingestion key that you want to use for your configuration.
+- `private_endpoint`- (Optional, String)  Add this option to connect to your monitoring service instance through the private service endpoint.
 
-* `id` - The unique identifier of the sysdig monitoring instance attach to cluster. The id is composed of \<cluster_name_id\>/\< monitoring_instance_id\>
-* `instance_name` - Name of the monitoring instance
-* `agent_key` - Sysydig agent key type.
-* `agent_namespace` - Sysdig agent namespace type
-* `daemonset_name` - Name of the deamonset
-* `discovered_agent` - 
-* `namespace` - Name of namespace
-* `crn` - CRN of the instance attach
+
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `agent_key` - (String) The IBM Cloud Activity Tracker agent key.
+- `agent_namespace` - (String) The IBM Cloud Activity Tracker agent namespace.
+- `crn` - (String) The CRN of the instance attach.
+- `daemonset_name` - Name of the deamonset.
+- `discovered_agent` - (String) The name of the discovered agent.
+- `id` - (String) The unique identifier of the logging instance attach to cluster. The ID is composed of `<cluster_name_id>/< logging_instance_id>`.
+- `instance_name` - (String) The name of the logging instance.
+- `namespace` - (String) The name of namespace.
 
 ## Import
+The `ibm_ob_monitoring` can be imported by using `cluster_name_id`, `monitoring_instance_id`.
 
-ibm_ob_monitoring can be imported using cluster_name_id, monitoring_instance_id, eg
+**Example**
 
 ```
 $ terraform import ibm_ob_monitoring.example mycluster/5c4f4d06e0dc402084922dea70850e3b-7cafe35
+```

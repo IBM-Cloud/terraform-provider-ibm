@@ -3,16 +3,15 @@ subcategory: "Satellite"
 layout: "ibm"
 page_title: "IBM : satellite_attach_host_script"
 description: |-
-  Generate host script to attach host to satellite location.
+  Generate host script to attach host to Satellite location.
 ---
 
-# ibm\_satellite_attach_host_script
+# ibm_satellite_attach_host_script
+Retrieve information of an existing IBM Satellite location registration script as a data source. Creates a script to run on a Red Hat Enterprise Linux 7 or AWS EC2 host in your on-premises infrastructure. The script attaches the host to your IBM Cloud Satellite location. The host must have access to the public network in order for the script to complete. For more information, about setting up Satellite hosts, see [Satellite hosts](https://cloud.ibm.com/docs/satellite?topic=satellite-hosts).
 
-Import the details of an existing IBM satellite location registration script as a data source. Creates a script to run on a Red Hat Enterprise Linux 7 or AWS EC2 host in your on-premises infrastructure. The script attaches the host to your IBM Cloud Satellite location. The host must have access to the public network in order for the script to complete.
+## Example usage
 
-## Example Usage
-
-###  Create satellite host script to attach IBM host to satellite control plane
+###  Sample to create satellite host script to attach IBM host to Satellite control plane
 
 ```terraform
 data "ibm_satellite_attach_host_script" "script" {
@@ -22,7 +21,7 @@ data "ibm_satellite_attach_host_script" "script" {
 }
 ```
 
-###  Create satellite host script to attach AWS EC2 host to satellite control plane
+###  Sample to create satellite host script to attach AWS EC2 host to Satellite control plane
 
 ```terraform
 data "ibm_satellite_attach_host_script" "script" {
@@ -33,20 +32,18 @@ data "ibm_satellite_attach_host_script" "script" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source.
 
-The following arguments are supported:
+- `location` - (Required, String) The name or ID of the Satellite location.
 
-* `location` - (Required, string) The name or ID of the Satellite location.
+## Attributes reference
+In addition to the argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the location.
-* `labels` - (Optional, array of strings) Key-value pairs to label the host, such as cpu=4 to describe the host capabilities.
-* `script_dir` - (Optional, string) Directory path to store the generated script.
-* `host_provider` - (Required, string) The name of host provider, such as ibm, aws or azure.
-* `script_path` -  Directory path to store the generated script.
-* `host_script` -  The raw content of the script file that was read.
+- `id` - The unique identifier of the location.
+- `labels` - (Strings) The key-value pairs to label the host, such as `cpu=4` to describe the host capabilities.
+- `script_dir` - (String) The directory path to store the generated script.
+- `host_provider` - (String) The name of host provider, such as `ibm`, `aws` or `azure`.
+- `script_path` -  (String) Directory path to store the generated script.
+- `host_script` -  (String) The raw content of the script file that was read.
 

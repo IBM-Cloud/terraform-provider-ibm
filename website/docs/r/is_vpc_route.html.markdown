@@ -4,15 +4,13 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : vpc-route"
 description: |-
-  Manages IBM IS VPC Route.
+  Manages IBM IS VPC route.
 ---
 
-# ibm\_is_vpc_route
+# ibm_is_vpc_route
+Create, update, or delete a VPC route. For more information, about VPC routes, see [setting up advanced routing in VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-custom-routes).
 
-Provides a vpc route resource. This allows vpc route to be created, updated, and cancelled.
-
-
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
@@ -30,34 +28,32 @@ resource "ibm_is_vpc_route" "testacc_vpc_route" {
 ```
 
 ## Timeouts
+The `ibm_is_vpc_route` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-ibm_is_vpc_route provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
-
-* `create` - (Default 10 minutes) Used for Creating VPC Route.
-* `delete` - (Default 10 minutes) Used for Deleting VPC Route.
+- **create**: The creation of the route is considered `failed` when no response is received for 10 minutes. 
+- **delete**: The deletion of the route is considered `failed` when no response is received for 10 minutes. 
 
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `destination` - (Required, Forces new resource, String) The destination IP address or CIDR that network traffic from your VPC must match to be routed to the `next_hop`.
+- `name` - (Required, String) The name of the route that you want to create.
+- `next_hop` - (Required, String) The IP address where network traffic is sent next.
+- `vpc` - (Required, Forces new resource, String) The ID of the VPC where you want to create the route. 
+- `zone` - (Required, Forces new resource, String) The name of the VPC zone where you want to create the route.
 
-* `name` - (Required, string) The route name.
-* `vpc` - (Required, Forces new resource, string) The vpc id. 
-* `zone` - (Required, Forces new resource, string) Name of the zone. 
-* `destination` - (Required, Forces new resource, string) The destination of the route. 
-* `next_hop` - (Required, string) The next hop of the route. 
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The id of the route. The id is composed of \<vpc_id\>/\<vpc_route_id\>
-* `status` - The status of the VPC Route.
+- `id` - (String) The ID of the VPC route. The ID is composed of `<vpc_id>/<vpc_route_id>`.
+- `status` - (String) The status of the VPC route.
 
 ## Import
+The `ibm_is_vpc_route` resource can be imported by using the VPC and route IDs. 
 
-ibm_is_vpc_route can be imported using VPC ID and VPC Route ID, eg
+**Syntax**
 
 ```
-$ terraform import ibm_is_vpc_route.example 56738c92-4631-4eb5-8938-8af9211a6ea4/fc2667e0-9e6f-4993-a0fd-cabab477c4d1
+$ terraform import ibm_is_vpc_route.example <vpc_ID>/<vpc_route_ID>
 ```

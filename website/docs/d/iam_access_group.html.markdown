@@ -6,12 +6,12 @@ description: |-
   Get information about IBM IAM Access Group and all the members and dynamic rules associated with the group.
 ---
 
-# ibm\_iam_access_group
+# ibm_iam_access_group
 
-Import the details of an existing [IAM Access Group](https://cloud.ibm.com/iam/groups) as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration using interpolation syntax.
+Retrieve information about an [IAM Access Group](https://cloud.ibm.com/iam/groups). Access groups can be used to define a set of permissions that you want to grant to a group of users.
 
+## Example usage
 
-## Example Usage
 
 ```terraform
 data "ibm_iam_access_group" "accgroup" {
@@ -19,33 +19,34 @@ data "ibm_iam_access_group" "accgroup" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument references that you can specify for your data source.
 
-* `access_group_name` - (Optional, string) The name of the Access Group. If not specified all access group present in the account will be fetched.
+- `access_group_name` - (Optional, String) The name of the access group that you want to retrieve details for. If no access group is specified, all access groups that exist in the IBM Cloud account are returned. 
 
-## Attributes Reference
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
-In addition to all arguments above, the following attributes are exported:
+- `groups`- (List) A list of IAM access groups that are set up for an IBM Cloud account.
 
-* `groups` - List of Access Groups attached to the Account.
-Nested `groups` blocks have the following structure:
-  * `id` - The id of the access group
-  * `name` - Name of the access group.
-  * `description` - Description of the access group.
-  * `ibm_ids` - List of IBMid of the member
-  * `iam_service_ids` - List of Service Id of the member.
-  * `rules` - List of Access Groups attached to the Account.
-  Nested `rules` blocks have the following structure:
-    * `name` -  Name of the dynamic rule.
-    * `expiration` -  The number of hours that the rule lives for (Must be between 1 and 24).
-    * `identity_provider` - (Required, string) The url of the identity provider.  
-    * `conditions` -  A list of conditions the rule must satisfy:
-      * `claim` - The claim to evaluate against. This will be found in the ext claims of a user's login request. 
-      * `operator` -  The operation to perform on the claim. Valid operators are EQUALS, EQUALS_IGNORE_CASE, IN, NOT_EQUALS_IGNORE_CASE, NOT_EQUALS, and CONTAINS.
-      * `value` - The stringified JSON value that the claim is compared to using the operator.
-    * `rule_id` -  ID of the dynamic rule.
+  Nested scheme for `groups`:
+  
+  - `description` - (String) The description of the IAM access group.
+  - `iam_service_ids` - (Array of Strings) A list of service IDs that belong to the access group.
+  - `ibm_ids` - (Array of Strings) A list of IBM ID that belong to the access group.
+  - `id` - (String) The ID of the IAM access group.
+  - `name` - (String) The name of the IAM access group.
+  - `rules`- (List) A list of dynamic rules that are applied to the IAM access group.
 
-
-    
+    Nested scheme for `rules`:
+	- `conditions`- (List) A list of conditions that the rule must satisfy.
+	  
+	   Nested scheme for `conditions`:
+	   - `claim` - (String) The key value to evaluate the condition against. The key depends on what key-value pairs your identity provider provides. For example, your identity provider might include a key that is named `blueGroups` and that holds all the user groups that have access. To apply a condition for a specific user group within the `blueGroups` key, you specify `blueGroups` as your claim and add the value that you are looking for in `value`.
+	   - `operator` - (String) The operation to perform on the claim. Supported values are `EQUALS`, `QUALS_IGNORE_CASE`, `IN`, `NOT_EQUALS_IGNORE_CASE`, `NOT_EQUALS`, and `CONTAINS`.
+	   - `value` - (String) The value that the claim is compared to by using the `operator`.
+	- `expiration`- (Integer) The number of hours that authenticated users can work in IBM Cloud before they must refresh their access.
+	- `identity_provider` - (String) The URI of your identity provider. This is the SAML "entity ID" field, which is sometimes referred to as the issuer ID, for the identity provider as part of the federation configuration for onboarding with IBMID.
+	- `name` - (String) The name of the dynamic rule.
+	- `rule_id` - (String) The ID of the dynamic rule.

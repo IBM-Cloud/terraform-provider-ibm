@@ -7,13 +7,14 @@ description: |-
   Manages IBM local load balancer service group.
 ---
 
-# ibm\_lb_service_group
+# ibm_lb_service_group
+Create, update, and delete a [local load balancer service group](https://cloud.ibm.com/docs/loadbalancer-service?topic=loadbalancer-service-ibm-cloud-load-balancer-basics). 
 
-Provides a resource for local load balancer service groups. This allows local load balancer service groups to be created, updated, and deleted.
+**Note**
 
-For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_Application_Delivery_Controller_LoadBalancer_Service_Group).
+For more information,  see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_Application_Delivery_Controller_LoadBalancer_Service_Group).
 
-## Example Usage
+## Example usage
 
 In the following example, you can create a local load balancer service group:
 
@@ -27,22 +28,20 @@ resource "ibm_lb_service_group" "test_service_group" {
 }
 ```
 
-## Argument Reference
+## Argument reference 
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `allocation` - (Required, Integer) The connection allocation for the load balancer service group.
+- `load_balancer_id` - (Required, Forces new resource,Integer) The ID of the local load balancer.
+- `port` - (Required, Integer) The port for the local load balancer service group.
+- `routing_method` - (Required, String) The routing method for the load balancer group. For example, `CONSISTENT_HASH_IP`.
+- `routing_type`- (Required, String) The routing type for the group.
+- `timeout`- (Optional, Integer) The timeout value for connections from remote clients to the load balancer. Timeout values are only valid for HTTP service groups.
+- `tags`- (Optional, Array of Strings) Tags associated with the local load balancer service group instance.  **Note** `Tags` are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
 
-* `load_balancer_id` - (Required, Forces new resource, integer) The ID of the local load balancer.
-* `allocation` - (Required, integer) The connection allocation for the load balancer service group.
-* `port` - (Required, integer) The port for the local load balancer service group.
-* `routing_method` - (Required, string) The routing method for the load balancer group. For example, `CONSISTENT_HASH_IP`.
-* `routing_type` - (Required, string) The routing type for the group.
-* `timeout` - (Optional, int) The timeout value for connections from remote clients to the load balancer. Timeout values are only valid for HTTP service groups. 
-* `tags` - (Optional, array of strings) Tags associated with the local load balancer service group instance.  
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `virtual_server_id` - The unique identifier of the virtual server.
-* `service_group_id` - The unique identifier of the load balancer service group.
+- `service_group_id`- (String) The unique identifier of the load balancer service group.
+- `virtual_server_id` - (String) The unique identifier of the virtual server.

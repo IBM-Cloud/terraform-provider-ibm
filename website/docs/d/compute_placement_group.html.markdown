@@ -3,14 +3,13 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_compute_placement_group"
 description: |-
-  Get information on a IBM Compute Placement Group resources
+  Get information on a IBM Cloud compute placement group resources
 ---
 
-# ibm\_compute_placement_group
+# ibm_compute_placement_group
+Retrieve information of an existing placement group as a read-only data source. For more information, about compute placement group resource, see [workload Placement for virtual servers](https://cloud.ibm.com/docs/cloud-infrastructure?topic=cloud-infrastructure-ha-introduction#workload-placement-for-virtual-servers).
 
-Import the details of an existing placement group as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
-
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_compute_placement_group" "group" {
@@ -25,25 +24,22 @@ resource "ibm_compute_vm_instance" "vm1" {
     placement_group_id = data.ibm_compute_placement_group.group.id
 }
 ```
+## Argument reference
+Review the argument references that you can specify for your data source.
 
-## Argument Reference
-
-The following arguments are supported:
-
-* `name` - (Required, string) The name of the placement group.
-
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the placement group.
-* `datacenter` - The datacenter in which placement group resides.
-* `pod` - The pod in which placement group resides.
-* `rule` - The rule of the placement group.
-* `virtual_guests` - A nested block describing the VSIs attached to the placement group. Nested `virtual_guests` blocks have the following structure:
-  * `id` - The ID of the virtual guest.
-  * `domain` - The domain of the virtual guest.
-  * `hostname` - The hostname of the virtual guest.
+- `name` - (Required, String) The name of the placement group.
 
 
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
+- `datacenter`- (String) The data center in which placement group resides.
+- `id` - (String) The unique identifier of the placement group.
+- `pod` - (String) The pod in which placement group resides.
+- `rule` - (String) The rule of the placement group.
+- `virtual_guests` - (List of Objects) A nested block describes the VSIs attached to the placement group.
+
+  Nested scheme for `virtual_guests`:
+	- `id` - (String) The ID of the virtual guest.
+	- `domain` - (String) The domain of the virtual guest.
+	- `hostname` - (String) The hostname of the virtual guest.

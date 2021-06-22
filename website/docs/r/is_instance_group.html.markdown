@@ -7,13 +7,13 @@ description: |-
   Manages IBM VPC instance group.
 ---
 
-# ibm\_is_instance_group
+# ibm_is_instance_group
 
-Create, update or delete a instance group on VPC
+Create, update or delete a instance group on VPC. For more information, about instance group, see [managing an instance group](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-instance-group).
 
-## Example Usage
+## Example usage
+In the following example, you can create a instance group on VPC Generation-2 infrastructure.
 
-In the following example, you can create a instance group on VPC gen-2 infrastructure.
 ```terraform
 resource "ibm_is_vpc" "vpc2" {
   name = "vpc2test"
@@ -62,41 +62,37 @@ resource "ibm_is_instance_group" "instance_group" {
 
 ## Timeouts
 
-ibm_is_instance_group provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_is_instance_group` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-* `create` - (Default 10 minutes) Used for creating Instance.
-* `update` - (Default 10 minutes) Used for updating Instance.
-* `delete` - (Default 5 minutes) Used for deleting Instance.
+- **create**: The creation of the instance group is considered `failed` if no response is received for 15 minutes.
+- **delete**: The deletion of the instance group is considered `failed` if no response is received for 15 minutes.
+- **update**: The creation of the instance group is considered `failed` if no response is received for 10 minutes. 
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `application_port` - (Optional, Integer) The instance group uses when scaling up instances to supply the port for the Load Balancer pool member.
+- `load_balancer` - (Optional, String) The load Balancer ID.
+- `load_balancer_pool` - (Optional, String) The load Balancer pool ID.
+- `instance_template` - (Required, Forces new resource, String) The ID of the instance template to create the instance group.
+- `instance_count` - (Optional, Integer) The number of instances to create in the instance group. **Note** instance group manager must be in diables state to update the `instance_count`.
+- `name` - (Required, String) The instance  group name.
+- `resource_group` - (Optional, String) The resource group ID.
+- `subnets` - (Required, List) The list of subnet IDs used by the instances.
 
-* `name` - (Required, string) The name of the instance group.
-* `instance_template` - (Required, Forces new resource, string) The ID of the instance template to create the instance group.
-* `instance_count` - (Optional, int) The number of instances to be created under the instance group. Default is set to 0.
-  **NOTE**: instance group manager should be in disabled state to update the `instance_count`.
-* `resource_group` - (Optional, string) Resource group ID.
-* `subnets` - (Required, list) The list of subnet IDs used by the instances.
-* `application_port` - (Optional, int) Used by the instance group when scaling up instances to supply the port for the load balancer pool member
-* `load_balancer` - (Optional, string) Load balancer ID.
-* `load_balancer_pool` - (Optional, string) Load balancer pool ID.
-* `tags` - (Optional, array of strings) Tags associated with the instance.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - Id of the instance group
-* `instances` - The number of instances in the intances group
-* `managers` - list of managers associated with the instance group.
-* `vpc` - The VPC ID
-* `status` - Status of instance group.
+- `id` - (String) The ID of an instance group.
+- `instances` - (String) The number of instances in the instances group.
+- `managers` - (String) List of managers associated with the instance group.
+- `status` - (String) Status of an instance group.
+- `vpc` - (String) The VPC ID.
 
 ## Import
-
-`ibm_is_instance_group` can be imported using instance group ID, eg ibm_is_instance_group.instance_group
+The `ibm_is_instance_group` resource can be imported by using the instance group ID.
 
 ```
-$ terraform import ibm_is_instance_group.instance_group r006-14140f94-fcc4-11e9-96e7-a72723715315
+$ terraform import ibm_is_instance_group.instance_group r006-14140f94-fcc4-11e9-96e7-a7272asd122112315
 ```
+
