@@ -679,6 +679,44 @@ func sgDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		return fmt.Errorf("Error Getting Security Group (%s): %s\n%s", id, err, response)
 	}
 
+	start := ""
+	allrecs := []vpcv1.SecurityGroupTargetReferenceIntf{}
+
+	for {
+		listSecurityGroupTargetsOptions := sess.NewListSecurityGroupTargetsOptions(id)
+
+		groups, response, err := sess.ListSecurityGroupTargets(listSecurityGroupTargetsOptions)
+		if err != nil || groups == nil {
+			return fmt.Errorf("Error Getting Security Group Targets %s\n%s", err, response)
+		}
+		if *groups.TotalCount == int64(0) {
+			break
+		}
+
+		start = GetNext(groups.Next)
+		allrecs = append(allrecs, groups.Targets...)
+
+		if start == "" {
+			break
+		}
+
+	}
+
+	for _, securityGroupTargetReferenceIntf := range allrecs {
+		if securityGroupTargetReferenceIntf != nil {
+			securityGroupTargetReference := securityGroupTargetReferenceIntf.(*vpcv1.SecurityGroupTargetReference)
+			if securityGroupTargetReference != nil && securityGroupTargetReference.ID != nil {
+
+				deleteSecurityGroupTargetBindingOptions := sess.NewDeleteSecurityGroupTargetBindingOptions(id, *securityGroupTargetReference.ID)
+				response, err = sess.DeleteSecurityGroupTargetBinding(deleteSecurityGroupTargetBindingOptions)
+				if err != nil {
+					return fmt.Errorf("Error Deleting Security Group Targets : %s\n%s", err, response)
+				}
+
+			}
+		}
+	}
+
 	deleteSecurityGroupOptions := &vpcv1.DeleteSecurityGroupOptions{
 		ID: &id,
 	}
