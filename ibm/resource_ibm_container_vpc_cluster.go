@@ -628,7 +628,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		updateAllWorkers := d.Get("update_all_workers").(bool)
 		if updateAllWorkers || d.HasChange("patch_version") || d.HasChange("retry_patch_version") {
 
-			patchVersion := d.Get("patch_version").(string)
+			// patchVersion := d.Get("patch_version").(string)
 			workers, err := csClient.Workers().ListWorkers(clusterID, false, targetEnv)
 			if err != nil {
 				d.Set("patch_version", nil)
@@ -644,7 +644,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 
 			for _, worker := range workers {
 				// check if change is present in MAJOR.MINOR version or in PATCH version
-				if strings.Split(worker.KubeVersion.Actual, "_")[0] != strings.Split(cls.MasterKubeVersion, "_")[0] || (strings.Split(worker.KubeVersion.Actual, ".")[2] != patchVersion && patchVersion == strings.Split(worker.KubeVersion.Target, ".")[2]) {
+				if worker.KubeVersion.Actual != worker.KubeVersion.Target {
 					_, err := csClient.Workers().ReplaceWokerNode(clusterID, worker.ID, targetEnv)
 					// As API returns http response 204 NO CONTENT, error raised will be exempted.
 					if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {
@@ -842,6 +842,9 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	}
 
 	workerPool, err := csClient.WorkerPools().GetWorkerPool(clusterID, "default", targetEnv)
+	if err != nil {
+		return fmt.Errorf("Error retrieving worker pool of the cluster %s: %s", workerPool.ID, err)
+	}
 
 	var zones = make([]map[string]interface{}, 0)
 	for _, zone := range workerPool.Zones {
@@ -1277,7 +1280,7 @@ func vpcClusterWorkersVersionRefreshFunc(client v2.Workers, workerID, clusterID 
 			return nil, "retry", fmt.Errorf("Error retrieving worker of container vpc cluster: %s", err)
 		}
 		// Check active updates
-		if worker.Health.State == "normal" && strings.Split(worker.KubeVersion.Actual, "_")[0] == strings.Split(masterVersion, "_")[0] {
+		if worker.Health.State == "normal" {
 			return worker, workerNormal, nil
 		}
 		return worker, versionUpdating, nil
