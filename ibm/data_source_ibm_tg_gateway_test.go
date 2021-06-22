@@ -34,7 +34,7 @@ func TestAccIBMTransitGatewayDataSource_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMTransitGatewayGreConnectionDataSourceConfig(gatewayname, location, classicConnName, greConnName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_tg_gateway.test_tg_gateway", "gateway.connections.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_tg_gateway.test_tg_gateway", "connections.#"),
 				),
 			},
 		},
@@ -75,7 +75,7 @@ func testAccCheckIBMTransitGatewayGreConnectionDataSourceConfig(gatewayName, loc
       		gateway = "${ibm_tg_gateway.test_tg_gateway.id}"
       		network_type = "gre_tunnel"
       		name = "%s"
-              base_connection_id = "${ibm_tg_connection.test_ibm_tg_classic_connection.id}"
+              base_connection_id = "${ibm_tg_connection.test_ibm_tg_classic_connection.connection_id}"
               local_gateway_ip = "192.168.100.1"
               local_tunnel_ip = "192.168.101.1"
               remote_gateway_ip = "10.242.63.12"

@@ -56,8 +56,8 @@ func TestAccIBMTransitGatewayConnection_basic(t *testing.T) {
 				//Create test case
 				Config: testAccCheckIBMTransitGatewayGreConnectionConfig(tgConnectionName, gatewayName, tgSecondConnectionName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMTransitGatewayConnectionExists("ibm_tg_connection.test_ibm_tg_connection", tgConnection),
-					resource.TestCheckResourceAttr("ibm_tg_connection.test_ibm_tg_connection", "name", tgConnectionName),
+					testAccCheckIBMTransitGatewayConnectionExists("ibm_tg_connection.test_ibm_tg_gre_connection", tgConnection),
+					resource.TestCheckResourceAttr("ibm_tg_connection.test_ibm_tg_gre_connection", "name", tgSecondConnectionName),
 				),
 			},
 		},
@@ -130,7 +130,7 @@ resource "ibm_tg_connection" "test_ibm_tg_gre_connection"{
 		gateway = "${ibm_tg_gateway.test_tg_gateway.id}"
 		network_type = "gre_tunnel"
 		name = "%s"
-        base_connection_id = "${ibm_tg_connection.test_ibm_tg_classic_connection.id}"
+        base_connection_id = "${ibm_tg_connection.test_ibm_tg_classic_connection.connection_id}"
         local_gateway_ip = "192.168.100.1"
         local_tunnel_ip = "192.168.101.1"
         remote_gateway_ip = "10.242.63.12"

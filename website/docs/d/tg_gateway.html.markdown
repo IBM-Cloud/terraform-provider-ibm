@@ -41,6 +41,7 @@ In addition to the argument reference list, you can access the following attribu
 - `location` - (String) The gateway location.
 - `resource_group` - (String) The resource group identifier.
 - `connections` - (String) A list of connections in the gateway
+
   Nested scheme for `connections`:
 	- `created_at` - (String) The date and time the connection is created.
 	- `id` - (String) The unique identifier for the transit gateway connection to network either `VPC`,  `classic`.
