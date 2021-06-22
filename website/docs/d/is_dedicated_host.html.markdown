@@ -3,14 +3,14 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_dedicated_host"
 description: |-
-  Get information about DedicatedHost
+  Get information about dedicated host
 ---
 
-# ibm\_is_dedicated_host
+# ibm_is_dedicated_host
+Retrieve the dedicated host data sources. For more information, about dedicated host in your IBM Cloud VPC, see [Dedicated hosts](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-dedicated-hosts-instances).
 
-Provides a read-only data source for DedicatedHost. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-## Example Usage
+## Example usage
+The following example retrieves information about the dedicated host data sources.
 
 ```terraform
 data "ibm_is_dedicated_host" "is_dedicated_host" {
@@ -19,86 +19,86 @@ data "ibm_is_dedicated_host" "is_dedicated_host" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `host_group` - (Required, String) The unique identifier of the dedicated host group.
+- `name` - (Required, String) The unique name of this dedicated host.
+- `resource_group` - (Optional, String) The unique identifier of the resource group.
 
-* `host_group` - (Required, string) The unique identifier of the Dedicated host group.
-* `name` - (Required, string) The unique name of this dedicated host.
-* `resource_group` - (Optional, string) The unique identifier of the resource group
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-In addition to all arguments above, the following attributes are exported:
+- `available_memory` -  (String) The amount of memory in `GB` that is currently available for instances.
+- `available_vcpu` -  (List) The available `VCPU` for the dedicated host. 
 
-* `id` - The unique identifier of the DedicatedHost.
-* `available_memory` - The amount of memory in gibibytes that is currently available for instances.
+  Nested scheme for `available_vcpu`:
+  - `architecture` -  (String) The `VCPU` architecture.
+  - `count` -  (String) The number of `VCPUs` assigned.
+- `created_at` -  (String) The date and time that the dedicated host was created.
+- `crn` -  (String) The CRN for this dedicated host.
+- `disks` - (List) The Collection of the dedicated host's disks. 
 
-* `available_vcpu` - The available VCPU for the dedicated host. Nested `available_vcpu` blocks have the following structure:
-	* `architecture` - The VCPU architecture.
-	* `count` - The number of VCPUs assigned.
+  Nested scheme for `disks`:
+  - `available` - (String) The remaining space left for instance placement in GB (gigabytes).
+  - `created_at` - (String) The creation date and time of the disk.
+  - `href` - (String) The URL for the disk.
+  - `id` - (String) The unique identifier for the disk.
+  - `instance_disks` - (List) Instance disks that are on the dedicated host disk. 
 
-* `created_at` - The date and time that the dedicated host was created.
+     Nested scheme for `instance_disks`:
+     - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information. 
 
-* `crn` - The CRN for this dedicated host.
-* `disks` - Collection of the dedicated host's disks. Nested `disks` blocks have the following structure:
-	* `available` - The remaining space left for instance placement in GB (gigabytes).
-	* `created_at` - The date and time that the disk was created.
-	* `href` - The URL for this disk.
-	* `id` - The unique identifier for this disk.
-	* `instance_disks` - Instance disks that are on this dedicated host disk. Nested `instance_disks` blocks have the following structure:
-		* `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
-			* `more_info` - Link to documentation about deleted resources.
-		* `href` - The URL for this instance disk.
-		* `id` - The unique identifier for this instance disk.
-		* `name` - The user-defined name for this disk.
-		* `resource_type` - The resource type.
-	* `interface_type` - The disk interface used for attaching the diskThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
-	* `lifecycle_state` - The lifecycle state of this dedicated host disk.
-	* `name` - The user-defined or system-provided name for this disk.
-	* `provisionable` - Indicates whether this dedicated host disk is available for instance disk creation.
-	* `resource_type` - The type of resource referenced.
-	* `size` - The size of the disk in GB (gigabytes).
-	* `supported_instance_interface_types` - The instance disk interfaces supported for this dedicated host disk.
+       Nested scheme for `deleted`:
+       - `more_info` - (List) Link to documentation about deleted resources.
+     - `href` - (String) The URL for this instance disk.
+     - `id` - (String) The unique identifier for this instance disk.
+     - `name` - (String) The user-defined name for this disk.
+     - `resource_type` - (String) The resource type.
+   - `interface_type` - (String) The disk interface used for attaching the disk. The enumerated values for the property are expected to expand in the future. When processing the property, you can check for and log unknown values. Optionally, halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
+   - `lifecycle_state` - (String) The lifecycle state of this dedicated host disk.
+   - `name` - (String) The user-defined or system-provided name for the disk.
+   - `provisionable` - (String)  Indicates whether the dedicated host disk is available for instance disk creation.
+   - `resource_type` - (String) The type of resource referenced.
+   - `size` - (String) The size of the disk in GB (gigabytes).
+   - `supported_instance_interface_types` - (String) The instance disk interfaces supported for this dedicated host disk.
+- `host_group` -  (String) The unique identifier of the dedicated host group this dedicated host is in.
+- `href` -  (String) The URL for this dedicated host.
+- `id` -  (String) The unique identifier of the dedicated host.
+- `instance_placement_enabled` -  (String) If set to **true**, instances can be placed on this dedicated host.
+- `instances` -  (List) Array of instances that are allocated to this dedicated host. 
 
-* `host_group` - The unique identifier of the dedicated host group this dedicated host is in.
-* `href` - The URL for this dedicated host.
+  Nested scheme for `instances`:
+  - `crn` -  (String) The CRN for this virtual server instance.
+  - `deleted` -  (List) If present, this property indicates the referenced resource has been deleted and provides supplementary information. 
 
-* `instance_placement_enabled` - If set to true, instances can be placed on this dedicated host.
+    Nested scheme for `deleted`:
+    - `more_info` -  (String) Link to documentation about deleted resources.
+  - `href` -  (String) The URL for this virtual server instance.
+  - `id` -  (String) The unique identifier for this virtual server instance.
+  - `name` -  (String) The user defined name for this virtual server instance (and default system hostname).
+- `lifecycle_state` -  (String) The lifecycle state of the dedicated host resource.
+- `memory` -  (String) The total amount of memory in `GB`` for this host.
+- `name` -  (String) The unique user defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.
+- `profile` -  (List) The profile this dedicated host uses. 
 
-* `instances` - Array of instances that are allocated to this dedicated host. Nested `instances` blocks have the following structure:
-	* `crn` - The CRN for this virtual server instance.
-	* `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
-		* `more_info` - Link to documentation about deleted resources.
-	* `href` - The URL for this virtual server instance.
-	* `id` - The unique identifier for this virtual server instance.
-	* `name` - The user-defined name for this virtual server instance (and default system hostname).
+  Nested scheme for `profile`:
+  - `href` -  (String) The URL for this dedicated host.
+  - `name` -  (String) The globally unique name for this dedicated host profile.
+- `provisionable` -  (String) Indicates whether this dedicated host is available for instance creation.
+- `resource_group` -  (String) The unique identifier of the resource group.
+- `resource_type` -  (String) The type of resource referenced.
+- `socket_count` -  (String) The total number of sockets for this host.
+- `state` -  (String) The administrative state of the dedicated host.
+- `supported_instance_profiles` -  (List) Array of instance profiles that can be used by instances placed on this dedicated host. 
 
-* `lifecycle_state` - The lifecycle state of the dedicated host resource.
+  Nested scheme for `supported_instance_profiles`:
+  - `href` -  (String) The URL for this virtual server instance profile.
+  - `name` -  (String) The globally unique name for this virtual server instance profile.
+- `vcpu` -  (List) The total `VCPU` of the dedicated host. 
 
-* `memory` - The total amount of memory in gibibytes for this host.
-
-* `name` - The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.
-
-* `profile` - The profile this dedicated host uses. Nested `profile` blocks have the following structure:
-	* `href` - The URL for this dedicated host.
-	* `name` - The globally unique name for this dedicated host profile.
-
-* `provisionable` - Indicates whether this dedicated host is available for instance creation.
-
-* `resource_group` - The unique identifier of the resource group.
-* `resource_type` - The type of resource referenced.
-
-* `socket_count` - The total number of sockets for this host.
-
-* `state` - The administrative state of the dedicated host.
-
-* `supported_instance_profiles` - Array of instance profiles that can be used by instances placed on this dedicated host. Nested `supported_instance_profiles` blocks have the following structure:
-	* `href` - The URL for this virtual server instance profile.
-	* `name` - The globally unique name for this virtual server instance profile.
-
-* `vcpu` - The total VCPU of the dedicated host. Nested `vcpu` blocks have the following structure:
-	* `architecture` - The VCPU architecture.
-	* `count` - The number of VCPUs assigned.
-
-* `zone` - The globally unique name of the zone this dedicated host resides in.
+  Nested scheme for `vcpu`:
+  - `architecture` -  (String) The `VCPU` architecture.
+  - `count` -  (String) The number of `VCPUs` assigned.
+- `zone` -  (String) The globally unique name of the zone this dedicated host resides in.

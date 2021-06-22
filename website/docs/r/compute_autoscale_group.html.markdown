@@ -4,18 +4,19 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : compute_autoscale_group"
 description: |-
-  Manages IBM Compute Auto Scale Group.
+  Manages IBM Cloud compute auto scale group.
 ---
 
-# ibm\_compute_autoscale_group
+# ibm_compute_autoscale_group
+Create, update, or delete an auto scaling group. For more information about compute auto scale group, see [enabling auto scale for better capacity and resiliency](https://cloud.ibm.com/docs/cloud-infrastructure?topic=cloud-infrastructure-ha-auto-scale).
 
-Provides a resource for auto scaling groups. This allows auto scaling groups to be created, updated, and deleted.
+**Note**
 
-For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Scale_Group).
+For more information, about SoftLayer auto scale APIs, see [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Scale_Group).
 
-## Example Usage
+## Example usage
 
-In the following example, you can create an auto scaling group using a Debian image:
+In the following example, you can create an auto scaling group that uses a Debian image:
 
 ```terraform
 /* Deprecated in terraform v0.12 hence not updated */
@@ -53,26 +54,25 @@ resource "ibm_compute_autoscale_group" "test_scale_group" {
 }
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-* `name` - (Required, string) The name of the auto scaling group.
-* `regional_group` - (Required, Forces new resource, string) The regional group for the auto scaling group.
-* `minimum_member_count` - (Required, integer) The fewest number of virtual guest members that are allowed in the auto scaling group.
-* `maximum_member_count` - (Required, integer) The greatest number of virtual guest members that are allowed in the auto scaling group.
-* `cooldown` - (Required, integer) The duration, expressed in seconds, that the auto scaling group waits before performing another scaling action.
-* `termination_policy` - (Required, string) The termination policy for the auto scaling group.
-* `virtual_guest_member_template` - (Required, array) The template with which to create guest members. Only one template can be configured. You can find accepted values in the [ibm_compute_vm_instance](compute_vm_instance.html) resource.
-* `network_vlan_ids` - (Optional, array) The collection of VLAN IDs for the auto scaling group. You can find accepted values in the [VLAN docs](https://cloud.ibm.com/classic/network/vlans). Click the desired VLAN and note the ID in the resulting URL. You can also [refer to a VLAN by name using a data source](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/website/docs/d/network_vlan.html.markdown).
-* `virtual_server_id` - (Optional, integer) The ID of a virtual server in a local load balancer. You can find the ID with the following URL: `https://api.softlayer.com/rest/v3/SoftLayer_Network_Application_Delivery_Controller_LoadBalancer_VirtualIpAddress/<load_balancer_ID>/getObject?objectMask=virtualServers`. Replace _<load_balancer_ID>_ with the ID of the target load balancer. An IBM Cloud Classic Infrastructure (SoftLayer) user name and API key are required.
-* `port` - (Optional, integer) The port number in a local load balancer. For example, `8080`.
-* `health_check` - (Optional, map) The type of health check in a local load balancer. For example, `HTTP`. You can also use this value to specify custom HTTP methods.
-* `tags` - (Optional, array of strings) Tags associated with the auto scaling group instance.  
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+- `cooldown`- (Required, Integer) The duration, expressed in seconds, that the autoscaling group waits before performing another scaling action.
+- `health_check` (Optional, Map) The type of health check in a local load balancer. For example, `HTTP`. You can also use this value to specify custom HTTP methods.
+- `minimum_member_count`- (Required, Integer) The minimum number of virtual guest members that are allowed in the autoscaling group.
+- `maximum_member_count`- (Required, Integer) The maximum number of virtual guest members that are allowed in the autoscaling group.
+- `name` - (Required, String) The name of the autoscaling group.
+- `network_vlan_ids` - (Optional, Array) The collection of VLAN IDs for the autoscaling group. You can find accepted values in the [VLAN console](https://cloud.ibm.com/classic/network/vlans). Click the VLAN that you want and notes the ID in the resulting URL. You can also refer to a VLAN name by using a data source.
+- `port` - (Optional, Integer) The port number in a local load balancer. For example, `8080`.
+- `regional_group` - (Required, Forces new resource, String) The regional group for the autoscaling group.
+- `tags` (Optional, Array of Strings) A list of tags that you want to add to the autoscaling group. Tags are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
+- `termination_policy` - (Required, String) The termination policy for the autoscaling group.
+- `virtual_guest_member_template` (Required, Array of Strings) The template with which to create guest members. Only one template can be configured. You can find accepted values in the ibm_compute_vm_instance resource.
+- `virtual_server_id` - (Optional, Integer) The ID of a virtual server in a local load balancer. You can find the ID with the following URL `https://api.softlayer.com/rest/v3/SoftLayer_Network_Application_Delivery_Controller_LoadBalancer_VirtualIpAddress/<load_balancer_ID>/getObject?objectMask=virtualServers`. Replace `<load_balancer_ID>` with the ID of the target load balancer. **Note** To view the load balancer ID. Log in to the [IBM Cloud Classic Infrastructure API](https://api.softlayer.com/rest/v3/SoftLayer_Hardware/getCreateObjectOptions.json) that uses your API key as the password. For more information, about creating classic infrastructure keys and locating your VPN username and password, refer [Managing classic infrastructure API keys](https://cloud.ibm.com/docs/account?topic=account-classic_keys).
 
-## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-* `id` - The unique identifier of the auto scaling group.
+- `id` - (String) The unique identifier of the autoscaling group.

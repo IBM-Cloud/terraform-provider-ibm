@@ -49,7 +49,7 @@ func testAccCheckIBMCmOfferingInstanceDataSourceConfig(clusterId string, cluster
 		resource "ibm_cm_version" "cm_version" {
 			catalog_identifier = ibm_cm_catalog.cm_catalog.id
 			offering_id = ibm_cm_offering.cm_offering.id
-			zipurl = "https://raw.githubusercontent.com/operator-framework/community-operators/master/community-operators/flux/0.9.1/manifests/flux.v0.9.1.clusterserviceversion.yaml"
+			zipurl = "https://raw.githubusercontent.com/operator-framework/community-operators/master/community-operators/cockroachdb/5.0.3/manifests/cockroachdb.clusterserviceversion.yaml"
 		}
 
 		resource "ibm_cm_offering_instance" "cm_offering_instance" {
@@ -63,6 +63,7 @@ func testAccCheckIBMCmOfferingInstanceDataSourceConfig(clusterId string, cluster
 			cluster_namespaces = ["tf-cm-data-test"]
 			cluster_all_namespaces = false
 			resource_group_id = "%s"
+			install_plan = "Automatic"
 		}
 
 		data "ibm_cm_offering_instance" "cm_offering_instance_data" {

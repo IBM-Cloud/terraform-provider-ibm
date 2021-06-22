@@ -4,19 +4,17 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_is_security_group_target"
 description: |-
-  Manages IBM Security Group Target
+  Manages IBM security group target.
 ---
 
 # ibm_is_security_group_target
-
 This request adds a resource to an existing security group. The supplied target identifier can be:
-  - A network interface identifier
-  - An application load balancer identifier
-When a target is added to a security group, the security group rules are applied to the target. A request body is not required, and if supplied, is ignored.
+  - A network interface identifier.
+  - An application load balancer identifier.
+When a target is added to a security group, the security group rules are applied to the target. A request body is not required, and if supplied, is ignored. For more information, about security group target, see [required permissions](https://cloud.ibm.com/docs/vpc?topic=vpc-resource-authorizations-required-for-api-and-cli-calls).
 
-## Example Usage
-
-In the following example, you can create a security group target:
+## Example usage
+Sample to create a security group target.
 
 ```terraform
 resource "ibm_is_security_group_target" "testacc_security_group_target" {
@@ -25,26 +23,26 @@ resource "ibm_is_security_group_target" "testacc_security_group_target" {
   }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `security_group` - (Required, Force new resource, String) The security group identifier.
+- `target` - (Required, Force new resource, String) The security group target identifier.
 
-- `security_group` - (Required, string,ForceNew) The security group identifier
-- `target` - (Required, string,ForceNew) The security group target identifier
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-The following attributes are exported:
-
-- `id` - The unique identifier of the security group target. The id is composed of <`security_group_id`>/<`target_id`>.
-- `name` - The user-defined name of the target
-- `resource_type` - The resource type
+- `id` - (String) The unique identifier of the security group target. The id is composed of <`security_group_id`>/<`target_id`>.
+- `name` - (String) The user-defined name of the target.
+- `resource_type` - (String) The resource type.
 
 ## Import
 
-ibm_is_security_group_target can be imported using security group ID and target ID, eg
+The `ibm_is_security_group_target` resource can be imported by using security group ID and target ID.
+
+**Example**
 
 ```
-$ terraform import ibm_is_security_group_target.example r006-6c6528a7-26de-4438-9685-bf2f6bbcb1ad/r006-5b77aa07-7dfb-4c74-a1bd-904b23cbe198
+$ terraform import ibm_is_security_group_target.example r006-6c6528a7-26de-4438-9685-bf2f6bbcb1ad/r006-5b77aa07-7dfb-4c74-a1bd-904123123cbe198
 
 ```

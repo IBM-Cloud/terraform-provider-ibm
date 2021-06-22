@@ -24,6 +24,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/apache/openwhisk-client-go/whisk"
+	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
@@ -744,7 +745,7 @@ func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
 
 func retentionRuleGet(in *s3.ProtectionConfiguration) []interface{} {
 	rules := make([]interface{}, 0, 1)
-	if in != nil && in.Status != nil && *in.Status == "Retention" {
+	if in != nil && in.Status != nil && *in.Status == "COMPLIANCE" {
 		protectConfig := make(map[string]interface{})
 		if in.DefaultRetention != nil {
 			protectConfig["default"] = int(*(in.DefaultRetention).Days)
@@ -764,22 +765,19 @@ func retentionRuleGet(in *s3.ProtectionConfiguration) []interface{} {
 }
 
 func flattenCosObejctVersioning(in *s3.GetBucketVersioningOutput) []interface{} {
-	out, err := json.Marshal(in)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(string(out))
-	att := make(map[string]interface{})
+	versioning := make([]interface{}, 0, 1)
 	if in != nil {
 		if in.Status != nil {
+			att := make(map[string]interface{})
 			if *in.Status == "Enabled" {
 				att["enable"] = true
 			} else {
 				att["enable"] = false
 			}
+			versioning = append(versioning, att)
 		}
 	}
-	return []interface{}{att}
+	return versioning
 }
 
 func flattenLimits(in *whisk.Limits) []interface{} {
@@ -887,6 +885,20 @@ func intValue(i64 *int64) (i int) {
 func float64Value(f32 *float32) (f float64) {
 	if f32 != nil {
 		f = float64(*f32)
+	}
+	return
+}
+
+func dateToString(d *strfmt.Date) (s string) {
+	if d != nil {
+		s = d.String()
+	}
+	return
+}
+
+func dateTimeToString(dt *strfmt.DateTime) (s string) {
+	if dt != nil {
+		s = dt.String()
 	}
 	return
 }
@@ -2494,4 +2506,71 @@ func immutableResourceCustomizeDiff(resourceList []string, diff *schema.Resource
 		}
 	}
 	return nil
+}
+
+func flattenSatelliteWorkerPoolZones(zones *schema.Set) []kubernetesserviceapiv1.SatelliteCreateWorkerPoolZone {
+	zoneList := make([]kubernetesserviceapiv1.SatelliteCreateWorkerPoolZone, zones.Len())
+	for i, v := range zones.List() {
+		data := v.(map[string]interface{})
+		if v, ok := data["id"]; ok && v.(string) != "" {
+			zoneList[i].ID = sl.String(v.(string))
+		}
+	}
+
+	return zoneList
+}
+
+func flattenSatelliteWorkerPools(list []kubernetesserviceapiv1.GetWorkerPoolResponse) []map[string]interface{} {
+	workerPools := make([]map[string]interface{}, len(list))
+	for i, workerPool := range list {
+		l := map[string]interface{}{
+			"id":                         *workerPool.ID,
+			"name":                       *workerPool.PoolName,
+			"isolation":                  *workerPool.Isolation,
+			"flavour":                    *workerPool.Flavor,
+			"size_per_zone":              *workerPool.WorkerCount,
+			"state":                      *workerPool.Lifecycle.ActualState,
+			"default_worker_pool_labels": workerPool.Labels,
+			"host_labels":                workerPool.HostLabels,
+		}
+		zones := workerPool.Zones
+		zonesConfig := make([]map[string]interface{}, len(zones))
+		for j, zone := range zones {
+			z := map[string]interface{}{
+				"zone":         *zone.ID,
+				"worker_count": int(*zone.WorkerCount),
+			}
+			zonesConfig[j] = z
+		}
+		l["zones"] = zonesConfig
+		workerPools[i] = l
+	}
+
+	return workerPools
+}
+
+func flattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {
+	mapped := make([]string, len(hostLabels))
+	idx := 0
+	for k, v := range hostLabels {
+		mapped[idx] = fmt.Sprintf("%s:%v", k, v)
+		idx++
+	}
+
+	return newStringSet(schema.HashString, mapped)
+}
+
+// KMS Private Endpoint
+func updatePrivateURL(kpURL string) (string, error) {
+	var kmsEndpointURL string
+	if !strings.Contains(kpURL, "private") {
+		kmsEndpURL := strings.SplitAfter(kpURL, "https://")
+		if len(kmsEndpURL) == 2 {
+			kmsEndpointURL = kmsEndpURL[0] + "private." + kmsEndpURL[1] + "/api/v2/"
+
+		} else {
+			return "", fmt.Errorf("Error in Kms EndPoint URL ")
+		}
+	}
+	return kmsEndpointURL, nil
 }

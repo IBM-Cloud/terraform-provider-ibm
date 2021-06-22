@@ -3,14 +3,13 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_instance_disk"
 description: |-
-  Get information about InstanceDisk
+  Get information about instance disk.
 ---
 
-# ibm\_is_instance_disk
+# ibm_is_instance_disk
+Retrieve information about an instance disk. For more information about instance disk, see [managing instance storage](https://cloud.ibm.com/docs/vpc?topic=vpc-instance-storage-provisioning).
 
-Provides a read-only data source for InstanceDisk. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
@@ -60,27 +59,19 @@ data "is_instance_disk" "is_instance_disk" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `instance` - (Required, String) The instance identifier.
+- `disk` - (Required, String) The instance disk identifier.
 
-* `instance` - (Required, string) The instance identifier.
-* `disk` - (Required, string) The instance disk identifier.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
-
-The following attributes are exported:
-
-* `id` - The unique identifier of the InstanceDisk.
-* `created_at` - The date and time that the disk was created.
-
-* `href` - The URL for this instance disk.
-
-* `interface_type` - The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
-
-* `name` - The user-defined name for this disk.
-
-* `resource_type` - The resource type.
-
-* `size` - The size of the disk in GB (gigabytes).
-
+- `created_at` - (Timestamp) The date and time that the disk was created.
+- `href` - (String) The URL for this instance disk.
+- `id` - (String) The unique identifier of the instance disk.
+- `interface_type` - (String) The disk interface used for attaching the disk. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally, halt processing and surface the error, or bypass the resource on which the unexpected property value is used.
+- `name` - (String) The user defined name for this disk.
+- `resource_type` - (String) The resource type.
+- `size` - (String) The size of the disk in GB (gigabytes).

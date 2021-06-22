@@ -3,14 +3,13 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: ibm_bare_metal"
 description: |-
-  Get information on a IBM Compute Bare Metal
+  Get information of an IBM Cloud compute bare metal
 ---
 
-# ibm\_compute_bare_metal
+# ibm_compute_bare_metal
+Retrieve information of an existing bare metal as a read-only data source. For more details, about compute bare metal, see [compute services](https://cloud.ibm.com/docs/cloud-infrastructure?topic=cloud-infrastructure-compute).
 
-Import the details of an existing bare metal as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_compute_bare_metal" "bare_metal" {
@@ -24,49 +23,44 @@ data "ibm_compute_bare_metal" "bare_metal" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source.
 
-The following arguments are supported:
+- `domain` - (Optional, String) The domain of the Bare Metal server. If you specify this option, do not specify `global_identifier` at the same time.
+- `global_identifier` - (Optional, String) The unique global identifier of the Bare Metal server. To see global identifier, log in to the [IBM Cloud Classic Infrastructure API](https://api.softlayer.com/rest/v3.1/SoftLayer_Account/getHardware.json), that uses your API key as the password. If you specify this option, do not specify `hostname`, `domain`, or `most_recent` at the same time.
+- `hostname` - (Optional, String) The hostname of the Bare Metal server. If you specify the `hostname`, do not specify `global_identifier` at the same time.
+- `most_recent` - (Optional, Bool) For multiple Bare Metal services, you can set this argument to **true** to import only the most recently created server. If you specify this option, do not specify `global_identifier` at the same time.
 
-* `hostname` - (Optional, string) The hostname of the bare metal server.  
-  **NOTE**: Conflicts with `global_identifier`.
-* `domain` - (Optional, string) The domain of the bare metal server.  
-  **NOTE**: Conflicts with `global_identifier`.
-* `global_identifier` - (Optional, string) The unique global identifier of the bare metal server. To see global identifier, log in to the [IBM Cloud Classic Infrastructure (SoftLayer) API](https://api.softlayer.com/rest/v3.1/SoftLayer_Account/getHardware.json), using your API key as the password.  
-  **NOTE**: Conflicts with `hostname`, `domain`, `most_recent`.
-* `most_recent` - (Optional, boolean) If there are multiple bare metals, you can set this argument to `true` to import only the most recently created server.  
-   **NOTE**: Conflicts with `global_identifier`.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the bare metal server.
-* `datacenter` - The data center in which the bare metal server is deployed.
-* `network_speed` - The connection speed, expressed in Mbps,  for the server network components.
-* `public_bandwidth` - The amount of public network traffic, allowed per month.
-* `public_ipv4_address` - The public IPv4 address of the bare metal server.
-* `public_ipv4_address_id` - The unique identifier for the public IPv4 address of the bare metal server.
-* `private_ipv4_address` - The private IPv4 address of the bare metal server.
-* `private_ipv4_address_id` - The unique identifier for the private IPv4 address of the bare metal server.
-* `public_vlan_id` - The public VLAN used for the public network interface of the server. 
-* `private_vlan_id` - The private VLAN used for the private network interface of the server. 
-* `public_subnet` - The public subnet used for the public network interface of the server. 
-* `private_subnet` - The private subnet used for the private network interface of the server. 
-* `hourly_billing` -  The billing type of the server.
-* `private_network_only` - Specifies whether the server only has access to the private network.
-* `user_metadata` - Arbitrary data available to the computing server.
-* `notes` -  Notes associated with the server.
-* `memory` - The amount of memory in gigabytes, for the server.
-* `redundant_power_supply` -  When the value is `true`, it indicates additional power supply is provided.
-* `redundant_network` - When the value is `true`, two physical network interfaces are provided with a bonding configuration.
-* `unbonded_network` - When the value is `true`, two physical network interfaces are provided without a bonding configuration.
-* `os_reference_code` - An operating system reference code that provisioned the computing server.
-*  `tags` - Tags associated with this bare metal server.
-* `block_storage_ids` - Block storage to which this computing server have access.
-* `file_storage_ids` - File storage to which this computing server have access.
-* `ipv6_enabled` - Indicates whether the public IPv6 address enabled or not.
-* `ipv6_address` - The public IPv6 address of the bare metal server.
-* `ipv6_address_id` - The unique identifier for the public IPv6 address of the bare metal server.
-* `secondary_ip_count` - The number of secondary IPv4 addresses of the bare metal server.
-* `secondary_ip_addresses` - The public secondary IPv4 addresses of the bare metal server.
+- `block_storage_ids`- (List of string) Block storage to which this computing server has access.
+- `datacenter` - (String) The data center in which the Bare Metal server is deployed.
+- `file_storage_ids`- (List of string) File storage to which this computing server has access.
+- `hourly_billing` - (String) The billing type of the server.
+- `id` - (String) The unique identifier of the Bare Metal server.
+- `ipv6_enabled`- (Bool) Indicates whether the public IPv6 address is enabled or not.
+- `ipv6_address` - (String) The public IPv6 address of the Bare Metal server.
+- `ipv6_address_id` - (String) The unique identifier for the public IPv6 address of the Bare Metal server.
+- `memory`- (Integer) The amount of memory in gigabytes, for the server.
+- `network_speed` - (String) The connection speed, expressed in Mbps, for the server network components.
+- `notes`-  (String) Notes associated with the server.
+- `os_reference_code` - (String) An operating system reference code that provisioned the computing server.
+- `public_bandwidth` - (String) The amount of public network traffic, allowed per month.
+- `public_ipv4_address` - (String) The public IPv4 address of the Bare Metal server.
+- `public_ipv4_address_id` - (String) The unique identifier for the public IPv4 address of the Bare Metal server.
+- `private_ipv4_address` - (String) The private IPv4 address of the Bare Metal server.
+- `private_ipv4_address_id` - (String) The unique identifier for the private IPv4 address of the Bare Metal server.
+- `public_vlan_id` - (String) The public VLAN used for the public network interface of the server.
+- `private_vlan_id` - (String) The private VLAN used for the private network interface of the server.
+- `public_subnet` - (String) The public subnet used for the public network interface of the server.
+- `private_subnet` - (String) The private subnet used for the private network interface of the server.
+- `private_network_only` - (String) Specifies whether the server has only access to the private network.
+- `redundant_power_supply`-  (Bool) When the value is **true**, it indicates that more power supply is provided.
+- `redundant_network`- (Bool) When the value is **true**, two physical network interfaces are provided with a bonding configuration.
+- `secondary_ip_count`- (Integer) The number of secondary IPv4 addresses of the Bare Metal server.
+- `secondary_ip_addresses` - (String) The public secondary IPv4 addresses of the Bare Metal server.
+- `tags`- (List of string) Tags associated with this Bare Metal server.
+- `user_metadata` - (String) Arbitrary data available to the computing server.
+- `unbonded_network`- (Bool) When the value is **true**, two physical network interfaces are provided without a bonding configuration.

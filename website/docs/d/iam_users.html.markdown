@@ -3,14 +3,15 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_users"
 description: |-
-  Fechtes all IAM users profile information.
+  Fetches all IAM users profile information.
 ---
 
-# ibm\_iam_users
+# ibm_iam_users
 
-Import the details of all IAM (Identity and Access Management) users profile on IBM Cloud as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Retrieve information about an IAM user profile on IBM Cloud as a read-only data source. For more information, about IAM users profile information, see [assigning access to account management services](https://cloud.ibm.com/docs/account?topic=account-account-services).
 
-## Example Usage
+
+## Example usage
 
 ```terraform
 
@@ -20,21 +21,22 @@ Import the details of all IAM (Identity and Access Management) users profile on 
 
 ```
 
-## Attribute Reference
+## Attribute reference
 
-In addition to all arguments above, the following attributes are exported:
-* `id` - An alphanumeric value identifying the user.
-* `users` - List of all IAM users. Each user profile has following list of arguments	
-  * `iam_id` - An alphanumeric value identifying the user's IAM ID.
-  * `realm` - The realm of the user. 
-  * `user_id` - The user ID used for login.
-  * `firstname` - The first name of the user.
-  * `lastname` -  The last name of the user.
-  * `state` - The state of the user. 
-  * `email` - The email of the user.
-  * `phonenumber` - The phone for the user.
-  * `altphonenumber` - The alternative phone number of the user.
-  * `account_id` - An alphanumeric value identifying the account ID.
+You can access the following attribute references after your data source is created.
 
+- `id` - (String) The unique identifier user.
+- `users`-  (String) List of all IAM users. Each user profile has following list of arguments.
 
+  Nested scheme for `users`:
+	- `altphonenumber`-  (String) The alternative phone number of the user.
+	- `account_id`-  (String) The account ID of the user.
+	- `email`-  (String) The email of the user.
+	- `iam_id`-  (String) The ID of the IAM user.
+	- `firstname`-  (String) The first name of the user.
+	- `lastname`-  (String) The last name of the user.
+	- `phonenumber`-  (String) The phone for the user.
+	- `realm`-  (String) The realm of the user.
+	- `state`-  (String) The state of the user.
+	- `user_id`-  (String) The user ID used for log in.
   

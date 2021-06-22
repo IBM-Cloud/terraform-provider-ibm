@@ -3,16 +3,15 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM: instance_group_manager_policies"
 description: |-
-  Get all the IBM VPC instance group manager policies info.
+  Get all the IBM VPC instance group manager policies information.
 ---
 
-# ibm\_is_instance_group_manager_policies
+# ibm_is_instance_group_manager_policies
+Retrieve all the policies information of an instance group manager. For more information, about instance group manager policies information, see [required permissions](https://cloud.ibm.com/docs/vpc?topic=vpc-resource-authorizations-required-for-api-and-cli-calls).
 
-Retrive all the policies info of an instance group manager
-
-## Example Usage
-
+## Example usage
 In the following example, you can retrieve a policy info of an instance group manager.
+
 ```terraform
 data "ibm_is_instance_group_manager_policy" "instance_group_manager_policy" {
   instance_group = "r006-76770f94-f7654-11e9-96e7-a77724435315"
@@ -20,20 +19,21 @@ data "ibm_is_instance_group_manager_policy" "instance_group_manager_policy" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source.
 
-The following arguments are supported:
-* `instance_group` - (Required, string) The instance group ID.
-* `instance_group_manager` - (Required, string) The instance group manager ID.
+- `instance_group` - (Required, String) The instance group ID.
+- `instance_group_manager` - (Required, String) The instance group manager ID.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-In addition to all arguments above, the following attributes are exported:
+- `instance_group_manager_policies` - (List) The list of instance group manager policies.
 
-* `instance_group_manager_policies` - instance group manager policies list
-  * `id` - Id is the combination of instance group ID, instance group manager ID and instance group manager policy ID
-  * `name` - Name of the Policy
-  * `policy_type` - The type of metric to be evaluated.
-  * `metric_type` - The type of metric to be evaluated. The possible values for metric types are cpu, memory, network_in and network_out
-  * `metric_value` - The metric value to be evaluated.
-  * `policy_id` - The ID of the Policy.
+  Nested scheme for `instance_group_manager_policies`:
+  - `id`- (Object) This ID is the combination of instance group ID, instance group manager ID and instance group manager policy ID.
+  - `metric_type` - (String) The type of metric to evaluate. The possible values are `cpu`, `memory`, `network_in` and `network_out`.
+  - `metric_value` -  (String) The metric value to evaluate.
+  - `name` - (String) The policy name.
+  - `policy_type` - (String) The type of metric to evaluate.
+  - `policy_id` - (String) The policy ID.

@@ -7,12 +7,11 @@ description: |-
   Manages IBM subnet.
 ---
 
-# ibm\_is_subnet
+# ibm_is_subnet
+Create, update, or delete a subnet. For more information, about subnet, see [configuring ACLs and security groups for use with VPN](https://cloud.ibm.com/docs/vpc?topic=vpc-acls-security-groups-vpn).
 
-Provides a subnet resource. This allows subnet to be created, updated, and cancelled.
 
-
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
@@ -41,46 +40,49 @@ resource "ibm_is_subnet" "testacc_subnet" {
 ```
 
 ## Timeouts
+The `ibm_is_subnet` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-ibm_is_subnet provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
-
-* `create` - (Default 10 minutes) Used for creating Instance.
-* `update` - (Default 10 minutes) Used for creating Instance.
-* `delete` - (Default 10 minutes) Used for deleting Instance.
-
-## Argument Reference
-
-The following arguments are supported:
+- **create** - (Default 10 minutes) Used for creating Instance.
+- **update** - (Default 10 minutes) Used for creating Instance.
+- **delete** - (Default 10 minutes) Used for deleting Instance.
 
 
-* `ipv4_cidr_block` - (Optional, Forces new resource, string)   The IPv4 range of the subnet.
-    **NOTE**: Conflicts with `total_ipv4_address_count`
-* `total_ipv4_address_count` - (Optional, Forces new resource, string) The total number of IPv4 addresses.
-    **NOTE**: Conflicts with `ipv4_cidr_block` and one of `ipv4_cidr_block`, `total_ipv4_address_count` is mandatory.
-* `ip_version` - (Optional, Forces new resource, string) The Ip Version. The default is `ipv4`.
-* `name` - (Required, string) The name of the subnet.
-* `network_acl` - (Optional, string) The ID of the network ACL for the subnet.
-* `public_gateway` - (Optional, string) The ID of the public-gateway for the subnet.
-* `vpc` - (Required, Forces new resource, string) The vpc id.
-* `zone` - (Required, Forces new resource, string) The subnet zone name.
-* `routing_table` - (Optional, string) The routing table identifier that is associated with the subnet. 
-* `resource_group` - (Optional, Forces new resource, string) The resource group ID where the Subnet to be created (This argument is supported only for Generation `2` infrastructure)
-* `tags` - (Optional, list(string)) Tags associated with the instance.
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-## Attribute Reference
+- `ipv4_cidr_block` - (Optional, Forces new resource, String) The IPv4 range of the subnet.
+- `ip_version` - (Optional, Forces new resource, String) The IP Version. The default is `ipv4`.
+- `name` - (Required, String) The name of the subnet.
+- `network_acl` - (Optional, String) The ID of the network ACL for the subnet.
+- `public_gateway` - (Optional, String) The ID of the public gateway for the subnet that you want to attach to the subnet. You create the public gateway with the [`ibm_is_public_gateway` resource](#provider-public-gateway).
+- `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the subnet.
+- `routing_table` - (Optional, String) The routing table ID associated with the subnet.
+- `tags`  - (Optional, List of Strings) A list of tags with the service policy instance. **Note** Tags are managed locally and not stored in the IBM Cloud service endpoint at this moment.
+- `total_ipv4_address_count` - (Optional, Forces new resource, String) The total number of IPv4 addresses. Either `ipv4_cidr_block` or `total_pv4_address_count` input parameters must be provided in the resource.
+- `vpc` - (Required, Forces new resource, String) The VPC ID.
+- `zone` - (Required, Forces new resource, String) The subnet zone name.
 
-In addition to all arguments above, the following attributes are exported:
 
-* `id` - The id of the subnet.
-* `ipv6_cidr_block` - The IPv6 range of the subnet.
-* `status` - The status of the subnet.
-* `available_ipv4_address_count` - The total number of available IPv4 addresses.
-* `crn` - The CRN of subnet.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `available_ipv4_address_count` - (String) The total number of available IPv4 addresses.
+- `crn` - (String) The CRN of subnet.
+- `id` - (String) The ID of the subnet.
+- `ipv6_cidr_block` - (String) The IPv6 range of the subnet.
+- `status` - (String) The status of the subnet.
 
 ## Import
+The `ibm_is_subnet` resource can be imported by using the ID. 
 
-ibm_is_subnet can be imported using ID, eg
+**Syntax**
 
 ```
-$ terraform import ibm_is_subnet.example d7bec597-4726-451f-8a63-e62e6f19c32c
+$ terraform import ibm_is_subnet.example <subnet_ID>
+```
+
+**Example**
+
+```
+$ terraform import ibm_is_subnet.example d7bec597-4726-451f-8a63-e62e6f12122c
 ```

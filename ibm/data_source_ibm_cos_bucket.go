@@ -421,9 +421,11 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
 		return err
 	}
-	versioningData := flattenCosObejctVersioning(versionPtr)
-	if versioningData != nil {
-		d.Set("object_versioning", versioningData)
+	if versionPtr != nil {
+		versioningData := flattenCosObejctVersioning(versionPtr)
+		if len(versioningData) > 0 {
+			d.Set("object_versioning", versioningData)
+		}
 	}
 
 	return nil

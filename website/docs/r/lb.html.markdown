@@ -4,15 +4,13 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lb"
 description: |-
-  Manages IBM Load Balancer.
+  Manages IBM Cloud load balancer.
 ---
 
-# ibm\_lb
+# ibm_lb
+Create, update, and delete a load balancer. For more information, about load balancer, see [selecting the service and configuring basic parameters](https://cloud.ibm.com/docs/loadbalancer-service?topic=loadbalancer-service-configuring-ibm-cloud-load-balancer-basic-parameters).
 
-Provides a resource for local load balancers. This allows local load balancers to be created, updated, and deleted.
-
-## Example Usage
-
+## Example usage
 In the following example, you can create a local load balancer:
 
 ```terraform
@@ -31,30 +29,28 @@ resource "ibm_lb" "test_lb_local" {
 
 ## Timeouts
 
-ibm_subnet provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_lb` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-* `create` - (Default 30 minutes) Used for Creating Instance.
+- **create** - (Default 30 minutes) Used for creating instance.
 
 
-## Argument Reference
+## Argument reference 
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `connections` - (Required, Integer) The number of connections for the local load balancer. Only incremental upgrade is supported. For downgrade, please open the SoftLayer support ticket.
+- `datacenter` - (Required, Forces new resource, String)The data center for the local load balancer.
+- `dedicated` - (Optional, Bool)  Specifies whether the local load balancer must be dedicated. The default value is **false**.
+- `ha_enabled`- (Required, Forces new resource, Bool) Specifies whether the local load balancer must be HA-enabled.
+- `security_certificate_id` - (Optional, Forces new resource, Integer) The ID of the security certificate associated with the local load balancer.
+- `ssl_offload` - (Optional, Bool)  Specifies the local load balancer SSL offload. If **true** start SSL acceleration on all SSL virtual services. (those with a type of HTTPS) This action should be taken only after configuring an SSL certificate for the virtual IP. If **false** stop SSL acceleration on all SSL virtual services (those with a type of HTTPS). The default value is **false**.
+- `tags`- (Optional, Array of Strings)Tags associated with the local load balancer instance.     **Note** `Tags` are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
 
-* `connections` - (Required, integer) The number of connections for the local load balancer. Only incremental upgrade is supported . For downgrade, please open the softlayer support ticket.
-* `datacenter` - (Required, Forces new resource, string) The data center for the local load balancer.
-* `ha_enabled` - (Required, Forces new resource, boolean) Specifies whether the local load balancer must be HA-enabled.
-* `security_certificate_id` - (Optional, Forces new resource, integer) The ID of the security certificate associated with the local load balancer.
-* `dedicated` - (Optional, boolean) Specifies whether the local load balancer must be dedicated. The default value is `false`.
-* `ssl_offload` - (Optional, boolean) Specifies the local load balancer ssl offload. If `true` start SSL acceleration on all SSL virtual services (those with a type of HTTPS). This action should be taken only after configuring an SSL certificate for the virtual IP. If `false` stop SSL acceleration on all SSL virtual services (those with a type of HTTPS). The default value is `false`.
-* `tags` - (Optional, array of strings) Tags associated with the local load balancer instance.  
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the local load balancer.
-* `hostname` - The host name of the local load balancer.
-* `ip_address` - The IP address of the local load balancer.
-* `subnet_id` - The unique identifier of the subnet associated with the local load balancer.
-* `ssl_enabled` - The status of whether the local load balancer provides SSL capability.
+- `id`- (String) The unique identifier of the local load balancer.
+- `ip_address`- (String) The IP address of the local load balancer.
+- `hostname`- (String) The host name of the local load balancer.
+- `subnet_id`- (String) The unique identifier of the subnet associated with the local load balancer.
+- `ssl_enabled`- (String) The status of whether the local load balancer provides SSL capability.

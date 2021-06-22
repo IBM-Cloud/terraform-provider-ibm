@@ -4,15 +4,14 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_flow_log"
 description: |-
-  Manages IBM VPC Flow Log.
+  Manages IBM VPC flow log.
 ---
 
-# ibm\_is_flow_log
+# ibm_is_flow_log
+Create, update, delete and suspend the flow log resource. For more information, about VPC flow log, see [creating a flow log collector](https://cloud.ibm.com/docs/vpc?topic=vpc-ordering-flow-log-collector).
 
-Provides a flow log resource. This allows flow log to be created, updated, deleted and suspended.
 
-
-## Example Usage
+## Example usage
 
 ```terraform
 
@@ -61,32 +60,34 @@ resource ibm_is_flow_log test_flowlog {
 
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-* `name` - (Required, string) The unique user-defined name for this flow log collector.
-* `target` - (Required, Forces new resource, string) The id of the target this collector is to collect flow logs for. If the target is an instance, subnet, or VPC, flow logs will not be collected for any network interfaces within the target that are themselves the target of a more specific flow log collector.
-* `storage_bucket` - (Required, Forces new resource, string) The name of the Cloud Object Storage bucket where the collected flows will be logged. The bucket must exist and an IAM service authorization must grant IBM Cloud Flow Logs resources of VPC Infrastructure Services writer access to the bucket.
-* `active` - (Optional, string) Indicates whether this collector is active. If false, this collector is created in inactive mode. Default is true. 
-* `resource_group` - (Optional, Forces new resource, string) The resource group ID where the flow log is to be created.
-* `tags` - (Optional, array of strings) Tags associated with the Flow log.
+- `name` - (Required, String) The unique user-defined name for the flow log collector.No.
+- `target` - (Required, Forces new resource, String) The ID of the target to collect flow logs. If the target is an instance, subnet, or VPC, flow logs is not collected for any network interfaces within the target that are more specific flow log collector.
+- `storage_bucket` - (Required, Forces new resource, String) The name of the IBM Cloud Object Storage bucket where the collected flows will be logged. The bucket must exist and an IAM service authorization must grant IBM Cloud flow logs resources of VPC infrastructure services writer access to the bucket.
+- `active` - (Optional, String) Indicates whether the collector is active. If **false**, this collector is created in inactive mode. Default value is true.
+- `resource_group` - (Optional, Forces new resource, String) The resource group ID where the flow log is created.
+- `tags` - (Optional, Array of Strings) The tags associated with the flow log.
 
-## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-* `created_at` - The date and time that the flow log collector was created. 
-* `crn` - The CRN for this flow log collector.
-* `href` - The URL for this flow log collector.
-* `id` - The unique identifier for this flow log collector.
-* `lifecycle_state` - The lifecycle state of the flow log collector.
-* `name` - The user-defined name for this flow log collector.
-* `vpc` - The VPC this flow log collector is associated with.
+- `created_at`-  (String) The date and time that the flow log collector created.
+- `crn` - (String) The CRN of the flow log collector.
+- `href` - (String) The URL of the flow log collector.
+- `id` - (String) The unique identifier of the flow log collector.
+- `lifecycle_state` - (String) The lifecycle state of the flow log collector.
+- `name`-  (String) The user-defined name of the flow log collector.
+- `vpc` - (String) The VPC of the flow log collector that is associated.
+
 
 ## Import
+The `ibm_is_flow_log` resource can be imported by using VPC flow log ID.
 
-ibm_is_flow_log can be imported using VPC Flow log ID, eg
+**Example**
 
 ```
 $ terraform import ibm_is_flow_log.example d7bec597-4726-451f-8a53-e62e6f19c32c

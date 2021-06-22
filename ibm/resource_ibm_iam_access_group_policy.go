@@ -385,12 +385,16 @@ func resourceIBMIAMAccessGroupPolicyExists(d *schema.ResourceData, meta interfac
 		accessGroupPolicyId,
 	)
 
-	accessGroupPolicy, res, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
-	if err != nil {
-		if res != nil && res.StatusCode == 404 {
+	accessGroupPolicy, resp, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+	if err != nil || accessGroupPolicy == nil {
+		if resp != nil && resp.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s\n%s", err, res)
+		return false, fmt.Errorf("Error communicating with the API: %s\n%s", err, resp)
+	}
+
+	if accessGroupPolicy != nil && accessGroupPolicy.State != nil && *accessGroupPolicy.State == "deleted" {
+		return false, nil
 	}
 
 	tempID := fmt.Sprintf("%s/%s", *getSubjectAttribute("access_group_id", accessGroupPolicy.Subjects[0]), *accessGroupPolicy.ID)

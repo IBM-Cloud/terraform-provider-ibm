@@ -4,15 +4,15 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : security_group"
 description: |-
-  Manages IBM Security Group.
+  Manages IBM Cloud Security Group.
 ---
 
-# ibm\_is_security_group
+# ibm_is_security_group
+Create, delete, and update a security group. Provides a networking security group resource that controls access to the public and private interfaces of a virtual server instance. To create rules for the security group, use the `security_group_rule` resource. For more information, about security group, see [managing security groups](https://cloud.ibm.com/docs/security-groups?topic=security-groups-managing-sg).
 
-Provides a security group resource. This allows security group to be created, updated, and cancelled.
+For more information, see [IBM Cloud Classic Infrastructure (SoftLayer)  API Docs(http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_SecurityGroup).
 
-
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
@@ -25,36 +25,37 @@ resource "ibm_is_security_group" "testacc_security_group" {
 }
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-* `name` - (Optional, string) The security group name.
-* `vpc` - (Required, Forces new resource, string) The vpc id. 
-* `resource_group` - (Optional, Forces new resource, string) The resource group ID where the security group to be created.
-* `tags` - (Optional, list(string)) Tags associated with the instance.
+- `name` - (Optional, String) The security group name.
+- `resource_group` - (Optional, String) The resource group ID where the security group to be created.
+- `tags`- (Optional, List of Strings) The tags associated with an instance.
+- `vpc` - (Required, Forces new resource, String) The VPC ID.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
+- `crn` - (String) The CRN of the security group.
+- `id` - (String) The ID of the security group.
+- `rules` - (List of Objects) A nested block describes the rules of this security group. Nested `rules` blocks have the following structure.
 
-* `id` - The id of the security group.
-* `rules` - A nested block describing the rules of this security group.
-Nested `rules` blocks have the following structure:
-  * `direction` -  The direction of the traffic either `inbound` or `outbound`.
-  * `ip_version` - IP version either `ipv4` or `ipv6`.
-  * `remote` - Security group id - an IP address, a CIDR block, or a single security group identifier.
-  * `protocol` - The type of the protocol `all`, `icmp`, `tcp`, `udp`. 
-  * `type` - The ICMP traffic type to allow.
-  * `code` - The ICMP traffic code to allow.
-  * `port_max` - The inclusive upper bound of TCP/UDP port range.
-  * `port_min` - The inclusive lower bound of TCP/UDP port range. 
-* `crn` - The CRN of the security group. 
+  Nested scheme for `rules`:
+  - `code` - (String) The `ICMP` traffic code to allow.
+  - `direction`-  (String) The direction of the traffic either `inbound` or `outbound`.
+  - `ip_version` - (String) IP version either `ipv4` or `ipv6`.
+  - `protocol` - (String) The type of the protocol `all`, `icmp`, `tcp`, `udp`.
+  - `port_max`- (Integer) The `TCP/UDP` port range that includes the maximum bound.
+  - `port_min`- (Integer) The `TCP/UDP` port range that includes the minimum bound.
+  - `remote` - (String) Security group id, an IP address, a `CIDR` block, or a single security group identifier.
+  - `type` - (String) The `ICMP` traffic type to allow.
 
 ## Import
+The `ibm_is_security_group` resource can be imported by using load balancer ID. 
 
-ibm_is_security_group can be imported using lbID, eg
+**Example**
 
 ```
-$ terraform import ibm_is_security_group.example d7bec597-4726-451f-8a63-e62e6f19c32c
+$ terraform import ibm_is_security_group.example a1aaa111-1111-111a-1a11-a11a1a11a11a
 ```

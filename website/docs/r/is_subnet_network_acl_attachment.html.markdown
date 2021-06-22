@@ -4,15 +4,13 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : subnet network acl attachment"
 description: |-
-  Manages IBM Subnet Network ACL Attachment.
+  Manages IBM Subnet network ACL attachment.
 ---
 
-# ibm\_is_subnet_network_acl_attachment
+# ibm_is_subnet_network_acl_attachment
+Create, update, or delete a subnet network ACL attachment resource. For more information, about subnet network ACL attachment, see [setting up network ACLs](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls).
 
-Provides a subnet network ACL attachment resource. This allows subnet network ACL attachment to be created, updated, and cancelled.
-
-
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_is_network_acl" "isExampleACL" {
@@ -55,58 +53,69 @@ resource "ibm_is_subnet_network_acl_attachment" attach {
 }
 
 ```
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-## Argument Reference
+- `network_acl` - (Optional, String) The network ACL identity.
+- `subnet` - (Optional, Forces new resource, String) The subnet identifier.
 
-The following arguments are supported:
 
-* `subnet` - (Required, Forces new resource string) The subnet identifier.
-* `network_acl` - (Required, string) The network ACL identity.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
+- `created_at` - (Timestamp) The creation date and time the network ACL.
+- `crn` - (String) The CRN of this network ACL.
+- `href` - (String) The URL of this network ACL.
+- `id` - (String) The unique identifier of this network ACL.
+- `name` - (String) The user-defined name of this network ACL.
+- `protocol` - (List) The protocol list to enforce.
+	
+  Nested scheme for `protocol`:
+  - `icmp` - (List) The protocol ICMP.
 
-In addition to all arguments above, the following attributes are exported:
+    Nested scheme for `icmp`:
+	  - `code` - (String) The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also specified.
+	  - `type` - (String) The ICMP traffic type to allow. If unspecified, all types are allowed by this rule.
+	- `tcp` - (List) The TCP protocol.
 
-* `id` - The unique identifier for this network ACL.
-* `name` - The user-defined name for this network ACL.
-* `created_at` - The date and time that the network ACL was created.
-* `crn` - The CRN for this network ACL.
-* `href` - The URL for this network ACL.
-* `resource_group` - The resource group for this network ACL.
-* `rules` - The ordered rules for this network ACL. If no rules exist, all traffic will be denied.
-Nested `rules` blocks have the following structure:
+    Nested scheme for `tcp`:
+	  - `destination_port_max` - (String) The inclusive maximum bound of TCP destination port range.
+	  - `destination_port_min` - (String) The inclusive minimum bound of TCP destination port range.
+	  - `source_port_max` - (String) The inclusive maximum bound of TCP source port range.
+	  - `source_port_min` - (String) The inclusive minimum bound of TCP source port range.
+	- `udp` - (List) The UDP protocol.
 
-        * `action` - Whether to allow or deny matching traffic.
-        * `created_at` - The date and time that the rule was created
-        * `source` - The source CIDR block. The CIDR block 0.0.0.0/0 applies to all addresses.
-        * `destination` - The destination CIDR block. The CIDR block 0.0.0.0/0 applies to all addresses.
-        * `direction` - Whether the traffic to be matched is inbound or outbound.
-        * `href` - The URL for this Network ACL rule.
-        * `id` - The unique identifier for this Network ACL rule.
-        * `ip_version` - The IP version for this rule
-        * `name` - The user-defined name for this rule.
-	* `protocol` - The protocol to enforce.
-        * `icmp` - The protocol ICMP
-                * `code` - The ICMP traffic code to allow. If unspecified, all codes are allowed. This can only be specified if type is also specified.
-                * `type` - The ICMP traffic type to allow. If unspecified, all types are allowed by this rule.
-        * `tcp` - TCP protocol.
-                * `destination_port_max` - The inclusive upper bound of TCP destination port range.  
-                * `destination_port_min` - The inclusive lower bound of TCP destination port range.
-                * `source_port_max` - The inclusive upper bound of TCP source port range.
-                * `source_port_min` - The inclusive lower bound of TCP source port range.
-        * `udp` - UDP protocol
-                * `destination_port_max` - The inclusive upper bound of UDP destination port range. 
-                * `destination_port_min` - The inclusive lower bound of UDP destination port range.
-                * `source_port_max` - The inclusive upper bound of UDP source port range.
-                * `source_port_min` - The inclusive lower bound of UDP source port range.
-        * `subnets` - The subnets to which this network ACL is attached.
-        * `vpc` - The VPC this network ACL is a part of. 
+    Nested scheme for `udp`:
+	  - `destination_port_max` - (String) The inclusive maximum bound of UDP destination port range.
+	  - `destination_port_min` - (String) The inclusive minimum bound of UDP destination port range.
+	  - `source_port_max` - (String) The inclusive maximum bound of UDP source port range.
+	  - `source_port_min` - (String) The inclusive minimum bound of UDP source port range.
+	- `subnets` - (String) The subnets to which this network ACL is attached.
+	- `vpc` - (String) The VPC to which this network ACL is a part of.
+- `resource_group` - (String) The resource group of this network ACL.
+- `rules` - (List) The ordered rules of this network ACL. If rules does not exist, all traffic will be denied. Nested rules blocks has the following structure.
 
+  Nested scheme for `rules`:
+	- `action` - (String) Specify to allow or deny matching traffic.
+	- `created_at` - (String) The rule creation date and time.
+	- `source` - (String) The source CIDR block. The CIDR block 0.0.0.0/0 applies to all addresses.
+	- `destination` - (String) The destination CIDR block. The CIDR block 0.0.0.0/0 applies to all addresses.
+	- `href` - (String) The URL of the Network ACL rule.
+	- `id` - (String) The unique identifier of the Network ACL rule.
+	- `ip_version` - (String) The IP version of the rule.
+	- `name` - (String) The user-defined name of the rule.
 
 ## Import
+The `ibm_is_subnet_network_acl_attachment` resource can be imported by using the ID. 
 
-ibm_is_subnet_network_acl_attachment can be imported using ID, eg
+**Syntax**
 
 ```
-$ terraform import ibm_is_subnet_network_acl_attachment.example d7bec597-4726-451f-8a63-e62e6f19c32c
+$ terraform import ibm_is_subnet_network_acl_attachment.example <subnet_network_acl_ID>
+```
+
+**Example**
+
+```
+$ terraform import ibm_is_subnet_network_acl_attachment.example d7bec597-4726-451f-8a63-1111e6f19c32c
 ```

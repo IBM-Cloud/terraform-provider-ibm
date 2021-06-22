@@ -7,10 +7,9 @@ description: |-
 ---
 
 # ibm_is_virtual_endpoint_gateway
+Retrieve information of an existing IBM Cloud Infrastructure virtual endpoint gateway as a read-only data source. For more information, about the VPC endpoint gateway, see [creating an endpoint gateway](https://cloud.ibm.com/docs/vpc?topic=vpc-ordering-endpoint-gateway).
 
-Import the details of an existing IBM Cloud Infrastructure virtual endpoint gateway as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_is_virtual_endpoint_gateway" "data_test" {
@@ -18,25 +17,28 @@ data "ibm_is_virtual_endpoint_gateway" "data_test" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `name` - (Required, String) The endpoint gateway name.
 
-- `name` - (Required, string) Endpoint gateway name
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
+- `created_at` - (Timestamp) The created date and time of the endpoint gateway.
+- `health_state` - (String) Endpoint gateway health state. `ok: Healthy`, `degraded: Suffering from compromised performance, capacity, or connectivity`, `faulted: Completely unreachable, inoperative, or entirely incapacitated`, `inapplicable: The health state does not apply because of the current lifecycle state`. A resource with a lifecycle state of failed or deleting will have a health state of inapplicable. A pending resource may have this state.
+- `lifecycle_state` - (String) The endpoint gateway lifecycle state, supported values are **deleted**, **deleting**, **failed**, **pending**, **stable**, **updating**, **waiting**, **suspended**.
+- `ips` - (List) The unique identifier for the reserved IP.
 
-In addition to all arguments above, the following attributes are exported:
+  Nested scheme for `ips`:
+	- `id` - (String) The collection of reserved IPs bound to an endpoint gateway.
+	- `name` - (String) The user defined or system provided name of the resource IP.
+	- `resource_type` - (String) The endpoint gateway IP resource type.
+- `resource_group` - (String) The unique identifier for the resource group.
+- `target` - (List) The endpoint gateway target.
 
-- `resource_group` - The unique identifier for this resource group
-- `created_at` - Endpoint gateway created date and time
-- `health_state` - Endpoint gateway health state(ok: Healthy,degraded: Suffering from compromised performance, capacity, or connectivity,faulted: Completely unreachable, inoperative, or otherwise entirely incapacitated,inapplicable: The health state does not apply because of the current lifecycle state. A resource with a lifecycle state of failed or deleting will have a health state of inapplicable. A pending resource may also have this state.)
-- `lifecycle_state` - Endpoint gateway lifecycle state(deleted, deleting, failed, pending, stable, updating, waiting, suspended)
-- `ips` - Collection of reserved IPs bound to an endpoint gateway
-  - `id` - The unique identifier for this reserved IP
-  - `name` - The user-defined or system-provided name for this reserved IP
-  - `resource_type` - Endpoint gateway IP resource type
-- `target` - Endpoint gateway target
-  - `name` - TThe target name
-  - `resource_type` - The resource type(subnet_reserved_ip)
-- `vpc` - The VPC id
+  Nested scheme for `target`:
+  - `name` - (String) The target name.
+  - `resource_type` - (String) The resource type of the subnet reserved IP.
+- `vpc` - (String) The VPC ID.
+

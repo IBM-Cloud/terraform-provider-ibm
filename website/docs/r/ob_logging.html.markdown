@@ -6,14 +6,11 @@ description: |-
   Create a logging configuration for your cluster to automatically collect pod logs and send them to IBM Log Analysis.
 ---
 
-# ibm\_ob_logging
+# ibm_ob_logging
+Create, update, or delete a logging instance. This resource creates a logging configuration for your cluster to automatically collect pod logs and send them to IBM Cloud Log Analysis. For more information, about Observability plug-in, see [managing  Observability logging commands](https://cloud.ibm.com/docs/containers?topic=containers-observability_cli).
 
-
-Create, update, or delete a logging instance. This resource creates a logging configuration for your cluster to automatically collect pod logs and send them to IBM Log Analysis.
-
-## Example Usage
-
-In the following example, we can create a logging configuration:
+## Example usage
+In the following example enables you to create a logging configuration:
 
 ```terraform
 
@@ -58,37 +55,39 @@ resource "ibm_ob_logging" "test2" {
 
 ## Timeouts
 
-ibm_ob_logging provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_ob_logging` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-* `create` - (Default 10 minutes) Used for creating Instance.
-* `update` - (Default 10 minutes) Used for updating Instance.
-* `delete` - (Default 10 minutes) Used for deleting Instance.
-
-## Argument Reference
-
-The following arguments are supported:
-
-* `cluster` - (Required, string) The name or id of the cluster. 
-* `instance_id` - (Required, string) The guid of the montoing instance.
-* `logdna_ingestion_key` - (Optional, string) The LogDNA ingestion key that you want to use for your configuration
-* `private_endpoint` - (Optional, string) Add this option to connect to your logging service instance through the private service endpoint.
+- **create**: The enablement of the feature is considered `failed` if no response is received for 10 minutes.
+- **delete**: The delete of the feature is considered `failed` if no response is received for 10 minutes. 
+- **update**: The update of the feature is considered `failed` if no response is received for 10 minutes. 
 
 
-## Attribute Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-In addition to all arguments above, the following attributes are exported:
+- `cluster` - (Required, String) The name or ID of the cluster.
+- `instance_id` - (Required, String) The GUID of the monitoring instance.
+- `logdna_ingestion_key` - (Optional, String) The LogDNA ingestion key that you want to use for your configuration.
+- `private_endpoint` - (Optional, String) Add this option to connect to your logging service instance through the private service endpoint.
 
-* `id` - The unique identifier of the logging instance attach to cluster. The id is composed of \<cluster_name_id\>/\< logging_instance_id\>
-* `instance_name` - Name of the logging instance
-* `agent_key` - LogDNA agent key
-* `agent_namespace` - LogDNA agent namespace
-* `daemonset_name` - Name of the deamonset
-* `namespace` - Name of namespace
-* `crn` - CRN of the LogDNA instance attach
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `agent_key` - (String) The IBM Cloud Activity Tracker agent key.
+- `agent_namespace` - (String) The IBM Cloud Activity Tracker agent namespace.
+- `daemonset_name` - (String) The name of the `daemon` set
+- `crn` - (String) The CRN of the IBM Cloud Activity Tracker instance attach.
+- `id` - (String) The unique identifier of the logging instance attach to cluster. The ID is composed of `<cluster_name_id>/< logging_instance_id>`.
+- `instance_name` - (String) Name of the logging instance.
+- `namespace` - (String) The name of namespace.
+
 
 ## Import
+The `ibm_ob_logging` can be imported by using `cluster_name_id`, `logging_instance_id`.
 
-ibm_ob_logging can be imported using cluster_name_id, logging_instance_id, eg:
+**Example**
 
 ```
 $ terraform import ibm_ob_logging.example mycluster/5c4f4d06e0dc402084922dea70850e3b-7cafe35
+```
+

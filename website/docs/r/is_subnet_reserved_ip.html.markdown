@@ -3,16 +3,14 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_is_subnet_reserved_ip"
 description: |-
-  Manages IBM Subnet reserved IP
+  Manages IBM Subnet reserved IP.
 ---
 
 # ibm_is_subnet_reserved_ip
+Create, update, or delete a subnet. For more information, about associated reserved IP subnet, see [reserved IP subnet](https://cloud.ibm.com/docs/vpc?topic=vpc-troubleshoot-reserved-ip).
 
-Provides a subnet reserved IP resource. This allows Subnet reserved IP to be created, updated, and deleted.
-
-## Example Usage
-
-In the following example, you can create a Reserved IP:
+## Example usage
+Sample to create a reserved IP:
 
 ```terraform
     // Create a VPC
@@ -70,32 +68,37 @@ In the following example, you can create a Reserved IP:
     }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `auto_delete`- (Optional, Bool)  If reserved IP is auto deleted.
+- `name` - (Optional, String) The name of the reserved IP. **NOTE** raise  error if name is given with a prefix `ibm- `.
+- `subnet` - (Required, Forces new resource, String) The subnet ID for the reserved IP.
+- `target` - (Optional, string) The ID for the target endpoint gateway for the reserved IP.
 
-* `subnet` - (Required, Forces new resource, string) The subnet id for the reserved IP.
-* `name` - (Optional, string) The name of the reserved IP.
-    **NOTE**: Raise error if name is given with a prefix `ibm-`.
-* `auto_delete` - (Optional, boolean) If reserved IP is auto deleted.
-* `target` - (Optional, string) The id for the target endpoint gateway for the reserved IP.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-
-## Attribure Reference
-
-* `id` - The combination of the subnet ID and reserved IP ID seperated by '/'.
-* `reserved_ip` - This refers to only the reserved IP.
-* `created_at` -The date and time that the reserved IP was created.",
-* `href` - The URL for this reserved IP.
-* `owner` - The owner of a reserved IP, defining whether it is managed by the user or the provider.
-* `resource_type` - The resource type.
-* `address` - The IP address.
-* `target` - The id for the target endpoint gateway for the reserved IP.
+- `address` - (String) The IP address.
+- `created_at` - (Timestamp) The date and time that the reserved IP was created.",
+- `href` - (String) The URL for this reserved IP.
+- `id` - (String) The combination of the subnet ID and reserved IP ID separated by **/**.
+- `owner` - (String) The owner of a reserved IP, defining whether it is managed by the user or the provider.
+- `reserved_ip` - (String) The reserved IP.
+- `resource_type` - (String) The resource type.
+- `target` - (String) The ID for the target endpoint gateway for the reserved IP.
 
 ## Import
+The `ibm_is_subnet_reserved_ip` and `ibm_is_subnet` resource can be imported by using subnet ID and reserved IP ID separated by **/**.
 
-ibm_is_subnet_reserved_ip can be imported using subnet ID and reserved IP ID seperated by '/' eg
+**Syntax**
 
-```terraform
-terraform import ibm_is_subnet_reserved_ip.example 0716-13315ad8-d355-4041-bb60-67430d393607/0716-617de4d8-5e2f-4d4a-b0d6-d221bc230c04
+```
+$ terraform import ibm_is_subnet.example <reserved_subnet_IP>
+```
+
+**Example**
+
+```
+$ terraform import ibm_is_subnet_reserved_ip.example 0716-13315ad8-d355-4041-bb60-62342000423/0716-617de4d8-5e2f-4d4a-b0d6-1000023
 ```
