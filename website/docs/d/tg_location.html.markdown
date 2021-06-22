@@ -4,38 +4,34 @@ subcategory: "Transit Gateway"
 layout: "ibm"
 page_title: "IBM : tg_location"
 description: |-
-  Manages IBM Cloud Infrastructure Transit Location.
+  Manages IBM Cloud Infrastructure Transit location.
 ---
 
-# ibm\_tg_location
+# ibm_tg_location
+Retreive information of an existing IBM Cloud infrastructure transit location as a read only data source. For more information, about transit location, see [about IBM Cloud Transit Gateway](https://cloud.ibm.com/docs/transit-gateway?topic=transit-gateway-about).
 
-Import the details of an existing IBM Cloud Infrastructure transit location as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_tg_location" "ds_tg_location" {
   name = "us-south"
 }
 ```
+## Argument reference
+Review the argument reference that you can specify for your data source. 
 
-## Argument Reference
+- `name` - (Required, String) The name of the transit gateway location.
 
-The following arguments are supported:
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
-* `name` - (Required, string) The Transit Gateway location Name.
+- `billing_location` - (String) The geographical location of the location, used for billing purposes.
+- `name` - (String) The name of the location.
+- `type` - (String) The type of the location, determining a `multi-zone region`, a `single data center`, or a `point of presence`.
+- `local_connection_locations` - (String) The set of network locations that are considered local for the transit gateway location.
 
-
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `billing_location` - The geographical location of this location, used for billing purposes.
-* `name` - Name of the Location.
-* `type` - The type of the location, determining is this a multi-zone region, a single data center, or a point of presence.
-* `local_connection_locations` - The set of network locations that are considered local for this Transit Gateway location.
-   * `display_name` - A descriptive display name for the location.
-   * `name` - The name of the location.
-   * `type` - The type of the location, determining is this a multi-zone region, a single data center, or a point of presence.
-
+  Nested scheme for `local_connection_locations`:
+  - `display_name` - (String) The descriptive display name for the location.
+  - `name` - (String) The name of the location.
+  - `type` - (String) The type of the location, determining a `multi-zone region`, a `single data center`, or a `point of presence`.

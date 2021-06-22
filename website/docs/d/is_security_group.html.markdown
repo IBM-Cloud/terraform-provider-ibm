@@ -3,17 +3,15 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : security_group"
 description: |-
-  Reads IBM Cloud Security Group.
+  Reads IBM Cloud security group.
 ---
 
-# ibm\_is_security_group
+# ibm_is_security_group
+Retrieve information about a security group as a read-only data source. For more information, about managing IBM Cloud security group , see [about security group](https://cloud.ibm.com/docs/vpc?topic=vpc-using-security-groups).
 
-Import the details of a security group as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-
-## Example Usage
-
-In the following example, you can create a different types of protocol rules `ALL`, `ICMP`, `UDP`, `TCP` and read the security group.
+## Example usage
+The following example allows to create a different types of protocol rules `ALL`, `ICMP`, `UDP`, `TCP` and read the security group.
 
 ```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
@@ -66,29 +64,29 @@ data "ibm_is_security_group" "sg1_rule" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `name` - (Required, String) The name of the security group.
 
-`name` - (Required, string) The name of the security group.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
+- `crn` - The CRN of the security group.
+- `id` - (String) The ID of the security group.
+- `rules` - (List of Objects) The rules associated with security group. Each rule has following attributes.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The id of the security group. 
-* `rules` - Rules associated with security group. Each rule has follwoing attributes
-  * `rule_id` - ID of the rule.
-  * `direction` - Direction of traffic to enforce, either inbound or outbound.
-  * `ip_version` - IP version: ipv4 or ipv6.
-  * `remote` - Security group id, an IP address, a CIDR block, or a single security group identifier.
-  * `type` - The traffic type to allow.
-  * `code` - The traffic code to allow.
-  * `port_max` - The inclusive upper bound of TCP/UDP port range.
-  * `port_min` - The inclusive lower bound of TCP/UDP port range.
-  * `protocol` - The type of the protocol all, icmp, tcp, udp.
-* `tags` - Tags associated with the security group.
-* `crn` - The CRN of the security group.
+  Nested scheme for `rules`:
+  - `rule_id`-  (String) ID of the rule.
+  - `direction` - (String) Direction of traffic to enforce, either inbound or outbound.
+  - `ip_version` - (String) IP version: IPv4 or IPv6.
+  - `protocol` - (String) The type of the protocol `all`, `icmp`, `tcp`, `udp`.
+  - `type` - (String) The traffic type to allow.
+  - `code` - (String) The traffic code to allow.
+  - `port_max`- (Integer) The TCP/UDP port range that includes the maximum bound.
+  - `port_min`- (Integer) The TCP/UDP port range that includes the minimum bound.
+  - `remote`- (Integer)  Security group ID, an IP address, a CIDR block, or a single security group identifier.
+- `tags` - Tags associated with the security group.
   
 
 

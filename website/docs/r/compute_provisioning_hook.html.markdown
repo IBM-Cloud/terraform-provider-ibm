@@ -4,17 +4,18 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : compute_provisioning_hook"
 description: |-
-  Manages IBM Compute Provisioning Hook.
+  Manages IBM Cloud compute provisioning hook.
 ---
 
 
-# ibm\_compute_provisioning_hook
+# ibm_compute_provisioning_hook
+Provides provisioning hooks that contains all the information that is needed to add a hook into a server or virtual provision and OS reload. This allows provisioning hooks to be created, updated, and deleted. For more information, about provisioning hook, see [integrate third-party services using hooks](https://cloud.ibm.com/docs/cloud-foundry?topic=cloud-foundry-hooks).
 
-Provides provisioning hooks containing all the information needed to add a hook into a server or virtual provision and OS reload. This allows provisioning hooks to be created, updated, and deleted.
+**Note**
 
-For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Provisioning_Hook).
+For more information, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Provisioning_Hook).
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_compute_provisioning_hook" "test_provisioning_hook" {
@@ -23,17 +24,14 @@ resource "ibm_compute_provisioning_hook" "test_provisioning_hook" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource.
 
-The following arguments are supported:
+- `name`- (Required, string) The descriptive name that is used to identify a provisioning hook.
+- `tags`- (Optional, array of strings) Tags associated with the provisioning hook instance. **Note** `Tags` are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
+- `uri`- (Required, string) The endpoint from which the script is downloaded or downloaded and executed.
 
-* `name` - (Required, string) The descriptive name used to identify a provisioning hook.
-* `uri` - (Required, string) The endpoint from which the script is downloaded or downloaded and executed.
-* `tags` - (Optional, array of strings) Tags associated with the provisioning hook instance.  
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the new provisioning hook.
+- `id`- (String) The unique identifier of the new provisioning hook.

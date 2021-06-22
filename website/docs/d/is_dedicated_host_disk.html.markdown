@@ -3,59 +3,50 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_dedicated_host_disk"
 description: |-
-  Get information about DedicatedHostDisk
+  Get information about dedicated host disk.
 ---
 
-# ibm\_is_dedicated_host_disk
+# ibm_is_dedicated_host_disk
+Retrieve the dedicated host disk. For more information, about dedicated host disk, see [migrating a dedicated host instance to another host](https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-migrating-dedicated-host).
 
-Provides a read-only data source for DedicatedHostDisk. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-## Example Usage
+## Example usage
 
 ```terraform
-data "is_dedicated_host_disk" "is_dedicated_host_disk" {
+data "ibm_is_dedicated_host_disk" "is_dedicated_host_disk" {
 	dedicated_host = "dedicatedhost id"
 	disk = "id"
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `dedicated_host` - (Required, String) The dedicated host identifier.
+- `disk` - (Required, String) The dedicated host disk identifier.
 
-* `dedicated_host` - (Required, string) The dedicated host identifier.
-* `disk` - (Required, string) The dedicated host disk identifier.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
+- `available` - (String) The remaining space left for instance placement in GB (gigabytes).
+- `id` - (String) The unique identifier of the dedicated host disk.
+- `created_at` - (Timestamp) The date and time that the disk was created.
+- `href` - The URL for this disk.
+- `instance_disks` - (List) Instance disks that are on the dedicated host disk. 
 
-The following attributes are exported:
+  Nested scheme for `instance_disks`:
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides the supplementary information. 
 
-* `id` - The unique identifier of the DedicatedHostDisk.
-* `available` - The remaining space left for instance placement in GB (gigabytes).
-
-* `created_at` - The date and time that the disk was created.
-
-* `href` - The URL for this disk.
-
-* `instance_disks` - Instance disks that are on this dedicated host disk. Nested `instance_disks` blocks have the following structure:
-	* `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
-		* `more_info` - Link to documentation about deleted resources.
-	* `href` - The URL for this instance disk.
-	* `id` - The unique identifier for this instance disk.
-	* `name` - The user-defined name for this disk.
-	* `resource_type` - The resource type.
-
-* `interface_type` - The disk interface used for attaching the diskThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
-
-* `lifecycle_state` - The lifecycle state of this dedicated host disk.
-
-* `name` - The user-defined or system-provided name for this disk.
-
-* `provisionable` - Indicates whether this dedicated host disk is available for instance disk creation.
-
-* `resource_type` - The type of resource referenced.
-
-* `size` - The size of the disk in GB (gigabytes).
-
-* `supported_instance_interface_types` - The instance disk interfaces supported for this dedicated host disk.
+      Nested scheme for `deleted`:
+      - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this instance disk.
+  - `id` - (String) The unique identifier for this instance disk.
+  - `name` - (String) The user defined name for this disk.
+  - `resource_type` - (String) The resource type.
+- `interface_type` - (String) The disk interface used for attaching the disk. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally, halts processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
+- `lifecycle_state` - (String) The lifecycle state of this dedicated host disk.
+- `name` - (String) The user defined or system provided name for this disk.
+- `provisionable` - (String) Indicates whether this dedicated host disk is available for instance disk creation.
+- `resource_type` - (String) The type of resource referenced.
+- `size` - (String) The size of the disk in GB (gigabytes).
+- `supported_instance_interface_types` - (String) The instance disk interfaces supported for this dedicated host disk.
 

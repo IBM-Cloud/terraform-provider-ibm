@@ -7,13 +7,12 @@ description: |-
   Manages IBM container addons.
 ---
 
-# ibm\_container_addons
+# ibm_container_addons
+Enable, update or disable a single add-on or a set of add-ons. For more information, see [Cluster addons](https://cloud.ibm.com/docs/containers?topic=containers-api-at-iam#ks-cluster).
 
-Enable, update or Disable a single AddOn or a Set of AddOns. 
+## Example usage
 
-## Example Usage
-
-In the following example, you can configure a Addons:
+In the following example, you can configure a add-ons:
 
 ```terraform
 resource "ibm_container_addons" "addons" {
@@ -56,36 +55,39 @@ resource "ibm_container_addons" "addons" {
 
 ## Timeouts
 
-ibm_container_addons provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_container_addons` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-* `create` - (Default 20 minutes) Used for creating Instance.
-* `update` - (Default 20 minutes) Used for updating Instance.
+- **Create** The enablement of the add-ons is considered `failed` if no response is received for 20 minutes.
+- **Update** The enablement of the add-ons is considered `failed` if no response is received for 20 minutes.
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-* `cluster` - (Required, string) Cluster Name or ID
-* `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
-* `addons` - (Required, set) Set of AddOns that has to be enabled
-    * `name` - (Optional, string) The addon name such as 'istio'.Please find supported addons for a given cluster type.
+- `addons` - (Required, Set) Set of add-ons that needs to be enabled.
+
+  Nested scheme for `addons`:
+	- `name` - (Optional, String) The add-on name such as `istio`. Supported add-ons are `kube-terminal`, `alb-oauth-proxy`, `debug-tool`, `istio`, `knative`, `static-route`,`vpc-block-csi-driver`.
       * [Kubernetes Cluster](https://cloud.ibm.com/docs/containers?topic=containers-managed-addons#adding-managed-add-ons)
       * [Openshift Cluster](https://cloud.ibm.com/docs/openshift?topic=openshift-managed-addons#adding-managed-add-ons)
       * [Satellite Cluster]( https://cloud.ibm.com/docs/openshift?topic=openshift-managed-addons#addons-satellite)
-    * `version` - (Optional,string) The addon version, omit the version if you wish to use the default version. It is required when one wants to update the addon to specified version.
+  - `version`- (Optional, String) The add-on version. Omit the version that you want to use as the default version.This is required when you want to update the add-on to specified version.
+- `cluster` - (Required, String) The name or ID of the cluster.
+- `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group. You can retrieve the value from data source ibm_resource_group. If not provided defaults to default resource group.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
+- `addons` - (String) The details of an enabled add-ons.
 
-* `id` - The AddOns ID.
-* `addons` - Details of Enabled AddOns
-    * `allowed_upgrade_versions` - The versions that the addon can be upgraded to 
-    * `deprecated` - Determines if this addon version is deprecated
-    * `health_state` - The health state for this addon, a short indication (e.g. critical, pending)
-    * `health_status` - The health status for this addon, provides a description of the state (e.g. error message)
-    * `min_kube_version` - The minimum kubernetes version for this addon.
-    * `min_ocp_version` - The minimum OpenShift version for this addon.
-    * `supported_kube_range` - The supported kubernetes version range for this addon.
-    * `target_version` - The addon target version.
-    * `vlan_spanning_required` - VLAN spanning required for multi-zone clusters.
+  Nested scheme for `addons`:
+	- `allowed_upgrade_versions` - (String) The versions that the add-on is upgraded to.
+	- `deprecated` - (String) Determines if the add-on version is deprecated.
+	- `health_state` - (String) The health state of an add-on, such as critical or pending.
+	- `health_status` - (String) The health status of an add-on, provides a description of the state in the form of error message.
+	- `min_kube_version` - (String) The minimum Kubernetes version of the add-on.
+	- `min_ocp_version` - (String) The minimum OpenShift version of the add-on.
+	- `supported_kube_range` - (String) The supported Kubernetes version range of the add-on.
+  - `target_version`-  (String) The add-on target version.
+  - `vlan_spanning_required`-  (String) The VLAN spanning required for multi-zone clusters.
+- `id` - (String) The ID of the add-ons.

@@ -7,13 +7,15 @@ description: |-
   Manages IBM Compute SSH keys.
 ---
 
-# ibm\_compute_ssh_key
+# ibm_compute_ssh_key
 
-Provide an SSH key resource. This allows SSH keys to be created, updated, and deleted.
+Create, update, and delete an SSH key resource. For more information, about computer SSH key, see [deploying server pools and origins in a single MZR](https://cloud.ibm.com/docs/cloud-infrastructure?topic=cloud-infrastructure-ha-pools-origins).
 
-For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Security_Ssh_Key).
+**Note**
 
-## Example Usage
+For more information, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Security_Ssh_Key).
+
+## Example usage
 
 ```terraform
 resource "ibm_compute_ssh_key" "test_ssh_key" {
@@ -23,20 +25,17 @@ resource "ibm_compute_ssh_key" "test_ssh_key" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource.
 
-The following arguments are supported:
+- `label`- (Required, String) The descriptive name that is used to identify an SSH key.
+- `notes`- (Optional, string) Descriptive text about the SSH key.
+- `public_key`- (Required, String) The public SSH key.
+- `tags`- (Optional, Array of Strings) Tags associated with the SSH Key instance. **Note** `Tags` are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
 
-* `label` - (Required, string) The descriptive name used to identify an SSH key.
-* `public_key` - (Required, Forces new resource, string) The public SSH key.
-* `notes` - (Optional, string) Descriptive text about the SSH key.
-* `tags` - (Optional, array of strings) Tags associated with the SSH Key instance.  
 
-**NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the new SSH key.
-* `fingerprint` - The sequence of bytes to authenticate or look up a longer SSH key.
+- `fingerprint`- (String) The sequence of bytes to authenticate or look up a longer SSH key.
+- `id`- (String )The unique identifier of the new SSH key.

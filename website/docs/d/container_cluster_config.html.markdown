@@ -6,13 +6,11 @@ description: |-
   Get the cluster configuration for Kubernetes on IBM Cloud.
 ---
 
-# ibm\_container_cluster_config
+# ibm_container_cluster_config
+Retrieve information about all the Kubernetes configuration files and certificates to access your cluster. For more information, about cluster configuration, see [accessing clusters](https://cloud.ibm.com/docs/containers?topic=containers-access_cluster).
 
 
-Download a configuration for Kubernetes clusters on IBM Cloud. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-
-## Example Usage
+## Example usage1
 
 ```terraform
 data "ibm_container_cluster_config" "cluster_foo" {
@@ -20,7 +18,10 @@ data "ibm_container_cluster_config" "cluster_foo" {
   config_dir      = "/home/foo_config"
 }
 ```
-## Example Usage for connecting to kubernetes provider for classic or vpc kubernetes cluster with admin certificates
+
+## Example usage2
+Example for connecting to Kubernetes provider for classic or VPC Kubernetes cluster with admin certificates
+
 ```terraform
 data "ibm_container_cluster_config" "cluster_foo" {
   cluster_name_id = "FOO"
@@ -41,7 +42,9 @@ resource "kubernetes_namespace" "example" {
   }
 }
 ```
-## Example Usage for connecting to kubernetes provider for classic or vpc kubernetes cluster with host and token
+## Example usage3
+Example for connecting to Kubernetes provider for classic or VPC Kubernetes cluster with host and token.
+
 ```terraform
 data "ibm_container_cluster_config" "cluster_foo" {
   cluster_name_id = "FOO"
@@ -60,7 +63,9 @@ resource "kubernetes_namespace" "example" {
   }
 }
 ```
-## Example Usage for connecting to kubernetes provider for classic openshift cluster with admin certificates
+## Example usage4
+Example for connecting to Kubernetes provider for classic OpenShift cluster with admin certificates.
+
 ```terraform
 data "ibm_container_cluster_config" "cluster_foo" {
   cluster_name_id = "FOO"
@@ -80,7 +85,9 @@ resource "kubernetes_namespace" "example" {
   }
 }
 ```
-## Example Usage for connecting to kubernetes provider for classic openshift cluster with host and token
+## Example usage5
+Example Usage for connecting to Kubernetes provider for classic OpenShift cluster with host and token.
+
 ```terraform
 data "ibm_container_cluster_config" "cluster_foo" {
   cluster_name_id = "FOO"
@@ -99,30 +106,32 @@ resource "kubernetes_namespace" "example" {
 }
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-* `cluster_name_id` - (Required, string) The name or ID of the cluster.
-* `config_dir` - (Required, string) The directory where you want the cluster configuration to download.
-* `admin` - (Optional, boolean) Set the value to `true` to download the configuration for the administrator. The default value is `false`.
-* `download` - (Optional, boolean) Set the value to `false` to skip downloading the configuration for the administrator. The default value is `true`. Because it is part of a data source, by default the configuration is downloaded for every Terraform call. For a particular cluster name or ID, the configuration is guaranteed to be downloaded to the same path for a given `config_dir`.
-* `org_guid` - (Deprecated, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from the `ibm_org` data source or by running the `ibmcloud iam orgs --guid` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
-* `space_guid` - (Deprecated, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from the `ibm_space` data source or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
-* `account_guid` - (Deprecated, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from the `ibm_account` data source or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
-* `region` - (Deprecated, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
-* `network` - (Optional, boolean) Set the value to `true` to download the configuration for the Calico network config with the Admin config. The default value is `false`.
-* `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
+- `admin` - (Optional, Bool) If set to **true**, the Kubernetes configuration for cluster administrators is downloaded. The default is **false**.
+- `cluster_name_id` - (Required, String) The name or ID of the cluster that you want to log in to. 
+- `config_dir` - (Required, String) The directory on your local machine where you want to download the Kubernetes config files and certificates.
+- `download` - (Optional, Bool) Set the value to **false** to skip downloading the configuration for the administrator. The default value is **true**. The configuration files and certificates are downloaded to the directory that you specified in `config_dir` every time that you run your infrastructure code.
+- `network` - (Optional, Bool) If set to **true**, the Calico configuration file, TLS certificates, and permission files that are required to run `calicoctl` commands in your cluster are downloaded in addition to the configuration files for the administrator. The default value is **false**. 
+- `resource_group_id` - (Optional, String) The ID of the resource group where your cluster is provisioned into. To find the resource group, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If this parameter is not provided, the `default` resource group is used.
 
-## Attribute Reference
+**Deprecated reference**
 
-In addition to all arguments above, the following attributes are exported:
+- `account_guid` - (Deprecated, String) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from the `ibm_account` data source or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
+- `org_guid` - (Deprecated, String) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from the `ibm_org` data source or by running the `ibmcloud iam orgs --guid` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
+- `region` - (Deprecated, String) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region (IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
+- `space_guid` - (Deprecated, String) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from the `ibm_space` data source or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
 
-* `id` - The unique identifier of the cluster configuration.
-* `admin_key`- (Sensitive) The admin key of the cluster configuration.
-* `admin_certificate`- The admin certificate of the cluster configuration.
-* `ca_certificate`- The cluster ca certificate of the cluster configuration.
-* `host`- The Host of the cluster configuration.
-* `token`- The token of the cluster configuration.
-* `config_file_path` - The path to the cluster configuration file. This is typically the Kubernetes YAML configuration file.
-* `calico_config_file_path` - The path to the cluster calico configuration file.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+
+- `calico_config_file_path` - (String) The path on your local machine where your Calico configuration files and certificates are downloaded to.
+- `config_file_path` - (String) The path on your local machine where the cluster configuration file and certificates are downloaded to. 
+- `id` - (String) The unique identifier of the cluster configuration.
+- `admin_key` - (String) The admin key of the cluster configuration. Note that this key is case-sensitive.
+- `admin_certificate` - (String) The admin certificate of the cluster configuration.
+- `ca_certificate` - (String) The cluster CA certificate of the cluster configuration.
+- `host` - (String) The host name of the cluster configuration.
+- `token` - (String) The token of the cluster configuration.

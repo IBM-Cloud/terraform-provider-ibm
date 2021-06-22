@@ -3,14 +3,13 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM : Cloud Internet Service DNS Record"
 description: |-
-  Manages IBM Cloud Internet Service DNS Record.
+  Manages IBM Cloud Internet Service DNS records.
 ---
 
-# ibm_cis_dns_record
+# ibm_cis_dns_records
+Retrieve information about an IBM Cloud Internet Services domain name service record. For more information, about DNS records, refer to [Managing DNS records](https://cloud.ibm.com/docs/dns-svcs?topic=dns-svcs-managing-dns-records). 
 
-Import the details of an existing IBM Cloud Internet Service domain name service record as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-## Example Usage
+## Example usage
 
 ```terraform
 
@@ -22,29 +21,28 @@ data "ibm_cis_dns_records" "test" {
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance on which zones were created.
+- `domain_id` - (Required, String) The resource domain ID of the DNS on which zones were created.
+- `file`-  (Optional, String) The file that DNS records to be exported.
 
-- `cis_id` - (Required, string) The resource cis id of the CIS on which zones were created.
-- `domain_id` - (Required, string) The resource domain id of the DNS on which zones were created.
-- `file` - (Optional, string) The file which dns records to be exported.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
+- `cis_dns_records` - (List) The list of DNS records.
 
-In addition to all arguments above, the following attributes are exported:
-
-- `cis_dns_records` - The list of DNS records.
-  - `id` - The identifier which consists of record id, zone id and crn with `:` seperator.
-  - `record_id` - The DNS record identifier.
-  - `name` - The name of a DNS record.
-  - `proxiable` - Whether the record has option to set proxied.
-  - `proxied` - Whether the record gets CIS's origin protection; defaults to `false`.
-  - `created_on` - The DNS record created date.
-  - `modified_on`- The DNS record modified date.
-  - `zone_name` - The DNS zone name.
-  - `type` - The type of the DNS record to be created. Supported Record types are: A, AAAA, CNAME, LOC, TXT, MX, SRV, SPF, NS, CAA, PTR.
-  - `content` - The (string) value of the record.
-  - `ttl`-TTL of the record. It should be automatic(i.e ttl=1) if the record is proxied. Terraform provider takes ttl in unit seconds.
-  - `priority` - The priority of the record. Mandatory field for SRV record type.
-  - `data` - Map of attributes that constitute the record value. Only for LOC, CAA and SRV record types.
+  Nested scheme for `cis_dns_records`:
+  - `created_on` - (String) The created date of the DNS record.
+  - `data` - (String) Map of attributes that constitute the record value. Only for `LOC`, `CAA` and `SRV` record types.
+  - `id` - (String) The ID which consists of record ID, zone ID and CRN with `:` separator.
+  - `modified_on` - (String) The modified date of the DNS record.
+  - `name` - (String) The name of a DNS record.
+  - `priority` - (String) The priority of the record. Mandatory field for `SRV` record type.
+  - `proxiable` - (String) Whether the record has option to set proxied.
+  - `proxied` - (String) Whether the record gets CIS's origin protection; defaults to **false**.
+  - `record_id` - (String) The DNS record identifier.
+  - `type` - (String) The type of the DNS record to be created. Supported Record types are `A`, `AAAA`, `CNAME`, `LOC`, `TXT`, `MX`, `SRV`, `SPF`, `NS`, `CAA`.
+  - `ttl` - (String) TTL of the record. It should be automatic that is `ttl=1`, if the record is proxied. Terraform provider takes `ttl` in unit seconds.
+  - `zone_name` - (String) The DNS zone name.

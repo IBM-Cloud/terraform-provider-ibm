@@ -4,15 +4,13 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : security_group_network_interface_attachment"
 description: |-
-  Manages IBM Security Group Network Interface Attachment.
+  Manages IBM security group network interface attachment.
 ---
 
-# ibm\_is_security_group_network_interface_attachment
+# ibm_is_security_group_network_interface_attachment
+Create, update, or delete a security group network interface attachment. For more information, about security group network interface attachment, see [attaching and detaching security groups](https://cloud.ibm.com/docs/vpc?topic=vpc-alb-integration-with-security-groups#attaching-detaching-sg-to-alb).
 
-Provides a security group network interface attachment resource. This allows security group network interface attachment to be created, updated, and cancelled.
-
-
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_is_security_group_network_interface_attachment" "sgnic" {
@@ -21,41 +19,50 @@ resource "ibm_is_security_group_network_interface_attachment" "sgnic" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `security_group` - (Required, Forces new resource, String) The security group ID. 
+- `network_interface` - (Required, Forces new resource, String) The network interface ID.
 
-* `security_group` - (Required, Forces new resource, string) The security group id.
-* `network_interface` - (Required, Forces new resource, string) The network interface id. 
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
+- `floating_ips` - (List of Objects) A nested block describes the floating IP's of this network interface.
 
-In addition to all arguments above, the following attributes are exported:
+  Nested scheme for `floating_ips`:
+	- `address` - (String) The globally unique IP address.
+	- `crn` - (String) The CRN of this floating IP.
+	- `id` - (String) The ID of this floating IP.
+	- `name` - (String) The name of this floating IP.
+- `id` - (String) The ID of the security group network interface. The ID is composed of `<security_group_id>/<network_interface_id>`.
+- `instance_network_interface` - (String) The instance network interface ID.
+- `name` - (String) The user-defined name for this network interface.
+- `port_speed`- (Integer) The network interface port speed in Mbps.
+- `primary_ipv4_address` - (String) The primary IPv4 address.
+- `secondary_address` - (Array) Collection secondary IP addresses.
+- `status` - (String) The status of the volume.
+- `subnet` - (String) The Subnet ID.
+- `security_groups` - (List of Objects) A nested block describes the security groups of this network interface.
 
-* `id` - The id of the security group network interface. The id is composed of \<security_group_id\>/\<network_interface_id\>.
-* `instance_network_interface` - The instance network interface id.
-* `name` - The user-defined name for this network interface.
-* `port_speed` - The network interface port speed in Mbp.
-* `primary_ipv4_address` - The network interface port speed in Mbp.
-* `secondary_address` - Collection seconary IP addresses.
-* `status` - The status of the volume.
-* `subnet` - The Subnet id.
-* `type` - The type of this network interface as it relates to a instance.
-* `security_groups` -  A nested block describing the security groups of this network interface.
-Nested `security_groups` blocks have the following structure:
-	* `id` - The id of this security group.
-	* `crn` - The CRN of this security group.
-	* `name` - The name of this security group.
+  Nested scheme for `security_groups`:
+	- `crn` - (String) The CRN of this security group.
+	- `id` - (String) The ID of this security group.
+	- `name` - (String) The name of this security group.
+- `type` - (String) The type of this network interface as it relates to a instance.
 
-* `floating_ips` - A nested block describing the floating ip's of this network interface.
-Nested `floating_ips` blocks have the following structure:
-  * `id` - The id of this floating Ip.
-  * `crn` - The CRN of this floating Ip.
-  * `name` - The name of this floating Ip.
+
 
 ## Import
+The `ibm_is_security_group_network_interface_attachment` resource can be imported by using security group ID and network interface ID.
 
-ibm_is_security_group_network_interface_attachment can be imported using security group ID and network interface ID, eg
+**Syntax**
+
+```
+$ terraform import ibm_is_security_group_network_interface_attachment.example <security_group_ID>/<network_interface_ID>
+```
+
+**Example**
 
 ```
 $ terraform import ibm_is_security_group_network_interface_attachment.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb

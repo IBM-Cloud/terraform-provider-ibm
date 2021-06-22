@@ -3,14 +3,13 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_instance_disks"
 description: |-
-  Get information about InstanceDiskCollection
+  Get information about an instance disks.
 ---
 
-# ibm\_is_instance_disks
+# ibm_is_instance_disks
+Retrieve information about an instance disks. For more information, about an instance disks, see [managing instance storage](https://cloud.ibm.com/docs/vpc?topic=vpc-instance-storage-provisioning).
 
-Provides a read-only data source for InstanceDiskCollection. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
@@ -59,23 +58,22 @@ data "is_instance_disks" "is_instance_disks" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `instance` - (Required, String) The instance identifier.
 
-* `instance` - (Required, string) The instance identifier.
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
+- `disks` - (List) Collection of the instance's disks. 
 
-The following attributes are exported:
-
-* `id` - The unique identifier of the InstanceDiskCollection.
-* `disks` - Collection of the instance's disks. Nested `disks` blocks have the following structure:
-	* `created_at` - The date and time that the disk was created.
-	* `href` - The URL for this instance disk.
-	* `id` - The unique identifier for this instance disk.
-	* `interface_type` - The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
-	* `name` - The user-defined name for this disk.
-	* `resource_type` - The resource type.
-	* `size` - The size of the disk in GB (gigabytes).
-
+  Nested scheme for `disks`:
+  - `created_at` - (Timestamp) The date and time that the disk was created.
+  - `href` - (String) The URL for this instance disk.
+  - `id` - (String) The unique identifier for this instance disk.
+  - `interface_type` - (String) The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
+  - `name` - (String) The user-defined name for this disk.
+  - `resource_type` - (String) The resource type.
+  - `size` - (String) The size of the disk in GB (gigabytes).
+- `id` - (String) The unique identifier of the InstanceDiskCollection.

@@ -1,17 +1,16 @@
 ---
 subcategory: "VPC infrastructure"
 layout: "ibm"
-page_title: "IBM : "
+page_title: "IBM : is_vpn_gateways"
 description: |-
-  Manages IBM vpn gateways.
+  Manages IBM Cloud VPN gateways.
 ---
 
-# ibm\_is_vpn_gateways
+# ibm_is_vpn_gateways
+Retrieve information of an existing VPN gateways. For more information, about IBM Cloud VPN gateways, see [configuring ACLs and security groups for use with VPN](https://cloud.ibm.com/docs/vpc?topic=vpc-acls-security-groups-vpn).
 
-Import the details of an existing IBM VPN Gateways as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-
-## Example Usage
+## Example usage
 
 ```terraform
 
@@ -21,27 +20,26 @@ data "ibm_is_vpn_gateways" "ds_vpn_gateways" {
 
 ```
 
-## Argument Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-The following arguments are supported:
+- `vpn_gateways` - (List) Collection of VPN Gateways.
 
+  Nested scheme for `vpn_gateways`:
+  - `crn` - (String) The VPN gateway's CRN.
+  - `created_at`- (Timestamp) The date and time the VPN gateway was created.
+  - `id` - (String) The ID of the VPN gateway.
+  - `name`-  (String) The VPN gateway instance name.
+  - `members` - (List) Collection of VPN gateway members.
 
+    Nested scheme for `members`:
+	  - `address` - (String) The public IP address assigned to the VPN gateway member.
+	  - `role`-  (String) The high availability role assigned to the VPN gateway member.
+	  - `private_address` - (String) The private IP address assigned to the VPN gateway member.
+	  - `status` - (String) The status of the VPN gateway member.
+  - `resource_type` - (String) The resource type, supported value is `vpn_gateway`.
+  - `status` - (String) The status of the VPN gateway, supported values are **available**, **deleting**, **failed**, **pending**.
+  - `subnet` - (String) The VPN gateway subnet information.
+  - `resource_group` - (String) The resource group ID.
+  - `mode` - (String) The VPN gateway mode, supported values are `policy` and `route`.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-* `vpn_gateways` - Collection of VPN Gateways
-  * `id` - ID of the VPN Gateway.
-  * `name` - VPN Gateway instance name.
-  * `created_at` - The date and time that this VPN gateway was created.
-  * `crn` - The VPN gateway's CRN.
-  * `members` - Collection of VPN gateway members.
-    * `address` - The public IP address assigned to the VPN gateway member.
-    * `private_address` - The private IP address assigned to the VPN gateway member.
-    * `role` - The high availability role assigned to the VPN gateway member.
-    * `status` - The status of the VPN gateway member
-  * `resource_type` - The resource type(vpn_gateway)
-  * `status` - The status of the VPN gateway(available, deleting, failed, pending)
-  * `subnet` - VPNGateway subnet info
-  * `resource_group` - resource group identifiers(ID).
-  * `mode` -  VPN gateway mode(policy/route)

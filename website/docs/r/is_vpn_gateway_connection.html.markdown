@@ -4,17 +4,15 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : VPN-gateway-connection"
 description: |-
-  Manages IBM VPN Gateway Connection
+  Manages IBM VPN gateway connection.
 ---
 
-# ibm\_is_vpn_gateway_connection
+# ibm_is_vpn_gateway_connection
+Create, update, or delete a VPN gateway connection. For more information, about VPN gateway, see [adding connections to a VPN gateway](https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-adding-connections).
 
-Provides a VPN gateway connection resource. This allows VPN gateway connection to be created, updated, and cancelled.
 
-
-## Example Usage
-
-In the following example, you can create a VPN gateway:
+## Example usage
+The following example creates a VPN gateway:
 
 ```terraform
 resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection" {
@@ -29,48 +27,55 @@ resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection" {
 ```
 
 ## Timeouts
+The `ibm_is_vpn_gateway_connection` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-ibm_is_vpn_gateway_connection provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+- **delete** - (Default 10 minutes) Used for deleting instance.
 
-* `delete` - (Default 10 minutes) Used for deleting Instance.
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `action` - (Optional, String)  Dead peer detection actions. Supported values are **restart**, **clear**, **hold**, or **none**. Default value is `none`.
+- `admin_state_up` - (Optional, Bool) The VPN gateway connection status. Default value is **false**. If set to false, the VPN gateway connection is shut down.
+- `ike_policy` - (Optional, String) The ID of the IKE policy.
+- `interval` - (Optional, Integer) Dead peer detection interval in seconds. Default value is 30.
+- `ipsec_policy` - (Optional, String) The ID of the IPSec policy.
+- `local_cidrs` - (Optional, Forces new resource, List) List of local CIDRs for this resource.
+- `name` - (Required, String) The name of the VPN gateway connection.
+- `peer_cidrs` - (Optional, Forces new resource, List) List of peer CIDRs for this resource.
+- `peer_address` - (Required, String) The IP address of the peer VPN gateway.
+- `preshared_key` - (Required, Forces new resource, String) The preshared key.
+- `timeout` - (Optional, Integer) Dead peer detection timeout in seconds. Default value is 120.
+- `vpn_gateway` - (Required, Forces new resource, String) The unique identifier of the VPN gateway.
 
-* `name` - (Required, string) Name of the VPN gateway connection.
-* `vpn_gateway` - (Required, Forces new resource, string) The unique identifier of VPN gateway(ID).
-* `peer_address` - (Required, string) The IP address of the peer VPN gateway.
-* `preshared_key`- (Required, string) The preshared key.
-* `local_cidrs` - (Optional, Forces new resource, list) List of CIDRs for this resource,optional for mode route.
-* `peer_cidrs` - (Optional, Forces new resource, list) List of CIDRs for this resource,optional for mode route.
-* `admin_state_up` - (Optional, bool) VPN gateway connection status. Default false. If set to false, the VPN gateway connection is shut down
-* `action` - (Optional, string) Dead Peer Detection actions. Supported values are restart, clear, hold, none. Default `restart`
-* `interval` - (Optional, int) Dead Peer Detection interval in seconds. Default 2.
-* `timeout` - (Optional, int) Dead Peer Detection timeout in seconds. Default 10.
-* `ike_policy` - (Optional, string) ID of the IKE policy.
-* `ipsec_policy` - (Optional, string) ID of the IPSec policy.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
+- `authentication_mode` - (String) The authentication mode, only `psk` is supported.
+- `created_at`-  (Timestamp) The date and time that VPN gateway connection was created.
+- `crn` - (String) The `VPN Gateway information ID`.
+- `gateway_connection` - The unique identifier for this VPN gateway connection.
+- `id` - (String) The unique identifier of the VPN gateway connection. The ID is composed of `<vpn_gateway_id>/<vpn_gateway_connection_id>`.
+- `mode` -  (String) The mode of the `VPN gateway` either **policy** or **route**.
+- `resource_type` -  (String) The resource type (vpn_gateway_connection).
+- `status` -  (String) The status of a VPN gateway connection either `down` or `up`.
+- `tunnels` -  (List) The VPN tunnel configuration for the VPN gateway connection (in static route mode).
 
-In addition to all arguments above, the following attributes are exported:
-* `gateway_connection` - The unique identifier for this VPN gateway connection
-* `id` - The unique identifier of the VPN gateway connection. The id is composed of \<vpn_gateway_id\>/\<vpn_gateway_connection_id\>.
-* `status` - The status of VPN gateway connection.
-* `authentication_mode` -  The authentication mode,Only psk is currently supported..
-* `created_at` -  The date and time that this VPN gateway connection was created.
-* `id` -  The unique identifier for this VPN gateway connection.
-* `resource_type` -  The resource type(vpn_gateway_connection).
-* `status` -  The status of a VPN gateway connection(down, up).
-* `tunnels` -  The VPN tunnel configuration for this VPN gateway connection (in static route mode).
-  * `address` -  The IP address of the VPN gateway member in which the tunnel resides.
-  * `resource_type` -  The status of the VPN Tunnel.
-* `crn` -  VPN Gateway info(ID).
-* `mode` -  The mode of the VPN gateway(policy,route).
+  Nested scheme for `tunnels`
+  - `address`-  (String) The IP address of the VPN gateway member in which the tunnel resides.
+  - `resource_type`-  (String) The status of the VPN tunnel.
+
 
 ## Import
+The `ibm_is_vpn_gateway_connection` resource can be imported by using the VPN gateway ID and the VPN gateway connection ID. 
 
-ibm_is_vpn_gateway_connection can be imported using vpn gateway ID and vpn gateway connection ID, eg
+**Syntax**
+
+```
+$ terraform import ibm_is_vpn_gateway_connection.example <vpn_gateway_ID>/<vpn_gateway_connection_ID>
+```
+
+**Example**
 
 ```
 $ terraform import ibm_is_vpn_gateway_connection.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb

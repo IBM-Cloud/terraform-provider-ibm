@@ -6,12 +6,10 @@ description: |-
   Manages IBM Cloud virtual server instance.
 ---
 
-# ibm\_is_instance
+# ibm_is_instance
+Retrieve information of an existing IBM Cloud virtual server instance  as a read-only data source. For more information, about managing VPC instance, see [about virtual server instances for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers).
 
-Import the details of an existing IBM Cloud virtual server instance  as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
@@ -57,75 +55,82 @@ data "ibm_is_instance" "ds_instance" {
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `name` - (Required, String) The name of the Virtual Servers for VPC instance that you want to retrieve.
+- `private_key` - (Optional, String) The private key of an SSH key that you want to add to your Virtual Servers for VPC instance during creation in PEM format. It is used to decrypt the default password of the Windows administrator for the virtual server instance if the image is used of type `windows`.
+- `passphrase` - (Optional, String) The passphrase that you used when you created your SSH key. If you did not enter a passphrase when you created the SSH key, do not provide this input parameter.
 
-* `name` - (Required, string) The name for this virtual server instance .
-* `private_key` - (Optional, string) The private key of the ssh key used in the creation of virtual server instance in PEM Format. It is used to decrypt Windows administrator default password for the virtual server instance if the image used is of type `windows`.
-* `passphrase` - (Optional, string) The passphrase used in the creation of encrypted ssh key pair. If non encrypted ssh key pair is used in the creation of the virtual server instance, this field can be omitted.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
+- `boot_volume` - (List of Objects) A list of boot volumes that were created for the instance.
 
-The following attributes can be exported:
+  Nested scheme for `boot_volume`:
+  - `id` - (String) The ID of the boot volume attachment.
+  - `name` - (String) The name of the boot volume.
+  - `device` - (String) The name of the device that is associated with the boot volume.
+  - `volume_id` - (String) The ID of the volume that is associated with the boot volume attachment.
+  - `volume_crn` - (String) The CRN of the volume that is associated with the boot volume attachment.
+- `disks` - (List) Collection of the instance's disks. Nested `disks` blocks has the following structure:
 
-* `id` - The id of the instance.
-* `memory` - Memory of the instance.
-* `status` - Status of the instance.
-* `image` - Image used in the instance.
-* `zone` - zone of the instance.
-* `vpc` - vpc id of the instance.
-* `resource_group` - resource group id of the instance.
-* `disks` - Collection of the instance's disks. Nested `disks` blocks have the following structure:
-	* `created_at` - The date and time that the disk was created.
-	* `href` - The URL for this instance disk.
-	* `id` - The unique identifier for this instance disk.
-	* `interface_type` - The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
-	* `name` - The user-defined name for this disk.
-	* `resource_type` - The resource type.
-	* `size` - The size of the disk in GB (gigabytes).
-* `vcpu` - A nested block describing the VCPU configuration of this instance.
-Nested `vcpu` blocks have the following structure:
-  * `architecture` - The architecture of the instance.
-  * `count` - The number of VCPUs assigned to the instance.
-* `gpu` - A nested block describing the gpu of this instance.
-Nested `gpu` blocks have the following structure:
-  * `cores` - The cores of the gpu.
-  * `count` - Count of the gpu.
-  * `manufacture` - Manufacture of the gpu.
-  * `memory` - Memory of the gpu.
-  * `model` - Model of the gpu.
-* `primary_network_interface` - A nested block describing the primary network interface of this instance.
-Nested `primary_network_interface` blocks have the following structure:
-  * `id` - The id of the network interface.
-  * `name` - The name of the network interface.
-  * `subnet` -  ID of the subnet.
-  * `security_groups` -  List of security groups.
-  * `primary_ipv4_address` - The primary IPv4 address.
-* `network_interfaces` - A nested block describing the additional network interface of this instance.
-Nested `network_interfaces` blocks have the following structure:
-  * `id` - The id of the network interface.
-  * `name` - The name of the network interface.
-  * `subnet` -  ID of the subnet.
-  * `security_groups` -  List of security groups.
-  * `primary_ipv4_address` - The primary IPv4 address.
-* `boot_volume` - A nested block describing the boot volume.
-Nested `boot_volume` blocks have the following structure:
-  * `id` -  The id of the boot volume attachment.
-  * `name` - The name of the boot volume.
-  * `device` -  The boot volume device Name.
-  * `volume_id` - The id of the boot volume attachment's volume
-  * `volume_crn` - The CRN/encryption of the boot volume attachment's volume
-* `volume_attachments` - A nested block describing the volume attachments.  
-Nested `volume_attachments` block have the following structure:
-  * `id` - The id of the volume attachment
-  * `name` -  The name of the volume attachment
-  * `volume_id` - The id of the volume attachment's volume
-  * `volume_name` -  The name of the volume attachment's volume
-  * `volume_crn` -  The CRN of the volume attachment's volume
-* `resource_controller_url` - The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
-* `password` - The password to this instance
-* `keys` - A nested block describing the keys used the creation of this instance.  
-Nested `keys` block have the following structure:
-  * `id` - The id of the key used in this instance creation
-  * `name` -  The name of the key used in this instance creation
+  Nested scheme for `disks`:
+  - `created_at` - (Timestamp) The creation date and time of the disk.
+  - `href` - (String) The URL for this instance disk.
+  - `id` - (String) The unique identifier for this instance disk.
+  - `interface_type` - (String) The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally, halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
+  - `name` - (String) The user-defined name for this disk.
+  - `resource_type` - (String) The resource type.
+  - `size` - (String) The size of the disk in GB.
+- `gpu`- (List) A list of graphics processing units that are allocated to the instance.
+
+  Nested scheme for `gpu`:
+  - `cores`- (Integer) The number of cores that are assigned to the GPU.
+  - `count`- (Integer) The number of GPUs that are allocated to the instance.
+  - `manufacture` - (String) The manufacturer of the GPU.
+  - `memory`- (Integer) The amount of memory that was allocated to the GPU.
+  - `model` - (String) The model of the GPU. 
+- `id` - (String) The ID that was assigned to the Virtual Servers for VPC instance.
+- `image` - (String) The ID of the virtual server image that is used in the instance.
+- `keys`- (List) A list of SSH keys that were added to the instance during creation.
+
+  Nested scheme for `keys`:
+  - `id` - (String) The ID of the SSH key.
+  - `name` - (String) The name of the SSH key that you entered when you uploaded the key to IBM Cloud.
+- `memory`- (Integer) The amount of memory that was allocated to the instance.
+- `network_interfaces`- (List) A list of more network interfaces that the instance uses.
+
+  Nested scheme for `network_interfaces`:
+  - `id` - (String) The ID of the more network interface.
+  - `name` - (String) The name of the more network interface.
+  - `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses.
+  - `subnet` - (String) The ID of the subnet that is used in the more network interface.
+  - `security_groups` (List)A list of security groups that were created for the interface.
+- `password` - (String) The password that you can use to access your instance.
+- `primary_network_interface`- (List) A list of primary network interfaces that were created for the instance. 
+
+  Nested scheme for `primary_network_interface`:
+  - `id` - (String) The ID of the primary network interface.
+  - `name` - (String) The name of the primary network interface.
+  - `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses.
+  - `subnet` - (String) The ID of the subnet that is used in the primary network interface.
+  - `security_groups` (List)A list of security groups that were created for the interface.
+- `resource_controller_url` - (String) The URL of the IBM Cloud dashboard that you can use to see details for your instance.  
+- `resource_group` - (String) The name of the resource group where the instance was created.
+- `status` - (String) The status of the instance.
+- `vpc` - (String) The ID of the VPC that the instance belongs to.
+- `vcpu`- (List) A list of virtual CPUs that were allocated to the instance.
+
+  Nested scheme for `vcpu`:
+  - `architecture` - (String) The architecture of the virtual CPU.
+  - `count`- (Integer) The number of virtual CPUs that are allocated to the instance.
+- `volume_attachments`- (List) A list of volume attachments that were created for the instance. 
+
+  Nested scheme for `volume_attachments`:
+  - `volume_crn` - (String) The CRN of the volume that is associated with the volume attachment.
+  - `id` - (String) The ID of the volume attachment.
+  - `name` - (String) The name of the volume attachment.
+  - `volume_id` - (String) The ID of the volume that is associated with the volume attachment.
+  - `volume_name` - (String) The name of the volume that is associated with the volume attachment.
+- `zone` - (String) The zone where the instance was created.

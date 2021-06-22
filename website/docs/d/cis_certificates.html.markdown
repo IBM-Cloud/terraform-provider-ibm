@@ -7,10 +7,9 @@ description: |-
 ---
 
 # ibm_cis_certificates
+Retrieve an information of an existing IBM Cloud Internet Services certificates resource. For more information about CIS certificate order, refer to [managing origin certificates](https://cloud.ibm.com/docs/cis?topic=cis-cis-origin-certificates).
 
-Imports a read only copy of an existing Internet Services Certificates resource.
-
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_cis_certificates" "test" {
@@ -19,25 +18,29 @@ data "ibm_cis_certificates" "test" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `cis_id` - (Required, String) The ID of the CIS instance.
+- `domain_id` - (Required, String) The ID of the domain.
 
-- `cis_id` - The ID of the CIS service instance.
-- `domain_id` - The ID of the domain.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attributes Reference
+- `certificates` - (String) The collection of the certificates.
 
-In addition to all arguments above, the following attributes are exported:
+   Nested scheme for `certificates`:
 
-- `certificates` - The Collection of certificates
-  - `id` - It is a combination of <`certificate_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
-  - `certificate_id` - The certificate id.
-  - `type` - The certificate type.
-  - `hosts` - The hosts for which certificates ordered.
-  - `status` - The certificate status.
-  - `primary_certificate` - The primary certificate id.
-  - `certificates` - The list of certificates associated with the ordered certificate.
-    - `id` - The certificate id.
-    - `hosts` - The hosts which the certificates associated with.
-    - `status` - The certificate status.
+   - `certificate_id` - (String) The certificate ID.
+   - `cprimary_certificate` - (String) The primary certificate ID.
+   - `certificates` (List) The list of certificates associated with the ordered certificate.
+
+       Nested scheme for `certificates`:
+	   - `id` - (String) The certificate ID.
+	   - `hosts` - (String) The hosts of the associated with the certificates.
+	   - `status` - (String) The certificate status.
+   - `hosts` - (String) The hosts of the ordered certificates.
+   - `id` - (String) It is a combination of `<certificate_id>:<domain_id>:<cis_id>`.
+   - `status` - (String) The certificate status.
+   - `type` - (String) The certificate type.
+

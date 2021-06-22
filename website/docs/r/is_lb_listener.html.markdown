@@ -6,15 +6,15 @@ description: |-
   Manages IBM load balancer listener.
 ---
 
-# ibm\_is_lb_listener
+# ibm_is_lb_listener
+Create, update, or delete a listener for a VPC load balancer. For more information, about load balancer listener, see [working with listeners](https://cloud.ibm.com/docs/vpc?topic=vpc-nlb-listeners).
 
-Provides a load balancer listener resource. This allows load balancer listener to be created, updated, and cancelled.
+**Note**
 
-**Note**: When provisioning the load balancer listener along with load balancer pool or pool member, Use explicit depends on the resources or perform the terraform apply with parallelism 1. For more information on explicit dependencies refer [here](https://learn.hashicorp.com/terraform/getting-started/dependencies#implicit-and-explicit-dependencies)
+When provisioning the load balancer listener along with load balancer pool or pool member, Use explicit depends on the resources or perform the terraform apply with parallelism. For more information, about explicit dependencies, see [create resource dependencies](https://learn.hashicorp.com/terraform/getting-started/dependencies#implicit-and-explicit-dependencies).
 
-## Example Usage
-
-In the following example, you can create a load balancer listener along with pool and pool member:
+## Example usage
+An example, to create a load balancer listener along with the pool and pool member.
 
 ```terraform
 resource "ibm_is_lb_listener" "testacc_lb_listener" {
@@ -47,37 +47,41 @@ resource "ibm_is_lb_pool_member" "webapptier-lb-pool-member-zone1" {
 ```
 
 ## Timeouts
+The `ibm_is_lb_listener` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-ibm_is_lb_listener provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
-
-* `create` - (Default 10 minutes) Used for creating Instance.
-* `update` - (Default 10 minutes) Used for updating Instance.
-* `delete` - (Default 10 minutes) Used for deleting Instance.
+- **create** - (Default 10 minutes) Used for creating Instance.
+- **update** - (Default 10 minutes) Used for updating Instance.
+- **delete** - (Default 10 minutes) Used for deleting Instance.
 
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `accept_proxy_protocol`- (Optional, Bool)  If set to **true**, listener forwards proxy protocol information that are supported by load balancers in the application family. Default value is **false**.
+- `lb` - (Required, Forces new resource, String) The load balancer unique identifier.
+- `port`- (Required, Integer) The listener port number. Valid range 1 to 65535.
+- `protocol` - (Required, String) The listener protocol. Enumeration type are `http`, `tcp`, and `https`. Network load balancer supports only `tcp` protocol.
+- `default_pool` - (Optional, String) The load balancer pool unique identifier.
+- `certificate_instance` - (Optional, String) The CRN of the certificate instance.
+- `connection_limit` - (Optional, Integer) The connection limit of the listener. Valid range is **1 to 15000**. Network load balancer do not support `connection_limit` argument.
 
-* `lb` - (Required, Forces new resource, string) The load balancer unique identifier.
-* `port` - (Required, int) The listener port number. Valid range 1 to 65535.
-* `protocol` - (Required, string) The listener protocol. Enumeration type: http, tcp, https. Network load balancer supports only `tcp` protocol.
-* `default_pool` - (Optional, string) The load balancer pool unique identifier.
-* `certificate_instance` - (Optional, string) CRN of the certificate instance.
-* `connection_limit` - (Optional, int) The connection limit of the listener. Valid range  1 to 15000. Network load balancer does not support `connection_limit` argument.
-* `accept_proxy_protocol` - (Optional, boolean) If true, listener will forward PROXY protocol information. Supported by load balancers in the application family otherwise false. Default: false.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the load balancer listener.
-* `status` - The status of load balancer listener.
+- `id` - (String) The unique identifier of the load balancer listener.
+- `status` - (String) The status of load balancer listener.
 
 ## Import
+The `ibm_is_lb_listener` resource can be imported by using the load balancer ID and listener ID.
 
-ibm_is_lb_listener can be imported using lbID and listenerID, eg
+**Syntax**
 
 ```
-$ terraform import ibm_is_lb_listener.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+$ terraform import ibm_is_lb_listener.example <loadbalancer_ID>/<listener_ID>
+```
+
+**Example**
+
+```
+$ terraform import ibm_is_lb_listener.example d7bec597-4726-451f-8a63-e61212c32c/cea6651a-bc0a-4438-9f8a-44444f3ebb
 ```

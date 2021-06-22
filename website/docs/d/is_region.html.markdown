@@ -3,15 +3,13 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : region"
 description: |-
-  Manages IBM Cloud Region.
+  Manages IBM Cloud region.
 ---
 
-# ibm\_is_region
+# ibm_is_region
+Retrieve information about a VPC Generation 2 Compute region. For more information, about managing IBM Cloud region, see [creating a VPC in a different region](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-a-vpc-in-a-different-region).
 
-Import the details of an existing IBM Cloud region as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-
-## Example Usage
+## Example usage
 
 ```terraform
 
@@ -20,16 +18,13 @@ data "ibm_is_region" "ds_region" {
 }
 
 ```
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-## Argument Reference
+- `name` - (Required, String) The name of the region.
 
-The following arguments are supported:
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
-* `name` - (Required, string) The name of the region.
-
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `status` - The status of region.
-* `endpoint` - The endpoint of the region.
+- `status` - (String) The status of the region.
+- `endpoint` - (String) The endpoint of the region.

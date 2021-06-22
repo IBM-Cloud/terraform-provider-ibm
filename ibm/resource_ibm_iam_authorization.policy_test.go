@@ -128,7 +128,7 @@ func testAccCheckIBMIAMAuthorizationPolicyDestroy(s *terraform.State) error {
 
 		if err == nil && *destroyedPolicy.State != "deleted" {
 			return fmt.Errorf("Authorization policy still exists: %s\n", rs.Primary.ID)
-		} else if response.StatusCode != 404 && *destroyedPolicy.State != "deleted" {
+		} else if response.StatusCode != 404 && destroyedPolicy.State != nil && *destroyedPolicy.State != "deleted" {
 			return fmt.Errorf("Error waiting for authorization policy (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}
@@ -178,7 +178,7 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceInstance(instanceName string) 
 	resource "ibm_resource_instance" "instance1" {
 		name     = "%s"
 		service  = "cloud-object-storage"
-		plan     = "standard"
+		plan     = "lite"
 		location = "global"
 	  }
 	  

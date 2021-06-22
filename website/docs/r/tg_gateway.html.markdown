@@ -4,14 +4,13 @@ subcategory: "Transit Gateway"
 layout: "ibm"
 page_title: "IBM : tg_gateway"
 description: |-
-  Manages IBM Transit Gateway.
+  Manages an IBM Transit Gateway.
 ---
 
-# ibm\_tg_gateway
+# ibm_tg_gateway
+Create, update and delete for the transit gateway resource. For more information, about transit location, see [managing transit gateways](https://cloud.ibm.com/docs/transit-gateway?topic=transit-gateway-edit-gateway).
 
-Provides a transit gateway resource. This allows transit gateway to be created, and updated and deleted.
-
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_tg_gateway" "new_tg_gw"{
@@ -22,29 +21,27 @@ resource_group="30951d2dff914dafb26455a88c0c0092"
 }  
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `location` - (Optional, Forces new resource, Integer) The location of the transit gateway. For example, `us-south`.
+- `name` - (Required, String) The unique user-defined name for the gateway. For example, `myGateway`.
+- `global` - (Required, Bool) The gateways with global routing (true) to connect to the networks outside their associated region.
+- `resource_group` -  (Optional, Forces new resource, String) The resource group ID where the transit gateway to be created.
 
-* `name` - (Required, boolean) The unique user-defined name for this gateway. Example: myGateway
-* `location` - (Required, Forces new resource, integer) Transit Gateway location. Example: us-south
-* `global` - (Required, boolean) Gateways with global routing (true) can connect to networks outside their associated region.
-* `resource_group` - (Optional, Forces new resource, string) The resource group ID where the transit gateway to be created.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your resource is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of this gateway. 
-* `crn` - The CRN (Cloud Resource Name) of this gateway.
-* `created_at` - The date and time resource was created.
-* `updated_at` - The date and time resource was created.
-* `status` - The status of the transit gateway. Example Available/Pending
-
+- `crn` - (String) The CRN of the gateway.
+- `created_at` - (Timestamp) The date and time the connection is created. 
+- `id` - (String) The unique identifier of the gateway ID or connection ID resource.
+- `status` - (String) The configuration status of the connection, such as **Available**, **pending**.
+- `updated_at` - (Timestamp) The date and time the connection is last updated.
 
 ## Import
+The `ibm_tg_gateway` resource can be imported by using transit gateway ID and connection ID.
 
-ibm_tg_gateway can be imported using transit gateway id, eg
+**Example**
 
 ```
 $ terraform import ibm_tg_gateway.example 5ffda12064634723b079acdb018ef308

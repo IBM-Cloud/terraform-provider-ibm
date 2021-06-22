@@ -7,17 +7,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
-
-	"strings"
-
+	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMIAMServiceID_Basic(t *testing.T) {
-	var conf models.ServiceID
+	var conf string
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	updateName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
@@ -26,7 +23,7 @@ func TestAccIBMIAMServiceID_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMServiceIDDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMServiceIDBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServiceIDExists("ibm_iam_service_id.serviceID", conf),
@@ -34,7 +31,7 @@ func TestAccIBMIAMServiceID_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "tags.#", "2"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMServiceIDUpdateWithSameName(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServiceIDExists("ibm_iam_service_id.serviceID", conf),
@@ -43,7 +40,7 @@ func TestAccIBMIAMServiceID_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "tags.#", "3"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMServiceIDUpdate(updateName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", updateName),
@@ -56,7 +53,7 @@ func TestAccIBMIAMServiceID_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMServiceID_import(t *testing.T) {
-	var conf models.ServiceID
+	var conf string
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_service_id.serviceID"
 
@@ -65,7 +62,7 @@ func TestAccIBMIAMServiceID_import(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMServiceIDDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMServiceIDTag(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServiceIDExists(resourceName, conf),
@@ -73,7 +70,7 @@ func TestAccIBMIAMServiceID_import(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "ServiceID for test scenario2"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -83,7 +80,7 @@ func TestAccIBMIAMServiceID_import(t *testing.T) {
 }
 
 func testAccCheckIBMIAMServiceIDDestroy(s *terraform.State) error {
-	rsContClient, err := testAccProvider.Meta().(ClientSession).IAMAPI()
+	rsContClient, err := testAccProvider.Meta().(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return err
 	}
@@ -93,21 +90,22 @@ func testAccCheckIBMIAMServiceIDDestroy(s *terraform.State) error {
 		}
 
 		serviceIDUUID := rs.Primary.ID
-
+		getServiceIDOptions := iamidentityv1.GetServiceIDOptions{
+			ID: &serviceIDUUID,
+		}
 		// Try to find the key
-		_, err := rsContClient.ServiceIds().Get(serviceIDUUID)
-
+		_, resp, err := rsContClient.GetServiceID(&getServiceIDOptions)
 		if err == nil {
-			return fmt.Errorf("ServiceID still exists: %s", rs.Primary.ID)
-		} else if !strings.Contains(err.Error(), "404") {
-			return fmt.Errorf("Error waiting for serviceID (%s) to be destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("ServiceID still exists: %s %s", rs.Primary.ID, resp)
+		} else if resp.StatusCode != 404 {
+			return fmt.Errorf("Error waiting for serviceID (%s) to be destroyed: %s %s", rs.Primary.ID, err, resp)
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckIBMIAMServiceIDExists(n string, obj models.ServiceID) resource.TestCheckFunc {
+func testAccCheckIBMIAMServiceIDExists(n string, obj string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -115,19 +113,20 @@ func testAccCheckIBMIAMServiceIDExists(n string, obj models.ServiceID) resource.
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		rsContClient, err := testAccProvider.Meta().(ClientSession).IAMAPI()
+		rsContClient, err := testAccProvider.Meta().(ClientSession).IAMIdentityV1API()
 		if err != nil {
 			return err
 		}
 		serviceIDUUID := rs.Primary.ID
-
-		serviceID, err := rsContClient.ServiceIds().Get(serviceIDUUID)
-
+		getServiceIDOptions := iamidentityv1.GetServiceIDOptions{
+			ID: &serviceIDUUID,
+		}
+		serviceID, resp, err := rsContClient.GetServiceID(&getServiceIDOptions)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error retrieving serviceID: %s %s", err, resp)
 		}
 
-		obj = serviceID
+		obj = *serviceID.ID
 		return nil
 	}
 }

@@ -266,7 +266,7 @@ func testAccCheckIBMIAMServicePolicyDestroy(s *terraform.State) error {
 
 		if err == nil && *destroyedPolicy.State != "deleted" {
 			return fmt.Errorf("User policy still exists: %s\n", rs.Primary.ID)
-		} else if response.StatusCode != 404 && *destroyedPolicy.State != "deleted" {
+		} else if response.StatusCode != 404 && destroyedPolicy.State != nil && *destroyedPolicy.State != "deleted" {
 			return fmt.Errorf("Error waiting for user policy (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}

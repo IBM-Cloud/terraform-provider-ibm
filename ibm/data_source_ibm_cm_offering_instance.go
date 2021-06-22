@@ -97,6 +97,16 @@ func dataSourceIBMCmOfferingInstance() *schema.Resource {
 				Computed:    true,
 				Description: "id of the resource group",
 			},
+			"install_plan": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "install plan for the subscription of the operator- can be either Automatic or Manual. Required for operator bundles",
+			},
+			"channel": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "channel to target for the operator subscription. Required for operator bundles",
+			},
 		},
 	}
 }
@@ -160,6 +170,12 @@ func dataSourceIBMCmOfferingInstanceRead(context context.Context, d *schema.Reso
 	}
 	if err = d.Set("resource_group_id", offeringInstance.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
+	}
+	if err = d.Set("install_plan", offeringInstance.InstallPlan); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting install_plan: %s", err))
+	}
+	if err = d.Set("channel", offeringInstance.Channel); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting channel: %s", err))
 	}
 
 	return nil

@@ -4,14 +4,14 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_authorization_policy"
 description: |-
-  Manages IBM IAM Service Authorizations.
+  Manages IBM IAM service authorizations.
 ---
 
-# ibm\_iam_authorization_policy
+# ibm_iam_authorization_policy
 
-Provides a resource for IAM Service Authorizations. This allows authorization policy to be created and deleted.
+Create or delete an IAM service authorization policy. For more information, about IAM service authorizations, see [using authorizations to grant access between services](https://cloud.ibm.com/docs/account?topic=account-serviceauth).
 
-## Example Usage
+## Example usage
 
 ### Authorization policy between two services
 
@@ -24,7 +24,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 
 ```
 
-### Authorization policy between two services with Authorize dependent services enabled
+### Authorization policy between two services with authorize dependent services enabled
 
 ```terraform
 resource "ibm_iam_authorization_policy" "policy" {
@@ -92,32 +92,37 @@ resource "ibm_iam_authorization_policy" "policy" {
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource.
 
-The following arguments are supported:
+- `roles` - (Required, list) The comma separated list of roles. For more information, about supported service specific roles, see  [IAM roles and actions](https://cloud.ibm.com/docs/account?topic=account-iam-service-roles-actions)
+- `source_service_account` - (Optional, Forces new resource, string) The account GUID of source service.
+- `source_service_name` - (Required, Forces new resource, string) The source service name.
+- `target_service_name` - (Required, Forces new resource, string) The target service name.
+- `source_resource_instance_id` - (Optional, Forces new resource, string) The source resource instance id.
+- `target_resource_instance_id` - (Optional, Forces new resource, string) The target resource instance id.
+- `source_resource_type` - (Optional, Forces new resource, string) The resource type of source service.
+- `target_resource_type` - (Optional, Forces new resource, string) The resource type of target service.
+- `source_resource_group_id` - (Optional, Forces new resource, string) The source resource group id.
+- `target_resource_group_id` - (Optional, Forces new resource, string) The target resource group id.
 
-* `source_service_name` - (Required, Forces new resource, string) The source service name.
-* `target_service_name` - (Required, Forces new resource, string) The target service name.
-* `roles` - (Required, list) comma separated list of roles.
-* `source_resource_instance_id` - (Optional, Forces new resource, string) The Source resource instance id.
-* `target_resource_instance_id` - (Optional, Forces new resource, string) The target resource instance id.
-* `source_resource_type` - (Optional, Forces new resource, string) Resource type of source service.
-* `target_resource_type` - (Optional, Forces new resource, string) Resource type of target service.
-* `source_service_account` - (Optional, Forces new resource, string) Account GUID of source service.
-* `source_resource_group_id` - (Optional, Forces new resource, string) The Source resource group id.
-* `target_resource_group_id` - (Optional, Forces new resource, string) The target resource group id.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the authorization policy. 
-
-* `version` - Version of the authorization policy.
+- `id` - (String) The unique identifier of the authorization policy.
+- `version` - (String) The version of the authorization policy.
 
 ## Import
 
-ibm_iam_authorization_policy can be imported using authorization policy ID, eg
+The `ibm_iam_authorization_policy` resource can be imported by using authorization policy ID.
+
+**Syntax**
+
+```
+$ terraform import ibm_iam_authorization_policy.example <authorization policy ID>
+```
+
+**Example**
 
 ```
 $ terraform import ibm_iam_authorization_policy.example 12fe9d62-81b1-41ee-8233-53150e38a61c
