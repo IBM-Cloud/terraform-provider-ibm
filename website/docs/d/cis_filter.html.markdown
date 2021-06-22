@@ -29,10 +29,10 @@ The following arguments are supported:
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
+- `id` - The Filter ID. It is a combination of <`filter_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":"
 - `cis_filters_list` - 
-  - `expression` - The expression of filter.
-  - `paused` - Whether this filter is currently disabled. Default: false
-  - `description` - Some useful information about this filter to help identify the purpose of it.
-  - `filter_id` - The Filter ID.
--  `id` - The ID of resource. It is the combination of <domain_id>:<cis_id>.
+  - `expression` - (Required,string) The expression of filter.
+  - `paused` - (Optional,boolean). Whether this filter is currently disabled.
+  - `description` - (Optional,string) Some useful information about this filter to help identify the purpose of it.
+  - `filter_id` - (Computed, string) The Filter ID.
 
