@@ -52,7 +52,7 @@ data "ibm_is_subnets" "ds_subnets" {
 
 ## Argument Reference
 
-The following arguments are supported:
+Review the argument references that you can specify for your data source. 
 
 * `resource_group` - (Optional, string) The id of the resource group.
 * `routing_table` - (Optional, string) The id of the routing table.
