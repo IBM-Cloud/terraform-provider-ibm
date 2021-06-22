@@ -23,7 +23,7 @@ data "ibm_is_images" "ds_images" {
 ```
 ## Argument Reference
 
-The following arguments are supported:
+Review the argument references that you can specify for your data source. 
 
 * `resource_group` - (Optional, string) The id of the resource group.
 * `name` - (Optional, string) The name of the image.
