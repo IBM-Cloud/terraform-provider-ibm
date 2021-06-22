@@ -4,14 +4,13 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_page_rule"
 description: |-
-  Provides a IBM CIS Page Rule resource.
+  Provides a IBM CIS Page rule resource.
 ---
 
 # ibm_cis_page_rule
+Provides an IBM Cloud Internet Services page rule resource, to create, update, delete page rules of a domain. This resource is associated with an IBM Cloud Internet Services instance and an IBM Cloud Internet Services domain resource. For more information, about IBM Cloud Internet Services page rules, see [using page rules](https://cloud.ibm.com/docs/cis?topic=cis-use-page-rules).
 
-Provides a IBM CIS Page Rule resource. This resource is associated with an IBM Cloud Internet Services instance and a CIS Domain resource. It allows to create, update, delete page rules of a domain of a CIS instance
-
-## Example Usage
+## Example usage
 
 ```terraform
 # Add a page rule to the domain
@@ -38,108 +37,120 @@ resource "ibm_cis_page_rule" "page_rule" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `actions` - (Required, List) The list of actions performed on URL. Minimum items is `1`.
 
-- `cis_id` - (Required,string) The ID of the CIS service instance.
-- `domain_id` - (Required,string) The ID of the domain.
-- `priority` - (Optional,integer) The priority of page rule. Default value is `1`. Set/Update not supported yet.
-- `status` - (Optional,string) The status of page rule. Valid values are `active` and `disabled`. Default value is `disabled`.
-- `targets` - (Required,set) The Targets, which rule is added.
-  - `target` - (Required,string) The Target type. Valid value: `url`.
-  - `constraint` - (Required,list(MaxItems: 1)) The Constrint of page rule.
-    - `operator` - (Required,string) The Operation on page rule. Valid value is `matches`.
-    - `value` - (Required,string) The URL value on which page rule is applied.
-- `actions` - (Required, list(MinItems: 1)) The List ofactions to be performed on url.
-  - `id` - (Required, string) The action identifier. Valid values are : (Page rule action field map from UI to API CF-UI map API)
-    - 'Disable Security': `disable_security` - this action conflicts with `email_obfuscation`, `server_side_exclude`, `waf` ,
-    - 'Always Online': `always_online` - this action conflicts with with all other settings,
-    - 'Forwarding URL': `forwarding_url` - this action conflicts with all other settings,
-    - 'Always Use HTTPS': `always_use_https` - this actions conflicts with all other settings,
-    - 'TLS': `ssl`,
-    - 'Browser Cache TTL': `browser_cache_ttl`,
-    - 'Security Level': `security_level`,
-    - 'Cache Level': `cache_level`,
-    - 'Edge Cache TTL': `edge_cache_ttl`,
-    - 'Bypass Cache on Cookie': `bypass_cache_on_cookie`,
-    - 'Browser Integrity Check': `browser_check`,
-    - 'Server Side Excludes': `server_side_exclude`,
-    - 'Server stale content': `serve_stale_content`,
-    - 'Email Obfuscation': `email_obfuscation`,
-    - 'Automatic HTTPS Rewrites': `automatic_https_rewrites`,
-    - 'Opportunistic Encryption': `opportunistic_encryption`,
-    - 'IP Geolocation Header': `ip_geolocation`,
-    - 'Origin Cache Control': `explicit_cache_control`,
-    - 'Cache Deception Armor': `cache_deception_armor`,
-    - 'Web Application Firewall': `waf`,
-    - 'Host header override': `host_header_override`,
-    - 'Resolve override': `resolve_override`,
-    - 'Cache on cookie': `cache_on_cookie`,
-    - 'Disable apps': `disable_apps`,
-    - 'Disable Performance': `disable_performance`,
-    - 'Image load optimization': `image_load_optimization`,
-    - 'Origin error page pass-through': `origin_error_page_pass_thru`,
-    - 'Response buffering': `response_buffering`,
-    - 'Image size optimization': `image_size_optimization`,
-    - 'Script load optimization': `script_load_optimization`,
-    - 'True client IP header': `true_client_ip_header`,
-    - 'Sort query string': `sort_query_string_for_cache`,
-  - `value` - (Required, string) The Values for corresponding actions are below,
-    - `always_online` - valid values: `on`, `off`.
-    - `ssl` - valid values: `off`, `flexible`, `full`, `strict`, `origin_pull`.
-    - `browser_cache_ttl` - valid values: `0`, `1800`, `3600`, `7200`, `10800`, `14400`, `18000`, `28800`, `43200`, `57600`, `72000`, `86400`, `172800`, `259200`, `345600`, `432000`, `691200`, `1382400`, `2073600`, `2678400`, `5356800`, `16070400`, `31536000`.
-    - `security_level` - valid values: `disable_security`, `always_use_https`.
-    - `cache_level` - valid values: `bypass`, `aggressive`, `basic`, `simplified`, `cache_everything`.
-    - `edge_cache_ttl` - valid values: `0`, `30`, `60`, `300`, `600`, `1200`, `1800`, `3600`, `7200`, `10800`, `14400`, `18000`, `28800`, `43200`, `57600`, `72000`, `86400`, `172800`, `259200`, `345600`, `432000`, `518400`, `604800`, `1209600`, `2419200`.
-    - `bypass_cache_on_cookie` - valid values: (string) cookie tags.
-    - `browser_check` - valid values: `on`, `off`.
-    - `server_side_exclude` - valid values: `on`, `off`.
-    - `serve_stale_content` - valid values: `on`, `off`.
-    - `email_obfuscation` - valid values: `on`, `off`.
-    - `automatic_https_rewrites` - valid values: `on`, `off`.
-    - `opportunistic_encryption` - valid values: `on`, `off`.
-    - `ip_geolocation` - valid values: `on`, `off`.
-    - `explicit_cache_control` - valid values: `on`, `off`.
-    - `cache_deception_armor` - valid values: `on`, `off`.
-    - `waf` - valid values: `on`, `off`.
-    - `host_header_override` - (string) Header value.
-    - `resolve_override` - (string) The value for resolving URL override.
-    - `cache_on_cookie` - (string) The cookie value.
-    - `disable_apps` - no value required.
-    - `disable_performance` - no value required.
-    - `image_load_optimization` - valid values: `on`, `off`.
-    - `origin_error_page_pass_thru` - valid values: `on`, `off`.
-    - `response_buffering` - valid values: `on`, `off`.
-    - `image_size_optimization` - valid values: `off`, `lossless`, `lossy`.
-    - `script_load_optimization` - valid values: `on`, `off`.
-    - `true_client_ip_header` - valid values: `on`, `off`.
-    - `sort_query_string_for_cache` - valid values: `on`, `off`.
-    - `minify` - This is not supported yet.
-  - `url` - (Optional,string) The URL for forward rule. This attribute is required for `forwarding_url` action.
-  - `status_code` - (Optional,string) The Status code to check for url forwarding. This attribute is required for `forwarding_url` action. valid values are: `301` and `302`. This returns `0` for all other actions.
+  Nested scheme for `actions`:
+  - `id` - (Required, String) The action ID. Valid values are `page rule action field map from console` to `API CF-UI map API`).
 
-## Attributes Reference
+    Nested scheme for `id`:
+    - `always_online` - (String) The action conflicts with all other settings.
+    - `always_use_https` - (String) The action conflicts with all other settings.
+    - `automatic_https_rewrites` - (String) The automatic HTTPS rewrites.
+    - `browser_cache_ttl` - (String) The browser cache TTL.
+    - `bypass_cache_on_cookie` - (String) The bypass cache on cookie.
+    - `browser_check` - (String) The browser integrity check.
+    - `cache_level` - (String) The cache level.
+    - `cache_on_cookie` - (String) The cache on cookie.
+    - `cache_deception_armor` - (String) The cache deception armor.
+    - `disable_security` - (String) The action conflicts with `email_obfuscation`, `server_side_exclude`, `waf`.
+    - `disable_apps` - (String) The disable apps.
+    - `disable_performance` - (String) The disable performance.
+    - `edge_cache_ttl` - (String) The edge cache TTL.
+    - `email_obfuscation` - (String) The Email obfuscation.
+    - `explicit_cache_control` - (String) The origin cache control.
+    - `forwarding_url` - (String) The action conflicts with all other settings.
+    - `host_header_override` - (String) The host header override.
+    - `image_load_optimization` - (String) The image load optimization.
+    - `image_size_optimization` - (String) The image size optimization.
+    - `ip_geolocation` - (String) The IP geography location header.
+    - `opportunistic_encryption` - (String) The opportunistic encryption.
+    - `origin_error_page_pass_thru` - (String) The origin error page pass-through.
+    - `resolve_override` - (String) The resolve override.
+    - `response_buffering` - (String) The response buffering.
+    - `script_load_optimization` - (String) The script load optimization.
+    - `ssl` - (String) The TLS settings.
+    - `security_level` - (String) The security level.
+    - `server_side_exclude` - (String) The server side excludes.
+    - `server_stale_content` - (String) The server stale content.
+    - `sort_query_string_for_cache` - (String) The sort query string.
+    - `true_client_ip_header` - (String) The true client IP header.
+    - `waf` - (String) The Web Application Firewall.
+  - `status_code` - (Optional, String) The status code to check for URL forwarding. The required attribute for `forwarding_url` action. Valid values are `301` and `302`. It returns `0` for all other actions.
+  - `url` - (Optional, String) The forward rule URL, a required attribute for `forwarding_url` action.
+  - `value` - (Required, String) The values for corresponding actions.
+ 
+    Nested scheme for `value`:
+    - `always_online` - (String) The valid values are `on`, `off`.
+    - `automatic_https_rewrites` - (String) The valid values are `on`, `off`.
+    - `browser_cache_ttl`- (Integer) The valid values are `0, 1800, 3600, 7200, 10800, 14400, 18000, 28800, 43200, 57600, 72000, 86400, 172800, 259200, 345600, 432000, 691200, 1382400, 2073600, 2678400, 5356800, 16070400, 31536000`.
+    - `browser_check` - (String) The valid values are `on`, `off`.
+    - `bypass_cache_on_cookie` - (String) The valid values are `cookie tags`.
+    - `cache_deception_armor` - (String) The valid values are `on`, `off`.
+    - `cache_level` - (String) The valid values are `bypass`, `aggressive`, `basic`, `simplified`, `cache_everything`.
+    - `cache_on_cookie` - (String) The cookie value.
+    - `disable_apps` - (String) The value is not required.
+    - `disable_performance` - (String) The value is not required.
+    - `edge_cache_ttl` - (String) The valid values are `0, 30, 60, 300, 600, 1200, 1800, 3600, 7200, 10800, 14400, 18000, 28800, 43200, 57600, 72000, 86400, 172800, 259200, 345600, 432000, 518400, 604800, 1209600, 2419200`.
+    - `email_obfuscation` - (String) The valid values are `on`, `off`.
+    - `explicit_cache_control` - (String) The valid values are `on`, `off`.
+    - `host_header_override` - (String) The header value.
+    - `image_load_optimization` - (String) The valid values are `on`, `off`.
+    - `image_size_optimization` - (String) The valid values are `on`, `off`.
+    - `ip_geolocation` - (String) The valid values are `on`, `off`.
+    - `origin_error_page_pass_thru` - (String) The valid values are `on`, `off`.
+    - `minify` - (String) This is not supported yet.
+    - `opportunistic_encryption` - (String) The valid values are `on`, `off`.
+    - `resolve_override` - (String) The value for resolving URL override.
+    - `response_buffering` - (String) The valid values are `on`, `off`.
+    - `script_load_optimization` - (String) The valid values are `off`, `lossless`, `lossy`.
+    - `security_level` - (String) The valid values are `disable_security`, `always_use_https`.
+    - `server_side_exclude` - (String) The valid values are `on`, `off`.
+    - `server_stale_content` - (String) The valid values are `on`, `off`.
+    - `sort_query_string_for_cache` - (String) The valid values are `on`, `off`.
+    - `ssl` - (String) The valid values are `off`, `flexible`, `full`, `strict`, `origin_pull`.
+    - `true_client_ip_header` - (String) The valid values are `on`, `off`.
+    - `waf` - (String) The valid values are `on`, `off`.
+- `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance.
+- `domain_id` - (Required, String) The ID of the IBM Cloud Internet Services domain.
+- `priority` - (Optional, Integer) The priority of the page rule. Default value is `1`. `Set` and `Update` are not supported yet.
+- `status` - (Optional, String) The status of the page rule. Valid values are `active` and `disabled`. Default value is `disabled`.
+- `targets`- (Required, Set) The targets, where rule is added.
 
-In addition to all arguments above, the following attributes are exported:
+  Nested scheme for `targets`:
+  - `target` - (Required, String) The target type. Valid value is `url`.
+  - `constraint` -(Required, List) The constraint of the page rule. Maximum item is `1`.
 
-- `id` - The record ID. It is a combination of <`rule_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
-- `rule_id` - The Page rule ID.
+    Nested scheme for `constraint`:
+    - `operator` - (Required, String) The operation on the page rule. The valid value is `matches`.
+    - `value` - (Required, String) The URL value on which page rule is applied.
+
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `id` - (String) The record ID. It is a combination of `<rule_id>:<domain_id>:<cis_id>` attributes of the origin pool.
+- `rule_id` - (String) The page rule ID.
 
 ## Import
+The `ibm_cis_page_rule` resource can be imported by using the ID. The ID is formed from the rule ID, the domain ID of the domain and the CRN concatenated by using a `:` character.
 
-The `ibm_cis_page_rule` resource can be imported using the `id`. The ID is formed from the `Rule ID`, the `Domain ID` of the domain and the `CRN` (Cloud Resource Name) concatentated using a `:` character.
+The domain ID and CRN is located on the **Overview** page of the Internet Services instance under the **Domain** heading of the console, or via the `ibmcloud cis` CLI.
 
-The Domain ID and CRN will be located on the **Overview** page of the Internet Services instance under the **Domain** heading of the UI, or via using the `ibmcloud cis` CLI commands.
+- **Domain ID** is a 32 digit character string of the form: `9caf68812ae9b3f0377fdf986751a78f`.
 
-- **Domain ID** is a 32 digit character string of the form: `9caf68812ae9b3f0377fdf986751a78f`
+- **CRN** is a 120 digit character string of the format `crn:v1:bluemix:public:internet-svcs:global:a/1aa1111a1a1111aa1a111111111111aa:11aa111a-11a1-1a11-111a-111aaa11a1a1::` 
 
-- **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`
+- **Rule ID** is a 32 digit character string in the format `489d96f0da6ed76251b475971b097205c`.
 
-- **Rule ID** is a 32 digit character string of the form: `489d96f0da6ed76251b475971b097205c`.
+**syntax**
 
 ```
 $ terraform import ibm_cis_page_rule.myorg <rule_id>:<domain-id>:<crn>
+```
+**Example**
 
+```
 $ terraform import ibm_cis_page_rule.myorg page_rule 48996f0da6ed76251b475971b097205c:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
 ```

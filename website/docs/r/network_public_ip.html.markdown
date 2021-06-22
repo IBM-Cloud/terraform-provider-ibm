@@ -4,16 +4,15 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: network_private_ip"
 description: |-
-  Manages IBM Network Public IP.
+  Manages IBM Cloud network public IP.
 ---
 
-# ibm\_network_public_ip
+# ibm_network_public_ip
+Create, delete, and update a public IP resource to route between servers. Public IPs are not restricted to routing within the same data center. For more information, about IBM Cloud network public IP, see [networking services](https://cloud.ibm.com/docs/cloud-infrastructure?topic=cloud-infrastructure-network).
 
-Provides a public IP resource to route between servers. This allows public IPs to be created, updated, and deleted. Public IPs are not restricted to routing within the same data center.
+For more information, see [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Network_Subnet_IpAddress_Global)
 
-For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/services/SoftLayer_Network_Subnet_IpAddress_Global) and [public IP address overview](https://knowledgelayer.softlayer.com/learning/global-ip-addresses).
-
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_network_public_ip" "test_public_ip " {
@@ -23,23 +22,19 @@ resource "ibm_network_public_ip" "test_public_ip " {
 ```
 
 ## Timeouts
-ibm_network_public_ip provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_network_public_ip` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-* `create` - (Default 30 minutes) Used for Creating Instance.
+- **create** - (Default 30 minutes) Used for creating instance.
 
-## Argument Reference
+## Argument reference 
+Review the argument references that you can specify for your resource.
 
-The following arguments are supported:
+- `notes`- (Optional, String) Descriptive text to associate with the public IP instance.
+- `routes_to` - (Required, String) The destination IP address that the public IP routes traffic through. The destination IP address can be a public IP address of IBM resources in the same account, such as a public IP address of a VM or public virtual IP addresses of **NetscalerVPXs**.
+- `tags`- (Optional, Array of string)  Tags associated with the public IP instance. **Note** `Tags` are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
 
-* `routes_to` - (Required, string) The destination IP address that the public IP routes traffic through. The destination IP address can be a public IP address of IBM resources in the same account, such as a public IP address of a VM or public virtual IP addresses of NetScaler VPXs.
-* `notes` - (Optional, string) Descriptive text to associate with the public IP instance.
-* `tags` - (Optional, array of strings) Tags associated with the public IP instance.  
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
-
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the public IP.
-* `ip_address` - The address of the public IP.
+- `id` - (String) The unique identifier of the public IP.
+- `ip_address` - (String) The address of the public IP.

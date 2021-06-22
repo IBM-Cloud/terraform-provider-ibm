@@ -7,14 +7,12 @@ description: |-
   Manages IBM container worker pool.
 ---
 
-# ibm\_container_worker_pool
+# ibm_container_worker_pool
 
-Create, update, or delete a worker pool. The worker pool will be attached to the specified cluster.
+Create, update, or delete a worker pool. For more information, about container worker pool, see [adding worker nodes and zones to clusters](https://cloud.ibm.com/docs/containers?topic=containers-add_workers).
 
-
-## Example Usage
-
-In the following example, you can create a worker pool:
+## Example usage
+The following example creates the worker pool `mypool` for the cluster that is named `mycluster`. 
 
 ```terraform
 resource "ibm_container_worker_pool" "testacc_workerpool" {
@@ -37,7 +35,7 @@ resource "ibm_container_worker_pool" "testacc_workerpool" {
 }
 ```
 
-Create the Openshift cluster worker Pool with entitlement:
+### Create the Openshift cluster worker Pool with entitlement:
 
 ```terraform
 resource "ibm_container_worker_pool" "test_pool" {
@@ -57,45 +55,47 @@ resource "ibm_container_worker_pool" "test_pool" {
 
 ## Timeouts
 
-ibm_container_worker_pool provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+ibm_container_worker_pool provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-* `update` - (Default 90 minutes) Used for updating Instance.
+- **Update**: The update of the worker pool is considered `failed` if no response is received for 90 minutes.
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `cluster` - (Required, Forces new resource, String) The name or ID of the cluster where you want to enable or disable the feature.
+- `disk_encryption` -  (Bool) Optional-If set to **true**, the worker node disks are set up with an AES 256-bit encryption. If set to **false**, the disk encryption for the worker node is disabled. For more information, see [Encrypted disks](https://cloud.ibm.com/docs/containers?topic=containers-security).Yes.
+- `entitlement` - (Optional, String) If you purchased an IBM Cloud Cloud Pak that includes an entitlement to run worker nodes that are installed with OpenShift Container Platform, enter `entitlement` to create your worker pool with that entitlement so that you are not charged twice for the OpenShift license. **Note** that this option can be set only when you create the worker pool. After the worker pool is created, the cost for the OpenShift license automates when you add worker nodes to your worker pool. **Note** <ul><li> It is set only for the first time creation of the worker pool, modification in the further executes will not have any impacts.</li><li> Set this argument to `cloud_pak` only if you use this cluster with a cloud pak that has an OpenShift entitlement.</li></ul>
+- `hardware` - (Optional, Forces new resource, String) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. This option is available for virtual machine worker node flavors only.
+- `labels` - (Optional, Map) A list of labels that you want to add to your worker pool. The labels can help you find the worker pool more easily later.
+- `machine_type` - (Required, Forces new resource, String) The machine type for your worker node. The machine type determines the amount of memory, CPU, and disk space that is available to the worker node. For an overview of supported machine types, see [Planning your worker node setup](https://cloud.ibm.com/docs/containers?topic=containers-planning_worker_nodes).
+- `name` - (Required, Forces new resource, String) The name of the worker pool.
+- `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group where your cluster is provisioned into. To list resource groups, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
+- `size_per_zone`  - (Required, Integer) The number of worker nodes per zone that you want to add to the worker pool.
 
-* `name` - (Required, Forces new resource, string) The name of the worker pool.
-* `cluster` - (Required, Forces new resource, string) The name or id of the cluster.
-* `machine_type` - (Required, Forces new resource, string) The machine type of the worker node.
-* `size_per_zone` - (Required, int) Number of workers per zone in this pool.
-* `hardware` - (Optional, Forces new resource, string) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. For IBM Cloud Public accounts, the default value is shared. For IBM Cloud Dedicated accounts, dedicated is the only available option.
-* `disk_encryption` - (Optional, Forces new resource, boolean) Set to `false` to disable encryption on a worker. Default is true.
-* `labels` - (Optional, map) Labels on all the workers in the worker pool.
-* `region` - (Deprecated, Forces new resource, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
-* `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
-* `entitlement` - (Optional, string) The openshift cluster entitlement avoids the OCP licence charges incurred. Use cloud paks with OCP Licence entitlement to add the Openshift cluster worker pool.
-  **NOTE**:
-  1. It is set only for the first time creation of the worker pool, modification in the further runs will not have any impacts.
-  2. Set this argument to 'cloud_pak' only if you use this cluster with a Cloud Pak that has an OpenShift entitlement
+**Deprecated reference**
 
-## Attribute Reference
+- `region` - (Deprecated, Forces new resource, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 
-In addition to all arguments above, the following attributes are exported:
+ 
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-* `id` - The unique identifier of the worker pool resource. The id is composed of \<cluster_name_id\>/\<worker_pool_id\>.<br/>
-**Note**:To reference the worker pool id in other resources use below interpolation syntax.<br/>
-`Ex: ${element(split("/",ibm_container_worker_pool.testacc_workerpool.id),1)}`
-* `state` - Worker pool state.
-* `zones` - List of zones attached to the worker_pool.
-   * `zone` - Zone name.
-   * `private_vlan` - The ID of the private VLAN.
-   * `public_vlan` - The ID of the public VLAN.
-   * `worker_count` - Number of workers attached to this zone.
+- `id` - (String) The unique identifier of the worker pool in the format `<cluster_name_id>/<worker_pool_id>`. **Note** To reference the worker pool ID in other resources use below interpolation syntax. For example, 
+`: ${element(split("/",ibm_container_worker_pool.testacc_workerpool.id),1)}`
+- `state` - (String) The state of the worker pool.
+- `zones` - List - A list of zones that are attached to the worker pool. 
+
+  Nested scheme for `zones`:
+  - `private_vlan` - (String) The ID of the private VLAN that is used in the zone. 
+  - `public_vlan` - (String) The ID of the public VLAN that is used in the zone. 
+  - `worker_count` - (Integer) The number of worker nodes that are attached to the zone.
+  - `zone` - (String) The name of the zone. 
 
 ## Import
+The `ibm_container_worker_pool` can be imported by using `cluster_name_id`, `worker_pool_id`.
 
-ibm_container_worker_pool can be imported using cluster_name_id, worker_pool_id eg
+**Example**
 
 ```
 $ terraform import ibm_container_worker_pool.example mycluster/5c4f4d06e0dc402084922dea70850e3b-7cafe35
+```

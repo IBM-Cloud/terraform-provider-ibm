@@ -3,15 +3,14 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : "
 description: |-
-  Manages IBM vpn gateway connections.
+  Manages IBM VPN gateway connections.
 ---
 
-# ibm\_is_vpn_gateway_connections
+# ibm_is_vpn_gateway_connections
+Retrieve information of an existing VPN gateway connections. For more information, see [adding connections to a VPN gateway](https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-adding-connections).
 
-Import the details of an existing IBM VPN Gateway connections as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-
-## Example Usage
+## Example usage
 
 ```terraform
 
@@ -21,32 +20,32 @@ data "ibm_is_vpn_gateway_connections" "ds_vpn_gateway_connections" {
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `status` - (Optional, String) Filters the collection to VPN gateway connections with the specified status.
+- `vpn_gateway` - (Required, String) The VPN gateway ID.
 
-* `status` - (Optional, string) Filters the collection to VPN gateway connections with the specified status .
-* `vpn_gateway` - (Required, string) The VPN gateway identifier(ID).
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
+- `action` - (String) Action detection for dead peer detection action.
+- `admin_state_up` - (String) The VPN gateway connection admin state. Default value is **true**.
+- `authentication_mode` - (String) The authentication mode.
+- `created_at`- (Timestamp) The date and time the VPN gateway connection was created.
+- `id` - (String) The ID of the VPN gateway connection.
+- `ike_policy` - (String) The VPN gateway connection IKE Policy.
+- `interval`-  (String) Interval for dead peer detection.
+- `ipsec_policy` - (String) The IP security policy VPN gateway connection.
+- `local_cidrs` - (String) The VPN gateway connection local CIDRs.
+- `mode` - (String) The mode of the VPN gateway.
+- `name`-  (String) The VPN gateway connection name.
+- `peer_address` - (String) The VPN gateway connection peer address.
+- `peer_cidrs` - (String) The VPN gateway connection peer CIDRs.
+- `resource_type` - (String) The resource type.
+- `timeout` - (String) Timeout for dead peer detection.
+- `tunnels` - (List) The VPN tunnel configuration for the VPN gateway connection (in static route mode).
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - ID of the VPN Gateway connection.
-* `admin_state_up` - VPN gateway connection admin state,default: true.
-* `authentication_mode` - The authentication mode.
-* `created_at` - The date and time that this VPN gateway connection was created.
-* `ike_policy` - VPN gateway connection IKE Policy.
-* `interval` - Interval for dead peer detection interval.
-* `ipsec_policy` - IP security policy for vpn gateway connection.
-* `local_cidrs` - VPN gateway connection local CIDRs.
-* `mode` - The mode of the VPN gateway.
-* `name` - VPN Gateway connection name.
-* `peer_address` - VPN gateway connection peer address.
-* `peer_cidrs` - VPN gateway connection peer CIDRs.
-* `resource_type` - The resource type.
-* `timeout` - Timeout for dead peer detection
-* `action` - Action detection for dead peer detection action
-* `tunnels` - The VPN tunnel configuration for this VPN gateway connection (in static route mode)
-  * `address` - The IP address of the VPN gateway member in which the tunnel resides
-  * `status` - The status of the VPN Tunnel
+  Nested scheme for `tunnels`:
+	- `address` - (String) The IP address of the VPN gateway member in which the tunnel resides.
+	- `status` - (String) The status of the VPN tunnel.

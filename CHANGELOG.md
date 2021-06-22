@@ -1,3 +1,97 @@
+## 1.26.2 (Jun15, 2021)
+BUGFIXES
+* Fix: Rollback the ibm_resource_tag resource ([#2718](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2718))
+
+* Fixed typo that prevented host_attach_script from completing ([#2715](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2715))
+
+* Fix InvalidBucketState: Versioning cannot be enabled for a bucket with expiration lifecycle actions ([#2727](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2727))
+
+* Fix the empty ca_certificate for download of network cluster config ([#2732](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2732))
+
+## 1.26.1 (Jun11, 2021)
+Note : Don't use this release we have an issue with checksum errors for users when attempting to download the plugin. We have a new release v1.26.2
+
+BUGFIXES
+* Fix: Rollback the ibm_resource_tag resource ([#2718](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2718))
+
+* Fixed typo that prevented host_attach_script from completing ([#2715](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2715))
+
+* Fix InvalidBucketState: Versioning cannot be enabled for a bucket with expiration lifecycle actions ([#2727](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2727))
+
+* Fix the empty ca_certificate for download of network cluster config ([#2732](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2732))
+
+## 1.26.0 (Jun04, 2021)
+FEATURES:
+* Support AppConfiguration
+    - **Resources**
+        - ibm_app_config_environment
+        - ibm_app_config_feature
+    - **DataSources**
+        - ibm_app_config_environment
+        - ibm_app_config_environments
+        - ibm_app_config_feature
+        - ibm_app_config_features
+* Support VPC instance group membership
+    - **Resources**
+        - ibm_is_instance_group_membership
+    - **DataSources**
+        - ibm_is_instance_group_memberships
+        - ibm_is_instance_group_membership
+* Support VPC instance group manager action
+    - **Resources**
+        - ibm_is_instance_group_manager_action
+    - **DataSources**
+        - ibm_is_instance_group_manager_action
+        - ibm_is_instance_group_manager_actions
+* Support Satellite Cluster
+    - **Resources**
+        - ibm_satellite_cluster
+        - ibm_satellite_cluster_worker_pool
+    - **DataSources**
+        - ibm_satellite_cluster
+        - ibm_satellite_cluster_worker_pool
+    
+* Support VPC Operating System
+    - **DataSources**
+        - ibm_is_operating_system
+        - ibm_is_operating_systems
+
+ENHANCEMENTS
+* Update catalog management offering instance ([#2628](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2628))
+
+* support object versioning feature for COS ([#2664](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2664))
+
+* Support data volume in instance group ([#2673](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2673))
+
+* Added VMWare Host Provider to Satellite Host Attach Script ([#2688](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2688))
+
+* Support: tags in resource_instance datasource ([#2691](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2691))
+
+* Add dbaas example ([#2683](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2683))
+
+
+BUGFIXES
+* Fix: Remove resource from statefile for pending_reclamation state  ([#2643](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2643))
+
+* ibm_container_cluster_config data source is broken in 1.25 release on windows ([#2651](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2651))
+
+* ibm_is_vpn_gateways data source documentation is wrong ([#2629](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2629))
+
+* Documentation/example covering how to encrypt boot volume on ibm_is_instance ([#2577](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2577))
+
+* Container Registry Documentation Error ([#2685](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2685))
+
+*  Create Key With Writer Role Assignment ([#2619](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2619))
+
+* Fix the NotFound Checks if the resource is still provisioning ([#2613](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2613))
+
+* A link should be fixed in ibm_kms_key ([#2704](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2704))
+
+* DocUpdate: Add Timeout Blocks to vpc cluster ([#2706](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2706))
+
+* ibm_schematics_workspace data source unable to parse env_values  ([#2708](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2708))
+
+
 ## 1.25.0 (May18, 2021)
 FEATURES:
 * Support Resource Tag Management

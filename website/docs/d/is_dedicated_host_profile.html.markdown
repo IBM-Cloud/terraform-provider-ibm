@@ -3,14 +3,14 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_dedicated_host_profile"
 description: |-
-  Get information about DedicatedHostProfile
+  Get information about dedicated host profile
 ---
 
-# ibm\_is_dedicated_host_profile
+# ibm_is_dedicated_host_profile
+Retrieve an information about the dedicated host profile. For more information, about dedicated host groups in your IBM Cloud VPC, see [dedicated host profiles](https://cloud.ibm.com/docs/vpc?topic=vpc-dh-profiles).
 
-Provides a read-only data source for DedicatedHostProfile. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_is_dedicated_host_profile" "is_dedicated_host_profile" {
@@ -18,67 +18,79 @@ data "ibm_is_dedicated_host_profile" "is_dedicated_host_profile" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `name` - (Required, String) The globally unique user defined name for this `VSI` profile.
 
-* `name` - (Required, string) The globally unique name for this virtual server instance profile.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-In addition to all arguments above, the following attributes are exported:
+- `class`-  (String) The product class this dedicated host profile belongs to.
+- `disks` - (List) Collection of the dedicated host profile's disks. 
 
-* `id` - The unique identifier of the DedicatedHostProfile.
-* `class` - The product class this dedicated host profile belongs to.
-* `disks` - Collection of the dedicated host profile's disks. Nested `disks` blocks have the following structure:
-	* `interface_type`  Nested `interface_type` blocks have the following structure:
-		* `type` - The type for this profile field.
-		* `value` - The interface of the disk for a dedicated host with this profileThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
-	* `quantity` - The number of disks of this type for a dedicated host with this profile. Nested `quantity` blocks have the following structure:
-		* `type` - The type for this profile field.
-		* `value` - The value for this profile field.
-	* `size` - The size of the disk in GB (gigabytes). Nested `size` blocks have the following structure:
-		* `type` - The type for this profile field.
-		* `value` - The size of the disk in GB (gigabytes).
-	* `supported_instance_interface_types`  Nested `supported_instance_interface_types` blocks have the following structure:
-		* `type` - The type for this profile field.
-		* `value` - The instance disk interfaces supported for a dedicated host with this profile.
-* `family` - The product family this dedicated host profile belongs to.
+  Nested scheme for `disks`:
+  - `interface_type`- (List) The interface type.
 
-* `href` - The URL for this dedicated host.
+    Nested scheme for `interface_type`:
+    - `type` - (String) The type for this profile field.
+    - `value` - (String) The interface of the disk for a dedicated host with this profileThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
+ - `quantity` - (List) The number of disks of this type for a dedicated host with this profile. Nested `quantity` blocks have the following structure:
 
-* `memory`  Nested `memory` blocks have the following structure:
-	* `type` - The type for this profile field.
-	* `value` - The value for this profile field.
-	* `default` - The default value for this profile field.
-	* `max` - The maximum value for this profile field.
-	* `min` - The minimum value for this profile field.
-	* `step` - The increment step value for this profile field.
-	* `values` - The permitted values for this profile field.
+    Nested scheme for `quantity`:
+    - `type` - (String) The type for this profile field.
+    - `value` - (String) The value for this profile field.
+ - `size` - (List) The size of the disk in GB (gigabytes). Nested `size` blocks have the following structure:
 
-* `socket_count`  Nested `socket_count` blocks have the following structure:
-	* `type` - The type for this profile field.
-	* `value` - The value for this profile field.
-	* `default` - The default value for this profile field.
-	* `max` - The maximum value for this profile field.
-	* `min` - The minimum value for this profile field.
-	* `step` - The increment step value for this profile field.
-	* `values` - The permitted values for this profile field.
+    Nested scheme for `size`:
+    - `type` - (String) The type for this profile field.
+    - `value` - (String) The size of the disk in GB (gigabytes).
+ - `supported_instance_interface_types` - (List) Nested `supported_instance_interface_types` blocks have the following structure:
 
-* `supported_instance_profiles` - Array of instance profiles that can be used by instances placed on dedicated hosts with this profile Nested`supported_instance_profiles` blocks have the following structure:
-	* `href` - The URL for this virtual server instance profile.
-	* `name` - The globally unique name for this virtual server instance profile.
+    Nested scheme for `supported_instance_interface_types`:
+    - `type` - (String) The type for this profile field.
+    - `value` - (String) The instance disk interfaces supported for a dedicated host with this profile.
+- `family`-  (String) The product family this dedicated host profile belongs to.
+- `href`-  (String) The URL for this dedicated host.
+- `id`-  (String) The unique identifier of the dedicated host profile.
+- `memory`-  (List) Nested memory blocks have the following structure.
 
-* `vcpu_architecture`  Nested `vcpu_architecture` blocks have the following structure:
-	* `type` - The type for this profile field.
-	* `value` - The VCPU architecture for a dedicated host with this profile.
+  Nested scheme for `memory`:
+  - `default` -  (String) The default value for this profile field.
+  - `max` -  (String) The maximum value for this profile field.
+  - `min` -  (String) The minimum value for this profile field.
+  - `step` -  (String) The increment step value for this profile field.
+  - `type` -  (String) The type for this profile field.
+  - `value` -  (String) The value for this profile field.
+  - `values` -  (String) The permitted values for this profile field.
+- `socket_count` - (List) Nested socket_count blocks have the following structure.
 
-* `vcpu_count`  Nested `vcpu_count` blocks have the following structure:
-	* `type` - The type for this profile field.
-	* `value` - The value for this profile field.
-	* `default` - The default value for this profile field.
-	* `max` - The maximum value for this profile field.
-	* `min` - The minimum value for this profile field.
-	* `step` - The increment step value for this profile field.
-	* `values` - The permitted values for this profile field.
+  Nested scheme for `socket_count`:
+  - `type` -  (String) The type for this profile field.
+  - `value` -  (String) The value for this profile field.
+  - `default` -  (String) The default value for this profile field.
+  - `max` -  (String) The maximum value for this profile field.
+  - `min` -  (String) The minimum value for this profile field.
+  - `step` -  (String) The increment step value for this profile field.
+  - `values` -  (String) The permitted values for this profile field.
+- `supported_instance_profiles`-  (List) Array of instance profiles that can be used by instances placed on dedicated hosts with this profile Nested `supported_instance_profiles` blocks have the following structure.
 
+  Nested scheme for `supported_instance_profiles`:
+  - `href`-  (String) The URL for this virtual server instance profile.
+  - `name`-  (String) The globally unique name for this virtual server instance profile.
+- `vcpu_architecture`-  (List) Nested `vcpu_architecture` blocks have the following structure.
+
+  Nested scheme for `vcpu_architecture`:
+  - `type`-  (String) The type for this profile field.
+  - `value`-  (String) The `VCPU` architecture for a dedicated host with this profile.
+- `vcpu_count` - (List) Nested `vcpu_count` blocks have the following structure.
+
+  Nested scheme for `vcpu_count`:
+  - `default`-  (String) The default value for this profile field.
+  - `max`-  (String) The maximum value for this profile field.
+  - `min`-  (String) The minimum value for this profile field.
+  - `step`-  (String) The increment step value for this profile field.
+  - `type`-  (String) The type for this profile field.
+  - `value`-  (String) The value for this profile field.
+  - `values`-  (String) The permitted values for this profile field.

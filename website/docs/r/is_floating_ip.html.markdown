@@ -4,15 +4,14 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : floating_ip"
 description: |-
-  Manages IBM Floating IP.
+  Manages IBM floating IP.
 ---
 
-# ibm\_is_floating_ip
+# ibm_is_floating_ip
+Create a floating IP address that you can associate with a Virtual Servers for VPC instance. You can use the floating IP address to access your instance from the public network, independent of whether the subnet is attached to a public gateway. For more information, see [about floating IP](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-a-vpc-using-the-rest-apis#create-floating-ip-api-tutorial).
 
-Provides a floatingip resource. This allows floatingip to be created, updated, and cancelled.
-
-
-## Example Usage
+## Example usage
+The following example shows how to create a Virtual Servers for VPC instance and associate a floating IP address to the primary network interface of the virtual server instance.
 
 ```terraform
 
@@ -39,35 +38,34 @@ resource "ibm_is_floating_ip" "testacc_floatingip" {
 ```
 
 ## Timeouts
+The `ibm_is_instance` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-ibm_is_instance provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+- **create**: The creation of the floating IP address is considered `failed` if no response is received for 10 minutes. 
+- **delete**: The deletion of the floating IP address is considered `failed` if no response is received for 10 minutes. 
 
-* `create` - (Default 10 minutes) Used for creating floating IP.
-* `delete` - (Default 10 minutes) Used for deleting floating IP.
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `name` - (Required, String) Enter a name for the floating IP address. 
+- `resource_group` - (Optional, String) The resource group ID where you want to create the floating IP.
+- `target` - (Optional, String) Enter the ID of the network interface that you want to use to allocate the IP address. If you specify this option, do not specify `zone` at the same time. **Note** conflicts with `zone`.
+- `tags` (Optional, Array of Strings) Enter any tags that you want to associate with your VPC. Tags might help you find your VPC more easily after it is created. Separate multiple tags with a comma (`,`).
+- `zone` - (Optional, String) Enter the name of the zone where you want to create the floating IP address. To list available zones, run `ibmcloud is zones`. If you specify this option, do not specify `target` at the same time. **Note** Conflicts with `target` and one of `target`, or `zone` is mandatory.
 
-* `name` - (Required, string) The floating ip name.
-* `target` - (Optional, string) ID of the target network interface.
-    **NOTE**: Conflicts with `zone`.
-* `zone` - (Optional, Forces new resource, string) Name of the target zone. 
-    **NOTE**: Conflicts with `target` and one of `target`, `zone` is mandatory.
-* `resource_group` - (Optional, Forces new resource, string) The resource group ID where the floating ip to be created
-* `tags` - (Optional, array of strings) Tags associated with the Floating IP.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
+- `address` - (String) The floating IP address that was created. 
+- `id` - (String) The unique identifier of the floating IP address. 
+- `status` - (String) The provisioning status of the floating IP address.
 
-* `id` - The id of the floating ip.
-* `status` - The status of the floating ip.
-* `address` - The floating ip address. 
 
 ## Import
+The `ibm_is_floating_ip` resource can be imported by using floating IP ID.
 
-ibm_is_floating_ip can be imported using floating ip ID, eg
+**Example**
 
 ```
 $ terraform import ibm_is_floating_ip.example d7bec597-4726-451f-8a63-e62e6f19c32c

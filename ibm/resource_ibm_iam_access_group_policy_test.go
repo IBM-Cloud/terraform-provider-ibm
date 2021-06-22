@@ -264,7 +264,7 @@ func TestAccIBMIAMAccessGroupPolicy_WithCustomRole(t *testing.T) {
 }
 
 func testAccCheckIBMIAMAccessGroupPolicyDestroy(s *terraform.State) error {
-	iampapClient, err := testAccProvider.Meta().(ClientSession).IAMPolicyManagementV1API()
+	iamPolicyManagementClient, err := testAccProvider.Meta().(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
@@ -278,15 +278,17 @@ func testAccCheckIBMIAMAccessGroupPolicyDestroy(s *terraform.State) error {
 			return err
 		}
 
-		accgrpPolicyID := parts[1]
+		accessGroupPolicyID := parts[1]
 
-		deletePolicyOptions := &iampolicymanagementv1.DeletePolicyOptions{
-			PolicyID: &accgrpPolicyID,
-		}
+		getPolicyOptions := iamPolicyManagementClient.NewGetPolicyOptions(
+			accessGroupPolicyID,
+		)
 
-		response, err := iampapClient.DeletePolicy(deletePolicyOptions)
+		destroyedPolicy, response, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 
-		if err != nil && response.StatusCode != 404 {
+		if err == nil && *destroyedPolicy.State != "deleted" {
+			return fmt.Errorf("Access group policy still exists: %s\n", rs.Primary.ID)
+		} else if response.StatusCode != 404 && destroyedPolicy.State != nil && *destroyedPolicy.State != "deleted" {
 			return fmt.Errorf("Error waiting for access group policy (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}
@@ -302,7 +304,7 @@ func testAccCheckIBMIAMAccessGroupPolicyExists(n string, obj iampolicymanagement
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		iampapClient, err := testAccProvider.Meta().(ClientSession).IAMPolicyManagementV1API()
+		iamPolicyManagementClient, err := testAccProvider.Meta().(ClientSession).IAMPolicyManagementV1API()
 		if err != nil {
 			return err
 		}
@@ -314,15 +316,15 @@ func testAccCheckIBMIAMAccessGroupPolicyExists(n string, obj iampolicymanagement
 			return err
 		}
 
-		accgrpPolicyID := parts[1]
+		accessGroupPolicyID := parts[1]
 
-		getPolicyOptions := &iampolicymanagementv1.GetPolicyOptions{
-			PolicyID: &accgrpPolicyID,
-		}
+		getPolicyOptions := iamPolicyManagementClient.NewGetPolicyOptions(
+			accessGroupPolicyID,
+		)
 
-		policy, _, err := iampapClient.GetPolicy(getPolicyOptions)
+		policy, _, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 		if err != nil {
-			return fmt.Errorf("Error retrieving Policy %s err: %s", accgrpPolicyID, err)
+			return fmt.Errorf("Error retrieving Policy %s err: %s", accessGroupPolicyID, err)
 		}
 		obj = *policy
 		return nil

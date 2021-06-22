@@ -6,11 +6,10 @@ description: |-
   Get information about an IBM DNS secondary resource.
 ---
 
-# ibm\_dns_secondary
+# ibm_dns_secondary
+Retrieve information of an existing DNS secondary zone as a read-only data source. For more information, about DNS secondary resource, see [managing secondary DNS zones](https://cloud.ibm.com/docs/dns?topic=dns-manage-secondary-dns-zones).
 
-Import the name of an existing dns secondary zone as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
-
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_dns_secondary" "secondary_id" {
@@ -18,18 +17,16 @@ data "ibm_dns_secondary" "secondary_id" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source.
 
-The following arguments are supported:
+- `zone_name` - (Required, String) The name of the secondary zone.
 
-* `zone_name` - (Required, string) The name of the secondary zone, as it was defined in IBM Cloud Classic Infrastructure (SoftLayer).
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the secondary.
-* `transfer_frequency` - Signifies how often a secondary DNS zone transferred in minutes.
-* `master_ip_address` - The IP address of the master name server where a secondary DNS zone is transferred from.
-* `status_id` - The current status of a secondary DNS record.
-* `status_text` - The textual representation of a secondary DNS zone's status.
+- `id` - (String) The unique identifier of the secondary.
+- `master_ip_address` - (String) The IP address of the master name server where a secondary DNS zone is transferred from.
+- `status_id` - (String) The status of a secondary DNS record.
+- `status_text` - (String) The textual representation of a secondary DNS zone's status.
+- `transfer_frequency`- (Integer) Signifies how often a secondary DNS zone transferred in minutes.

@@ -3,14 +3,14 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_user_profile"
 description: |-
-  Manages IBM IAM user settings & profle.
+  Manages IBM IAM user settings & profile.
 ---
 
-# ibm\_iam_user_profile
+# ibm_iam_user_profile
 
-Can be used to fetch user profle & settings.
+Retrieve information about an IAM user profile. For more information, about IAM role action, see [updating company profile details](https://cloud.ibm.com/docs/account?topic=account-contact-info).
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_iam_user_settings" "user_setting" {
@@ -24,23 +24,23 @@ data "ibm_iam_user_profile" "user_profle" {
 
 ```
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument references that you can specify for your data source.
 
-* `iam_id` - (Required, string) The iam id or email of user.
+- `iam_id` - (Required, String) The IBM ID or email address of the user.
 
-## Attribute Reference
+## Attribute reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
-* `allowed_ip_addresses` - List of IPs from which invited user can access the IBM cloud console of the inviter.
-* `id` - The unique identifier (email) of the IAM user setting.
-* `firstname` - The first name of the user.
-* `lastname` - The last name of the user.
-* `state` - The state of the user.
-* `phonenumber` - phonenumber of the user.
-* `email` - The email of the user.
+- `allowed_ip_addresses` (List) List of invited users IP's to access the IBM cloud console.
+- `email` - (String) The email address of the user.
+- `firstname`-  (String) The first name of the user.
+- `id` - (String) The unique identifier or email address of the IAM user.
+- `lastname`-  (String) The last name of the user.
+- `phonenumber` - (String) The contact number of the user.
+- `state` - (String) The state of the user.
 
 
   

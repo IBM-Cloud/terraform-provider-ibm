@@ -6,11 +6,10 @@ description: |-
   Get information about a Kubernetes container ALB.
 ---
 
-# ibm\_container_alb
+# ibm_container_alb
+Retrieve information about all the Kubernetes cluster ALB on IBM Cloud as a read-only data source.  For more information, about Ingress ALBs, see [about Ingress ALBs](https://cloud.ibm.com/docs/containers?topic=containers-ingress-about)
 
-Import the details of a Kubernetes cluster ALB on IBM Cloud as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-## Example Usage
+## Example usage
 
 In the following example, you can retrive alb configurations :
 
@@ -20,22 +19,19 @@ data "ibm_container_alb" "alb" {
 }
 
 ```
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-## Argument Reference
+- `alb_id` - (Required, String) The ID of the ALB.
 
-The following arguments are supported:
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute reference after your resource is created.
 
-* `alb_id` - (Required,string) The ID of the Application Load Balancer.
-
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `alb_type` - The ALB type.
-* `cluster` - The name of the cluster.
-* `name` - The name of the ALB.
-* `user_ip` - The IP address assigned by the user.
-* `id` - The ALB ID.
-* `zone` - The name of the zone.
-* `enable` -  Enable an ALB for the cluster.
-* `disable_deployment` -  Disable the ALB deployment only details.
+- `alb_type` - (String) The ALB type.
+- `cluster` - (String) The name of the cluster.
+- `disable_deployment` - (String) Disable the ALB deployment details.
+- `enable` - (String) Enable an ALB for the cluster.
+- `id` - (String) The ALB ID.
+- `name` - (String) The name of the ALB.
+- `user_ip` - (String) The IP address assigned by the user.
+- `zone` - (String) The name of the zone.

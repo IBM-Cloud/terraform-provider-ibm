@@ -4,11 +4,11 @@ go 1.16
 
 require (
 	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20210521083814-a0bd7732f494
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20210611051827-cdc80c935c05
 	github.com/IBM-Cloud/power-go-client v1.0.55
 	github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a
-	github.com/IBM/appconfiguration-go-admin-sdk v0.1.0 // indirect
-	github.com/IBM/container-registry-go-sdk v0.0.12
+	github.com/IBM/appconfiguration-go-admin-sdk v0.1.0
+	github.com/IBM/container-registry-go-sdk v0.0.13
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.3.1
 	github.com/IBM/go-sdk-core/v4 v4.10.0
@@ -17,11 +17,11 @@ require (
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/keyprotect-go-client v0.7.0
 	github.com/IBM/networking-go-sdk v0.14.0
-	github.com/IBM/platform-services-go-sdk v0.18.12
+	github.com/IBM/platform-services-go-sdk v0.18.16
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/schematics-go-sdk v0.0.2
 	github.com/IBM/secrets-manager-go-sdk v0.1.19
-	github.com/IBM/vpc-go-sdk v0.6.0
+	github.com/IBM/vpc-go-sdk v0.7.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.27.2
 	github.com/apache/incubator-openwhisk-client-go v0.0.0-20171128215515-ad814bc98c32 // indirect

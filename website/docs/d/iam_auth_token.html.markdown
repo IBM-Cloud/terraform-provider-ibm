@@ -6,22 +6,22 @@ description: |-
   Get information about an IBM Cloud IAM and UAA tokens.
 ---
 
-# ibm\_iam_auth_token
+# ibm_iam_auth_token
 
-Import the details of an existing IBM Cloud authentication tokens as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about your IAM access token. You can use this token to authenticate with the IBM Cloud platform. For more information, about IAM and UAA token, see [access tokens](https://cloud.ibm.com/docs/appid?topic=appid-tokens).
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_iam_auth_token" "tokendata" {}
 ```
 
-## Attribute Reference
+## Attribute reference
 
-In addition to all arguments above, the following attributes are exported:
+You can access the following attribute references after your data source is created.
 
-* `iam_access_token` - IAM access Token. 
-* `iam_refresh_token` - IAM Refresh Token.
-* `uaa_access_token`- UAA access Token. 
-* `uaa_refresh_token` -  UAA Refresh Token.
+- `iam_access_token`  - (String) The IAM access token.
+- `iam_refresh_token` - (String) The IAM refresh token.
+- `uaa_access_token` - (String) The UAA access token.
+- `uaa_refresh_token` - (String) The UAA refresh token.
   

@@ -800,7 +800,7 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 			d.Set("metrics_monitoring", flattenMetricsMonitor(bucketPtr.MetricsMonitoring))
 		}
 	}
-	// Read the lifecycle configuration (archive)
+	// Read the lifecycle configuration (archive & expiration)
 
 	gInput := &s3.GetBucketLifecycleConfigurationInput{
 		Bucket: aws.String(bucketName),
@@ -823,6 +823,7 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	// Read retention rule
 	retentionInput := &s3.GetBucketProtectionConfigurationInput{
 		Bucket: aws.String(bucketName),
 	}
@@ -839,7 +840,7 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	// Get the object Versioning
+	// Read Object versioning
 	versionInput := &s3.GetBucketVersioningInput{
 		Bucket: aws.String(bucketName),
 	}
@@ -848,11 +849,14 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
 		return err
 	}
-	versioningData := flattenCosObejctVersioning(versionPtr)
-	if versioningData != nil {
-		d.Set("object_versioning", versioningData)
+	if versionPtr != nil {
+		versioningData := flattenCosObejctVersioning(versionPtr)
+		if len(versioningData) > 0 {
+			d.Set("object_versioning", versioningData)
+		} else {
+			d.Set("object_versioning", nil)
+		}
 	}
-
 	return nil
 }
 

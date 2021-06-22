@@ -3,16 +3,15 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_instance_group_membership"
 description: |-
-  Manages Instance Group Membership
+  Manages instance group membership.
 ---
 
-# ibm\_is_instance_group_membership
-
-Update or delete a instance group memership on of an instance group
+# ibm_is_instance_group_membership
+Create, update, or delete a instance group memership of an instance group. For more information, about instance group membership, see [bulk provisioning instances with instance groups](https://cloud.ibm.com/docs/vpc?topic=vpc-bulk-provisioning).
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "is_instance_group_membership" "is_instance_group_membership" {
   instance_group            = "r006-76740f94-fcc4-11e9-96e7-a77723715315"
   instance_group_membership = "eff45fa0-de38-4368-8a0d-28dc88c2ef9b"
@@ -20,35 +19,36 @@ resource "is_instance_group_membership" "is_instance_group_membership" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `instance_group` - (Required, Forces new resource, String) The ID of the instance group.
+- `instance_group_membership` - (Required, String) The ID of the instance group membership.
+- `name` - (Optional, String) The name of the instance group membership.
+- `action_delete` - (Optional, Bool) The delete flag for the instance group membership. You must set to **true** to delete the instance group membership.
 
-* `instance_group` - (Required, Forces new resource, string) The instance group identifier.
-* `instance_group_membership` - (Required, string) The instance group membership identifier.
-* `name` - (Optional, string) The name of the instance group membership.
-* `action_delete` - (Optional, string) "The delete flag for this instance group membership. Must be set to true to delete instance group membership.".
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
+- `delete_instance_on_membership_delete` - (String) If set to **true**, when deleting the membership, the instance gets deleted.
+- `id` - (String) The combination ID of the instance group and the instance group membership ID's.
+- `instance` - (List) Nested `instance` blocks have the following structure:
 
-In addition to all arguments above, the following attributes are exported:
+  Nested scheme for `instance`:
+  - `crn` - (String) The CRN for this virtual server instance.
+  - `name` - (String) The user defined name for this virtual server instance (and default system hostname).
+  - `virtual_server_instance` - (String) The unique identifier for this virtual server instance.
+- `instance_template` - (List)  Nested `instance_template` blocks have the following structure:
 
-* `id` - Id is the the combination of instance group ID and instance group membership ID.
-* `delete_instance_on_membership_delete` - If set to true, when deleting the membership the instance will also be deleted.
-* `instance`  Nested `instance` blocks have the following structure:
-	* `crn` - The CRN for this virtual server instance.
-	* `virtual_server_instance` - The unique identifier for this virtual server instance.
-	* `name` - The user-defined name for this virtual server instance (and default system hostname).
-* `instance_template`  Nested `instance_template` blocks have the following structure:
-	* `crn` - The CRN for this instance template.
-	* `instance_template` - The unique identifier for this instance template.
-	* `name` - The unique user-defined name for this instance template.
-* `name` - The user-defined name for this instance group membership. Names must be unique within the instance group.
-* `load_balancer_pool_member` - The unique identifier for this load balancer pool member.
-* `status` - The status of the instance group membership
-	`deleting`: Membership is deleting dependent resources
-	`failed`: Membership was unable to maintain dependent resources
-	`healthy`: Membership is active and serving in the group
-	`pending`: Membership is waiting for dependent resources
-	`unhealthy`: Membership has unhealthy dependent resources.
-
+  Nested scheme for `instance_template`:
+  - `crn` - (String) The CRN for this instance template.
+  - `instance_template` - (String) The unique identifier for this instance template.
+  - `name` - (String) The unique user defined name for this instance template.
+- `load_balancer_pool_member` - (String) The unique identifier for this load balancer pool member.
+- `name` - (String) The user-defined name for this instance group membership. Names must be unique within the instance group.
+- `status` - (String) The status of the instance group membership are:</br>
+	**deleting** Membership is deleting dependent resources.</br>
+	**failed** Membership is unable to maintain dependent resources.</br>
+	**healthy** Membership is active and serving in the group.</br>
+	**pending** Membership is waiting for dependent resources.</br>
+	**unhealthy** Membership contains unhealthy dependent resources.

@@ -4,12 +4,11 @@ subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_instance"
 description: |-
-  Manages an instance in the Power Virtual Server Cloud.
+  Manages an instance in the Power Virtual Server cloud.
 ---
 
-# ibm\_pi_instance
-
-Import the details of an existing IBM Power Virtual Server instance as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+# ibm_pi_instance
+Retrieve information about a Power Systems Virtual Server instance. For more information, about Power Virtual Server instance, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example Usage
 
@@ -19,49 +18,55 @@ data "ibm_pi_instance" "ds_instance" {
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
-## Notes:
+
+**Notes**
 * Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 * If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   * `region` - `lon`
   * `zone` - `lon04`
-  Example Usage:
+  
+  Example usage:
+  
   ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"
     }
   ```
-## Argument Reference
+  
 
-The following arguments are supported:
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-* `pi_instance_name` - (Required, string) The name of the instance.
-* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_instance_name` - (Required, String) The name of the instance.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-In addition to all arguments above, the following attributes are exported:
+- `health_status` - (String) The health of the instance.
+- `id` - (String) The unique identifier of the instance.
+- `memory` - (String) The amount of memory that is allocated to the instance.
+- `min_processors`- (Integer) The minimum number of processors that must be allocated to the instance. 
+- `max_processors`- (Integer) The maximum number of processors that can be allocated to the instance without shutting down or rebooting the `LPAR`.
+- `max_virtual_cores` - (Integer) The maximum value that you increase without a reboot.
+- `min_memory`- (Integer) The minimum amount of memory that must be allocated to the instance.
+- `max_memory`- (Integer) The maximum amount of memory that can be allocated to the instance without shutting down or rebooting the `LPAR`.
+- `min_virtual_cores` - (Integer) The minimum cores assigned to an instance.
 
-* `id` - The unique identifier for this instance.
-* `memory` - The memory of the instance.
-* `processors` - The processors of the instance.
-* `status` - The status of the instance.
-* `proctype` - The proctype of the instance.
-* `volumes` - The list of the volumes attached to the instance.
-* `health_status` - The health status of the instance.
-* `state` - The state of the instance.
-* `min_processors` - Minimum number of processors that were  allocated (for resize)
-* `min_memory` - Minimum memory  that was allocated (for resize)
-* `max_processors` - Maximumx number of processors that can be allocated (for resize) without a shutdown/reboot of the lpar
-* `max_memory` - Maximum amount of memory that can be allocated (for resize) without a shutdown/reboot of the lpar
-* `virtual_cores_assigned` - The virtual cores that are assigned to the instance
-* `max_virtual_cores` - The max value that we are increase to without a reboot
-* `min_virutal_cores` - The min cores assigned to the instance
- * `addresses` - The addresses associated with this instance.  Nested `addresses` blocks have the following structure:
-	* `ip` - IP of the instance.
-  * `macaddress` - The macaddress of the instance.
-  * `network_id` - The networkID of the instance.
-  * `network_name` - The network name of the instance.
-  * `type` - The type of the network
-  * `external_ip` - The externalIP address of the instance.
+  Nested scheme for `min_virtual_cores`:
+  - `addresses` - List of objects - The address associated with this instance.
 
+    Nested scheme for `addresses`:
+    - `ip` - (String) The IP address of the instance.
+    - `external_ip` - (String) The external IP address of the instance.
+    - `macaddress` - (String) The MAC address of the instance.
+    - `network_id` - (String) The network ID of the instance.
+    - `network_name` - (String) The network name of the instance.
+    - `type` - (String) The type of the network.
+- `processors` - (String) The number of processors that are allocated to the instance.
+- `proctype` - (String) The procurement type of the instance. Supported values are `shared` and `dedicated`.
+- `status` - (String) The status of the instance.
+- `state` - (String) The state of the instance.
+- `virtual_cores_assigned` - (Integer) The virtual cores that are assigned to the instance.
+- `volumes`- (List of strings) The list of volume IDs that are attached to the instance.

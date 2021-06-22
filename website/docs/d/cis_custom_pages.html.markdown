@@ -3,14 +3,13 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_custom_pages"
 description: |-
-  Get information on an IBM Cloud Internet Services Custom Pages resource.
+  Get information on an IBM Cloud Internet Services custom pages resource.
 ---
 
 # ibm_cis_custom_pages
+Retrieve information of an existing IBM Cloud Internet Services custom pages resource. For more information, about custom page, refer to [CIS custom page](https://cloud.ibm.com/docs/cis?topic=cis-custom-page).
 
-Imports a read only copy of an existing Internet Services custom pages resource.
-
-## Example Usage
+## Example usage
 
 ```terraform
 # Get custom pages of the domain
@@ -21,18 +20,17 @@ data "ibm_cis_custom_pages" "custom_pages" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
-
-- `id` - The custom page ID. It is a combination of <`page_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
-- `cis_id` - The ID of the CIS service instance.
-- `domain_id` - The ID of the domain to change Custom Page.
-- `page_id` - The Custom page identifier. Valid values are `basic_challenge, waf_challenge, waf_block, ratelimit_block, country_challenge, ip_block, under_attack, 500_errors, 1000_errors, always_online`
-- `url` - The URL for custom page settings. By default `url` is set with empty string `""`. If this field is being set with empty string, when it is already set with empty string, then it throws error.
-- `description` - The description of custom page.
-- `required_tokens` - The custom page required token which is expected from `url` page.
-- `preview_target` - The custom page target
-- `state` - The custom page state. This is set `default` when there is empty `url` and set to `customized` when `url` is set with some url.
-- `created_on` - The custom page created date and time.
-- `modified_on` - The custom page modified date and time.
+- `cis_id` - (String) The ID of the CIS service instance.
+- `created_on` - (String) Created date and time of the custom page.
+- `description` - (String) The description of the custom page.
+- `domain_id` - (String) The domain ID to change custom page.
+- `id` - (String) The custom page ID. It is a combination of `<page_id>, <domain_id>, <cis_id>` attributes concatenated with `:`.
+- `modified_on` - (String) Modified date and time of the custom page.
+- `page_id ` - (String) The custom page identifier. Valid values are `basic_challenge`, `waf_challenge`, `waf_block`, `ratelimit_block`, `country_challenge`, `ip_block`, `under_attack`, `500_errors`, `1000_errors`, `always_online`.
+- `preview_target` - (String) The target custom page.
+- `required_tokens` - (String) The custom page required token which is expected from the URL page.
+- `state` - (String) The custom page state. This is set default when there is an empty URL and can customize when URL is set with some URL.
+- `url` - (String) The URL for custom page settings. By default URL is set with empty string `""`. Setting a duplicate empty string throws an error.

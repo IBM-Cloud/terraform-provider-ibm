@@ -96,7 +96,7 @@ func checkNetworkACLDestroy(s *terraform.State) error {
 
 func testAccCheckIBMISNetworkACLExists(n, nwACL string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		fmt.Println("siv ", s.RootModule().Resources)
+
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {

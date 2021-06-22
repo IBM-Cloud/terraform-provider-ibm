@@ -41,7 +41,7 @@ func testAccCheckResourceTagReadDataSource(name, managed_from string) string {
 	}
 
 	data "ibm_satellite_location" "get_location" {
-		location   = ibm_satellite_location.location.location
+		location   = ibm_satellite_location.location.id
 	}
 
 	resource "ibm_resource_tag" "tag" {
