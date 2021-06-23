@@ -62,7 +62,7 @@ resource "ibm_is_instance_group" "instance_group" {
 
 ## Timeouts
 
-The `ibm_is_instance_group` resource provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_is_instance_group` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create**: The creation of the instance group is considered `failed` if no response is received for 15 minutes.
 - **delete**: The deletion of the instance group is considered `failed` if no response is received for 15 minutes.

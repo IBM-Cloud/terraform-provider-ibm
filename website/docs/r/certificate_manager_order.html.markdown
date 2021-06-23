@@ -40,7 +40,7 @@ resource "ibm_certificate_manager_order" "cert" {
 ```
 
 ## Timeouts
-The following [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) are defined for this resource. 
+The following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) are defined for this resource. 
 
 - **Create**: The ordering of the certificate is considered failed if no response is received for 10 minutes.
 - **Update**: The renewal or update of the certificate is considered failed if no response is received for 10 minutes.

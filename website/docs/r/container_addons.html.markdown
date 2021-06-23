@@ -55,7 +55,7 @@ resource "ibm_container_addons" "addons" {
 
 ## Timeouts
 
-The `ibm_container_addons` provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_container_addons` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **Create** The enablement of the add-ons is considered `failed` if no response is received for 20 minutes.
 - **Update** The enablement of the add-ons is considered `failed` if no response is received for 20 minutes.

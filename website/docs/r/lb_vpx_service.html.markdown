@@ -4,17 +4,17 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lb_vpx_service"
 description: |-
-  Manages IBM VPX load balancer services
+  Manages IBM VPX load balancer services.
 ---
 
-# ibm\_lb_vpx_service
+# ibm_lb_vpx_service
+Create, update, and delete a VPX load balancer service. For more information, about VPC load balancer virtual IP address, see [about Citrix Netscaler VPX](https://cloud.ibm.com/docs/citrix-netscaler-vpx?topic=citrix-netscaler-vpx-about-citrix-netscaler-vpx).
 
-Provides a resource for VPX load balancer services. This allows VPX load balancer services to be created, updated, and deleted. For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_LoadBalancer_Service).  
+**Note** 
 
-**NOTE**: If you use NetScaler VPX 10.5, Terraform uses NetScaler's [NITRO REST API](https://docs.citrix.com/en-us/netscaler/11/nitro-api.html) to manage the resource.  Terraform can only access the NITRO API in the IBM Cloud Classic Infrastructure (SoftLayer) private network, so connect to the private network when running Terraform. You can also use the [SSL VPN](http://www.softlayer.com/VPN-Access) to access a private network connection.
+If you use Netscaler VPX 10.5, Terraform uses Netscaler's [NITRO REST API](https://docs.citrix.com/en-us/netscaler/11/nitro-api.html) to manage the resource. Terraform can only access the NITRO API in the IBM Cloud Classic Infrastructure (SoftLayer) private network, so connect to the private network when running  Terraform. You can also use the [SSL VPN](https://www.ibm.com/cloud/vpn-access) to access a private network connection.
 
-## Example Usage
-
+## Example usage
 In the following example, you can create a VPX load balancer:
 
 ```terraform
@@ -30,25 +30,21 @@ resource "ibm_lb_vpx_service" "test_service" {
 }
 ```
 
-## Argument Reference
+## Argument reference 
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `connection_limit`- (Required, Integer) The connection limit for this service. Acceptable values are `0`- `4294967294`. See the [Citrix Netscaler Docs](https://docs.citrix.com/en-us/netscaler/11/reference/netscaler-command-reference/basic/service.html) for details.
+- `destination_ip_address` - (Required, Forces new resource, String)The IP address of the server to which traffic directs. If you use Netscaler VPX 10.1, you must indicate a public IP address in an IBM Cloud Classic Infrastructure (SoftLayer) account. If you use Netscaler VPX 10.5, you can use any IP address.
+- `destination_port`- (Required, Integer) The destination port of the server to which traffic directs.
+- `health_check`- (Required, String) The health check type. See the [IBM Cloud Classic Infrastructure (SoftLayer) API Docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_LoadBalancer_Service) for details.
+- `name`- (Required, Forces new resource, String) The ID of the VPX load balancer service.
+- `tags`- (Optional, Array of string)  Tags associated with the VPX load balancer service instance. **Note** `Tags` are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
+- `usip`- (Optional, Forces new resource, String) Whether the service reports the source IP of the client to the service being load balance. Acceptable values are **YES** or **NO**. The default value is **NO**. **Note** This argument is only available for VPX 10.5.
+- `vip_id`- (Required, Forces new resource, String) The ID of the VPX load balancer virtual IP address to which the service is assigned.
+- `weight` - (Required, Integer) The percentage of the total connection limit allocated to the load balancer between all your services. See the [IBM Cloud Classic Infrastructure (SoftLayer)  API Docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_LoadBalancer_Service) for details.   **Note** If you use Netscaler VPX 10.5, the weight value is ignored.
 
-* `name` - (Required, Forces new resource, string) The ID of the VPX load balancer service.
-* `vip_id` - (Required, Forces new resource, string) The ID of the VPX load balancer virtual IP address to which the service is assigned.
-* `destination_ip_address` - (Required, Forces new resource, string) The IP address of the server to which traffic directs. If you use NetScaler VPX 10.1, you must indicate a public IP address in an IBM Cloud Classic Infrastructure (SoftLayer) account. If you use NetScaler VPX 10.5, you can use any IP address.
-* `destination_port` - (Required, integer) The destination port of the server to which traffic directs.
-* `weight` - (Required, integer) The percentage of the total connection limit allocated to the load balancer between all your services. See the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_LoadBalancer_Service) for details.  
-    **NOTE**: If you use NetScaler VPX 10.5, the weight value is ignored.
-* `connection_limit` - (Required, integer) The connection limit for this service. Acceptable values are `0` - `4294967294`. See the [Citrix NetScaler docs](https://docs.citrix.com/en-us/netscaler/11/reference/netscaler-command-reference/basic/service.html) for details.
-* `health_check` - (Required, string) The health check type. See the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_LoadBalancer_Service) for details.
-* `usip` - (Optional, string) Whether the service reports the source IP of the client to the service being load balanced. Acceptable values are `YES` or `NO`. The default value is `NO`. See the [Citrix NetScaler docs](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/11.0/configuration/basic/service/service) for more details.  
-    **NOTE**: This argument is only available for VPX 10.5.
-* `tags` - (Optional, array of strings) Tags associated with the VPX load balancer service instance.  
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the VPX load balancer service.
+- `id`- (String) The unique identifier of the VPX load balancer service.

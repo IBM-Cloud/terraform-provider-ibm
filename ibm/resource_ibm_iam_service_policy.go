@@ -12,8 +12,6 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
 func resourceIBMIAMServicePolicy() *schema.Resource {
@@ -234,15 +232,13 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		_, _, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+		policy, res, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 
-		if err != nil {
-			if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-				if apiErr.StatusCode() == 404 {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+		if err != nil || policy == nil {
+			if res != nil && res.StatusCode == 404 {
+				return resource.RetryableError(err)
 			}
+			return resource.NonRetryableError(err)
 		}
 		return nil
 	})
@@ -443,14 +439,16 @@ func resourceIBMIAMServicePolicyExists(d *schema.ResourceData, meta interface{})
 		servicePolicyID,
 	)
 
-	servicePolicy, _, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
-	if err != nil {
-		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
-				return false, nil
-			}
+	servicePolicy, resp, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+	if err != nil || servicePolicy == nil {
+		if resp != nil && resp.StatusCode == 404 {
+			return false, nil
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("Error communicating with the API: %s\n%s", err, resp)
+	}
+
+	if servicePolicy != nil && servicePolicy.State != nil && *servicePolicy.State == "deleted" {
+		return false, nil
 	}
 
 	tempID := fmt.Sprintf("%s/%s", serviceIDUUID, *servicePolicy.ID)

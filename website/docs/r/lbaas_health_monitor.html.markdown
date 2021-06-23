@@ -4,14 +4,13 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lbaas_health_monitor"
 description: |-
-  Manages health monitors of a IBM Load balancer as a service.
+  Manages health monitors of a IBM load balancer as a service.
 ---
 
-# ibm\_lbaas\_health\_monitor
+# ibm_lbaas_health_monitor
+Create, delete, and update a health monitor configuration of the load balancer. For more information, about health monitor of a load balancer as a service, see [monitoring and managing your service](https://cloud.ibm.com/docs/loadbalancer-service?topic=loadbalancer-service-monitoring-and-managing-your-service).
 
-Provides a resource for the health monitors of IBM Lbaas. This allows to update a health monitor configuration of the load balancer. Health monitors are created and deleted by the creation and deletion of lbaas protocols.
- 
-## Example Usage
+## Example usage
 
 ```terraform
 
@@ -50,29 +49,30 @@ resource "ibm_lbaas_health_monitor" "lbaas_hm" {
 
 ```
 
-## Argument Reference
+## Argument reference 
+Review the argument references that you can specify for your resource.
 
-The following arguments are supported:
+- `interval` - (Optional, Integer) Interval in seconds to perform.
+- `lbaas_id` - (Required, Forces new resource, String) LBaaS unique identifier.
+- `max_retries` - (Optional, Integer) Maximum retries.
+- `monitor_id` - (Required, Forces new resource, String)Health Monitor unique identifier. The monitor ID can be imported from either the `ibm_lbaas` resource or datasource. For example, `ibm_lbaas.lbaas.health_monitors.X.monitor_id` or `data.ibm_lbaas.lbaas.health_monitors.X.monitor_id`.
+- `protocol` - (Required, String)The back-end protocol.
+- `port` - (Required, Integer) The back-end port.
+- `timeout` - (Optional, Integer) Health check methods timeout in.
+- `url_path`- (Optional, String) If monitor is **HTTP**, it specifies the URL path.
 
-* `monitor_id` - (Required, Forces new resource,string) Health Monitor unique identifier. The monitor id can be imported from either the ibm_lbaas resource or datasource.
-ex: ibm_lbaas.lbaas.health_monitors.X.monitor_id or data.ibm_lbaas.lbaas.health_monitors.X.monitor_id
-* `lbaas_id` - (Required, Forces new resource,string) Lbaas unique identifier
-* `protocol` - (Required, string) Backends protocol
-* `port` - (Required, int) Backends port
-* `interval` - (Optional,int) Interval in seconds to perform 
-* `max_retries` - (Optional,int) Maximum retries
-* `timeout` - (Optional,int) Health check methods timeout in 
-* `url_path` - (Optional,string) If monitor is "HTTP", this specifies URL path
 
-## Attributes Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
+- `id` - (String) The unique identifier of the LBaaS health monitor resource. The ID is composed of `<lbaas_id>/<monitor_id>`.
 
-* `id` - The unique identifier of the lbaas health monitor resource. The id is composed of \<lbaas_id\>/\<monitor_id/>
 
 ## Import
+The `ibm_lbaas_health_monitor` resource can be imported by using LBaaS ID and monitor ID.
 
-ibm_lbaas_health_monitor can be imported using lbaas_id and monitor_id, eg
+**Example**
 
 ```
-$ terraform import ibm_lbaas_health_monitor.example 988-454f-45vf-454542/d343f-f44r-wer3-fe3
+$ terraform import ibm_lbaas_health_monitor.example 988-454f-45vf-454542/d343f-f44r-wer3-fe
+```

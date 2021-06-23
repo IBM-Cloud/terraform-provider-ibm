@@ -4,16 +4,16 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : compute_autoscale_policy"
 description: |-
-  Manages IBM Compute Auto Scale Policy.
+  Manages IBM Cloud compute auto scale policy.
 ---
 
-# ibm\_compute_autoscale_policy
+# ibm_compute_autoscale_policy
+Create, update, or delete a policy for an auto scaling policy. For more information, about compute auto scale policy, see [auto scale](https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-about-auto-scale).
 
-Provides an auto scaling policy resource. This allows policies for auto scale groups to be created, updated, and deleted.
+**Note**
+For more information, see [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Scale_Policy).
 
-For additional details, see the [IBM Cloud Classic Infrastructure (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Scale_Policy).
-
-## Example Usage
+## Example usage
 
 In the following example, you can create an auto scaling policy:
 
@@ -46,21 +46,19 @@ resource "ibm_compute_autoscale_policy" "test_scale_policy" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `cooldown` - (Optional, Integer) The duration, expressed in seconds, that the policy waits after the last action date before performing another scaling action. If you do not provide a value, the `scale_group` cool down applies.
+- `name` - (Required, String) The name of the autoscaling policy.
+- `scale_type` - (Required, String) The scale type for the autoscaling policy. Accepted values are `ABSOLUTE`, `RELATIVE`, and `PERCENT`.
+- `scale_amount`- (Required, Integer) A count of the scaling actions to perform upon any trigger hit.
+- `scale_group_id`- (Required, Integer) The ID of the autoscaling group that is associated with the policy.Yes.
+- `triggers` (Optional, Array of Strings) The triggers to check for this group.
+- `tags` (Optional, Array of Strings) The tags that you want to add to the autoscaling policy. Tags are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
 
-* `name` - (Required, string) The name of the auto scaling policy.
-* `scale_type` - (Required, string) The scale type for the auto scaling policy. Accepted values are `ABSOLUTE`, `RELATIVE`, and `PERCENT`.
-* `scale_amount` - (Required, integer) A count of the scaling actions to perform upon any trigger hit.
-* `cooldown` - (Optional, integer) The duration, expressed in seconds, that the policy waits after the last action date before performing another scaling action. If you do not provide a value, the `scale_group` cooldown applies.
-* `scale_group_id` - (Required, Forces new resource, integer) The ID of the auto scale group associated with the policy.
-* `triggers` - (Optional, array of integers and strings) The triggers to check for this group.
-* `tags` - (Optional, array of strings) Tags associated with the auto scaling policy instance.  
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the auto scaling policy.
+- `id` - (String) The unique identifier of the autoscaling policy.

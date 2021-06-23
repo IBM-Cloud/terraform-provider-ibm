@@ -23,7 +23,7 @@ resource "ibm_container_alb_cert" "cert" {
 ```
 
 ## Timeouts
-The `ibm_container_alb_cert` provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_container_alb_cert` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **Create**: The creation of the SSL certificate is considered `failed` if no response is received for 10 minutes.
 - **Delete**: The deletion of the SSL certificate is considered `failed` if no response is received for 10 minutes.

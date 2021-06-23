@@ -16,6 +16,12 @@ func dataSourceIBMISSSHKey() *schema.Resource {
 		Read: dataSourceIBMISSSHKeyRead,
 
 		Schema: map[string]*schema.Schema{
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Resource group ID",
+			},
+
 			isKeyName: {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -147,6 +153,13 @@ func keyGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 		return err
 	}
 	listKeysOptions := &vpcv1.ListKeysOptions{}
+
+	resourceGroup := ""
+	if rg, ok := d.GetOk("resource_group"); ok {
+		resourceGroup = rg.(string)
+		listKeysOptions.ResourceGroupID = &resourceGroup
+	}
+
 	keys, response, err := sess.ListKeys(listKeysOptions)
 	if err != nil {
 		return fmt.Errorf("Error Fetching Keys %s\n%s", err, response)

@@ -3,14 +3,13 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : lbaas"
 description: |-
-  Manages IBM Load Balancer As A Service.
+  Manages IBM Cloud load balancer as a service.
 ---
 
-# ibm\_lbaas
-
-Import the details of an existing IBM Cloud load balancer as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+# ibm_lbaas
+Retrieve information of an existing IBM Cloud load balancer as a read-only data source. For more information, about load balancer as a service, see [enabling auto scale for better capacity and resiliency](https://cloud.ibm.com/docs/cloud-infrastructure?topic=cloud-infrastructure-ha-auto-scale).
  
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_lbaas" "lbaas" {
@@ -38,41 +37,44 @@ data "ibm_lbaas" "tfacc_lbaas" {
 
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the argument references that you can specify for your data source.
 
-* `name` - (Required, string) The load balancer's name.
+- `name` - (Required, String) The name of the load balancer.
 
-## Attributes Reference
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
-In addition to all arguments above, the following attributes are exported:
+- `active_connections`- (Integer) The number of total established connections.
+- `description` - (String) A description of the load balancer.
+- `datacenter` - (String) The data center where load balancer is located.
+- `health_monitors` - (List of Objects) A nested block describes the health_monitors assigned to the load balancer.
 
-* `description` - A description of the load balancer.
-* `datacenter` - The datacenter where load balancer is located.
-* `protocols` - A nested block describing the protocols assigned to the load balancer. Nested `protocols` blocks have the following structure:
-  * `frontend_protocol` - The frontend protocol.
-  * `frontend_port` - The frontend protocol port number.
-  * `backend_protocol` - The backend protocol.
-  * `backend_port` - The backend protocol port number.
-  * `load_balancing_method` - The load balancing algorithm.
-  * `session_stickiness` - Session stickiness.
-  * `max_conn` - The number of connections the listener can accept.
-  * `tls_certificate_id` - The ID of the SSL/TLS certificate being used for a protocol.
-  * `protocol_id` - The UUID of a load balancer protocol.
-* `health_monitors` - A nested block describing the health_monitors assigned to the load balancer. Nested `health_monitors` blocks have the following structure:
-  * `protocol` - Backends protocol
-  * `port` - Backends port
-  * `interval` - Interval in seconds to perform 
-  * `max_retries` - Maximum retries
-  * `timeout` - Health check methods timeout in 
-  * `url_path` - If monitor is "HTTP", this specifies URL path
-  * `monitor_id` - Health Monitor UUID
-* `type` - Specifies whether a load balancer is public or private.
-* `status` - Specifies the operation status of the load balancer as 'ONLINE' or 'OFFLINE'.
-* `vip` - The virtual IP address of the load balancer.
-* `server_instances_up` - The number of service instances which are in the `UP` health state.
-* `server_instances_down` - The number of service instances which are in the `DOWN` health state.
-* `active_connections` - The number of total established connections.
-* `use_system_public_ip_pool` - It specifies whether the public IP addresses are allocated from system public IP pool or public subnet from the account ordering the load balancer.
-* `ssl_ciphers` - The list of ssl offloads.
+  Nested scheme for `health_monitors`:
+  - `interval`- (Integer) The interval in seconds to perform the health check.
+  - `max_retries`- (Integer) The maximum retries before the load balancer are considered unhealthy.
+  - `monitor_id` - (String) The health monitor UUID.
+  - `protocol` - (String) The backend protocol.
+  - `port` - (String) The backend port.
+  - `timeout` - (String) The health check method.
+  - `url_path` - (String)  If monitor is "HTTP", it specifies the URL path.
+- `protocols` - (List of Objects) A nested block describes the protocols that are assigned to the load balancer.
+
+  Nested scheme for `protocols`:
+  - `backend_protocol` - (String) The backend protocol.
+  - `backend_port`- (Integer) The backend protocol port number.
+  - `frontend_protocol` - (String) The front-end protocol.
+  - `frontend_port`- (Integer) The front-end protocol port number.
+  - `load_balancing_method` - (String) The load-balancing algorithm.
+  - `protocol_id` - (String) The UUID of a load balancer protocol.
+  - `max_conn`- (Integer) The number of connections the listener can accept.
+  - `session_stickiness`- (Bool) Session stickiness.
+  - `tls_certificate_id` - (String) The ID of the SSL/TLS certificate used for a protocol.
+- `server_instances_up`- (Integer) The number of service instances, that are in the `UP` health state.
+- `server_instances_down`- (Integer) The number of service instances, that are in the `DOWN` health state.
+- `status` - (String) Specifies the operation status of the load balancer as `online` or `offline`.
+- `ssl_ciphers` - (Array) The list of SSL offloads.
+- `type` - (String) Specifies whether a load balancer is public or private.
+- `use_system_public_ip_pool` - (String) It specifies whether the public IP addresses are allocated from system public IP pool or public subnet from the account order of the load balancer.
+- `vip` - (String) The virtual IP address of the load balancer.

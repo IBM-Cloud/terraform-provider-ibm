@@ -11,10 +11,23 @@ Retrieve information of an existing IBM Cloud Infrastructure images as a read-on
 
 ## Example usage
 
-```terraform
+```hcl
+
 data "ibm_is_images" "ds_images" {
 }
+
+data "ibm_is_images" "ds_images" {
+  visibility = "public"
+}
+
 ```
+## Argument Reference
+
+Review the argument references that you can specify for your data source. 
+
+* `resource_group` - (Optional, string) The id of the resource group.
+* `name` - (Optional, string) The name of the image.
+* `visibility` - (Optional, string) Visibility of the image.
 
 ## Attribute reference
 You can access the following attribute references after your data source is created. 
@@ -33,5 +46,4 @@ You can access the following attribute references after your data source is crea
   - `status` - (String) The status of this image.
   - `visibility` - (String) The visibility of the image public or private.
   - `source_volume` - The source volume id of the image.
-
 

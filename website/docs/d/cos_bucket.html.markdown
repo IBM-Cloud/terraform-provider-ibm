@@ -92,5 +92,6 @@ In addition to all argument reference list, you can access the following attribu
   - `maximum` - (String) Specifies maximum duration of time an object can be kept unmodified in the bucket.
   - `minimum` - (String) Specifies minimum duration of time an object must be kept unmodified in the bucket.
   - `permanent` - (String) Specifies a permanent retention status either enable or disable for a bucket.
+- `hard_quota` - (String) Maximum bytes for the bucket.
 - `single_site_location` - (String) The location to create a single site bucket.
 - `storage_class` - (String) The storage class of the bucket.

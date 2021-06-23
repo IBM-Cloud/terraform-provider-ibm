@@ -30,6 +30,7 @@ resource "ibm_cos_bucket" "standard-ams03" {
   resource_instance_id  = ibm_resource_instance.cos_instance.id
   single_site_location  = var.single_site_loc
   storage_class         = var.storage
+  hard_quota            = var.quota
   activity_tracking {
     read_data_events     = true
     write_data_events    = true
@@ -48,6 +49,7 @@ resource "ibm_cos_bucket" "lifecycle_rule_cos" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location      = var.regional_loc
   storage_class        = var.storage
+  hard_quota           = var.quota
   archive_rule {
     rule_id = var.archive_ruleid
     enable  = true
@@ -73,6 +75,7 @@ resource "ibm_cos_bucket" "cos_bucket" {
   resource_instance_id  = ibm_resource_instance.cos_instance.id
   region_location       = var.regional_loc
   storage_class         = var.storage
+  hard_quota            = var.quota
   object_versioning {
     enable  = true
   }

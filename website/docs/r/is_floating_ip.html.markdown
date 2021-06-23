@@ -38,7 +38,7 @@ resource "ibm_is_floating_ip" "testacc_floatingip" {
 ```
 
 ## Timeouts
-The `ibm_is_instance` provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_is_instance` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create**: The creation of the floating IP address is considered `failed` if no response is received for 10 minutes. 
 - **delete**: The deletion of the floating IP address is considered `failed` if no response is received for 10 minutes. 

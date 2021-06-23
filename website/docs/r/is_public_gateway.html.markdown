@@ -32,7 +32,7 @@ resource "ibm_is_public_gateway" "testacc_gateway" {
 ```
 
 ## Timeouts
-The `ibm_is_public_gateway` resource provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_is_public_gateway` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** The creation of the public gateway is considered `failed` when no response is received for 10 minutes. 
 - **delete** The deletion of the public gateway is considered `failed` when no response is received for 10 minutes.

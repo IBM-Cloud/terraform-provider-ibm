@@ -4,15 +4,13 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: storage_evault"
 description: |-
-  Manages IBM Storage Evault.
+  Manages IBM Cloud storage EVault.
 ---
-# ibm\_storage_evault
+# ibm_storage_evault
+Create, delete, and update a EVault storage resource. For more information, about storage evalut [getting started with IBM Cloud backup](https://cloud.ibm.com/docs/infrastructure/Backup/index.html#getting-started-with-evault-backup-services).
 
-Provides a evault storage resource. This allows [Evault Backup](https://cloud.ibm.com/docs/infrastructure/Backup/index.html#getting-started-with-evault-backup-services) storage to be created, updated, and deleted.
-
-## Example Usage
-
-In the following example, you can create 20G of evault storage 
+## Example usage
+In the following example, you can create 20G of EVault storage 
 
 ```terraform
 resource "ibm_storage_evault" "test" {
@@ -23,31 +21,25 @@ resource "ibm_storage_evault" "test" {
 ```
 
 ## Timeouts
+The `ibm_storage_evault` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-ibm_storage_evault provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
-
-* `create` - (Default 10 minutes) Used for Creating Instance.
-* `update` - (Default 10 minutes) Used for Updating Instance.
-
-## Argument Reference
-
-The following arguments are supported:
-
-* `datacenter` - (Required, Forces new resource, string) The data center where you want to provision the evault storage instance.
-* `capacity` - (Required, integer) The amount of storage capacity you want to allocate, specified in gigabytes.
-* `virtual_instance_id` - (Optional, Forces new resource, integer) The id of the virtual instance.
-    **NOTE**: Conflicts with `hardware_instance_id`.
-* `hardware_instance_id` - (Optional, Forces new resource, integer) The id of the hardware instance.
-    **NOTE**: Conflicts with `virtual_instance_id`.
-* `tags` - (Optional, array of strings) Tags associated with the storage evault instance.  
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+- **create** - (Default 10 minutes) Used for creating instance.
+- **update** - (Default 10 minutes) Used for updating instance.
 
 
-## Attribute Reference
+## Argument reference
+Review the argument references that you can specify for your resource.
 
-In addition to all arguments above, the following attributes are exported:
+- `datacenter` - (Required, Forces new resource, String) The data center where you want to provision the EVault  storage instance.
+- `capacity` - (Required, Integer) The amount of storage capacity that you want to allocate, specified in gigabytes.
+- `hardware_instance_id` - (Optional, Forces new resource, Integer) The ID of the hardware instance. **Note** Conflicts with `virtual_instance_id`.
+- `tags` - (Optional, Array of string) Tags associated with the storage EVault instance. **Note** `Tags` are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
+- `virtual_instance_id` - (Optional, Forces new resource, Integer) The ID of the virtual instance. **Note** Conflicts with `hardware_instance_id`.
 
-* `id` - The unique identifier of the evault.
-* `username` - The username of the evault.
-* `password` - The password of the evault.
-* `service_resource_name` - The name of a evault storage network resource.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your resource is created.
+
+- `id`- (String) The unique identifier of the EVault.
+- `password`- (String) The password of the EVault.
+- `service_resource_name`- (String) The name of an EVault storage network resource.
+- `username`- (String) The username of the EVault.
