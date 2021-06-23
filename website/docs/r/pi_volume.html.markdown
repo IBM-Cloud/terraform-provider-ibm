@@ -40,7 +40,7 @@ resource "ibm_pi_volume" "testacc_volume"{
   
 ## Timeouts
 
-The `ibm_pi_volume` provides the following [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+ibm_pi_volume provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 60 minutes) Used for creating volume.
 - **delete** - (Default 60 minutes) Used for deleting volume.

@@ -81,8 +81,8 @@ Review the argument references that you can specify for your resource.
 
     Nested scheme for `request`:
     - `url` - (Optional, String) The URL that the request uses. Wildcard domains are expanded to match applicable traffic, query strings are not matched. You can use `*` to apply the rule to all URLs. The maximum length of this value can be 1024.
-    - `schemes` - (Optional, Set of strings) The scheme of the request that determines the protocol that you want. Supported values are `HTTPS`, `HTTP,HTTPS`, and `ALL`.
-    - `methods` - (Optional, Set of strings) The HTTP methods that the incoming request that match the `threshold` count. Supported values are `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, and `ALL`. You can also combine multiple methods and separate them with a comma. For example `POST,PUT`. 
+    - `schemes` - (Optional, Set of strings) The scheme of the request that determines the protocol that you want. Supported values are `HTTPS`, `HTTP,HTTPS`, and `_ALL_`.
+    - `methods` - (Optional, Set of strings) The HTTP methods that the incoming request that match the `threshold` count. Supported values are `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, and `_ALL_`. You can also combine multiple methods and separate them with a comma. For example `POST,PUT`. 
 - `response`- (Optional, List) A list of HTTP responses that outgoing packets must match before they can be returned to the client. If an incoming request matches the request criteria, but the response does not match the response criteria, then the request packet is not counted with the `threshold`. 
 
   Nested scheme for `response`:

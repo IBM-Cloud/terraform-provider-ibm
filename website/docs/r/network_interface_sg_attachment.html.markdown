@@ -4,16 +4,17 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: ibm_network_interface_sg_attachment"
 description: |-
-  Manages binding between a security group and a network interface
+  Manages binding between a security group and a network interface.
 ---
 
-# ibm\_network_interface_sg_attachment
+# ibm_network_interface_sg_attachment
+Create, delete, and update to attach security group to a network interface. For more information, about security group and an network interface, see [integrating an IBM Cloud Application Load Balancer for VPC with security groups](https://cloud.ibm.com/docs/vpc?topic=vpc-alb-integration-with-security-groups).
 
-Provide a resource to attach security group to a network interface. This allows attachments to be created and deleted.
+**Note**
 
-For additional details, see the [IBM Cloud Classic Infrastructure  (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Virtual_Network_SecurityGroup_NetworkComponentBinding).
+For more information, see the [IBM Cloud Classic Infrastructure  (SoftLayer) API docs](http://sldn.softlayer.com/reference/datatypes/SoftLayer_Virtual_Network_SecurityGroup_NetworkComponentBinding).
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_security_group" "allowssh" {
@@ -36,16 +37,17 @@ resource "ibm_network_interface_sg_attachment" "sg1" {
 
 ## Timeouts
 
-ibm_network_interface_sg_attachment provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_network_interface_sg_attachment` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-* `create` - (Default 15 minutes) Used for Creating Instance.
+- **create** - (Default 15 minutes) Used for creating instance.
 
-## Argument Reference
+## Argument reference 
+Review the argument references that you can specify for your resource.
 
-The following arguments are supported:
+- `security_group_id` - (Required, Forces new resource, Integer) The ID of the security group.
+- `network_interface_id` - (Required, Forces new resource, Integer) The ID of the network interface to which the security group must be applied.
+- `soft_reboot`-  (Optional, Forces new resource, Bool) Default **true**. If set to **true** and a reboot is required to apply the security group attachment for the virtual server instance, then a soft reboot is performed. If set to **false**, no reboot is performed. 
 
-* `security_group_id` - (Required, Forces new resource, int) The ID of the security group.
-* `network_interface_id` - (Required, Forces new resource, int) The ID of the network interface to which the security group must be applied.
-* `soft_reboot` - (Optional, Forces new resource, boolean) Default `true`. If true and if a reboot is required to apply the attachment then VSI on which the network interface lies would be soft rebooted. If false then no reboot is perfomed.
+**Note** 
 
-**Note**: A reboot is required if this is first time any security group is applied to this network interface and it has never been rebooted since then.
+A reboot is always required the first time a security group is applied to a network interface of a virtual server instance that was never rebooted before.

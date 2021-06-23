@@ -3,14 +3,13 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM: ibm_compute_ssh_key"
 description: |-
-  Get information about an IBM Compute SSH key.
+  Get information about an IBM Cloud compute SSH key.
 ---
 
-# ibm\_compute_ssh_key
+# ibm_compute_ssh_key
+Retrieve information of an existing SSH key as a read-only data source. For more information, about computer SSH key, see [deploying server pools and origins in a single MZR](https://cloud.ibm.com/docs/cloud-infrastructure?topic=cloud-infrastructure-ha-pools-origins).
 
-Import the details of an existing SSH key as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
-
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_compute_ssh_key" "public_key" {
@@ -35,19 +34,17 @@ resource "ibm_compute_vm_instance" "vm1" {
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source.
 
-The following arguments are supported:
+- `label` - (Required, String) The label of the SSH key.
+- `most_recent` - (Optional, Bool) If more than one SSH key matches the label, you can set this argument to **true** to import only the most recent key. **Note** The search must return only one match. More or less than one match causes  Terraform to fail. Ensure that your label is specific enough to return a single SSH key only, or use the `most_recent` argument.
 
-* `label` - (Required, string) The label of the SSH key, as it was defined in IBM Cloud Classic Infrastructure (SoftLayer).
-* `most_recent` - (Optional, boolean) If more than one SSH key matches the label, you can set this argument to `true` to import only the most recent key.
-  **NOTE**: The search must return only one match. More or less than one match causes Terraform to fail. Ensure that your label is specific enough to return a single SSH key only, or use the `most_recent` argument.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the SSH key.  
-* `fingerprint` - The sequence of bytes to authenticate or look up a longer SSH key.
-* `public_key` - The public key contents.
-* `notes` - The notes that are stored with the SSH key.
+- `fingerprint` - (String) The sequence of bytes to authenticate or look up a longer SSH key.
+- `id` - (String) The unique identifier of the SSH key.
+- `notes` - (String) The notes that are stored with the SSH key.
+- `public_key` - (String) The public key contents.

@@ -22,7 +22,7 @@ resource "ibm_container_alb" "alb" {
 
 ## Timeouts
 
-The `ibm_container_alb` provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_container_alb` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 60 minutes) Used for creating Instance.
 - **update** - (Default 60 minutes) Used for updating Instance.

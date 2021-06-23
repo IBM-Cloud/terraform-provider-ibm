@@ -29,6 +29,7 @@ Review the argument reference that you can specify for your data source.
 In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
 - `catalog_id` - (String) The catalog ID the instance that is created from.
+- `channel` - (String) Channel to target for the operator subscription. Required for operator bundles
 - `cluster_id` - (String) The cluster ID.
 - `cluster_region` - (String) The cluster region for example, `us-south`.
 - `cluster_namespaces` - (String) The list of target namespaces to install.
@@ -36,6 +37,7 @@ In addition to the argument reference list, you can access the following attribu
 - `crn` - (String) The platform CRN for an instance.
 - `_rev` - (string) The cloudant revisionn of this object
 - `id` - (String) The unique identifier of the `cm_offering_instance`.
+- `install_plan` - (String) Install plan for the subscription of the operator- can be either Automatic or Manual. Required for operator bundles
 - `kind_format` - (String) The format this instance has such as `helm`, `operator`.
 - `label` - (String) The label for an instance.
 - `offering_id` - (String) The offering ID the instance that is created from.

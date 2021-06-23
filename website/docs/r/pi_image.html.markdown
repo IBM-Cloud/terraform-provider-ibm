@@ -38,7 +38,7 @@ resource "ibm_pi_image" "testacc_image  "{
   
 ## Timeouts
 
-The   ibm_pi_image   provides the following [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The   ibm_pi_image   provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **Create** The creation of the image is considered failed if no response is received for 60 minutes. 
 - **Delete** The deletion of the image is considered failed if no response is received for 60 minutes. 

@@ -67,7 +67,7 @@ resource "ibm_resource_instance" "myhpdbcluster" {
 
 ## Timeouts
 
-The `ibm_resource_instance` resource provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_resource_instance` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 10 minutes) Used for Creating Instance.
 - **update** - (Default 10 minutes) Used for Updating Instance.

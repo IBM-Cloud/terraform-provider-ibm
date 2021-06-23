@@ -4,17 +4,14 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : volume"
 description: |-
-  Manages IBM Volume.
+  Manages IBM volume.
 ---
 
-# ibm\_is_volume
+# ibm_is_volume
+Create, update, or delete a VPC block storage volume. For more information, about the VPC block storage volume, see [getting started with VPC](https://cloud.ibm.com/docs/vpc).
 
-Provides a volume resource. This allows volume to be created, updated, and cancelled.
-
-
-## Example Usage
-
-In the following example, you can create a `10iops-tier` volume:
+## Example usage
+The following example creates a volume with 10 IOPs tier.
 
 ```terraform
 resource "ibm_is_volume" "testacc_volume" {
@@ -24,7 +21,7 @@ resource "ibm_is_volume" "testacc_volume" {
 }
 
 ```
-In the following example, you can create a `custom` volume:
+The following example creates a custom volume.
 
 ```terraform
 resource "ibm_is_volume" "testacc_volume" {
@@ -39,41 +36,41 @@ resource "ibm_is_volume" "testacc_volume" {
 ```
 
 ## Timeouts
+The `ibm_is_volume` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-ibm_is_volume provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
-
-* `create` - (Default 10 minutes) Used for Creating Instance.
-* `delete` - (Default 10 minutes) Used for Deleting Instance.
+- **create** - (Default 10 minutes) Used for creating instance.
+- **delete** - (Default 10 minutes) Used for deleting instance.
 
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `capacity` - (Optional, Forces new resource, Integer) (The capacity of the volume in gigabytes. This defaults to `100`.
+- `encryption_key` - (Optional, Forces new resource, String) The key to use for encrypting this volume.
+- `iops` - (Optional, Forces new resource, Integer) The total input/ output operations per second (IOPS) for your storage. This value is required for `custom` storage profiles only.
+- `name` - (Required, String) The user-defined name for this volume.No.
+- `profile` - (Required, Forces new resource, String) The profile to use for this volume.
+- `resource_group` - (Optional, Forces new resource, String) The resource group ID for this volume.
+- `resource_controller_url` - (Optional, Forces new resource, String) The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
+- `tags`- (Optional, Array of Strings) A list of tags that you want to add to your volume. Tags can help you find your volume more easily later.No.
+- `zone` - (Required, Forces new resource, String) The location of the volume.
 
-* `name` - (Required, string) The user-defined name for this volume.
-* `profile` - (Required, Forces new resource, string) The profile to use for this volume.
-* `zone` - (Required, Forces new resource, string) The location of the volume.
-* `iops` - (Optional, Forces new resource, int) The bandwidth for the volume. This is required only for the `custom` profile volume.
-* `capacity` - (Optional, Forces new resource, int) The capacity of the volume in gigabytes. This defaults to `100`.
-* `encryption_key` - (Optional, Forces new resource, string) The CRN of the root key to use to wrap the data encryption key for the volume. If this property is not provided, the encryption type for the volume will be `provider_managed`.
-* `resource_group` - (Optional, Forces new resource, string) The resource group ID for this volume.
-* `tags` - (Optional, array of strings) Tags associated with the volume.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
+- `id` - (String) The unique identifier of the volume.
+- `status` - (String) The status of volume. Supported values are **available**, **failed**, **pending**, **unusable**, or `pending_deletion`.
+- `status_reasons` - (List) Array of reasons for the current status.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the volume.
-* `status` - The status of volume.
-* `crn` - The CRN for the volume.
-* `status` - The status of the volume. One of [ available, failed, pending, unusable, pending_deletion ].
-* `status_reasons` - Array of reasons for the current status
-  * `code` - A snake case string succinctly identifying the status reason
-  * `message` - An explanation of the status reason
+  Nested scheme for `status_reasons`:
+  - `code` - (String) A string with an underscore as a special character identifying the status reason.
+  - `message` - (String) An explanation of the status reason.
+- `crn` - (String) The CRN for the volume.
 
 ## Import
+The `ibm_is_volume` resource can be imported by using volume ID.
 
-ibm_is_volume can be imported using volume ID, eg
+**Example**
 
 ```
 $ terraform import ibm_is_volume.example d7bec597-4726-451f-8a63-e62e6f19c32c

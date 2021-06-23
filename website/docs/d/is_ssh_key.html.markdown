@@ -3,15 +3,13 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : SSH Key"
 description: |-
-  Manages IBM SSH Key.
+  Manages IBM SSH key.
 ---
 
-# ibm\_is_ssh_key
+# ibm_is_ssh_key
+Retrieve information of an existing IBM Cloud VPC SSH key as a read only data source. For more information, see [SSH keys](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys).
 
-Import the details of an existing IBM VPC SSh Key as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-
-
-## Example Usage
+## Example usage
 
 ```terraform
 
@@ -21,18 +19,17 @@ data "ibm_is_ssh_key" "ds_key" {
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `name` - (Required, String) The name of the SSH key.
+- `resource_group` - (Optional, string) The ID of resource group of the Key.
 
-* `name` - (Required, string) The name of the Key.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The id of the ssh key.
-* `fingerprint` -  The SHA256 fingerprint of the public key.
-* `length` - The length of this key.
-* `type` - The cryptosystem used by this key.
-* `public_key` - SSH Public key data.
+- `id` - (String) The ID of the SSH key.
+- `fingerprint`-  (String) The SHA256 fingerprint of the public key.
+- `length` - (String) The length of the SSH key.
+- `type` - (String) The crypto system that is used by this key.
+- `public_key` - (String) The public SSH key value.

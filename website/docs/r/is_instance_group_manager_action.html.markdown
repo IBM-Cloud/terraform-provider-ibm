@@ -3,16 +3,15 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : instance_group_manager_action"
 description: |-
-  Manages IBM VPC Instance group manager action.
+  Manages IBM VPC instance group manager action.
 ---
 
-# ibm\_is_instance_group_manager_action
+# ibm_is_instance_group_manager_action
+Create, update, or delete an instance group manager action on VPC. For more information, about instance group manager action, see [creating an instance group for auto scaling](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-auto-scale-instance-group).
 
-This allows instance group manager action to be created, updated and deleted.
+## Example usage
 
-## Example Usage
-
-```hcl
+```terraform
 provider "ibm" {
   generation = 2
 }
@@ -70,45 +69,44 @@ resource "ibm_is_instance_group_manager_action" "instance_group_manager_action" 
 }
     
 ```
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-## Argument Reference
-
-The following arguments are supported:
-
-* `instance_group` - (Required, string) The instance group identifier.
-* `instance_group_manager` - (Required, string) The instance group manager identifier of type scheduled.
-* `name` - (Optional, string) The user-defined name for this instance group manager action. Names must be unique within the instance group manager.
-* `run_at` - (Optional, string) The date and time that is specified for the scheduled action. The format is in ISO 8601 format. Example: 2024-03-05T15:31:50.701Z or 2024-03-05T15:31:50.701+8:00.
-* `cron_spec` - (Optional, string) The cron specification for a recurring scheduled action. Actions can be applied a maximum of one time within a 5 min period.
-* `membership_count` - (Optional, int) The number of members the instance group should have at the scheduled time.
-* `target_manager` - (Optional, string) The unique identifier for this instance group manager of type autoscale.
-* `max_membership_count` - (Optional, int) The maximum number of members the instance group should have at the scheduled time.
-* `min_membership_count` - (Optional, int) The minimum number of members the instance group should have at the scheduled time. Default value is set to 1.
+- `cron_spec` - (Optional, String) The cron specification for a recurring scheduled action. Actions can be applied a maximum of one time within a 5 min period.
+- `instance_group` - (Required, String) The instance group identifier.
+- `instance_group_manager` - (Required, String) The instance group manager identifier of type scheduled.
+- `membership_count` - (Optional, Integer) The number of members the instance group should have at the scheduled time.
+- `max_membership_count` - (Optional, Integer) The maximum number of members the instance group should have at the scheduled time.
+- `min_membership_count` - (Optional, Integer) The minimum number of members the instance group should have at the scheduled time. Default value is set to 1.
+- `name` - (Optional, String) The user-defined name for this instance group manager action. Names must be unique within the instance group manager.
+- `run_at` - (Optional, String) The date and time that is specified for the scheduled action. The format is in ISO 8601 format. Example: 2024-03-05T15:31:50.701Z or 2024-03-05T15:31:50.701+8:00.
+- `target_manager` - (Optional, String) The unique identifier for this instance group manager of type autoscale.
  
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
+- `action_id` - (String) The unique identifier of the `ibm_is_instance_group_manager_action`.
+- `action_type` - (String) The type of action for the instance group.
+- `auto_delete` - (Bool) If set to **true**, this scheduled action automatically deletes after finishing and the `auto_delete_timeout` time has passed.
+- `auto_delete_timeout` - (String) An amount of time in hours that are required to pass before the scheduled action is automatically deleted once it is finish. If this value is `0`, the action will be deleted on completion.
+- `created_at` - (Timestamp) The date and time that the instance group manager action was created.
+- `cron_spec` - (String) The cron specification for a recurring scheduled action. Actions can be applied a maximum of one time within a 5 minutes period.
+- `id` - (String) The combination ID of the instance group ID, instance group manager ID and instance group manager action ID.
+- `last_applied_at` - (Timestamp) The date and time the scheduled action last applied. If empty the action has never been applied.
+- `name` - (String) The user defined name for the instance group manager action. Names must be unique within the instance group manager.
+- `next_run_at` - (Timestamp) The date and time the scheduled action will next run. If empty the system is currently calculating the next run time.
+- `resource_type` - (String) The resource type.
+- `status` - (String) The status of the instance group action. **active** Action is ready to be run. **completed** Action completed successfully. **failed** Action could not be completed successfully. **incompatible** Action parameters are not compatible with the group or manager. **omitted** Action not applied when the action's manager is disabled.
+- `target_manager_name` - (String) The name of the instance group manager of type autoscale.
+- `updated_at` - (Timestamp) The date and time that the instance group manager action was modified.
 
-* `id` - Id is the combination of instance group ID, instance group manager ID and instance group manager action ID
-* `action_id` - The unique identifier of the ibm_is_instance_group_manager_action.
-* `auto_delete` - If set to `true`, this scheduled action will be automatically deleted after it has finished and the `auto_delete_timeout` time has passed.
-* `auto_delete_timeout` - Amount of time in hours that are required to pass before the scheduled action will be automatically deleted once it has finished. If this value is 0, the action will be deleted on completion.
-* `created_at` - The date and time that the instance group manager action was created.
-* `name` - The user-defined name for this instance group manager action. Names must be unique within the instance group manager.
-* `resource_type` - The resource type.
-* `status` - The status of the instance group action- `active`: Action is ready to be run- `completed`: Action was completed successfully- `failed`: Action could not be completed successfully- `incompatible`: Action parameters are not compatible with the group or manager- `omitted`: Action was not applied because this action's manager was disabled.
-* `updated_at` - The date and time that the instance group manager action was modified.
-* `action_type` - The type of action for the instance group.
-* `cron_spec` - The cron specification for a recurring scheduled action. Actions can be applied a maximum of one time within a 5 min period.
-* `last_applied_at` - The date and time the scheduled action was last applied. If empty the action has never been applied.
-* `next_run_at` - The date and time the scheduled action will next run. If empty the system is currently calculating the next run time.
-* `target_manager_name` - Name of instance group manager of type autoscale.
 
 ## Import
 
-`ibm_is_instance_group_manager_action` can be imported using instance group ID,  insatnce group manager ID and instance group manager action ID.
-eg; ibm_is_instance_group_manager_action.action
+The `ibm_is_instance_group_manager_action` resource can be imported by using instance group ID,  instance group manager ID and instance group manager action ID.
+
+**Example**
 
 ```
 $ terraform import ibm_is_instance_group_manager_action.action r006-eea6b0b7-babd-47a8-82c5-ad73d1e10bef/r006-160b9a68-58c8-4ec3-84b0-ad553ccb1e5a/r006-94d99d1d-be65-4939-9006-1a1a767245b5

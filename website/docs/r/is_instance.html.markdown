@@ -4,15 +4,16 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : instance"
 description: |-
-  Manages IBM IS Instance.
+  Manages IBM VPC instance.
 ---
 
-# ibm\_is_instance
+# ibm_is_instance
+Create, update, or delete a Virtual Servers for VPC instance. For more information, about managing VPC instance, see [about virtual server instances for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers).
 
-Provides a instance resource. This allows instance to be created, updated, and cancelled.
 
+## Example usage
 
-## Example Usage
+### Sample for creating an instance in a VPC.
 
 ```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
@@ -66,7 +67,9 @@ resource "ibm_is_instance" "testacc_instance" {
 
 ```
 
-Here is an example of creating virtual server instance with security group, security group rule. Here, the security group, security group rule, and virtual server instance must be created sequentially as security group rule depends on security group creation and virtual server instance depends on security group, security group rule creation. The sequential creation of resources like security group, security rule, virtual server instance is achieved using "depends_on" attribute. You can find more information about depends_on attribute in [terraform documentation](https://www.terraform.io/docs/configuration/resources.html). Creating security group, security group rule, virtual server instance without depends_on attribute will create the resources in parallel and virtual server instance creation may fail with "Error: The security group to attach to is not available" as security group or security group rule creation is not complete and security group may be in Pending state.
+### Sample for creating an instance with custom security group rules.
+
+The following example shows how you can create a virtual server instance with custom security group rules. Note that the security group, security group rules, and the virtual server instance must be created in a specific order to meet the dependencies of the individual resources. To force the creation in a specific order, you use the [`depends_on` parameter](https://www.terraform.io/docs/configuration/resources.html){: external}. If you do not provide this parameter, all resources are created at the same time which might lead to resource dependency errors during the provisioning of your virtual server, such as `The security group to attach to is not available`.
 
 ```terraform
 
@@ -215,111 +218,125 @@ resource "ibm_is_instance" "testacc_instance2" {
 
 ## Timeouts
 
-ibm_is_instance provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_is_instance` resource provides the following [[Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-* `create` - (Default 30 minutes) Used for creating Instance.
-* `update` - (Default 30 minutes) Used for updating Instance or while attaching it with volume attachments or interfaces.
-* `delete` - (Default 30 minutes) Used for deleting Instance.
 
-## Argument Reference
+- **create**: The creation of the instance is considered failed when no response is received for 30 minutes.
+- **update**: The update of the instance or the attachment of a volume to an instance is considered failed when no response is received for 30 minutes.
+- **delete**: The deletion of the instance is considered failed when no response is received for 30 minutes.
 
-The following arguments are supported:
 
-* `name` - (Optional, string) The instance name.
-* `vpc` - (Required, Forces new resource, string) The vpc id.
-* `zone` - (Required, Forces new resource, string) Name of the zone.
-* `profile` - (Required, string) The profile name.
-  * * Updating profile requires instance to be in stopped status, running instance will be stopped on update profile action.  * `image` - (Required, string) ID of the image.
-* `dedicated_host` - (Optional, string, ForceNew) The placement restrictions to use for the virtual server instance. Unique Identifier of the Dedicated Host where the instance will be placed
-* `dedicated_host_group` - (Optional, string, ForceNew) The placement restrictions to use for the virtual server instance. Unique Identifier of the Dedicated Host Group where the instance will be placed
-* `boot_volume` - (Optional, list) A block describing the boot volume of this instance.
-`boot_volume` block have the following structure:
-  * `name` - (Optional, string) The name of the boot volume.
-  * `encryption` -(Optional, string) 	The CRN of the root key to use to wrap the data encryption key for the volume. If this property is not provided but the image is encrypted, the image's encryption_key will be used. Otherwise, the encryption type for the volume will be `provider_managed`.
-* `keys` - (Required, list) Comma separated IDs of ssh keys.
-* `primary_network_interface` - (Required, list) A nested block describing the primary network interface of this instance. We can have only one primary network interface.
-Nested `primary_network_interface` block have the following structure:
-  * `name` - (Optional, string) The name of the network interface.
-  * `port_speed` - (Deprecated, int) Speed of the network interface.
-  * `primary_ipv4_address` - (Optional, Forces new resource, string) The IPV4 address of the interface
-  * `subnet` -  (Required, string) ID of the subnet.
-  * `security_groups` - (Optional, list) Comma separated IDs of security groups.
-  * `allow_ip_spoofing` - (Optional, bool) Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If true, IP spoofing is allowed on this interface.
-* `network_interfaces` - (Optional, Forces new resource, list) A nested block describing the additional network interface of this instance.
-Nested `network_interfaces` block have the following structure:
-  * `name` - (Optional, string) The name of the network interface.
-  * `primary_ipv4_address` - (Optional, Forces new resource, string) The IPV4 address of the interface
-  * `subnet` -  (Required, string) ID of the subnet.
-  * `security_groups` - (Optional, list) Comma separated IDs of security groups.
-  * `allow_ip_spoofing` - (Optional, bool) Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If true, IP spoofing is allowed on this interface.
-* `volumes` - (Optional, list) Comma separated IDs of volumes.
-* `auto_delete_volume` - (Optional, bool) If set to true, automatically deletes volumes attached to the instance.
-**Note** Setting this argument may bring some inconsistency in volume resources since the volumes will be destroyed along with instances.
-* `user_data` - (Optional, string) User data to transfer to the server instance.
-* `resource_group` - (Optional, Forces new resource, string) The resource group ID for this instance.
-* `tags` - (Optional, array of strings) Tags associated with the instance.
-* `force_recovery_time` - (Optional, int) Define timeout (in minutes), to force the is_instance to recover from a perpetual "starting" state, during provisioning; similarly, to force the is_instance to recover from a perpetual "stopping" state, during deprovisioning.  **Note**: the force_recovery_time is used to retry multiple times until timeout.
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-## Attribute Reference
+- `auto_delete_volume`- (Optional, Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. **Note** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
+- `boot_volume`  (Optional, List) A list of boot volumes for an instance.
 
-In addition to all arguments above, the following attributes are exported:
+  Nested scheme for `boot_volume`:
+  - `name` - (Optional, String) The name of the boot volume.
+  - `encryption` - (Optional, String) The type of encryption to use for the boot volume.
+- `dedicated_host` - (Optional, Forces new resource, String) The placement restrictions to use the virtual server instance. Unique ID of the dedicated host where the instance id placed.
+- `dedicated_host_group` - (Optional, Forces new resource, String) The placement restrictions to use for the virtual server instance. Unique ID of the dedicated host group where the instance is placed.
+- `force_recovery_time` - (Optional, Integer) Define timeout (in minutes), to force the `is_instance` to recover from a perpetual "starting" state, during provisioning. And to force the is_instance to recover from a perpetual "stopping" state, during removal of user access. **Note** The force_recovery_time is used to retry multiple times until timeout.
+- `image` - (Required, String) The ID of the virtual server image that you want to use. To list supported images, run `ibmcloud is images`.
+- `keys` - (Required, List) A comma-separated list of SSH keys that you want to add to your instance.
+- `name` - (Optional, String) The instance name.
+- `network_interfaces`  (Optional,  Forces new resource, List) A list of more network interfaces that are set up for the instance.
 
-* `id` - The id of the instance.
-* `memory` - Memory of the instance.
-* `status` - Status of the instance.
-* `vcpu` - A nested block describing the VCPU configuration of this instance.
-Nested `vcpu` blocks have the following structure:
-  * `architecture` - The architecture of the instance.
-  * `count` - The number of VCPUs assigned to the instance.
-* `gpu` - A nested block describing the gpu of this instance.
-Nested `gpu` blocks have the following structure:
-  * `cores` - The cores of the gpu.
-  * `count` - Count of the gpu.
-  * `manufacture` - Manufacture of the gpu.
-  * `memory` - Memory of the gpu.
-  * `model` - Model of the gpu.
-* `primary_network_interface` - A nested block describing the primary network interface of this instance.
-Nested `primary_network_interface` blocks have the following structure:
-  * `id` - The id of the network interface.
-  * `name` - The name of the network interface.
-  * `subnet` -  ID of the subnet.
-  * `security_groups` -  List of security groups.
-  * `primary_ipv4_address` - The primary IPv4 address.
-  * `allow_ip_spoofing` - Indicates whether IP spoofing is allowed on this interface.
-* `network_interfaces` - A nested block describing the additional network interface of this instance.
-Nested `network_interfaces` blocks have the following structure:
-  * `id` - The id of the network interface.
-  * `name` - The name of the network interface.
-  * `subnet` -  ID of the subnet.
-  * `security_groups` -  List of security groups.
-  * `primary_ipv4_address` - The primary IPv4 address.
-  * `allow_ip_spoofing` - Indicates whether IP spoofing is allowed on this interface.
-* `boot_volume` - A nested block describing the boot volume.
-Nested `boot_volume` blocks have the following structure:
-  * `name` - The name of the boot volume.
-  * `size` -  Capacity of the volume in GB.
-  * `iops` -  Input/Output Operations Per Second for the volume.
-  * `profile` - The profile of the volume.
-  * `encryption` - The encryption of the boot volume.
-* `volume_attachments` - A nested block describing the volume attachments.
-Nested `volume_attachments` block have the following structure:
-  * `id` - The id of the volume attachment
-  * `name` -  The name of the volume attachment
-  * `volume_id` - The id of the volume attachment's volume
-  * `volume_name` -  The name of the volume attachment's volume
-  * `volume_crn` -  The CRN of the volume attachment's volume
-* `disks` - Collection of the instance's disks. Nested `disks` blocks have the following structure:
-	* `created_at` - The date and time that the disk was created.
-	* `href` - The URL for this instance disk.
-	* `id` - The unique identifier for this instance disk.
-	* `interface_type` - The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
-	* `name` - The user-defined name for this disk.
-	* `resource_type` - The resource type.
-	* `size` - The size of the disk in GB (gigabytes).
+  Nested scheme for `network_interaces`:
+  - `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on the interface. If **false**, IP spoofing is prevented on the interface. If **true**, IP spoofing is allowed on the interface.
+  - `name` - (Optional, String) The name of the network interface.
+  - `primary_ipv4_address` - (Optional, Forces new resource, String) The IPV4 address of the interface.
+  - `subnet` - (Required, String) The ID of the subnet.
+  - `security_groups`- (Optional, List of strings)A comma separated list of security groups to add to the primary network interface.
+- `primary_network_interface` - (Required, List) A nested block describes the primary network interface of this instance. Only one primary network interface can be specified for an instance.
+
+  Nested scheme for `primary_network_interface`:
+  - `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on the interface. If **false**, IP spoofing is prevented on the interface. If **true**, IP spoofing is allowed on the interface.
+  - `name` - (Optional, String) The name of the network interface.
+  - `port_speed` - (Deprecated, Integer) Speed of the network interface.
+  - `primary_ipv4_address` - (Optional, Forces new resource, String) The IPV4 address of the interface.
+  - `subnet` - (Required, String) The ID of the subnet.
+  - `security_groups`-List of strings-Optional-A comma separated list of security groups to add to the primary network interface.
+- `profile` - (Required, Forces new resource, String) The name of the profile that you want to use for your instance. To list supported profiles, run `ibmcloud is instance-profiles`.
+- `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the instance.
+- `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance. Tags can help you find your instance more easily later.
+- `user_data` - (Optional, String) User data to transfer to the instance.
+- `volumes`  (Optional, List) A comma separated list of volume IDs to attach to the instance.
+- `vpc` - (Required, Forces new resource, String) The ID of the VPC where you want to create the instance.
+- `zone` - (Required, Forces new resource, String) The name of the VPC zone where you want to create the instance.
+
+
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `boot_volume`- (List of Strings) A list of boot volumes that the instance uses.
+
+  Nested scheme for `boot_volume`:
+  - `encryption` - (String) The type of encryption that is used for the boot volume.
+  - `iops`- (Integer) The number of input and output operations per second of the volume.
+  - `name` - (String) The name of the boot volume.
+  - `profile` - (String) The profile of the volume.
+  - `size`- (Integer) The capacity of the volume in gigabytes.
+- `disks` - (List of Strings) The collection of the instance's disks. Nested `disks` blocks have the following structure:
+
+  Nested scheme for `disks`:
+  - `created_at` - (Timestamp) The date and time that the disk was created.
+  - `href` - (String) The URL for the instance disk.
+  - `id` - (String) The unique identifier for the instance disk.
+  - `interface_type` - (String) The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing the property, check for the unknown log values. Optionally stop processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
+  - `name` - (String) The user defined name for the disk.
+  - `resource_type` - (String) The resource type.
+  - `size` - (String) The size of the disk in GB (gigabytes).
+- `gpu`- (List of Strings) A list of GPUs that are assigned to the instance.
+
+  Nested scheme for `gpu`:
+  - `cores`- (Integer) The number of cores of the GPU.
+  - `count`- (Integer) The count of the GPU.
+  - `manufacture` - (String) The manufacturer of the GPU.
+  - `memory`- (Integer) The amount of memory of the GPU in gigabytes.
+  - `model` - (String) The model of the GPU.
+- `id` - (String) The ID of the instance.
+- `memory`- (Integer) The amount of memory that is allocated to the instance in gigabytes.
+- `network_interfaces`- (List of Strings) A list of more network interfaces that are attached to the instance.
+
+  Nested scheme for `network_interfaces`:
+  - `allow_ip_spoofing` - (String) Indicates whether IP spoofing is allowed on the interface.
+  - `id` - (String) The ID of the network interface.
+  - `name` - (String) The name of the network interface.
+  - `subnet` - (String) The ID of the subnet.
+  - `security_groups`- (List of Strings) A list of security groups that are used in the network interface.
+  - `primary_ipv4_address` - (String) The primary IPv4 address.
+- `primary_network_interface`- (List of Strings) A list of primary network interfaces that are attached to the instance.
+
+  Nested scheme for `primary_network_interface`:
+  - `allow_ip_spoofing` - (String) Indicates whether IP spoofing is allowed on the interface.
+  - `id` - (String) The ID of the primary network interface.
+  - `name` - (String) The name of the primary network interface.
+  - `subnet` - (String) The ID of the subnet that the primary network interface is attached to.
+  - `security_groups`-List of strings-A list of security groups that are used in the primary network interface.
+  - `primary_ipv4_address` - (String) The primary IPv4 address.
+- `status` - (String) The status of the instance.
+- `volume_attachments`- (List of Strings) A list of volume attachments for the instance.
+
+  Nested scheme for `volume_attachements`:
+  - `id` - (String) The ID of the volume attachment.
+  - `name` - (String) The name of the volume attachment.
+  - `volume_id` - (String) The ID of the volume that is used in the volume attachment.
+  - `volume_name` - (String) The name of the volume that is used in the volume attachment.
+  - `volume_crn` - (String) The CRN of the volume that is used in the volume attachment.
+- `vcpu`- (List of Strings) A list of virtual CPUs that are allocated to the instance.
+
+  Nested scheme for `vcpu`:
+  - `architecture` - (String) The architecture of the CPU.
+  - `count`- (Integer) The number of virtual CPUS that are assigned to the instance.
+
+
 ## Import
+The `ibm_is_instance` resource can be imported by using the instance ID.
 
-ibm_is_instance can be imported using instanceID, eg
+**Example**
 
 ```
-$ terraform import ibm_is_instance.example d7bec597-4726-451f-8a63-e62e6f19c32c
+$ terraform import ibm_is_instance.example a1aaa111-1111-111a-1a11-a11a1a11a11a
 ```

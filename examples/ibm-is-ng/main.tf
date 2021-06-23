@@ -345,6 +345,28 @@ resource "ibm_is_network_acl" "isExampleACL" {
   }
 }
 
+resource "ibm_is_network_acl_rule" "isExampleACLRule" {
+  network_acl = ibm_is_network_acl.isExampleACL.id
+  name           = "isexample-rule"
+  action         = "allow"
+  source         = "0.0.0.0/0"
+  destination    = "0.0.0.0/0"
+  direction      = "outbound"
+  icmp {
+    code = 1
+    type = 1
+  }
+}
+
+data "ibm_is_network_acl_rule" "testacc_dsnaclrule" {
+  network_acl = ibm_is_network_acl.isExampleACL.id
+  name = ibm_is_network_acl_rule.isExampleACL.name
+}
+
+data "ibm_is_network_acl_rules" "testacc_dsnaclrules" {
+  network_acl = ibm_is_network_acl.isExampleACL.id
+}
+
 resource "ibm_is_public_gateway" "publicgateway1" {
   name = "gateway1"
   vpc  = ibm_is_vpc.vpc1.id
@@ -408,6 +430,24 @@ data "ibm_is_dedicated_hosts" "dhosts" {
 data "ibm_is_dedicated_host" "dhost" {
   name = ibm_is_dedicated_host.is_dedicated_host.name
   host_group = data.ibm_is_dedicated_host_group.dgroup.id
+}
+
+resource "ibm_is_image" "image1" {
+  href = var.image_cos_url
+  name = "my-img-1"
+  operating_system = var.image_operating_system
+}
+
+resource "ibm_is_image" "image2" {
+  source_volume = data.ibm_is_instance.instance1.volume_attachments.0.volume_id
+  name = "my-img-1"
+}
+
+data "ibm_is_image" "dsimage" {
+  name = ibm_is_image.image1.name
+}
+
+data "ibm_is_images" "dsimages" {
 }
 
 resource "ibm_is_instance_disk_management" "disks"{

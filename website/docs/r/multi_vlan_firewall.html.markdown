@@ -4,16 +4,15 @@ subcategory: "Classic infrastructure"
 layout: "ibm"
 page_title: "IBM : multivlan_firewall"
 description: |-
-  Manages IBM Multi Vlan Firewall.
+  Manages IBM Cloud multi-Vlan firewall.
 ---
 
-# ibm\_multivlan_firewall
+# ibm_multivlan_firewall
+Create, delete, and update a multi-Vlan firewall resource. For more information, about IBM Cloud multi-Vlan firewall, see [getting started with VLANs](https://cloud.ibm.com/docs/vlans?topic=vlans-getting-started).
 
-Provides an Multi-Vlan Firewall Resource.
+For more information, see the [IBM Cloud (SoftLayer) multi VLAN firewall Request Docs](https://sldn.softlayer.com/reference/datatypes/SoftLayer_Container_Product_Order_Network_Protection_Firewall_Dedicated/).
 
-For additional details, see the [IBM Cloud (SoftLayer) multivlan firewall Request docs](https://softlayer.github.io/reference/datatypes/SoftLayer_Container_Product_Order_Network_Protection_Firewall_Dedicated/)
-
-## Example Usage
+## Example usage
 
 In the following example, you can create a multi-vlan firewall:
 
@@ -28,26 +27,23 @@ resource "ibm_multi_vlan_firewall" "firewall_first" {
 
 ```
 
+## Argument reference 
+Review the argument references that you can specify for your resource.
 
-## Argument Reference
+- `addon_configuration`- (Required, List) The list of add-ons that are allowed. Allowed values are **FortiGate Security Appliance) Web Filtering Add-on (High Availability)**,**FortiGate Security Appliance - NGFW Add-on (High Availability)**,**FortiGate Security Appliance - AV Add-on (High Availability)** or **FortiGate Security Appliance - Web Filtering Add-on**, **FortiGate Security Appliance - NGFW Add-on**,**FortiGate Security Appliance - AV Add-on**.
+- `datacenter` - (Required, Forces new resource, String)The data center in which the firewall appliance resides.
+- `firewall_type` - (Required, Forces new resource, String)The type of the firewall device. Supported values include **FortiGate Security Appliance** and **FortiGate Firewall Appliance HA Option**.
+- `name` - (Required, Forces new resource, String)The name of the firewall device.
+- `pod` - (Required, Forces new resource, String)The pod in which the firewall resides.
 
-The following arguments are supported:
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-* `datacenter` - (Required, Forces new resource, string) The data center in which the firewall appliance resides.
-* `pod` - (Required, Forces new resource, string) The pod in which the firewall resides
-* `name` - (Required, Forces new resource, string) The name of the firewall device
-* `firewall_type` - (Required, Forces new resource, string) The type of the firewall device. Allowed values are:- FortiGate Security Appliance,FortiGate Firewall Appliance HA Option
-* `addon_configuration` - (Required, list) The list of addons that are allowed. Allowed values:- ["FortiGate Security Appliance - Web Filtering Add-on (High Availability)","FortiGate Security Appliance - NGFW Add-on (High Availability)","FortiGate Security Appliance - AV Add-on (High Availability)"] or ["FortiGate Security Appliance - Web Filtering Add-on","FortiGate Security Appliance - NGFW Add-on","FortiGate Security Appliance - AV Add-on"]
-
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the Multi-Vlan firewall
-* `public_vlan_id` - The id of the Public Vlan for accessing this gateway
-* `private_vlan_id` - The id of the Private Vlan for accessing this gateway
-* `public_ip` - The public gateway IP address.
-* `public_ipv6` - The public gateway IPv6 address.
-* `private_ip` - The private gateway IP address.
-* `username` - The username used to login into the device
-* `password` - The password used to login into the device
+- `id` - (String) The unique identifier of the multi VLAN firewall.
+- `public_vlan_id` - (String) The ID of the Public VLAN for accessing this gateway.
+- `private_vlan_id` - (String) The ID of the Private VLAN for accessing this gateway.
+- `public_ip` - (String) The public gateway IP address.
+- `public_ipv6` - (String) The public gateway IPv6 address.
+- `private_ip` - (String) The private gateway IP address.
+- `password` - (String) The password that is used to log in into the device.
+- `username` - (String) The username that is used to log in into the device.

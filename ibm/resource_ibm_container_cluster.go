@@ -890,14 +890,9 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		// with major and minor updates.
 		updateAllWorkers := d.Get("update_all_workers").(bool)
 		if updateAllWorkers || d.HasChange("patch_version") || d.HasChange("retry_patch_version") {
-			patchVersion := d.Get("patch_version").(string)
 			workerFields, err := wrkAPI.List(clusterID, targetEnv)
 			if err != nil {
 				return fmt.Errorf("Error retrieving workers for cluster: %s", err)
-			}
-			cluster, err := clusterAPI.Find(clusterID, targetEnv)
-			if err != nil {
-				return fmt.Errorf("Error retrieving cluster %s: %s", clusterID, err)
 			}
 
 			waitForWorkerUpdate := d.Get("wait_for_worker_update").(bool)
@@ -907,7 +902,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 				1. There is a change in Major.Minor version
 				2. Therese is a change in patch_version & Traget kube patch version and patch_version are same
 				*/
-				if strings.Split(w.KubeVersion, "_")[0] != strings.Split(cluster.MasterKubeVersion, "_")[0] || (strings.Split(w.KubeVersion, ".")[2] != patchVersion && strings.Split(w.TargetVersion, ".")[2] == patchVersion) {
+				if w.KubeVersion != w.TargetVersion {
 					params := v1.WorkerUpdateParam{
 						Action: "update",
 					}

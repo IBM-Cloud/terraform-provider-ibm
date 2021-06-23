@@ -47,7 +47,7 @@ resource "ibm_satellite_cluster_worker_pool" "create_cluster_wp" {
 
 ## Timeouts
 
-ibm_satellite_cluster_worker_pool provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+ibm_satellite_cluster_worker_pool provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 * `create` - (Default 120 minutes) Used for creating Instance.
 * `read`   - (Default 10 minutes) Used for reading Instance.

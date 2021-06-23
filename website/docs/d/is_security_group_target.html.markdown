@@ -4,15 +4,14 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : ibm_is_security_group_target"
 description: |-
-  Manages IBM Security Group Target
+  Manages IBM Cloud security group target.
 ---
 
 # ibm_is_security_group_target
+Retrieve information of an existing security group target as a read only data source. For more information, about security group target, see [required permissions](https://cloud.ibm.com/docs/vpc?topic=vpc-resource-authorizations-required-for-api-and-cli-calls).
 
-This request retrieves a single target for a given security group, The target must be an existing target of the security group.
 
-## Example Usage
-
+## Example usage
 In the following example, you can create a security group target:
 
 ```terraform
@@ -22,18 +21,16 @@ data "ibm_is_security_group_target" "testacc_security_group_target" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `security_group` - (Required, String) The security group identifier.
+- `name` - (Required, String) The user defined name of the target.
 
-- `security_group` - (Required, string) The security group identifier
-- `name` - (Required, string) The user-defined name of the target
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
-
-The following attributes are exported:
-
-- `id` - The unique identifier of the security group target. The id is composed of <`security_group_id`>/<`target_id`>.
-- `name` - The user-defined name of the target
-- `resource_type` - The resource type
-- `more_info` - Link to documentation about deleted resources
+- `id` - (String) The unique identifier of the security group target. The ID is composed of <`security_group_id`>/<`target_id`>.
+- `name` - (String) The user defined name of the target.
+- `resource_type` - (String) The resource type.
+- `more_info` - (String) Link to documentation about deleted resources.

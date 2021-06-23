@@ -185,7 +185,7 @@ resource "ibm_container_vpc_worker_pool" "cluster_pool" {
 
 ## Timeouts
 
-The `ibm_container_alb` provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_container_alb` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **Create** The enablement of the feature is considered `failed` if no response is received for 90 minutes.
 - **Delete** The delete of the feature is considered `failed` if no response is received for 45 minutes.

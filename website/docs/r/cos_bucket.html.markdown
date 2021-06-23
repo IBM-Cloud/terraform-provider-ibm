@@ -165,6 +165,7 @@ resource "ibm_cos_bucket" "retention_cos" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location      = "jp-tok"
   storage_class        = standard
+  hard_quota           = 1024
   force_delete        = true
   retention_rule {
     default = 1
@@ -181,6 +182,7 @@ resource "ibm_cos_bucket" "objectversioning" {
   resource_instance_id  = ibm_resource_instance.cos_instance.id
   region_location       = "us-east"
   storage_class         = var.storage
+  hard_quota            = 11
   object_versioning {
     enable  = true
   }
@@ -223,7 +225,7 @@ Review the argument references that you can specify for your resource.
 Both `archive_rule` and `expire_rule` must be managed by  Terraform as they use the same lifecycle configuration. If user creates any of the rule outside of  Terraform by using command line or console, you can see unexpected difference like removal of any of the rule or one rule overrides another. The policy cannot match as expected due to API limitations, as the lifecycle is a single API request for both archive and expire.
 - `force_delete`- (Optional, Bool) As the default value set to **true**, it will delete all the objects in the COS Bucket and then delete the bucket. **Note:** `force_delete` will timeout on buckets with a large amount of objects. 24 hours before you delete the bucket you can set an expire rule to remove all the files over a day old. * **Note** Both `archive_rule` and `expire_rule` must be managed by Terraform as they use the same lifecycle configuration. If user creates any of the rule outside of Terraform by using command line, or console, you can see unexpected difference such as removal of any of the rule, or one rule overrides another, the policy may not match as expected due to API limitation because the lifecycle is a single API request for both archive and expire.
 - `key_protect` - (Optional, String) The CRN of the IBM Key Protect root key that you want to use to encrypt data that is sent and stored in IBM Cloud Object Storage. Before you can enable IBM Key Protect encryption, you must provision an instance of IBM Key Protect and authorize the service to access IBM Cloud Object Storage. For more information, see [Server-Side Encryption with IBM Key Protect or Hyper Protect Crypto Services (SSE-KP)](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-encryption).
-- `metrics_monitoring_crn` - (Required, string) Required the first time `metrics_monitoring` is configured. The instance of IBM Cloud Monitoring receives the bucket metrics. **Note** Request metrics are supported in all regions and console has the support. For more details check the [cloud documentiona](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-mm-cos-integration) **Note** One of the location option must be present.
+- `metrics_monitoring_crn` - (Required, string) Required the first time `metrics_monitoring` is configured. The instance of IBM Cloud Monitoring receives the bucket metrics. **Note** Request metrics are supported in all regions and console has the support. For more details check the [cloud documention](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-mm-cos-integration) **Note** One of the location option must be present.
 - `metrics_monitoring`- (Object) to enable metrics tracking with IBM Cloud Monitoring - Optional- Set up your IBM Cloud Monitoring service instance to receive metrics for your IBM Cloud Object Storage bucket.
 
   Nested scheme for `metrics_monitoring`:
@@ -259,6 +261,7 @@ Both `archive_rule` and `expire_rule` must be managed by  Terraform as they use 
      - The minimum retention period must be less than or equal to the default retention period, that in turn must be less than or equal to the maximum retention period.
      - Permanent retention can only be enabled at a IBM Cloud Object Storage bucket level with retention policy enabled and users are able to select the permanent retention period option during object uploads. Once enabled, this process can't be reversed and objects uploaded that use a permanent retention period cannot be deleted. It's the responsibility of the users to validate at their end if there's a legitimate need to permanently store objects by using Object Storage buckets with a retention policy.
      - force deleting the bucket will not work if any object is still under retention. As objects cannot be deleted or overwritten until the retention period has expired and all the legal holds have been removed.
+- `hard_quota` - (Optional, Integer) sets a maximum amount of storage (in bytes) available for a bucket. For more details check the [cloud documention](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-quota)
 - `single_site_location` - (Optional, String) The location for a single site bucket. Supported values are: `ams03`, `che01`, `hkg02`, `mel01`, `mex01`, `mil01`, `mon01`, `osl01`, `par01`, `sjc04`, `sao01`, `seo01`, `sng01`, and `tor01`. If you set this parameter, do not set `region_location` or `cross_region_location` at the same time.
 - `storage_class` - (Required, String) The storage class that you want to use for the bucket. Supported values are `standard`, `vault`, `cold`, `flex`, and `smart`. For more information, about storage classes, see [Use storage classes](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-classes).
 

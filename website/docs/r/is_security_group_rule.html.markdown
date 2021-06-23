@@ -4,17 +4,15 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : security_group_rule"
 description: |-
-  Manages IBM Security Group Rule.
+  Manages IBM security group rule.
 ---
 
-# ibm\_is_security_group_rule
+# ibm_is_security_group_rule
+Create, update, or delete a security group rule. When you want to create a security group and security group rule for a virtual server instance in your VPC, you must create these resources in a specific order to avoid errors during the creation of your virtual server instance. For more information, about security group rule, see [security in your VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-security-in-your-vpc).
 
-Provides a security group rule resource. This allows security group rule to be created, updated, and cancelled.
 
-
-## Example Usage
-
-In the following example, you can create a different types of protocol rules `ALL`, `ICMP`, `UDP` and `TCP`.
+## Example usage
+In the following example, you create a different type of protocol rules `ALL`, `ICMP`, `UDP` and `TCP`.
 
 ```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
@@ -63,38 +61,47 @@ resource "ibm_is_security_group_rule" "testacc_security_group_rule_tcp" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `direction` - (Required, String) The direction of the traffic either `inbound` or `outbound`.
+- `group` - (Required, Forces new resource, String) The security group ID.
+- `ip_version` - (Optional, String) The IP version either `IPv4` or `IPv6`. Default `IPv4`.
+- `icmp` - (Optional, List) A nested block describes the `icmp` protocol of this security group rule.
 
-* `group` - (Required, Forces new resource, string) The security group id.
-* `direction` - (Required, string)  The direction of the traffic either `inbound` or `outbound`.
-* `remote` - (Optional, string) Security group id - an IP address, a CIDR block, or a single security group identifier.
-* `ip_version` - (Optional, string) IP version either `IPv4` or `IPv6`. Default `IPv4`.
-* `icmp` - (Optional, list) A nested block describing the `icmp` protocol of this security group rule.
-  * `type` - (Required, int) The ICMP traffic type to allow. Valid values from 0 to 254.
-  * `code` - (Optional, int) The ICMP traffic code to allow. Valid values from 0 to 255.
-* `tcp` - (Optional, list) A nested block describing the `tcp` protocol of this security group rule.
-  * `port_min` - (Required, int) The inclusive lower bound of TCP port range. Valid values are from 1 to 65535.
-  * `port_max` - (Required, int) The inclusive upper bound of TCP port range. Valid values are from 1 to 65535.
-* `udp` - (Optional, list) A nested block describing the `udp` protocol of this security group rule.
-  * `port_min` - (Required, int) The inclusive lower bound of UDP port range. Valid values are from 1 to 65535.
-  * `port_max` - (Required, int) The inclusive upper bound of UDP port range. Valid values are from 1 to 65535.
+  Nested scheme for `icmp`:
+  - `type`- (Required, Integer) The ICMP traffic type to allow. Valid values from 0 to 254.
+  - `code` - (Optional, Integer) The ICMP traffic code to allow. Valid values from 0 to 255.
+- `remote` - (Optional, String) Security group ID, an IP address, a CIDR block, or a single security group identifier.
+- `tcp` - (Optional, List) A nested block describes the `tcp` protocol of this security group rule.
 
-**NOTE**: If any of the `icmp` , `tcp` or `udp` is not specified it creates a rule with protocol `ALL`. 
+  Nested scheme for `tcp`:
+  - `port_min`- (Required, Integer) The TCP port range that includes the minimum bound. Valid values are from 1 to 65535.
+  - `port_max`- (Required, Integer) The TCP port range that includes the maximum bound. Valid values are from 1 to 65535.
+- `udp` - (Optional, List) A nested block describes the `udp` protocol of this security group rule.
 
+  Nested scheme for `udp`:
+  - `port_min`- (Required, Integer) The UDP port range that includes minimum bound. Valid values are from 1 to 65535.
+  - `port_max`- (Required, Integer) The UDP port range that includes maximum bound. Valid values are from 1 to 65535.
 
-## Attribute Reference
+**Note** 
 
-In addition to all arguments above, the following attributes are exported:
+If any of the `icmp` , `tcp`, or `udp` is not specified it creates a rule with protocol `ALL`.
 
-* `id` - The id of the security group rule. The id is composed of \<security_group_id\>/\<security_group_rule_id\>.
-* `rule_id` - The unique identifier of the rule.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `id` - (String) The ID of the security group rule. The ID is composed of `<security_group_id>/<security_group_rule_id>`.
+- `rule_id` - (String) The unique identifier of the rule.
+
 
 ## Import
+The `ibm_is_security_group_rule` resource can be imported by using security group ID and security group rule ID.
 
-ibm_is_security_group_rule can be imported using security group ID and security group rule ID, eg
+**Example**
 
 ```
 $ terraform import ibm_is_security_group_rule.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
 ```
+
+

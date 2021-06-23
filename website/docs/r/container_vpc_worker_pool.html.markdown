@@ -49,7 +49,7 @@ resource "ibm_container_vpc_worker_pool" "test_pool" {
 
 ## Timeouts
 
-The `ibm_container_vpc_worker_pool` provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_container_vpc_worker_pool` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **Create** The creation of the worker pool is considered failed when no response is received for 90 minutes. 
 - **Delete** The deletion of the worker pool is considered failed when no response is received for 90 minutes. 

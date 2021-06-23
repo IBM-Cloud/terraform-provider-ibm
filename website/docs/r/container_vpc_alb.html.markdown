@@ -23,7 +23,7 @@ resource "ibm_container_vpc_alb" "alb" {
 
 ## Timeouts
 
-The ibm_container_vpc_alb provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The ibm_container_vpc_alb provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **Create** The enablement or disablement of the ALB is considered failed when no response is received for 5 minutes. 
 - **Update** The update of the ALB is considered failed when no response is received for 5 minutes. 

@@ -3,14 +3,14 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_dedicated_host_disk_management"
 description: |-
-  Manages IBM DedicatedHost Disk Management.
+  Manages IBM Dedicated host disk management.
 ---
 
-# ibm\_is_dedicated_host_disk_management
+# ibm_is_dedicated_host_disk_management
 
-Provides a resource for DedicatedHost Disk Management. This allows DedicatedHost disk names to be updated
+Create, update, delete and suspend the dedicated host disk management resource. For more information, about dedicated host disk management, see [migrating a dedicated host instance to another host](https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-migrating-dedicated-host).
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_is_dedicated_host_group" "dh_group01" {
@@ -46,27 +46,27 @@ resource "ibm_is_dedicated_host_disk_management" "disks"{
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument reference that you can specify for your resource.
 
-The following arguments are supported:
+- `dedicated_host` - (Required, Force New Resource, String) The unique-identifier of the dedicated host.
+- `disks` - (Required, String) Disks that needs to be updated. Nested `disks` blocks have the following structure:
+  
+  Nested scheme for `disks`:
+  - `id` - (Required, String) The unique-identifier of the dedicated host disk.
+  - `name` - (Required, String) The unique user defined name for the dedicated host disk.
 
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-* `dedicated_host` - (Required, string, ForceNew) The unique-identifier of the dedicated host
-* `disks` - (Required, string) Disks that needs to be updated. Nested `disks` blocks have the following structure:
-	* `id` - (Required, string) The unique-identifier of the dedicated host disk.
-	* `name` - (Required, string) The unique user defined name for the dedicated host disk
-
-## Attribute Reference
-
-The following attributes are exported:
-
-
-* `id` - The unique-identifier of the Dedicated host disk management
+- `id` - (String) The unique-identifier of the dedicated host disk management.
 
 ## Import
 
-ibm_is_dedicated_host_disk_management can be imported using Dedicated Host disk management ID, eg
+The `ibm_is_dedicated_host_disk_management` resource can be imported by using dedicated host disk management ID.
+
+**Example**
 
 ```
-$ terraform import ibm_is_dedicated_host_disk_management.example 0716-1c372bb2-decc-4555-b1a6-5d128c62806c
+$ terraform import ibm_is_dedicated_host_disk_management.example 0716-1c372bb2-decc-4555-b1a6-5d128c612316c
 ```
