@@ -14,7 +14,9 @@ import (
 )
 
 const (
-	isSubnets = "subnets"
+	isSubnets                = "subnets"
+	isSubnetResourceGroupID  = "resource_group"
+	isSubnetRoutingTableName = "routing_table_name"
 )
 
 func dataSourceIBMISSubnets() *schema.Resource {
@@ -22,6 +24,23 @@ func dataSourceIBMISSubnets() *schema.Resource {
 		Read: dataSourceIBMISSubnetsRead,
 
 		Schema: map[string]*schema.Schema{
+			isSubnetResourceGroupID: {
+				Type:        schema.TypeString,
+				Description: "Resource Group ID",
+				Optional:    true,
+			},
+
+			isSubnetRoutingTableName: {
+				Type:        schema.TypeString,
+				Description: "Name of the routing table",
+				Optional:    true,
+			},
+
+			isSubnetRoutingTableID: {
+				Type:        schema.TypeString,
+				Description: "ID of the routing table",
+				Optional:    true,
+			},
 
 			isSubnets: {
 				Type:        schema.TypeList,
@@ -65,7 +84,7 @@ func dataSourceIBMISSubnets() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"resource_group": {
+						isSubnetResourceGroupID: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -163,8 +182,34 @@ func subnetList(d *schema.ResourceData, meta interface{}) error {
 	}
 	start := ""
 	allrecs := []vpcv1.Subnet{}
+
+	var resourceGroup string
+	if v, ok := d.GetOk(isSubnetResourceGroupID); ok {
+		resourceGroup = v.(string)
+	}
+
+	var routingTable string
+	if v, ok := d.GetOk(isSubnetRoutingTableID); ok {
+		routingTable = v.(string)
+	}
+
+	var resourceTableName string
+	if v, ok := d.GetOk(isSubnetRoutingTableName); ok {
+		resourceTableName = v.(string)
+	}
+
+	options := &vpcv1.ListSubnetsOptions{}
+	if resourceGroup != "" {
+		options.SetResourceGroupID(resourceGroup)
+	}
+	if routingTable != "" {
+		options.SetRoutingTableID(routingTable)
+	}
+	if resourceTableName != "" {
+		options.SetRoutingTableName(resourceTableName)
+	}
+
 	for {
-		options := &vpcv1.ListSubnetsOptions{}
 		if start != "" {
 			options.Start = &start
 		}
