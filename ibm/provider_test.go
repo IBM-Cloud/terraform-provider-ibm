@@ -654,3 +654,15 @@ func testAccPreCheckEncryptedImage(t *testing.T) {
 		t.Fatal("IS_IMAGE_ENCRYPTION_KEY must be set for acceptance tests")
 	}
 }
+
+func testAccPreCheckResourceAliasBinding(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+	if v := os.Getenv("IBM_ORG"); v == "" {
+		t.Fatal("IBM_ORG must be set for acceptance tests")
+	}
+	if v := os.Getenv("IBM_SPACE"); v == "" {
+		t.Fatal("IBM_SPACE must be set for acceptance tests")
+	}
+}
