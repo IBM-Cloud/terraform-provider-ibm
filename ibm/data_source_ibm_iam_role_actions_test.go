@@ -36,7 +36,8 @@ func TestAccIBMIAMRoleDataSourceAction_basic(t *testing.T) {
 
 func TestAccIBMIAMRoleDataSourceAction_withServiceSpecificRoleActions(t *testing.T) {
 	serviceName := "cloud-object-storage"
-	countActionsForObjectWriterRole := "12"
+	countActionsContentReaderAndObjectWriter := "22"
+	contentReaderActionInCos := "cloud-object-storage.bucket.get"
 	name := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	displayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
@@ -44,11 +45,14 @@ func TestAccIBMIAMRoleDataSourceAction_withServiceSpecificRoleActions(t *testing
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIAMCustomRoleActionConfig(name, displayName, serviceName),
+				Config: testAccCheckIBMIAMCustomServiceRoleActionsConfig(name, displayName, serviceName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_iam_role_actions.test", "service", serviceName),
-					resource.TestCheckResourceAttr("ibm_iam_custom_role.customrole", "service", serviceName),
-					resource.TestCheckResourceAttr("ibm_iam_custom_role.customrole", "actions.#", countActionsForObjectWriterRole),
+					resource.TestCheckResourceAttr("data.ibm_iam_role_actions.example", "service", serviceName),
+					resource.TestCheckResourceAttr("ibm_iam_custom_role.read_write", "service", serviceName),
+					resource.TestCheckResourceAttr(
+						"ibm_iam_custom_role.read_write", "actions.#", countActionsContentReaderAndObjectWriter),
+					resource.TestCheckResourceAttr(
+						"ibm_iam_custom_role.read_write", "actions.0", contentReaderActionInCos),
 				),
 			},
 		},
@@ -72,19 +76,21 @@ resource "ibm_iam_custom_role" "customrole" {
 `, serviceName, name, displayName)
 }
 
-func testAccCheckIBMIAMCustomRoleActionConfig(name, displayName, serviceName string) string {
+func testAccCheckIBMIAMCustomServiceRoleActionsConfig(name, displayName, serviceName string) string {
 	return fmt.Sprintf(`
 
-data "ibm_iam_role_actions" "test" {
+data "ibm_iam_role_actions" "example" {
   service = "%s"
 }
 
-resource "ibm_iam_custom_role" "customrole" {
-    name         = "%s"
-    display_name = "%s"
-    description  = "Custom Role for ObjectWriter"
-    service = "%s"
-    actions      = [data.ibm_iam_role_actions.test["Object Writer"]]
+resource "ibm_iam_custom_role" "read_write" {
+  name = "%s"
+  display_name = "%s"
+  service = "%s"
+  actions = concat(
+             split(",", data.ibm_iam_role_actions.example.actions["Content Reader"]),
+             split(",", data.ibm_iam_role_actions.example.actions["Object Writer"])
+  )
 }
 `, serviceName, name, displayName, serviceName)
 }

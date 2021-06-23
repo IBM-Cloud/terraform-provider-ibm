@@ -6,7 +6,7 @@ package ibm
 import (
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"log"
+	"strings"
 )
 
 func datasourceIBMIAMRoleAction() *schema.Resource {
@@ -44,6 +44,11 @@ func datasourceIBMIAMRoleAction() *schema.Resource {
 				Description: "writer action ids",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
+			"actions": {
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "List of actions for different services roles",
+			},
 		},
 	}
 
@@ -68,15 +73,19 @@ func datasourceIBMIAMRoleActionRead(d *schema.ResourceData, meta interface{}) er
 	}
 	serviceRoles := roleList.ServiceRoles
 
-	//TODOM: Debug
-	log.Printf("MMM2: The serviceRoles: %+v", serviceRoles)
-
-	//TODOM: Convert this into a function where we add a key based on displaynames (but convert to lowercase and underscore)
-	//TODOM: Is there any naming convention for these keys?
 	d.Set("reader", flattenActionbyDisplayName("Reader", serviceRoles))
 	d.Set("manager", flattenActionbyDisplayName("Manager", serviceRoles))
 	d.Set("reader_plus", flattenActionbyDisplayName("ReaderPlus", serviceRoles))
 	d.Set("writer", flattenActionbyDisplayName("Writer", serviceRoles))
+	d.Set("actions", flattenRoleActions(serviceRoles))
 
 	return nil
+}
+
+func flattenRoleActions(object []iampolicymanagementv1.Role) map[string]string {
+	actions := make(map[string]string)
+	for _, item := range object {
+		actions[*item.DisplayName] = strings.Join(item.Actions, ",")
+	}
+	return actions
 }
