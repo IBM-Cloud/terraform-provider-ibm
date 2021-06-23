@@ -23,16 +23,16 @@ data "ibm_cis_filters" "test" {
 
 The following arguments are supported:
 
-- `cis_id` - (Required,string) The ID of the CIS service instance.
-- `domain_id` - (Required,string) The ID of the domain.
+- `cis_id` - (Required, String) The ID of the CIS service instance.
+- `domain_id` - (Required, String) The ID of the domain.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
-- `id` - The Filter ID. It is a combination of <`filter_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":"
-- `cis_filters_list` - 
-  - `expression` - (Required,string) The expression of filter.
-  - `paused` - (Optional,boolean). Whether this filter is currently disabled.
-  - `description` - (Optional,string) Some useful information about this filter to help identify the purpose of it.
-  - `filter_id` - (Computed, string) The Filter ID.
+- `id` - (String) The Filter ID. It is a combination of <`filter_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":"
+- `cis_filters_list` - (List of Filters)
+  - `expression` - (String) The expression of filter.
+  - `paused` - (Boolean). Whether this filter is currently disabled.
+  - `description` - (String) Some useful information about this filter to help identify the purpose of it.
+  - `filter_id` - (String) The Filter ID.
 

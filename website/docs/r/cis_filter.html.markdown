@@ -29,18 +29,18 @@ resource "ibm_cis_filter" "test" {
 
 The following arguments are supported:
 
-- `cis_id` - (Required,string) The ID of the CIS service instance
-- `domain_id` - (Required,string) The ID of the domain to add the Filter.
-- `expression` - (Required,string) The expression of filter.
-- `paused` - (Optional,boolean). Whether this filter is currently disabled.
-- `description` - (Optional,string) Some useful information about this filter to help identify the purpose of it.
+- `cis_id` - (Required,String) The ID of the CIS service instance
+- `domain_id` - (Required,String) The ID of the domain to add the Filter.
+- `expression` - (Required,String) The expression of filter.
+- `paused` - (Optional, Bool). Whether this filter is currently disabled.
+- `description` - (Optional, String) Some useful information about this filter to help identify the purpose of it.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of filter resource. It is a combination of <`filter-id`>:<`domain-id`>:<`crn`> attributes concatenated with ":".
-- `filter_id` - Unique identifier for the Filter.
+- `id` - (String) The ID of filter resource. It is a combination of <`filter-id`>:<`domain-id`>:<`crn`> attributes concatenated with ":".
+- `filter_id` - (String) Unique identifier for the Filter.
 
 ## Import
 
