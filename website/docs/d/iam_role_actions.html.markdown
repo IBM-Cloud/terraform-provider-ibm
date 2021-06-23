@@ -34,6 +34,7 @@ In addition to the argument reference list, you can access the following attribu
 - `reader`- (List of strings) A list of supported actions that require the **Reader** service access role.
 - `reader_plus`- (List of strings) A list of supported actions that require the **Reader plus** service access role.
 - `writer`- (List of strings) A list of supported actions that require the **Writer** service access role.
+- `actions`- (Map of (string, string)) A map containing all roles and actions in key value format. The key contains a string equal to the role name and value contains a string of all the actions separated by a comma (",")
 
 
 
