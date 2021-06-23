@@ -5,11 +5,14 @@ package ibm
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	homedir "github.com/mitchellh/go-homedir"
 
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
@@ -54,6 +57,12 @@ func resourceIbmIamApiKey() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Send true or false to set whether the API key value is retrievable in the future by using the Get details of an API key request. If you create an API key for a user, you must specify `false` or omit the value. We don't allow storing of API keys for users.",
+			},
+			"file": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "File where api key is to be stored",
 			},
 			"entity_lock": &schema.Schema{
 				Type:        schema.TypeString,
@@ -142,7 +151,7 @@ func resourceIbmIamApiKeyCreate(context context.Context, d *schema.ResourceData,
 	d.Set("apikey", *apiKey.Apikey)
 
 	if keyfile, ok := d.GetOk("file"); ok {
-		if err := saveToFile(apiKey, keyfile.(string)); err != nil {
+		if err := saveApikeyToFile(apiKey, keyfile.(string)); err != nil {
 			log.Printf("Error writing API Key Details to file: %s", err)
 		}
 	}
@@ -170,44 +179,41 @@ func resourceIbmIamApiKeyRead(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	if err = d.Set("name", apiKey.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	if apiKey.Name != nil {
+		d.Set("name", *apiKey.Name)
 	}
-	if err = d.Set("iam_id", apiKey.IamID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting iam_id: %s", err))
+	if apiKey.IamID != nil {
+		d.Set("iam_id", *apiKey.IamID)
 	}
-	if err = d.Set("description", apiKey.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+	if apiKey.Description != nil {
+		d.Set("description", *apiKey.Description)
 	}
-	if err = d.Set("account_id", apiKey.AccountID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
+	if apiKey.AccountID != nil {
+		d.Set("account_id", *apiKey.AccountID)
 	}
-	if err = d.Set("apikey", apiKey.Apikey); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting apikey: %s", err))
+	if *apiKey.Apikey != "" {
+		d.Set("apikey", *apiKey.Apikey)
 	}
-	if err = d.Set("locked", apiKey.Locked); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting entity_lock: %s", err))
+	if apiKey.Locked != nil {
+		d.Set("locked", *apiKey.Locked)
 	}
-	if err = d.Set("apikey_id", apiKey.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
+	if apiKey.ID != nil {
+		d.Set("apikey_id", *apiKey.ID)
 	}
-	if err = d.Set("entity_tag", apiKey.EntityTag); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting entity_tag: %s", err))
+	if apiKey.EntityTag != nil {
+		d.Set("entity_tag", *apiKey.EntityTag)
 	}
-	if err = d.Set("crn", apiKey.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+	if apiKey.CRN != nil {
+		d.Set("crn", *apiKey.CRN)
 	}
-	if err = d.Set("locked", apiKey.Locked); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting locked: %s", err))
+	if apiKey.CreatedBy != nil {
+		d.Set("created_by", *apiKey.CreatedBy)
 	}
-	if err = d.Set("created_at", apiKey.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+	if apiKey.CreatedAt != nil {
+		d.Set("created_at", apiKey.CreatedAt.String())
 	}
-	if err = d.Set("created_by", apiKey.CreatedBy); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
-	}
-	if err = d.Set("modified_at", apiKey.ModifiedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting modified_at: %s", err))
+	if apiKey.ModifiedAt != nil {
+		d.Set("modified_at", apiKey.ModifiedAt.String())
 	}
 
 	return nil
@@ -255,4 +261,32 @@ func resourceIbmIamApiKeyDelete(context context.Context, d *schema.ResourceData,
 	d.SetId("")
 
 	return nil
+}
+
+func saveApikeyToFile(apiKey *iamidentityv1.APIKey, filePath string) error {
+	outputFilePath, err := homedir.Expand(filePath)
+	if err != nil {
+		return fmt.Errorf("Error generating API Key file path: %s", err)
+	}
+
+	key := &APIKey{
+		Name:      *apiKey.Name,
+		Apikey:    *apiKey.Apikey,
+		CreatedAt: apiKey.CreatedAt.String(),
+		Locked:    *apiKey.Locked,
+	}
+	if apiKey.Description != nil {
+		key.Description = *apiKey.Description
+	} else {
+		key.Description = ""
+	}
+
+	out, err := json.MarshalIndent(key, "", "\t")
+
+	err = ioutil.WriteFile(outputFilePath, out, 0666)
+	if err == nil {
+		log.Println("Successfully save API key information to ", outputFilePath)
+	}
+
+	return err
 }

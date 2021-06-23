@@ -28,6 +28,7 @@ Review the argument references that you can specify for your resource.
 - `entity_lock` - (Optional, Bool) Indicates the API key is locked for further write operations. Default value is `false`.
 - `name` - (Required, String) The name of the API key. The name is not checked for uniqueness. Therefore, multiple names with the same value can exist. Access is done through the UUID of the API key.
 - `store_value` - (Optional, Bool) Use `true` or `false` to set whether the API key value is retrievable in the future by using the `Get` details of an API key request. If you create an API key for a user, you must specify `false` or omit the value. Users cannot store the API key.
+- `file` - (Optional, String) The file name where API key is to be stored.
 
 
 ## Attribute reference

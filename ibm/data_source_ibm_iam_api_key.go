@@ -131,9 +131,6 @@ func dataSourceIbmIamApiKeyRead(context context.Context, d *schema.ResourceData,
 	if err = d.Set("account_id", apiKey.AccountID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
 	}
-	if err = d.Set("apikey", apiKey.Apikey); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting apikey: %s", err))
-	}
 
 	return nil
 }
