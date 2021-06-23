@@ -71,7 +71,7 @@ resource "ibm_iam_custom_role" "customrole" {
     display_name = "%s"
     description  = "Custom Role for test scenario2"
     service = "kms"
-    actions      = [data.ibm_iam_role_actions.test["Manager"].18]
+    actions      = [data.ibm_iam_role_actions.test.manager.18]
 }
 `, serviceName, name, displayName)
 }
