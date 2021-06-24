@@ -40,6 +40,9 @@ const (
 	isSubnetDeleting         = "deleting"
 	isSubnetDeleted          = "done"
 	isSubnetRoutingTableID   = "routing_table"
+	isSubnetAccessTags       = "access_tags"
+	isUserTagType            = "user"
+	isAccessTagType          = "access"
 )
 
 func resourceIBMISSubnet() *schema.Resource {
@@ -117,6 +120,15 @@ func resourceIBMISSubnet() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_subnet", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "List of tags",
+			},
+
+			isSubnetAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_subnet", "accesstag")},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access management tags",
 			},
 
 			isSubnetCRN: {
@@ -340,7 +352,7 @@ func classicSubnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zo
 	subnet, response, err := sess.CreateSubnet(createSubnetOptions)
 	if err != nil {
 		log.Printf("[DEBUG] Subnet err %s\n%s", err, response)
-		return fmt.Errorf("Error while creating Subnet %s\n%s", err, response)
+		return fmt.Errorf("Error while creating Subnet %s\n%v", err, response)
 	}
 	d.SetId(*subnet.ID)
 	log.Printf("[INFO] Subnet : %s", *subnet.ID)
@@ -412,7 +424,7 @@ func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv
 	subnet, response, err := sess.CreateSubnet(createSubnetOptions)
 	if err != nil {
 		log.Printf("[DEBUG] Subnet err %s\n%s", err, response)
-		return fmt.Errorf("Error while creating Subnet %s\n%s", err, response)
+		return fmt.Errorf("Error while creating Subnet %s\n%v", err, response)
 	}
 	d.SetId(*subnet.ID)
 	log.Printf("[INFO] Subnet : %s", *subnet.ID)
@@ -420,15 +432,25 @@ func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv
 	if err != nil {
 		return err
 	}
-	v := os.Getenv("IC_ENV_TAGS")
-	if _, ok := d.GetOk(isSubnetTags); ok || v != "" {
+
+	if _, ok := d.GetOk(isSubnetTags); ok {
 		oldList, newList := d.GetChange(isSubnetTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *subnet.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *subnet.CRN, "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource subnet (%s) tags: %s", d.Id(), err)
 		}
 	}
+
+	if _, ok := d.GetOk(isSubnetAccessTags); ok {
+		oldList, newList := d.GetChange(isSubnetAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *subnet.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource subnet (%s) access tags: %s", d.Id(), err)
+		}
+	}
+
 	return nil
 }
 
@@ -611,12 +633,21 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
-	tags, err := GetTagsUsingCRN(meta, *subnet.CRN)
+
+	tags, err := GetGlobalTagsUsingCRN(meta, *subnet.CRN, "", isUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource subnet (%s) tags: %s", d.Id(), err)
 	}
+
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *subnet.CRN, "", isAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource subnet (%s) access tags: %s", d.Id(), err)
+	}
+
 	d.Set(isSubnetTags, tags)
+	d.Set(isSubnetAccessTags, accesstags)
 	d.Set(isSubnetCRN, *subnet.CRN)
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/subnets")
 	d.Set(ResourceName, *subnet.Name)
@@ -630,20 +661,29 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 }
 
 func resourceIBMISSubnetUpdate(d *schema.ResourceData, meta interface{}) error {
-
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
 	id := d.Id()
+
 	if d.HasChange(isSubnetTags) {
 		oldList, newList := d.GetChange(isSubnetTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, d.Get(isSubnetCRN).(string))
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(isSubnetCRN).(string), "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource subnet (%s) tags: %s", d.Id(), err)
 		}
 	}
+	if d.HasChange(isSubnetAccessTags) {
+		oldList, newList := d.GetChange(isSubnetAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(isSubnetCRN).(string), "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource subnet (%s) access tags: %s", d.Id(), err)
+		}
+	}
+
 	if userDetails.generation == 1 {
 		err := classicSubnetUpdate(d, meta, id)
 		if err != nil {
