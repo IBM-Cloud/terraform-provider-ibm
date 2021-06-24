@@ -37,6 +37,7 @@ const (
 	isVolumeResourceGroup        = "resource_group"
 	isVolumeSourceSnapshot       = "source_snapshot"
 	isVolumeDeleteAllSnapshots   = "delete_all_snapshots"
+	isVolumeBandwidth            = "bandwidth"
 )
 
 func resourceIBMISVolume() *schema.Resource {
@@ -201,6 +202,12 @@ func resourceIBMISVolume() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
+			},
+
+			isVolumeBandwidth: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The maximum bandwidth (in megabits per second) for the volume",
 			},
 		},
 	}
@@ -378,6 +385,7 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isVolumeSourceSnapshot, *vol.SourceSnapshot.ID)
 	}
 	d.Set(isVolumeStatus, *vol.Status)
+	d.Set(isVolumeBandwidth, int(*vol.Bandwidth))
 	//set the status reasons
 	if vol.StatusReasons != nil {
 		statusReasonsList := make([]map[string]interface{}, 0)

@@ -74,6 +74,7 @@ You can access the following attribute references after your data source is crea
 	- `subnet` - (String) The VPC subnet to assign to the interface.
 	- `security_groups` - (String) List of security groups of the subnet.
 - `resource_group` - (String) The resource group ID.	
+- `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `user_data` -  (String) The user data provided for the instance.
 - `volume_attachments` - (List) A nested block describes the storage volume configuration for the template.
 

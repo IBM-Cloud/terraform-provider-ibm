@@ -42,6 +42,14 @@ In addition to the argument reference list, you can access the following attribu
   - `type` - (String) The type for this profile field.
   - `value` - (String) The value for this profile field.
   - `values` - (String) The permitted values for this profile field.
+- `total_volume_bandwidth`  Nested `total_volume_bandwidth` blocks have the following structure:
+  - `type` - The type for this profile field.
+  - `value` - The value for this profile field.
+  - `default` - The default value for this profile field.
+  - `max` - The maximum value for this profile field.
+  - `min` - The minimum value for this profile field.
+  - `step` - The increment step value for this profile field.
+  - `values` - The permitted values for this profile field.
 - `disks` - (List) Collection of the instance profile's disks. Nested `disks` blocks have the following structure:
 
   Nested scheme for `disks`:

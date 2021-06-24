@@ -171,6 +171,7 @@ Review the argument references that you can specify for your resource.
 	- `delete_volume_on_instance_delete` - (Optional, Bool) You can configure to delete the boot volume based on instance deletion.
 	- `encryption` - (Optional, String) The encryption key CRN to encrypt the boot volume attached.
 	- `name` - (Optional, String) The name of the boot volume.
+- `total_volume_bandwidth` - (Optional, int) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `dedicated_host` - (Optional, Force new resource,String) The placement restrictions to use for the virtual server instance. Unique Identifier of the dedicated host where the instance is placed.
 
   **NOTE:**

@@ -39,6 +39,9 @@ const (
 	isInstanceBootVolume              = "boot_volume"
 	isInstanceVolumeSnapshot          = "snapshot"
 	isInstanceSourceTemplate          = "instance_template"
+	isInstanceBandwidth               = "bandwidth"
+	isInstanceTotalVolumeBandwidth    = "total_volume_bandwidth"
+	isInstanceTotalNetworkBandwidth   = "total_network_bandwidth"
 	isInstanceVolAttVolAutoDelete     = "auto_delete_volume"
 	isInstanceVolAttVolBillingTerm    = "billing_term"
 	isInstanceImage                   = "image"
@@ -210,6 +213,26 @@ func resourceIBMISInstance() *schema.Resource {
 				ForceNew:      true,
 				ConflictsWith: []string{isPlacementTargetDedicatedHost, isPlacementTargetDedicatedHostGroup},
 				Description:   "Unique Identifier of the Placement Group for restricting the placement of the instance",
+			},
+
+			isInstanceTotalVolumeBandwidth: {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: InvokeValidator("ibm_is_instance", isInstanceTotalVolumeBandwidth),
+				Description:  "The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes",
+			},
+
+			isInstanceBandwidth: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes",
+			},
+
+			isInstanceTotalNetworkBandwidth: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.",
 			},
 
 			isInstanceKeys: {
@@ -675,6 +698,13 @@ func resourceIBMISInstanceValidator() *ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isInstanceTotalVolumeBandwidth,
+			ValidateFunctionIdentifier: IntAtLeast,
+			Type:                       TypeInt,
+			Optional:                   true,
+			MinValue:                   "500"})
 
 	validateSchema = append(validateSchema,
 		ValidateSchema{
@@ -710,7 +740,10 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			ID: &vpcID,
 		},
 	}
-
+	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
+		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
+		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
+	}
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
 		dHostIdStr := dHostIdInf.(string)
 		dHostPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
@@ -917,6 +950,11 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 			Name: &profile,
 		}
 	}
+	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
+		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
+		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
+	}
+
 	if vpcID != "" {
 		instanceproto.VPC = &vpcv1.VPCIdentity{
 			ID: &vpcID,
@@ -1188,6 +1226,10 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			DeleteVolumeOnInstanceDelete: &deletebool,
 			Volume:                       volTemplate,
 		}
+	}
+	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
+		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
+		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
 	}
 
 	if primnicintf, ok := d.GetOk(isInstancePrimaryNetworkInterface); ok {
@@ -1493,6 +1535,18 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		cpuList = append(cpuList, currentCPU)
 	}
 	d.Set(isInstanceCPU, cpuList)
+
+	if instance.Bandwidth != nil {
+		d.Set(isInstanceBandwidth, int(*instance.Bandwidth))
+	}
+
+	if instance.TotalNetworkBandwidth != nil {
+		d.Set(isInstanceTotalNetworkBandwidth, int(*instance.TotalNetworkBandwidth))
+	}
+
+	if instance.TotalVolumeBandwidth != nil {
+		d.Set(isInstanceTotalVolumeBandwidth, int(*instance.TotalVolumeBandwidth))
+	}
 
 	d.Set(isInstanceMemory, *instance.Memory)
 	gpuList := make([]map[string]interface{}, 0)
@@ -1895,6 +1949,27 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 
+	}
+
+	if d.HasChange(isInstanceTotalVolumeBandwidth) && !d.IsNewResource() {
+		totalVolBandwidth := int64(d.Get(isInstanceTotalVolumeBandwidth).(int))
+		updnetoptions := &vpcv1.UpdateInstanceOptions{
+			ID: &id,
+		}
+
+		instancePatchModel := &vpcv1.InstancePatch{
+			TotalVolumeBandwidth: &totalVolBandwidth,
+		}
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch with total volume bandwidth for InstancePatch: %s", err)
+		}
+		updnetoptions.InstancePatch = instancePatch
+
+		_, _, err = instanceC.UpdateInstance(updnetoptions)
+		if err != nil {
+			return err
+		}
 	}
 
 	if d.HasChange(isInstanceName) && !d.IsNewResource() {

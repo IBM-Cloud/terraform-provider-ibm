@@ -99,6 +99,14 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 				Description: "Profile info",
 			},
 
+			isInstanceTotalVolumeBandwidth: {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: InvokeValidator("ibm_is_instance_template", isInstanceTotalVolumeBandwidth),
+				Description:  "The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes",
+			},
+
 			isInstanceTemplateKeys: {
 				Type:             schema.TypeSet,
 				Required:         true,
@@ -372,6 +380,13 @@ func resourceIBMISInstanceTemplateValidator() *ResourceValidator {
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isInstanceTotalVolumeBandwidth,
+			ValidateFunctionIdentifier: IntAtLeast,
+			Type:                       TypeInt,
+			Optional:                   true,
+			MinValue:                   "500"})
 
 	ibmISInstanceTemplateValidator := ResourceValidator{ResourceName: "ibm_is_instance_template", Schema: validateSchema}
 	return &ibmISInstanceTemplateValidator
@@ -473,6 +488,11 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			ID: &placementGrpStr,
 		}
 		instanceproto.PlacementTarget = placementGrp
+	}
+
+	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
+		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
+		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
 	}
 
 	// BOOT VOLUME ATTACHMENT for instance template
@@ -714,6 +734,10 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 		instanceProfileIntf := instance.Profile
 		identity := instanceProfileIntf.(*vpcv1.InstanceProfileIdentity)
 		d.Set(isInstanceTemplateProfile, *identity.Name)
+	}
+
+	if instance.TotalVolumeBandwidth != nil {
+		d.Set(isInstanceTotalVolumeBandwidth, int(*instance.TotalVolumeBandwidth))
 	}
 
 	var placementTargetMap map[string]interface{}
