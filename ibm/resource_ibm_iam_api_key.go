@@ -58,11 +58,10 @@ func resourceIbmIamApiKey() *schema.Resource {
 				Optional:    true,
 				Description: "Send true or false to set whether the API key value is retrievable in the future by using the Get details of an API key request. If you create an API key for a user, you must specify `false` or omit the value. We don't allow storing of API keys for users.",
 			},
-			"file": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: applyOnce,
-				Description:      "File where api key is to be stored",
+			"file": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "File where api key is to be stored",
 			},
 			"entity_lock": &schema.Schema{
 				Type:        schema.TypeString,
@@ -170,7 +169,7 @@ func resourceIbmIamApiKeyRead(context context.Context, d *schema.ResourceData, m
 	getApiKeyOptions.SetID(d.Id())
 
 	apiKey, response, err := iamIdentityClient.GetAPIKey(getApiKeyOptions)
-	if err != nil {
+	if err != nil || apiKey == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
@@ -179,41 +178,38 @@ func resourceIbmIamApiKeyRead(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	if apiKey.Name != nil {
-		d.Set("name", *apiKey.Name)
+	if err = d.Set("name", apiKey.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	if apiKey.IamID != nil {
-		d.Set("iam_id", *apiKey.IamID)
+	if err = d.Set("iam_id", apiKey.IamID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting iam_id: %s", err))
 	}
-	if apiKey.Description != nil {
-		d.Set("description", *apiKey.Description)
+	if err = d.Set("description", apiKey.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
-	if apiKey.AccountID != nil {
-		d.Set("account_id", *apiKey.AccountID)
+	if err = d.Set("account_id", apiKey.AccountID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
 	}
-	if *apiKey.Apikey != "" {
-		d.Set("apikey", *apiKey.Apikey)
+	if err = d.Set("locked", apiKey.Locked); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting entity_lock: %s", err))
 	}
-	if apiKey.Locked != nil {
-		d.Set("locked", *apiKey.Locked)
+	if err = d.Set("apikey_id", apiKey.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
 	}
-	if apiKey.ID != nil {
-		d.Set("apikey_id", *apiKey.ID)
+	if err = d.Set("entity_tag", apiKey.EntityTag); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting entity_tag: %s", err))
 	}
-	if apiKey.EntityTag != nil {
-		d.Set("entity_tag", *apiKey.EntityTag)
+	if err = d.Set("crn", apiKey.CRN); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
-	if apiKey.CRN != nil {
-		d.Set("crn", *apiKey.CRN)
+	if err = d.Set("created_at", apiKey.CreatedAt.String()); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
-	if apiKey.CreatedBy != nil {
-		d.Set("created_by", *apiKey.CreatedBy)
+	if err = d.Set("created_by", apiKey.CreatedBy); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if apiKey.CreatedAt != nil {
-		d.Set("created_at", apiKey.CreatedAt.String())
-	}
-	if apiKey.ModifiedAt != nil {
-		d.Set("modified_at", apiKey.ModifiedAt.String())
+	if err = d.Set("modified_at", apiKey.ModifiedAt.String()); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting modified_at: %s", err))
 	}
 
 	return nil
