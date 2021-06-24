@@ -31,6 +31,12 @@ func dataSourceIBMISVolume() *schema.Resource {
 				Description: "Zone name",
 			},
 
+			isVolumeBandwidth: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The maximum bandwidth (in megabits per second) for the volume",
+			},
+
 			isVolumeResourceGroup: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -201,6 +207,7 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 	}
 	for _, vol := range allrecs {
 		d.SetId(*vol.ID)
+		d.Set(isVolumeBandwidth, int(*vol.Bandwidth))
 		d.Set(isVolumeName, *vol.Name)
 		d.Set(isVolumeProfileName, *vol.Profile.Name)
 		d.Set(isVolumeZone, *vol.Zone.Name)

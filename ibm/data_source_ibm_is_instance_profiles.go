@@ -104,7 +104,7 @@ func dataSourceIBMISInstanceProfiles() *schema.Resource {
 						"gpu_count": {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Collection of the instance profile's disks.",
+							Description: "GPU count of this profile",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
@@ -151,7 +151,7 @@ func dataSourceIBMISInstanceProfiles() *schema.Resource {
 						"gpu_manufacturer": {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Collection of the instance profile's disks.",
+							Description: "GPU manufacturer of this profile",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
@@ -173,7 +173,7 @@ func dataSourceIBMISInstanceProfiles() *schema.Resource {
 						"gpu_memory": {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Collection of the instance profile's disks.",
+							Description: "GPU memory of this profile",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
@@ -220,7 +220,7 @@ func dataSourceIBMISInstanceProfiles() *schema.Resource {
 						"gpu_model": {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Collection of the instance profile's disks.",
+							Description: "GPU model of this profile",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
@@ -234,6 +234,53 @@ func dataSourceIBMISInstanceProfiles() *schema.Resource {
 										Description: "The possible GPU model(s) for an instance with this profile",
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
+						"total_volume_bandwidth": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in this value will result in a corresponding decrease to total_network_bandwidth.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The value for this profile field.",
+									},
+									"default": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The default value for this profile field.",
+									},
+									"max": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The maximum value for this profile field.",
+									},
+									"min": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The minimum value for this profile field.",
+									},
+									"step": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The increment step value for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted values for this profile field.",
+										Elem: &schema.Schema{
+											Type: schema.TypeInt,
 										},
 									},
 								},
@@ -568,6 +615,10 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 
 		if profile.GpuModel != nil {
 			l["gpu_model"] = dataSourceInstanceProfileFlattenGPUModel(*profile.GpuModel)
+		}
+
+		if profile.TotalVolumeBandwidth != nil {
+			l["total_volume_bandwidth"] = dataSourceInstanceProfileFlattenTotalVolumeBandwidth(*profile.TotalVolumeBandwidth.(*vpcv1.InstanceProfileVolumeBandwidth))
 		}
 
 		if profile.Disks != nil {

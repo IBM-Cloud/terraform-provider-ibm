@@ -96,6 +96,11 @@ func dataSourceIBMISInstanceTemplate() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			isInstanceTotalVolumeBandwidth: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes",
+			},
 			isInstanceTemplateVolumeAttachments: {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -305,6 +310,10 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 			placementTargetMap := dataSourceInstanceTemplateCollectionTemplatesPlacementTargetToMap(*instance.PlacementTarget.(*vpcv1.InstancePlacementTargetPrototype))
 			placementTargetList = append(placementTargetList, placementTargetMap)
 			d.Set("placement_target", placementTargetList)
+		}
+
+		if instance.TotalVolumeBandwidth != nil {
+			d.Set(isInstanceTotalVolumeBandwidth, int(*instance.TotalVolumeBandwidth))
 		}
 
 		if instance.PrimaryNetworkInterface != nil {
@@ -526,6 +535,10 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 						interfacesList = append(interfacesList, currentNic)
 					}
 					d.Set(isInstanceTemplateNetworkInterfaces, interfacesList)
+				}
+
+				if instance.TotalVolumeBandwidth != nil {
+					d.Set(isInstanceTotalVolumeBandwidth, int(*instance.TotalVolumeBandwidth))
 				}
 
 				if instance.Image != nil {
