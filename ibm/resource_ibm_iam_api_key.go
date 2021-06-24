@@ -5,14 +5,11 @@ package ibm
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	homedir "github.com/mitchellh/go-homedir"
 
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
@@ -150,7 +147,7 @@ func resourceIbmIamApiKeyCreate(context context.Context, d *schema.ResourceData,
 	d.Set("apikey", *apiKey.Apikey)
 
 	if keyfile, ok := d.GetOk("file"); ok {
-		if err := saveApikeyToFile(apiKey, keyfile.(string)); err != nil {
+		if err := saveToFile(apiKey, keyfile.(string)); err != nil {
 			log.Printf("Error writing API Key Details to file: %s", err)
 		}
 	}
@@ -257,32 +254,4 @@ func resourceIbmIamApiKeyDelete(context context.Context, d *schema.ResourceData,
 	d.SetId("")
 
 	return nil
-}
-
-func saveApikeyToFile(apiKey *iamidentityv1.APIKey, filePath string) error {
-	outputFilePath, err := homedir.Expand(filePath)
-	if err != nil {
-		return fmt.Errorf("Error generating API Key file path: %s", err)
-	}
-
-	key := &APIKey{
-		Name:      *apiKey.Name,
-		Apikey:    *apiKey.Apikey,
-		CreatedAt: apiKey.CreatedAt.String(),
-		Locked:    *apiKey.Locked,
-	}
-	if apiKey.Description != nil {
-		key.Description = *apiKey.Description
-	} else {
-		key.Description = ""
-	}
-
-	out, err := json.MarshalIndent(key, "", "\t")
-
-	err = ioutil.WriteFile(outputFilePath, out, 0666)
-	if err == nil {
-		log.Println("Successfully save API key information to ", outputFilePath)
-	}
-
-	return err
 }
