@@ -26,9 +26,9 @@ Review the argument references that you can specify for your resource.
 - `apikey` - (Optional, String) You can passthrough the API key value for this API key. If passed, that API key value is not validated, means, the value can be non URL safe. If omitted, the API key management creates an URL safe opaque API key value. The value of the API key is checked for uniqueness. Please ensure enough variations when passing the value.
 - `description` - (Optional, String) The description of the API key. The `description` property is only available if a description was provided during API key creation.
 - `entity_lock` - (Optional, Bool) Indicates the API key is locked for further write operations. Default value is `false`.
+- `file` - (Optional, String) The file name where API key is to be stored.
 - `name` - (Required, String) The name of the API key. The name is not checked for uniqueness. Therefore, multiple names with the same value can exist. Access is done through the UUID of the API key.
 - `store_value` - (Optional, Bool) Use `true` or `false` to set whether the API key value is retrievable in the future by using the `Get` details of an API key request. If you create an API key for a user, you must specify `false` or omit the value. Users cannot store the API key.
-- `file` - (Optional, String) The file name where API key is to be stored.
 
 
 ## Attribute reference

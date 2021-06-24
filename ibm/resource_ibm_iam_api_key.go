@@ -56,9 +56,10 @@ func resourceIbmIamApiKey() *schema.Resource {
 				Description: "Send true or false to set whether the API key value is retrievable in the future by using the Get details of an API key request. If you create an API key for a user, you must specify `false` or omit the value. We don't allow storing of API keys for users.",
 			},
 			"file": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "File where api key is to be stored",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "File where api key is to be stored",
 			},
 			"entity_lock": &schema.Schema{
 				Type:        schema.TypeString,
