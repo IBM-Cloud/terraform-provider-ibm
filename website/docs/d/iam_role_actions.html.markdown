@@ -30,11 +30,11 @@ Review the argument references that you can specify for your data source.
 In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
 - `id` - (String) The unique identifier of the service.
+- `actions`- (Map of (string, string)) A map containing all roles and actions in key value format. The key contains a string equal to the role name and value contains a string of all the actions separated by a comma (",").
 - `manager`- (List of strings) A list of supported actions that require the **Manager** service access role.
 - `reader`- (List of strings) A list of supported actions that require the **Reader** service access role.
 - `reader_plus`- (List of strings) A list of supported actions that require the **Reader plus** service access role.
 - `writer`- (List of strings) A list of supported actions that require the **Writer** service access role.
-- `actions`- (Map of (string, string)) A map containing all roles and actions in key value format. The key contains a string equal to the role name and value contains a string of all the actions separated by a comma (",")
 
 
 
