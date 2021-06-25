@@ -31,6 +31,7 @@ const (
 	isSubnetPublicGateway             = "public_gateway"
 	isSubnetStatus                    = "status"
 	isSubnetVPC                       = "vpc"
+	isSubnetVPCName                   = "vpc_name"
 	isSubnetZone                      = "zone"
 	isSubnetAvailableIpv4AddressCount = "available_ipv4_address_count"
 	isSubnetResourceGroup             = "resource_group"
