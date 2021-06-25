@@ -37,7 +37,7 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage
 // infrastructure resources, including virtual server instances, subnets, volumes, and load balancers.
 //
-// Version: 2021-06-29
+// Version: 2021-06-22
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -121,7 +121,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2021-06-29")
+		options.Version = core.StringPtr("2021-06-22")
 	}
 
 	service = &VpcV1{
@@ -9389,6 +9389,7 @@ func (vpc *VpcV1) ListBareMetalServersWithContext(ctx context.Context, listBareM
 
 	var rawResponse map[string]json.RawMessage
 	response, err = vpc.Service.Request(request, &rawResponse)
+
 	if err != nil {
 		return
 	}
@@ -10519,6 +10520,7 @@ func (vpc *VpcV1) GetBareMetalServerWithContext(ctx context.Context, getBareMeta
 
 	var rawResponse map[string]json.RawMessage
 	response, err = vpc.Service.Request(request, &rawResponse)
+
 	if err != nil {
 		return
 	}

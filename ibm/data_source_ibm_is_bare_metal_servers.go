@@ -329,7 +329,7 @@ func dataSourceIBMISBareMetalServers() *schema.Resource {
 
 func dataSourceIBMISBareMetalServersRead(d *schema.ResourceData, meta interface{}) error {
 
-	err := volumeProfilesList(d, meta)
+	err := bmsList(d, meta)
 	if err != nil {
 		return err
 	}

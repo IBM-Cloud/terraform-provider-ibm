@@ -266,10 +266,10 @@ func bmsGetNetworkInterfaces(d *schema.ResourceData, meta interface{}, bareMetal
 					floatingIPList := make([]map[string]interface{}, 0)
 					for _, ip := range nic.FloatingIps {
 						currentIP := map[string]interface{}{
-							isBareMetalServerNicIpHref:    *ip.Href,
-							isBareMetalServerNicIpID:      *ip.ID,
-							isBareMetalServerNicIpCRN:     *ip.CRN,
-							isBareMetalServerNicIpName:    *ip.Name,
+							// isBareMetalServerNicIpHref:    *ip.Href,
+							isBareMetalServerNicIpID: *ip.ID,
+							// isBareMetalServerNicIpCRN:     *ip.CRN,
+							// isBareMetalServerNicIpName:    *ip.Name,
 							isBareMetalServerNicIpAddress: *ip.Address,
 						}
 						floatingIPList = append(floatingIPList, currentIP)
@@ -282,11 +282,11 @@ func bmsGetNetworkInterfaces(d *schema.ResourceData, meta interface{}, bareMetal
 					ipsList := make([]map[string]interface{}, 0)
 					for _, ip := range nic.Ips {
 						currentIP := map[string]interface{}{
-							isBareMetalServerNicIpHref:       *ip.Href,
-							isBareMetalServerNicIpID:         *ip.ID,
-							isBareMetalServerNicResourceType: *ip.ResourceType,
-							isBareMetalServerNicIpName:       *ip.Name,
-							isBareMetalServerNicIpAddress:    *ip.Address,
+							// isBareMetalServerNicIpHref:       *ip.Href,
+							isBareMetalServerNicIpID: *ip.ID,
+							// isBareMetalServerNicResourceType: *ip.ResourceType,
+							// isBareMetalServerNicIpName:       *ip.Name,
+							isBareMetalServerNicIpAddress: *ip.Address,
 						}
 						ipsList = append(ipsList, currentIP)
 					}
@@ -300,11 +300,11 @@ func bmsGetNetworkInterfaces(d *schema.ResourceData, meta interface{}, bareMetal
 				primaryIpList := make([]map[string]interface{}, 0)
 				if nic.PrimaryIP != nil {
 					currentIP := map[string]interface{}{
-						isBareMetalServerNicIpHref:       *nic.PrimaryIP.Href,
-						isBareMetalServerNicIpID:         *nic.PrimaryIP.ID,
-						isBareMetalServerNicResourceType: *nic.PrimaryIP.ResourceType,
-						isBareMetalServerNicIpName:       *nic.PrimaryIP.Name,
-						isBareMetalServerNicIpAddress:    *nic.PrimaryIP.Address,
+						// isBareMetalServerNicIpHref:       *nic.PrimaryIP.Href,
+						isBareMetalServerNicIpID: *nic.PrimaryIP.ID,
+						// isBareMetalServerNicResourceType: *nic.PrimaryIP.ResourceType,
+						// isBareMetalServerNicIpName:       *nic.PrimaryIP.Name,
+						isBareMetalServerNicIpAddress: *nic.PrimaryIP.Address,
 					}
 					primaryIpList = append(primaryIpList, currentIP)
 				}
@@ -324,7 +324,7 @@ func bmsGetNetworkInterfaces(d *schema.ResourceData, meta interface{}, bareMetal
 				if nic.AllowedVlans != nil {
 					var out = make([]interface{}, len(nic.AllowedVlans), len(nic.AllowedVlans))
 					for i, v := range nic.AllowedVlans {
-						out[i] = v
+						out[i] = int(v)
 					}
 					l[isBareMetalServerNicAllowedVlans] = schema.NewSet(schema.HashInt, out)
 				}
@@ -338,10 +338,10 @@ func bmsGetNetworkInterfaces(d *schema.ResourceData, meta interface{}, bareMetal
 					floatingIPList := make([]map[string]interface{}, 0)
 					for _, ip := range nic.FloatingIps {
 						currentIP := map[string]interface{}{
-							isBareMetalServerNicIpHref:    *ip.Href,
-							isBareMetalServerNicIpID:      *ip.ID,
-							isBareMetalServerNicIpCRN:     *ip.CRN,
-							isBareMetalServerNicIpName:    *ip.Name,
+							// isBareMetalServerNicIpHref:    *ip.Href,
+							isBareMetalServerNicIpID: *ip.ID,
+							// isBareMetalServerNicIpCRN:     *ip.CRN,
+							// isBareMetalServerNicIpName:    *ip.Name,
 							isBareMetalServerNicIpAddress: *ip.Address,
 						}
 						floatingIPList = append(floatingIPList, currentIP)
@@ -354,11 +354,11 @@ func bmsGetNetworkInterfaces(d *schema.ResourceData, meta interface{}, bareMetal
 					ipsList := make([]map[string]interface{}, 0)
 					for _, ip := range nic.Ips {
 						currentIP := map[string]interface{}{
-							isBareMetalServerNicIpHref:       *ip.Href,
-							isBareMetalServerNicIpID:         *ip.ID,
-							isBareMetalServerNicResourceType: *ip.ResourceType,
-							isBareMetalServerNicIpName:       *ip.Name,
-							isBareMetalServerNicIpAddress:    *ip.Address,
+							// isBareMetalServerNicIpHref:       *ip.Href,
+							isBareMetalServerNicIpID: *ip.ID,
+							// isBareMetalServerNicResourceType: *ip.ResourceType,
+							// isBareMetalServerNicIpName:       *ip.Name,
+							isBareMetalServerNicIpAddress: *ip.Address,
 						}
 						ipsList = append(ipsList, currentIP)
 					}
@@ -373,11 +373,11 @@ func bmsGetNetworkInterfaces(d *schema.ResourceData, meta interface{}, bareMetal
 				primaryIpList := make([]map[string]interface{}, 0)
 				if nic.PrimaryIP != nil {
 					currentIP := map[string]interface{}{
-						isBareMetalServerNicIpHref:       *nic.PrimaryIP.Href,
-						isBareMetalServerNicIpID:         *nic.PrimaryIP.ID,
-						isBareMetalServerNicResourceType: *nic.PrimaryIP.ResourceType,
-						isBareMetalServerNicIpName:       *nic.PrimaryIP.Name,
-						isBareMetalServerNicIpAddress:    *nic.PrimaryIP.Address,
+						// isBareMetalServerNicIpHref:       *nic.PrimaryIP.Href,
+						isBareMetalServerNicIpID: *nic.PrimaryIP.ID,
+						// isBareMetalServerNicResourceType: *nic.PrimaryIP.ResourceType,
+						// isBareMetalServerNicIpName:       *nic.PrimaryIP.Name,
+						isBareMetalServerNicIpAddress: *nic.PrimaryIP.Address,
 					}
 					primaryIpList = append(primaryIpList, currentIP)
 				}

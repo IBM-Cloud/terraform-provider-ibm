@@ -5,7 +5,6 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -249,7 +248,6 @@ func dataSourceBareMetalServerNetworkInterface() *schema.Resource {
 func dataSourceIBMISBareMetalServerNetworkInterfaceRead(d *schema.ResourceData, meta interface{}) error {
 	bareMetalServerID := d.Get(isBareMetalServerID).(string)
 	bareMetalServerNicID := d.Get(isBareMetalServerNicID).(string)
-	log.Printf("[INFO] bmsnic ::: 0 got bare metal server id %s and network interface id  ni %s", bareMetalServerID, bareMetalServerNicID)
 
 	err := bmsNetworkInterfaceGetById(d, meta, bareMetalServerID, bareMetalServerNicID)
 	if err != nil {
@@ -259,8 +257,6 @@ func dataSourceIBMISBareMetalServerNetworkInterfaceRead(d *schema.ResourceData, 
 }
 
 func bmsNetworkInterfaceGetById(d *schema.ResourceData, meta interface{}, bareMetalServerID, bareMetalServerNICId string) error {
-	log.Printf("[INFO] bmsnic ::: 0.1 entering get by id %s and network interface id  ni %s", bareMetalServerID, bareMetalServerNICId)
-
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -274,25 +270,17 @@ func bmsNetworkInterfaceGetById(d *schema.ResourceData, meta interface{}, bareMe
 	if err != nil || nicIntf == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
-			log.Printf("[INFO] bmsnic ::: 0.2 err getting  %s and network interface id  ni %s", bareMetalServerID, bareMetalServerNICId)
-
 			return nil
 		}
 		return fmt.Errorf("Error getting Bare Metal Server (%s) network interface (%s): %s\n%s", bareMetalServerID, bareMetalServerNICId, err, response)
 	}
-	log.Printf("[INFO] bmsnic ::: 1 got bare metal server ni %s", reflect.TypeOf(nicIntf).String())
 	switch reflect.TypeOf(nicIntf).String() {
 	case "*vpcv1.BareMetalServerNetworkInterfaceByPci":
 		{
-			log.Printf("[INFO] bmsnic ::: 2 got bare metal server ni %s", reflect.TypeOf(nicIntf).String())
-
 			nic := nicIntf.(*vpcv1.BareMetalServerNetworkInterfaceByPci)
 			d.SetId(*nic.ID)
-			log.Printf("[INFO] bmsnic ::: 3 id set ")
 			d.Set(isBareMetalServerNicAllowIPSpoofing, *nic.AllowIPSpoofing)
-			log.Printf("[INFO] bmsnic ::: 3.1 ais set ")
 			d.Set(isBareMetalServerNicEnableInfraNAT, *nic.EnableInfrastructureNat)
-			log.Printf("[INFO] bmsnic ::: 3.2 fip set ")
 			floatingIPList := make([]map[string]interface{}, 0)
 			if nic.FloatingIps != nil {
 				for _, ip := range nic.FloatingIps {
@@ -306,82 +294,66 @@ func bmsNetworkInterfaceGetById(d *schema.ResourceData, meta interface{}, bareMe
 					floatingIPList = append(floatingIPList, currentIP)
 				}
 			}
-			log.Printf("[INFO] bmsnic ::: 3.3  fip setting %v", floatingIPList)
-			log.Printf("[INFO] bmsnic ::: 3.3.1  fip setting %+v", floatingIPList)
-			log.Printf("[INFO] bmsnic ::: 3.3.2  fip setting %#v", floatingIPList)
 			d.Set(isBareMetalServerNicFloatingIPs, floatingIPList)
 
 			d.Set(isBareMetalServerNicHref, *nic.Href)
-			log.Printf("[INFO] bmsnic ::: 4  href setting")
 
 			d.Set(isBareMetalServerNicID, *nic.ID)
-			log.Printf("[INFO] bmsnic ::: 5  id set ")
 
 			d.Set(isBareMetalServerNicInterfaceType, *nic.InterfaceType)
-			log.Printf("[INFO] bmsnic ::: 6  id set inttype set ")
 			ipsList := make([]map[string]interface{}, 0)
 			if nic.Ips != nil {
 				for _, ip := range nic.Ips {
 					currentIP := map[string]interface{}{
-						isBareMetalServerNicIpHref:       *ip.Href,
-						isBareMetalServerNicIpID:         *ip.ID,
-						isBareMetalServerNicResourceType: *ip.ResourceType,
-						isBareMetalServerNicIpName:       *ip.Name,
-						isBareMetalServerNicIpAddress:    *ip.Address,
+						// isBareMetalServerNicIpHref:       *ip.Href,
+						isBareMetalServerNicIpID: *ip.ID,
+						// isBareMetalServerNicResourceType: *ip.ResourceType,
+						// isBareMetalServerNicIpName:       *ip.Name,
+						isBareMetalServerNicIpAddress: *ip.Address,
 					}
 					ipsList = append(ipsList, currentIP)
 				}
 			}
-			log.Printf("[INFO] bmsnic ::: 7  ips set %v ", ipsList)
 			d.Set(isBareMetalServerNicReservedIps, ipsList)
 
 			d.Set(isBareMetalServerNicMacAddress, *nic.MacAddress)
 			d.Set(isBareMetalServerNicName, *nic.Name)
-			log.Printf("[INFO] bmsnic ::: 8 mac and name set ")
 			if nic.PortSpeed != nil {
 				d.Set(isBareMetalServerNicPortSpeed, *nic.PortSpeed)
 			}
-			log.Printf("[INFO] bmsnic ::: 9 port speed set ")
 			primaryIpList := make([]map[string]interface{}, 0)
 			if nic.PrimaryIP != nil {
 				currentIP := map[string]interface{}{
-					isBareMetalServerNicIpHref:       *nic.PrimaryIP.Href,
-					isBareMetalServerNicIpID:         *nic.PrimaryIP.ID,
-					isBareMetalServerNicResourceType: *nic.PrimaryIP.ResourceType,
-					isBareMetalServerNicIpName:       *nic.PrimaryIP.Name,
-					isBareMetalServerNicIpAddress:    *nic.PrimaryIP.Address,
+					// isBareMetalServerNicIpHref:       *nic.PrimaryIP.Href,
+					isBareMetalServerNicIpID: *nic.PrimaryIP.ID,
+					// isBareMetalServerNicResourceType: *nic.PrimaryIP.ResourceType,
+					// isBareMetalServerNicIpName:       *nic.PrimaryIP.Name,
+					isBareMetalServerNicIpAddress: *nic.PrimaryIP.Address,
 				}
 				primaryIpList = append(primaryIpList, currentIP)
 			}
-			log.Printf("[INFO] bmsnic ::: 10  primary ip set %v ", primaryIpList)
 			d.Set(isBareMetalServerNicPrimaryIP, primaryIpList)
 
 			d.Set(isBareMetalServerNicResourceType, *nic.ResourceType)
-			log.Printf("[INFO] bmsnic ::: 11 rt set ")
 			if nic.SecurityGroups != nil && len(nic.SecurityGroups) != 0 {
 				secgrpList := []string{}
 				for i := 0; i < len(nic.SecurityGroups); i++ {
 					secgrpList = append(secgrpList, string(*(nic.SecurityGroups[i].ID)))
 				}
-				log.Printf("[INFO] bmsnic ::: 12  sg set %v", newStringSet(schema.HashString, secgrpList))
 				d.Set(isBareMetalServerNicSecurityGroups, newStringSet(schema.HashString, secgrpList))
 			}
 
 			d.Set(isBareMetalServerNicStatus, *nic.Status)
-			log.Printf("[INFO] bmsnic ::: 13 status set ")
 
 			d.Set(isBareMetalServerNicSubnet, *nic.Subnet.ID)
-			log.Printf("[INFO] bmsnic ::: subnet rt set ")
 
 			d.Set(isBareMetalServerNicType, *nic.Type)
-			log.Printf("[INFO] bmsnic ::: 15 type set ")
 
 			if nic.AllowedVlans != nil {
 				var out = make([]interface{}, len(nic.AllowedVlans), len(nic.AllowedVlans))
 				for i, v := range nic.AllowedVlans {
-					out[i] = v
+					out[i] = int(v)
 				}
-				log.Printf("[INFO] bmsnic ::: 15 allow vlans set %v ", schema.NewSet(schema.HashInt, out))
 				d.Set(isBareMetalServerNicAllowedVlans, schema.NewSet(schema.HashInt, out))
 			}
 		}
@@ -415,11 +387,11 @@ func bmsNetworkInterfaceGetById(d *schema.ResourceData, meta interface{}, bareMe
 			if nic.Ips != nil {
 				for _, ip := range nic.Ips {
 					currentIP := map[string]interface{}{
-						isBareMetalServerNicIpHref:       *ip.Href,
-						isBareMetalServerNicIpID:         *ip.ID,
-						isBareMetalServerNicResourceType: *ip.ResourceType,
-						isBareMetalServerNicIpName:       *ip.Name,
-						isBareMetalServerNicIpAddress:    *ip.Address,
+						// isBareMetalServerNicIpHref:       *ip.Href,
+						isBareMetalServerNicIpID: *ip.ID,
+						// isBareMetalServerNicResourceType: *ip.ResourceType,
+						// isBareMetalServerNicIpName:       *ip.Name,
+						isBareMetalServerNicIpAddress: *ip.Address,
 					}
 					ipsList = append(ipsList, currentIP)
 				}
@@ -433,11 +405,11 @@ func bmsNetworkInterfaceGetById(d *schema.ResourceData, meta interface{}, bareMe
 			primaryIpList := make([]map[string]interface{}, 0)
 			if nic.PrimaryIP != nil {
 				currentIP := map[string]interface{}{
-					isBareMetalServerNicIpHref:       *nic.PrimaryIP.Href,
-					isBareMetalServerNicIpID:         *nic.PrimaryIP.ID,
-					isBareMetalServerNicResourceType: *nic.PrimaryIP.ResourceType,
-					isBareMetalServerNicIpName:       *nic.PrimaryIP.Name,
-					isBareMetalServerNicIpAddress:    *nic.PrimaryIP.Address,
+					// isBareMetalServerNicIpHref:       *nic.PrimaryIP.Href,
+					isBareMetalServerNicIpID: *nic.PrimaryIP.ID,
+					// isBareMetalServerNicResourceType: *nic.PrimaryIP.ResourceType,
+					// isBareMetalServerNicIpName:       *nic.PrimaryIP.Name,
+					isBareMetalServerNicIpAddress: *nic.PrimaryIP.Address,
 				}
 				primaryIpList = append(primaryIpList, currentIP)
 			}

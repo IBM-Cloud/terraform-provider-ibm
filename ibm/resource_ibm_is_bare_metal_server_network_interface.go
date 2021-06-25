@@ -17,6 +17,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+const (
+	isBareMetalServerNetworkInterfaceAvailable = "available"
+	isBareMetalServerNetworkInterfaceDeleting  = "deleting"
+	isBareMetalServerNetworkInterfacePending   = "pending"
+	isBareMetalServerNetworkInterfaceDeleted   = "deleted"
+	isBareMetalServerNetworkInterfaceFailed    = "failed"
+)
+
 func resourceIBMisBareMetalServerNetworkInterface() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMISBareMetalServerNetworkInterfaceCreate,
@@ -405,8 +413,12 @@ func resourceIBMISBareMetalServerNetworkInterfaceCreate(d *schema.ResourceData, 
 		if err != nil {
 			return err
 		}
+		_, nicId, err := parseNICTerraformID(d.Id())
+		if err != nil {
+			return err
+		}
 		log.Printf("[INFO] Bare Metal Server Network Interface : %s", d.Id())
-		_, err = isWaitForBareMetalServerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d)
+		_, err = isWaitForBareMetalServerNetworkInterfaceAvailable(sess, bareMetalServerId, nicId, d.Timeout(schema.TimeoutCreate), d)
 		if err != nil {
 			return err
 		}
@@ -523,8 +535,12 @@ func createVlanTypeNetworkInterface(d *schema.ResourceData, meta interface{}, ba
 	if err != nil {
 		return err
 	}
+	_, nicId, err := parseNICTerraformID(d.Id())
+	if err != nil {
+		return err
+	}
 	log.Printf("[INFO] Bare Metal Server Network Interface : %s", d.Id())
-	_, err = isWaitForBareMetalServerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d)
+	_, err = isWaitForBareMetalServerNetworkInterfaceAvailable(sess, bareMetalServerId, nicId, d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
 		return err
 	}
@@ -640,7 +656,7 @@ func bareMetalServerNICGet(d *schema.ResourceData, meta interface{}, nicIntf int
 			if nic.AllowedVlans != nil {
 				var out = make([]interface{}, len(nic.AllowedVlans), len(nic.AllowedVlans))
 				for i, v := range nic.AllowedVlans {
-					out[i] = v
+					out[i] = int(v)
 				}
 				d.Set(isBareMetalServerNicAllowedVlans, schema.NewSet(schema.HashInt, out))
 			}
@@ -845,8 +861,8 @@ func bareMetalServerNetworkInterfaceDelete(d *schema.ResourceData, meta interfac
 func isWaitForBareMetalServerNetworkInterfaceDeleted(bmsC *vpcv1.VpcV1, bareMetalServerId, nicId string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for (%s) / (%s) to be deleted.", bareMetalServerId, nicId)
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"available", "deleting", "pending"},
-		Target:     []string{"failed", "", "deleted"},
+		Pending:    []string{isBareMetalServerNetworkInterfaceAvailable, isBareMetalServerNetworkInterfaceDeleting, isBareMetalServerNetworkInterfacePending},
+		Target:     []string{isBareMetalServerNetworkInterfaceDeleted, isBareMetalServerNetworkInterfaceFailed, ""},
 		Refresh:    isBareMetalServerNetworkInterfaceDeleteRefreshFunc(bmsC, bareMetalServerId, nicId),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -858,18 +874,20 @@ func isWaitForBareMetalServerNetworkInterfaceDeleted(bmsC *vpcv1.VpcV1, bareMeta
 
 func isBareMetalServerNetworkInterfaceDeleteRefreshFunc(bmsC *vpcv1.VpcV1, bareMetalServerId, nicId string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
+
 		getBmsNicOptions := &vpcv1.GetBareMetalServerNetworkInterfaceOptions{
 			BareMetalServerID: &bareMetalServerId,
 			ID:                &nicId,
 		}
 		bmsNic, response, err := bmsC.GetBareMetalServerNetworkInterface(getBmsNicOptions)
+
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return bmsNic, "deleted", nil
+				return bmsNic, isBareMetalServerNetworkInterfaceDeleted, nil
 			}
-			return bmsNic, "", fmt.Errorf("Error getting Bare Metal Server(%s) Network Interface (%s): %s\n%s", bareMetalServerId, nicId, err, response)
+			return bmsNic, isBareMetalServerNetworkInterfaceFailed, fmt.Errorf("Error getting Bare Metal Server(%s) Network Interface (%s): %s\n%s", bareMetalServerId, nicId, err, response)
 		}
-		return bmsNic, "deleting", err
+		return bmsNic, isBareMetalServerNetworkInterfaceDeleting, err
 	}
 }
 
@@ -908,8 +926,8 @@ func isWaitForBareMetalServerNetworkInterfaceAvailable(client *vpcv1.VpcV1, bare
 	log.Printf("Waiting for Bare Metal Server (%s) Network Interface (%s) to be available.", bareMetalServerId, nicId)
 	communicator := make(chan interface{})
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending"},
-		Target:     []string{"available", "failed"},
+		Pending:    []string{isBareMetalServerNetworkInterfacePending},
+		Target:     []string{isBareMetalServerNetworkInterfaceAvailable, isBareMetalServerNetworkInterfaceFailed},
 		Refresh:    isBareMetalServerNetworkInterfaceRefreshFunc(client, bareMetalServerId, nicId, d, communicator),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,

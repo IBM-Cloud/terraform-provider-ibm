@@ -360,8 +360,9 @@ func resourceIBMisBareMetalServer() *schema.Resource {
 			},
 
 			isBareMetalServerNetworkInterfaces: {
-				Type:     schema.TypeList,
-				Optional: true,
+				Type:             schema.TypeList,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -495,10 +496,11 @@ func resourceIBMisBareMetalServer() *schema.Resource {
 							Description: "Collection of security group ids",
 						},
 						isBareMetalServerNicSubnet: {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "The associated subnet",
+							Type:             schema.TypeString,
+							Required:         true,
+							ForceNew:         false,
+							DiffSuppressFunc: applyOnce,
+							Description:      "The associated subnet",
 						},
 						isBareMetalServerNicAllowedVlans: {
 							Type:        schema.TypeSet,
@@ -722,7 +724,7 @@ func resourceIBMISBareMetalServerCreate(d *schema.ResourceData, meta interface{}
 		options.Name = &nameStr
 	}
 
-	if primnicintf, ok := d.GetOk(isBareMetalServerPrimaryNetworkInterface); ok {
+	if primnicintf, ok := d.GetOk(isBareMetalServerPrimaryNetworkInterface); ok && len(primnicintf.([]interface{})) > 0 {
 		primnic := primnicintf.([]interface{})[0].(map[string]interface{})
 		subnetintf, _ := primnic[isBareMetalServerNicSubnet]
 		subnetintfstr := subnetintf.(string)
@@ -856,7 +858,7 @@ func resourceIBMISBareMetalServerCreate(d *schema.ResourceData, meta interface{}
 					nicobj.EnableInfrastructureNat = &enableInfraNATbool
 				}
 
-				if ipsIntf, ok := nic[isBareMetalServerNicReservedIps]; ok {
+				if ipsIntf, ok := nic[isBareMetalServerNicReservedIps]; ok && len(ipsIntf.([]interface{})) > 0 {
 					ips := ipsIntf.([]interface{})
 					var intfs []vpcv1.NetworkInterfaceIPPrototypeIntf
 					for _, resource := range ips {
@@ -882,7 +884,7 @@ func resourceIBMISBareMetalServerCreate(d *schema.ResourceData, meta interface{}
 					nicobj.Ips = intfs
 				}
 
-				if primaryIpIntf, ok := nic[isBareMetalServerNicPrimaryIP]; ok {
+				if primaryIpIntf, ok := nic[isBareMetalServerNicPrimaryIP]; ok && len(primaryIpIntf.([]interface{})) > 0 {
 					primaryIp := primaryIpIntf.([]interface{})[0].(map[string]interface{})
 					if reservedIpId, ok := primaryIp[isBareMetalServerNicIpID]; ok {
 						reservedIpIdStr := reservedIpId.(string)
@@ -1051,7 +1053,7 @@ func resourceIBMISBareMetalServerCreate(d *schema.ResourceData, meta interface{}
 		}
 	}
 
-	if tpmIntf, ok := d.GetOk(isBareMetalServerTrustedPlatformModule); ok {
+	if tpmIntf, ok := d.GetOk(isBareMetalServerTrustedPlatformModule); ok && len(tpmIntf.([]interface{})) > 0 {
 		tpm := tpmIntf.([]interface{})[0].(map[string]interface{})
 		enabledIntf, _ := tpm[isBareMetalServerTrustedPlatformModuleEnabled]
 		enabled := enabledIntf.(bool)
@@ -1174,11 +1176,11 @@ func bareMetalServerGet(d *schema.ResourceData, meta interface{}, id string) err
 		primaryIpList := make([]map[string]interface{}, 0)
 		if bms.PrimaryNetworkInterface.PrimaryIP != nil {
 			currentIP := map[string]interface{}{
-				isBareMetalServerNicIpHref:       *bms.PrimaryNetworkInterface.PrimaryIP.Href,
-				isBareMetalServerNicIpID:         *bms.PrimaryNetworkInterface.PrimaryIP.ID,
-				isBareMetalServerNicResourceType: *bms.PrimaryNetworkInterface.PrimaryIP.ResourceType,
-				isBareMetalServerNicIpName:       *bms.PrimaryNetworkInterface.PrimaryIP.Name,
-				isBareMetalServerNicIpAddress:    *bms.PrimaryNetworkInterface.PrimaryIP.Address,
+				// isBareMetalServerNicIpHref:       *bms.PrimaryNetworkInterface.PrimaryIP.Href,
+				isBareMetalServerNicIpID: *bms.PrimaryNetworkInterface.PrimaryIP.ID,
+				// isBareMetalServerNicResourceType: *bms.PrimaryNetworkInterface.PrimaryIP.ResourceType,
+				// isBareMetalServerNicIpName:       *bms.PrimaryNetworkInterface.PrimaryIP.Name,
+				isBareMetalServerNicIpAddress: *bms.PrimaryNetworkInterface.PrimaryIP.Address,
 			}
 			primaryIpList = append(primaryIpList, currentIP)
 		}
@@ -1236,11 +1238,11 @@ func bareMetalServerGet(d *schema.ResourceData, meta interface{}, id string) err
 			primaryIpList := make([]map[string]interface{}, 0)
 			if intfc.PrimaryIP != nil {
 				currentIP := map[string]interface{}{
-					isBareMetalServerNicIpHref:       *intfc.PrimaryIP.Href,
-					isBareMetalServerNicIpID:         *intfc.PrimaryIP.ID,
-					isBareMetalServerNicResourceType: *intfc.PrimaryIP.ResourceType,
-					isBareMetalServerNicIpName:       *intfc.PrimaryIP.Name,
-					isBareMetalServerNicIpAddress:    *intfc.PrimaryIP.Address,
+					// isBareMetalServerNicIpHref:       *intfc.PrimaryIP.Href,
+					isBareMetalServerNicIpID: *intfc.PrimaryIP.ID,
+					// isBareMetalServerNicResourceType: *intfc.PrimaryIP.ResourceType,
+					// isBareMetalServerNicIpName:       *intfc.PrimaryIP.Name,
+					isBareMetalServerNicIpAddress: *intfc.PrimaryIP.Address,
 				}
 				primaryIpList = append(primaryIpList, currentIP)
 			}
