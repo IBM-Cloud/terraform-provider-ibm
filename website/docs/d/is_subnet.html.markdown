@@ -72,4 +72,5 @@ In addition to all argument reference list, you can access the following attribu
 - `tags`  - (String) Tags associated for the instance.
 - `total_ipv4_address_count` - (Integer) The total number of IPv4 addresses.
 - `vpc` - (String) The ID of the VPC that the subnet belongs to.
+- `vpc_name` - (String) The name of the VPC that the subnet belongs to.
 - `zone` - (String) The subnet zone name.

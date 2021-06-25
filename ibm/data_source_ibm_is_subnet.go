@@ -87,6 +87,11 @@ func dataSourceIBMISSubnet() *schema.Resource {
 				Computed: true,
 			},
 
+			isSubnetVPCName: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			isSubnetZone: {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -284,6 +289,7 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 	d.Set(isSubnetStatus, *subnet.Status)
 	d.Set(isSubnetZone, *subnet.Zone.Name)
 	d.Set(isSubnetVPC, *subnet.VPC.ID)
+	d.Set(isSubnetVPCName, *subnet.VPC.Name)
 
 	controller, err := getBaseController(meta)
 	if err != nil {
