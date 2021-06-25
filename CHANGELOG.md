@@ -1,3 +1,58 @@
+## 1.27.0 (Jun25, 2021)
+FEATURES:
+* Support VPC network rules
+    - **Resources**
+        - ibm_is_network_acl_rule
+    - **DataSources**
+        - ibm_is_network_acl_rule
+* Support CIS filter
+    - **Resources**
+        - ibm_cis_filter
+    - **DataSources**
+        - ibm_cis_filters
+
+ENHANCEMENTS
+
+* Support `install_plan`, `channel` and `wait_until_successful` arguments in ibm_cm_offering_instance resource ([#2745](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2745))
+
+* Support provisioning of VPC images from source_volume ([#2682](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2682))
+
+* Support filters to filter the VPC resources sshkeys, subnets, images, subnet, instances
+
+* Support `hard_quota` argument for ibm_cos_bucket resource ([#2756](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2756))
+
+* Add support creating gre tunnel connections on a transit gateway ([#2700](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2700))
+
+* Support service roles in iam_role_actions ([#2746](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2746))
+
+* Add retry to download the cluster config ([#2743](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2743))
+
+* Add save to file feature to apikeys resource ([#2775](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2775))
+
+* Migrate: Service Id resource to Platform-go-SDK ([#2560](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2560))
+
+BUGFIXES
+* Bug fix for Retrieving Policy with Key ([#2730](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2730))
+
+* Fixed resource_tag crn validation issue ([#2749](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2749))
+
+* Fix the updated of kube version for ROKS cluster ([#2754](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2754))
+
+* Fix Documentation error for ibm_cis_rate_limit match.request.methods ([#2764](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2764))
+
+* Fix ibm_cis_rate_limit Error: cis_id or zone_id not passed but it was passed in ([#2770](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2770))
+
+* Fix the doc formats for VPC, Calssic Infrastructure services 
+
+* Add doc link to role definition in IAM policy resources ([#2751](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2751))
+
+* Plugin crashes if import is attempted without API Key being set ([#2729](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2729))
+
+* wrong resource name in the doc link for ibm_iam_api_key ([#2736](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2736))
+
+* Couldn't able to delete the Service Policy ([#2703](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2703))
+
+
 ## 1.26.2 (Jun15, 2021)
 BUGFIXES
 * Fix: Rollback the ibm_resource_tag resource ([#2718](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2718))
