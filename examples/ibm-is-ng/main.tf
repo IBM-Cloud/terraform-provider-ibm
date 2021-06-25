@@ -496,3 +496,49 @@ data "ibm_is_operating_system" "os"{
 
 data "ibm_is_operating_systems" "oslist"{
 }
+
+
+resource "ibm_is_bare_metal_server" "bms" {
+    profile = "bx2-metaldev-160x768"
+    name = "my-bms"
+    image = "r134-31c8ca90-2623-48d7-8cf7-737be6fc4c3e"
+    zone = "us-south-3"
+    keys = [ibm_is_ssh_key.sshkey.id]
+    primary_network_interface {
+      subnet     = ibm_is_subnet.subnet1.id
+    }
+    vpc = ibm_is_vpc.vpc1.id
+}
+
+data ibm_is_bare_metal_server_profiles this  {
+}
+
+data ibm_is_bare_metal_server_profile this {
+	name = data.ibm_is_bare_metal_server_profiles.this.profiles.0.name
+}
+
+data ibm_is_bare_metal_server_disk this {
+	bare_metal_server = ibm_is_bare_metal_server.this.id
+	disk = ibm_is_bare_metal_server.this.disks.0.id
+}
+
+data ibm_is_bare_metal_server_disks this {
+	bare_metal_server = ibm_is_bare_metal_server.this.id
+} 
+
+data ibm_is_bare_metal_server_network_interface this {
+  bare_metal_server = ibm_is_bare_metal_server.this.id
+  network_interface = ibm_is_bare_metal_server.this.primary_network_interface.id
+} 
+
+data ibm_is_bare_metal_server_network_interfaces this {
+  bare_metal_server = ibm_is_bare_metal_server.this.id
+}
+
+data ibm_is_bare_metal_server this {
+  identifier = ibm_is_bare_metal_server.this.id
+}
+ 
+data ibm_is_bare_metal_server_initialization this {
+  bare_metal_server = ibm_is_bare_metal_server.this.id
+} 
