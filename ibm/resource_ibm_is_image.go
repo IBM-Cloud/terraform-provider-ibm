@@ -63,13 +63,13 @@ func resourceIBMISImage() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isImageHref: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ForceNew:     true,
-				RequiredWith: []string{isImageOperatingSystem},
-				ExactlyOneOf: []string{isImageHref, isImageVolume},
-				Description:  "Image Href value",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: applyOnce,
+				RequiredWith:     []string{isImageOperatingSystem},
+				ExactlyOneOf:     []string{isImageHref, isImageVolume},
+				Description:      "Image Href value",
 			},
 
 			isImageName: {
