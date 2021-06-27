@@ -259,9 +259,9 @@ func resourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interface{
 	})
 
 	if isResourceTimeoutError(err) {
-		_, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+		accessGroupPolicy, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	}
-	if err != nil {
+	if err != nil || accessGroupPolicy == nil {
 		return fmt.Errorf("Error retrieving access group policy: %s\n%s", err, res)
 	}
 
