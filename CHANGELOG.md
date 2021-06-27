@@ -1,3 +1,8 @@
+## 1.27.1 (Jun27, 2021)
+BUGFIXES
+
+* Add retries on reading a IAM Policy ([#2788](https://github.com/IBM-Cloudterraform-provider-ibm/issues/2788))
+
 ## 1.27.0 (Jun25, 2021)
 FEATURES:
 * Support VPC network rules
