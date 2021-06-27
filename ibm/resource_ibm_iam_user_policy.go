@@ -268,9 +268,9 @@ func resourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) erro
 	})
 
 	if isResourceTimeoutError(err) {
-		_, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+		userPolicy, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	}
-	if err != nil {
+	if err != nil || userPolicy == nil {
 		return fmt.Errorf("Error retrieving userPolicy: %s %s", err, res)
 	}
 	d.Set("ibm_id", userEmail)

@@ -213,9 +213,9 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 		[]iampolicymanagementv1.PolicyResource{policyResources},
 	)
 
-	servicePolicy, _, err := iamPolicyManagementClient.CreatePolicy(createPolicyOptions)
+	servicePolicy, res, err := iamPolicyManagementClient.CreatePolicy(createPolicyOptions)
 	if err != nil {
-		return fmt.Errorf("Error creating servicePolicy: %s", err)
+		return fmt.Errorf("Error creating servicePolicy: %s %s", err, res)
 	}
 
 	getPolicyOptions := iamPolicyManagementClient.NewGetPolicyOptions(
@@ -236,7 +236,7 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 	})
 
 	if isResourceTimeoutError(err) {
-		_, _, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+		_, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	}
 	if err != nil {
 		if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
@@ -246,7 +246,7 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 			iamID := v.(string)
 			d.SetId(fmt.Sprintf("%s/%s", iamID, *servicePolicy.ID))
 		}
-		return fmt.Errorf("error fetching service  policy: %w", err)
+		return fmt.Errorf("error fetching service  policy: %s %s", err, res)
 	}
 	if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
 		serviceIDUUID := v.(string)
@@ -291,9 +291,9 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 	})
 
 	if isResourceTimeoutError(err) {
-		_, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+		servicePolicy, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	}
-	if err != nil {
+	if err != nil || servicePolicy == nil {
 		return fmt.Errorf("Error retrieving servicePolicy: %s %s", err, res)
 	}
 	if strings.HasPrefix(serviceIDUUID, "iam-") {
