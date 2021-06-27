@@ -214,16 +214,8 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 	)
 
 	servicePolicy, _, err := iamPolicyManagementClient.CreatePolicy(createPolicyOptions)
-
 	if err != nil {
 		return fmt.Errorf("Error creating servicePolicy: %s", err)
-	}
-	if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
-		serviceIDUUID := v.(string)
-		d.SetId(fmt.Sprintf("%s/%s", serviceIDUUID, *servicePolicy.ID))
-	} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
-		iamID := v.(string)
-		d.SetId(fmt.Sprintf("%s/%s", iamID, *servicePolicy.ID))
 	}
 
 	getPolicyOptions := iamPolicyManagementClient.NewGetPolicyOptions(
@@ -247,7 +239,21 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 		_, _, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	}
 	if err != nil {
+		if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
+			serviceIDUUID := v.(string)
+			d.SetId(fmt.Sprintf("%s/%s", serviceIDUUID, *servicePolicy.ID))
+		} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
+			iamID := v.(string)
+			d.SetId(fmt.Sprintf("%s/%s", iamID, *servicePolicy.ID))
+		}
 		return fmt.Errorf("error fetching service  policy: %w", err)
+	}
+	if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
+		serviceIDUUID := v.(string)
+		d.SetId(fmt.Sprintf("%s/%s", serviceIDUUID, *servicePolicy.ID))
+	} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
+		iamID := v.(string)
+		d.SetId(fmt.Sprintf("%s/%s", iamID, *servicePolicy.ID))
 	}
 
 	return resourceIBMIAMServicePolicyRead(d, meta)
@@ -266,13 +272,29 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 	}
 	serviceIDUUID := parts[0]
 	servicePolicyID := parts[1]
-
+	servicePolicy := &iampolicymanagementv1.Policy{}
+	res := &core.DetailedResponse{}
 	getPolicyOptions := iamPolicyManagementClient.NewGetPolicyOptions(
 		servicePolicyID,
 	)
-	servicePolicy, _, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
+		servicePolicy, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+
+		if err != nil || servicePolicy == nil {
+			if res != nil && res.StatusCode == 404 {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if isResourceTimeoutError(err) {
+		_, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+	}
 	if err != nil {
-		return fmt.Errorf("Error retrieving servicePolicy: %s", err)
+		return fmt.Errorf("Error retrieving servicePolicy: %s %s", err, res)
 	}
 	if strings.HasPrefix(serviceIDUUID, "iam-") {
 		d.Set("iam_id", serviceIDUUID)
