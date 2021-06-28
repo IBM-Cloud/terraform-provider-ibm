@@ -58,6 +58,7 @@ resource "ibm_dl_gateway" "test_dl_connect" {
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
 
+- `authentication_key` - (Optional, String) BGP MD5 authentication key.
 - `bgp_asn`- (Required, Forces new resource, Integer) The BGP ASN of the gateway to be created. For example, `64999`.
 - `bgp_base_cidr` - (Optional, String) (Deprecated) The BGP base CIDR of the gateway to be created. See `bgp_ibm_cidr` and `bgp_cer_cidr` for details on how to create a gateway by using  automatic or explicit IP assignment. Any `bgp_base_cidr` value set will be ignored.
 - `bgp_cer_cidr` - (Optional, Forces new resource, String) The BGP customer edge router CIDR. Specify a value within `bgp_base_cidr`.  For auto IP assignment, omit `bgp_cer_cidr` and `bgp_ibm_cidr`. IBM will automatically select values for `bgp_cer_cidr` and `bgp_ibm_cidr`.
