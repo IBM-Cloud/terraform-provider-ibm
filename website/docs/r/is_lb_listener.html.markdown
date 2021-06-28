@@ -62,7 +62,7 @@ Review the argument references that you can specify for your resource.
 - `port`- (Required, Integer) The listener port number. Valid range 1 to 65535.
 - `protocol` - (Required, String) The listener protocol. Enumeration type are `http`, `tcp`, and `https`. Network load balancer supports only `tcp` protocol.
 - `default_pool` - (Optional, String) The load balancer pool unique identifier.
-- `certificate_instance` - (Optional, String) The CRN of the certificate instance.
+- `certificate_instance` - (Optional, String) The CRN of the certificate instance, it is applicable(mandatory) only to https protocol.
 - `connection_limit` - (Optional, Integer) The connection limit of the listener. Valid range is **1 to 15000**. Network load balancer do not support `connection_limit` argument.
 
 ## Attribute reference
