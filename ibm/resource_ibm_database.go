@@ -1044,7 +1044,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	_, err = waitForDatabaseInstanceCreate(d, meta, *instance.ID)
 	if err != nil {
 		return fmt.Errorf(
-			"Error waiting for create database instance (%s) to complete: %s", d.Id(), err)
+			"Error waiting for create database instance (%s) to complete: %s", *instance.ID, err)
 	}
 
 	d.SetId(*instance.ID)
@@ -1841,7 +1841,7 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 				ID: &instanceID,
 			}
 			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
-			if err != nil {
+			if err != nil || instance == nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v %s", d.Id(), err, response)
 				}
