@@ -107,6 +107,13 @@ func resourceIBMPIInstance() *schema.Resource {
 				Description: "Base64 encoded data to be passed in for invoking a cloud init script",
 			},
 
+			"pi_storage_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Storage type for server deployment",
+			},
+
 			"addresses": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -354,6 +361,10 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		body.VirtualCores = &models.VirtualCores{Assigned: &assignedVirtualCores}
 	}
 
+	if st, ok := d.GetOk("pi_storage_type"); ok {
+		body.StorageType = st.(string)
+	}
+
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
 	pvm, err := client.Create(&p_cloud_p_vm_instances.PcloudPvminstancesPostParams{
 		Body: body,
@@ -420,6 +431,9 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if &powervmdata.Progress != nil {
 		d.Set(helpers.PIInstanceProgress, powervmdata.Progress)
+	}
+	if &powervmdata.StorageType != nil {
+		d.Set("pi_storage_type", powervmdata.StorageType)
 	}
 	d.Set(helpers.PICloudInstanceId, powerinstanceid)
 	if powervmdata.PvmInstanceID != nil {
