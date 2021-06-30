@@ -130,7 +130,7 @@ yum install container-selinux -y
 yum repolist all
 yum install container-selinux -y
 yum install subscription-manager -y
-`
+`)
 			} else {
 				lines[i] = "subscription-manager refresh\nyum update -y\n"
 			}
