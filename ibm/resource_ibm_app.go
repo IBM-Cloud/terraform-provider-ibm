@@ -75,6 +75,7 @@ func resourceIBMApp() *schema.Resource {
 				Description: "Define the service instance guids that should be bound to this application.",
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
 			},
