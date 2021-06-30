@@ -97,12 +97,43 @@ const (
 
 func resourceIBMISInstance() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMisInstanceCreate,
-		Read:     resourceIBMisInstanceRead,
-		Update:   resourceIBMisInstanceUpdate,
-		Delete:   resourceIBMisInstanceDelete,
-		Exists:   resourceIBMisInstanceExists,
-		Importer: &schema.ResourceImporter{},
+		Create: resourceIBMisInstanceCreate,
+		Read:   resourceIBMisInstanceRead,
+		Update: resourceIBMisInstanceUpdate,
+		Delete: resourceIBMisInstanceDelete,
+		Exists: resourceIBMisInstanceExists,
+		Importer: &schema.ResourceImporter{
+			State: func(d *schema.ResourceData, meta interface{}) (result []*schema.ResourceData, err error) {
+				log.Printf("[INFO] Instance (%s) importing", d.Id())
+				id := d.Id()
+				instanceC, err := vpcClient(meta)
+				if err != nil {
+					return nil, err
+				}
+				getinsOptions := &vpcv1.GetInstanceOptions{
+					ID: &id,
+				}
+				instance, response, err := instanceC.GetInstance(getinsOptions)
+				if err != nil {
+					if response != nil && response.StatusCode == 404 {
+						d.SetId("")
+						return nil, nil
+					}
+					return nil, fmt.Errorf("Error Getting Instance: %s\n%s", err, response)
+				}
+				var volumes []string
+				volumes = make([]string, 0)
+				if instance.VolumeAttachments != nil {
+					for _, volume := range instance.VolumeAttachments {
+						if volume.Volume != nil && *volume.Volume.ID != *instance.BootVolumeAttachment.Volume.ID {
+							volumes = append(volumes, *volume.Volume.ID)
+						}
+					}
+				}
+				d.Set(isInstanceVolumes, newStringSet(schema.HashString, volumes))
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
@@ -1401,16 +1432,6 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isInstanceVPC, *instance.VPC.ID)
 	d.Set(isInstanceZone, *instance.Zone.Name)
 
-	var volumes []string
-	volumes = make([]string, 0)
-	if instance.VolumeAttachments != nil {
-		for _, volume := range instance.VolumeAttachments {
-			if volume.Volume != nil && *volume.Volume.ID != *instance.BootVolumeAttachment.Volume.ID {
-				volumes = append(volumes, *volume.Volume.ID)
-			}
-		}
-	}
-	d.Set(isInstanceVolumes, newStringSet(schema.HashString, volumes))
 	if instance.VolumeAttachments != nil {
 		volList := make([]map[string]interface{}, 0)
 		for _, volume := range instance.VolumeAttachments {
