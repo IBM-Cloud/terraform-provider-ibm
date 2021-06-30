@@ -374,6 +374,9 @@ func Provider() *schema.Provider {
 			"ibm_tg_locations": dataSourceIBMTransitGatewaysLocations(),
 			"ibm_tg_location":  dataSourceIBMTransitGatewaysLocation(),
 
+			//Added for Custom Resolver
+			"ibm_dns_custom_resolvers": dataSourceIBMDNSCustomResolver(),
+
 			//Added for BSS Enterprise
 			"ibm_enterprises":               dataSourceIbmEnterprises(),
 			"ibm_enterprise_account_groups": dataSourceIbmEnterpriseAccountGroups(),
@@ -597,6 +600,10 @@ func Provider() *schema.Provider {
 			"ibm_dns_glb_monitor":       resourceIBMPrivateDNSGLBMonitor(),
 			"ibm_dns_glb_pool":          resourceIBMPrivateDNSGLBPool(),
 			"ibm_dns_glb":               resourceIBMPrivateDNSGLB(),
+
+			//Added for Custom Resolver
+			"ibm_dns_custom_resolver": resouceIBMPrivateDNSCustomResolver(),
+			"ibm_dns_cr_locations":    resourceIBMPrivateDNSCRLocation(),
 
 			//Direct Link related resources
 			"ibm_dl_gateway":            resourceIBMDLGateway(),
