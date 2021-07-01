@@ -33,6 +33,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
+- `access_tags`  - (String) Access management tags associated for the instance.
 - `capacity` - (String) The capacity of the volume in gigabytes.
 - `encryption_key` - (String) The key to use for encrypting this volume.
 - `iops` - (String) The bandwidth for the volume.
