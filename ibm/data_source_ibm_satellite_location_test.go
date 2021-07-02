@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccSatelliteLocationDataSourceBasic(t *testing.T) {
-	name := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
+func TestAccIBMSatelliteLocationDataSourceBasic(t *testing.T) {
+	name := fmt.Sprintf("tf-satellitelocation-%s", acctest.RandString(10))
 	managed_from := "wdc04"
 
 	resource.Test(t, resource.TestCase{

@@ -7,14 +7,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
 )
 
-func TestAccFunctionSatelliteHost_Basic(t *testing.T) {
-	name := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
+func TestAccIBMSatelliteHost_Basic(t *testing.T) {
+	name := fmt.Sprintf("tf-satellitelocation-%s", acctest.RandString(10))
 	resource_prefix := "tf-satellite"
 
 	resource.Test(t, resource.TestCase{

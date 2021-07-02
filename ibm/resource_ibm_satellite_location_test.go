@@ -7,15 +7,15 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
 )
 
-func TestAccSatelliteLocation_Basic(t *testing.T) {
+func TestAccIBMSatelliteLocation_Basic(t *testing.T) {
 	var instance string
-	name := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-satellitelocation-%s", acctest.RandString(10))
 	managed_from := "wdc04"
 
 	resource.Test(t, resource.TestCase{
@@ -36,9 +36,9 @@ func TestAccSatelliteLocation_Basic(t *testing.T) {
 	})
 }
 
-func TestAccSatelliteLocation_Import(t *testing.T) {
+func TestAccIBMSatelliteLocation_Import(t *testing.T) {
 	var instance string
-	name := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-satellitelocation-%s", acctest.RandString(10))
 	managed_from := "wdc04"
 
 	resource.Test(t, resource.TestCase{

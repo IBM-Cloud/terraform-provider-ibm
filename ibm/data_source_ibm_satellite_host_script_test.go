@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccIBMSatelliteAttachHostScriptDataSourceBasic(t *testing.T) {
-	locationName := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
+	locationName := fmt.Sprintf("tf-satellitelocation-%s", acctest.RandString(10))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,

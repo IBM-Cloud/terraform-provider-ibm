@@ -6,13 +6,13 @@
 variable "location" {
   description = "Location Name"
   type         = string
-  default = "sat-loc-1031"
+  default = "sat-loc"
 }
 
 variable "managed_from" {
-  description = "The IBM Cloud region to manage your Satellite location from. Choose a region close to your on-prem data center for better performance."
+  description  = "The IBM Cloud region to manage your Satellite location from. Choose a region close to your on-prem data center for better performance."
   type         = string
-  default = "wdc"
+  default      = "wdc"
 }
 
 variable "location_zones" {

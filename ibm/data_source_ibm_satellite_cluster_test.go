@@ -12,8 +12,8 @@ import (
 )
 
 func TestAccIBMSatelliteClusterDataSourceBasic(t *testing.T) {
-	clusterName := fmt.Sprintf("tf-satellitecluster-%d", acctest.RandIntRange(10, 100))
-	locationName := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("tf-satellitecluster-%s", acctest.RandString(10))
+	locationName := fmt.Sprintf("tf-satellitelocation-%s", acctest.RandString(10))
 	resource_prefix := "tf-satellite"
 
 	resource.Test(t, resource.TestCase{

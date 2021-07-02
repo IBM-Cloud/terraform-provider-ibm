@@ -13,8 +13,8 @@ import (
 )
 
 func TestAccIBMSatelliteClusterWorkerPoolDataSourceBasic(t *testing.T) {
-	clusterName := fmt.Sprintf("tf-satellitecluster-%d", acctest.RandIntRange(10, 100))
-	locationName := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("tf-satellitecluster-%s", acctest.RandString(10))
+	locationName := fmt.Sprintf("tf-satellitelocation-%s", acctest.RandString(10))
 	workerPoolName := fmt.Sprintf("tf-cluster-wp-%d", acctest.RandIntRange(10, 100))
 	managed_from := "wdc04"
 	zones := []string{"us-east-1", "us-east-2", "us-east-3"}
