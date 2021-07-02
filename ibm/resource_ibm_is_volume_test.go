@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -47,39 +46,20 @@ func TestAccIBMISVolume_basic(t *testing.T) {
 }
 
 func testAccCheckIBMISVolumeDestroy(s *terraform.State) error {
-	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	if userDetails.generation == 1 {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_vol" {
-				continue
-			}
-
-			getvolumeoptions := &vpcclassicv1.GetVolumeOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetVolume(getvolumeoptions)
-
-			if err == nil {
-				return fmt.Errorf("Volume still exists: %s", rs.Primary.ID)
-			}
+	sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_vol" {
+			continue
 		}
-	} else {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_vol" {
-				continue
-			}
 
-			getvolumeoptions := &vpcv1.GetVolumeOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetVolume(getvolumeoptions)
+		getvolumeoptions := &vpcv1.GetVolumeOptions{
+			ID: &rs.Primary.ID,
+		}
+		_, _, err := sess.GetVolume(getvolumeoptions)
 
-			if err == nil {
-				return fmt.Errorf("Volume still exists: %s", rs.Primary.ID)
-			}
+		if err == nil {
+			return fmt.Errorf("Volume still exists: %s", rs.Primary.ID)
 		}
 	}
 
@@ -98,29 +78,15 @@ func testAccCheckIBMISVolumeExists(n, volID string) resource.TestCheckFunc {
 			return errors.New("No Record ID is set")
 		}
 
-		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-		if userDetails.generation == 1 {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getvolumeoptions := &vpcclassicv1.GetVolumeOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundvol, _, err := sess.GetVolume(getvolumeoptions)
-			if err != nil {
-				return err
-			}
-			volID = *foundvol.ID
-		} else {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getvolumeoptions := &vpcv1.GetVolumeOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundvol, _, err := sess.GetVolume(getvolumeoptions)
-			if err != nil {
-				return err
-			}
-			volID = *foundvol.ID
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		getvolumeoptions := &vpcv1.GetVolumeOptions{
+			ID: &rs.Primary.ID,
 		}
+		foundvol, _, err := sess.GetVolume(getvolumeoptions)
+		if err != nil {
+			return err
+		}
+		volID = *foundvol.ID
 		return nil
 	}
 }
