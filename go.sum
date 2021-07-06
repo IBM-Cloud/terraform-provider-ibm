@@ -49,11 +49,13 @@ github.com/IBM/container-registry-go-sdk v0.0.13/go.mod h1:GYi1VN59VaJWWq2xP06o9
 github.com/IBM/go-sdk-core v1.1.0 h1:pV73lZqr9r1xKb3h08c1uNG3AphwoV5KzUzhS+pfEqY=
 github.com/IBM/go-sdk-core v1.1.0/go.mod h1:2pcx9YWsIsZ3I7kH+1amiAkXvLTZtAq9kbxsfXilSoY=
 github.com/IBM/go-sdk-core/v3 v3.0.0/go.mod h1:JI5NS2+iCoY/D8Oq3JNEZNA7qO42agu6fnaUmDsRcJA=
+github.com/IBM/go-sdk-core/v3 v3.2.4 h1:WKYJYYKlZnw1y/gM+Qbf5EQVAL9xaoD54+ooJZz/iBQ=
 github.com/IBM/go-sdk-core/v3 v3.2.4/go.mod h1:lk9eOzNbNltPf3CBpcg1Ewkhw4qC3u2QCCKDRsUA2M0=
 github.com/IBM/go-sdk-core/v3 v3.3.1 h1:DoXjP1+Wm8Yd4XJsvBMRcYLvQwSLFnzKlMjSrg3Rzpw=
 github.com/IBM/go-sdk-core/v3 v3.3.1/go.mod h1:lk9eOzNbNltPf3CBpcg1Ewkhw4qC3u2QCCKDRsUA2M0=
 github.com/IBM/go-sdk-core/v4 v4.5.1/go.mod h1:lTUXbqIX6/aAbSCkP6q59+dyFsTwZAc0ewRS2vJWVbg=
 github.com/IBM/go-sdk-core/v4 v4.8.1/go.mod h1:GECJ/p0r9Hs0XcOnCiGjZrt6M/rQc+gW8YkCsGJ+j5U=
+github.com/IBM/go-sdk-core/v4 v4.9.0 h1:OkSg5kaEfVoNuBA4IsIOz8Ur5rbGHbWxmWCZ7nK/oc0=
 github.com/IBM/go-sdk-core/v4 v4.9.0/go.mod h1:DbQ+3pFoIjxGGTEiA9zQ2V0cemMNmFMkLBBnR729HKg=
 github.com/IBM/go-sdk-core/v4 v4.10.0 h1:aLoKusSFVsxMJeKHf8csj9tBWt4Y50kVvfxoKh6scN0=
 github.com/IBM/go-sdk-core/v4 v4.10.0/go.mod h1:0uz2ca0MZ2DwsBRGl9Jp3EaCTqxmKZTdvV/CkCB7JnI=
@@ -70,8 +72,6 @@ github.com/IBM/ibm-cos-sdk-go-config v1.2.0 h1:1E93234yZgVS0ntm7eUwVb3h0AAayPGcx
 github.com/IBM/ibm-cos-sdk-go-config v1.2.0/go.mod h1:Wetfgv6m1xyuzpZLQTTLIBsWstxjYa15h+Utj7x53Dk=
 github.com/IBM/keyprotect-go-client v0.7.0 h1:JstSHD14Lp6ihwQseyPuGcs1AjOBjAmcisP0dTBA6A0=
 github.com/IBM/keyprotect-go-client v0.7.0/go.mod h1:SVr2ylV/fhSQPDiUjWirN9fsyWFCNNbt8GIT8hPJVjE=
-github.com/IBM/networking-go-sdk v0.17.0 h1:AkP0aFX8ZfkHT7LDUOD1DtcImZWXqrlTr5eHlCgDcC4=
-github.com/IBM/networking-go-sdk v0.17.0/go.mod h1:nViqUm1Bv+ke8dyOhjQ6e+2U1XeqZX2y4bQbR8Od3Hc=
 github.com/IBM/networking-go-sdk v0.18.0 h1:mlALxXptnoDGviRW59ZQTyCr4PgTdQKp/5ksh2NM6Sk=
 github.com/IBM/networking-go-sdk v0.18.0/go.mod h1:nViqUm1Bv+ke8dyOhjQ6e+2U1XeqZX2y4bQbR8Od3Hc=
 github.com/IBM/platform-services-go-sdk v0.18.16 h1:blYycstPoNtPKtu1uZe240WvzcJENy/Lzx+HMUA8bOo=
@@ -323,6 +323,8 @@ github.com/gobuffalo/packd v0.1.0/go.mod h1:M2Juc+hhDXf/PnmBANFCqx4DM3wRbgDvnVWe
 github.com/gobuffalo/packr/v2 v2.0.9/go.mod h1:emmyGweYTm6Kdper+iywB6YK5YzuKchGtJQZ0Odn4pQ=
 github.com/gobuffalo/packr/v2 v2.2.0/go.mod h1:CaAwI0GPIAv+5wKLtv8Afwl+Cm78K/I/VCm/3ptBN+0=
 github.com/gobuffalo/syncx v0.0.0-20190224160051-33c29581e754/go.mod h1:HhnNqWY95UYwwW3uSASeV7vtgYkT2t16hJgV3AEPUpw=
+github.com/golang-jwt/jwt v3.2.1+incompatible h1:73Z+4BJcrTC+KczS6WvTPvRGOp1WmfEP4Q1lOd9Z/+c=
+github.com/golang-jwt/jwt v3.2.1+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
 github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6/go.mod h1:cIg4eruTrX1D+g88fzRXU5OdNfaM+9IcxsU14FzY7Hc=
 github.com/golang/groupcache v0.0.0-20191227052852-215e87163ea7/go.mod h1:cIg4eruTrX1D+g88fzRXU5OdNfaM+9IcxsU14FzY7Hc=
