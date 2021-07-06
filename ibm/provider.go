@@ -289,6 +289,7 @@ func Provider() *schema.Provider {
 			"ibm_is_volume_profiles":                 dataSourceIBMISVolumeProfiles(),
 			"ibm_is_vpc":                             dataSourceIBMISVPC(),
 			"ibm_is_vpn_gateways":                    dataSourceIBMISVPNGateways(),
+			"ibm_is_vpc_address_prefixs":             dataSourceIbmIsVpcAddressPrefix(),
 			"ibm_is_vpn_gateway_connections":         dataSourceIBMISVPNGatewayConnections(),
 			"ibm_is_vpc_default_routing_table":       dataSourceIBMISVPCDefaultRoutingTable(),
 			"ibm_is_vpc_routing_tables":              dataSourceIBMISVPCRoutingTables(),
