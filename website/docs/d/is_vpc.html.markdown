@@ -56,7 +56,7 @@ In addition to all argument reference list, you can access the following attribu
     Nested scheme for `rules`:
     - `direction` - (String) Direction of the traffic either inbound or outbound.
     - `code` - (String) The ICMP traffic code to allow.
-    - `ip_version` - (String) The IP version either **ipv4** or **ipv6**.
+    - `ip_version` - (String) The IP version **ipv4**
     - `port_min` - (String) The inclusive lower bound of TCP port range. 
     - `port_max` - (String) The inclusive upper bound of TCP port range. 
     - `remote` - (String) The security group ID, an IP address, a CIDR block, or a single security group identifier.

@@ -64,7 +64,7 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 			isSecurityGroupRuleIPVersion: {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Description:  "IP version: ipv4 or ipv6",
+				Description:  "IP version: ipv4",
 				Default:      isSecurityGroupRuleIPVersionDefault,
 				ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleIPVersion),
 			},
@@ -175,7 +175,7 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 func resourceIBMISSecurityGroupRuleValidator() *ResourceValidator {
 	validateSchema := make([]ValidateSchema, 1)
 	direction := "inbound, outbound"
-	ip_version := "ipv4, ipv6"
+	ip_version := "ipv4"
 
 	validateSchema = append(validateSchema,
 		ValidateSchema{

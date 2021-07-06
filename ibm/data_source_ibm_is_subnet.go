@@ -29,11 +29,6 @@ func dataSourceIBMISSubnet() *schema.Resource {
 				Computed: true,
 			},
 
-			isSubnetIpv6CidrBlock: {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
 			isSubnetAvailableIpv4AddressCount: {
 				Type:     schema.TypeInt,
 				Computed: true,

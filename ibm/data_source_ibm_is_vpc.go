@@ -174,7 +174,7 @@ func dataSourceIBMISVPC() *schema.Resource {
 									isVPCSecurityGroupRuleIPVersion: {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "IP version: ipv4 or ipv6",
+										Description: "IP version: ipv4",
 									},
 
 									isVPCSecurityGroupRuleRemote: {

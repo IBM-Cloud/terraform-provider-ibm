@@ -20,7 +20,6 @@ import (
 
 const (
 	isSubnetIpv4CidrBlock             = "ipv4_cidr_block"
-	isSubnetIpv6CidrBlock             = "ipv6_cidr_block"
 	isSubnetTotalIpv4AddressCount     = "total_ipv4_address_count"
 	isSubnetIPVersion                 = "ip_version"
 	isSubnetName                      = "name"
@@ -71,12 +70,6 @@ func resourceIBMISSubnet() *schema.Resource {
 				ConflictsWith: []string{isSubnetTotalIpv4AddressCount},
 				ValidateFunc:  InvokeValidator("ibm_is_subnet", isSubnetIpv4CidrBlock),
 				Description:   "IPV4 subnet - CIDR block",
-			},
-
-			isSubnetIpv6CidrBlock: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "IPV6 subnet - CIDR block",
 			},
 
 			isSubnetAvailableIpv4AddressCount: {
@@ -426,7 +419,6 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isSubnetName, *subnet.Name)
 	d.Set(isSubnetIPVersion, *subnet.IPVersion)
 	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CIDRBlock)
-	// d.Set(isSubnetIpv6CidrBlock, *subnet.IPV6CidrBlock)
 	d.Set(isSubnetAvailableIpv4AddressCount, *subnet.AvailableIpv4AddressCount)
 	d.Set(isSubnetTotalIpv4AddressCount, *subnet.TotalIpv4AddressCount)
 	if subnet.NetworkACL != nil {
