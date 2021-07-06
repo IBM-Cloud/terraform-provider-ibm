@@ -24,15 +24,15 @@ resource "ibm_cr_retention_policy" "cr_retention_policy" {
 
 The following arguments are supported:
 
-* `namespace` - (Required, string) The namespace to which the retention policy is attached.
-* `images_per_repo` - (Required, int) Determines how many images are retained in each repository when the retention policy is processed. The value -1 denotes 'Unlimited' (all images are retained).
-* `retain_untagged` - (Optional, bool) Determines whether untagged images are retained when the retention policy is processed. The value is false by default, which means that untagged images can be deleted when the policy runs.
+- `namespace` - (Required, string) The namespace to which the retention policy is attached.
+- `images_per_repo` - (Required, int) Determines how many images are retained in each repository when the retention policy is processed. The value -1 denotes 'Unlimited' (all images are retained).
+- `retain_untagged` - (Optional, bool) Determines whether untagged images are retained when the retention policy is processed. The value is false by default, which means that untagged images can be deleted when the policy runs.
 
 ## Attribute Reference
 
 In addition to the arguments in the Argument Reference section, the following attributes are exported:
 
-* `id` - The unique identifier of the cr_retention_policy. This identifier is the same as the name of namespace to which the retention policy is attached.
+- `id` - The unique identifier of the cr_retention_policy. This identifier is the same as the name of namespace to which the retention policy is attached.
 
 ## Import
 

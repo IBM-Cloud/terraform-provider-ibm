@@ -32,21 +32,21 @@ resource "ibm_cr_namespace" "rg_namespace" {
 
 The following arguments are supported:
 
-* `name` - (Required, Forces new resource, string) The name of the namespace that you want to create.
-  * Constraints: The maximum length is `30` characters. The minimum length is `4` characters. The value must match regular expression `/^[a-z0-9]+[a-z0-9_-]+[a-z0-9]+$/`
-* `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group to which you want to add the namespace. If you don't set this option, the default resource group for the account is used.
-* `tags` - (Optional, array of strings) The tags that are associated with the `ibm_cr_namespace`. **Note*- `Tags` are managed locally and not stored on the IBM Cloud service endpoint.
+- `name` - (Required, Forces new resource, string) The name of the namespace that you want to create.
+  - Constraints: The maximum length is `30` characters. The minimum length is `4` characters. The value must match regular expression `/^[a-z0-9]+[a-z0-9_-]+[a-z0-9]+$/`
+- `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group to which you want to add the namespace. If you don't set this option, the default resource group for the account is used.
+- `tags` - (Optional, array of strings) The tags that are associated with the `ibm_cr_namespace`. **Note*- `Tags` are managed locally and not stored on the IBM Cloud service endpoint.
 
 ## Attribute Reference
 
 In addition to the attributes in the argument reference list, you can access the following attribute reference after your resource is created.
 
-* `id` - (String) The unique identifier of the namespace. This identifier is the same as the name of namespace.
-* `account` - (String) The IBM Cloud account that owns the namespace.
-* `created_date` - (Timestamp) The creation date of the namespace.
-* `crn` - (String) If the namespace is assigned to a resource group, the IBM Cloud CRN representing the namespace.
-* `resource_created_date` - (Timestamp) The date that the namespace was assigned to a resource group.
-* `updated_date` - (Timestamp) The date that the namespace was last updated.
+- `id` - (String) The unique identifier of the namespace. This identifier is the same as the name of namespace.
+- `account` - (String) The IBM Cloud account that owns the namespace.
+- `created_date` - (Timestamp) The creation date of the namespace.
+- `crn` - (String) If the namespace is assigned to a resource group, the IBM Cloud CRN representing the namespace.
+- `resource_created_date` - (Timestamp) The date that the namespace was assigned to a resource group.
+- `updated_date` - (Timestamp) The date that the namespace was last updated.
 
 ## Import
 
