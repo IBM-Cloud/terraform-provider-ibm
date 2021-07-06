@@ -7,7 +7,7 @@ description: |-
 ---
 # ibm_cr_namespaces
 
-Lists all IBM Cloud Container Registry namespaces in your account in the targeted region. For more information about Container Registry, see [about IBM Cloud Container Registry](https://cloud.ibm.com/docs/Registry?topic=Registry-registry_overview).
+Lists all IBM Cloud Container Registry namespaces in your account in the targeted region. For more information about Container Registry, see [About IBM Cloud Container Registry](https://cloud.ibm.com/docs/Registry?topic=Registry-registry_overview).
 
 ## Example usage
 
