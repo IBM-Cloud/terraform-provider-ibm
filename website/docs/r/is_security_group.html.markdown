@@ -43,7 +43,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `rules`:
   - `code` - (String) The `ICMP` traffic code to allow.
   - `direction`-  (String) The direction of the traffic either `inbound` or `outbound`.
-  - `ip_version` - (String) IP version either `ipv4` or `ipv6`.
+  - `ip_version` - (String) IP version: `ipv4`
   - `protocol` - (String) The type of the protocol `all`, `icmp`, `tcp`, `udp`.
   - `port_max`- (Integer) The `TCP/UDP` port range that includes the maximum bound.
   - `port_min`- (Integer) The `TCP/UDP` port range that includes the minimum bound.

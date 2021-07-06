@@ -27,7 +27,6 @@ const (
 	isInstanceNicPortSpeed            = "port_speed"
 	isInstanceNicAllowIPSpoofing      = "allow_ip_spoofing"
 	isInstanceNicPrimaryIpv4Address   = "primary_ipv4_address"
-	isInstanceNicPrimaryIpv6Address   = "primary_ipv6_address"
 	isInstanceNicSecondaryAddress     = "secondary_addresses"
 	isInstanceNicSecurityGroups       = "security_groups"
 	isInstanceNicSubnet               = "subnet"

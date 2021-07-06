@@ -71,7 +71,7 @@ func dataSourceIBMISSecurityGroup() *schema.Resource {
 						isSgRuleIPVersion: {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "IP version: ipv4 or ipv6",
+							Description: "IP version: ipv4",
 						},
 
 						isSgRuleRemote: {

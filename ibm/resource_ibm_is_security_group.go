@@ -458,7 +458,7 @@ func makeIBMISSecurityRuleSchema() map[string]*schema.Schema {
 		isSecurityGroupRuleIPVersion: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "IP version: ipv4 or ipv6",
+			Description: "IP version: ipv4",
 		},
 
 		isSecurityGroupRuleRemote: {
