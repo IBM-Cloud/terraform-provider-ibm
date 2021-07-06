@@ -349,12 +349,13 @@ func Provider() *schema.Provider {
 
 			// Added for private dns zones
 
-			"ibm_dns_zones":              dataSourceIBMPrivateDNSZones(),
-			"ibm_dns_permitted_networks": dataSourceIBMPrivateDNSPermittedNetworks(),
-			"ibm_dns_resource_records":   dataSourceIBMPrivateDNSResourceRecords(),
-			"ibm_dns_glb_monitors":       dataSourceIBMPrivateDNSGLBMonitors(),
-			"ibm_dns_glb_pools":          dataSourceIBMPrivateDNSGLBPools(),
-			"ibm_dns_glbs":               dataSourceIBMPrivateDNSGLBs(),
+			"ibm_dns_zones":               dataSourceIBMPrivateDNSZones(),
+			"ibm_dns_permitted_networks":  dataSourceIBMPrivateDNSPermittedNetworks(),
+			"ibm_dns_resource_records":    dataSourceIBMPrivateDNSResourceRecords(),
+			"ibm_dns_glb_monitors":        dataSourceIBMPrivateDNSGLBMonitors(),
+			"ibm_dns_glb_pools":           dataSourceIBMPrivateDNSGLBPools(),
+			"ibm_dns_glbs":                dataSourceIBMPrivateDNSGLBs(),
+			"ibm_dns_cr_forwarding_rules": dataSourceIbmDnsCrForwardingRules(),
 
 			// Added for Direct Link
 
@@ -591,13 +592,14 @@ func Provider() *schema.Provider {
 			"ibm_pi_network_port_attach": resourceIBMPINetworkPortAttach(),
 
 			//Private DNS related resources
-			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),
-			"ibm_dns_permitted_network": resourceIBMPrivateDNSPermittedNetwork(),
-			"ibm_dns_resource_record":   resourceIBMPrivateDNSResourceRecord(),
-			"ibm_dns_glb_monitor":       resourceIBMPrivateDNSGLBMonitor(),
-			"ibm_dns_glb_pool":          resourceIBMPrivateDNSGLBPool(),
-			"ibm_dns_glb":               resourceIBMPrivateDNSGLB(),
-
+			"ibm_dns_zone":               resourceIBMPrivateDNSZone(),
+			"ibm_dns_permitted_network":  resourceIBMPrivateDNSPermittedNetwork(),
+			"ibm_dns_resource_record":    resourceIBMPrivateDNSResourceRecord(),
+			"ibm_dns_glb_monitor":        resourceIBMPrivateDNSGLBMonitor(),
+			"ibm_dns_glb_pool":           resourceIBMPrivateDNSGLBPool(),
+			"ibm_dns_glb":                resourceIBMPrivateDNSGLB(),
+			"ibm_dns_cr_locations":       resourceIBMPrivateDNSCRLocation(),
+			"ibm_dns_cr_forwarding_rule": resourceIbmDnsCrForwardingRule(),
 			//Direct Link related resources
 			"ibm_dl_gateway":            resourceIBMDLGateway(),
 			"ibm_dl_virtual_connection": resourceIBMDLGatewayVC(),
@@ -727,6 +729,7 @@ func Validator() ValidatorDict {
 				"ibm_satellite_location":                resourceIBMSatelliteLocationValidator(),
 				"ibm_satellite_cluster":                 resourceIBMSatelliteClusterValidator(),
 				"ibm_pi_volume":                         resourceIBMPIVolumeValidator(),
+				"ibm_dns_cr_forwarding_rule":            resourceIbmDnsCrForwardingRuleValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),

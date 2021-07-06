@@ -186,3 +186,17 @@ data "ibm_dns_glbs" "test1" {
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   zone_id     = ibm_dns_zone.test-pdns-zone.zone_id
 }
+
+resource "ibm_dns_cr_forwarding_rule" "dns_cr_forwarding_rule" {
+ instance_id = ibm_resource_instance.dns_cr_forwarding_rule_instance_id
+ resolver_id = ibm_dns_custom_resolver.dns_cr_forwarding_rule_resolver_id
+  description = "test forward rule"
+  type = "zone"
+  match = "test.example.com"
+  forward_to = ["168.20.22.122"]
+}
+
+data "ibm_dns_cr_forwarding_rules" "dns_cr_forwarding_rules" {
+  instance_id = ibm_dns_cr_forwarding_rule.dns_cr_forwarding_rule.instance_id
+  resolver_id = ibm_dns_cr_forwarding_rule.dns_cr_forwarding_rule.resolver_id
+}
