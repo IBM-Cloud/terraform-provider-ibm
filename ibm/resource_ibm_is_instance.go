@@ -996,6 +996,7 @@ func isWaitForInstanceAvailable(instanceC *vpcv1.VpcV1, id string, timeout time.
 		forceTimeout := v.(int)
 		go isRestartStartAction(instanceC, id, d, forceTimeout, communicator)
 	}
+
 	return stateConf.WaitForState()
 }
 
@@ -1040,6 +1041,10 @@ func isInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.Resource
 		if *instance.Status == "available" || *instance.Status == "failed" || *instance.Status == "running" {
 			// let know the isRestartStartAction() to stop
 			close(communicator)
+			// taint the instance if status is failed
+			if *instance.Status == "failed" {
+				return instance, *instance.Status, fmt.Errorf("Instance (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted instance and attempt to create the instance again replacing the previous configuration", *instance.ID)
+			}
 			return instance, *instance.Status, nil
 
 		}
