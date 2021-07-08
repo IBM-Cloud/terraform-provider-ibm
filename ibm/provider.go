@@ -424,6 +424,8 @@ func Provider() *schema.Provider {
 			"ibm_satellite_attach_host_script":  dataSourceIBMSatelliteAttachHostScript(),
 			"ibm_satellite_cluster":             dataSourceIBMSatelliteCluster(),
 			"ibm_satellite_cluster_worker_pool": dataSourceIBMSatelliteClusterWorkerPool(),
+			"ibm_satellite_link":                dataSourceIbmSatelliteLink(),
+			"ibm_satellite_endpoint":            dataSourceIbmSatelliteEndpoint(),
 
 			// Catalog related resources
 			"ibm_cm_catalog":           dataSourceIBMCmCatalog(),
@@ -697,6 +699,8 @@ func Provider() *schema.Provider {
 			"ibm_satellite_host":                resourceIBMSatelliteHost(),
 			"ibm_satellite_cluster":             resourceIBMSatelliteCluster(),
 			"ibm_satellite_cluster_worker_pool": resourceIBMSatelliteClusterWorkerPool(),
+			"ibm_satellite_link":                resourceIbmSatelliteLink(),
+			"ibm_satellite_endpoint":            resourceIbmSatelliteEndpoint(),
 
 			//Added for Resource Tag
 			"ibm_resource_tag": resourceIBMResourceTag(),
@@ -809,6 +813,7 @@ func Validator() ValidatorDict {
 				"ibm_pi_volume":                           resourceIBMPIVolumeValidator(),
 				"ibm_atracker_target":                     resourceIBMAtrackerTargetValidator(),
 				"ibm_atracker_route":                      resourceIBMAtrackerRouteValidator(),
+				"ibm_satellite_endpoint":                  resourceIbmSatelliteEndpointValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),

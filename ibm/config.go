@@ -17,6 +17,7 @@ import (
 	// Added code for the Power Colo Offering
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
+	"github.com/IBM-Cloud/container-services-go-sdk/satellitelinkv1"
 	apigateway "github.com/IBM/apigateway-go-sdk/apigatewaycontrollerapiv1"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
@@ -248,6 +249,7 @@ type ClientSession interface {
 	SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error)
 	SchematicsV1() (*schematicsv1.SchematicsV1, error)
 	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
+	SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error)
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 }
@@ -489,6 +491,10 @@ type clientSession struct {
 	//Atracker
 	atrackerClient    *atrackerv1.AtrackerV1
 	atrackerClientErr error
+
+	//Satellite link service
+	satelliteLinkClient    *satellitelinkv1.SatelliteLinkV1
+	satelliteLinkClientErr error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -882,6 +888,11 @@ func (session clientSession) SecretsManagerV1() (*secretsmanagerv1.SecretsManage
 	return session.secretsManagerClient, session.secretsManagerClientErr
 }
 
+// Satellite Link
+func (session clientSession) SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error) {
+	return session.satelliteLinkClient, session.satelliteLinkClientErr
+}
+
 var cloudEndpoint = "cloud.ibm.com"
 
 // Session to the Satellite client
@@ -984,6 +995,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.schematicsClientErr = errEmptyBluemixCredentials
 		session.satelliteClientErr = errEmptyBluemixCredentials
 		session.iamPolicyManagementErr = errEmptyBluemixCredentials
+		session.satelliteLinkClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -2147,6 +2159,29 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	// Enable retries for API calls
 	session.satelliteClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+
+	// Construct an "options" struct for creating the service client.
+	satelliteLinkEndpoint := satellitelinkv1.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		satelliteLinkEndpoint = contructEndpoint("private.api.link.satellite", cloudEndpoint)
+	}
+
+	satelliteLinkClientOptions := &satellitelinkv1.SatelliteLinkV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_SATELLITE_LINK_API_ENDPOINT"}, satelliteLinkEndpoint),
+		Authenticator: authenticator,
+	}
+
+	session.satelliteLinkClient, err = satellitelinkv1.NewSatelliteLinkV1(satelliteLinkClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.satelliteLinkClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.satelliteLinkClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.satelliteLinkClientErr = fmt.Errorf("Error occurred while configuring Satellite Link service: %q", err)
+	}
 
 	return session, nil
 }
