@@ -1,3 +1,41 @@
+## 1.27.2 (Jul09, 2021)
+
+ENHANCEMENTS
+* Support `vpc_name` attribute in ibm_is_subnet datasource ([#2783](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2783))
+
+* Support `authentication_key` in Direct Link Gateway resource and datasource ([#2792](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2792))
+
+* Support `pi_affinity_policy`, `pi_affinity_volume` and `pi_affinity_instance` for PI Volume ([#2800](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2800))
+
+* Support `pi_migratable` argument for ibm_pi_instance resource and deprecate `migratable` ([#2801](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2801))
+
+* Support `pi_storage_type` argument for ibm_pi_instance resource ([#2797](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2797))
+
+* Added a fix to skip instance volumes setting in ibm_is_instance resource ([#2798](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2798))
+
+BUGFIXES
+* Fix the documentation for ibm_is_lb_listener ([#2790](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2790))
+
+* Fix the documentation for ibm_cr_namespaces and ibm_cr_retention_policy ([#2821](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2821))
+
+* Fix the documentation for ibm_kms_key_alias ([#2825](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2825))
+
+* Remove the guides folder from website docs ([#2833](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2833))
+
+* Fix: Panics on Import ([#2585](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2585))
+
+* Fix host script for GCP ([#2802](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2802))
+
+* Fix: Resource group crash for no default resource group ([#2809](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2809))
+
+* Fix Detach targets before deleting security group ([#2723](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2723))
+
+* Fix ibm_database datasource for different instances with same name ([#2817](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2817))
+
+* Fix: pi_public_network datasource crash ([#2801](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2801))
+
+* Fix: added failure check and tainting on failure for ibm_is_instance ([#2812](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2812))
+
 ## 1.27.1 (Jun27, 2021)
 BUGFIXES
 
