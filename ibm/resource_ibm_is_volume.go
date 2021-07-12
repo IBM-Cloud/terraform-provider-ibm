@@ -10,7 +10,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -482,38 +481,6 @@ func volDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.SetId("")
 	return nil
-}
-
-//delete on instance cleanup
-func isWaitForClassicVolumeDeleted(vol *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
-	log.Printf("Waiting for  (%s) to be deleted.", id)
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", isVolumeDeleting},
-		Target:     []string{"done", ""},
-		Refresh:    isClassicVolumeDeleteRefreshFunc(vol, id),
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}
-
-func isClassicVolumeDeleteRefreshFunc(vol *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		volgetoptions := &vpcclassicv1.GetVolumeOptions{
-			ID: &id,
-		}
-		vol, response, err := vol.GetVolume(volgetoptions)
-		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				return vol, isVolumeDeleted, nil
-			}
-			return vol, "", fmt.Errorf("Error Getting Volume: %s\n%s", err, response)
-		}
-		return vol, isVolumeDeleting, err
-	}
 }
 
 func isWaitForVolumeDeleted(vol *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
