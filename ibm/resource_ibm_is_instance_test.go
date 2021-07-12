@@ -9,7 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -317,37 +316,19 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 }
 
 func testAccCheckIBMISInstanceDestroy(s *terraform.State) error {
-	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	if userDetails.generation == 1 {
-		instanceC, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_instance" {
-				continue
-			}
-			getinsOptions := &vpcclassicv1.GetInstanceOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := instanceC.GetInstance(getinsOptions)
-
-			if err == nil {
-				return fmt.Errorf("instance still exists: %s", rs.Primary.ID)
-			}
+	instanceC, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_instance" {
+			continue
 		}
-	} else {
-		instanceC, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_instance" {
-				continue
-			}
-			getinsOptions := &vpcv1.GetInstanceOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := instanceC.GetInstance(getinsOptions)
+		getinsOptions := &vpcv1.GetInstanceOptions{
+			ID: &rs.Primary.ID,
+		}
+		_, _, err := instanceC.GetInstance(getinsOptions)
 
-			if err == nil {
-				return fmt.Errorf("instance still exists: %s", rs.Primary.ID)
-			}
+		if err == nil {
+			return fmt.Errorf("instance still exists: %s", rs.Primary.ID)
 		}
 	}
 
@@ -365,28 +346,16 @@ func testAccCheckIBMISInstanceExists(n string, instance string) resource.TestChe
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
 		}
-		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-		if userDetails.generation == 1 {
-			instanceC, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getinsOptions := &vpcclassicv1.GetInstanceOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundins, _, err := instanceC.GetInstance(getinsOptions)
-			if err != nil {
-				return err
-			}
-			instance = *foundins.ID
-		} else {
-			instanceC, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getinsOptions := &vpcv1.GetInstanceOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundins, _, err := instanceC.GetInstance(getinsOptions)
-			if err != nil {
-				return err
-			}
-			instance = *foundins.ID
+
+		instanceC, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		getinsOptions := &vpcv1.GetInstanceOptions{
+			ID: &rs.Primary.ID,
 		}
+		foundins, _, err := instanceC.GetInstance(getinsOptions)
+		if err != nil {
+			return err
+		}
+		instance = *foundins.ID
 		return nil
 	}
 }
