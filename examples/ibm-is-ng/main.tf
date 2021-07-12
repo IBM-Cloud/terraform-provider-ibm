@@ -36,15 +36,15 @@ resource "ibm_is_instance_template" "instancetemplate1" {
     name                             = "testbootvol"
     delete_volume_on_instance_delete = true
   }
-   volume_attachments {
-        delete_volume_on_instance_delete = true
-        name                             = "volatt-01"
-        volume_prototype {
-            iops = 3000
-            profile = "general-purpose"
-            capacity = 200
-        }
-    }
+  volume_attachments {
+      delete_volume_on_instance_delete = true
+      name                             = "volatt-01"
+      volume_prototype {
+          iops = 3000
+          profile = "general-purpose"
+          capacity = 200
+      }
+  }
 }
 
 resource "ibm_is_instance_template" "instancetemplate2" {
@@ -432,15 +432,120 @@ data "ibm_is_dedicated_host" "dhost" {
   host_group = data.ibm_is_dedicated_host_group.dgroup.id
 }
 
+resource "ibm_is_volume" "vol3" {
+  name    = "vol3"
+  profile = "10iops-tier"
+  zone    = var.zone1
+}
+
+// creating an instance with volumes
+resource "ibm_is_instance" "instance4" {
+  name    = "instance4"
+  image   = var.image
+  profile = var.profile
+
+  volumes = [ ibm_is_volume.vol3.id ]
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet1.id
+  }
+
+  vpc       = ibm_is_vpc.vpc1.id
+  zone      = var.zone1
+  keys      = [ibm_is_ssh_key.sshkey.id]
+}
+
+// creating a snapshot from boot volume
+resource "ibm_is_snapshot" "b_snapshot" {
+  name          = "my-snapshot-boot"
+  source_volume = ibm_is_instance.instance4.volume_attachments[0].volume_id
+}
+
+// creating a snapshot from data volume
+resource "ibm_is_snapshot" "d_snapshot" {
+  name          = "my-snapshot-data"
+  source_volume = ibm_is_instance.instance4.volume_attachments[1].volume_id
+}
+
+// data source for snapshot by name
+data "ibm_is_snapshot" "ds_snapshot" {
+	name = "my-snapshot-boot"
+}
+
+// data source for snapshots
+data "ibm_is_snapshots" "ds_snapshots" {
+}
+
+// restoring a boot volume from snapshot in a new instance
+resource "ibm_is_instance" "instance5" {
+  name    = "instance5"
+  profile = var.profile
+  boot_volume {
+    name     = "boot-restore"
+    snapshot = ibm_is_snapshot.b_snapshot.id
+  }
+  auto_delete_volume = true
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet2.id
+  }
+  vpc  = ibm_is_vpc.vpc2.id
+  zone = "us-south-2"
+  keys = [ibm_is_ssh_key.sshkey.id]
+}
+
+// creating a volume 
+resource "ibm_is_volume" "vol5" {
+  name    = "vol5"
+  profile = "10iops-tier"
+  zone    = "us-south-2"
+}
+
+// creating a volume attachment on an existing instance using an existing volume
+resource "ibm_is_instance_volume_attachment" "att1" {
+  instance                            = ibm_is_instance.instance5.id
+  volume                              = ibm_is_volume.vol5.id
+  name                                = "vol-att-1"
+  delete_volume_on_attachment_delete  = false
+  delete_volume_on_instance_delete    = false
+}
+
+// creating a volume attachment on an existing instance using a new volume
+resource "ibm_is_instance_volume_attachment" "att2" {
+  instance                            = ibm_is_instance.instance5.id
+  name                                = "vol-att-2"
+  profile                             = "general-purpose"
+  snapshot                            = ibm_is_snapshot.d_snapshot.id
+  delete_volume_on_instance_delete    = true
+  delete_volume_on_attachment_delete  = true
+  volume_name                         = "vol4-restore"
+}
+
+// data source for volume attachment
+data "ibm_is_instance_volume_attachment" "ds_vol_att" {
+  instance  = ibm_is_instance.instance5.id
+  name      = ibm_is_instance_volume_attachment.att2.name
+}
+
+// data source for volume attachments
+data "ibm_is_instance_volume_attachment" "ds_vol_atts" {
+  instance = ibm_is_instance.instance5.id
+}
+
+// creating an instance using an existing instance template
+resource "ibm_is_instance" "instance6" {
+  name              = "instance4"
+  instance_template   = ibm_is_instance_template.instancetemplate1.id
+}
+
 resource "ibm_is_image" "image1" {
-  href = var.image_cos_url
-  name = "my-img-1"
+  href             = var.image_cos_url
+  name             = "my-img-1"
   operating_system = var.image_operating_system
 }
 
 resource "ibm_is_image" "image2" {
   source_volume = data.ibm_is_instance.instance1.volume_attachments.0.volume_id
-  name = "my-img-1"
+  name          = "my-img-1"
 }
 
 data "ibm_is_image" "dsimage" {

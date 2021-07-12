@@ -35,6 +35,8 @@ const (
 	isVolumeProvisioning         = "provisioning"
 	isVolumeProvisioningDone     = "done"
 	isVolumeResourceGroup        = "resource_group"
+	isVolumeSourceSnapshot       = "source_snapshot"
+	isVolumeDeleteAllSnapshots   = "delete_all_snapshots"
 )
 
 func resourceIBMISVolume() *schema.Resource {
@@ -140,6 +142,16 @@ func resourceIBMISVolume() *schema.Resource {
 				},
 			},
 
+			isVolumeSourceSnapshot: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Identifier of the snapshot from which this volume was cloned",
+			},
+			isVolumeDeleteAllSnapshots: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Deletes all snapshots created from this volume",
+			},
 			isVolumeTags: {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -325,6 +337,9 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isVolumeIops, *vol.Iops)
 	d.Set(isVolumeCapacity, *vol.Capacity)
 	d.Set(isVolumeCrn, *vol.CRN)
+	if vol.SourceSnapshot != nil {
+		d.Set(isVolumeSourceSnapshot, *vol.SourceSnapshot.ID)
+	}
 	d.Set(isVolumeStatus, *vol.Status)
 	//set the status reasons
 	if vol.StatusReasons != nil {
@@ -365,24 +380,33 @@ func resourceIBMISVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 	name := ""
 	hasChanged := false
+	delete := false
+
+	if delete_all_snapshots, ok := d.GetOk(isVolumeDeleteAllSnapshots); ok && delete_all_snapshots.(bool) {
+		delete = true
+	}
 
 	if d.HasChange(isVolumeName) {
 		name = d.Get(isVolumeName).(string)
 		hasChanged = true
 	}
 
-	err := volUpdate(d, meta, id, name, hasChanged)
+	err := volUpdate(d, meta, id, name, hasChanged, delete)
 	if err != nil {
 		return err
 	}
 	return resourceIBMISVolumeRead(d, meta)
 }
 
-func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged, delete bool) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
+	if delete {
+		deleteAllSnapshots(sess, id)
+	}
+
 	if d.HasChange(isVolumeTags) {
 		options := &vpcv1.GetVolumeOptions{
 			ID: &id,
@@ -580,4 +604,14 @@ func isVolumeRefreshFunc(client *vpcv1.VpcV1, id string) resource.StateRefreshFu
 
 		return vol, isVolumeProvisioning, nil
 	}
+}
+
+func deleteAllSnapshots(sess *vpcv1.VpcV1, id string) error {
+	delete_all_snapshots := new(vpcv1.DeleteSnapshotsOptions)
+	delete_all_snapshots.SourceVolumeID = &id
+	response, err := sess.DeleteSnapshots(delete_all_snapshots)
+	if err != nil {
+		return fmt.Errorf("Error deleting snapshots from volume %s\n%s", err, response)
+	}
+	return nil
 }
