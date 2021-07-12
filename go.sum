@@ -40,6 +40,8 @@ github.com/IBM-Cloud/bluemix-go v0.0.0-20210630064518-6896aabf6888/go.mod h1:AEc
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
 github.com/IBM-Cloud/power-go-client v1.0.55 h1:XoRU8FWYY8NUKau1nkErkf2FHAUbFEbbXtbLTvaGp9c=
 github.com/IBM-Cloud/power-go-client v1.0.55/go.mod h1:I4r5tCrA8mV5GFqGAJG4/Tn+/JpR+XLnDCLLNVKJxuI=
+github.com/IBM-Cloud/softlayer-go v1.0.3-tf h1:FZF0D11BcYvDCZtWC0ZNEC6PKivuahW/nW9naK7H2PU=
+github.com/IBM-Cloud/softlayer-go v1.0.3-tf/go.mod h1:6HepcfAXROz0Rf63krk5hPZyHT6qyx2MNvYyHof7ik4=
 github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a h1:lX3vP+9Y5gTP0w6l+4oL0mvNfgXZYJsMdlsiUG43GBw=
 github.com/IBM/apigateway-go-sdk v0.0.0-20200414212859-416e5948678a/go.mod h1:sNVpGpUv3jvA2dQbRPFjVrRFNdmnQrf2QTtKa/c2XrI=
 github.com/IBM/appconfiguration-go-admin-sdk v0.1.0 h1:9rdOk32VQFnMqsBB7cTpkZbD7/b0EnwrU3VNN8vuUYc=
@@ -456,6 +458,7 @@ github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:
 github.com/imdario/mergo v0.3.11/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH0dnCYA=
 github.com/imdario/mergo v0.3.12/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH0dnCYA=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
+github.com/jarcoal/httpmock v1.0.5/go.mod h1:ATjnClrvW/3tijVmpL/va5Z3aAyGvqU3gCT8nX0Txik=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jcmturner/gofork v1.0.0 h1:J7uCkflzTEhUZ64xqKnkDxq3kzc96ajM1Gli5ktUem8=
 github.com/jcmturner/gofork v1.0.0/go.mod h1:MK8+TM0La+2rjBD4jE12Kj1pCCxK7d2LK/UM3ncEo0o=
@@ -601,6 +604,10 @@ github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeV
 github.com/sirupsen/logrus v1.4.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.1/go.mod h1:ni0Sbl8bgC9z8RoU9G6nDWqqs/fq4eDPysMBDgk/93Q=
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
+github.com/softlayer/softlayer-go v1.0.3 h1:9FONm5xzQ9belQtbdryR6gBg4EF6hX6lrjNKi0IvZkU=
+github.com/softlayer/softlayer-go v1.0.3/go.mod h1:6HepcfAXROz0Rf63krk5hPZyHT6qyx2MNvYyHof7ik4=
+github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e h1:3OgWYFw7jxCZPcvAg+4R8A50GZ+CCkARF10lxu2qDsQ=
+github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e/go.mod h1:fKZCUVdirrxrBpwd9wb+lSoVixvpwAu8eHzbQB2tums=
 github.com/spf13/cobra v0.0.3/go.mod h1:1l0Ry5zgKvJasoi3XT1TypsSe7PqH0Sj9dhYf7v3XqQ=
 github.com/spf13/pflag v1.0.2/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
 github.com/spf13/pflag v1.0.3/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
@@ -874,6 +881,7 @@ golang.org/x/tools v0.0.0-20200227222343-706bc42d1f0d/go.mod h1:TB2adYChydJhpapK
 golang.org/x/tools v0.0.0-20200304193943-95d2e580d8eb/go.mod h1:o4KQGtdN14AW+yjsvvwRTJJuXz8XRtIHtEnmAXLyFUw=
 golang.org/x/tools v0.0.0-20200312045724-11d5b4c81c7d/go.mod h1:o4KQGtdN14AW+yjsvvwRTJJuXz8XRtIHtEnmAXLyFUw=
 golang.org/x/tools v0.0.0-20200331025713-a30bf2db82d4/go.mod h1:Sl4aGygMT6LrqrWclx+PTx3U+LnKx/seiNR+3G19Ar8=
+golang.org/x/tools v0.0.0-20200410194907-79a7a3126eef/go.mod h1:EkVYQZoAsY45+roYkvgYkIh4xh/qjgUK9TdY2XT94GE=
 golang.org/x/tools v0.0.0-20200501065659-ab2804fb9c9d/go.mod h1:EkVYQZoAsY45+roYkvgYkIh4xh/qjgUK9TdY2XT94GE=
 golang.org/x/tools v0.0.0-20200512131952-2bc93b1c0c88/go.mod h1:EkVYQZoAsY45+roYkvgYkIh4xh/qjgUK9TdY2XT94GE=
 golang.org/x/tools v0.0.0-20200515010526-7d3b6ebf133d/go.mod h1:EkVYQZoAsY45+roYkvgYkIh4xh/qjgUK9TdY2XT94GE=
