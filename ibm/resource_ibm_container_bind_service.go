@@ -203,6 +203,7 @@ func resourceIBMContainerBindServiceRead(d *schema.ResourceData, meta interface{
 
 	d.Set("service_instance_name", boundService.ServiceName)
 	d.Set("service_instance_id", boundService.ServiceID)
+	d.Set("cluster_name_id", clusterNameID)
 	//d.Set(key, boundService.ServiceKeyName)
 	//d.Set(key, boundService.ServiceName)
 	return nil
