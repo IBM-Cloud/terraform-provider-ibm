@@ -286,7 +286,7 @@ id = `$CRN:meta:$buckettype:$bucketlocation`
 **Syntax**
 
 ```
-$ terraform import ibm_cos_bucket.mybucket <crn>
+$ terraform import ibm_cos_bucket.mybucket `$CRN:meta:$buckettype:$bucketlocation`
 
 ```
 
