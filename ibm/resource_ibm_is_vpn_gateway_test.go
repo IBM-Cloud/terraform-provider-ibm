@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -64,39 +63,20 @@ func TestAccIBMISVPNGateway_route(t *testing.T) {
 }
 
 func testAccCheckIBMISVPNGatewayDestroy(s *terraform.State) error {
-	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	if userDetails.generation == 1 {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_vpn_gateway" {
-				continue
-			}
-
-			getvpngcptions := &vpcclassicv1.GetVPNGatewayConnectionOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetVPNGatewayConnection(getvpngcptions)
-
-			if err == nil {
-				return fmt.Errorf("vpnGateway still exists: %s", rs.Primary.ID)
-			}
+	sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_vpn_gateway" {
+			continue
 		}
-	} else {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_vpn_gateway" {
-				continue
-			}
 
-			getvpngcptions := &vpcv1.GetVPNGatewayConnectionOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetVPNGatewayConnection(getvpngcptions)
+		getvpngcptions := &vpcv1.GetVPNGatewayConnectionOptions{
+			ID: &rs.Primary.ID,
+		}
+		_, _, err := sess.GetVPNGatewayConnection(getvpngcptions)
 
-			if err == nil {
-				return fmt.Errorf("vpnGateway still exists: %s", rs.Primary.ID)
-			}
+		if err == nil {
+			return fmt.Errorf("vpnGateway still exists: %s", rs.Primary.ID)
 		}
 	}
 
@@ -114,32 +94,16 @@ func testAccCheckIBMISVPNGatewayExists(n, vpnGatewayID string) resource.TestChec
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
 		}
-
-		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-		if userDetails.generation == 1 {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getvpngcptions := &vpcclassicv1.GetVPNGatewayOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundvpnGatewayIntf, _, err := sess.GetVPNGateway(getvpngcptions)
-			if err != nil {
-				return err
-			}
-			foundvpnGateway := foundvpnGatewayIntf.(*vpcclassicv1.VPNGateway)
-			vpnGatewayID = *foundvpnGateway.ID
-		} else {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getvpngcptions := &vpcv1.GetVPNGatewayOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundvpnGatewayIntf, _, err := sess.GetVPNGateway(getvpngcptions)
-			if err != nil {
-				return err
-			}
-			foundvpnGateway := foundvpnGatewayIntf.(*vpcv1.VPNGateway)
-			vpnGatewayID = *foundvpnGateway.ID
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		getvpngcptions := &vpcv1.GetVPNGatewayOptions{
+			ID: &rs.Primary.ID,
 		}
+		foundvpnGatewayIntf, _, err := sess.GetVPNGateway(getvpngcptions)
+		if err != nil {
+			return err
+		}
+		foundvpnGateway := foundvpnGatewayIntf.(*vpcv1.VPNGateway)
+		vpnGatewayID = *foundvpnGateway.ID
 		return nil
 	}
 }
