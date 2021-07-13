@@ -192,10 +192,10 @@ resource "ibm_iam_service_policy" "policy" {
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `account_management` - (Optional, Bool) Gives access to all account management services if set to **true**. Default value is **false**. If you set this option, do not set `resources` at the same time.
+- `account_management` - (Optional, Bool) Gives access to all account management services if set to **true**. Default value is **false**. If you set this option, do not set `resources` at the same time.**Note** Conflicts with `resources` and `resource_attributes`.
 - `iam_service_id` - (Required, Forces new resource, String) The UUID of the service ID.
 - `iam_id` - (Optional,  Forces new resource, String) IAM ID of the service ID. Used to assign cross account service ID policy. Either `iam_service_id` or `iam_id` is required.
-- `resources` - (List of Objects) Optional- A nested block describes the resource of this policy.
+- `resources` - (List of Objects) Optional- A nested block describes the resource of this policy.**Note** Conflicts with `account_management` and `resource_attributes`.
 
   Nested scheme for `resources`:
   - `service`  (Optional, String) The service name of the policy definition. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search`.
@@ -205,7 +205,7 @@ Review the argument references that you can specify for your resource.
   - `resource` - (Optional, String) The resource of the policy definition.
   - `resource_group_id` - (Optional, String) The ID of the resource group. To retrieve the value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
   - `attributes` (Optional, Map)  A set of resource attributes in the format `name=value,name=value`. If you set this option, do not specify `account_management` and `resource_attributes` at the same time.
-- `resource_attributes` - (Optional, list) A nested block describing the resource of this policy.
+- `resource_attributes` - (Optional, list) A nested block describing the resource of this policy. - `resource_attributes` - (Optional, List) A nested block describing the resource of this policy. **Note** Conflicts with `account_management` and `resources`.
 
   Nested scheme for `resource_attributes`:
   - `name` - (Required, String) The name of an attribute. Supported values are `serviceName` , `serviceInstance` , `region` ,`resourceType` , `resource` , `resourceGroupId` and other service specific resource attributes.
