@@ -140,6 +140,33 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "list of labels to the default worker pool",
 			},
+			"taints": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "WorkerPool Taints",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Key for taint",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Value for taint.",
+						},
+						"effect": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Effect for taint. Accepted values are NoSchedule, PreferNoSchedule, and NoExecute.",
+							ValidateFunc: InvokeValidator(
+								"ibm_container_cluster",
+								"worker_taints"),
+						},
+					},
+				},
+			},
 
 			"workers_info": {
 				Type:     schema.TypeList,
@@ -580,6 +607,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 }
 
 func resourceIBMContainerClusterValidator() *ResourceValidator {
+	tainteffects := "NoSchedule, PreferNoSchedule, and NoExecute"
 	validateSchema := make([]ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
@@ -589,7 +617,13 @@ func resourceIBMContainerClusterValidator() *ResourceValidator {
 			Optional:                   true,
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
-			MaxValueLength:             128})
+			MaxValueLength:             128},
+		ValidateSchema{
+			Identifier:                 "worker_taints",
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              tainteffects})
 
 	ibmContainerClusterResourceValidator := ResourceValidator{ResourceName: "ibm_container_cluster", Schema: validateSchema}
 	return &ibmContainerClusterResourceValidator
@@ -1041,6 +1075,41 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf(
 				"The default worker pool does not exist. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes..")
 		}
+	}
+	if d.HasChange("taints") {
+		workerPoolsAPI := csClient.WorkerPools()
+		workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID, targetEnv)
+		if err != nil {
+			return err
+		}
+		var poolName string
+		var poolContains bool
+
+		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
+			poolName = defaultWorkerPool
+			poolContains = true
+		} else if len(workerPools) > 0 && workerPoolContains(workerPools, computeWorkerPool) && workerPoolContains(workerPools, gatewayWorkerpool) {
+			poolName = computeWorkerPool
+			poolContains = true
+		}
+		if poolContains {
+			taintParam := expandWorkerPoolTaints(d, meta, clusterID, poolName)
+			targetEnv, err := getVpcClusterTargetHeader(d, meta)
+			if err != nil {
+				return err
+			}
+			ClusterClient, err := meta.(ClientSession).VpcContainerAPI()
+			if err != nil {
+				return err
+			}
+			err = ClusterClient.WorkerPools().UpdateWorkerPoolTaints(taintParam, targetEnv)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error updating the taints: %s", err)
+			}
+		} else {
+			return fmt.Errorf("[ERROR] The default worker pool does not exist. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes")
+		}
+
 	}
 
 	if d.HasChange("worker_num") {

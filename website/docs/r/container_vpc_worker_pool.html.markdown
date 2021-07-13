@@ -62,6 +62,13 @@ Review the argument references that you can specify for your resource.
 - `flavor` - (Required, Forces new resource, String) The flavor of the worker node.
 - `labels` (Optional, Map) A list of labels that you want to add to all the worker nodes in the worker pool.
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group. To retrieve the ID, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
+- `taints` - (Optional, List) A nested block describes the taints of this worker pool.
+
+  Nested scheme for `taints`:
+  - `key` - (Required, String) Key for taint.
+  - `value` - (Required, String) Value for taint.
+  - `effect` - (Required, String) Effect for taint. Accepted values are `NoSchedule`, `PreferNoSchedule`, and `NoExecute`.
+ 
 - `vpc_id` - (Required, Forces new resource, String) The ID of the VPC.
 - `worker_count`- (Required, Integer) The number of worker nodes per zone in the worker pool.
 - `worker_pool_name` - (Required, Forces new resource, String) The name of the worker pool.
