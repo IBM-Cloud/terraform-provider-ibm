@@ -226,6 +226,13 @@ Review the argument references that you can specify for your resource.
 - `subnet_id` - (Optional, String) The ID of an existing subnet that you want to use for your worker nodes. To find existing subnets, run `ibmcloud ks subnets`.
 - `service_subnet`-  (Optional, Forces new resource, String) Specify a custom subnet CIDR to provide private IP addresses for services. The subnet should be at least `/24` or more. For more information, refer to [Subnet service](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#service-subnet).
 - `tags` - (Optional, Array of string)  A list of tags that you want to add to your cluster. Tags can help find a cluster more quickly.  **Note**: For users on account to add tags to a resource, they must be assigned the appropriate [permissions](https://cloud.ibm.com/docs/resources?topic=resources-access).
+- `taints` - (Optional, List) A nested block describes the taints of this worker pool.
+
+  Nested scheme for `taints`:
+  - `key` - (Required, String) Key for taint.
+  - `value` - (Required, String) Value for taint.
+  - `effect` - (Required, String) Effect for taint. Accepted values are `NoSchedule`, `PreferNoSchedule`, and `NoExecute`.
+ 
 - `update_all_workers` - (Optional, Bool) If set to **true**, the Kubernetes version of the worker nodes is updated along with the Kubernetes version of the cluster that you specify in `kube_version`.  **Note**: setting `wait_for_worker_update` to `false` is not recommended. This results in upgrading all the worker nodes in the cluster at the same time causing the cluster downtime. 
 - `webhook` - (Optional, String) The webhook that you want to add to the cluster. For available options, see the [`webhook create` command](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli).
 - `workers_info` - (Optional, Array of objects) The worker nodes that you want to update.

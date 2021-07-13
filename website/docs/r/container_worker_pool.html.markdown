@@ -71,6 +71,13 @@ Review the argument references that you can specify for your resource.
 - `name` - (Required, Forces new resource, String) The name of the worker pool.
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group where your cluster is provisioned into. To list resource groups, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
 - `size_per_zone`  - (Required, Integer) The number of worker nodes per zone that you want to add to the worker pool.
+- `taints` - (Optional, List) A nested block describes the taints of this worker pool.
+
+  Nested scheme for `taints`:
+  - `key` - (Required, String) Key for taint.
+  - `value` - (Required, String) Value for taint.
+  - `effect` - (Required, String) Effect for taint. Accepted values are `NoSchedule`, `PreferNoSchedule`, and `NoExecute`.
+ 
 
 **Deprecated reference**
 

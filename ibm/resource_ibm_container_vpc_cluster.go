@@ -196,6 +196,33 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "Labels for default worker pool",
 			},
 
+			"taints": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "WorkerPool Taints",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Key for taint",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Value for taint.",
+						},
+						"effect": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Effect for taint. Accepted values are NoSchedule, PreferNoSchedule, and NoExecute.",
+							ValidateFunc: InvokeValidator(
+								"ibm_container_vpc_cluster",
+								"worker_taints"),
+						},
+					},
+				},
+			},
 			"disable_public_service_endpoint": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -371,6 +398,7 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 }
 
 func resourceIBMContainerVpcClusterValidator() *ResourceValidator {
+	tainteffects := "NoSchedule, PreferNoSchedule, and NoExecute"
 	validateSchema := make([]ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
@@ -380,7 +408,13 @@ func resourceIBMContainerVpcClusterValidator() *ResourceValidator {
 			Optional:                   true,
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
-			MaxValueLength:             128})
+			MaxValueLength:             128},
+		ValidateSchema{
+			Identifier:                 "worker_taints",
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              tainteffects})
 
 	ibmContainerVpcClusteresourceValidator := ResourceValidator{ResourceName: "ibm_container_vpc_cluster", Schema: validateSchema}
 	return &ibmContainerVpcClusteresourceValidator
@@ -700,6 +734,22 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 				"[ERROR] Error updating the labels: %s", err)
 		}
 	}
+	if d.HasChange("taints") {
+		taintParam := expandWorkerPoolTaints(d, meta, clusterID, "default")
+
+		targetEnv, err := getVpcClusterTargetHeader(d, meta)
+		if err != nil {
+			return err
+		}
+		ClusterClient, err := meta.(ClientSession).VpcContainerAPI()
+		if err != nil {
+			return err
+		}
+		err = ClusterClient.WorkerPools().UpdateWorkerPoolTaints(taintParam, targetEnv)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error updating the taints: %s", err)
+		}
+	}
 
 	if d.HasChange("worker_count") && !d.IsNewResource() {
 		count := d.Get("worker_count").(int)
@@ -871,6 +921,9 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("worker_labels", IgnoreSystemLabels(workerPool.Labels))
 	if cls.Vpcs != nil {
 		d.Set("vpc_id", cls.Vpcs[0])
+	}
+	if workerPool.Taints != nil {
+		d.Set("taints", flattenWorkerPoolTaints(workerPool))
 	}
 	d.Set("master_url", cls.MasterURL)
 	d.Set("flavor", workerPool.Flavor)
