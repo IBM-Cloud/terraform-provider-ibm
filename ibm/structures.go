@@ -1282,7 +1282,7 @@ func contains(s []int, e int) bool {
 	return false
 }
 
-func flattenMembersData(list []models.AccessGroupMemberV2, users []usermanagementv2.UserInfo, serviceids []models.ServiceID) ([]string, []string) {
+func flattenMembersData(list []models.AccessGroupMemberV2, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) ([]string, []string) {
 	var ibmid []string
 	var serviceid []string
 	for _, m := range list {
@@ -1296,8 +1296,8 @@ func flattenMembersData(list []models.AccessGroupMemberV2, users []usermanagemen
 		} else {
 
 			for _, srid := range serviceids {
-				if srid.IAMID == m.ID {
-					serviceid = append(serviceid, srid.UUID)
+				if *srid.IamID == m.ID {
+					serviceid = append(serviceid, *srid.ID)
 					break
 				}
 			}
