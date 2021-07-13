@@ -149,9 +149,8 @@ func dataSourceIBMISVPC() *schema.Resource {
 
 						isVPCSecurityGroupID: {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Security group id",
-							ForceNew:    true,
 						},
 
 						isSecurityGroupRules: {
