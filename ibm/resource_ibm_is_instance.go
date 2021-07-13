@@ -31,6 +31,7 @@ const (
 	isInstanceNicSecondaryAddress     = "secondary_addresses"
 	isInstanceNicSecurityGroups       = "security_groups"
 	isInstanceNicSubnet               = "subnet"
+	isInstanceNicFloatingIP           = "floating_ip"
 	isInstanceNicFloatingIPs          = "floating_ips"
 	isInstanceUserData                = "user_data"
 	isInstanceVolumes                 = "volumes"
@@ -362,6 +363,7 @@ func resourceIBMISInstance() *schema.Resource {
 			isInstanceNetworkInterfaces: {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
