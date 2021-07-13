@@ -58,6 +58,7 @@ var regionName string
 var ISZoneName string
 var ISCIDR string
 var ISAddressPrefixCIDR string
+var InstanceName string
 var instanceProfileName string
 var instanceProfileNameUpdate string
 var dedicatedHostProfileName string
@@ -396,6 +397,12 @@ func init() {
 		//isWinImage = "a7a0626c-f97e-4180-afbe-0331ec62f32a" // classic windows machine: ibm-windows-server-2012-full-standard-amd64-1
 		isWinImage = "r006-5f9568ae-792e-47e1-a710-5538b2bdfca7" // next gen windows machine: ibm-windows-server-2012-full-standard-amd64-3
 		fmt.Println("[INFO] Set the environment variable IS_WIN_IMAGE for testing ibm_is_instance data source else it is set to default value 'r006-5f9568ae-792e-47e1-a710-5538b2bdfca7'")
+	}
+
+	InstanceName = os.Getenv("IS_INSTANCE_NAME")
+	if InstanceName == "" {
+		InstanceName = "placement-check-ins" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_INSTANCE_NAME for testing ibm_is_instance resource else it is set to default value 'instance-01'")
 	}
 
 	instanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")
