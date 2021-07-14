@@ -294,7 +294,7 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.CRN)
 		if err != nil {
 			log.Printf(
-				"Error on create of resource vpc volume (%s) tags: %s", d.Id(), err)
+				"Error on create of resource Volume (%s) tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -324,7 +324,7 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error Getting Volume (%s): %s\n%s", id, err, response)
+		return fmt.Errorf("Error getting Volume (%s): %s\n%s", id, err, response)
 	}
 	d.SetId(*vol.ID)
 	d.Set(isVolumeName, *vol.Name)
@@ -460,12 +460,30 @@ func volDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	getvoloptions := &vpcv1.GetVolumeOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetVolume(getvoloptions)
+	volDetails, response, err := sess.GetVolume(getvoloptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("Error Getting Volume (%s): %s\n%s", id, err, response)
+		return fmt.Errorf("Error getting Volume (%s): %s\n%s", id, err, response)
+	}
+
+	if volDetails.VolumeAttachments != nil {
+		for _, volAtt := range volDetails.VolumeAttachments {
+			deleteVolumeAttachment := &vpcv1.DeleteInstanceVolumeAttachmentOptions{
+				InstanceID: volAtt.Instance.ID,
+				ID:         volAtt.ID,
+			}
+			_, err := sess.DeleteInstanceVolumeAttachment(deleteVolumeAttachment)
+			if err != nil {
+				return fmt.Errorf("Error while removing volume attachment %q for instance %s: %q", *volAtt.ID, *volAtt.Instance.ID, err)
+			}
+			_, err = isWaitForInstanceVolumeDetached(sess, d, d.Id(), *volAtt.ID)
+			if err != nil {
+				return err
+			}
+
+		}
 	}
 
 	options := &vpcv1.DeleteVolumeOptions{
@@ -473,7 +491,7 @@ func volDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	response, err = sess.DeleteVolume(options)
 	if err != nil {
-		return fmt.Errorf("Error Deleting Volume : %s\n%s", err, response)
+		return fmt.Errorf("Error deleting Volume : %s\n%s", err, response)
 	}
 	_, err = isWaitForVolumeDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -508,7 +526,7 @@ func isVolumeDeleteRefreshFunc(vol *vpcv1.VpcV1, id string) resource.StateRefres
 			if response != nil && response.StatusCode == 404 {
 				return vol, isVolumeDeleted, nil
 			}
-			return vol, "", fmt.Errorf("Error Getting Volume: %s\n%s", err, response)
+			return vol, "", fmt.Errorf("Error getting Volume: %s\n%s", err, response)
 		}
 		return vol, isVolumeDeleting, err
 	}
@@ -562,7 +580,7 @@ func isVolumeRefreshFunc(client *vpcv1.VpcV1, id string) resource.StateRefreshFu
 		}
 		vol, response, err := client.GetVolume(volgetoptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("Error Getting volume: %s\n%s", err, response)
+			return nil, "", fmt.Errorf("Error getting volume: %s\n%s", err, response)
 		}
 
 		if *vol.Status == "available" {
