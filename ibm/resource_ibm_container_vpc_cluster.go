@@ -518,7 +518,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		oldList, newList := d.GetChange("tags")
 		cluster, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
 		if err != nil {
-			return fmt.Errorf("Error retrieving cluster %s: %s", clusterID, err)
+			return fmt.Errorf("[ERROR] Error retrieving cluster %s: %s", clusterID, err)
 		}
 		err = UpdateTagsUsingCRN(oldList, newList, meta, cluster.CRN)
 		if err != nil {
@@ -592,7 +592,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 			_, err = WaitForVpcClusterVersionUpdate(d, meta, targetEnv)
 			if err != nil {
 				return fmt.Errorf(
-					"Error waiting for cluster (%s) version to be updated: %s", d.Id(), err)
+					"[ERROR] Error waiting for cluster (%s) version to be updated: %s", d.Id(), err)
 			}
 		}
 
@@ -608,7 +608,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		clusterID := d.Id()
 		cls, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
 		if err != nil {
-			return fmt.Errorf("Error retrieving conatiner vpc cluster: %s", err)
+			return fmt.Errorf("[ERROR] Error retrieving conatiner vpc cluster: %s", err)
 		}
 
 		// Update the worker nodes after master node kube-version is updated.
@@ -622,7 +622,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 			workers, err := csClient.Workers().ListWorkers(clusterID, false, targetEnv)
 			if err != nil {
 				d.Set("patch_version", nil)
-				return fmt.Errorf("Error retrieving workers for cluster: %s", err)
+				return fmt.Errorf("[ERROR] Error retrieving workers for cluster: %s", err)
 			}
 
 			for index, worker := range workers {
@@ -639,7 +639,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 					// As API returns http response 204 NO CONTENT, error raised will be exempted.
 					if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {
 						d.Set("patch_version", nil)
-						return fmt.Errorf("Error replacing the worker node from the cluster: %s", err)
+						return fmt.Errorf("[ERROR] Error replacing the worker node from the cluster: %s", err)
 					}
 
 					if waitForWorkerUpdate {
@@ -647,21 +647,21 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 						_, deleteError := waitForWorkerNodetoDelete(d, meta, targetEnv, worker.ID)
 						if deleteError != nil {
 							d.Set("patch_version", nil)
-							return fmt.Errorf("Worker node - %s is failed to replace", worker.ID)
+							return fmt.Errorf("[ERROR] Worker node - %s is failed to replace", worker.ID)
 						}
 
 						//2. wait for new workerNode
 						_, newWorkerError := waitForNewWorker(d, meta, targetEnv, workersCount)
 						if newWorkerError != nil {
 							d.Set("patch_version", nil)
-							return fmt.Errorf("Failed to spawn new worker node")
+							return fmt.Errorf("[ERROR] Failed to spawn new worker node")
 						}
 
 						//3. Get new worker node ID and update the map
 						newWorkerID, index, newNodeError := getNewWorkerID(d, meta, targetEnv, workersInfo)
 						if newNodeError != nil {
 							d.Set("patch_version", nil)
-							return fmt.Errorf("Unable to find the new worker node info")
+							return fmt.Errorf("[ERROR] Unable to find the new worker node info")
 						}
 
 						delete(workersInfo, worker.ID)
@@ -672,7 +672,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 						if Err != nil {
 							d.Set("patch_version", nil)
 							return fmt.Errorf(
-								"Error waiting for cluster (%s) worker nodes kube version to be updated: %s", d.Id(), Err)
+								"[ERROR] Error waiting for cluster (%s) worker nodes kube version to be updated: %s", d.Id(), Err)
 						}
 					}
 				}
@@ -697,7 +697,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		err = ClusterClient.WorkerPools().UpdateLabelsWorkerPool(clusterID, "default", labels, Env)
 		if err != nil {
 			return fmt.Errorf(
-				"Error updating the labels: %s", err)
+				"[ERROR] Error updating the labels: %s", err)
 		}
 	}
 
@@ -712,7 +712,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		err = ClusterClient.WorkerPools().ResizeWorkerPool(clusterID, "default", count, Env)
 		if err != nil {
 			return fmt.Errorf(
-				"Error updating the worker_count %d: %s", count, err)
+				"[ERROR] Error updating the worker_count %d: %s", count, err)
 		}
 	}
 	if d.HasChange("zones") && !d.IsNewResource() {
@@ -738,12 +738,12 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 				}
 				err = csClient.WorkerPools().CreateWorkerPoolZone(zoneParam, targetEnv)
 				if err != nil {
-					return fmt.Errorf("Error adding zone to conatiner vpc cluster: %s", err)
+					return fmt.Errorf("[ERROR] Error adding zone to conatiner vpc cluster: %s", err)
 				}
 				_, err = WaitForWorkerPoolAvailable(d, meta, clusterID, "default", d.Timeout(schema.TimeoutCreate), targetEnv)
 				if err != nil {
 					return fmt.Errorf(
-						"Error waiting for workerpool (%s) to become ready: %s", d.Id(), err)
+						"[ERROR] Error waiting for workerpool (%s) to become ready: %s", d.Id(), err)
 				}
 
 			}
@@ -758,12 +758,12 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 				Env := v1.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
 				err = ClusterClient.WorkerPools().RemoveZone(clusterID, oldZone["name"].(string), "default", Env)
 				if err != nil {
-					return fmt.Errorf("Error deleting zone to conatiner vpc cluster: %s", err)
+					return fmt.Errorf("[ERROR] Error deleting zone to conatiner vpc cluster: %s", err)
 				}
 				_, err = WaitForV2WorkerZoneDeleted(clusterID, "default", oldZone["name"].(string), meta, d.Timeout(schema.TimeoutDelete), targetEnv)
 				if err != nil {
 					return fmt.Errorf(
-						"Error waiting for deleting workers of worker pool (%s) of cluster (%s):  %s", "default", clusterID, err)
+						"[ERROR] Error waiting for deleting workers of worker pool (%s) of cluster (%s):  %s", "default", clusterID, err)
 				}
 			}
 		}
@@ -799,7 +799,7 @@ func workerPoolV2ZoneDeleteStateRefreshFunc(client v2.Workers, instanceID, worke
 	return func() (interface{}, string, error) {
 		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, true, target)
 		if err != nil {
-			return nil, "", fmt.Errorf("Error retrieving workers for cluster: %s", err)
+			return nil, "", fmt.Errorf("[ERROR] Error retrieving workers for cluster: %s", err)
 		}
 		//Done worker has two fields State and Status , so check for those 2
 		for _, e := range workerFields {
@@ -828,12 +828,16 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	clusterID := d.Id()
 	cls, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
 	if err != nil {
-		return fmt.Errorf("Error retrieving conatiner vpc cluster: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving conatiner vpc cluster: %s", err)
 	}
 
 	workerPool, err := csClient.WorkerPools().GetWorkerPool(clusterID, "default", targetEnv)
 	if err != nil {
-		return fmt.Errorf("Error retrieving worker pool of the cluster %s: %s", workerPool.ID, err)
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() != 404 && !strings.Contains(apiErr.Description(), "The specified worker pool could not be found") {
+				return fmt.Errorf("[ERROR] Error retrieving worker pool of the cluster %s: %s", workerPool.ID, err)
+			}
+		}
 	}
 
 	var zones = make([]map[string]interface{}, 0)
@@ -851,7 +855,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 
 	albs, err := albsAPI.ListClusterAlbs(clusterID, targetEnv)
 	if err != nil && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") {
-		return fmt.Errorf("Error retrieving alb's of the cluster %s: %s", clusterID, err)
+		return fmt.Errorf("[ERROR] Error retrieving alb's of the cluster %s: %s", clusterID, err)
 	}
 
 	d.Set("name", cls.Name)
@@ -955,7 +959,7 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 	forceDeleteStorage := d.Get("force_delete_storage").(bool)
 	err = csClient.Clusters().Delete(clusterID, targetEnv, forceDeleteStorage)
 	if err != nil {
-		return fmt.Errorf("Error deleting cluster: %s", err)
+		return fmt.Errorf("[ERROR] Error deleting cluster: %s", err)
 	}
 	_, err = waitForVpcClusterDelete(d, meta)
 	if err != nil {
@@ -1166,7 +1170,7 @@ func resourceIBMContainerVpcClusterExists(d *schema.ResourceData, meta interface
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error communicating with the API: %s", err)
 	}
 	return cls.ID == clusterID, nil
 }
@@ -1197,7 +1201,7 @@ func vpcClusterVersionRefreshFunc(client v2.Clusters, instanceID string, d *sche
 	return func() (interface{}, string, error) {
 		cls, err := client.GetCluster(instanceID, target)
 		if err != nil {
-			return nil, "retry", fmt.Errorf("Error retrieving conatiner vpc cluster: %s", err)
+			return nil, "retry", fmt.Errorf("[ERROR] Error retrieving conatiner vpc cluster: %s", err)
 		}
 
 		// Check active transactions
@@ -1235,7 +1239,7 @@ func vpcClusterWorkersVersionRefreshFunc(client v2.Workers, workerID, clusterID 
 	return func() (interface{}, string, error) {
 		worker, err := client.Get(clusterID, workerID, target)
 		if err != nil {
-			return nil, "retry", fmt.Errorf("Error retrieving worker of container vpc cluster: %s", err)
+			return nil, "retry", fmt.Errorf("[ERROR] Error retrieving worker of container vpc cluster: %s", err)
 		}
 		// Check active updates
 		if worker.Health.State == "normal" {
@@ -1287,7 +1291,7 @@ func waitForNewWorker(d *schema.ResourceData, meta interface{}, targetEnv v2.Clu
 		Refresh: func() (interface{}, string, error) {
 			workers, err := csClient.Workers().ListWorkers(clusterID, false, targetEnv)
 			if err != nil {
-				return workers, "", fmt.Errorf("Error in retriving the list of worker nodes")
+				return workers, "", fmt.Errorf("[ERROR] Error in retriving the list of worker nodes")
 			}
 			if len(workers) == workersCount {
 				return workers, "created", nil
@@ -1312,7 +1316,7 @@ func getNewWorkerID(d *schema.ResourceData, meta interface{}, targetEnv v2.Clust
 
 	workers, err := csClient.Workers().ListWorkers(clusterID, false, targetEnv)
 	if err != nil {
-		return "", -1, fmt.Errorf("Error in retriving the list of worker nodes")
+		return "", -1, fmt.Errorf("[ERROR] Error in retriving the list of worker nodes")
 	}
 
 	for index, worker := range workers {
@@ -1321,5 +1325,5 @@ func getNewWorkerID(d *schema.ResourceData, meta interface{}, targetEnv v2.Clust
 			return worker.ID, index, nil
 		}
 	}
-	return "", -1, fmt.Errorf("no new node found")
+	return "", -1, fmt.Errorf("[ERROR] no new node found")
 }
