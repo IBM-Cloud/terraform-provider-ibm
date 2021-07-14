@@ -29,7 +29,7 @@ Review the argument references that you can specify for your data source.
 In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
 - `service_ids` - (List of Objects)  A nested block list of IAM service IDs.
-  - `bound_to`-  (String) The service the service ID is bound to.
+  - `bound_to`-  (String) The service the service ID is bound to. This attribute is Deprecated.
   - `crn`-  (String) The CRN of the service ID.
   - `description`-  (String) A description of the service ID.
   - `iam_id`-  (String) The IAM ID of the service ID.
