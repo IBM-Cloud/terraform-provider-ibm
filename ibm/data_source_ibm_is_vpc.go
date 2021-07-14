@@ -310,19 +310,21 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			d.Set(isVPCName, *vpc.Name)
 			d.Set(isVPCClassicAccess, *vpc.ClassicAccess)
 			d.Set(isVPCStatus, *vpc.Status)
-			d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID)
-			d.Set(isVPCDefaultNetworkACLName, *vpc.DefaultNetworkACL.Name)
-			d.Set(isVPCDefaultRoutingTableName, *vpc.DefaultRoutingTable.Name)
-			d.Set(isVPCDefaultSecurityGroupName, *vpc.DefaultSecurityGroup.Name)
+			if vpc.ResourceGroup != nil {
+				d.Set(isVPCResourceGroup, *vpc.ResourceGroup.ID)
+			}
 			if vpc.DefaultNetworkACL != nil {
+				d.Set(isVPCDefaultNetworkACLName, *vpc.DefaultNetworkACL.Name)
 				d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID)
 			} else {
 				d.Set(isVPCDefaultNetworkACL, nil)
 			}
 			if vpc.DefaultRoutingTable != nil {
+				d.Set(isVPCDefaultRoutingTableName, *vpc.DefaultRoutingTable.Name)
 				d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID)
 			}
 			if vpc.DefaultSecurityGroup != nil {
+				d.Set(isVPCDefaultSecurityGroupName, *vpc.DefaultSecurityGroup.Name)
 				d.Set(isVPCDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
 			} else {
 				d.Set(isVPCDefaultSecurityGroup, nil)
