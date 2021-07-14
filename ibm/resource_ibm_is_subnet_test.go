@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -62,38 +61,20 @@ func TestAccIBMISSubnet_basic(t *testing.T) {
 }
 
 func testAccCheckIBMISSubnetDestroy(s *terraform.State) error {
-	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	if userDetails.generation == 1 {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_subnet" {
-				continue
-			}
-
-			getsubnetoptions := &vpcclassicv1.GetSubnetOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetSubnet(getsubnetoptions)
-			if err == nil {
-				return fmt.Errorf("subnet still exists: %s", rs.Primary.ID)
-			}
+	sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_subnet" {
+			continue
 		}
-	} else {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_subnet" {
-				continue
-			}
 
-			getsubnetoptions := &vpcv1.GetSubnetOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetSubnet(getsubnetoptions)
+		getsubnetoptions := &vpcv1.GetSubnetOptions{
+			ID: &rs.Primary.ID,
+		}
+		_, _, err := sess.GetSubnet(getsubnetoptions)
 
-			if err == nil {
-				return fmt.Errorf("subnet still exists: %s", rs.Primary.ID)
-			}
+		if err == nil {
+			return fmt.Errorf("subnet still exists: %s", rs.Primary.ID)
 		}
 	}
 
@@ -112,29 +93,15 @@ func testAccCheckIBMISSubnetExists(n, subnetID string) resource.TestCheckFunc {
 			return errors.New("No Record ID is set")
 		}
 
-		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-		if userDetails.generation == 1 {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getsubnetoptions := &vpcclassicv1.GetSubnetOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundsubnet, _, err := sess.GetSubnet(getsubnetoptions)
-			if err != nil {
-				return err
-			}
-			subnetID = *foundsubnet.ID
-		} else {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getsubnetoptions := &vpcv1.GetSubnetOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundsubnet, _, err := sess.GetSubnet(getsubnetoptions)
-			if err != nil {
-				return err
-			}
-			subnetID = *foundsubnet.ID
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		getsubnetoptions := &vpcv1.GetSubnetOptions{
+			ID: &rs.Primary.ID,
 		}
+		foundsubnet, _, err := sess.GetSubnet(getsubnetoptions)
+		if err != nil {
+			return err
+		}
+		subnetID = *foundsubnet.ID
 		return nil
 	}
 }

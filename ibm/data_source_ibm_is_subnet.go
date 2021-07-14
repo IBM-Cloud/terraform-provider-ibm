@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -153,88 +152,10 @@ func dataSourceIBMISSubnetValidator() *ResourceValidator {
 }
 
 func dataSourceIBMISSubnetRead(d *schema.ResourceData, meta interface{}) error {
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	err := subnetGetByNameOrID(d, meta)
 	if err != nil {
 		return err
 	}
-	if userDetails.generation == 1 {
-		err := classicSubnetGetByNameOrID(d, meta)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := subnetGetByNameOrID(d, meta)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func classicSubnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
-	sess, err := classicVpcClient(meta)
-	if err != nil {
-		return err
-	}
-	var subnet *vpcclassicv1.Subnet
-
-	if v, ok := d.GetOk("identifier"); ok {
-		id := v.(string)
-		getSubnetOptions := &vpcclassicv1.GetSubnetOptions{
-			ID: &id,
-		}
-		subnetinfo, response, err := sess.GetSubnet(getSubnetOptions)
-		if err != nil {
-			return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
-		}
-		subnet = subnetinfo
-	}
-	if v, ok := d.GetOk(isSubnetName); ok {
-		name := v.(string)
-		getSubnetsListOptions := &vpcclassicv1.ListSubnetsOptions{}
-		subnetsCollection, response, err := sess.ListSubnets(getSubnetsListOptions)
-		if err != nil {
-			return fmt.Errorf("Error Getting Subnets List : %s\n%s", err, response)
-		}
-		for _, subnetInfo := range subnetsCollection.Subnets {
-			if *subnetInfo.Name == name {
-				subnet = &subnetInfo
-				break
-			}
-		}
-	}
-	d.SetId(*subnet.ID)
-	d.Set(isSubnetName, *subnet.Name)
-	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CIDRBlock)
-	d.Set(isSubnetAvailableIpv4AddressCount, *subnet.AvailableIpv4AddressCount)
-	d.Set(isSubnetTotalIpv4AddressCount, *subnet.TotalIpv4AddressCount)
-	if subnet.NetworkACL != nil {
-		d.Set(isSubnetNetworkACL, *subnet.NetworkACL.ID)
-	}
-	if subnet.PublicGateway != nil {
-		d.Set(isSubnetPublicGateway, *subnet.PublicGateway.ID)
-	} else {
-		d.Set(isSubnetPublicGateway, nil)
-	}
-	d.Set(isSubnetStatus, *subnet.Status)
-	d.Set(isSubnetZone, *subnet.Zone.Name)
-	d.Set(isSubnetVPC, *subnet.VPC.ID)
-
-	controller, err := getBaseController(meta)
-	if err != nil {
-		return err
-	}
-	tags, err := GetTagsUsingCRN(meta, *subnet.CRN)
-	if err != nil {
-		log.Printf(
-			"An error occured during reading of subnet (%s) tags : %s", d.Id(), err)
-	}
-	d.Set(isSubnetTags, tags)
-	d.Set(isSubnetCRN, *subnet.CRN)
-	d.Set(ResourceControllerURL, controller+"/vpc/network/subnets")
-	d.Set(ResourceName, *subnet.Name)
-	d.Set(ResourceCRN, *subnet.CRN)
-	d.Set(ResourceStatus, *subnet.Status)
 	return nil
 }
 

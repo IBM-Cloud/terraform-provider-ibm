@@ -13,7 +13,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -243,10 +242,6 @@ func resourceIBMISSubnetValidator() *ResourceValidator {
 }
 
 func resourceIBMISSubnetCreate(d *schema.ResourceData, meta interface{}) error {
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return err
-	}
 
 	name := d.Get(isSubnetName).(string)
 	vpc := d.Get(isSubnetVPC).(string)
@@ -288,78 +283,13 @@ func resourceIBMISSubnetCreate(d *schema.ResourceData, meta interface{}) error {
 	if rt, ok := d.GetOk(isSubnetRoutingTableID); ok {
 		rtID = rt.(string)
 	}
-	if userDetails.generation == 1 {
-		err := classicSubnetCreate(d, meta, name, vpc, zone, ipv4cidr, acl, gw, ipv4addrcount64)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := subnetCreate(d, meta, name, vpc, zone, ipv4cidr, acl, gw, rtID, ipv4addrcount64)
-		if err != nil {
-			return err
-		}
+
+	err := subnetCreate(d, meta, name, vpc, zone, ipv4cidr, acl, gw, rtID, ipv4addrcount64)
+	if err != nil {
+		return err
 	}
 
 	return resourceIBMISSubnetRead(d, meta)
-}
-
-func classicSubnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv4cidr, acl, gw string, ipv4addrcount64 int64) error {
-	sess, err := classicVpcClient(meta)
-	if err != nil {
-		return err
-	}
-	subnetTemplate := &vpcclassicv1.SubnetPrototype{
-		Name: &name,
-		VPC: &vpcclassicv1.VPCIdentity{
-			ID: &vpc,
-		},
-		Zone: &vpcclassicv1.ZoneIdentity{
-			Name: &zone,
-		},
-	}
-	if ipv4cidr != "" {
-		subnetTemplate.Ipv4CIDRBlock = &ipv4cidr
-	}
-	if ipv4addrcount64 != int64(0) {
-		subnetTemplate.TotalIpv4AddressCount = &ipv4addrcount64
-	}
-	if gw != "" {
-		subnetTemplate.PublicGateway = &vpcclassicv1.PublicGatewayIdentity{
-			ID: &gw,
-		}
-	}
-
-	if acl != "" {
-		subnetTemplate.NetworkACL = &vpcclassicv1.NetworkACLIdentity{
-			ID: &acl,
-		}
-	}
-	//create a subnet
-	createSubnetOptions := &vpcclassicv1.CreateSubnetOptions{
-		SubnetPrototype: subnetTemplate,
-	}
-	subnet, response, err := sess.CreateSubnet(createSubnetOptions)
-	if err != nil {
-		log.Printf("[DEBUG] Subnet err %s\n%s", err, response)
-		return fmt.Errorf("Error while creating Subnet %s\n%s", err, response)
-	}
-	d.SetId(*subnet.ID)
-	log.Printf("[INFO] Subnet : %s", *subnet.ID)
-	_, err = isWaitForClassicSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return err
-	}
-	v := os.Getenv("IC_ENV_TAGS")
-	if _, ok := d.GetOk(isSubnetTags); ok || v != "" {
-		oldList, newList := d.GetChange(isSubnetTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *subnet.CRN)
-		if err != nil {
-			log.Printf(
-				"Error on create of resource subnet (%s) tags: %s", d.Id(), err)
-		}
-	}
-
-	return nil
 }
 
 func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv4cidr, acl, gw, rtID string, ipv4addrcount64 int64) error {
@@ -433,39 +363,6 @@ func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv
 	return nil
 }
 
-func isWaitForClassicSubnetAvailable(subnetC *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
-	log.Printf("Waiting for subnet (%s) to be available.", id)
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", isSubnetProvisioning},
-		Target:     []string{isSubnetProvisioningDone, ""},
-		Refresh:    isClassicSubnetRefreshFunc(subnetC, id),
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}
-
-func isClassicSubnetRefreshFunc(subnetC *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		getSubnetOptions := &vpcclassicv1.GetSubnetOptions{
-			ID: &id,
-		}
-		subnet, response, err := subnetC.GetSubnet(getSubnetOptions)
-		if err != nil {
-			return nil, "", fmt.Errorf("Error getting Subnet : %s\n%s", err, response)
-		}
-
-		if *subnet.Status == "available" || *subnet.Status == "failed" {
-			return subnet, isSubnetProvisioningDone, nil
-		}
-
-		return subnet, isSubnetProvisioning, nil
-	}
-}
-
 func isWaitForSubnetAvailable(subnetC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for subnet (%s) to be available.", id)
 
@@ -500,72 +397,13 @@ func isSubnetRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.StateRefreshF
 }
 
 func resourceIBMISSubnetRead(d *schema.ResourceData, meta interface{}) error {
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return err
-	}
-	id := d.Id()
-	if userDetails.generation == 1 {
-		err := classicSubnetGet(d, meta, id)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := subnetGet(d, meta, id)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-func classicSubnetGet(d *schema.ResourceData, meta interface{}, id string) error {
-	sess, err := classicVpcClient(meta)
-	if err != nil {
-		return err
-	}
-	getSubnetOptions := &vpcclassicv1.GetSubnetOptions{
-		ID: &id,
-	}
-	subnet, response, err := sess.GetSubnet(getSubnetOptions)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
-	}
-	d.Set(isSubnetName, *subnet.Name)
-	d.Set(isSubnetIpv4CidrBlock, *subnet.Ipv4CIDRBlock)
-	// d.Set(isSubnetIpv6CidrBlock, *subnet.IPV6CidrBlock)
-	d.Set(isSubnetAvailableIpv4AddressCount, *subnet.AvailableIpv4AddressCount)
-	d.Set(isSubnetTotalIpv4AddressCount, *subnet.TotalIpv4AddressCount)
-	if subnet.NetworkACL != nil {
-		d.Set(isSubnetNetworkACL, *subnet.NetworkACL.ID)
-	}
-	if subnet.PublicGateway != nil {
-		d.Set(isSubnetPublicGateway, *subnet.PublicGateway.ID)
-	} else {
-		d.Set(isSubnetPublicGateway, nil)
-	}
-	d.Set(isSubnetStatus, *subnet.Status)
-	d.Set(isSubnetZone, *subnet.Zone.Name)
-	d.Set(isSubnetVPC, *subnet.VPC.ID)
 
-	controller, err := getBaseController(meta)
+	id := d.Id()
+
+	err := subnetGet(d, meta, id)
 	if err != nil {
 		return err
 	}
-	tags, err := GetTagsUsingCRN(meta, *subnet.CRN)
-	if err != nil {
-		log.Printf(
-			"Error on get of resource subnet (%s) tags: %s", d.Id(), err)
-	}
-	d.Set(isSubnetTags, tags)
-	d.Set(isSubnetCRN, *subnet.CRN)
-	d.Set(ResourceControllerURL, controller+"/vpc/network/subnets")
-	d.Set(ResourceName, *subnet.Name)
-	d.Set(ResourceCRN, *subnet.CRN)
-	d.Set(ResourceStatus, *subnet.Status)
 	return nil
 }
 
@@ -631,102 +469,21 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 }
 
 func resourceIBMISSubnetUpdate(d *schema.ResourceData, meta interface{}) error {
-
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return err
-	}
 	id := d.Id()
 	if d.HasChange(isSubnetTags) {
 		oldList, newList := d.GetChange(isSubnetTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, d.Get(isSubnetCRN).(string))
+		err := UpdateTagsUsingCRN(oldList, newList, meta, d.Get(isSubnetCRN).(string))
 		if err != nil {
 			log.Printf(
 				"Error on update of resource subnet (%s) tags: %s", d.Id(), err)
 		}
 	}
-	if userDetails.generation == 1 {
-		err := classicSubnetUpdate(d, meta, id)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := subnetUpdate(d, meta, id)
-		if err != nil {
-			return err
-		}
-	}
-	return resourceIBMISSubnetRead(d, meta)
-}
-
-func classicSubnetUpdate(d *schema.ResourceData, meta interface{}, id string) error {
-	sess, err := classicVpcClient(meta)
+	err := subnetUpdate(d, meta, id)
 	if err != nil {
 		return err
 	}
-	hasChanged := false
-	name := ""
-	acl := ""
-	updateSubnetOptions := &vpcclassicv1.UpdateSubnetOptions{}
-	subnetPatchModel := &vpcclassicv1.SubnetPatch{
-		Name: &name,
-	}
-	if d.HasChange(isSubnetName) {
-		name = d.Get(isSubnetName).(string)
-		subnetPatchModel.Name = &name
-		hasChanged = true
-	}
-	if d.HasChange(isSubnetNetworkACL) {
-		acl = d.Get(isSubnetNetworkACL).(string)
-		subnetPatchModel.NetworkACL = &vpcclassicv1.NetworkACLIdentity{
-			ID: &acl,
-		}
-		hasChanged = true
-	}
-	if d.HasChange(isSubnetPublicGateway) {
-		gw := d.Get(isSubnetPublicGateway).(string)
-		if gw == "" {
-			unsetSubnetPublicGatewayOptions := &vpcclassicv1.UnsetSubnetPublicGatewayOptions{
-				ID: &id,
-			}
-			response, err := sess.UnsetSubnetPublicGateway(unsetSubnetPublicGatewayOptions)
-			if err != nil {
-				return fmt.Errorf("Error Detaching the public gateway attached to the subnet : %s\n%s", err, response)
-			}
-			_, err = isWaitForClassicSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return err
-			}
-		} else {
-			setSubnetPublicGatewayOptions := &vpcclassicv1.SetSubnetPublicGatewayOptions{
-				ID: &id,
-				PublicGatewayIdentity: &vpcclassicv1.PublicGatewayIdentity{
-					ID: &gw,
-				},
-			}
-			_, response, err := sess.SetSubnetPublicGateway(setSubnetPublicGatewayOptions)
-			if err != nil {
-				return fmt.Errorf("Error Attaching public gateway to the subnet : %s\n%s", err, response)
-			}
-			_, err = isWaitForClassicSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return err
-			}
-		}
-	}
-	if hasChanged {
-		subnetPatch, err := subnetPatchModel.AsPatch()
-		if err != nil {
-			return fmt.Errorf("Error calling asPatch for SubnetPatch: %s", err)
-		}
-		updateSubnetOptions.SubnetPatch = subnetPatch
-		updateSubnetOptions.ID = &id
-		_, response, err := sess.UpdateSubnet(updateSubnetOptions)
-		if err != nil {
-			return fmt.Errorf("Error Updating Subnet : %s\n%s", err, response)
-		}
-	}
-	return nil
+
+	return resourceIBMISSubnetRead(d, meta)
 }
 
 func subnetUpdate(d *schema.ResourceData, meta interface{}, id string) error {
@@ -817,66 +574,13 @@ func subnetUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 }
 
 func resourceIBMISSubnetDelete(d *schema.ResourceData, meta interface{}) error {
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return err
-	}
+
 	id := d.Id()
-	if userDetails.generation == 1 {
-		err := classicSubnetDelete(d, meta, id)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := subnetDelete(d, meta, id)
-		if err != nil {
-			return err
-		}
-	}
-
-	d.SetId("")
-	return nil
-}
-
-func classicSubnetDelete(d *schema.ResourceData, meta interface{}, id string) error {
-	sess, err := classicVpcClient(meta)
+	err := subnetDelete(d, meta, id)
 	if err != nil {
 		return err
 	}
-	getSubnetOptions := &vpcclassicv1.GetSubnetOptions{
-		ID: &id,
-	}
-	subnet, response, err := sess.GetSubnet(getSubnetOptions)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			return nil
-		}
-		return fmt.Errorf("Error Getting Subnet (%s): %s\n%s", id, err, response)
-	}
-	if subnet.PublicGateway != nil {
-		unsetSubnetPublicGatewayOptions := &vpcclassicv1.UnsetSubnetPublicGatewayOptions{
-			ID: &id,
-		}
-		_, err = sess.UnsetSubnetPublicGateway(unsetSubnetPublicGatewayOptions)
-		if err != nil {
-			return err
-		}
-		_, err = isWaitForClassicSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
-		if err != nil {
-			return err
-		}
-	}
-	deleteSubnetOptions := &vpcclassicv1.DeleteSubnetOptions{
-		ID: &id,
-	}
-	response, err = sess.DeleteSubnet(deleteSubnetOptions)
-	if err != nil {
-		return fmt.Errorf("Error Deleting Subnet : %s\n%s", err, response)
-	}
-	_, err = isWaitForClassicSubnetDeleted(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		return err
-	}
+
 	d.SetId("")
 	return nil
 }
@@ -924,38 +628,6 @@ func subnetDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	return nil
 }
 
-func isWaitForClassicSubnetDeleted(subnetC *vpcclassicv1.VpcClassicV1, id string, timeout time.Duration) (interface{}, error) {
-	log.Printf("Waiting for subnet (%s) to be deleted.", id)
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", isSubnetDeleting},
-		Target:     []string{isSubnetDeleted, ""},
-		Refresh:    isClassicSubnetDeleteRefreshFunc(subnetC, id),
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}
-
-func isClassicSubnetDeleteRefreshFunc(subnetC *vpcclassicv1.VpcClassicV1, id string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		log.Printf("[DEBUG] delete function here")
-		getSubnetOptions := &vpcclassicv1.GetSubnetOptions{
-			ID: &id,
-		}
-		subnet, response, err := subnetC.GetSubnet(getSubnetOptions)
-		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				return subnet, isSubnetDeleted, nil
-			}
-			return subnet, "", fmt.Errorf("The Subnet %s failed to delete: %s\n%s", id, err, response)
-		}
-		return subnet, isSubnetDeleting, err
-	}
-}
-
 func isWaitForSubnetDeleted(subnetC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for subnet (%s) to be deleted.", id)
 
@@ -992,36 +664,9 @@ func isSubnetDeleteRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.StateRe
 }
 
 func resourceIBMISSubnetExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return false, err
-	}
 	id := d.Id()
-	if userDetails.generation == 1 {
-		exists, err := classicSubnetExists(d, meta, id)
-		return exists, err
-	} else {
-		exists, err := subnetExists(d, meta, id)
-		return exists, err
-	}
-}
-
-func classicSubnetExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
-	sess, err := classicVpcClient(meta)
-	if err != nil {
-		return false, err
-	}
-	getsubnetOptions := &vpcclassicv1.GetSubnetOptions{
-		ID: &id,
-	}
-	_, response, err := sess.GetSubnet(getsubnetOptions)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			return false, nil
-		}
-		return false, fmt.Errorf("Error getting Subnet: %s\n%s", err, response)
-	}
-	return true, nil
+	exists, err := subnetExists(d, meta, id)
+	return exists, err
 }
 
 func subnetExists(d *schema.ResourceData, meta interface{}, id string) (bool, error) {
