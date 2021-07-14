@@ -40,6 +40,7 @@ const (
 	isSubnetDeleting         = "deleting"
 	isSubnetDeleted          = "done"
 	isSubnetRoutingTableID   = "routing_table"
+	isSubnetInUse            = "resources_attached"
 )
 
 func resourceIBMISSubnet() *schema.Resource {
@@ -618,7 +619,11 @@ func subnetDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	response, err = sess.DeleteSubnet(deleteSubnetOptions)
 	if err != nil {
-		return fmt.Errorf("Error Deleting Subnet : %s\n%s", err, response)
+		if response != nil && response.StatusCode == 409 {
+			_, err = isWaitForSubnetDeleteRetry(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
+		} else {
+			return fmt.Errorf("Error Deleting Subnet : %s\n%s", err, response)
+		}
 	}
 	_, err = isWaitForSubnetDeleted(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -626,6 +631,34 @@ func subnetDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.SetId("")
 	return nil
+}
+
+func isWaitForSubnetDeleteRetry(vpcClient *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Retrying subnet (%s) delete", id)
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{isSubnetInUse},
+		Target:  []string{isSubnetDeleting, isSubnetDeleted, ""},
+		Refresh: func() (interface{}, string, error) {
+			deleteSubnetOptions := &vpcv1.DeleteSubnetOptions{
+				ID: &id,
+			}
+			log.Printf("Retrying subnet (%s) delete", id)
+			response, err := vpcClient.DeleteSubnet(deleteSubnetOptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 409 {
+					return response, isSubnetInUse, nil
+				} else if response != nil && response.StatusCode == 404 {
+					return response, isSubnetDeleted, nil
+				}
+				return response, "", fmt.Errorf("Error deleting subnet: %s\n%s", err, response)
+			}
+			return response, isSubnetDeleting, nil
+		},
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForState()
 }
 
 func isWaitForSubnetDeleted(subnetC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
