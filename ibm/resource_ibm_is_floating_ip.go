@@ -10,7 +10,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -139,11 +138,6 @@ func resourceIBMISFloatingIP() *schema.Resource {
 			},
 		},
 	}
-}
-
-func classicVpcClient(meta interface{}) (*vpcclassicv1.VpcClassicV1, error) {
-	sess, err := meta.(ClientSession).VpcClassicV1API()
-	return sess, err
 }
 
 func vpcClient(meta interface{}) (*vpcv1.VpcV1, error) {
