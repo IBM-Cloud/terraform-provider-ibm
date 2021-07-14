@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -389,16 +388,7 @@ func resourceIBMContainerVpcClusterValidator() *ResourceValidator {
 
 func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface{}) error {
 
-	var vpcProvider string
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return err
-	}
-	if userDetails.generation == 1 {
-		vpcProvider = "vpc-classic"
-	} else {
-		vpcProvider = "vpc-gen2"
-	}
+	vpcProvider := "vpc-gen2"
 
 	csClient, err := meta.(ClientSession).VpcContainerAPI()
 	if err != nil {
@@ -973,67 +963,35 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 	}
 
 	if region != "" {
-		userDetails, err := meta.(ClientSession).BluemixUserDetails()
+
+		vpcurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", region)
+		vpcoptions := &vpcv1.VpcV1Options{
+			URL:           envFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
+			Authenticator: authenticator,
+		}
+		sess1, err := vpcv1.NewVpcV1(vpcoptions)
 		if err != nil {
-			return err
+			log.Println("error creating vpc session", err)
 		}
-		if userDetails.generation == 1 {
-			vpcclassicurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", region)
-			vpcclassicoptions := &vpcclassicv1.VpcClassicV1Options{
-				URL:           envFallBack([]string{"IBMCLOUD_IS_API_ENDPOINT"}, vpcclassicurl),
-				Authenticator: authenticator,
-			}
-			sess1, err := vpcclassicv1.NewVpcClassicV1(vpcclassicoptions)
-			if err != nil {
-				log.Println("error creating vpcclassic session", err)
-			}
-			listlbOptions := &vpcclassicv1.ListLoadBalancersOptions{}
-			lbs, response, err1 := sess1.ListLoadBalancers(listlbOptions)
-			if err1 != nil {
-				log.Printf("Error Retrieving vpc load balancers: %s\n%s", err, response)
-			}
-			if lbs != nil && lbs.LoadBalancers != nil && len(lbs.LoadBalancers) > 0 {
-				for _, lb := range lbs.LoadBalancers {
-					if strings.Contains(*lb.Name, clusterID) {
-						log.Println("Deleting Load Balancer", *lb.Name)
-						id := *lb.ID
-						_, err = isWaitForClassicLBDeleted(sess1, id, d.Timeout(schema.TimeoutDelete))
-						if err != nil {
-							log.Printf("Error waiting for vpc load balancer to be deleted: %s\n", err)
+		listlbOptions := &vpcv1.ListLoadBalancersOptions{}
+		lbs, response, err1 := sess1.ListLoadBalancers(listlbOptions)
+		if err1 != nil {
+			log.Printf("Error Retrieving vpc load balancers: %s\n%s", err, response)
+		}
+		if lbs != nil && lbs.LoadBalancers != nil && len(lbs.LoadBalancers) > 0 {
+			for _, lb := range lbs.LoadBalancers {
+				if strings.Contains(*lb.Name, clusterID) {
+					log.Println("Deleting Load Balancer", *lb.Name)
+					id := *lb.ID
+					_, err = isWaitForLBDeleted(sess1, id, d.Timeout(schema.TimeoutDelete))
+					if err != nil {
+						log.Printf("Error waiting for vpc load balancer to be deleted: %s\n", err)
 
-						}
-					}
-				}
-			}
-		} else {
-			vpcurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", region)
-			vpcoptions := &vpcv1.VpcV1Options{
-				URL:           envFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
-				Authenticator: authenticator,
-			}
-			sess1, err := vpcv1.NewVpcV1(vpcoptions)
-			if err != nil {
-				log.Println("error creating vpc session", err)
-			}
-			listlbOptions := &vpcv1.ListLoadBalancersOptions{}
-			lbs, response, err1 := sess1.ListLoadBalancers(listlbOptions)
-			if err1 != nil {
-				log.Printf("Error Retrieving vpc load balancers: %s\n%s", err, response)
-			}
-			if lbs != nil && lbs.LoadBalancers != nil && len(lbs.LoadBalancers) > 0 {
-				for _, lb := range lbs.LoadBalancers {
-					if strings.Contains(*lb.Name, clusterID) {
-						log.Println("Deleting Load Balancer", *lb.Name)
-						id := *lb.ID
-						_, err = isWaitForLBDeleted(sess1, id, d.Timeout(schema.TimeoutDelete))
-						if err != nil {
-							log.Printf("Error waiting for vpc load balancer to be deleted: %s\n", err)
-
-						}
 					}
 				}
 			}
 		}
+
 	}
 	return nil
 }
