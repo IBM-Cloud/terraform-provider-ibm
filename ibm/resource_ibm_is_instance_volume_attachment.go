@@ -291,11 +291,11 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 		log.Printf("[DEBUG] Instance volume attachment create err %s\n%s", err, response)
 		return fmt.Errorf("Error while attaching volume for instance %s: %q", instanceId, err)
 	}
+	d.SetId(makeTerraformVolAttID(instanceId, *instanceVolAtt.ID))
 	_, err = isWaitForInstanceVolumeAttached(sess, d, instanceId, *instanceVolAtt.ID)
 	if err != nil {
 		return err
 	}
-	d.SetId(makeTerraformVolAttID(instanceId, *instanceVolAtt.ID))
 	log.Printf("[INFO] Instance (%s) volume attachment : %s", instanceId, *instanceVolAtt.ID)
 	return nil
 }
