@@ -351,7 +351,9 @@ func instanceVolumeAttachmentGet(d *schema.ResourceData, meta interface{}, insta
 	}
 	d.Set(isInstanceVolumeDeleteOnInstanceDelete, *volumeAtt.DeleteVolumeOnInstanceDelete)
 	d.Set(isInstanceVolAttName, *volumeAtt.Name)
-	d.Set(isInstanceVolumeAttDevice, *volumeAtt.Device.ID)
+	if volumeAtt.Device != nil {
+		d.Set(isInstanceVolumeAttDevice, *volumeAtt.Device.ID)
+	}
 	d.Set(isInstanceVolumeAttHref, *volumeAtt.Href)
 	d.Set(isInstanceVolAttId, *volumeAtt.ID)
 	d.Set(isInstanceVolumeAttStatus, *volumeAtt.Status)
