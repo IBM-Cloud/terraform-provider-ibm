@@ -54,6 +54,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
+	ibmcloudshellv1 "github.com/IBM/platform-services-go-sdk/ibmcloudshellv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
@@ -240,6 +241,7 @@ type ClientSession interface {
 	CisRangeAppClientSession() (*cisrangeappv1.RangeApplicationsV1, error)
 	CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1, error)
 	IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
+	IBMCloudShellV1() (*ibmcloudshellv1.IBMCloudShellV1, error)
 	ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error)
 	CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error)
 	EnterpriseManagementV1() (*enterprisemanagementv1.EnterpriseManagementV1, error)
@@ -300,6 +302,9 @@ type clientSession struct {
 
 	iamConfigErr  error
 	iamServiceAPI iamv1.IAMServiceAPI
+
+	ibmCloudShellClient    *ibmcloudshellv1.IBMCloudShellV1
+	ibmCloudShellClientErr error
 
 	userManagementErr error
 	userManagementAPI usermanagementv2.UserManagementAPI
@@ -577,6 +582,11 @@ func (sess clientSession) IAMPolicyManagementV1API() (*iampolicymanagement.IamPo
 // IAMUUMAPIV2 provides IAM UUM APIs ...
 func (sess clientSession) IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error) {
 	return sess.iamUUMServiceAPIV2, sess.iamUUMConfigErrV2
+}
+
+// IBM Cloud Shell
+func (session clientSession) IBMCloudShellV1() (*ibmcloudshellv1.IBMCloudShellV1, error) {
+	return session.ibmCloudShellClient, session.ibmCloudShellClientErr
 }
 
 // IcdAPI provides IBM Cloud Databases APIs ...
@@ -1992,6 +2002,19 @@ func (c *Config) ClientSession() (interface{}, error) {
 		resourceManagerClient.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 	session.resourceManagerAPI = resourceManagerClient
+
+	ibmCloudShellClientOptions := &ibmcloudshellv1.IBMCloudShellV1Options{
+		Authenticator: authenticator,
+	}
+	session.ibmCloudShellClient, err = ibmcloudshellv1.NewIBMCloudShellV1(ibmCloudShellClientOptions)
+	if err == nil {
+		session.ibmCloudShellClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.ibmCloudShellClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.ibmCloudShellClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Shell service: %q", err)
+	}
 
 	enterpriseURL := enterprisemanagementv1.DefaultServiceURL
 	if c.Visibility == "private" {

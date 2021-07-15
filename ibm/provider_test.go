@@ -18,6 +18,7 @@ var cisDomainStatic string
 var cisDomainTest string
 var cisInstance string
 var cisResourceGroup string
+var cloudShellAccountID string
 var cosCRN string
 var ibmid1 string
 var ibmid2 string
@@ -557,6 +558,11 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable ACCOUNT_TO_BE_IMPORTED for testing import enterprise account resource else  tests will fail if this is not set correctly")
 	}
 
+	cloudShellAccountID = os.Getenv("IBM_CLOUD_SHELL_ACCOUNT_ID")
+	if cloudShellAccountID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CLOUD_SHELL_ACCOUNT_ID for ibm-cloud-shell resource or datasource else tests will fail if this is not set correctly")
+	}
+
 }
 
 var testAccProviders map[string]*schema.Provider
@@ -620,6 +626,13 @@ func testAccPreCheckCis(t *testing.T) {
 	}
 	if cisDomainTest == "" {
 		t.Fatal("IBM_CIS_DOMAIN_TEST must be set for acceptance tests")
+	}
+}
+
+func testAccPreCheckCloudShell(t *testing.T) {
+	testAccPreCheck(t)
+	if cloudShellAccountID == "" {
+		t.Fatal("IBM_CLOUD_SHELL_ACCOUNT_ID must be set for acceptance tests")
 	}
 }
 
