@@ -168,7 +168,7 @@ Review the argument references that you can specify for your resource.
 - `pod_subnet` - (Optional, Forces new resource, String) Specify a custom subnet CIDR to provide private IP addresses for pods. The subnet must have a CIDR of at least `/23` or larger. For more information, see the [documentation](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#cs_subnets). Default value is `172.30.0.0/16`.
 - `retry_patch_version` - (Optional, Integer) This argument retries the update of `patch_version` if the previous update fails. Increment the value to retry the update of `patch_version` on worker nodes.
 - `service_subnet` - (Optional, Forces new resource, String) Specify a custom subnet CIDR to provide private IP addresses for services. The subnet must be at least ’/24’ or larger. For more information, see the [documentation](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#cs_messages). Default value is `172.21.0.0/16`.
-- `taints` - (Optional, List) A nested block describes the taints of this worker pool.
+- `taints` - (Optional, Set) A nested block that sets or removes Kubernetes taints for all worker nodes in a worker pool
 
   Nested scheme for `taints`:
   - `key` - (Required, String) Key for taint.

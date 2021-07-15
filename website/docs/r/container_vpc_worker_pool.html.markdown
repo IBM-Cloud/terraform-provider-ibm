@@ -62,7 +62,7 @@ Review the argument references that you can specify for your resource.
 - `flavor` - (Required, Forces new resource, String) The flavor of the worker node.
 - `labels` (Optional, Map) A list of labels that you want to add to all the worker nodes in the worker pool.
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group. To retrieve the ID, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
-- `taints` - (Optional, List) A nested block describes the taints of this worker pool.
+- `taints` - (Optional, Set) A nested block that sets or removes Kubernetes taints for all worker nodes in a worker pool
 
   Nested scheme for `taints`:
   - `key` - (Required, String) Key for taint.
