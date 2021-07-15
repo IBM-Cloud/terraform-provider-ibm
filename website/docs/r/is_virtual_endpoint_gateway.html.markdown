@@ -11,7 +11,7 @@ description: |-
 Create, update, or delete a VPC endpoint gateway by using virtual endpoint gateway resource. For more information, about the VPC endpoint gateway, see [creating an endpoint gateway](https://cloud.ibm.com/docs/vpc?topic=vpc-ordering-endpoint-gateway).
 
 ## Example usage
-The following example, creates a VPN gateway.
+The following example, creates a Virtual Private Endpoint gateway.
 
 ```terraform
 resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway1" {
@@ -84,7 +84,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `created_at` - (Timestamp) The created date and time of the endpoint gateway.
 - `health_state` - (String) The health state of the endpoint gateway.
-- `id` - (String) The unique identifier of the VPN gateway connection. The ID is composed of `<gateway_id>`.
+- `id` - (String) The unique identifier of the VPE Gateway. The ID is composed of `<gateway_id>`.
 - `lifecycle_state` - (String) The lifecycle state of the endpoint gateway.
 - `resource_type` - (String) The endpoint gateway resource type.
 
