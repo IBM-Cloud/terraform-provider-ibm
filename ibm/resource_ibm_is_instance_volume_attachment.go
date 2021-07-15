@@ -74,8 +74,8 @@ func resourceIBMISInstanceVolumeAttachment() *schema.Resource {
 			isInstanceVolumeDeleteOnAttachmentDelete: {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Computed:    true,
-				Description: "If set to true, when deleting the attachment, the volume will also be deleted.",
+				Default:     true,
+				Description: "If set to true, when deleting the attachment, the volume will also be deleted. Default value for this true.",
 			},
 			isInstanceVolAttVol: {
 				Type:          schema.TypeString,
