@@ -10,10 +10,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 )
 
 const (
@@ -194,6 +195,9 @@ func resourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) error 
 		parts, err := vmIdParts(d.Id())
 		if err != nil {
 			return err
+		}
+		if len(parts) < 2 {
+			return fmt.Errorf("Incorrect ID %s: Id should be a combination of resourceID/resourceType", d.Id())
 		}
 		rID = parts[0]
 		rType = parts[1]

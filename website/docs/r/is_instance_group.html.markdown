@@ -71,9 +71,9 @@ The `ibm_is_instance_group` resource provides the following [Timeouts](https://w
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `application_port` - (Optional, Integer) The instance group uses when scaling up instances to supply the port for the Load Balancer pool member.
-- `load_balancer` - (Optional, String) The load Balancer ID.
-- `load_balancer_pool` - (Optional, String) The load Balancer pool ID.
+- `application_port` - (Optional, Integer) The instance group uses when scaling up instances to supply the port for the Load Balancer pool member. The `load_balancer` and `load_balancer_pool` arguments must be specified when configured.
+- `load_balancer` - (Optional, String) The load Balancer ID, the `application_port` and `load_balancer_pool` arguments must be specified when configured.
+- `load_balancer_pool` - (Optional, String) The load Balancer pool ID, the `application_port` and `load_balancer` arguments must be specified when configured.
 - `instance_template` - (Required, Forces new resource, String) The ID of the instance template to create the instance group.
 - `instance_count` - (Optional, Integer) The number of instances to create in the instance group. **Note** instance group manager must be in diables state to update the `instance_count`.
 - `name` - (Required, String) The instance  group name.

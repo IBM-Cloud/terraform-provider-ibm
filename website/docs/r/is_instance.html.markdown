@@ -213,6 +213,31 @@ resource "ibm_is_instance" "testacc_instance2" {
   }
 }
 
+// Example to provision instance from a snapshot, restoring boot volume from an existing snapshot
+
+resource "ibm_is_snapshot" "testacc_snapshot" {
+  name 		      	= "testsnapshot"
+  source_volume 	= ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
+}
+
+resource "ibm_is_instance" "testacc_instance_restore" {
+  name    = "vsirestore"
+  profile = "cx2-2x4"
+  boot_volume {
+    name     = "boot-restore"
+    snapshot = ibm_is_snapshot.testacc_snapshot.id
+  }
+  primary_network_interface {
+    subnet     = ibm_is_subnet.testacc_subnet.id
+  }
+  vpc  = ibm_is_vpc.testacc_vpc.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  network_interfaces {
+    subnet = ibm_is_subnet.testacc_subnet.id
+    name   = "eth1"
+  }
+}
 
 ```
 
@@ -227,19 +252,26 @@ The `ibm_is_instance` resource provides the following [[Timeouts](https://www.te
 
 
 ## Argument reference
-Review the argument references that you can specify for your resource. 
+Review the argument references that you can specify for your resource.
 
 - `auto_delete_volume`- (Optional, Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. **Note** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
 - `boot_volume`  (Optional, List) A list of boot volumes for an instance.
 
   Nested scheme for `boot_volume`:
-  - `name` - (Optional, String) The name of the boot volume.
   - `encryption` - (Optional, String) The type of encryption to use for the boot volume.
+  - `name` - (Optional, String) The name of the boot volume.
+  - `snapshot` - (Optional, Forces new resource, String) The snapshot id of the volume to be used for creating boot volume attachment
+    **Note** 
+    
+     - `snapshot` conflicts with `image` id and `instance_template`
 - `dedicated_host` - (Optional, Forces new resource, String) The placement restrictions to use the virtual server instance. Unique ID of the dedicated host where the instance id placed.
 - `dedicated_host_group` - (Optional, Forces new resource, String) The placement restrictions to use for the virtual server instance. Unique ID of the dedicated host group where the instance is placed.
 - `force_recovery_time` - (Optional, Integer) Define timeout (in minutes), to force the `is_instance` to recover from a perpetual "starting" state, during provisioning. And to force the is_instance to recover from a perpetual "stopping" state, during removal of user access. **Note** The force_recovery_time is used to retry multiple times until timeout.
-- `image` - (Required, String) The ID of the virtual server image that you want to use. To list supported images, run `ibmcloud is images`.
-- `keys` - (Required, List) A comma-separated list of SSH keys that you want to add to your instance.
+- `image` - (Optional, String) The ID of the virtual server image that you want to use. To list supported images, run `ibmcloud is images`.
+  **Note** 
+    
+  - `image` conflicts with `boot_volume.0.snapshot`  
+- `keys` - (Optional, List) A comma-separated list of SSH keys that you want to add to your instance.
 - `name` - (Optional, String) The instance name.
 - `network_interfaces`  (Optional,  Forces new resource, List) A list of more network interfaces that are set up for the instance.
 
@@ -249,7 +281,7 @@ Review the argument references that you can specify for your resource.
   - `primary_ipv4_address` - (Optional, Forces new resource, String) The IPV4 address of the interface.
   - `subnet` - (Required, String) The ID of the subnet.
   - `security_groups`- (Optional, List of strings)A comma separated list of security groups to add to the primary network interface.
-- `primary_network_interface` - (Required, List) A nested block describes the primary network interface of this instance. Only one primary network interface can be specified for an instance.
+- `primary_network_interface` - (Optional, List) A nested block describes the primary network interface of this instance. Only one primary network interface can be specified for an instance.
 
   Nested scheme for `primary_network_interface`:
   - `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on the interface. If **false**, IP spoofing is prevented on the interface. If **true**, IP spoofing is allowed on the interface.
@@ -258,13 +290,17 @@ Review the argument references that you can specify for your resource.
   - `primary_ipv4_address` - (Optional, Forces new resource, String) The IPV4 address of the interface.
   - `subnet` - (Required, String) The ID of the subnet.
   - `security_groups`-List of strings-Optional-A comma separated list of security groups to add to the primary network interface.
-- `profile` - (Required, Forces new resource, String) The name of the profile that you want to use for your instance. To list supported profiles, run `ibmcloud is instance-profiles`.
+- `profile` - (Optional, Forces new resource, String) The name of the profile that you want to use for your instance. To list supported profiles, run `ibmcloud is instance-profiles`.
 - `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the instance.
+- `instance_template` - (Optional, String) ID of the source template.
+  **Note** 
+    
+  - `instance_template` conflicts with `boot_volume.0.snapshot`  
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance. Tags can help you find your instance more easily later.
 - `user_data` - (Optional, String) User data to transfer to the instance.
 - `volumes`  (Optional, List) A comma separated list of volume IDs to attach to the instance.
-- `vpc` - (Required, Forces new resource, String) The ID of the VPC where you want to create the instance.
-- `zone` - (Required, Forces new resource, String) The name of the VPC zone where you want to create the instance.
+- `vpc` - (Optional, Forces new resource, String) The ID of the VPC where you want to create the instance.
+- `zone` - (Optional, Forces new resource, String) The name of the VPC zone where you want to create the instance.
 
 
 ## Attribute reference

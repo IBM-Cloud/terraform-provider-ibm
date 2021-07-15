@@ -31,7 +31,6 @@ Review the argument references that you can specify for your data source.
 In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
 - `account_id` - (String) ID of the account that this API key authenticates for.
-- `apikey` - (String) The API key value. This property contains the API key value for the following cases: create an API key, update a service ID API key that stores the API key value as retrievable, or get a service ID API key that stores the API key value as retrievable. All other operations don't return the API key value. For example, all user API key related operations, except create, don't contain the API key value.
 - `apikey_id` - (String) The unique identifier of the `iam_api_key`.
 - `crn` - (String) Cloud Resource Name (CRN) of the item. For example Cloud Resource Name: `crn:v1:bluemix:public:iam-identity:us-south:a/myaccount::apikey:1234-9012-5678`.
 - `created_at` - (Timestamp) If set contains a date time string of the creation date in ISO format.

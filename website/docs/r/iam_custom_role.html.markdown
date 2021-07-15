@@ -22,6 +22,21 @@ resource "ibm_iam_custom_role" "customrole" {
   actions      = ["kms.secrets.rotate"]
 }
 ```
+## Creating custon role using iam role actions
+
+```terraform
+data "ibm_iam_role_actions" "example" {
+  service = "cloud-object-storage"
+}
+
+resource "ibm_iam_custom_role" "read_write" {
+  name = "Role1"
+  display_name = "Role1"
+  service = "cloud-object-storage"
+  actions = concat(split(",", data.ibm_iam_role_actions.example.actions["Content Reader"]),
+            split(",", data.ibm_iam_role_actions.example.actions["Object Writer"]))
+}
+```
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 

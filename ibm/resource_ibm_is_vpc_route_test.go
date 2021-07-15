@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -48,53 +47,26 @@ func TestAccIBMISVPCRoute_basic(t *testing.T) {
 }
 
 func testAccCheckIBMISVPCRouteDestroy(s *terraform.State) error {
-	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-	if userDetails.generation == 1 {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_vpc_route" {
-				continue
-			}
-			parts, err := idParts(rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			vpcID := parts[0]
-			routeID := parts[1]
-			getVpcRouteOptions := &vpcclassicv1.GetVPCRouteOptions{
-				VPCID: &vpcID,
-				ID:    &routeID,
-			}
-			_, _, err1 := sess.GetVPCRoute(getVpcRouteOptions)
-
-			if err1 == nil {
-				return fmt.Errorf("vpc route still exists: %s", rs.Primary.ID)
-			}
+	sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_vpc_route" {
+			continue
 		}
-	} else {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_vpc_route" {
-				continue
-			}
-			parts, err := idParts(rs.Primary.ID)
-			if err != nil {
-				return err
-			}
+		parts, err := idParts(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
 
-			vpcID := parts[0]
-			routeID := parts[1]
-			getVpcRouteOptions := &vpcv1.GetVPCRouteOptions{
-				VPCID: &vpcID,
-				ID:    &routeID,
-			}
-			_, _, err1 := sess.GetVPCRoute(getVpcRouteOptions)
+		vpcID := parts[0]
+		routeID := parts[1]
+		getVpcRouteOptions := &vpcv1.GetVPCRouteOptions{
+			VPCID: &vpcID,
+			ID:    &routeID,
+		}
+		_, _, err1 := sess.GetVPCRoute(getVpcRouteOptions)
 
-			if err1 == nil {
-				return fmt.Errorf("vpc route still exists: %s", rs.Primary.ID)
-			}
+		if err1 == nil {
+			return fmt.Errorf("vpc route still exists: %s", rs.Primary.ID)
 		}
 	}
 	return nil
@@ -119,31 +91,17 @@ func testAccCheckIBMISVPCRouteExists(n, vpcrouteID string) resource.TestCheckFun
 
 		vpcID := parts[0]
 		routeID := parts[1]
-		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-		if userDetails.generation == 1 {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getVpcRouteOptions := &vpcclassicv1.GetVPCRouteOptions{
-				VPCID: &vpcID,
-				ID:    &routeID,
-			}
-			foundroute, _, err := sess.GetVPCRoute(getVpcRouteOptions)
-			if err != nil {
-				return err
-			}
-			vpcrouteID = *foundroute.ID
-		} else {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getVpcRouteOptions := &vpcv1.GetVPCRouteOptions{
-				VPCID: &vpcID,
-				ID:    &routeID,
-			}
-			foundroute, _, err := sess.GetVPCRoute(getVpcRouteOptions)
-			if err != nil {
-				return err
-			}
-			vpcrouteID = *foundroute.ID
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		getVpcRouteOptions := &vpcv1.GetVPCRouteOptions{
+			VPCID: &vpcID,
+			ID:    &routeID,
 		}
+		foundroute, _, err := sess.GetVPCRoute(getVpcRouteOptions)
+		if err != nil {
+			return err
+		}
+		vpcrouteID = *foundroute.ID
 		return nil
 	}
 }

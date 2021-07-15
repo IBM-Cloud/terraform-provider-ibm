@@ -25,28 +25,28 @@ func TestAccIBMIAMAccessGroupMember_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMAccessGroupMemberDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMAccessGroupMemberBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgroup", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_members.accgroupmem", "members.#", "1"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMAccessGroupMemberAddServiceID(name, sname),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgroup", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_members.accgroupmem", "members.#", "2"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMAccessGroupMemberAddAnotherServiceID(name, sname, sname1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgroup", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_members.accgroupmem", "members.#", "3"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMAccessGroupMemberRemoveUserAndSID(name, sname, sname1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgroup", "name", name),
@@ -67,13 +67,13 @@ func TestAccIBMIAMAccessGroupMember_import(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMAccessGroupMemberDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMAccessGroupMemberImport(name, sname),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", name),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,

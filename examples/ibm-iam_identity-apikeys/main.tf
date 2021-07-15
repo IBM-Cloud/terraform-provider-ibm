@@ -11,6 +11,7 @@ data "ibm_iam_api_key" "iam_api_key" {
 resource "ibm_iam_api_key" "iam_api_key_instance" {
   name = "apikey name"
   description = "apikey desc"
+  file = "provide file path"
 }
 
 

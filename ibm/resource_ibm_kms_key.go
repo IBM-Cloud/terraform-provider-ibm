@@ -283,10 +283,10 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 
-		if endpointType == "public" {
-			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
-		} else {
+		if endpointType == "private" {
 			hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
+		} else {
+			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
 		}
 
 		u, err := url.Parse(hpcsEndpointURL)
@@ -402,10 +402,10 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 
-		if endpointType == "public" {
-			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
-		} else {
+		if endpointType == "private" {
 			hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
+		} else {
+			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
 		}
 
 		u, err := url.Parse(hpcsEndpointURL)
@@ -525,10 +525,10 @@ func resourceIBMKmsKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 				return err
 			}
 
-			if endpointType == "public" {
-				hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
-			} else {
+			if endpointType == "private" {
 				hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
+			} else {
+				hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
 			}
 
 			u, err := url.Parse(hpcsEndpointURL)
@@ -590,10 +590,10 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 
-		if endpointType == "public" {
-			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
-		} else {
+		if endpointType == "private" {
 			hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
+		} else {
+			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
 		}
 
 		u, err := url.Parse(hpcsEndpointURL)
@@ -655,10 +655,10 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 			return false, err
 		}
 
-		if endpointType == "public" {
-			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
-		} else {
+		if endpointType == "private" {
 			hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
+		} else {
+			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
 		}
 
 		u, err := url.Parse(hpcsEndpointURL)

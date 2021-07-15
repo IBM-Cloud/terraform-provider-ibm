@@ -9,7 +9,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -41,46 +40,23 @@ func TestAccIBMISSecurityGroupRule_basic(t *testing.T) {
 }
 
 func testAccCheckIBMISSecurityGroupRuleDestroy(s *terraform.State) error {
-	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-	if userDetails.generation == 1 {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_security_group_rule" {
-				continue
-			}
-			secgrpID, ruleID, err := parseISTerraformID(rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-			getsgruleoptions := &vpcclassicv1.GetSecurityGroupRuleOptions{
-				SecurityGroupID: &secgrpID,
-				ID:              &ruleID,
-			}
-			_, _, err1 := sess.GetSecurityGroupRule(getsgruleoptions)
-			if err1 == nil {
-				return fmt.Errorf("securitygrouprule still exists: %s", rs.Primary.ID)
-			}
+	sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_security_group_rule" {
+			continue
 		}
-	} else {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_security_group_rule" {
-				continue
-			}
 
-			secgrpID, ruleID, err := parseISTerraformID(rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-			getsgruleoptions := &vpcv1.GetSecurityGroupRuleOptions{
-				SecurityGroupID: &secgrpID,
-				ID:              &ruleID,
-			}
-			_, _, err1 := sess.GetSecurityGroupRule(getsgruleoptions)
-			if err1 == nil {
-				return fmt.Errorf("securitygrouprule still exists: %s", rs.Primary.ID)
-			}
+		secgrpID, ruleID, err := parseISTerraformID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		getsgruleoptions := &vpcv1.GetSecurityGroupRuleOptions{
+			SecurityGroupID: &secgrpID,
+			ID:              &ruleID,
+		}
+		_, _, err1 := sess.GetSecurityGroupRule(getsgruleoptions)
+		if err1 == nil {
+			return fmt.Errorf("securitygrouprule still exists: %s", rs.Primary.ID)
 		}
 	}
 	return nil
@@ -102,60 +78,30 @@ func testAccCheckIBMISSecurityGroupRuleExists(n, securityGroupRuleID string) res
 		if err != nil {
 			return err
 		}
-		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-		if userDetails.generation == 1 {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getsgruleoptions := &vpcclassicv1.GetSecurityGroupRuleOptions{
-				SecurityGroupID: &secgrpID,
-				ID:              &ruleID,
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		getsgruleoptions := &vpcv1.GetSecurityGroupRuleOptions{
+			SecurityGroupID: &secgrpID,
+			ID:              &ruleID,
+		}
+		foundSecurityGroupRule, _, err := sess.GetSecurityGroupRule(getsgruleoptions)
+		if err != nil {
+			return err
+		}
+		switch reflect.TypeOf(foundSecurityGroupRule).String() {
+		case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
+			{
+				sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
+				securityGroupRuleID = *sgr.ID
 			}
-			foundSecurityGroupRule, _, err := sess.GetSecurityGroupRule(getsgruleoptions)
-			if err != nil {
-				return err
+		case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
+			{
+				sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
+				securityGroupRuleID = *sgr.ID
 			}
-			switch reflect.TypeOf(foundSecurityGroupRule).String() {
-			case "*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
-				{
-					sgr := foundSecurityGroupRule.(*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
-					securityGroupRuleID = *sgr.ID
-				}
-			case "*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
-				{
-					sgr := foundSecurityGroupRule.(*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
-					securityGroupRuleID = *sgr.ID
-				}
-			case "*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
-				{
-					sgr := foundSecurityGroupRule.(*vpcclassicv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
-					securityGroupRuleID = *sgr.ID
-				}
-			}
-		} else {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getsgruleoptions := &vpcv1.GetSecurityGroupRuleOptions{
-				SecurityGroupID: &secgrpID,
-				ID:              &ruleID,
-			}
-			foundSecurityGroupRule, _, err := sess.GetSecurityGroupRule(getsgruleoptions)
-			if err != nil {
-				return err
-			}
-			switch reflect.TypeOf(foundSecurityGroupRule).String() {
-			case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
-				{
-					sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
-					securityGroupRuleID = *sgr.ID
-				}
-			case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
-				{
-					sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
-					securityGroupRuleID = *sgr.ID
-				}
-			case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
-				{
-					sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
-					securityGroupRuleID = *sgr.ID
-				}
+		case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
+			{
+				sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
+				securityGroupRuleID = *sgr.ID
 			}
 		}
 		return nil

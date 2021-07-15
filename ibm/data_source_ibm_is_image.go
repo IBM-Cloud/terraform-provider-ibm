@@ -6,7 +6,6 @@ package ibm
 import (
 	"fmt"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -76,67 +75,18 @@ func dataSourceIBMISImage() *schema.Resource {
 }
 
 func dataSourceIBMISImageRead(d *schema.ResourceData, meta interface{}) error {
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return err
-	}
+
 	name := d.Get("name").(string)
 	var visibility string
 	if v, ok := d.GetOk("visibility"); ok {
 		visibility = v.(string)
 	}
-	if userDetails.generation == 1 {
-		err := classicImageGet(d, meta, name, visibility)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := imageGet(d, meta, name, visibility)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
 
-func classicImageGet(d *schema.ResourceData, meta interface{}, name, visibility string) error {
-	sess, err := classicVpcClient(meta)
+	err := imageGet(d, meta, name, visibility)
 	if err != nil {
 		return err
 	}
-	start := ""
-	allrecs := []vpcclassicv1.Image{}
-	for {
-		listImagesOptions := &vpcclassicv1.ListImagesOptions{}
-		if start != "" {
-			listImagesOptions.Start = &start
-		}
-		if visibility != "" {
-			listImagesOptions.Visibility = &visibility
-		}
-		availableImages, response, err := sess.ListImages(listImagesOptions)
-		if err != nil {
-			return fmt.Errorf("Error Fetching Images %s\n%s", err, response)
-		}
-		start = GetNext(availableImages.Next)
-		allrecs = append(allrecs, availableImages.Images...)
-		if start == "" {
-			break
-		}
-	}
-	for _, image := range allrecs {
-		if *image.Name == name {
-			d.SetId(*image.ID)
-			d.Set("status", *image.Status)
-			d.Set("name", *image.Name)
-			d.Set("visibility", *image.Visibility)
-			d.Set("os", *image.OperatingSystem.Name)
-			d.Set("architecture", *image.OperatingSystem.Architecture)
-			d.Set("crn", *image.CRN)
-			return nil
-		}
-	}
-	return fmt.Errorf("No Image found with name %s", name)
+	return nil
 }
 
 func imageGet(d *schema.ResourceData, meta interface{}, name, visibility string) error {

@@ -199,7 +199,7 @@ Review the argument references that you can specify for your resource.
 - `access_group_id` - (Required, Forces new resource, String) The ID of the access group.
 - `account_management` - (Optional, Bool) Gives access to all account management services if set to **true**. Default value **false**. If you set this option, do not specify `resources` at the same time. **Note** Conflicts with `resources` and `resource_attributes`.
 - `roles` - (Required, List)  A comma separated list of roles. Valid roles are `Writer`, `Reader`, `Manager`, `Administrator`, `Operator`, `Viewer`, and `Editor`. For more information, about supported service specific roles, see  [IAM roles and actions](https://cloud.ibm.com/docs/account?topic=account-iam-service-roles-actions)
-- `resources`  (List , Optional) A nested block describes the resource of this policy.
+- `resources`  (List , Optional) A nested block describes the resource of this policy. **Note** Conflicts with `account_management` and `resource_attributes`.
 
   Nested scheme for `resources`:
   - `attributes` (Optional, Map) Set resource attributes in the form of `name=value,name=value`.  If you set this option, do not specify `account_management` at the same time.
@@ -210,7 +210,7 @@ Review the argument references that you can specify for your resource.
   - `resources.resource_group_id` - (Optional, String) The ID of the resource group. To retrieve the ID, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
   - `service` - (Optional, String) The service name that you want to include in your policy definition. For account management services, you can find supported values in the [documentation](https://cloud.ibm.com/docs/account?topic=account-account-services#api-acct-mgmt). For other services, run the `ibmcloud catalog service-marketplace` command and retrieve the value from the **Name** column of your command line output.
 
-- `resource_attributes` - (Optional, List) A nested block describing the resource of this policy.
+- `resource_attributes` - (Optional, List) A nested block describing the resource of this policy. **Note** Conflicts with `account_management` and `resources`.
 
   Nested scheme for `resource_attributes`:
   - `name` - (Required, String) Name of an attribute. Supported values are `serviceName`, `serviceInstance`, `region`,`resourceType`, `resource`, `resourceGroupId`, and other service specific resource attributes.

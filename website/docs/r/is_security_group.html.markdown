@@ -8,9 +8,8 @@ description: |-
 ---
 
 # ibm_is_security_group
-Create, delete, and update a security group. Provides a networking security group resource that controls access to the public and private interfaces of a virtual server instance. To create rules for the security group, use the `security_group_rule` resource. For more information, about security group, see [managing security groups](https://cloud.ibm.com/docs/security-groups?topic=security-groups-managing-sg).
+Create, delete, and update a security group. Provides a networking security group resource that controls access to the public and private interfaces of a virtual server instance. To create rules for the security group, use the `is_security_group_rule` resource. For more information, about security group, see API Docs(https://cloud.ibm.com/docs/vpc?topic=vpc-using-security-groups).
 
-For more information, see [IBM Cloud Classic Infrastructure (SoftLayer)  API Docs(http://sldn.softlayer.com/reference/datatypes/SoftLayer_Network_SecurityGroup).
 
 ## Example usage
 

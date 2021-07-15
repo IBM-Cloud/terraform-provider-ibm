@@ -3,4 +3,5 @@
 output "ibm_iam_api_key" {
   value       = ibm_iam_api_key.iam_api_key_instance
   description = "iam_api_key resource instance"
+  sensitive = true
 }

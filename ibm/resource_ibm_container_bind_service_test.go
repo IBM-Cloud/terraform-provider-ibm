@@ -23,8 +23,8 @@ func TestAccIBMContainerBindServiceBasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMContainerBindServiceBasic(clusterName, serviceName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"ibm_container_bind_service.bind_service", "namespace_id", "default"),
+					resource.TestCheckResourceAttr("ibm_container_bind_service.bind_service", "namespace_id", "default"),
+					resource.TestCheckResourceAttrSet("ibm_container_bind_service.bind_service", "cluster_name_id"),
 				),
 			},
 			{

@@ -29,6 +29,7 @@ You can access the following attribute references after your data source is crea
 - `gateways` - (String) List of all the Direct Link Gateways in the IBM Cloud infrastructure.
 
   Nested scheme for `gateways`:
+  - `authentication_key` - (String) BGP MD5 authentication key.
   - `bgp_asn` - (String) Customer BGP ASN.
   - `bgp_base_cidr` - (String) The BGP base CIDR.
   - `bgp_cer_cidr` - (String) The BGP customer edge router CIDR.

@@ -22,7 +22,7 @@ func TestAccIBMIAMServicePolicy_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMServicePolicyBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
@@ -31,7 +31,7 @@ func TestAccIBMIAMServicePolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "1"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMServicePolicyUpdateRole(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
@@ -52,7 +52,7 @@ func TestAccIBMIAMServicePolicy_With_Service(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMServicePolicyService(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
@@ -61,7 +61,7 @@ func TestAccIBMIAMServicePolicy_With_Service(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "1"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMServicePolicyUpdateServiceAndRegion(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
@@ -83,7 +83,7 @@ func TestAccIBMIAMServicePolicy_With_ResourceInstance(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMServicePolicyResourceInstance(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
@@ -105,7 +105,7 @@ func TestAccIBMIAMServicePolicy_With_Resource_Group(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMServicePolicyResourceGroup(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
@@ -127,7 +127,7 @@ func TestAccIBMIAMServicePolicy_With_Resource_Type(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMServicePolicyResourceType(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
@@ -149,7 +149,7 @@ func TestAccIBMIAMServicePolicy_import(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMServicePolicyImport(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists(resourceName, conf),
@@ -157,7 +157,7 @@ func TestAccIBMIAMServicePolicy_import(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "1"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
@@ -177,7 +177,7 @@ func TestAccIBMIAMServicePolicy_account_management(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMServicePolicyAccountManagement(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists(resourceName, conf),
@@ -200,7 +200,7 @@ func TestAccIBMIAMServicePolicyWithCustomRole(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMServicePolicyWithCustomRole(name, crName, displayName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),

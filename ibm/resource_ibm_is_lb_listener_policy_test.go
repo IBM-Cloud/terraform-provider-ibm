@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -156,71 +155,35 @@ func TestAccIBMISLBListenerPolicyReject_basic(t *testing.T) {
 
 func testAccCheckIBMISLBListenerPolicyDestroy(s *terraform.State) error {
 
-	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-	if userDetails.generation == 1 {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_lb_listener_policy" {
-				continue
-			}
-
-			if rs.Primary.ID == "" {
-				return errors.New("No Record ID is set")
-			}
-
-			parts, err := idParts(rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			lbID := parts[0]
-			lbListenerID := parts[1]
-			policyID := parts[2]
-
-			getLbListenerPolicyOptions := &vpcclassicv1.GetLoadBalancerListenerPolicyOptions{
-				LoadBalancerID: &lbID,
-				ListenerID:     &lbListenerID,
-				ID:             &policyID,
-			}
-
-			policy, _, err := sess.GetLoadBalancerListenerPolicy(getLbListenerPolicyOptions)
-
-			if err == nil {
-				return fmt.Errorf("LBLIstenerPolicy still exists: %s %v", rs.Primary.ID, policy)
-			}
+	sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_lb_listener_policy" {
+			continue
 		}
-	} else {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_lb_listener_policy" {
-				continue
-			}
 
-			if rs.Primary.ID == "" {
-				return errors.New("No Record ID is set")
-			}
+		if rs.Primary.ID == "" {
+			return errors.New("No Record ID is set")
+		}
 
-			parts, err := idParts(rs.Primary.ID)
-			if err != nil {
-				return err
-			}
+		parts, err := idParts(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
 
-			lbID := parts[0]
-			lbListenerID := parts[1]
-			policyID := parts[2]
+		lbID := parts[0]
+		lbListenerID := parts[1]
+		policyID := parts[2]
 
-			getLbListenerPolicyOptions := &vpcv1.GetLoadBalancerListenerPolicyOptions{
-				LoadBalancerID: &lbID,
-				ListenerID:     &lbListenerID,
-				ID:             &policyID,
-			}
+		getLbListenerPolicyOptions := &vpcv1.GetLoadBalancerListenerPolicyOptions{
+			LoadBalancerID: &lbID,
+			ListenerID:     &lbListenerID,
+			ID:             &policyID,
+		}
 
-			policy, _, err := sess.GetLoadBalancerListenerPolicy(getLbListenerPolicyOptions)
+		policy, _, err := sess.GetLoadBalancerListenerPolicy(getLbListenerPolicyOptions)
 
-			if err == nil {
-				return fmt.Errorf("LBLIstenerPolicy still exists: %s %v", rs.Primary.ID, policy)
-			}
+		if err == nil {
+			return fmt.Errorf("LBLIstenerPolicy still exists: %s %v", rs.Primary.ID, policy)
 		}
 	}
 
@@ -249,41 +212,21 @@ func testAccCheckIBMISLBListenerPolicyExists(n string, policyID string) resource
 		lbListenerID := parts[1]
 		policyID := parts[2]
 
-		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-		if userDetails.generation == 1 {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-
-			getLbListenerPolicyOptions := &vpcclassicv1.GetLoadBalancerListenerPolicyOptions{
-				LoadBalancerID: &lbID,
-				ListenerID:     &lbListenerID,
-				ID:             &policyID,
-			}
-
-			policy, _, err := sess.GetLoadBalancerListenerPolicy(getLbListenerPolicyOptions)
-
-			if err != nil {
-				return err
-			}
-
-			policyID = *policy.ID
-
-		} else {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getLbListenerPolicyOptions := &vpcv1.GetLoadBalancerListenerPolicyOptions{
-				LoadBalancerID: &lbID,
-				ListenerID:     &lbListenerID,
-				ID:             &policyID,
-			}
-
-			policy, _, err := sess.GetLoadBalancerListenerPolicy(getLbListenerPolicyOptions)
-
-			if err != nil {
-				return err
-			}
-
-			policyID = *policy.ID
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		getLbListenerPolicyOptions := &vpcv1.GetLoadBalancerListenerPolicyOptions{
+			LoadBalancerID: &lbID,
+			ListenerID:     &lbListenerID,
+			ID:             &policyID,
 		}
+
+		policy, _, err := sess.GetLoadBalancerListenerPolicy(getLbListenerPolicyOptions)
+
+		if err != nil {
+			return err
+		}
+
+		policyID = *policy.ID
+
 		return nil
 	}
 }

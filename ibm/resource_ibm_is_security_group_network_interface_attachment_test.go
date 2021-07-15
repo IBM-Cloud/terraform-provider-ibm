@@ -9,7 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -45,53 +44,26 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 }
 
 func testAccCheckIBMISSecurityGroupNwInterfaceAttachmentDestroy(s *terraform.State) error {
-	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-	if userDetails.generation == 1 {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_security_group_network_interface_attachment" {
-				continue
-			}
-
-			parts, err := idParts(rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			sgID := parts[0]
-			nicID := parts[1]
-			getsgnicptions := &vpcclassicv1.GetSecurityGroupNetworkInterfaceOptions{
-				SecurityGroupID: &sgID,
-				ID:              &nicID,
-			}
-			_, _, err1 := sess.GetSecurityGroupNetworkInterface(getsgnicptions)
-			if err1 == nil {
-				return fmt.Errorf("network interface still exists: %s", rs.Primary.ID)
-			}
+	sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_security_group_network_interface_attachment" {
+			continue
 		}
-	} else {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_security_group_network_interface_attachment" {
-				continue
-			}
 
-			parts, err := idParts(rs.Primary.ID)
-			if err != nil {
-				return err
-			}
+		parts, err := idParts(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
 
-			sgID := parts[0]
-			nicID := parts[1]
-			getsgnicptions := &vpcv1.GetSecurityGroupNetworkInterfaceOptions{
-				SecurityGroupID: &sgID,
-				ID:              &nicID,
-			}
-			_, _, err1 := sess.GetSecurityGroupNetworkInterface(getsgnicptions)
-			if err1 == nil {
-				return fmt.Errorf("network interface still exists: %s", rs.Primary.ID)
-			}
+		sgID := parts[0]
+		nicID := parts[1]
+		getsgnicptions := &vpcv1.GetSecurityGroupNetworkInterfaceOptions{
+			SecurityGroupID: &sgID,
+			ID:              &nicID,
+		}
+		_, _, err1 := sess.GetSecurityGroupNetworkInterface(getsgnicptions)
+		if err1 == nil {
+			return fmt.Errorf("network interface still exists: %s", rs.Primary.ID)
 		}
 	}
 
@@ -117,30 +89,16 @@ func testAccCheckIBMISSecurityGroupNwInterfaceAttachmentExists(n, instance strin
 		sgID := parts[0]
 		nicID := parts[1]
 
-		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-		if userDetails.generation == 1 {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getsgnicptions := &vpcclassicv1.GetSecurityGroupNetworkInterfaceOptions{
-				SecurityGroupID: &sgID,
-				ID:              &nicID,
-			}
-			found, _, err := sess.GetSecurityGroupNetworkInterface(getsgnicptions)
-			if err != nil {
-				return err
-			}
-			instance = *found.ID
-		} else {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getsgnicptions := &vpcv1.GetSecurityGroupNetworkInterfaceOptions{
-				SecurityGroupID: &sgID,
-				ID:              &nicID,
-			}
-			found, _, err := sess.GetSecurityGroupNetworkInterface(getsgnicptions)
-			if err != nil {
-				return err
-			}
-			instance = *found.ID
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		getsgnicptions := &vpcv1.GetSecurityGroupNetworkInterfaceOptions{
+			SecurityGroupID: &sgID,
+			ID:              &nicID,
 		}
+		found, _, err := sess.GetSecurityGroupNetworkInterface(getsgnicptions)
+		if err != nil {
+			return err
+		}
+		instance = *found.ID
 		return nil
 	}
 }

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -108,62 +107,11 @@ func dataSourceIBMISImages() *schema.Resource {
 }
 
 func dataSourceIBMISImagesRead(d *schema.ResourceData, meta interface{}) error {
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+
+	err := imageList(d, meta)
 	if err != nil {
 		return err
 	}
-	if userDetails.generation == 1 {
-		err := classicImageList(d, meta)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := imageList(d, meta)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func classicImageList(d *schema.ResourceData, meta interface{}) error {
-	sess, err := classicVpcClient(meta)
-	if err != nil {
-		return err
-	}
-	start := ""
-	allrecs := []vpcclassicv1.Image{}
-	for {
-		listImagesOptions := &vpcclassicv1.ListImagesOptions{}
-		if start != "" {
-			listImagesOptions.Start = &start
-		}
-		availableImages, response, err := sess.ListImages(listImagesOptions)
-		if err != nil {
-			return fmt.Errorf("Error Fetching Images %s\n%s", err, response)
-		}
-		start = GetNext(availableImages.Next)
-		allrecs = append(allrecs, availableImages.Images...)
-		if start == "" {
-			break
-		}
-	}
-	imagesInfo := make([]map[string]interface{}, 0)
-	for _, image := range allrecs {
-
-		l := map[string]interface{}{
-			"name":         *image.Name,
-			"id":           *image.ID,
-			"status":       *image.Status,
-			"crn":          *image.CRN,
-			"visibility":   *image.Visibility,
-			"os":           *image.OperatingSystem.Name,
-			"architecture": *image.OperatingSystem.Architecture,
-		}
-		imagesInfo = append(imagesInfo, l)
-	}
-	d.SetId(dataSourceIBMISSubnetsID(d))
-	d.Set(isImages, imagesInfo)
 	return nil
 }
 
