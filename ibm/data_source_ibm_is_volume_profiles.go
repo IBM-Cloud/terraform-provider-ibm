@@ -56,13 +56,32 @@ func volumeProfilesList(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	listVolumeProfilesOptions := &vpcv1.ListVolumeProfilesOptions{}
-	availableProfiles, response, err := sess.ListVolumeProfiles(listVolumeProfilesOptions)
-	if err != nil {
-		return fmt.Errorf("Error Fetching Volume Profiles %s\n%s", err, response)
+
+	start := ""
+	allrecs := []vpcv1.VolumeProfile{}
+	for {
+		listVolumeProfilesOptions := &vpcv1.ListVolumeProfilesOptions{}
+		if start != "" {
+			listVolumeProfilesOptions.Start = &start
+		}
+		availableProfiles, response, err := sess.ListVolumeProfiles(listVolumeProfilesOptions)
+		if err != nil {
+			return fmt.Errorf("Error Fetching Volume Profiles %s\n%s", err, response)
+		}
+		start = GetNext(availableProfiles.Next)
+		allrecs = append(allrecs, availableProfiles.Profiles...)
+		if start == "" {
+			break
+		}
 	}
+
+	// listVolumeProfilesOptions := &vpcv1.ListVolumeProfilesOptions{}
+	// availableProfiles, response, err := sess.ListVolumeProfiles(listVolumeProfilesOptions)
+	// if err != nil {
+	// 	return fmt.Errorf("Error Fetching Volume Profiles %s\n%s", err, response)
+	// }
 	profilesInfo := make([]map[string]interface{}, 0)
-	for _, profile := range availableProfiles.Profiles {
+	for _, profile := range allrecs {
 
 		l := map[string]interface{}{
 			"name":   *profile.Name,
