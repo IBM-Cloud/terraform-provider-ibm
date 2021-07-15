@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 
@@ -164,13 +165,32 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 		return err
 	}
 
-	listSgOptions := &vpcv1.ListSecurityGroupsOptions{}
-	sgs, _, err := sess.ListSecurityGroups(listSgOptions)
-	if err != nil {
-		return err
+	// Support for pagination
+	start := ""
+	allrecs := []vpcv1.SecurityGroup{}
+
+	for {
+		listSgOptions := &vpcv1.ListSecurityGroupsOptions{}
+		if start != "" {
+			listSgOptions.Start = &start
+		}
+		sgs, response, err := sess.ListSecurityGroups(listSgOptions)
+		if err != nil || sgs == nil {
+			return fmt.Errorf("Error Getting Security Groups %s\n%s", err, response)
+		}
+		if *sgs.TotalCount == int64(0) {
+			break
+		}
+		start = GetNext(sgs.Next)
+		allrecs = append(allrecs, sgs.SecurityGroups...)
+
+		if start == "" {
+			break
+		}
+
 	}
 
-	for _, group := range sgs.SecurityGroups {
+	for _, group := range allrecs {
 		if *group.Name == name {
 
 			d.Set(isSgName, *group.Name)
