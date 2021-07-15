@@ -78,6 +78,9 @@ resource "ibm_is_instance_volume_attachment" "testacc_att2" {
 
   name = "test-col-att-2"
   volume = ibm_is_volume.testacc_vol.id
+
+  // it is recommended to keep the delete_volume_on_attachment_delete as false here otherwise on deleting attachment, existing volume will also get deleted
+
   delete_volume_on_attachment_delete = false
   delete_volume_on_instance_delete = false
 }
@@ -123,8 +126,8 @@ Review the argument references that you can specify for your resource.
 - `capacity` - (Optional, Integer) The capacity of the volume in gigabytes. **NOTE** The specified minimum and maximum capacity values for creating or updating volumes may expand in the future. Accepted value is in [10-2000].
   - If this property is not provided or less than the minimum_capacity, minimum_capacity of the snapshot will be used as the capacity for the volume.
 
-- `delete_volume_on_attachment_delete` - (Optional, Bool) If set to true, when deleting the attachment, the volume will also be deleted
-- `delete_volume_on_instance_delete` - (Optional, Bool) If set to true, when deleting the instance, the volume will also be deleted
+- `delete_volume_on_attachment_delete` - (Optional, Bool) If set to true, when deleting the attachment, the volume will also be deleted. By default it is **true**
+- `delete_volume_on_instance_delete` - (Optional, Bool) If set to true, when deleting the instance, the volume will also be deleted. By default it is **false**
 - `encryption_key` - (Optional, String) The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource. If this property is not provided but the image is encrypted, the image's encryption_key will be used. Otherwise, the encryption type for the volume will be `provider_managed`.
 - `instance` - (Required, String) The id of the instance.
 - `iops` - (Optional, Integer) The bandwidth for the new volume
