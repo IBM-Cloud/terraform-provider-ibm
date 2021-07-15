@@ -247,12 +247,26 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 	if err != nil {
 		return err
 	}
-	listLoadBalancersOptions := &vpcv1.ListLoadBalancersOptions{}
-	lbs, response, err := sess.ListLoadBalancers(listLoadBalancersOptions)
-	if err != nil {
-		return fmt.Errorf("Error Fetching Load Balancers %s\n%s", err, response)
+
+	start := ""
+	allrecs := []vpcv1.LoadBalancer{}
+	for {
+		listLoadBalancersOptions := &vpcv1.ListLoadBalancersOptions{}
+		if start != "" {
+			listLoadBalancersOptions.Start = &start
+		}
+		lbs, response, err := sess.ListLoadBalancers(listLoadBalancersOptions)
+		if err != nil {
+			return fmt.Errorf("Error Fetching Load Balancers %s\n%s", err, response)
+		}
+		start = GetNext(lbs.Next)
+		allrecs = append(allrecs, lbs.LoadBalancers...)
+		if start == "" {
+			break
+		}
 	}
-	for _, lb := range lbs.LoadBalancers {
+
+	for _, lb := range allrecs {
 		if *lb.Name == name {
 			d.SetId(*lb.ID)
 			d.Set(isLBName, *lb.Name)
