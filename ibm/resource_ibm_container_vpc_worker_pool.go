@@ -145,7 +145,7 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 		},
 	}
 }
-func resourceContainerVPCWorkerPoolTaintsValidator() *ResourceValidator {
+func resourceContainerVPCWorkerPoolValidator() *ResourceValidator {
 	tainteffects := "NoSchedule, PreferNoSchedule, and NoExecute"
 	validateSchema := make([]ValidateSchema, 1)
 	validateSchema = append(validateSchema,

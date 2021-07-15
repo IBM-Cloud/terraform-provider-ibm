@@ -226,7 +226,7 @@ Review the argument references that you can specify for your resource.
 - `subnet_id` - (Optional, String) The ID of an existing subnet that you want to use for your worker nodes. To find existing subnets, run `ibmcloud ks subnets`.
 - `service_subnet`-  (Optional, Forces new resource, String) Specify a custom subnet CIDR to provide private IP addresses for services. The subnet should be at least `/24` or more. For more information, refer to [Subnet service](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli#service-subnet).
 - `tags` - (Optional, Array of string)  A list of tags that you want to add to your cluster. Tags can help find a cluster more quickly.  **Note**: For users on account to add tags to a resource, they must be assigned the appropriate [permissions](https://cloud.ibm.com/docs/resources?topic=resources-access).
-- `taints` - (Optional, List) A nested block describes the taints of this worker pool.
+- `taints` - (Optional, Set) A nested block that sets or removes Kubernetes taints for all worker nodes in a worker pool
 
   Nested scheme for `taints`:
   - `key` - (Required, String) Key for taint.
