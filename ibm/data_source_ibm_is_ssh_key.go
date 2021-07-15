@@ -101,11 +101,25 @@ func keyGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 		listKeysOptions.ResourceGroupID = &resourceGroup
 	}
 
-	keys, response, err := sess.ListKeys(listKeysOptions)
-	if err != nil {
-		return fmt.Errorf("Error fetching Keys %s\n%s", err, response)
+	start := ""
+	allrecs := []vpcv1.Key{}
+	for {
+		if start != "" {
+			listKeysOptions.Start = &start
+		}
+
+		keys, response, err := sess.ListKeys(listKeysOptions)
+		if err != nil {
+			return fmt.Errorf("Error fetching Keys %s\n%s", err, response)
+		}
+		start = GetNext(keys.Next)
+		allrecs = append(allrecs, keys.Keys...)
+		if start == "" {
+			break
+		}
 	}
-	for _, key := range keys.Keys {
+
+	for _, key := range allrecs {
 		if *key.Name == name {
 			d.SetId(*key.ID)
 			d.Set("name", *key.Name)
