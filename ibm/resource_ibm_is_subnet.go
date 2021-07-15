@@ -429,6 +429,7 @@ func resourceIBMISSubnetRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
+	var rType string
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
