@@ -178,12 +178,26 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 		subnet = subnetinfo
 	} else if v, ok := d.GetOk(isSubnetName); ok {
 		name := v.(string)
+		start := ""
+		allrecs := []vpcv1.Subnet{}
 		getSubnetsListOptions := &vpcv1.ListSubnetsOptions{}
-		subnetsCollection, response, err := sess.ListSubnets(getSubnetsListOptions)
-		if err != nil {
-			return fmt.Errorf("Error Getting Subnets List : %s\n%s", err, response)
+
+		for {
+			if start != "" {
+				getSubnetsListOptions.Start = &start
+			}
+			subnetsCollection, response, err := sess.ListSubnets(getSubnetsListOptions)
+			if err != nil {
+				return fmt.Errorf("Error Fetching subnets List %s\n%s", err, response)
+			}
+			start = GetNext(subnetsCollection.Next)
+			allrecs = append(allrecs, subnetsCollection.Subnets...)
+			if start == "" {
+				break
+			}
 		}
-		for _, subnetInfo := range subnetsCollection.Subnets {
+
+		for _, subnetInfo := range allrecs {
 			if *subnetInfo.Name == name {
 				subnet = &subnetInfo
 				break
