@@ -15,7 +15,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
-func dataSourceIbmIsVpcAddressPrefix() *schema.Resource {
+func dataSourceIbmIsVpcAddressPrefixes() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIbmIsVpcAddressPrefixRead,
 
@@ -93,44 +93,6 @@ func dataSourceIbmIsVpcAddressPrefix() *schema.Resource {
 					},
 				},
 			},
-			"first": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "A link to the first page of resources.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for a page of resources.",
-						},
-					},
-				},
-			},
-			"limit": &schema.Schema{
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The maximum number of resources that can be returned by the request.",
-			},
-			"next": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "A link to the next page of resources. This property is present for all pagesexcept the last page.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for a page of resources.",
-						},
-					},
-				},
-			},
-			"total_count": &schema.Schema{
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The total number of resources across all pages.",
-			},
 		},
 	}
 }
@@ -142,14 +104,26 @@ func dataSourceIbmIsVpcAddressPrefixRead(context context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	listVpcAddressPrefixesOptions := &vpcv1.ListVPCAddressPrefixesOptions{}
+	start := ""
+	allrecs := []vpcv1.AddressPrefix{}
+	for {
+		listVpcAddressPrefixesOptions := &vpcv1.ListVPCAddressPrefixesOptions{}
 
-	listVpcAddressPrefixesOptions.SetVPCID(d.Get("vpc").(string))
+		listVpcAddressPrefixesOptions.SetVPCID(d.Get("vpc").(string))
 
-	addressPrefixCollection, response, err := vpcClient.ListVPCAddressPrefixesWithContext(context, listVpcAddressPrefixesOptions)
-	if err != nil {
-		log.Printf("[DEBUG] ListVpcAddressPrefixesWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListVpcAddressPrefixesWithContext failed %s\n%s", err, response))
+		if start != "" {
+			listVpcAddressPrefixesOptions.Start = &start
+		}
+		addressPrefixCollection, response, err := vpcClient.ListVPCAddressPrefixesWithContext(context, listVpcAddressPrefixesOptions)
+		if err != nil {
+			log.Printf("[DEBUG] ListVpcAddressPrefixesWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("ListVpcAddressPrefixesWithContext failed %s\n%s", err, response))
+		}
+		start = GetNext(addressPrefixCollection.Next)
+		allrecs = append(allrecs, addressPrefixCollection.AddressPrefixes...)
+		if start == "" {
+			break
+		}
 	}
 
 	// Use the provided filter argument and construct a new list with only the requested resource(s)
@@ -160,18 +134,17 @@ func dataSourceIbmIsVpcAddressPrefixRead(context context.Context, d *schema.Reso
 	if v, ok := d.GetOk("name"); ok {
 		name = v.(string)
 		suppliedFilter = true
-		for _, data := range addressPrefixCollection.AddressPrefixes {
+		for _, data := range allrecs {
 			if *data.Name == name {
 				matchAddressPrefixes = append(matchAddressPrefixes, data)
 			}
 		}
 	} else {
-		matchAddressPrefixes = addressPrefixCollection.AddressPrefixes
+		matchAddressPrefixes = allrecs
 	}
-	addressPrefixCollection.AddressPrefixes = matchAddressPrefixes
 
 	if suppliedFilter {
-		if len(addressPrefixCollection.AddressPrefixes) == 0 {
+		if len(matchAddressPrefixes) == 0 {
 			return diag.FromErr(fmt.Errorf("no AddressPrefixes found with name %s", name))
 		}
 		d.SetId(name)
@@ -179,31 +152,11 @@ func dataSourceIbmIsVpcAddressPrefixRead(context context.Context, d *schema.Reso
 		d.SetId(dataSourceIbmIsVpcAddressPrefixID(d))
 	}
 
-	if addressPrefixCollection.AddressPrefixes != nil {
-		err = d.Set("address_prefixes", dataSourceAddressPrefixCollectionFlattenAddressPrefixes(addressPrefixCollection.AddressPrefixes))
+	if matchAddressPrefixes != nil {
+		err = d.Set("address_prefixes", dataSourceAddressPrefixCollectionFlattenAddressPrefixes(matchAddressPrefixes))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting address_prefixes %s", err))
 		}
-	}
-
-	if addressPrefixCollection.First != nil {
-		err = d.Set("first", dataSourceAddressPrefixCollectionFlattenFirst(*addressPrefixCollection.First))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting first %s", err))
-		}
-	}
-	if err = d.Set("limit", addressPrefixCollection.Limit); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
-	}
-
-	if addressPrefixCollection.Next != nil {
-		err = d.Set("next", dataSourceAddressPrefixCollectionFlattenNext(*addressPrefixCollection.Next))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting next %s", err))
-		}
-	}
-	if err = d.Set("total_count", addressPrefixCollection.TotalCount); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
 	}
 
 	return nil

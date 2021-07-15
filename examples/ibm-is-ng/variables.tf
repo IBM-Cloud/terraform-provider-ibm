@@ -26,3 +26,6 @@ variable "image_operating_system" {
   default = "red-7-amd64"
 }
 
+variable "cidr1" {
+  default = "10.120.0.0/24"
+}

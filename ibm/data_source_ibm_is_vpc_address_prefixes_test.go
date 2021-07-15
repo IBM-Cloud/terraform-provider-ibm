@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIbmIsVpcAddressPrefixDataSourceBasic(t *testing.T) {
+func TestAccIbmIsVpcAddressPrefixesDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("tfvpcuat-%d", acctest.RandIntRange(10, 100))
 	prefixName := fmt.Sprintf("tfaddprename-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
@@ -21,11 +21,9 @@ func TestAccIbmIsVpcAddressPrefixDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmIsVpcAddressPrefixDataSourceConfigBasic(name, prefixName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_address_prefix.is_vpc_address_prefix", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_address_prefix.is_vpc_address_prefix", "vpc"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_address_prefix.is_vpc_address_prefix", "address_prefixes.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_address_prefix.is_vpc_address_prefix", "limit"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_address_prefix.is_vpc_address_prefix", "total_count"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_address_prefixes.is_vpc_address_prefix", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_address_prefixes.is_vpc_address_prefix", "vpc"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_address_prefixes.is_vpc_address_prefix", "address_prefixes.#"),
 				),
 			},
 		},
@@ -34,7 +32,7 @@ func TestAccIbmIsVpcAddressPrefixDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmIsVpcAddressPrefixDataSourceConfigBasic(name, prefixName string) string {
 	return testAccCheckIBMISVPCAddressPrefixConfig(name, prefixName) + fmt.Sprintf(`
-		data "ibm_is_vpc_address_prefixs" "is_vpc_address_prefix" {
+		data "ibm_is_vpc_address_prefixes" "is_vpc_address_prefix" {
 			vpc = "${ibm_is_vpc.testacc_vpc.id}"
 		}
 	`)

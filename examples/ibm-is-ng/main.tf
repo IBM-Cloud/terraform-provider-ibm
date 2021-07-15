@@ -2,6 +2,14 @@ resource "ibm_is_vpc" "vpc1" {
   name = "vpc1"
 }
 
+resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix" {
+  name        = "vpcaddressprefix"
+  zone        = var.zone1
+  vpc         = ibm_is_vpc.vpc1.id
+	cidr        = var.cidr1
+	is_default  = true
+}
+
 resource "ibm_is_vpc_route" "route1" {
   name        = "route1"
   vpc         = ibm_is_vpc.vpc1.id
