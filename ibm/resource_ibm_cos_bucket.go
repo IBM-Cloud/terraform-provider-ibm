@@ -1056,7 +1056,9 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 	if err != nil {
 		return false, err
 	}
-
+	if parseBucketId(d.Id(), "") == "" {
+		return false, fmt.Errorf("[ERROR] Incorrect ID. ID should be of format <CRN:meta:buckettype:bucketlocation>")
+	}
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
 	endpointType := parseBucketId(d.Id(), "endpointType")
@@ -1121,9 +1123,16 @@ func selectCosApi(apiType string, bLocation string) (string, string) {
 }
 
 func parseBucketId(id string, info string) string {
-	crn := strings.Split(id, ":meta:")[0]
-	meta := strings.Split(id, ":meta:")[1]
-
+	bucketId := strings.Split(id, ":meta:")
+	if len(bucketId) != 2 {
+		return ""
+	}
+	crn := bucketId[0]
+	meta := bucketId[1]
+	metaID := strings.Split(meta, ":")
+	if len(metaID) < 2 {
+		return ""
+	}
 	if info == "bucketName" {
 		return strings.Split(crn, ":bucket:")[1]
 	}
