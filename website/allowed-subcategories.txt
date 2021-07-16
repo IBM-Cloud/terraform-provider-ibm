@@ -12,6 +12,7 @@ Enterprise Management
 Event Streams
 Functions
 Global Tagging
+IBM Cloud Shell
 Identity & Access Management (IAM)
 Internet services
 Key Management Service
