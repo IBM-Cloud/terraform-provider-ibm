@@ -59,6 +59,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
+- `access_tags`  - (String) Access management tags associated for the instance.
 - `available_ipv4_address_count` - (Integer) The total number of available IPv4 addresses.
 - `crn` - (String) The CRN of subnet.
 - `ipv4_cidr_block` -  (String) The IPv4 range of the subnet.
