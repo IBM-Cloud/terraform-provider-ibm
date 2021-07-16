@@ -344,7 +344,7 @@ func init() {
 	isImage = os.Getenv("IS_IMAGE")
 	if isImage == "" {
 		//isImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
-		isImage = "r006-5b05b4fe-bcbc-4309-ad45-3354813227a0" // for next gen infrastructure
+		isImage = "r134-9573cb89-984e-45a4-bfc5-df611bbb8e7d" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00'")
 	}
 

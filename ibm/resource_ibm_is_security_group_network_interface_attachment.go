@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -38,6 +39,8 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachment() *schema.Resource {
 		Delete:   resourceIBMISSecurityGroupNetworkInterfaceAttachmentDelete,
 		Exists:   resourceIBMISSecurityGroupNetworkInterfaceAttachmentExists,
 		Importer: &schema.ResourceImporter{},
+
+		DeprecationMessage: "Resource ibm_is_security_group_network_interface_attachment is deprecated. Use ibm_is_security_group_target to attach a network interface to a security group",
 
 		Schema: map[string]*schema.Schema{
 			isSGNICAGroupId: {
@@ -158,11 +161,11 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachmentCreate(d *schema.Resour
 	sgID := d.Get(isSGNICAGroupId).(string)
 	nicID := d.Get(isSGNICANicId).(string)
 
-	options := &vpcv1.AddSecurityGroupNetworkInterfaceOptions{
+	options := &vpcv1.CreateSecurityGroupTargetBindingOptions{
 		SecurityGroupID: &sgID,
 		ID:              &nicID,
 	}
-	_, response, err := sess.AddSecurityGroupNetworkInterface(options)
+	_, response, err := sess.CreateSecurityGroupTargetBinding(options)
 	if err != nil {
 		return fmt.Errorf("Error while creating SecurityGroup NetworkInterface Binding %s\n%s", err, response)
 	}
@@ -183,17 +186,27 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachmentRead(d *schema.Resource
 	sgID := parts[0]
 	nicID := parts[1]
 
-	getSecurityGroupNetworkInterfaceOptions := &vpcv1.GetSecurityGroupNetworkInterfaceOptions{
+	getSecurityGroupNetworkInterfaceOptions := &vpcv1.GetSecurityGroupTargetOptions{
 		SecurityGroupID: &sgID,
 		ID:              &nicID,
 	}
-	instanceNic, response, err := sess.GetSecurityGroupNetworkInterface(getSecurityGroupNetworkInterfaceOptions)
-	if err != nil {
+	secGroupTarget, response, err := sess.GetSecurityGroupTarget(getSecurityGroupNetworkInterfaceOptions)
+	if err != nil || secGroupTarget == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error getting NetworkInterface(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
+		return fmt.Errorf("Error getting target(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
+	}
+	instance_id := strings.Split(*secGroupTarget.(*vpcv1.SecurityGroupTargetReference).Href, "/")[5]
+	net_interf_id := *secGroupTarget.(*vpcv1.SecurityGroupTargetReference).ID
+	getnicoptions := &vpcv1.GetInstanceNetworkInterfaceOptions{
+		InstanceID: &instance_id,
+		ID:         &net_interf_id,
+	}
+	instanceNic, response, err := sess.GetInstanceNetworkInterface(getnicoptions)
+	if err != nil {
+		return fmt.Errorf("Error getting network interfaces attached to the instance %s %s\n%s", instance_id, err, response)
 	}
 	d.Set(isSGNICAGroupId, sgID)
 	d.Set(isSGNICANicId, nicID)
@@ -251,11 +264,11 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachmentDelete(d *schema.Resour
 	sgID := parts[0]
 	nicID := parts[1]
 
-	getSecurityGroupNetworkInterfaceOptions := &vpcv1.GetSecurityGroupNetworkInterfaceOptions{
+	getSecurityGroupNetworkInterfaceOptions := &vpcv1.GetSecurityGroupTargetOptions{
 		SecurityGroupID: &sgID,
 		ID:              &nicID,
 	}
-	_, response, err := sess.GetSecurityGroupNetworkInterface(getSecurityGroupNetworkInterfaceOptions)
+	_, response, err := sess.GetSecurityGroupTarget(getSecurityGroupNetworkInterfaceOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -264,11 +277,11 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachmentDelete(d *schema.Resour
 		return fmt.Errorf("Error getting NetworkInterface(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
 	}
 
-	removeSecurityGroupNetworkInterfaceOptions := &vpcv1.RemoveSecurityGroupNetworkInterfaceOptions{
+	removeSecurityGroupNetworkInterfaceOptions := &vpcv1.DeleteSecurityGroupTargetBindingOptions{
 		SecurityGroupID: &sgID,
 		ID:              &nicID,
 	}
-	response, err = sess.RemoveSecurityGroupNetworkInterface(removeSecurityGroupNetworkInterfaceOptions)
+	response, err = sess.DeleteSecurityGroupTargetBinding(removeSecurityGroupNetworkInterfaceOptions)
 	if err != nil {
 		return fmt.Errorf("Error Deleting NetworkInterface(%s) for the SecurityGroup (%s) : %s\n%s", nicID, sgID, err, response)
 	}
@@ -290,11 +303,11 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachmentExists(d *schema.Resour
 	}
 	sgID := parts[0]
 	nicID := parts[1]
-	getSecurityGroupNetworkInterfaceOptions := &vpcv1.GetSecurityGroupNetworkInterfaceOptions{
+	getSecurityGroupNetworkInterfaceOptions := &vpcv1.GetSecurityGroupTargetOptions{
 		SecurityGroupID: &sgID,
 		ID:              &nicID,
 	}
-	_, response, err := sess.GetSecurityGroupNetworkInterface(getSecurityGroupNetworkInterfaceOptions)
+	_, response, err := sess.GetSecurityGroupTarget(getSecurityGroupNetworkInterfaceOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
