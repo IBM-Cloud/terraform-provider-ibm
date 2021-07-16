@@ -90,15 +90,15 @@ func testAccCheckIBMISSecurityGroupNwInterfaceAttachmentExists(n, instance strin
 		nicID := parts[1]
 
 		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-		getsgnicptions := &vpcv1.GetSecurityGroupNetworkInterfaceOptions{
+		getsgnicptions := &vpcv1.GetSecurityGroupTargetOptions{
 			SecurityGroupID: &sgID,
 			ID:              &nicID,
 		}
-		found, _, err := sess.GetSecurityGroupNetworkInterface(getsgnicptions)
+		found, _, err := sess.GetSecurityGroupTarget(getsgnicptions)
 		if err != nil {
 			return err
 		}
-		instance = *found.ID
+		instance = *found.(*vpcv1.SecurityGroupTargetReference).ID
 		return nil
 	}
 }
