@@ -4,38 +4,41 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
-	isLBPoolName                      = "name"
-	isLBID                            = "lb"
-	isLBPoolAlgorithm                 = "algorithm"
-	isLBPoolProtocol                  = "protocol"
-	isLBPoolHealthDelay               = "health_delay"
-	isLBPoolHealthRetries             = "health_retries"
-	isLBPoolHealthTimeout             = "health_timeout"
-	isLBPoolHealthType                = "health_type"
-	isLBPoolHealthMonitorURL          = "health_monitor_url"
-	isLBPoolHealthMonitorPort         = "health_monitor_port"
-	isLBPoolSessPersistenceType       = "session_persistence_type"
-	isLBPoolSessPersistenceCookieName = "session_persistence_cookie_name"
-	isLBPoolProvisioningStatus        = "provisioning_status"
-	isLBPoolProxyProtocol             = "proxy_protocol"
-	isLBPoolActive                    = "active"
-	isLBPoolCreatePending             = "create_pending"
-	isLBPoolUpdatePending             = "update_pending"
-	isLBPoolDeletePending             = "delete_pending"
-	isLBPoolMaintainancePending       = "maintenance_pending"
-	isLBPoolFailed                    = "failed"
-	isLBPoolDeleteDone                = "deleted"
-	isLBPool                          = "pool_id"
+	isLBPoolName                          = "name"
+	isLBID                                = "lb"
+	isLBPoolAlgorithm                     = "algorithm"
+	isLBPoolProtocol                      = "protocol"
+	isLBPoolHealthDelay                   = "health_delay"
+	isLBPoolHealthRetries                 = "health_retries"
+	isLBPoolHealthTimeout                 = "health_timeout"
+	isLBPoolHealthType                    = "health_type"
+	isLBPoolHealthMonitorURL              = "health_monitor_url"
+	isLBPoolHealthMonitorPort             = "health_monitor_port"
+	isLBPoolSessPersistenceType           = "session_persistence_type"
+	isLBPoolSessPersistenceAppCookieName  = "session_persistence_app_cookie_name"
+	isLBPoolSessPersistenceHttpCookieName = "session_persistence_http_cookie_name"
+	isLBPoolProvisioningStatus            = "provisioning_status"
+	isLBPoolProxyProtocol                 = "proxy_protocol"
+	isLBPoolActive                        = "active"
+	isLBPoolCreatePending                 = "create_pending"
+	isLBPoolUpdatePending                 = "update_pending"
+	isLBPoolDeletePending                 = "delete_pending"
+	isLBPoolMaintainancePending           = "maintenance_pending"
+	isLBPoolFailed                        = "failed"
+	isLBPoolDeleteDone                    = "deleted"
+	isLBPool                              = "pool_id"
 )
 
 func resourceIBMISLBPool() *schema.Resource {
@@ -52,6 +55,12 @@ func resourceIBMISLBPool() *schema.Resource {
 			Update: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return resourceIBMISLBPoolCookieValidate(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 			isLBPoolName: {
@@ -128,10 +137,17 @@ func resourceIBMISLBPool() *schema.Resource {
 				Description:  "Load Balancer Pool session persisence type.",
 			},
 
-			isLBPoolSessPersistenceCookieName: {
+			isLBPoolSessPersistenceAppCookieName: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: InvokeValidator("ibm_is_lb_pool", isLBPoolSessPersistenceAppCookieName),
+				Description:  "Load Balancer Pool session persisence app cookie name.",
+			},
+
+			isLBPoolSessPersistenceHttpCookieName: {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Load Balancer Pool session persisence cookie name",
+				Computed:    true,
+				Description: "Load Balancer Pool session persisence http cookie name.",
 			},
 
 			isLBPoolProvisioningStatus: {
@@ -168,7 +184,7 @@ func resourceIBMISLBPoolValidator() *ResourceValidator {
 	validateSchema := make([]ValidateSchema, 1)
 	algorithm := "round_robin, weighted_round_robin, least_connections"
 	protocol := "http, tcp, https"
-	persistanceType := "source_ip"
+	persistanceType := "source_ip, app_cookie, http_cookie"
 	proxyProtocol := "disabled, v1, v2"
 	validateSchema = append(validateSchema,
 		ValidateSchema{
@@ -209,6 +225,15 @@ func resourceIBMISLBPoolValidator() *ResourceValidator {
 			AllowedValues:              proxyProtocol})
 	validateSchema = append(validateSchema,
 		ValidateSchema{
+			Identifier:                 isLBPoolSessPersistenceAppCookieName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     "^[-A-Za-z0-9!#$%&'*+.^_`~|]+$",
+			MinValueLength:             1,
+			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
 			Identifier:                 isLBPoolSessPersistenceType,
 			ValidateFunctionIdentifier: ValidateAllowedStringValue,
 			Type:                       TypeString,
@@ -237,7 +262,7 @@ func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
 		spType = pt.(string)
 	}
 
-	if cn, ok := d.GetOk(isLBPoolSessPersistenceCookieName); ok {
+	if cn, ok := d.GetOk(isLBPoolSessPersistenceAppCookieName); ok {
 		cName = cn.(string)
 	}
 	if pp, ok := d.GetOk(isLBPoolProxyProtocol); ok {
@@ -296,6 +321,9 @@ func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorith
 	if spType != "" {
 		options.SessionPersistence = &vpcv1.LoadBalancerPoolSessionPersistencePrototype{
 			Type: &spType,
+		}
+		if cName != "" {
+			options.SessionPersistence.CookieName = &cName
 		}
 	}
 	if pProtocol != "" {
@@ -379,7 +407,20 @@ func lbPoolGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) 
 	}
 	if lbPool.SessionPersistence != nil {
 		d.Set(isLBPoolSessPersistenceType, *lbPool.SessionPersistence.Type)
-		// d.Set(isLBPoolSessPersistenceCookieName, *lbPool.SessionPersistence.CookieName)
+		if lbPool.SessionPersistence.CookieName != nil {
+			if *lbPool.SessionPersistence.Type == "app_cookie" {
+				d.Set(isLBPoolSessPersistenceAppCookieName, *lbPool.SessionPersistence.CookieName)
+				d.Set(isLBPoolSessPersistenceHttpCookieName, "")
+			} else if *lbPool.SessionPersistence.Type == "http_cookie" {
+				d.Set(isLBPoolSessPersistenceHttpCookieName, *lbPool.SessionPersistence.CookieName)
+				d.Set(isLBPoolSessPersistenceAppCookieName, "")
+			}
+
+		}
+	} else {
+		d.Set(isLBPoolSessPersistenceType, "")
+		d.Set(isLBPoolSessPersistenceHttpCookieName, "")
+		d.Set(isLBPoolSessPersistenceAppCookieName, "")
 	}
 	d.Set(isLBPoolProvisioningStatus, *lbPool.ProvisioningStatus)
 	d.Set(isLBPoolProxyProtocol, *lbPool.ProxyProtocol)
@@ -450,12 +491,22 @@ func lbPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 		hasChanged = true
 	}
 
-	if d.HasChange(isLBPoolSessPersistenceType) || d.HasChange(isLBPoolSessPersistenceCookieName) {
+	sessionPersistenceRemoved := false
+	if d.HasChange(isLBPoolSessPersistenceType) || d.HasChange(isLBPoolSessPersistenceAppCookieName) {
 		sesspersistancetype := d.Get(isLBPoolSessPersistenceType).(string)
-		sessionPersistence := &vpcv1.LoadBalancerPoolSessionPersistencePatch{
-			Type: &sesspersistancetype,
+		sessPersistanceCookieName := d.Get(isLBPoolSessPersistenceAppCookieName).(string)
+		sessionPersistence := &vpcv1.LoadBalancerPoolSessionPersistencePatch{}
+		if sesspersistancetype != "" {
+			sessionPersistence.Type = &sesspersistancetype
+			if sessPersistanceCookieName != "" {
+				sessionPersistence.CookieName = &sessPersistanceCookieName
+			}
+		} else {
+			sessionPersistenceRemoved = true
 		}
+
 		loadBalancerPoolPatchModel.SessionPersistence = sessionPersistence
+
 		hasChanged = true
 	}
 
@@ -492,6 +543,9 @@ func lbPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 		LoadBalancerPoolPatch, err := loadBalancerPoolPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for LoadBalancerPoolPatch: %s", err)
+		}
+		if sessionPersistenceRemoved {
+			LoadBalancerPoolPatch["session_persistence"] = nil
 		}
 		updateLoadBalancerPoolOptions.LoadBalancerPoolPatch = LoadBalancerPoolPatch
 

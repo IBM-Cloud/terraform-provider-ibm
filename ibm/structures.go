@@ -1991,6 +1991,27 @@ func resourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 	return nil
 }
 
+func resourceIBMISLBPoolCookieValidate(diff *schema.ResourceDiff) error {
+	_, sessionPersistenceTypeIntf := diff.GetChange(isLBPoolSessPersistenceType)
+	_, sessionPersistenceCookieNameIntf := diff.GetChange(isLBPoolSessPersistenceAppCookieName)
+	sessionPersistenceType := sessionPersistenceTypeIntf.(string)
+	sessionPersistenceCookieName := sessionPersistenceCookieNameIntf.(string)
+
+	if sessionPersistenceType == "app_cookie" {
+		if sessionPersistenceCookieName == "" {
+			return fmt.Errorf("Load Balancer Pool: %s is required for %s 'app_cookie'", isLBPoolSessPersistenceAppCookieName, isLBPoolSessPersistenceType)
+		}
+		if strings.HasPrefix(sessionPersistenceCookieName, "IBM") {
+			return fmt.Errorf("Load Balancer Pool: %s starting with IBM are not allowed", isLBPoolSessPersistenceAppCookieName)
+		}
+	}
+
+	if sessionPersistenceCookieName != "" && sessionPersistenceType != "app_cookie" {
+		return fmt.Errorf("Load Balancer Pool: %s is only applicable for %s 'app_cookie'.", isLBPoolSessPersistenceAppCookieName, isLBPoolSessPersistenceType)
+	}
+	return nil
+}
+
 func resourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
 
 	if volsintf, ok := diff.GetOk("volume_attachments"); ok {
