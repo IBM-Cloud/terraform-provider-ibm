@@ -1,3 +1,38 @@
+## 1.28.0 (Jul16, 2021)
+FEATURES:
+* Support VPC address prefixes
+    - **DataSources**
+        - ibm_is_vpc_address_prefixes
+* Support VPC Instance Volume attachment
+    - **Resources**
+        - ibm_is_instance_volume_attachment
+    - **DataSources**
+        - ibm_is_instance_volume_attachment
+        - ibm_is_instance_volume_attachments
+* Support VPC Snapshots
+    - **Resources**
+        - ibm_is_snapshot
+    - **DataSources**
+        - ibm_is_snapshot
+        - ibm_is_snapshots
+
+ENHANCEMENTS
+
+* Support to provision an instance from `instance_template` and instance boot volume from `snapshot` ([2672](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2672))
+
+* Support Worker Pool Taints for IBM Cloud Clusters ([#2862](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2862))
+
+* Clean up the reference for Gen1 code from all VPC resources and datasources
+
+BUGFIXES
+* ibm_is_security_group datasource does not find existing SGs ([#2868](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2868))
+* Apply for ibm_iam_access_group_members fails with 404 when using IBMCLOUD_VISIBILITY=private ([#2828](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2828))
+* Removed IPV6 References in vpc resources ([2697](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2697))
+* IBM Cloud Provider - ibm_satellite_location silent correction ([2724](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2724))
+* fix: set required cluster_name_id attribute ([2836](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2836))
+* Doc fix for IAM policies and COS bucket ([2861](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2861))
+
+
 ## 1.27.2 (Jul09, 2021)
 
 ENHANCEMENTS
