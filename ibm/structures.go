@@ -1841,9 +1841,14 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 	}
 
 	if len(remove) > 0 {
-		detachTagOptions := &globaltaggingv1.DetachTagOptions{
-			Resources: resources,
-			TagNames:  remove,
+		detachTagOptions := &globaltaggingv1.DetachTagOptions{}
+		detachTagOptions.Resources = resources
+		detachTagOptions.TagNames = remove
+		if len(tagType) > 0 {
+			detachTagOptions.TagType = ptrToString(tagType)
+			if tagType == service {
+				detachTagOptions.AccountID = ptrToString(acctID)
+			}
 		}
 
 		_, resp, err := gtClient.DetachTag(detachTagOptions)

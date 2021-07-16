@@ -45,6 +45,7 @@ The `ibm_is_volume` resource provides the following [Timeouts](https://www.terra
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `access_tags` - (Optional, List of Strings) A list of access management tags for the volume. **Note** Currently we are supporting only the existing tags attachement.
 - `capacity` - (Optional, Forces new resource, Integer) (The capacity of the volume in gigabytes. This defaults to `100`.
 - `delete_all_snapshots` - (Optional, Bool) Deletes all snapshots created from this volume.
 - `encryption_key` - (Optional, Forces new resource, String) The key to use for encrypting this volume.
