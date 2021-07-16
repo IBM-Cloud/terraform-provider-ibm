@@ -392,6 +392,10 @@ data "ibm_is_vpc" "vpc1" {
   name = ibm_is_vpc.vpc1.name
 }
 
+// added for vpcs datasource
+data "ibm_is_vpc" "vpcs"{
+}
+
 data "ibm_is_volume_profile" "volprofile"{
   name = "general-purpose"
 }
