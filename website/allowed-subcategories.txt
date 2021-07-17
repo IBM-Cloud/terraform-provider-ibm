@@ -12,6 +12,7 @@ Enterprise Management
 Event Streams
 Functions
 Global Tagging
+Hyper Protect Crypto Service (HPCS)
 Identity & Access Management (IAM)
 Internet services
 Key Management Service

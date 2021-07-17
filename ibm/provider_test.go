@@ -74,6 +74,10 @@ var hpcsInstanceID string
 var secretsManagerInstanceID string
 var secretsManagerSecretType string
 var secretsManagerSecretID string
+var hpcsAdmin1 string
+var hpcsToken1 string
+var hpcsAdmin2 string
+var hpcsToken2 string
 
 // For Power Colo
 
@@ -556,6 +560,22 @@ func init() {
 	if account_to_be_imported == "" {
 		fmt.Println("[INFO] Set the environment variable ACCOUNT_TO_BE_IMPORTED for testing import enterprise account resource else  tests will fail if this is not set correctly")
 	}
+	hpcsAdmin1 = os.Getenv("IBM_HPCS_ADMIN1")
+	if hpcsAdmin1 == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_HPCS_ADMIN1 with a VALID HPCS Admin Key1 Path")
+	}
+	hpcsToken1 = os.Getenv("IBM_HPCS_TOKEN1")
+	if hpcsToken1 == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_HPCS_TOKEN1 with a VALID token for HPCS Admin Key1")
+	}
+	hpcsAdmin2 = os.Getenv("IBM_HPCS_ADMIN2")
+	if hpcsAdmin2 == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_HPCS_ADMIN2 with a VALID HPCS Admin Key2 Path")
+	}
+	hpcsToken2 = os.Getenv("IBM_HPCS_TOKEN2")
+	if hpcsToken2 == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_HPCS_TOKEN2 with a VALID token for HPCS Admin Key2")
+	}
 
 }
 
@@ -622,7 +642,21 @@ func testAccPreCheckCis(t *testing.T) {
 		t.Fatal("IBM_CIS_DOMAIN_TEST must be set for acceptance tests")
 	}
 }
-
+func testAccPreCheckHPCS(t *testing.T) {
+	testAccPreCheck(t)
+	if hpcsAdmin1 == "" {
+		t.Fatal("IBM_HPCS_ADMIN1 must be set for acceptance tests")
+	}
+	if hpcsToken1 == "" {
+		t.Fatal("IBM_HPCS_TOKEN1 must be set for acceptance tests")
+	}
+	if hpcsAdmin2 == "" {
+		t.Fatal("IBM_HPCS_ADMIN2 must be set for acceptance tests")
+	}
+	if hpcsToken2 == "" {
+		t.Fatal("IBM_HPCS_TOKEN2 must be set for acceptance tests")
+	}
+}
 func testAccPreCheckCOS(t *testing.T) {
 	testAccPreCheck(t)
 	if cosCRN == "" {
