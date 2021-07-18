@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -300,24 +299,18 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 	if err != nil {
 		return err
 	}
-	var rType string
-	if v, ok := d.GetOk("resource_type"); ok && v != nil {
-		rType = v.(string)
-	}
-	v := os.Getenv("IC_ENV_TAGS")
-	if _, ok := d.GetOk(isVolumeTags); ok || v != "" {
+	if _, ok := d.GetOk(isVolumeTags); ok {
 		oldList, newList := d.GetChange(isVolumeTags)
-		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, rType, isVolumeUserTagType)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, "", isVolumeUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource Volume (%s) tags: %s", d.Id(), err)
 		}
 	}
 
-	accesstags := os.Getenv("IC_ENV_TAGS")
-	if _, ok := d.GetOk(isVolumeAccessTags); ok || accesstags != "" {
+	if _, ok := d.GetOk(isVolumeAccessTags); ok {
 		oldList, newList := d.GetChange(isVolumeAccessTags)
-		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, rType, isVolumeAccessTagType)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, "", isVolumeAccessTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc volume (%s) access tags: %s", d.Id(), err)
@@ -380,17 +373,12 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isVolumeStatusReasons, statusReasonsList)
 	}
 
-	var rType string
-	if v, ok := d.GetOk("resource_type"); ok && v != nil {
-		rType = v.(string)
-	}
-
-	tags, err := GetGlobalTagsUsingCRN(meta, *vol.CRN, rType, isVolumeUserTagType)
+	tags, err := GetGlobalTagsUsingCRN(meta, *vol.CRN, "", isVolumeUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
 	}
-	accesstags, err := GetGlobalTagsUsingCRN(meta, *vol.CRN, rType, isVolumeAccessTagType)
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *vol.CRN, "", isVolumeAccessTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource subnet (%s) access tags: %s", d.Id(), err)
@@ -454,11 +442,7 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		}
 		oldList, newList := d.GetChange(isVolumeTags)
 
-		var rType string
-		if v, ok := d.GetOk("resource_type"); ok && v != nil {
-			rType = v.(string)
-		}
-		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, rType, isVolumeUserTagType)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, "", isVolumeUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc volume (%s) tags: %s", id, err)
@@ -474,11 +458,7 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		}
 		oldList, newList := d.GetChange(isVolumeAccessTags)
 
-		var rType string
-		if v, ok := d.GetOk("resource_type"); ok && v != nil {
-			rType = v.(string)
-		}
-		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, rType, isVolumeAccessTagType)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, "", isVolumeAccessTagType)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc volume (%s) access tags: %s", id, err)

@@ -227,18 +227,13 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 			}
 			d.Set(isVolumeStatusReasons, statusReasonsList)
 		}
-		var rType string
-		if v, ok := d.GetOk("resource_type"); ok && v != nil {
-			rType = v.(string)
-		}
-
-		tags, err := GetGlobalTagsUsingCRN(meta, *vol.CRN, rType, isVolumeUserTagType)
+		tags, err := GetGlobalTagsUsingCRN(meta, *vol.CRN, "", isVolumeUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
 		}
 		d.Set(isVolumeTags, tags)
-		accesstags, err := GetGlobalTagsUsingCRN(meta, *vol.CRN, rType, isVolumeAccessTagType)
+		accesstags, err := GetGlobalTagsUsingCRN(meta, *vol.CRN, "", isVolumeAccessTagType)
 		if err != nil {
 			log.Printf(
 				"Error on get of resource vpc volume (%s) access tags: %s", d.Id(), err)
