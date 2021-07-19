@@ -353,6 +353,11 @@ In addition to all argument reference list, you can access the following attribu
   - `security_groups`-List of strings-A list of security groups that are used in the primary network interface.
   - `primary_ipv4_address` - (String) The primary IPv4 address.
 - `status` - (String) The status of the instance.
+- `status_reasons` - (List) Array of reasons for the current status.
+
+  Nested scheme for `status_reasons`:
+  - `code` - (String) A string with an underscore as a special character identifying the status reason.
+  - `message` - (String) An explanation of the status reason.
 - `volume_attachments`- (List of Strings) A list of volume attachments for the instance.
 
   Nested scheme for `volume_attachements`:
