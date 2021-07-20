@@ -8,11 +8,11 @@ import (
 	"log"
 	"time"
 
-	// "github.com/IBM/networking-go-sdk/dnssvcsv1"
+	"github.com/IBM/networking-go-sdk/dnssvcsv1"
 
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.ibm.com/ibmcloud/networking-go-sdk/dnssvcsv1"
 )
 
 const (
@@ -31,6 +31,9 @@ const (
 	pdnsCRLocationEnabled       = "enabled"
 	pdnsCRLocationHealthy       = "healthy"
 	pdnsCRLocationDnsServerIp   = "dns_server_ip"
+	pdnsCustomResolverCritical  = "CRITICAL"
+	pdnsCustomResolverDegraded  = "DEGRADED"
+	pdnsCustomResolverHealthy   = "HEALTHY"
 )
 
 func resouceIBMPrivateDNSCustomResolver() *schema.Resource {
@@ -61,26 +64,19 @@ func resouceIBMPrivateDNSCustomResolver() *schema.Resource {
 				Description: "Identifier of the custom resolver",
 			},
 			pdnsCRName: {
-				Type:     schema.TypeString,
-				Required: true,
-				// ForceNew:    true,
+				Type:        schema.TypeString,
+				Required:    true,
 				Description: "Name of the custom resolver",
-				// ValidateFunc: InvokeValidator(pdnsCustomResolvers,
-				// 	pdnsCRName),
 			},
 			pdnsCRDescription: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Descriptive text of the custom resolver.",
-				// ValidateFunc: InvokeValidator(pdnsCustomResolvers,
-				// 	pdnsCRDescription),
 			},
 			pdnsCREnabled: {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Whether the custom resolver is enabled",
-				// ValidateFunc: InvokeValidator(pdnsCustomResolvers,
-				// 	pdnsCREnabled),
 			},
 			pdnsCRHealth: {
 				Type:        schema.TypeString,
@@ -138,7 +134,7 @@ func resouceIBMPrivateDNSCustomResolver() *schema.Resource {
 }
 
 func resouceIBMPrivateDNSCustomResolverCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).PrivateDNSClientSessionScoped()
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return fmt.Errorf("Error while getting the PrivateDNSClientSession %s", err)
 	}
@@ -168,12 +164,26 @@ func resouceIBMPrivateDNSCustomResolverCreate(d *schema.ResourceData, meta inter
 	d.SetId(convertCisToTfTwoVar(*result.ID, crn))
 	d.Set(pdnsCRId, *result.ID)
 
+	_, err = waitForPDNSCustomResolverHealthy(d, meta)
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for update custom resolver (%s) to be not CRITICAL : %s", d.Id(), err)
+	}
+
+	// Enable Custrom Resolver
+	optEnabled := sess.NewUpdateCustomResolverOptions(crn, *result.ID)
+	optEnabled.SetEnabled(true)
+	_, _, errEnabled := sess.UpdateCustomResolver(optEnabled)
+	if errEnabled != nil {
+		return fmt.Errorf("Error enabling pdns custom resolver: %s", err)
+	}
+
 	return resouceIBMPrivateDNSCustomResolverRead(d, meta)
 }
 
 func resouceIBMPrivateDNSCustomResolverRead(d *schema.ResourceData, meta interface{}) error {
 
-	sess, err := meta.(ClientSession).PrivateDNSClientSessionScoped()
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return fmt.Errorf("Error while getting the PrivateDNSClientSession %s", err)
 	}
@@ -206,7 +216,7 @@ func resouceIBMPrivateDNSCustomResolverRead(d *schema.ResourceData, meta interfa
 }
 
 func resouceIBMPrivateDNSCustomResolverUpdate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).PrivateDNSClientSessionScoped()
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return fmt.Errorf("Error while getting the PrivateDNSClientSession %s", err)
 	}
@@ -247,7 +257,7 @@ func resouceIBMPrivateDNSCustomResolverUpdate(d *schema.ResourceData, meta inter
 }
 
 func resouceIBMPrivateDNSCustomResolverDelete(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).PrivateDNSClientSessionScoped()
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}
@@ -255,6 +265,14 @@ func resouceIBMPrivateDNSCustomResolverDelete(d *schema.ResourceData, meta inter
 	customResolverID, crn, err := convertTftoCisTwoVar(d.Id())
 	if err != nil {
 		return err
+	}
+
+	// Disable Cutsom Resolver before deleting
+	optEnabled := sess.NewUpdateCustomResolverOptions(crn, customResolverID)
+	optEnabled.SetEnabled(false)
+	_, _, errEnabled := sess.UpdateCustomResolver(optEnabled)
+	if errEnabled != nil {
+		return fmt.Errorf("Error updating pdns custom resolver: %s", err)
 	}
 
 	opt := sess.NewDeleteCustomResolverOptions(crn, customResolverID)
@@ -273,7 +291,7 @@ func resouceIBMPrivateDNSCustomResolverDelete(d *schema.ResourceData, meta inter
 
 func resouceIBMPrivateDNSCustomResolverExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 
-	sess, err := meta.(ClientSession).PrivateDNSClientSessionScoped()
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return false, err
 	}
@@ -315,7 +333,6 @@ func expandPdnsCRLocations(crLocList *schema.Set) (crLocations []dnssvcsv1.Locat
 	for _, iface := range crLocList.List() {
 		var locOpt dnssvcsv1.LocationInput
 		loc := iface.(map[string]interface{})
-		log.Println(loc[pdnsCRLocationSubnetCrn].(string))
 		locOpt.SubnetCrn = core.StringPtr(loc[pdnsCRLocationSubnetCrn].(string))
 		if val, ok := loc[pdnsCRLocationEnabled]; ok {
 			locOpt.Enabled = core.BoolPtr(val.(bool))
@@ -323,4 +340,33 @@ func expandPdnsCRLocations(crLocList *schema.Set) (crLocations []dnssvcsv1.Locat
 		crLocations = append(crLocations, locOpt)
 	}
 	return
+}
+
+func waitForPDNSCustomResolverHealthy(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
+	if err != nil {
+		return nil, err
+	}
+	customResolverID, crn, _ := convertTftoCisTwoVar(d.Id())
+	opt := sess.NewGetCustomResolverOptions(crn, customResolverID)
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{pdnsCustomResolverCritical},
+		Target:  []string{pdnsCustomResolverDegraded, pdnsCustomResolverHealthy},
+		Refresh: func() (interface{}, string, error) {
+			res, detail, err := sess.GetCustomResolver(opt)
+			if err != nil {
+				if detail != nil && detail.StatusCode == 404 {
+					return nil, "", fmt.Errorf("The custom resolver %s does not exist anymore: %v", customResolverID, err)
+				}
+				return nil, "", fmt.Errorf("Get the custom resolver %s failed with resp code: %s, err: %v", customResolverID, detail, err)
+			}
+			return res, *res.Health, nil
+		},
+		Timeout:    10 * time.Minute,
+		Delay:      5 * time.Second,
+		MinTimeout: 60 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }

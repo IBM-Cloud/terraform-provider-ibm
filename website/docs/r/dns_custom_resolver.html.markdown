@@ -41,9 +41,9 @@ Review the argument reference that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute references after your resource is created. 
 
 - `created_on` - (Timestamp) The time (created On) of the DNS Custom Resolver. 
-- `id` - (String) The unique ID of the private DNS custom resolver. The ID is composed of `<instance_id>:<custom_resolver_id>`. 
+- `id` - (String) The unique ID of the private DNS custom resolver.
 - `modified_on` - (Timestamp) The time (modified On) of the DNS Custom Resolver.
-- `health`- (String) The status of DNS Custom Resolver's health. Possible values are `DOWN`, `CRITICAL`, `HEALTHY`.
+- `health`- (String) The status of DNS Custom Resolver's health. Possible values are `DEGRADED`, `CRITICAL`, `HEALTHY`.
 - `locations`
   
   Nested scheme for `locations`:
@@ -54,11 +54,11 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 The `ibm_dns_custom_resolver` can be imported by using private DNS instance ID, Custom Resolver ID.
-The `id` property can be formed from `instance_id` and `custom_resolver_id` in the following format:
-<instance_id>:<custom_resolver_id>
+The `id` property can be formed from `custom_resolver_id` and `instance_id` in the following format:
+<custom_resolver_id>:<instance_id>
 
 **Example**
 
 ```
-$ terraform import ibm_dns_custom_resolver.example 6ffda12064634723b079acdb018ef308:435da12064634723b079acdb018ef308
+$ terraform import ibm_dns_custom_resolver.example 270edfad-8574-4ce0-86bf-5c158d3e38fe:345ca2c4-83bf-4c04-bb09-5d8ec4d425a8
 ```

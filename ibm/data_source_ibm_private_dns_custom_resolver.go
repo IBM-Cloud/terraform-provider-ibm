@@ -89,7 +89,7 @@ func dataSourceIBMDNSCustomResolver() *schema.Resource {
 }
 
 func dataSourceIBMDNSCustomResolverRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).PrivateDNSClientSessionScoped()
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}

@@ -88,7 +88,7 @@ func testAccCheckIBMPrivateDNSCustomResolverDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_dns_custom_resolver" {
 			continue
 		}
-		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDNSClientSessionScoped()
+		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDNSClientSession()
 		if err != nil {
 			return err
 		}
@@ -116,7 +116,7 @@ func testAccCheckIBMPrivateDNSCustomResolverExists(n string, result string) reso
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
-		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDNSClientSessionScoped()
+		pdnsClient, err := testAccProvider.Meta().(ClientSession).PrivateDNSClientSession()
 		if err != nil {
 			return err
 		}

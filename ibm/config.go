@@ -65,7 +65,6 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	slsession "github.com/softlayer/softlayer-go/session"
 	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
-	dnsScoped "github.ibm.com/ibmcloud/networking-go-sdk/dnssvcsv1"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
@@ -215,7 +214,6 @@ type ClientSession interface {
 	VpcV1API() (*vpc.VpcV1, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 	PrivateDNSClientSession() (*dns.DnsSvcsV1, error)
-	PrivateDNSClientSessionScoped() (*dnsScoped.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
 	DirectlinkV1API() (*dl.DirectLinkV1, error)
 	DirectlinkProviderV2API() (*dlProviderV2.DirectLinkProviderV2, error)
@@ -339,9 +337,6 @@ type clientSession struct {
 
 	pDNSClient *dns.DnsSvcsV1
 	pDNSErr    error
-
-	pDNSClientScoped *dnsScoped.DnsSvcsV1
-	pDNSErrscoped    error
 
 	bluemixSessionErr error
 
@@ -683,11 +678,6 @@ func (sess clientSession) IBMPISession() (*ibmpisession.IBMPISession, error) {
 
 func (sess clientSession) PrivateDNSClientSession() (*dns.DnsSvcsV1, error) {
 	return sess.pDNSClient, sess.pDNSErr
-}
-
-// Private DNS Service Scoped
-func (sess clientSession) PrivateDNSClientSessionScoped() (*dnsScoped.DnsSvcsV1, error) {
-	return sess.pDNSClientScoped, sess.pDNSErrscoped
 }
 
 // Session to the Namespace cloud function
@@ -1486,19 +1476,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.pDNSClient != nil && session.pDNSClient.Service != nil {
 		session.pDNSClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-	}
-
-	// pDNS Scopped Session
-	dnsOptionsscoped := &dnsScoped.DnsSvcsV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_PRIVATE_DNS_API_ENDPOINT"}, pdnsURL),
-		Authenticator: authenticator,
-	}
-	session.pDNSClientScoped, session.pDNSErrscoped = dnsScoped.NewDnsSvcsV1(dnsOptionsscoped)
-	if session.pDNSErrscoped != nil {
-		session.pDNSErrscoped = fmt.Errorf("Error occured while configuring PrivateDNS Service Scoped: %s", session.pDNSErr)
-	}
-	if session.pDNSClientScoped != nil && session.pDNSClientScoped.Service != nil {
-		session.pDNSClientScoped.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 
 	ver := time.Now().Format("2006-01-02")

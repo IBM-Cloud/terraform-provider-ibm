@@ -349,12 +349,14 @@ func Provider() *schema.Provider {
 
 			// Added for private dns zones
 
-			"ibm_dns_zones":              dataSourceIBMPrivateDNSZones(),
-			"ibm_dns_permitted_networks": dataSourceIBMPrivateDNSPermittedNetworks(),
-			"ibm_dns_resource_records":   dataSourceIBMPrivateDNSResourceRecords(),
-			"ibm_dns_glb_monitors":       dataSourceIBMPrivateDNSGLBMonitors(),
-			"ibm_dns_glb_pools":          dataSourceIBMPrivateDNSGLBPools(),
-			"ibm_dns_glbs":               dataSourceIBMPrivateDNSGLBs(),
+			"ibm_dns_zones":               dataSourceIBMPrivateDNSZones(),
+			"ibm_dns_permitted_networks":  dataSourceIBMPrivateDNSPermittedNetworks(),
+			"ibm_dns_resource_records":    dataSourceIBMPrivateDNSResourceRecords(),
+			"ibm_dns_glb_monitors":        dataSourceIBMPrivateDNSGLBMonitors(),
+			"ibm_dns_glb_pools":           dataSourceIBMPrivateDNSGLBPools(),
+			"ibm_dns_glbs":                dataSourceIBMPrivateDNSGLBs(),
+			"ibm_dns_custom_resolvers":    dataSourceIBMDNSCustomResolver(),
+			"ibm_dns_cr_forwarding_rules": dataSourceIbmDnsCrForwardingRules(),
 
 			// Added for Direct Link
 
@@ -373,9 +375,6 @@ func Provider() *schema.Provider {
 			"ibm_tg_gateways":  dataSourceIBMTransitGateways(),
 			"ibm_tg_locations": dataSourceIBMTransitGatewaysLocations(),
 			"ibm_tg_location":  dataSourceIBMTransitGatewaysLocation(),
-
-			//Added for Custom Resolver
-			"ibm_dns_custom_resolvers": dataSourceIBMDNSCustomResolver(),
 
 			//Added for BSS Enterprise
 			"ibm_enterprises":               dataSourceIbmEnterprises(),
@@ -602,8 +601,9 @@ func Provider() *schema.Provider {
 			"ibm_dns_glb":               resourceIBMPrivateDNSGLB(),
 
 			//Added for Custom Resolver
-			"ibm_dns_custom_resolver": resouceIBMPrivateDNSCustomResolver(),
-			"ibm_dns_cr_locations":    resourceIBMPrivateDNSCRLocation(),
+			"ibm_dns_custom_resolver":    resouceIBMPrivateDNSCustomResolver(),
+			"ibm_dns_cr_locations":       resourceIBMPrivateDNSCRLocation(),
+			"ibm_dns_cr_forwarding_rule": resourceIbmDnsCrForwardingRule(),
 
 			//Direct Link related resources
 			"ibm_dl_gateway":            resourceIBMDLGateway(),
@@ -723,6 +723,7 @@ func Validator() ValidatorDict {
 				"ibm_kms_key_rings":                     resourceIBMKeyRingValidator(),
 				"ibm_dns_glb_monitor":                   resourceIBMPrivateDNSGLBMonitorValidator(),
 				"ibm_dns_glb_pool":                      resourceIBMPrivateDNSGLBPoolValidator(),
+				"ibm_dns_cr_forwarding_rule":            resourceIbmDnsCrForwardingRuleValidator(),
 				"ibm_schematics_action":                 resourceIBMSchematicsActionValidator(),
 				"ibm_schematics_job":                    resourceIBMSchematicsJobValidator(),
 				"ibm_schematics_workspace":              resourceIBMSchematicsWorkspaceValidator(),

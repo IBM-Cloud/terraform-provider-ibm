@@ -72,7 +72,7 @@ func resourceIBMPrivateDNSCRLocation() *schema.Resource {
 	}
 }
 func resourceIBMPrivateDNSLocationCreate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).PrivateDNSClientSessionScoped()
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return fmt.Errorf("Error connecting to session :%s", err)
 	}
@@ -104,7 +104,7 @@ func resourceIBMPrivateDNSLocationRead(d *schema.ResourceData, meta interface{})
 	return nil
 }
 func resourceIBMPrivateDNSLocationUpdate(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).PrivateDNSClientSessionScoped()
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}
@@ -127,7 +127,7 @@ func resourceIBMPrivateDNSLocationUpdate(d *schema.ResourceData, meta interface{
 	return resourceIBMPrivateDNSLocationRead(d, meta)
 }
 func resourceIBMPrivateDNSLocationDelete(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(ClientSession).PrivateDNSClientSessionScoped()
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return err
 	}

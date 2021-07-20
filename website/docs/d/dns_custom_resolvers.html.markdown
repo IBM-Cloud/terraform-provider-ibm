@@ -35,7 +35,7 @@ In addition to the argument references list, you can access the following attrib
    - `name` - (String) Name of the  custom resolver.
    - `description` - (String) Descriptive text of the custom resolver.
    - `enabled` - (String) Descriptive text of the custom resolver.
-   - `health`- (String) The status of DNS Custom Resolver's health. Possible values are `DOWN`, `CRITICAL`, `HEALTHY`.
+   - `health`- (String) The status of DNS Custom Resolver's health. Possible values are `CRITICAL`, `DEGRADED`, `HEALTHY`.
   
     Nested scheme for `locations`:
     - `healthy`- (String) The health status.
