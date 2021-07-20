@@ -9,7 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -85,39 +84,22 @@ func TestAccIBMISImage_encrypted(t *testing.T) {
 	})
 }
 func checkImageDestroy(s *terraform.State) error {
-	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	if userDetails.generation == 1 {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_image" {
-				continue
-			}
-
-			getimgoptions := &vpcclassicv1.GetImageOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetImage(getimgoptions)
-			if err == nil {
-				return fmt.Errorf("Image still exists: %s", rs.Primary.ID)
-			}
+	sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_image" {
+			continue
 		}
-	} else {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_image" {
-				continue
-			}
 
-			getimgoptions := &vpcv1.GetImageOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetImage(getimgoptions)
-			if err == nil {
-				return fmt.Errorf("Image still exists: %s", rs.Primary.ID)
-			}
+		getimgoptions := &vpcv1.GetImageOptions{
+			ID: &rs.Primary.ID,
+		}
+		_, _, err := sess.GetImage(getimgoptions)
+		if err == nil {
+			return fmt.Errorf("Image still exists: %s", rs.Primary.ID)
 		}
 	}
+
 	return nil
 }
 
@@ -132,29 +114,17 @@ func testAccCheckIBMISImageExists(n, image string) resource.TestCheckFunc {
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
 		}
-		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-		if userDetails.generation == 1 {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getimgoptions := &vpcclassicv1.GetImageOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundImage, _, err := sess.GetImage(getimgoptions)
-			if err != nil {
-				return err
-			}
-			image = *foundImage.ID
-		} else {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getimgoptions := &vpcv1.GetImageOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundImage, _, err := sess.GetImage(getimgoptions)
-			if err != nil {
-				return err
-			}
-			image = *foundImage.ID
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		getimgoptions := &vpcv1.GetImageOptions{
+			ID: &rs.Primary.ID,
 		}
+		foundImage, _, err := sess.GetImage(getimgoptions)
+		if err != nil {
+			return err
+		}
+		image = *foundImage.ID
+
 		return nil
 	}
 }

@@ -16,7 +16,8 @@ import (
 
 	// Added code for the Power Colo Offering
 
-	apigateway "github.com/IBM/apigateway-go-sdk"
+	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
+	apigateway "github.com/IBM/apigateway-go-sdk/apigatewaycontrollerapiv1"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	"github.com/IBM/container-registry-go-sdk/containerregistryv1"
 	"github.com/IBM/go-sdk-core/v4/core"
@@ -59,12 +60,10 @@ import (
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
-	vpcclassic "github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
-	jwt "github.com/dgrijalva/jwt-go"
+	jwt "github.com/golang-jwt/jwt"
 	slsession "github.com/softlayer/softlayer-go/session"
-	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
@@ -102,8 +101,7 @@ const RetryAPIDelay = 5 * time.Second
 var BluemixRegion string
 
 var (
-	errEmptySoftLayerCredentials = errors.New("iaas_classic_username and iaas_classic_api_key must be provided. Please see the documentation on how to configure them")
-	errEmptyBluemixCredentials   = errors.New("ibmcloud_api_key or bluemix_api_key or iam_token and iam_refresh_token must be provided. Please see the documentation on how to configure it")
+	errEmptyBluemixCredentials = errors.New("ibmcloud_api_key or bluemix_api_key or iam_token and iam_refresh_token must be provided. Please see the documentation on how to configure it")
 )
 
 //UserConfig ...
@@ -210,7 +208,6 @@ type ClientSession interface {
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
 	keyManagementAPI() (*kp.Client, error)
-	VpcClassicV1API() (*vpcclassic.VpcClassicV1, error)
 	VpcV1API() (*vpc.VpcV1, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 	PrivateDNSClientSession() (*dns.DnsSvcsV1, error)
@@ -345,9 +342,6 @@ type clientSession struct {
 
 	appConfigurationClient    *appconfigurationv1.AppConfigurationV1
 	appConfigurationClientErr error
-
-	vpcClassicErr error
-	vpcClassicAPI *vpcclassic.VpcClassicV1
 
 	vpcErr error
 	vpcAPI *vpc.VpcV1
@@ -644,10 +638,6 @@ func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
 
 func (sess clientSession) keyManagementAPI() (*kp.Client, error) {
 	return sess.kmsAPI, sess.kmsErr
-}
-
-func (sess clientSession) VpcClassicV1API() (*vpcclassic.VpcClassicV1, error) {
-	return sess.vpcClassicAPI, sess.vpcClassicErr
 }
 
 func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
@@ -947,7 +937,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
 		session.certManagementErr = errEmptyBluemixCredentials
-		session.vpcClassicErr = errEmptyBluemixCredentials
 		session.vpcErr = errEmptyBluemixCredentials
 		session.apigatewayErr = errEmptyBluemixCredentials
 		session.pDNSErr = errEmptyBluemixCredentials
@@ -1209,35 +1198,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 	}
 	session.schematicsClient = schematicsClient
-
-	vpcclassicurl := contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
-	if c.Visibility == "private" {
-		if c.Region == "us-south" || c.Region == "us-east" {
-			vpcclassicurl = contructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
-		} else {
-			session.vpcClassicErr = fmt.Errorf("VPC Classic supports private endpoints only in us-south and us-east")
-		}
-	}
-	if c.Visibility == "public-and-private" {
-		if c.Region == "us-south" || c.Region == "us-east" {
-			vpcclassicurl = contructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
-		} else {
-			vpcclassicurl = contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
-		}
-	}
-	vpcclassicoptions := &vpcclassic.VpcClassicV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_IS_API_ENDPOINT"}, vpcclassicurl),
-		Authenticator: authenticator,
-	}
-	vpcclassicclient, err := vpcclassic.NewVpcClassicV1(vpcclassicoptions)
-	if err != nil {
-		session.vpcErr = fmt.Errorf("Error occured while configuring vpc classic service: %q", err)
-	}
-	if vpcclassicclient != nil && vpcclassicclient.Service != nil {
-		vpcclassicclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-	}
-
-	session.vpcClassicAPI = vpcclassicclient
 
 	vpcurl := contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
 	if c.Visibility == "private" {

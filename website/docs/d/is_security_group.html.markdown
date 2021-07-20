@@ -79,7 +79,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `rules`:
   - `rule_id`-  (String) ID of the rule.
   - `direction` - (String) Direction of traffic to enforce, either inbound or outbound.
-  - `ip_version` - (String) IP version: IPv4 or IPv6.
+  - `ip_version` - (String) IP version: IPv4
   - `protocol` - (String) The type of the protocol `all`, `icmp`, `tcp`, `udp`.
   - `type` - (String) The traffic type to allow.
   - `code` - (String) The traffic code to allow.

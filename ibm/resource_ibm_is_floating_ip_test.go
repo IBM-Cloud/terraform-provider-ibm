@@ -9,7 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -70,39 +69,22 @@ func TestAccIBMISFloatingIP_NoTarget(t *testing.T) {
 }
 
 func testAccCheckIBMISFloatingIPDestroy(s *terraform.State) error {
-	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	if userDetails.generation == 1 {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_floating_ip" {
-				continue
-			}
-
-			getfipoptions := &vpcclassicv1.GetFloatingIPOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetFloatingIP(getfipoptions)
-			if err == nil {
-				return fmt.Errorf("Floating IP still exists: %s", rs.Primary.ID)
-			}
+	sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_floating_ip" {
+			continue
 		}
-	} else {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_floating_ip" {
-				continue
-			}
 
-			getfipoptions := &vpcv1.GetFloatingIPOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetFloatingIP(getfipoptions)
-			if err == nil {
-				return fmt.Errorf("Floating IP still exists: %s", rs.Primary.ID)
-			}
+		getfipoptions := &vpcv1.GetFloatingIPOptions{
+			ID: &rs.Primary.ID,
+		}
+		_, _, err := sess.GetFloatingIP(getfipoptions)
+		if err == nil {
+			return fmt.Errorf("Floating IP still exists: %s", rs.Primary.ID)
 		}
 	}
+
 	return nil
 }
 
@@ -117,29 +99,15 @@ func testAccCheckIBMISFloatingIPExists(n, ip string) resource.TestCheckFunc {
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
 		}
-		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-		if userDetails.generation == 1 {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getfipoptions := &vpcclassicv1.GetFloatingIPOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundip, _, err := sess.GetFloatingIP(getfipoptions)
-			if err != nil {
-				return err
-			}
-			ip = *foundip.ID
-		} else {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getfipoptions := &vpcv1.GetFloatingIPOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundip, _, err := sess.GetFloatingIP(getfipoptions)
-			if err != nil {
-				return err
-			}
-			ip = *foundip.ID
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		getfipoptions := &vpcv1.GetFloatingIPOptions{
+			ID: &rs.Primary.ID,
 		}
+		foundip, _, err := sess.GetFloatingIP(getfipoptions)
+		if err != nil {
+			return err
+		}
+		ip = *foundip.ID
 		return nil
 	}
 }
