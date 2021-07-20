@@ -32,6 +32,10 @@ const (
 	isDedicatedHostStatusPending        = "pending"
 	isDedicatedHostStatusRunning        = "running"
 	isDedicatedHostStatusFailed         = "failed"
+
+	isDedicatedHostAccessTags    = "access_tags"
+	isDedicatedHostUserTagType   = "user"
+	isDedicatedHostAccessTagType = "access"
 )
 
 func resourceIbmIsDedicatedHost() *schema.Resource {
@@ -55,6 +59,14 @@ func resourceIbmIsDedicatedHost() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: InvokeValidator("ibm_is_dedicated_host", "name"),
 				Description:  "The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.",
+			},
+			isDedicatedHostAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_dedicated_host", "accesstag")},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access management tags",
 			},
 			"profile": {
 				Type:        schema.TypeString,
@@ -411,6 +423,15 @@ func resourceIbmIsDedicatedHostCreate(context context.Context, d *schema.Resourc
 
 	d.SetId(*dedicatedHost.ID)
 
+	if _, ok := d.GetOk(isDedicatedHostAccessTags); ok {
+		oldList, newList := d.GetChange(isDedicatedHostAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *dedicatedHost.CRN, "", isDedicatedHostAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource dedicated host (%s) access tags: %s", d.Id(), err)
+		}
+	}
+
 	_, err = isWaitForDedicatedHostAvailable(vpcClient, d.Id(), d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -521,6 +542,13 @@ func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("Error setting zone: %s", err))
 	}
 
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *dedicatedHost.CRN, "", isDedicatedHostAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource dedicated host (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(isDedicatedHostAccessTags, accesstags)
+
 	return nil
 }
 
@@ -608,6 +636,15 @@ func resourceIbmIsDedicatedHostUpdate(context context.Context, d *schema.Resourc
 		if err != nil {
 			log.Printf("[DEBUG] UpdateDedicatedHostWithContext fails %s\n%s", err, response)
 			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange(isDedicatedHostAccessTags) {
+		oldList, newList := d.GetChange(isDedicatedHostAccessTags)
+		err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get("crn").(string), "", isDedicatedHostAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource dedicated host (%s) access tags: %s", d.Id(), err)
 		}
 	}
 

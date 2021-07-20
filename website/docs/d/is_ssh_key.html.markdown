@@ -33,3 +33,4 @@ In addition to all argument reference list, you can access the following attribu
 - `length` - (String) The length of the SSH key.
 - `type` - (String) The crypto system that is used by this key.
 - `public_key` - (String) The public SSH key value.
+- `access_tags`  - (String) Access management tags associated for the SSH key.

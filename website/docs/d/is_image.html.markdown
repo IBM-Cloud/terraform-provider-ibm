@@ -38,3 +38,4 @@ In addition to all argument reference list, you can access the following attribu
 - `os` - (String) The name of the operating system.
 - `status` - (String) The status of this image.
 - `source_volume` - The source volume id of the image.
+- `access_tags`  - (String) Access management tags associated for the image.

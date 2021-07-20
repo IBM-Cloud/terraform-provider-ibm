@@ -26,7 +26,7 @@ Review the argument references that you can specify for your resource.
 - `public_key` - (Required, Forces new resource, String) The public SSH key.
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID where the SSH is created.
 - `tags`- (Optional, Array of Strings) A list of tags that you want to add to your SSH key. Tags can help you find the SSH key more easily later.
-
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the SSH key. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

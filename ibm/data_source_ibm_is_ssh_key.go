@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,6 +26,14 @@ func dataSourceIBMISSSHKey() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of the ssh key",
+			},
+
+			isKeyAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access tags",
 			},
 
 			isKeyType: {
@@ -139,6 +148,12 @@ func keyGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			if key.PublicKey != nil {
 				d.Set(isKeyPublicKey, *key.PublicKey)
 			}
+			accesstags, err := GetGlobalTagsUsingCRN(meta, *key.CRN, "", isKeyAccessTagType)
+			if err != nil {
+				log.Printf(
+					"Error on get of resource SSH Key (%s) access tags: %s", d.Id(), err)
+			}
+			d.Set(isKeyAccessTags, accesstags)
 			return nil
 		}
 	}

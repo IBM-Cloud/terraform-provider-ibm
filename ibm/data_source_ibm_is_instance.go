@@ -105,6 +105,14 @@ func dataSourceIBMISInstance() *schema.Resource {
 				Set:         resourceIBMVPCHash,
 				Description: "list of tags for the instance",
 			},
+
+			isInstanceAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "list of access tags for the instance",
+			},
 			isInstanceBootVolume: {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -723,12 +731,19 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 				bootVolList = append(bootVolList, bootVol)
 				d.Set(isInstanceBootVolume, bootVolList)
 			}
-			tags, err := GetTagsUsingCRN(meta, *instance.CRN)
+			tags, err := GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceUserTagType)
 			if err != nil {
 				log.Printf(
 					"Error on get of resource vpc Instance (%s) tags: %s", d.Id(), err)
 			}
 			d.Set(isInstanceTags, tags)
+
+			accesstags, err := GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceAccessTagType)
+			if err != nil {
+				log.Printf(
+					"Error on get of resource vpc Instance (%s) access tags: %s", d.Id(), err)
+			}
+			d.Set(isInstanceAccessTags, accesstags)
 
 			controller, err := getBaseController(meta)
 			if err != nil {

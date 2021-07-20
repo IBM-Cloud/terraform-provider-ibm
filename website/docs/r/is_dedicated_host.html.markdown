@@ -35,7 +35,7 @@ Review the argument reference that you can specify for your resource.
 - `name` - (Optional, String) The unique user-defined name for the dedicated host. If unspecified, the name will be a hyphenated list of randomly selected words.
 - `profile`-  (String)  Required - The globally unique name of the dedicated host profile to use for the dedicated host.
 - `resource_group`- (Optional, String) The unique ID of the resource group to use. If unspecified, the account's [default resource group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
-
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the dedicated host. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

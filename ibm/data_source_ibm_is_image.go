@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,6 +21,14 @@ func dataSourceIBMISImage() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Image name",
+			},
+
+			isImageAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access tags",
 			},
 
 			"visibility": {
@@ -123,6 +132,12 @@ func imageGet(d *schema.ResourceData, meta interface{}, name, visibility string)
 				fmt.Printf("[WARN] Given image %s is deprecated and soon will be obsolete.", name)
 			}
 			d.Set("name", *image.Name)
+			accesstags, err := GetGlobalTagsUsingCRN(meta, *image.CRN, "", isImageAccessTagType)
+			if err != nil {
+				log.Printf(
+					"Error on get of resource image (%s) access tags: %s", d.Id(), err)
+			}
+			d.Set(isImageAccessTags, accesstags)
 			d.Set("visibility", *image.Visibility)
 			d.Set("os", *image.OperatingSystem.Name)
 			d.Set("architecture", *image.OperatingSystem.Architecture)

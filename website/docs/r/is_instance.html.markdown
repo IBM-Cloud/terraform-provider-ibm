@@ -297,6 +297,7 @@ Review the argument references that you can specify for your resource.
     
   - `instance_template` conflicts with `boot_volume.0.snapshot`  
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance. Tags can help you find your instance more easily later.
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the instance. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
 - `user_data` - (Optional, String) User data to transfer to the instance.
 - `volumes`  (Optional, List) A comma separated list of volume IDs to attach to the instance.
 - `vpc` - (Optional, Forces new resource, String) The ID of the VPC where you want to create the instance.

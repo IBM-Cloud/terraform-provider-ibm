@@ -32,6 +32,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `available_memory` -  (String) The amount of memory in `GB` that is currently available for instances.
 - `available_vcpu` -  (List) The available `VCPU` for the dedicated host. 
+- `access_tags`  - (String) Access management tags associated for the dedicated host.
 
   Nested scheme for `available_vcpu`:
   - `architecture` -  (String) The `VCPU` architecture.
