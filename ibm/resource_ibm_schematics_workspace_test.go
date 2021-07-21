@@ -36,7 +36,7 @@ func TestAccIBMSchematicsWorkspaceAllArgs(t *testing.T) {
 	var conf schematicsv1.WorkspaceResponse
 	description := fmt.Sprintf("tf-acc-test-schematics-all-args_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-acc-test-schematics_%d", acctest.RandIntRange(10, 100))
-	templateType := "terraform_v0.12.20"
+	templateType := "terraform_v0.13.5"
 
 	descriptionUpdate := fmt.Sprintf("description_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf-acc-test-schematics_%d", acctest.RandIntRange(10, 100))
@@ -88,7 +88,7 @@ func testAccCheckIBMSchematicsWorkspaceConfigBasic() string {
 			name = "tf-acc-test-schematics"
 			location = "us-east"
 			resource_group = "default"
-			template_type = "terraform_v0.12.20"
+			template_type = "terraform_v0.13.5"
 		}
 	`)
 }
@@ -101,7 +101,7 @@ func testAccCheckIBMSchematicsWorkspaceConfig(description string, name string) s
 			location = "us-east"
 			name = "%s"
 			resource_group = "default"
-			template_type = "terraform_v0.12.20"
+			template_type = "terraform_v0.13.5"
 		}
 	`, description, name)
 }
