@@ -361,13 +361,30 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				}
 				d.Set(cseSourceAddresses, cseSourceIpsList)
 			}
+
+			// adding pagination support for subnets inside vpc
+
+			startSub := ""
+			allrecsSub := []vpcv1.Subnet{}
 			options := &vpcv1.ListSubnetsOptions{}
-			s, response, err := sess.ListSubnets(options)
-			if err != nil {
-				log.Printf("Error Fetching subnets %s\n%s", err, response)
-			} else {
+
+			for {
+				if startSub != "" {
+					options.Start = &start
+				}
+				s, response, err := sess.ListSubnets(options)
+				if err != nil {
+					return fmt.Errorf("Error fetching subnets %s\n%s", err, response)
+				}
+				start = GetNext(s.Next)
+				allrecsSub = append(allrecsSub, s.Subnets...)
+				if startSub == "" {
+					break
+				}
+			}
+			if err == nil {
 				subnetsInfo := make([]map[string]interface{}, 0)
-				for _, subnet := range s.Subnets {
+				for _, subnet := range allrecsSub {
 					if *subnet.VPC.ID == d.Id() {
 						l := map[string]interface{}{
 							"name":                    *subnet.Name,
@@ -383,116 +400,137 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				d.Set(subnetsList, subnetsInfo)
 			}
 
-			listSgOptions := &vpcv1.ListSecurityGroupsOptions{}
-			sgs, _, err := sess.ListSecurityGroups(listSgOptions)
-			if err != nil {
-				return err
+			// adding pagination support for subnets inside vpc
+
+			startSg := ""
+			allrecsSg := []vpcv1.SecurityGroup{}
+
+			for {
+				vpcId := d.Id()
+				listSgOptions := &vpcv1.ListSecurityGroupsOptions{
+					VPCID: &vpcId,
+				}
+				if startSg != "" {
+					listSgOptions.Start = &start
+				}
+				sgs, response, err := sess.ListSecurityGroups(listSgOptions)
+				if err != nil || sgs == nil {
+					return fmt.Errorf("Error fetching Security Groups %s\n%s", err, response)
+				}
+				if *sgs.TotalCount == int64(0) {
+					break
+				}
+				start = GetNext(sgs.Next)
+				allrecsSg = append(allrecsSg, sgs.SecurityGroups...)
+
+				if startSg == "" {
+					break
+				}
+
 			}
 
 			securityGroupList := make([]map[string]interface{}, 0)
 
-			for _, group := range sgs.SecurityGroups {
-				if *group.VPC.ID == d.Id() {
-					g := make(map[string]interface{})
+			for _, group := range allrecsSg {
+				g := make(map[string]interface{})
 
-					g[isVPCSecurityGroupName] = *group.Name
-					g[isVPCSecurityGroupID] = *group.ID
+				g[isVPCSecurityGroupName] = *group.Name
+				g[isVPCSecurityGroupID] = *group.ID
 
-					rules := make([]map[string]interface{}, 0)
-					for _, sgrule := range group.Rules {
-						switch reflect.TypeOf(sgrule).String() {
-						case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
-							{
-								rule := sgrule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
-								r := make(map[string]interface{})
-								if rule.Code != nil {
-									r[isVPCSecurityGroupRuleCode] = int(*rule.Code)
-								}
-								if rule.Type != nil {
-									r[isVPCSecurityGroupRuleType] = int(*rule.Type)
-								}
-								r[isVPCSecurityGroupRuleDirection] = *rule.Direction
-								r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
-								if rule.Protocol != nil {
-									r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
-								}
-								r[isVPCSecurityGroupRuleID] = *rule.ID
-								remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
-								if ok {
-									if remote != nil && reflect.ValueOf(remote).IsNil() == false {
-										if remote.ID != nil {
-											r[isVPCSecurityGroupRuleRemote] = remote.ID
-										} else if remote.Address != nil {
-											r[isVPCSecurityGroupRuleRemote] = remote.Address
-										} else if remote.CIDRBlock != nil {
-											r[isVPCSecurityGroupRuleRemote] = remote.CIDRBlock
-										}
+				rules := make([]map[string]interface{}, 0)
+				for _, sgrule := range group.Rules {
+					switch reflect.TypeOf(sgrule).String() {
+					case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
+						{
+							rule := sgrule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
+							r := make(map[string]interface{})
+							if rule.Code != nil {
+								r[isVPCSecurityGroupRuleCode] = int(*rule.Code)
+							}
+							if rule.Type != nil {
+								r[isVPCSecurityGroupRuleType] = int(*rule.Type)
+							}
+							r[isVPCSecurityGroupRuleDirection] = *rule.Direction
+							r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
+							if rule.Protocol != nil {
+								r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
+							}
+							r[isVPCSecurityGroupRuleID] = *rule.ID
+							remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+							if ok {
+								if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+									if remote.ID != nil {
+										r[isVPCSecurityGroupRuleRemote] = remote.ID
+									} else if remote.Address != nil {
+										r[isVPCSecurityGroupRuleRemote] = remote.Address
+									} else if remote.CIDRBlock != nil {
+										r[isVPCSecurityGroupRuleRemote] = remote.CIDRBlock
 									}
 								}
-								rules = append(rules, r)
 							}
+							rules = append(rules, r)
+						}
 
-						case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
-							{
-								rule := sgrule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
-								r := make(map[string]interface{})
-								r[isVPCSecurityGroupRuleDirection] = *rule.Direction
-								r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
-								if rule.Protocol != nil {
-									r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
-								}
-								r[isVPCSecurityGroupRuleID] = *rule.ID
-								remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
-								if ok {
-									if remote != nil && reflect.ValueOf(remote).IsNil() == false {
-										if remote.ID != nil {
-											r[isVPCSecurityGroupRuleRemote] = remote.ID
-										} else if remote.Address != nil {
-											r[isVPCSecurityGroupRuleRemote] = remote.Address
-										} else if remote.CIDRBlock != nil {
-											r[isVPCSecurityGroupRuleRemote] = remote.CIDRBlock
-										}
+					case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
+						{
+							rule := sgrule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
+							r := make(map[string]interface{})
+							r[isVPCSecurityGroupRuleDirection] = *rule.Direction
+							r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
+							if rule.Protocol != nil {
+								r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
+							}
+							r[isVPCSecurityGroupRuleID] = *rule.ID
+							remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+							if ok {
+								if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+									if remote.ID != nil {
+										r[isVPCSecurityGroupRuleRemote] = remote.ID
+									} else if remote.Address != nil {
+										r[isVPCSecurityGroupRuleRemote] = remote.Address
+									} else if remote.CIDRBlock != nil {
+										r[isVPCSecurityGroupRuleRemote] = remote.CIDRBlock
 									}
 								}
-								rules = append(rules, r)
+							}
+							rules = append(rules, r)
+						}
+
+					case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
+						{
+							rule := sgrule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
+							r := make(map[string]interface{})
+							r[isVPCSecurityGroupRuleDirection] = *rule.Direction
+							r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
+							if rule.PortMin != nil {
+								r[isVPCSecurityGroupRulePortMin] = int(*rule.PortMin)
+							}
+							if rule.PortMax != nil {
+								r[isVPCSecurityGroupRulePortMax] = int(*rule.PortMax)
+							}
+							r[isVPCSecurityGroupRuleID] = *rule.ID
+							if rule.Protocol != nil {
+								r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
 							}
 
-						case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
-							{
-								rule := sgrule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
-								r := make(map[string]interface{})
-								r[isVPCSecurityGroupRuleDirection] = *rule.Direction
-								r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
-								if rule.PortMin != nil {
-									r[isVPCSecurityGroupRulePortMin] = int(*rule.PortMin)
-								}
-								if rule.PortMax != nil {
-									r[isVPCSecurityGroupRulePortMax] = int(*rule.PortMax)
-								}
-
-								if rule.Protocol != nil {
-									r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
-								}
-
-								remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
-								if ok {
-									if remote != nil && reflect.ValueOf(remote).IsNil() == false {
-										if remote.ID != nil {
-											r[isVPCSecurityGroupRuleRemote] = remote.ID
-										} else if remote.Address != nil {
-											r[isVPCSecurityGroupRuleRemote] = remote.Address
-										} else if remote.CIDRBlock != nil {
-											r[isVPCSecurityGroupRuleRemote] = remote.CIDRBlock
-										}
+							remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+							if ok {
+								if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+									if remote.ID != nil {
+										r[isVPCSecurityGroupRuleRemote] = remote.ID
+									} else if remote.Address != nil {
+										r[isVPCSecurityGroupRuleRemote] = remote.Address
+									} else if remote.CIDRBlock != nil {
+										r[isVPCSecurityGroupRuleRemote] = remote.CIDRBlock
 									}
 								}
-								rules = append(rules, r)
 							}
+							rules = append(rules, r)
 						}
 					}
-					g[isVPCSgRules] = rules
-					securityGroupList = append(securityGroupList, g)
 				}
+				g[isVPCSgRules] = rules
+				securityGroupList = append(securityGroupList, g)
 			}
 
 			d.Set(isVPCSecurityGroupList, securityGroupList)
