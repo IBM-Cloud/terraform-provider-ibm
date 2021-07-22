@@ -53,7 +53,7 @@ module "satellite-cluster" {
 | cluster                       | Name of the ROKS Cluster that has to be created                   | string   | n/a     | yes      |
 | location                      | Name of the Location that has to be created                       | string   | n/a     | yes      |
 | zones                         | Allocate your hosts across these three zones                      | set      | n/a     | yes      |
-| kube_version                  | Kuber version                                                     | string   | 4.5_openshift   | yes      |
+| kube_version                  | Kuber version                                                     | string   | 4.6_openshift   | yes      |
 | cluster                       | The name for the new IBM Cloud Satellite cluster                  | string   | n/a     | no       |
 | kube_version                  | The OpenShift Container Platform version                          | string   | n/a     | no       |
 | default_wp_labels             | Labels on the default worker pool                                 | map      | n/a     | no       |

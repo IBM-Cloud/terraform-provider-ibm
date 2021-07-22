@@ -99,7 +99,7 @@ module "satellite-cluster" {
 | public_key                     | Public SSH key used to provision Host/VSI                         | string   | n/a     | no       |
 | cluster                        | The name for the new IBM Cloud Satellite cluster                  | string   | satellite-ibm-cluster  | no |
 | cluster_zones                  | cluster zones                                                     | list     | ["us-east-1", "us-east-2", "us-east-3"]     | no       |
-| kube_version                   | The OpenShift Container Platform version                          | string   | 4.5_openshift     | no       |
+| kube_version                   | The OpenShift Container Platform version                          | string   | 4.6_openshift     | no       |
 | default_wp_labels              | Labels on the default worker pool                                 | map      | n/a     | no       |
 | worker_pool_name               | Public SSH key used to provision Host/VSI                         | string   | satellite-ibm-cluster-wp     | no       |
 | workerpool_labels              | Labels on the worker pool                                         | map      | n/a     | no       |

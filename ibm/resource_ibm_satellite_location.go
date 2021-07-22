@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -431,9 +432,23 @@ func waitForLocationToReady(loc string, d *schema.ResourceData, meta interface{}
 			getSatLocOptions := &kubernetesserviceapiv1.GetSatelliteLocationOptions{
 				Controller: ptrToString(loc),
 			}
-			location, response, err := satClient.GetSatelliteLocation(getSatLocOptions)
-			if err != nil {
-				return nil, "", fmt.Errorf("Error Getting location : %s\n%s", err, response)
+
+			var location *kubernetesserviceapiv1.MultishiftGetController
+			var response *core.DetailedResponse
+			var err error
+			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+				location, response, err = satClient.GetSatelliteLocation(getSatLocOptions)
+				if err != nil || location == nil {
+					if response != nil && response.StatusCode == 404 {
+						return resource.RetryableError(err)
+					}
+					return resource.NonRetryableError(err)
+				}
+				return nil
+			})
+
+			if isResourceTimeoutError(err) {
+				location, response, err = satClient.GetSatelliteLocation(getSatLocOptions)
 			}
 
 			if location != nil && *location.State == isLocationDeployFailed {
