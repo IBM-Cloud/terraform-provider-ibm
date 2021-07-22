@@ -97,14 +97,25 @@ func dataSourceIBMISEndpointGatewayTargetsRead(context context.Context, d *schem
 	getCatalogOptions.Query = &query
 	digest := false
 	getCatalogOptions.Digest = &digest
-	catalog, response, err := catalogManagementClient.SearchObjectsWithContext(context, getCatalogOptions)
-	if err != nil {
-		log.Printf("[DEBUG] GetCatalogWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+
+	start := ""
+	catalog := []catalogmanagementv1.CatalogObject{}
+	for {
+		search, response, err := catalogManagementClient.SearchObjectsWithContext(context, getCatalogOptions)
+		if err != nil {
+			log.Printf("[DEBUG] GetCatalogWithContext failed %s\n%s", err, response)
+			return diag.FromErr(err)
+		}
+		start = GetNext(search.Next)
+		catalog = append(catalog, search.Resources...)
+		if start == "" {
+			break
+		}
 	}
-	if catalog != nil && *catalog.ResourceCount > 0 && catalog.Resources != nil {
+
+	if catalog != nil {
 		resourceInfo := make([]map[string]interface{}, 0)
-		for _, res := range catalog.Resources {
+		for _, res := range catalog {
 			l := map[string]interface{}{}
 			if res.ParentID != nil {
 				l[isVPEResourceParent] = *res.ParentID
