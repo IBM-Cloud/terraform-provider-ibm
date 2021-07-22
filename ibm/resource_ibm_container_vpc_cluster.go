@@ -196,6 +196,13 @@ func resourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "Labels for default worker pool",
 			},
 
+			"default_pool_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "default",
+				Description: "Name of the default worker pool",
+			},
+
 			"taints": {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -439,6 +446,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	serviceSubnet := d.Get("service_subnet").(string)
 	vpcID := d.Get("vpc_id").(string)
 	flavor := d.Get("flavor").(string)
+	defaultPoolName := d.Get("default_pool_name").(string)
 	workerCount := d.Get("worker_count").(int)
 
 	// timeoutStage will define the timeout stage
@@ -465,6 +473,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	workerpool := v2.WorkerPoolConfig{
 		VpcID:       vpcID,
 		Flavor:      flavor,
+		Name:        defaultPoolName,
 		WorkerCount: workerCount,
 		Zones:       zonesList,
 	}
@@ -546,7 +555,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 	}
 
 	clusterID := d.Id()
-
+	defaultWorkerPool := d.Get("default_pool_name").(string)
 	v := os.Getenv("IC_ENV_TAGS")
 	if d.HasChange("tags") || v != "" {
 		oldList, newList := d.GetChange("tags")
@@ -728,14 +737,14 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		}
 		Env := v1.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
 
-		err = ClusterClient.WorkerPools().UpdateLabelsWorkerPool(clusterID, "default", labels, Env)
+		err = ClusterClient.WorkerPools().UpdateLabelsWorkerPool(clusterID, defaultWorkerPool, labels, Env)
 		if err != nil {
 			return fmt.Errorf(
 				"[ERROR] Error updating the labels: %s", err)
 		}
 	}
 	if d.HasChange("taints") {
-		taintParam := expandWorkerPoolTaints(d, meta, clusterID, "default")
+		taintParam := expandWorkerPoolTaints(d, meta, clusterID, defaultWorkerPool)
 
 		targetEnv, err := getVpcClusterTargetHeader(d, meta)
 		if err != nil {
@@ -759,7 +768,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		}
 		Env := v1.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
 
-		err = ClusterClient.WorkerPools().ResizeWorkerPool(clusterID, "default", count, Env)
+		err = ClusterClient.WorkerPools().ResizeWorkerPool(clusterID, defaultWorkerPool, count, Env)
 		if err != nil {
 			return fmt.Errorf(
 				"[ERROR] Error updating the worker_count %d: %s", count, err)
@@ -784,13 +793,13 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 					Cluster:      clusterID,
 					Id:           newZone["name"].(string),
 					SubnetID:     newZone["subnet_id"].(string),
-					WorkerPoolID: "default",
+					WorkerPoolID: defaultWorkerPool,
 				}
 				err = csClient.WorkerPools().CreateWorkerPoolZone(zoneParam, targetEnv)
 				if err != nil {
 					return fmt.Errorf("[ERROR] Error adding zone to conatiner vpc cluster: %s", err)
 				}
-				_, err = WaitForWorkerPoolAvailable(d, meta, clusterID, "default", d.Timeout(schema.TimeoutCreate), targetEnv)
+				_, err = WaitForWorkerPoolAvailable(d, meta, clusterID, defaultWorkerPool, d.Timeout(schema.TimeoutCreate), targetEnv)
 				if err != nil {
 					return fmt.Errorf(
 						"[ERROR] Error waiting for workerpool (%s) to become ready: %s", d.Id(), err)
@@ -806,14 +815,14 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 					return err
 				}
 				Env := v1.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
-				err = ClusterClient.WorkerPools().RemoveZone(clusterID, oldZone["name"].(string), "default", Env)
+				err = ClusterClient.WorkerPools().RemoveZone(clusterID, oldZone["name"].(string), defaultWorkerPool, Env)
 				if err != nil {
 					return fmt.Errorf("[ERROR] Error deleting zone to conatiner vpc cluster: %s", err)
 				}
-				_, err = WaitForV2WorkerZoneDeleted(clusterID, "default", oldZone["name"].(string), meta, d.Timeout(schema.TimeoutDelete), targetEnv)
+				_, err = WaitForV2WorkerZoneDeleted(clusterID, defaultWorkerPool, oldZone["name"].(string), meta, d.Timeout(schema.TimeoutDelete), targetEnv)
 				if err != nil {
 					return fmt.Errorf(
-						"[ERROR] Error waiting for deleting workers of worker pool (%s) of cluster (%s):  %s", "default", clusterID, err)
+						"[ERROR] Error waiting for deleting workers of worker pool (%s) of cluster (%s):  %s", defaultWorkerPool, clusterID, err)
 				}
 			}
 		}
@@ -876,12 +885,13 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	}
 
 	clusterID := d.Id()
+	defaultWorkerPool := d.Get("default_pool_name").(string)
 	cls, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving conatiner vpc cluster: %s", err)
 	}
 
-	workerPool, err := csClient.WorkerPools().GetWorkerPool(clusterID, "default", targetEnv)
+	workerPool, err := csClient.WorkerPools().GetWorkerPool(clusterID, defaultWorkerPool, targetEnv)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() != 404 && !strings.Contains(apiErr.Description(), "The specified worker pool could not be found") {
@@ -1095,11 +1105,12 @@ func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{
 		return nil, err
 	}
 	clusterID := d.Id()
+	defaultWorkerPool := d.Get("default_pool_name").(string)
 	createStateConf := &resource.StateChangeConf{
 		Pending: []string{deployRequested, deployInProgress},
 		Target:  []string{normal},
 		Refresh: func() (interface{}, string, error) {
-			workers, err := csClient.Workers().ListByWorkerPool(clusterID, "default", false, targetEnv)
+			workers, err := csClient.Workers().ListByWorkerPool(clusterID, defaultWorkerPool, false, targetEnv)
 			if err != nil {
 				return workers, deployInProgress, err
 			}
