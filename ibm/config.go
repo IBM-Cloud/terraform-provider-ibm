@@ -50,6 +50,7 @@ import (
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
+	"github.com/IBM/platform-services-go-sdk/atrackerv1"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
@@ -248,6 +249,7 @@ type ClientSession interface {
 	SchematicsV1() (*schematicsv1.SchematicsV1, error)
 	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
+	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 }
 
 type clientSession struct {
@@ -483,6 +485,10 @@ type clientSession struct {
 	// CIS Filters options
 	cisFiltersClient *cisfiltersv1.FiltersV1
 	cisFiltersErr    error
+
+	//Atracker
+	atrackerClient    *atrackerv1.AtrackerV1
+	atrackerClientErr error
 }
 
 func (session clientSession) CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error) {
@@ -891,6 +897,11 @@ func (sess clientSession) CisFiltersSession() (*cisfiltersv1.FiltersV1, error) {
 	return sess.cisFiltersClient.Clone(), nil
 }
 
+// Activity Tracking API
+func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
+	return session.atrackerClient, session.atrackerClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1167,6 +1178,37 @@ func (c *Config) ClientSession() (interface{}, error) {
 	catalogManagementClientOptions := &catalogmanagementv1.CatalogManagementV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT"}, catalogManagementURL),
 		Authenticator: authenticator,
+	}
+
+	// Construct an "options" struct for creating the atracker service client.
+	var atrackerClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		atrackerClientURL, err = atrackerv1.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			atrackerClientURL, err = atrackerv1.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		atrackerClientURL, err = atrackerv1.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		atrackerClientURL = atrackerv1.DefaultServiceURL
+	}
+	atrackerClientOptions := &atrackerv1.AtrackerV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_ATRACKER_API_ENDPOINT"}, atrackerClientURL),
+	}
+
+	// Construct the service client.
+	session.atrackerClient, err = atrackerv1.NewAtrackerV1(atrackerClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.atrackerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.atrackerClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.atrackerClientErr = fmt.Errorf("Error occurred while configuring Activity Tracking API service: %q", err)
 	}
 
 	// Construct the service client.
