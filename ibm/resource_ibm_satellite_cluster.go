@@ -13,6 +13,7 @@ import (
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -744,9 +745,23 @@ func waitForLocationNormal(location string, d *schema.ResourceData, meta interfa
 			getSatLocOptions := &kubernetesserviceapiv1.GetSatelliteLocationOptions{
 				Controller: &location,
 			}
-			instance, response, err := satClient.GetSatelliteLocation(getSatLocOptions)
-			if err != nil {
-				return nil, "", fmt.Errorf("Error Getting location : %s\n%s", err, response)
+
+			var instance *kubernetesserviceapiv1.MultishiftGetController
+			var response *core.DetailedResponse
+			var err error
+			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+				instance, response, err = satClient.GetSatelliteLocation(getSatLocOptions)
+				if err != nil || instance == nil {
+					if response != nil && response.StatusCode == 404 {
+						return resource.RetryableError(err)
+					}
+					return resource.NonRetryableError(err)
+				}
+				return nil
+			})
+
+			if isResourceTimeoutError(err) {
+				instance, response, err = satClient.GetSatelliteLocation(getSatLocOptions)
 			}
 
 			if instance != nil {

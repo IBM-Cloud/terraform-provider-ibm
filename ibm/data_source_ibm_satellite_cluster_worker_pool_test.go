@@ -131,7 +131,7 @@ func testAccCheckIBMSatelliteClusterorkerPoolDataSourceConfig(workerPoolName, cl
 		name                   = "%s"  
 		location               = ibm_satellite_host.assign_host.0.location
 		enable_config_admin    = true
-		kube_version           = "4.5_openshift"
+		kube_version           = "4.6_openshift"
 		wait_for_worker_update = true
 		dynamic "zones" {
 			for_each = var.location_zones
