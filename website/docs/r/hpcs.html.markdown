@@ -51,7 +51,7 @@ The following arguments are supported:
 * `plan` - (Required, string) The pricing plan for your service instance. Currently, only the standard plan is supportd.
 * `resource_group_id` - (Optional, string) The Id of resource group where you want to organize and manage your service instance.
 * `revocation_threshold` - (Required, int) The number of administrator signatures that is required to remove an administrator after you leave imprint mode. The valid value is between 1 and 8.
-* `service_endpoints` - (Optional, string) Types of the service endpoints that can be set to a resource instance. Possible values are 'public', 'private', 'public-and-private'.
+* `service_endpoints` - (Optional, string) Types of the service endpoints that can be set to a resource instance. Possible values are `public-and-private`, `private-only`.
 * `signature_server_url` - (Optional, string) The URL of the signing service. If you use a third-party signing service to provide administrator signature keys, you need to specify the URL.
 * `signature_threshold`- (Required, int)  The number of administrator signatures that is required to execute administrative commands. The valid value is between 1 and 8. You need to set it to at least 2 to enable quorum authentication.
 * `tags` - (Optional, array of strings) Tags that are associated with your instance are used to organize your resources. 

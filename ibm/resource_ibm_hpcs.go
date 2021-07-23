@@ -86,11 +86,11 @@ func resourceIBMHPCS() *schema.Resource {
 				Computed:    true,
 			},
 			"service_endpoints": {
-				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
+				Description:  "Types of the service endpoints. Possible values are `public-and-private`, `private-only`.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "public-and-private"}),
+				ValidateFunc: validateAllowedStringValue([]string{"public-and-private", "private-only"}),
 			},
 			"tags": {
 				Type:     schema.TypeSet,
@@ -307,7 +307,7 @@ func resourceIBMHPCS() *schema.Resource {
 type HPCSParams struct {
 	Units            int    `json:"units,omitempty"`
 	FailoverUnits    int    `json:"failover_units,omitempty"`
-	ServiceEndpoints string `json:"service-endpoints,omitempty"`
+	ServiceEndpoints string `json:"allowed_network,omitempty"`
 }
 
 func resourceIBMHPCSValidator() *ResourceValidator {
@@ -501,7 +501,7 @@ func resourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta i
 	d.Set("plan", servicePlan)
 	// Set Instance parameters
 	if instance.Parameters != nil {
-		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
+		if endpoint, ok := instance.Parameters["allowed_network"]; ok {
 			d.Set("service_endpoints", endpoint)
 		}
 		if units, ok := instance.Parameters["units"]; ok {
@@ -880,11 +880,16 @@ func hsmClient(d *schema.ResourceData, meta interface{}) (tkesdk.CommonInputs, e
 	if err != nil {
 		return ci, fmt.Errorf("[ERROR] Error Refreshing Authentication Token: %s", err)
 	}
+	var serviceEndpoint string
+	if e, ok := d.GetOk("service_endpoints"); ok {
+		serviceEndpoint = e.(string)
+	}
 	ci.Region = d.Get("location").(string)
 	ci.ApiEndpoint = envFallBack([]string{"IBMCLOUD_HPCS_TKE_ENDPOINT"}, "cloud.ibm.com")
-	if bluemixSession.Config.Visibility == "private" || bluemixSession.Config.Visibility == "public-and-private" {
+	if bluemixSession.Config.Visibility == "private" || bluemixSession.Config.Visibility == "public-and-private" || serviceEndpoint == "private-only" {
 		ci.ApiEndpoint = envFallBack([]string{"IBMCLOUD_HPCS_TKE_ENDPOINT"}, "private.cloud.ibm.com")
 	}
+
 	ci.AuthToken = bluemixSession.Config.IAMAccessToken
 
 	return ci, err
