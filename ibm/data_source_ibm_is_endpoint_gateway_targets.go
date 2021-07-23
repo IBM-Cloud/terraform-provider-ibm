@@ -7,6 +7,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -97,14 +99,34 @@ func dataSourceIBMISEndpointGatewayTargetsRead(context context.Context, d *schem
 	getCatalogOptions.Query = &query
 	digest := false
 	getCatalogOptions.Digest = &digest
-	catalog, response, err := catalogManagementClient.SearchObjectsWithContext(context, getCatalogOptions)
-	if err != nil {
-		log.Printf("[DEBUG] GetCatalogWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+
+	start := int64(0)
+	catalog := []catalogmanagementv1.CatalogObject{}
+	for {
+		if start != int64(0) {
+			getCatalogOptions.Offset = &start
+		}
+		search, response, err := catalogManagementClient.SearchObjectsWithContext(context, getCatalogOptions)
+		if err != nil {
+			log.Printf("[DEBUG] GetCatalogWithContext failed %s\n%s", err, response)
+			return diag.FromErr(err)
+		}
+		next := search.Next
+		if next == nil {
+			start = int64(0)
+		} else {
+			u, _ := url.Parse(fmt.Sprintf("%s", *next))
+			q := u.Query()
+			start, _ = strconv.ParseInt(q.Get("offset"), 10, 64)
+		}
+		catalog = append(catalog, search.Resources...)
+		if start == int64(0) {
+			break
+		}
 	}
-	if catalog != nil && *catalog.ResourceCount > 0 && catalog.Resources != nil {
+	if catalog != nil {
 		resourceInfo := make([]map[string]interface{}, 0)
-		for _, res := range catalog.Resources {
+		for _, res := range catalog {
 			l := map[string]interface{}{}
 			if res.ParentID != nil {
 				l[isVPEResourceParent] = *res.ParentID
