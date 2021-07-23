@@ -70,8 +70,8 @@ github.com/IBM/ibm-cos-sdk-go v1.7.0 h1:3DZULY/D5WzjlIm+Iaj6h0surEjQs65EZk1YAe8+
 github.com/IBM/ibm-cos-sdk-go v1.7.0/go.mod h1:Oi8AC5WNDhmUJgbo1GL2FtBdo0nRgbzE/1HmCL1SERU=
 github.com/IBM/ibm-cos-sdk-go-config v1.2.0 h1:1E93234yZgVS0ntm7eUwVb3h0AAayPGcxEhhizEN1LE=
 github.com/IBM/ibm-cos-sdk-go-config v1.2.0/go.mod h1:Wetfgv6m1xyuzpZLQTTLIBsWstxjYa15h+Utj7x53Dk=
-github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20210716185544-e8403b3501ef h1:x7xHqeuiTUfvozRQo3qt7W1qispGpLsDXqnBfXpkvYY=
-github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20210716185544-e8403b3501ef/go.mod h1:M2JyuyeWHPtgGNeezr6YqVRuaav2MpY8Ha4QrEYvMoI=
+github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20210723145459-a232c3f3ac91 h1:8ICDvg7YM+PmfF+LQ42D4w/p4QEpiknbycAgGdbk0dw=
+github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20210723145459-a232c3f3ac91/go.mod h1:M2JyuyeWHPtgGNeezr6YqVRuaav2MpY8Ha4QrEYvMoI=
 github.com/IBM/keyprotect-go-client v0.7.0 h1:JstSHD14Lp6ihwQseyPuGcs1AjOBjAmcisP0dTBA6A0=
 github.com/IBM/keyprotect-go-client v0.7.0/go.mod h1:SVr2ylV/fhSQPDiUjWirN9fsyWFCNNbt8GIT8hPJVjE=
 github.com/IBM/networking-go-sdk v0.18.0 h1:mlALxXptnoDGviRW59ZQTyCr4PgTdQKp/5ksh2NM6Sk=
