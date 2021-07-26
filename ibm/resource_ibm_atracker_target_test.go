@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -15,6 +16,9 @@ import (
 
 func TestAccIBMAtrackerTargetBasic(t *testing.T) {
 	var conf atrackerv1.Target
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	targetType := "cloud_object_storage"
+	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -22,9 +26,18 @@ func TestAccIBMAtrackerTargetBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMAtrackerTargetDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMAtrackerTargetConfigBasic(),
+				Config: testAccCheckIBMAtrackerTargetConfigBasic(name, targetType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMAtrackerTargetExists("ibm_atracker_target.atracker_target", conf),
+					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target", "name", name),
+					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target", "target_type", targetType),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMAtrackerTargetConfigBasic(nameUpdate, targetType),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target", "target_type", targetType),
 				),
 			},
 			resource.TestStep{
@@ -36,12 +49,27 @@ func TestAccIBMAtrackerTargetBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMAtrackerTargetConfigBasic() string {
+// cos_endpoint {
+// 	endpoint = "endpoint"
+// 	target_crn = "target_crn"
+// 	bucket = "bucket"
+// 	api_key = "api_key"
+// }
+
+func testAccCheckIBMAtrackerTargetConfigBasic(name string, targetType string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_atracker_target" "atracker_target" {
+			name = "%s"
+			target_type = "%s"
+			cos_endpoint {
+				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
+				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+				bucket = "my-atracker-bucket"
+				api_key = "xxxxxxxxxxxxxx"
+			}
 		}
-	`)
+	`, name, targetType)
 }
 
 func testAccCheckIBMAtrackerTargetExists(n string, obj atrackerv1.Target) resource.TestCheckFunc {
@@ -59,13 +87,7 @@ func testAccCheckIBMAtrackerTargetExists(n string, obj atrackerv1.Target) resour
 
 		getTargetOptions := &atrackerv1.GetTargetOptions{}
 
-		parts, err := sepIdParts(rs.Primary.ID, "/")
-		if err != nil {
-			return err
-		}
-
-		getTargetOptions.SetID(parts[0])
-		getTargetOptions.SetID(parts[1])
+		getTargetOptions.SetID(rs.Primary.ID)
 
 		target, _, err := atrackerClient.GetTarget(getTargetOptions)
 		if err != nil {
@@ -89,13 +111,7 @@ func testAccCheckIBMAtrackerTargetDestroy(s *terraform.State) error {
 
 		getTargetOptions := &atrackerv1.GetTargetOptions{}
 
-		parts, err := sepIdParts(rs.Primary.ID, "/")
-		if err != nil {
-			return err
-		}
-
-		getTargetOptions.SetID(parts[0])
-		getTargetOptions.SetID(parts[1])
+		getTargetOptions.SetID(rs.Primary.ID)
 
 		// Try to find the key
 		_, response, err := atrackerClient.GetTarget(getTargetOptions)

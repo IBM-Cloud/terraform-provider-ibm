@@ -747,6 +747,7 @@ func Validator() ValidatorDict {
 				"ibm_satellite_location":                resourceIBMSatelliteLocationValidator(),
 				"ibm_satellite_cluster":                 resourceIBMSatelliteClusterValidator(),
 				"ibm_pi_volume":                         resourceIBMPIVolumeValidator(),
+				"ibm_atracker_target":                   resourceIBMAtrackerTargetValidator(),
 				"ibm_atracker_route":                    resourceIBMAtrackerRouteValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{

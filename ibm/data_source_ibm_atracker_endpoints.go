@@ -58,6 +58,7 @@ func dataSourceIBMAtrackerEndpointsRead(context context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	// fmt.Println("******** dataSourceIBMAtrackerEndpointsRead") //MPS
 
 	getEndpointsOptions := &atrackerv1.GetEndpointsOptions{}
 

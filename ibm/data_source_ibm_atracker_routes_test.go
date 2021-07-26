@@ -32,13 +32,39 @@ func TestAccIBMAtrackerRoutesDataSourceBasic(t *testing.T) {
 	})
 }
 
+// resource "ibm_atracker_route" "atracker_route" {
+// 	name = "%s"
+// 	receive_global_events = %s
+// 	rules {
+// 		target_ids = ["target_ids"]
+// 	}
+// }
+
+// cos_endpoint {
+// 	endpoint = "endpoint"
+// 	target_crn = "target_crn"
+// 	bucket = "bucket"
+// 	api_key = "api_key"
+// }
+
 func testAccCheckIBMAtrackerRoutesDataSourceConfigBasic(routeName string, routeReceiveGlobalEvents string) string {
 	return fmt.Sprintf(`
+		resource "ibm_atracker_target" "atracker_target" {
+			name = "my-cos-target"
+			target_type = "cloud_object_storage"
+			cos_endpoint {
+				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
+				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+				bucket = "my-atracker-bucket"
+				api_key = "xxxxxxxxxxxxxx"
+			}
+		}
+
 		resource "ibm_atracker_route" "atracker_route" {
 			name = "%s"
 			receive_global_events = %s
 			rules {
-				target_ids = ["target_ids"]
+				target_ids = [ ibm_atracker_target.atracker_target.id ]
 			}
 		}
 
