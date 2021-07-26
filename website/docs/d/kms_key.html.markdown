@@ -11,7 +11,7 @@ Retrieves the list of keys from the Hyper Protect Crypto Services (HPCS) and Key
 
 ## Example usage
 
-```hcl
+```terraform
 data "ibm_kms_key" "test" {
   instance_id = "guid-of-keyprotect-or hs-crypto-instance"
   key_name = "name-of-key"
