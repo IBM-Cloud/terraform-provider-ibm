@@ -99,7 +99,32 @@ resource "ibm_kms_key" "key" {
 **Deprecated** :
 1) Support for creating Policies along with the Key will be deprecated after 30 days.
 2) A new resource for creating Key pollicies has been released which can be used to create policies for existing key.
+<<<<<<< HEAD
 3) Use either "ibm_kms_key" or "ibm_kms_key_policy" to manage key policies but not both together.
+=======
+3) Use either "ibm_kms_key" or "ibm_kms_key_policies" to manage key policies but not both together.
+4) If both the resources have been utilised to create policies then add licycle ignore block to "ibm_kms_key" resource to avoid any changes kms_key_policies resource to the policies.
+
+## Licycle Ignore Block Example
+
+```
+resource "ibm_kms_key" "kms_tf_test_key1" {
+ instance_id = ibm_resource_instance.kms_tf_test1.guid
+ key_name   = "kms_tf_test_key1"
+ standard_key = false
+ force_delete = true
+ policies {
+     rotation {
+         interval_month = 8
+     }
+ }
+   lifecycle {
+    ignore_changes = [
+      policies,
+    ]
+  }
+  ```
+>>>>>>> Polices
 
 ## Example usage to provision KMS and import a key
 
@@ -131,7 +156,7 @@ Review the argument references that you can specify for your resource.
 - `key_ring_id` - (Optional, Forces new resource, String) The ID of the key ring where you want to add your Key Protect key. The default value is `default`.
 - `payload` - (Optional, Forces new resource, String) The base64 encoded key that you want to store and manage in the service. To import an existing key, provide a 256-bit key. To generate a new key, omit this parameter.
 - `standard_key`- (Optional, Bool) Set flag **true** for standard key, and **false** for root key. Default value is **false**.Yes.
-- `policies` - (Optional, List) Set policies for a key, for an automatic rotation policy or a dual authorization policy to protect against the accidental deletion of keys. Policies follow the following structure.
+- `policies` - (Optional, List) Set policies for a key, for an automatic rotation policy or a dual authorization policy to protect against the accidental deletion of keys. Policies follow the following structure. (This attribute is deprecated)
 
   Nested scheme for `policies`:
   - `rotation` -  (Optional, List) Specifies the key rotation time interval in months, with a minimum of 1, and a maximum of 12.

@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceIBMKmskeyPolicy() *schema.Resource {
+func resourceIBMKmskeyPolicies() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMKmsKeyPolicyCreate,
 		ReadContext:   resourceIBMKmsKeyPolicyRead,
@@ -171,8 +171,6 @@ func resourceIBMKmsKeyPolicyCreate(context context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	log.Println("Entering the Policies++++++++>>>>>>>>")
-
 	instanceID := d.Get("instance_id").(string)
 	endpointType := d.Get("endpoint_type").(string)
 	key_id := d.Get("key_id").(string)
@@ -181,7 +179,7 @@ func resourceIBMKmsKeyPolicyCreate(context context.Context, d *schema.ResourceDa
 
 	instanceData, err := rContollerApi.GetInstance(instanceID)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting KMS Instance during creation of policy %s", err))
 	}
 	instanceCRN := instanceData.Crn.String()
 	crnData := strings.Split(instanceCRN, ":")
@@ -195,7 +193,7 @@ func resourceIBMKmsKeyPolicyCreate(context context.Context, d *schema.ResourceDa
 
 		resp, err := hpcsEndpointAPI.Endpoint().GetAPIEndpoint(instanceID)
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(fmt.Errorf("[ERROR] Error getting KMS Instance during READ %s", err))
 		}
 
 		if endpointType == "public" {
@@ -230,22 +228,9 @@ func resourceIBMKmsKeyPolicyCreate(context context.Context, d *schema.ResourceDa
 	}
 	kpAPI.Config.InstanceID = instanceID
 
-	var expiration *time.Time
-	if es, ok := d.GetOk("expiration_date"); ok {
-		expiration_string := es.(string)
-		// parse string to required time format
-		expiration_time, err := time.Parse(time.RFC3339, expiration_string)
-		if err != nil {
-			return diag.Errorf("Invalid time format (the date format follows RFC 3339): %s", err)
-		}
-		expiration = &expiration_time
-	} else {
-		expiration = nil
-	}
-	log.Println("expiration", expiration)
 	key, err := kpAPI.GetKey(context, key_id)
 	if err != nil {
-		return diag.Errorf("Get Key failed with error: %s", err)
+		return diag.Errorf("Get Key failed with error while creating policies: %s", err)
 	}
 	err = resourceHandlePolicies(context, d, kpAPI, meta, key_id)
 	if err != nil {
@@ -318,18 +303,17 @@ func resourceIBMKmsKeyPolicyRead(context context.Context, d *schema.ResourceData
 	// keyid := d.Id()
 	key, err := kpAPI.GetKey(context, keyid)
 	if err != nil {
-		return diag.Errorf("Get Key failed with error: %s", err)
+		kpError := err.(*kp.Error)
+		if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
+			d.SetId("")
+			return nil
+		}
+		return diag.Errorf("Get Key failed with error while reading policies: %s", err)
 	}
 
 	d.Set("instance_id", instanceID)
 	d.Set("key_id", keyid)
 	d.Set("endpoint_type", endpointType)
-	if key.Expiration != nil {
-		expiration := key.Expiration
-		d.Set("expiration_date", expiration.Format(time.RFC3339))
-	} else {
-		d.Set("expiration_date", "")
-	}
 	d.Set(ResourceName, key.Name)
 	d.Set(ResourceCRN, key.CRN)
 	state := key.State
@@ -380,7 +364,7 @@ func resourceIBMKmsKeyPolicyUpdate(context context.Context, d *schema.ResourceDa
 
 		instanceData, err := rContollerApi.GetInstance(instanceID)
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(fmt.Errorf("[ERROR] Error getting KMS Instance during Update %s", err))
 		}
 		instanceCRN := instanceData.Crn.String()
 		crnData := strings.Split(instanceCRN, ":")

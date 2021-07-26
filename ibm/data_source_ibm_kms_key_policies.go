@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/url"
 	"strings"
@@ -164,7 +165,7 @@ func dataSourceIBMKMSKeyPoliciesRead(context context.Context, d *schema.Resource
 
 	instanceData, err := rContollerApi.GetInstance(instanceID)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting KMS Instance %s", err))
 	}
 	instanceCRN := instanceData.Crn.String()
 

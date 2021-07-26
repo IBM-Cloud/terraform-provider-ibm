@@ -108,7 +108,7 @@ func testAccCheckIBMKmsKeyPolicyStandardConfigCheck(instanceName, KeyName string
 		key_name       = "%s"
 		standard_key   = false
 	  }
-	  resource "ibm_kms_key_policy" "Policy" {
+	  resource "ibm_kms_key_policies" "Policy" {
 		instance_id = ibm_resource_instance.kp_instance.guid
 		key_id = ibm_kms_key.test.key_id
 		rotation {
@@ -135,7 +135,7 @@ func testAccCheckIBMKmsKeyPolicyDualAuthCheck(instanceName, KeyName string, dual
 		key_name       = "%s"
 		standard_key   = false
 	  }
-	  resource "ibm_kms_key_policy" "Policy" {
+	  resource "ibm_kms_key_policies" "Policy" {
 		instance_id = ibm_resource_instance.kp_instance.guid
 		key_id = ibm_kms_key.test.key_id
 		  dual_auth_delete {
@@ -159,7 +159,7 @@ func testAccCheckIBMKmsKeyPolicyRotationCheck(instanceName, KeyName string, rota
 		key_name       = "%s"
 		standard_key   = false
 	  }
-	  resource "ibm_kms_key_policy" "Policy" {
+	  resource "ibm_kms_key_policies" "Policy" {
 		instance_id = ibm_resource_instance.kp_instance.guid
 		key_id = ibm_kms_key.test.key_id
 		  rotation {

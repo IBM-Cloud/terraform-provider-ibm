@@ -433,7 +433,12 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	// keyid := d.Id()
 	key, err := kpAPI.GetKey(context.Background(), keyid)
 	if err != nil {
-		return fmt.Errorf("Get Key failed with error: %s", err)
+		kpError := err.(*kp.Error)
+		if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Get Key failed with error while reading policies: %s", err)
 	}
 
 	policies, err := kpAPI.GetPolicies(context.Background(), keyid)
@@ -558,8 +563,7 @@ func resourceIBMKmsKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		err = handlePolicies(d, kpAPI, meta, key_id)
 		if err != nil {
-			resourceIBMKmsKeyRead(d, meta)
-			return fmt.Errorf("Could not create policies: %s", err)
+			return fmt.Errorf("Could not update policies: %s", err)
 		}
 	}
 	return resourceIBMKmsKeyRead(d, meta)
