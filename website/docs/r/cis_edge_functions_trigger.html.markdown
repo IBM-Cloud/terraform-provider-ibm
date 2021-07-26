@@ -4,16 +4,17 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_edge_functions_triggers"
 description: |-
-  Provides a IBM CIS Edge Functions Action resource.
+  Provides a IBM CIS Edge Functions trigger resource.
 ---
 
 # ibm_cis_edge_functions_trigger
 
-Provides a IBM CIS Edge Functions Trigger resource. This resource is associated with an IBM Cloud Internet Services instance and a CIS Domain resource. It allows to create, update, delete Edge Functions Trigger of a domain of a CIS instance
+Create, update, or delete an edge functions trigger for a domain to include in your CIS edge functions trigger resource. For more information, about CIS edge functions trigger, see [working with triggers](https://cloud.ibm.com/docs/cis?topic=cis-edge-functions-actions#triggers).
 
-## Example Usage
+## Example usage
+The example to add an edge functions trigger to the domain.
 
-```hcl
+```terraform
 # Add a Edge Functions Trigger to the domain
 resource "ibm_cis_edge_functions_trigger" "test_trigger" {
   cis_id      = ibm_cis_edge_functions_action.test_action.cis_id
@@ -23,39 +24,43 @@ resource "ibm_cis_edge_functions_trigger" "test_trigger" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `action_name` - (Optional, String) An action name of the edge functions action on which the trigger associates. If it is not specified, then the trigger will be disabled.
+- `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance.
+- `domain_id` - (Required, String) The ID of the domain to add the edge functions trigger.
+- `pattern_url` - (Required, String) The domain name pattern on which the edge function action trigger should be executed.
 
-- `cis_id` - (Required,string) The ID of the CIS service instance
-- `domain_id` - (Required,string) The ID of the domain to add the edge functions action.
-- `pattern_url` - (Required,string) The domain name pattern on which the edge function action trigger should be executed.
-- `action_name` - (Optional, string) The action name of the edge functions action which the trigger associates to. If it is not specified, then the trigger will be disabled.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-- `id` - The Action ID. It is a combination of <`trigger_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
-- `pattern_url` - The Route pattern. It is a domain name which the action will be performed.
-- `trigger_id` - The Route ID of action trigger.
-- `action_name` - The Edge Functions Action Script name.
-- `request_limit_fail_open` - The Action request limit fail open
+- `action_name` - (String) An edge functions action Script name.
+- `id` - (String) The action ID with a combination of `<trigger_id>`,`<domain_id>`,`<cis_id>` attributes concatenate with colon (`:`).
+- `pattern_url` - (String) The Route pattern. It is a domain name on which the action is performed.
+- `request_limit_fail_open` - (String) An action request limit fail open.
+- `trigger_id` - (String) The route ID of an action trigger.
 
 ## Import
+The `ibm_cis_edge_functions_trigger` resource can be imported by using the ID. The ID is composed from an edge functions trigger route ID, the domain ID of the domain and the CRN (Cloud Resource Name) is concatenated with colon (`:`).
 
-The `ibm_cis_edge_functions_trigger` resource can be imported using the `id`. The ID is formed from the `Edge Functions Trigger Route ID`, the `Domain ID` of the domain and the `CRN` (Cloud Resource Name) concatentated using a `:` character.
 
-The Domain ID and CRN will be located on the **Overview** page of the Internet Services instance under the **Domain** heading of the UI, or via using the `ibmcloud cis` CLI commands.
+The domain ID and CRN are located on the overview page of the Internet Services instance in the domain heading of the console, or by using the IBM Cloud CIS command line commands.
 
-- **Domain ID** is a 32 digit character string of the form: `9caf68812ae9b3f0377fdf986751a78f`
+- **Domain ID** is a 32 digit character string of the form: `9caf68812ae9b3f0377fdf986751a78f`.
 
-- **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`
+- **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`.
+Edge functions trigger route ID is a 32 digit character string of the form: `48996f0da6ed76251b475971b097205c`.
 
-- **Edge Functions Trigger Route ID** is a 32 digit character string of the form : `48996f0da6ed76251b475971b097205c`.
+
+**Syntax**
 
 ```
 $ terraform import ibm_cis_edge_functions_trigger.test_trigger <trigger_id>:<domain-id>:<crn>
+```
 
-$ terraform import ibm_cis_edge_functions_trigger.test_trigger 48996f0da6ed76251b475971b097205c:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
+**Example**
+
+```
+$ terraform import ibm_cis_edge_functions_trigger.test_trigger 48996f0da6ed76251b475971b097205c:9caf68812ae9b3f0377fdf986751a78f:crn:v1:ibmcloud:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
 ```

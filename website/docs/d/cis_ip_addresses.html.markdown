@@ -7,22 +7,20 @@ description: |-
 ---
 
 # ibm_cis_ip_addresses
+Retrieve information of all IP addresses that the CIS proxy uses. The CIS proxy uses these IP addresses for both `client-to-proxy` and `proxy-to-origin` communication. You can reference the IP addresses by using Terraform interpolation syntax to configure and allowed IP addresses in firewalls, network ACLs, and security groups. For more information, about CIS IP addressess, see [best practices for CIS setup](https://cloud.ibm.com/docs/cis?topic=cis-best-practices-for-cis-setup).
 
-Import the lists of all IP addresses used by the CIS proxy. The CIS proxy uses only addresses from this list, for both client-to-proxy and proxy-to-origin communication. You can then reference the IP addresses by interpolation to configure firewalls, network ACLs and Security Groups to white list these addresses.
+## Example usage
+The following example retrieves information about IP addresses that IBM Cloud Internet Services uses for name servers.
 
-## Example Usage
-
-```hcl
+```terraform
 data "ibm_cis_ip_addresses" "ip_addresses" {}
 ```
 
-## Argument Reference
-
+## Argument reference
 No arguments are required. All CIS instances on an account use the same range of name servers.
 
-## Attribute Reference
+## Attribute reference
+You can access the following attribute references after your data source is created. 
 
-In addition to all arguments above, the following attributes are exported:
-
-- `ipv4_cidrs` - The ipv4 address ranges used by CIS for name servers. To be whitelisted by the service user.
-- `ipv6_cidrs` - The ipv6 address ranges used by CIS for name servers. To be whitelisted by the service user.
+- `ipv4_cidrs` - (String) The IPv4 address ranges that the CIS proxy uses and that you can reference to configure and allowed IP addresses in firewalls, network ACLs, and security groups.
+- `ipv6_cidrs` - (String) The IPv6 address ranges that the CIS proxy uses and that you can reference to configure and allowed IP addresses in firewalls, network ACLs, and security groups.

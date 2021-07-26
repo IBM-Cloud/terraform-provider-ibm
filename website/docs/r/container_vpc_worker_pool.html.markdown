@@ -4,19 +4,18 @@ subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_vpc_worker_pool"
 description: |-
-  Manages IBM container vpc worker pool.
+  Manages IBM container VPC worker pool.
 ---
 
-# ibm\_container_vpc_worker_pool
+# ibm_container_vpc_worker_pool
 
-Create or delete a worker pool. The worker pool will be attached to the specified cluster.
+Create or delete a worker pool. The worker pool will be attached to the specified cluster. For more information, about VPC worker pool, see [creating clusters](https://cloud.ibm.com/docs/containers?topic=containers-clusters).
 
 
 ## Example Usage
-
 In the following example, you can create a worker pool for a vpc cluster:
 
-```hcl
+```terraform
 resource "ibm_container_vpc_worker_pool" "test_pool" {
   cluster          = "my_vpc_cluster"
   worker_pool_name = "my_vpc_pool"
@@ -32,7 +31,7 @@ resource "ibm_container_vpc_worker_pool" "test_pool" {
 ```
 
 In the follwoing example, you can create a worker pool for openshift cluster type with entitlement.
-```hcl
+```terraform
 resource "ibm_container_vpc_worker_pool" "test_pool" {
   cluster          = "my_openshift_cluster"
   worker_pool_name = "my_openshift_vpc_pool"
@@ -50,41 +49,46 @@ resource "ibm_container_vpc_worker_pool" "test_pool" {
 
 ## Timeouts
 
-ibm_container_vpc_worker_pool provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The `ibm_container_vpc_worker_pool` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-* `create` - (Default 90 minutes) Used for creating Instance.
-* `delete` - (Default 90 minutes) Used for deleting Instance.
+- **Create** The creation of the worker pool is considered failed when no response is received for 90 minutes. 
+- **Delete** The deletion of the worker pool is considered failed when no response is received for 90 minutes. 
 
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-## Argument Reference
+- `cluster` - (Required, Forces new resource, String) The name or ID of the cluster.
+- `entitlement`- (Optional, String) The OpenShift cluster entitlement avoids incurred OCP license charges and use cloud pak with OCP license entitlement to add the OpenShift cluster worker pool. **Note** <ul><li> It is set as one time creation of the worker pool. There is no impacts on any modification.</li><li> Set the argument to `entitlement` only when you use cluster with a cloud pak that has an OpenShift entitlement. </li></ul>
+- `flavor` - (Required, Forces new resource, String) The flavor of the worker node.
+- `labels` (Optional, Map) A list of labels that you want to add to all the worker nodes in the worker pool.
+- `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group. To retrieve the ID, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
+- `taints` - (Optional, Set) A nested block that sets or removes Kubernetes taints for all worker nodes in a worker pool
 
-The following arguments are supported:
+  Nested scheme for `taints`:
+  - `key` - (Required, String) Key for taint.
+  - `value` - (Required, String) Value for taint.
+  - `effect` - (Required, String) Effect for taint. Accepted values are `NoSchedule`, `PreferNoSchedule`, and `NoExecute`.
+ 
+- `vpc_id` - (Required, Forces new resource, String) The ID of the VPC.
+- `worker_count`- (Required, Integer) The number of worker nodes per zone in the worker pool.
+- `worker_pool_name` - (Required, Forces new resource, String) The name of the worker pool.
+- `zones` - (Required, List) A nested block describes the zones of this worker pool.
 
-* `worker_pool_name` - (Required, Forces new resource, string) The name of the worker pool.
-* `cluster` - (Required, Forces new resource, string) The name or id of the cluster.
-* `vpc_id` - (Required, Forces new resource, string) The Id of VPC 
-* `worker_count` - (Required, Int) The number of worker nodes per zone in the worker pool.
-* `flavor` - (Required, Forces new resource, string) The flavour of the worker node.
-* `zones` - (Required, set) A nested block describing the zones of this worker_pool. Nested zones blocks have the following structure:
-  * `subnet-id` - (Required, string) The worker pool subnet to assign the cluster. 
-  * `name` - (Required, string) Name of the zone.
-* `labels` - (Optional, map) Labels on all the workers in the worker pool.
-* `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
-* `entitlement` - (Optional, string) The openshift cluster entitlement avoids the OCP licence charges incurred. Use cloud paks with OCP Licence entitlement to add the Openshift cluster worker pool.
-   **NOTE**:
-   1. It is set only for the first time creation of the worker pool, modification in the further runs will not have any impacts.
-   2. Set this argument to 'cloud_pak' only if you use this cluster with a Cloud Pak that has an OpenShift entitlement
+  Nested scheme for `zones`:
+  - `name` - (Required, String) The name of the zone.
+  - `subnet_id` - (Required, String) The subnet that you want to use for your worker pool.
  
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the worker pool resource. The id is composed of \<cluster_name_id\>/\<worker_pool_id\>.<br/>
+- `id` - (String) The unique identifier of the worker pool. The ID is composed of `<cluster_name_id>/<worker_pool_id>`.
 
 ## Import
 
-ibm_container_vpc_worker_pool can be imported using cluster_name_id, worker_pool_id eg
+The `ibm_container_vpc_worker_pool` can be imported by using `cluster_name_id`, `worker_pool_id`.
+
+**Example**
 
 ```
 $ terraform import ibm_container_vpc_worker_pool.example mycluster/5c4f4d06e0dc402084922dea70850e3b-7cafe35

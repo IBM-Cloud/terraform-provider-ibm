@@ -3,45 +3,43 @@ subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_addons"
 description: |-
-  Reads all enabled IBM  container addons.
+  Reads all enabled IBM  container add-ons.
 ---
 
-# ibm\_container_addons
+# ibm_container_addons
+Retrieve information about all the add-ons that are enables on a cluster. For more information, see [Cluster addons](https://cloud.ibm.com/docs/containers?topic=containers-api-at-iam#ks-cluster).
 
-Reads all the addOns that are enabled on a cluster
+## Example usage
+The following example retrieves information of an add-ons.
 
-## Example Usage
-
-In the following example, you can get details of Addons:
-
-```hcl
+```terraform
 data "ibm_container_addons" "addons" {
   cluster= ibm_container_addons.addons.cluster
 }
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `cluster` - (Required, String) The name or ID of the cluster.
 
-* `cluster` - (Required, string) Cluster Name or ID
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
+- `addons` - (String) The details of an enabled add-ons.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The AddOns ID.
-* `resource_group_id` - The ID of the cluster resource group in which the addons have to be installed.
-* `addons` - Details of Enabled AddOns
-  * `name` - The addon name such as 'istio'.
-  * `version` - The addon version, omit the version if you wish to use the default version.
-  * `allowed_upgrade_versions` - The versions that the addon can be upgraded to 
-  * `deprecated` - Determines if this addon version is deprecated
-  * `health_state` - The health state for this addon, a short indication (e.g. critical, pending)
-  * `health_status` - The health status for this addon, provides a description of the state (e.g. error message)
-  * `min_kube_version` - The minimum kubernetes version for this addon.
-  * `min_ocp_version` - The minimum OpenShift version for this addon.
-  * `supported_kube_range` - The supported kubernetes version range for this addon.
-  * `target_version` - The addon target version.
-  * `vlan_spanning_required` - VLAN spanning required for multi-zone clusters.
+  Nested scheme for `addons`:
+	- `allowed_upgrade_versions` - (String) The versions that the add-on is upgraded to.
+	- `deprecated` - (String) Determines if the add-on version is deprecated.
+	- `health_state` - (String) The health state of an add-on, such as critical or pending.
+	- `health_status` - (String) The health status of an add-on, provides a description of the state in the form of error message.
+	- `min_kube_version` - (String) The minimum Kubernetes version of the add-on.
+	- `min_ocp_version` - (String) The minimum OpenShift version of the add-on.
+	- `name` - (String) The add-on name such as `istio`.
+	- `supported_kube_range` - (String) The supported Kubernetes version range of the add-on.
+	- `target_version`-  (String) The add-on target version.
+	- `version` - (String) The add-on version. Omit the version, if you need to use the default version.
+	- `vlan_spanning_required`-  (String) The VLAN spanning required for multi-zone clusters.
+- `id` - (String) The ID of an add-ons.
+- `resource_group_id` - (String) The ID of the cluster resource group in which the `addons` is installed.

@@ -56,7 +56,7 @@ func checkSubnetNetworkACLAttachmentDestroy(s *terraform.State) error {
 
 func testAccCheckIBMISSubnetNetworkACLAttachmentExists(n, subnetNwACL string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		fmt.Println("siv ", s.RootModule().Resources)
+
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {

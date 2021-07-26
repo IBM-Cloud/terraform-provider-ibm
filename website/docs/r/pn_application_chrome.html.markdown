@@ -4,16 +4,15 @@ subcategory: "Push Notifications"
 layout: "ibm"
 page_title: "IBM : pn_application_chrome"
 description: |-
-  Create, Update, and Delete application settings for platform chrome web.
+  Create, update, and delete application settings for platform chrome web.
 ---
 
 # ibm_pn_application_chrome
+Configure push notifications resource for Chrome web platform. For more information, about push notifications for Chrome, see [for Chrome applications](https://cloud.ibm.com/docs/mobilepush?topic=mobilepush-push_step_2#push_step_2_chrome-apps).
 
-Provides an application chrome web resource. This allows to configure chrome web platform for push notification.
+## Example usage
 
-## Example Usage
-
-```hcl
+```terraform
 resource "ibm_pn_application_chrome" "application_chrome" {
   guid = "guid"
   server_key = "server_key"
@@ -21,16 +20,15 @@ resource "ibm_pn_application_chrome" "application_chrome" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `guid`-  (String)  Required - The unique GUID of the push notifications instance.
+- `server_key`-  (String)  Required -  Server key that provides push notification service to authorize the access to Google services that is used for Chrome web push.
+- `web_site_url`-  (String)  Required - The URL of the website or web application that should be permitted to subscribe to the web push.
 
-- `guid` - (Required, string) The unique guid of the push notifications instance.
-- `server_key` - (Required, string) Server key that provides Push Notification service authorized access to Google services that is used for Chrome Web Push.
-- `web_site_url` - (Required, string) The URL of the website/web application that should be permitted to subscribe to Web Push.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-- `id` - The unique identifier of the resource application chrome.
+- `id`-  (String) The unique identifier of the resource application for chrome.

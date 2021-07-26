@@ -4,61 +4,63 @@ subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_image"
 description: |-
-  Manages IBM Image in the Power Virtual Server Cloud.
+  Manages IBM Image in the Power Virtual Server cloud.
 ---
 
-# ibm\_pi_image
+# ibm_pi_image
+Create, update, or delete for a Power Systems Virtual Server image. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-Provides a image resource. This allows image to be created, updated, and cancelled in the Power Virtual Server Cloud.
+## Example usage
+The following example enables you to create a image:
 
-## Example Usage
-
-In the following example, you can create a image:
-
-```hcl
+```terraform
 resource "ibm_pi_image" "testacc_image  "{
   pi_image_name       = "7200-03-02"
-  pi_image_id         = [ "image id obtained from the datasource"]
+  pi_image_id         = <"image id obtained from the datasource">
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
 }
 ```
-## Notes:
+
+**Note**
 * Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 * If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   * `region` - `lon`
   * `zone` - `lon04`
-  Example Usage:
-  ```hcl
+  
+  Example usage:
+  
+  ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"
     }
   ```
+  
 ## Timeouts
 
-ibm_pi_image provides the following [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+The   ibm_pi_image   provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-* `create` - (Default 60 minutes) Used for Creating image.
-* `delete` - (Default 60 minutes) Used for Deleting image.
+- **Create** The creation of the image is considered failed if no response is received for 60 minutes. 
+- **Delete** The deletion of the image is considered failed if no response is received for 60 minutes. 
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `pi_image_name` - (Required, String) The name of an image.
+- `pi_image_id` - (Required, String) The ID of an image. 
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 
-* `pi_image_name` - (Required, string) The name for this image.
-* `pi_image_id` - (Required, string) The image id for this image.
-* `pi_cloud_instance_id` - (Required, string) The GUID of the service instance associated with the account
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the image.The id is composed of \<power_instance_id\>/\<image_id\>.
-* `image_id` - The unique identifier of the image.
+- `id` - (String) The unique identifier of an image.
+- `image_id` - (String) The unique identifier of an image.
 
 ## Import
 
-ibm_pi_image can be imported using `power_instance_id` and `image_id`, eg
+The `ibm_pi_image` can be imported by using `power_instance_id` and `image_id`.
+
+**Example**
 
 ```
 $ terraform import ibm_pi_image.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb

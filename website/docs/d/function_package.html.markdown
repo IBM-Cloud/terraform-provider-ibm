@@ -3,37 +3,39 @@ subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_package"
 description: |-
-  Get information on an IBM Cloud Functions Package.
+  Get information on an IBM Cloud Functions package.
 ---
 
-# ibm\_function_package
+# ibm_function_package
 
-Import the details of an existing [IBM Cloud Functions package](https://cloud.ibm.com/docs/openwhisk/openwhisk_packages.html#openwhisk_packages) as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration using interpolation syntax.
+Retrieve the information about an existing [IBM Cloud Functions package](https://cloud.ibm.com/docs/openwhisk/openwhisk_packages.html#openwhisk_packages).
 
-## Example Usage
 
-```hcl
+## Example usage
+The following example retrieves information about the `mypackage` package. 
+
+
+```terraform
 data "ibm_function_package" "package" {
   name      = "package_name"
   namespace = "function_namespace_name"
-}
+
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument reference that you can specify for your data source. 
 
-The following arguments are supported:
+- `name` - (Required, String) The name of the package.
+- `namespace` - (Required, String) The name of the function namespace.
 
-* `name` - (Required, string) The name of the package.
-* `namespace` - (Required, string) The name of the function namespace.
 
-## Attributes Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The ID of the package.
-* `namespace` -  The name of the function namespace.
-* `version` - Semantic version of the package.
-* `publish` - Package visibility.
-* `annotations` - All annotations to describe the package, including those set by you or by IBM Cloud Functions.
-* `parameters` - All parameters passed to the package, including those set by you or by IBM Cloud Functions.
-* `package_id` - package ID.
+- `annotations` - (List) All annotations to describe the package, including those set by you or by IBM Cloud Functions.
+- `id` - (String) The ID of the package.
+- `parameters` (List) All parameters passed to the package, including those set by you or by IBM Cloud Functions.
+- `package_id` - (String) The package ID.
+- `publish`- (Bool) Package visibility.
+- `namespace` - (String) The name of the function namespace.
+- `version` - (String) Semantic version of the package.

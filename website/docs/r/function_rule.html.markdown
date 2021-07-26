@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_rule"
@@ -7,81 +6,76 @@ description: |-
   Manages IBM Cloud Functions rule.
 ---
 
-# ibm\_function_rule
+# ibm_function_rule
 
-Create, update, or delete [IBM Cloud Functions triggers](https://cloud.ibm.com/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers). Events from external and internal event sources are channeled through a trigger, and rules allow your actions to react to these events. To set triggers, use the `function_trigger` resource.
+Create, update, or delete an IBM Cloud Functions rule. Events from external and internal event sources are channeled through a trigger, and rules allow your actions to react to these events. To set triggers, use the `function_trigger` resource. For more information, see [getting started with IBM Cloud Functions](https://cloud.ibm.com/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers).
 
-## Example Usage
 
-```hcl
+## Example usage
+The following example creates a rule for an action. 
+
+```terraform
 resource "ibm_function_action" "action" {
-  name      = "hello"
-  namespace = "function-namespace-name
-
-  exec {
+  name = "hello"  exec {
     kind = "nodejs:10"
     code = file("test-fixtures/hellonode.js")
   }
 }
 
 resource "ibm_function_trigger" "trigger" {
-  name      = "alarmtrigger"
-  namespace = "function-namespace-name
-
-  feed {
-    name      = "/whisk.system/alarms/alarm"
-    namespace = "function-namespace-name
-    parameters = <<EOF
-                                        [
-                                                {
-                                                        "key":"cron",
-                                                        "value":"0 */2 * * *"
-                                                }
-                                        ]
-
-EOF
-
-  }
+  name = "alarmtrigger"  feed = [
+    {
+      name = "/whisk.system/alarms/alarm"      parameters = <<EOF
+                    [
+                        {
+                            "key":"cron",
+                            "value":"0 */2 * * *"
+                        }
+                    ]
+                EOF
+    },
+  ]
 }
 
 resource "ibm_function_rule" "rule" {
   name         = "alarmrule"
-  namespace    = "function-namespace-name
   trigger_name = ibm_function_trigger.trigger.name
   action_name  = ibm_function_action.action.name
 }
 
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the argument reference that you can specify for your resource. 
 
-* `name` - (Required, Forces new resource, string) The name of the rule.
-* `namespace` - (Required, string) The name of the function namespace.
-* `trigger_name` - (Required, string) The name of the trigger.
-* `action_name` - (Required, string) The name of the action.
+- `action_name` - (Required, String) The name of the action.
+- `name` - (Required, Forces new resource, String) The name of the rule.
+- `namespace` - (Required, String) The name of the function namespace.
+- `trigger_name` - (Required, String) The name of the trigger.
 
-## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the rule.The id is combination of namespace and ruleID delimited by `:`.
-* `namespace` - The name of the function namespace.
-* `publish` - Rule visibility.
-* `version` - Semantic version of the item.
-* `status` - The status of the rule.
-* `rule_id` - Rule ID	
+- `id` - (String) The ID of the new rule.
+- `namespace` - (String) The name of the function namespace.
+- `publish`- (Bool) Rule visibility.
+- `rule_id` - (String) The rule ID.
+- `status` - (String) The status of the rule.
+- `version` - (String) Semantic version of the item.
 
 ## Import
+The `ibm_function_rule` resource can be imported by using the `namespace` and `rule_id`.
 
-`ibm_function_rule` can be imported using the namespace and ruleID.
-
-Example: 
+**Syntax**
 
 ```
 $ terraform import ibm_function_rule.sampleRule <namespace>:<rule_id>
 
-$ terraform import ibm_function_rule.sampleRule Namespace-01:alaramrule
+```
+**Example**
 
+```
+$ terraform import ibm_function_rule.sampleRule alarmrule
 ```

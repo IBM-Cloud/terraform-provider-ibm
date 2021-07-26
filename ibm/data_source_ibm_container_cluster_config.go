@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	homedir "github.com/mitchellh/go-homedir"
 
@@ -95,27 +98,30 @@ func dataSourceIBMContainerClusterConfig() *schema.Resource {
 				Sensitive: true,
 			},
 			"admin_certificate": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 			"ca_certificate": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 			"host": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"token": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 		},
 	}
 }
 
 func dataSourceIBMContainerClusterConfigRead(d *schema.ResourceData, meta interface{}) error {
-	csClient, err := meta.(ClientSession).ContainerAPI()
+	csClient, err := meta.(ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
 	}
@@ -145,13 +151,29 @@ func dataSourceIBMContainerClusterConfigRead(d *schema.ResourceData, meta interf
 		d.Set("config_file_path", configPath)
 
 	} else {
-		targetEnv, err := getClusterTargetHeader(d, meta)
+		targetEnv, err := getVpcClusterTargetHeader(d, meta)
 		if err != nil {
 			return err
 		}
 		if network {
 			// For the Network config we need to gather the certs so we must override the admin value
-			calicoConfigFilePath, clusterKeyDetails, err := csAPI.StoreConfigDetail(name, configDir, admin || true, network, targetEnv)
+			var calicoConfigFilePath string
+			var clusterKeyDetails v1.ClusterKeyInfo
+			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+				var err error
+				calicoConfigFilePath, clusterKeyDetails, err = csAPI.StoreConfigDetail(name, configDir, admin || true, network, targetEnv)
+				if err != nil {
+					log.Printf("[DEBUG] Failed to fetch cluster config err %s", err)
+					if strings.Contains(err.Error(), "Could not login to openshift account runtime error:") {
+						return resource.RetryableError(err)
+					}
+					return resource.NonRetryableError(err)
+				}
+				return nil
+			})
+			if isResourceTimeoutError(err) {
+				calicoConfigFilePath, clusterKeyDetails, err = csAPI.StoreConfigDetail(name, configDir, admin || true, network, targetEnv)
+			}
 			if err != nil {
 				return fmt.Errorf("Error downloading the cluster config [%s]: %s", name, err)
 			}
@@ -164,7 +186,22 @@ func dataSourceIBMContainerClusterConfigRead(d *schema.ResourceData, meta interf
 			d.Set("config_file_path", clusterKeyDetails.FilePath)
 
 		} else {
-			clusterKeyDetails, err := csAPI.GetClusterConfigDetail(name, configDir, admin, targetEnv)
+			var clusterKeyDetails v1.ClusterKeyInfo
+			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+				var err error
+				clusterKeyDetails, err = csAPI.GetClusterConfigDetail(name, configDir, admin, targetEnv)
+				if err != nil {
+					log.Printf("[DEBUG] Failed to fetch cluster config err %s", err)
+					if strings.Contains(err.Error(), "Could not login to openshift account runtime error:") {
+						return resource.RetryableError(err)
+					}
+					return resource.NonRetryableError(err)
+				}
+				return nil
+			})
+			if isResourceTimeoutError(err) {
+				clusterKeyDetails, err = csAPI.GetClusterConfigDetail(name, configDir, admin, targetEnv)
+			}
 			if err != nil {
 				return fmt.Errorf("Error downloading the cluster config [%s]: %s", name, err)
 			}

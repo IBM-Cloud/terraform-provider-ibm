@@ -6,45 +6,46 @@ description: |-
   Get information about accounts
 ---
 
-# ibm\_enterprise_accounts
+# ibm_enterprise_accounts
 
-Provides a read-only data source for accounts. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Retrieve an information from an `enterprise_accounts` data source. For more information, about enterprise account, refer to [setting up accounts to an enterprise](https://cloud.ibm.com/docs/account?topic=account-enterprise-add).
 
-## Example Usage
 
-```hcl
+## Example usage
+
+```terraform
 data "ibm_enterprise_accounts" "accounts" {
 }
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the argument reference that you can specify to your data source. 
 
-* `name` - (Optional, string) The name of the account.
+- `name` - (Optional, String)  The name of an account..
 
-## Attribute Reference
+## Attribute reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all argument reference list, you can access the following attribute reference after your data source is created. 
 
-* `id` - The unique identifier of the accounts.
+- `accounts` - (List) A list of  Nested `resources` blocks has the following structure.
 
-* `accounts` - A list of accounts. Nested `accounts` blocks have the following structure:
-	* `url` - The URL of the account.
-	* `id` - The account ID.
-	* `crn` - The Cloud Resource Name (CRN) of the account.
-	* `parent` - The CRN of the parent of the account.
-	* `enterprise_account_id` - The enterprise account ID.
-	* `enterprise_id` - The enterprise ID that the account is a part of.
-	* `enterprise_path` - The path from the enterprise to this particular account.
-	* `name` - The name of the account.
-	* `state` - The state of the account.
-	* `owner_iam_id` - The IAM ID of the owner of the account.
-	* `paid` - The type of account - whether it is free or paid.
-	* `owner_email` - The email address of the owner of the account.
-	* `is_enterprise_account` - The flag to indicate whether the account is an enterprise account or not.
-	* `created_at` - The time stamp at which the account was created.
-	* `created_by` - The IAM ID of the user or service that created the account.
-	* `updated_at` - The time stamp at which the account was last updated.
-	* `updated_by` - The IAM ID of the user or service that updated the account.
-
+  Nested scheme for `accounts`:
+  - `crn` - (String) The Cloud Resource Name (CRN) of an account.
+  - `created_at` - (Timestamp) The time stamp at which an account is created.
+  - `created_by` - (String) The IAM ID of the user or service that created an account.
+  - `enterprise_account_id` - (String) The enterprise account ID.
+  - `enterprise_id` - (String) The enterprise ID that an account is a part of.
+  - `enterprise_path` - (String) The path from an enterprise to the particular account.
+  - `id` - (String) The account ID.
+  - `is_enterprise_account` - (String) The flag to indicate whether the account is an enterprise account or not.
+  - `name` - (String) The name of an enterprise.
+  - `owner_iam_id` - (String) The IAM ID of the owner of an account.
+  - `owner_email` - (String) The Email address of the owner of an account.
+  - `parent` - (String) The CRN of the parent of an account.
+  - `paid` - (String) The type of account, whether it is `free`, or `paid`.
+  - `state` - (String) The state of an account.
+  - `updated_at` - (Timestamp) The time stamp at which an account was last updated.
+  - `updated_by` - (String) The IAM ID of the user or service that updated an account.
+  - `url` - (String) The URL of an account.
+- `id` - (String) The unique identifier of an accounts.

@@ -4,32 +4,29 @@ subcategory: "Push Notifications"
 layout: "ibm"
 page_title: "IBM : pn_application_chrome"
 description: |-
-  Get push notification configuration of platform chrome web
+  Get push notification configuration of platform chrome web.
 ---
 
 # ibm_pn_application_chrome
+Configure push notifications resource for Chrome web platform. For more information, about push notifications for Chrome, see [Chrome applications](https://cloud.ibm.com/docs/mobilepush?topic=mobilepush-push_step_2#push_step_2_chrome-apps).
 
-Provides a read-only data source for platform chrome web. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+## Example usage
 
-## Example Usage
-
-```hcl
+```terraform
 data "pn_application_chrome" "pn_application_chrome" {
 	guid = "guid"
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `guid`-  (String)  Required - The unique GUID of the application by using the push service.
 
-- `guid` - (Required, string) Unique guid of the application using the push service.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-- `id` - The unique identifier of the applications chrome.
-- `server_key` - A server key that gives the push service an authorized access to Google services that is used for Chrome Web Push.
+- `id`-  (String) The unique identifier of the applications chrome.
+- `server_key`-  (String) Server key that provides push notification service to authorize the access to Google services that is used for Chrome web push.
 
 - `web_site_url` - The URL of the WebSite / WebApp that should be permitted to subscribe to WebPush.

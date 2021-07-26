@@ -6,27 +6,31 @@ description: |-
   Get information about an IBM Cloud shared domain.
 ---
 
-# ibm\_app_domain_shared
+# ibm_app_domain_shared
 
-Import the details of an existing IBM Cloud shared domain as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about an existing shared domain for an app. For more information, about an app domain shared, see [managing your domains](https://cloud.ibm.com/docs/cloud-foundry-public?topic=cloud-foundry-public-custom-domains).
 
-## Example Usage
 
-```hcl
+## Example usage
+The following example retrieves information about the `example.com` domain. 
+
+
+```terraform
 data "ibm_app_domain_shared" "shared_domain" {
   name = "foo.com"
 }
-
 ```
 
-## Argument Reference
 
-The following arguments are supported:
+## Argument reference
+Review the argument reference that you can specify for your data source. 
 
-* `name` - (Required, string) The name of the shared domain.
+- `name` - (Required, String)  The name of the shared domain.
 
-## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
-* `id` - The unique identifier of the shared domain.  
+- `id` - (String) The unique identifier of the shared domain.
+
+

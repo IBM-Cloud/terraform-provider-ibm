@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -170,37 +169,19 @@ func TestAccIBMISLB_basic_private(t *testing.T) {
 }
 
 func testAccCheckIBMISLBDestroy(s *terraform.State) error {
-	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	if userDetails.generation == 1 {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_lb" {
-				continue
-			}
-
-			getlboptions := &vpcclassicv1.GetLoadBalancerOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetLoadBalancer(getlboptions)
-			if err == nil {
-				return fmt.Errorf("LB still exists: %s", rs.Primary.ID)
-			}
+	sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_lb" {
+			continue
 		}
-	} else {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_lb" {
-				continue
-			}
 
-			getlboptions := &vpcv1.GetLoadBalancerOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetLoadBalancer(getlboptions)
-			if err == nil {
-				return fmt.Errorf("LB still exists: %s", rs.Primary.ID)
-			}
+		getlboptions := &vpcv1.GetLoadBalancerOptions{
+			ID: &rs.Primary.ID,
+		}
+		_, _, err := sess.GetLoadBalancer(getlboptions)
+		if err == nil {
+			return fmt.Errorf("LB still exists: %s", rs.Primary.ID)
 		}
 	}
 
@@ -219,29 +200,16 @@ func testAccCheckIBMISLBExists(n, lb string) resource.TestCheckFunc {
 			return errors.New("No Record ID is set")
 		}
 
-		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-		if userDetails.generation == 1 {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getlboptions := &vpcclassicv1.GetLoadBalancerOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundLB, _, err := sess.GetLoadBalancer(getlboptions)
-			if err != nil {
-				return err
-			}
-			lb = *foundLB.ID
-		} else {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getlboptions := &vpcv1.GetLoadBalancerOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundLB, _, err := sess.GetLoadBalancer(getlboptions)
-			if err != nil {
-				return err
-			}
-			lb = *foundLB.ID
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		getlboptions := &vpcv1.GetLoadBalancerOptions{
+			ID: &rs.Primary.ID,
 		}
+		foundLB, _, err := sess.GetLoadBalancer(getlboptions)
+		if err != nil {
+			return err
+		}
+		lb = *foundLB.ID
+
 		return nil
 	}
 }

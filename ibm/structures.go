@@ -17,19 +17,21 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	kp "github.com/IBM/keyprotect-go-client"
+	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/apache/openwhisk-client-go/whisk"
+	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
-	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
 
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
@@ -38,6 +40,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
 const (
@@ -743,7 +746,7 @@ func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
 
 func retentionRuleGet(in *s3.ProtectionConfiguration) []interface{} {
 	rules := make([]interface{}, 0, 1)
-	if in != nil && in.Status != nil && *in.Status == "Retention" {
+	if in != nil && in.Status != nil && *in.Status == "COMPLIANCE" {
 		protectConfig := make(map[string]interface{})
 		if in.DefaultRetention != nil {
 			protectConfig["default"] = int(*(in.DefaultRetention).Days)
@@ -760,6 +763,22 @@ func retentionRuleGet(in *s3.ProtectionConfiguration) []interface{} {
 		rules = append(rules, protectConfig)
 	}
 	return rules
+}
+
+func flattenCosObejctVersioning(in *s3.GetBucketVersioningOutput) []interface{} {
+	versioning := make([]interface{}, 0, 1)
+	if in != nil {
+		if in.Status != nil {
+			att := make(map[string]interface{})
+			if *in.Status == "Enabled" {
+				att["enable"] = true
+			} else {
+				att["enable"] = false
+			}
+			versioning = append(versioning, att)
+		}
+	}
+	return versioning
 }
 
 func flattenLimits(in *whisk.Limits) []interface{} {
@@ -867,6 +886,20 @@ func intValue(i64 *int64) (i int) {
 func float64Value(f32 *float32) (f float64) {
 	if f32 != nil {
 		f = float64(*f32)
+	}
+	return
+}
+
+func dateToString(d *strfmt.Date) (s string) {
+	if d != nil {
+		s = d.String()
+	}
+	return
+}
+
+func dateTimeToString(dt *strfmt.DateTime) (s string) {
+	if dt != nil {
+		s = dt.String()
 	}
 	return
 }
@@ -1131,6 +1164,14 @@ func idParts(id string) ([]string, error) {
 	return []string{}, fmt.Errorf("The given id %s does not contain / please check documentation on how to provider id during import command", id)
 }
 
+func sepIdParts(id string, separator string) ([]string, error) {
+	if strings.Contains(id, separator) {
+		parts := strings.Split(id, separator)
+		return parts, nil
+	}
+	return []string{}, fmt.Errorf("The given id %s does not contain %s please check documentation on how to provider id during import command", id, separator)
+}
+
 func vmIdParts(id string) ([]string, error) {
 	parts := strings.Split(id, "/")
 	return parts, nil
@@ -1141,27 +1182,66 @@ func cfIdParts(id string) ([]string, error) {
 	return parts, nil
 }
 
-func flattenPolicyResource(list []iampapv1.Resource) []map[string]interface{} {
+// getCustomAttributes will return all attributes which are not system defined
+func getCustomAttributes(r iampolicymanagementv1.PolicyResource) []iampolicymanagementv1.ResourceAttribute {
+	attributes := []iampolicymanagementv1.ResourceAttribute{}
+	for _, a := range r.Attributes {
+		switch *a.Name {
+		case "accesGroupId":
+		case "accountId":
+		case "organizationId":
+		case "spaceId":
+		case "region":
+		case "resource":
+		case "resourceType":
+		case "resourceGroupId":
+		case "serviceType":
+		case "serviceName":
+		case "serviceInstance":
+		default:
+			attributes = append(attributes, a)
+		}
+	}
+	return attributes
+}
+
+func flattenPolicyResource(list []iampolicymanagementv1.PolicyResource) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
-			"service":              i.GetAttribute("serviceName"),
-			"resource_instance_id": i.GetAttribute("serviceInstance"),
-			"region":               i.GetAttribute("region"),
-			"resource_type":        i.GetAttribute("resourceType"),
-			"resource":             i.GetAttribute("resource"),
-			"resource_group_id":    i.GetAttribute("resourceGroupId"),
+			"service":              getResourceAttribute("serviceName", i),
+			"resource_instance_id": getResourceAttribute("serviceInstance", i),
+			"region":               getResourceAttribute("region", i),
+			"resource_type":        getResourceAttribute("resourceType", i),
+			"resource":             getResourceAttribute("resource", i),
+			"resource_group_id":    getResourceAttribute("resourceGroupId", i),
 		}
-		customAttributes := i.CustomAttributes()
+		customAttributes := getCustomAttributes(i)
 		if len(customAttributes) > 0 {
 			out := make(map[string]string)
 			for _, a := range customAttributes {
-				out[a.Name] = a.Value
+				out[*a.Name] = *a.Value
 			}
 			l["attributes"] = out
 		}
 
 		result = append(result, l)
+	}
+	return result
+}
+func flattenPolicyResourceAttributes(list []iampolicymanagementv1.PolicyResource) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0)
+	for _, i := range list {
+		for _, a := range i.Attributes {
+			if *a.Name != "accountId" {
+				l := map[string]interface{}{
+					"name":     a.Name,
+					"value":    a.Value,
+					"operator": a.Operator,
+				}
+				result = append(result, l)
+			}
+		}
 	}
 	return result
 }
@@ -1202,7 +1282,7 @@ func contains(s []int, e int) bool {
 	return false
 }
 
-func flattenMembersData(list []models.AccessGroupMemberV2, users []usermanagementv2.UserInfo, serviceids []models.ServiceID) ([]string, []string) {
+func flattenMembersData(list []models.AccessGroupMemberV2, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) ([]string, []string) {
 	var ibmid []string
 	var serviceid []string
 	for _, m := range list {
@@ -1216,8 +1296,8 @@ func flattenMembersData(list []models.AccessGroupMemberV2, users []usermanagemen
 		} else {
 
 			for _, srid := range serviceids {
-				if srid.IAMID == m.ID {
-					serviceid = append(serviceid, srid.UUID)
+				if *srid.IamID == m.ID {
+					serviceid = append(serviceid, *srid.ID)
 					break
 				}
 			}
@@ -1228,7 +1308,7 @@ func flattenMembersData(list []models.AccessGroupMemberV2, users []usermanagemen
 	return ibmid, serviceid
 }
 
-func flattenAccessGroupMembers(list []models.AccessGroupMemberV2, users []usermanagementv2.UserInfo, serviceids []models.ServiceID) []map[string]interface{} {
+func flattenAccessGroupMembers(list []models.AccessGroupMemberV2, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, m := range list {
 		var value, vtype string
@@ -1244,8 +1324,8 @@ func flattenAccessGroupMembers(list []models.AccessGroupMemberV2, users []userma
 
 			vtype = iamuumv1.AccessGroupMemberService
 			for _, srid := range serviceids {
-				if srid.IAMID == m.ID {
-					value = srid.UUID
+				if *srid.IamID == m.ID {
+					value = *srid.ID
 					break
 				}
 			}
@@ -1279,7 +1359,7 @@ func flattenServiceIds(services []string, meta interface{}) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		serviceids[i] = serviceID.IAMID
+		serviceids[i] = *serviceID.IamID
 	}
 	return serviceids, nil
 }
@@ -1678,6 +1758,129 @@ func UpdateTags(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
+func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
+
+	gtClient, err := meta.(ClientSession).GlobalTaggingAPIv1()
+	if err != nil {
+		return nil, fmt.Errorf("Error getting global tagging client settings: %s", err)
+	}
+
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return nil, err
+	}
+	accountID := userDetails.userAccount
+
+	var providers []string
+	if strings.Contains(resourceType, "SoftLayer_") {
+		providers = []string{"ims"}
+	}
+
+	ListTagsOptions := &globaltaggingv1.ListTagsOptions{}
+	ListTagsOptions.AttachedTo = &resourceID
+	ListTagsOptions.Providers = providers
+	if len(tagType) > 0 {
+		ListTagsOptions.TagType = ptrToString(tagType)
+
+		if tagType == service {
+			ListTagsOptions.AccountID = ptrToString(accountID)
+		}
+	}
+	taggingResult, _, err := gtClient.ListTags(ListTagsOptions)
+	if err != nil {
+		return nil, err
+	}
+	var taglist []string
+	for _, item := range taggingResult.Items {
+		taglist = append(taglist, *item.Name)
+	}
+	log.Println("tagList: ", taglist)
+	return newStringSet(resourceIBMVPCHash, taglist), nil
+}
+
+func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, resourceID, resourceType, tagType string) error {
+	gtClient, err := meta.(ClientSession).GlobalTaggingAPIv1()
+	if err != nil {
+		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+	}
+
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
+	acctID := userDetails.userAccount
+
+	resources := []globaltaggingv1.Resource{}
+	r := globaltaggingv1.Resource{ResourceID: ptrToString(resourceID), ResourceType: ptrToString(resourceType)}
+	resources = append(resources, r)
+
+	if oldList == nil {
+		oldList = new(schema.Set)
+	}
+	if newList == nil {
+		newList = new(schema.Set)
+	}
+	olds := oldList.(*schema.Set)
+	news := newList.(*schema.Set)
+	removeInt := olds.Difference(news).List()
+	addInt := news.Difference(olds).List()
+	add := make([]string, len(addInt))
+	for i, v := range addInt {
+		add[i] = fmt.Sprint(v)
+	}
+	remove := make([]string, len(removeInt))
+	for i, v := range removeInt {
+		remove[i] = fmt.Sprint(v)
+	}
+
+	schematicTags := os.Getenv("IC_ENV_TAGS")
+	var envTags []string
+	if schematicTags != "" {
+		envTags = strings.Split(schematicTags, ",")
+		add = append(add, envTags...)
+	}
+
+	if len(remove) > 0 {
+		detachTagOptions := &globaltaggingv1.DetachTagOptions{
+			Resources: resources,
+			TagNames:  remove,
+		}
+
+		_, resp, err := gtClient.DetachTag(detachTagOptions)
+		if err != nil {
+			return fmt.Errorf("Error detaching database tags %v: %s\n%s", remove, err, resp)
+		}
+		for _, v := range remove {
+			delTagOptions := &globaltaggingv1.DeleteTagOptions{
+				TagName: ptrToString(v),
+			}
+			_, resp, err := gtClient.DeleteTag(delTagOptions)
+			if err != nil {
+				return fmt.Errorf("Error deleting database tag %v: %s\n%s", v, err, resp)
+			}
+		}
+	}
+
+	if len(add) > 0 {
+		AttachTagOptions := &globaltaggingv1.AttachTagOptions{}
+		AttachTagOptions.Resources = resources
+		AttachTagOptions.TagNames = add
+		if len(tagType) > 0 {
+			AttachTagOptions.TagType = ptrToString(tagType)
+			if tagType == service {
+				AttachTagOptions.AccountID = ptrToString(acctID)
+			}
+		}
+
+		_, resp, err := gtClient.AttachTag(AttachTagOptions)
+		if err != nil {
+			return fmt.Errorf("Error updating database tags %v : %s\n%s", add, err, resp)
+		}
+	}
+
+	return nil
+}
+
 func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) {
 
 	gtClient, err := meta.(ClientSession).GlobalTaggingAPI()
@@ -1788,20 +1991,61 @@ func resourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 	return nil
 }
 
-func flattenRoleData(object []iampapv2.Role, roleType string) []map[string]string {
+func resourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
+
+	if volsintf, ok := diff.GetOk("volume_attachments"); ok {
+		vols := volsintf.([]interface{})
+		for volAttIdx := range vols {
+			volumeid := "volume_attachments." + strconv.Itoa(volAttIdx) + "." + isInstanceTemplateVolAttVol
+			volumePrototype := "volume_attachments." + strconv.Itoa(volAttIdx) + "." + isInstanceTemplateVolAttVolPrototype
+			var volIdnterpolated = false
+			var volumeIdFound = false
+			if _, volumeIdFound = diff.GetOk(volumeid); !volumeIdFound {
+				if !diff.NewValueKnown(volumeid) {
+					volIdnterpolated = true
+				}
+			}
+			_, volPrototypeFound := diff.GetOk(volumePrototype)
+
+			if volPrototypeFound && (volumeIdFound || volIdnterpolated) {
+				return fmt.Errorf("InstanceTemplate - volume_attachments[%d]: Cannot provide both 'volume' and 'volume_prototype' together.", volAttIdx)
+			}
+			if !volPrototypeFound && !volumeIdFound && !volIdnterpolated {
+				return fmt.Errorf("InstanceTemplate - volume_attachments[%d]: Volume details missing. Provide either 'volume' or 'volume_prototype'.", volAttIdx)
+			}
+		}
+	}
+
+	return nil
+}
+
+func flattenRoleData(object []iampolicymanagementv1.Role, roleType string) []map[string]string {
 	var roles []map[string]string
 
 	for _, item := range object {
 		role := make(map[string]string)
-		role["name"] = item.DisplayName
+		role["name"] = *item.DisplayName
 		role["type"] = roleType
-		role["description"] = item.Description
+		role["description"] = *item.Description
 		roles = append(roles, role)
 	}
 	return roles
 }
 
-func flattenActions(object []iampapv2.Role) map[string]interface{} {
+func flattenCustomRoleData(object []iampolicymanagementv1.CustomRole, roleType string) []map[string]string {
+	var roles []map[string]string
+
+	for _, item := range object {
+		role := make(map[string]string)
+		role["name"] = *item.DisplayName
+		role["type"] = roleType
+		role["description"] = *item.Description
+		roles = append(roles, role)
+	}
+	return roles
+}
+
+func flattenActions(object []iampolicymanagementv1.Role) map[string]interface{} {
 	actions := map[string]interface{}{
 		"reader":      flattenActionbyDisplayName("Reader", object),
 		"manager":     flattenActionbyDisplayName("Manager", object),
@@ -1811,10 +2055,10 @@ func flattenActions(object []iampapv2.Role) map[string]interface{} {
 	return actions
 }
 
-func flattenActionbyDisplayName(displayName string, object []iampapv2.Role) []string {
+func flattenActionbyDisplayName(displayName string, object []iampolicymanagementv1.Role) []string {
 	var actionIDs []string
 	for _, role := range object {
-		if role.DisplayName == displayName {
+		if *role.DisplayName == displayName {
 			actionIDs = role.Actions
 		}
 	}
@@ -1844,6 +2088,20 @@ func GetNext(next interface{}) string {
 
 	q := u.Query()
 	return q.Get("start")
+}
+
+// GetNextIAM ...
+func GetNextIAM(next interface{}) string {
+	if reflect.ValueOf(next).IsNil() {
+		return ""
+	}
+
+	u, err := url.Parse(reflect.ValueOf(next).Elem().String())
+	if err != nil {
+		return ""
+	}
+	q := u.Query()
+	return q.Get("pagetoken")
 }
 
 /* Return the default resource group */
@@ -1960,4 +2218,374 @@ func flatterSatelliteZones(zones *schema.Set) []string {
 	}
 
 	return zoneList
+}
+
+// error object
+type ServiceErrorResponse struct {
+	Message    string
+	StatusCode int
+	Result     interface{}
+}
+
+func beautifyError(err error, response *core.DetailedResponse) *ServiceErrorResponse {
+	var (
+		statusCode int
+		result     interface{}
+	)
+	if response != nil {
+		statusCode = response.StatusCode
+		result = response.Result
+	}
+	return &ServiceErrorResponse{
+		Message:    err.Error(),
+		StatusCode: statusCode,
+		Result:     result,
+	}
+}
+
+func (response *ServiceErrorResponse) String() string {
+	output, err := json.MarshalIndent(response, "", "    ")
+	if err == nil {
+		return fmt.Sprintf("%+v\n", string(output))
+	}
+	return fmt.Sprintf("Error : %#v", response)
+}
+
+// IAM Policy Management
+func getResourceAttribute(name string, r iampolicymanagementv1.PolicyResource) *string {
+	for _, a := range r.Attributes {
+		if *a.Name == name {
+			return a.Value
+		}
+	}
+	return core.StringPtr("")
+}
+
+func getSubjectAttribute(name string, s iampolicymanagementv1.PolicySubject) *string {
+	for _, a := range s.Attributes {
+		if *a.Name == name {
+			return a.Value
+		}
+	}
+	return core.StringPtr("")
+}
+
+func setResourceAttribute(name *string, value *string, r []iampolicymanagementv1.ResourceAttribute) []iampolicymanagementv1.ResourceAttribute {
+	for _, a := range r {
+		if *a.Name == *name {
+			a.Value = value
+			return r
+		}
+	}
+	r = append(r, iampolicymanagementv1.ResourceAttribute{
+		Name:     name,
+		Value:    value,
+		Operator: core.StringPtr("stringEquals"),
+	})
+	return r
+}
+
+func getRolesFromRoleNames(roleNames []string, roles []iampolicymanagementv1.PolicyRole) ([]iampolicymanagementv1.PolicyRole, error) {
+
+	filteredRoles := []iampolicymanagementv1.PolicyRole{}
+	for _, roleName := range roleNames {
+		role, err := findRoleByName(roles, roleName)
+		if err != nil {
+			return []iampolicymanagementv1.PolicyRole{}, err
+		}
+		role.DisplayName = nil
+		filteredRoles = append(filteredRoles, role)
+	}
+	return filteredRoles, nil
+}
+
+func mapRoleListToPolicyRoles(roleList iampolicymanagementv1.RoleList) []iampolicymanagementv1.PolicyRole {
+	var policyRoles []iampolicymanagementv1.PolicyRole
+	for _, customRole := range roleList.CustomRoles {
+		newPolicyRole := iampolicymanagementv1.PolicyRole{
+			DisplayName: customRole.DisplayName,
+			RoleID:      customRole.CRN,
+		}
+		policyRoles = append(policyRoles, newPolicyRole)
+	}
+	for _, serviceRole := range roleList.ServiceRoles {
+		newPolicyRole := iampolicymanagementv1.PolicyRole{
+			DisplayName: serviceRole.DisplayName,
+			RoleID:      serviceRole.CRN,
+		}
+		policyRoles = append(policyRoles, newPolicyRole)
+	}
+	for _, systemRole := range roleList.SystemRoles {
+		newPolicyRole := iampolicymanagementv1.PolicyRole{
+			DisplayName: systemRole.DisplayName,
+			RoleID:      systemRole.CRN,
+		}
+		policyRoles = append(policyRoles, newPolicyRole)
+	}
+	return policyRoles
+}
+
+func generatePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicymanagementv1.CreatePolicyOptions, error) {
+
+	var serviceName string
+	var resourceType string
+	resourceAttributes := []iampolicymanagementv1.ResourceAttribute{}
+
+	if res, ok := d.GetOk("resources"); ok {
+		resources := res.([]interface{})
+		for _, resource := range resources {
+			r, _ := resource.(map[string]interface{})
+
+			if r, ok := r["service"]; ok && r != nil {
+				serviceName = r.(string)
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.ResourceAttribute{
+						Name:     core.StringPtr("serviceName"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["resource_instance_id"]; ok {
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.ResourceAttribute{
+						Name:     core.StringPtr("serviceInstance"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["region"]; ok {
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.ResourceAttribute{
+						Name:     core.StringPtr("region"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["resource_type"]; ok {
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.ResourceAttribute{
+						Name:     core.StringPtr("resourceType"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["resource"]; ok {
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.ResourceAttribute{
+						Name:     core.StringPtr("resource"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["resource_group_id"]; ok {
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.ResourceAttribute{
+						Name:     core.StringPtr("resourceGroupId"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["attributes"]; ok {
+				for k, v := range r.(map[string]interface{}) {
+					resourceAttributes = setResourceAttribute(core.StringPtr(k), core.StringPtr(v.(string)), resourceAttributes)
+				}
+			}
+		}
+	}
+	if r, ok := d.GetOk("resource_attributes"); ok {
+		for _, attribute := range r.(*schema.Set).List() {
+			a := attribute.(map[string]interface{})
+			name := a["name"].(string)
+			value := a["value"].(string)
+			operator := a["operator"].(string)
+			at := iampolicymanagementv1.ResourceAttribute{
+				Name:     &name,
+				Value:    &value,
+				Operator: &operator,
+			}
+			resourceAttributes = append(resourceAttributes, at)
+		}
+	}
+
+	var serviceTypeResourceAttribute iampolicymanagementv1.ResourceAttribute
+
+	if d.Get("account_management").(bool) {
+		serviceTypeResourceAttribute = iampolicymanagementv1.ResourceAttribute{
+			Name:     core.StringPtr("serviceType"),
+			Value:    core.StringPtr("platform_service"),
+			Operator: core.StringPtr("stringEquals"),
+		}
+		resourceAttributes = append(resourceAttributes, serviceTypeResourceAttribute)
+	}
+
+	if len(resourceAttributes) == 0 {
+		serviceTypeResourceAttribute = iampolicymanagementv1.ResourceAttribute{
+			Name:     core.StringPtr("serviceType"),
+			Value:    core.StringPtr("service"),
+			Operator: core.StringPtr("stringEquals"),
+		}
+		resourceAttributes = append(resourceAttributes, serviceTypeResourceAttribute)
+	}
+
+	policyResources := iampolicymanagementv1.PolicyResource{
+		Attributes: resourceAttributes,
+	}
+
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return iampolicymanagementv1.CreatePolicyOptions{}, err
+	}
+
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
+
+	if err != nil {
+		return iampolicymanagementv1.CreatePolicyOptions{}, err
+	}
+
+	serviceToQuery := serviceName
+
+	if serviceName == "" && // no specific service specified
+		!d.Get("account_management").(bool) && // not all account management services
+		resourceType != "resource-group" { // not to a resource group
+		serviceToQuery = "alliamserviceroles"
+	}
+
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID:   &userDetails.userAccount,
+		ServiceName: &serviceToQuery,
+	}
+
+	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
+	if err != nil {
+		return iampolicymanagementv1.CreatePolicyOptions{}, err
+	}
+
+	roles := mapRoleListToPolicyRoles(*roleList)
+	policyRoles, err := getRolesFromRoleNames(expandStringList(d.Get("roles").([]interface{})), roles)
+	if err != nil {
+		return iampolicymanagementv1.CreatePolicyOptions{}, err
+	}
+
+	return iampolicymanagementv1.CreatePolicyOptions{Roles: policyRoles, Resources: []iampolicymanagementv1.PolicyResource{policyResources}}, nil
+}
+
+func getIBMUniqueId(accountID, userEmail string, meta interface{}) (string, error) {
+	userManagement, err := meta.(ClientSession).UserManagementAPI()
+	if err != nil {
+		return "", err
+	}
+	client := userManagement.UserInvite()
+	res, err := client.ListUsers(accountID)
+	if err != nil {
+		return "", err
+	}
+	for _, userInfo := range res {
+		//handling case-sensitivity in userEmail
+		if strings.ToLower(userInfo.Email) == strings.ToLower(userEmail) {
+			return userInfo.IamID, nil
+		}
+	}
+	return "", fmt.Errorf("User %s is not found under account %s", userEmail, accountID)
+}
+
+func immutableResourceCustomizeDiff(resourceList []string, diff *schema.ResourceDiff) error {
+
+	for _, rName := range resourceList {
+		if diff.Id() != "" && diff.HasChange(rName) {
+			o, n := diff.GetChange(rName)
+			old := o.(string)
+			new := n.(string)
+			if len(old) > 0 && old != new {
+				if !(rName == sateLocZone && strings.Contains(old, new)) {
+					return fmt.Errorf("'%s' attribute is immutable and can't be changed from %s to %s.", rName, old, new)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func flattenSatelliteWorkerPoolZones(zones *schema.Set) []kubernetesserviceapiv1.SatelliteCreateWorkerPoolZone {
+	zoneList := make([]kubernetesserviceapiv1.SatelliteCreateWorkerPoolZone, zones.Len())
+	for i, v := range zones.List() {
+		data := v.(map[string]interface{})
+		if v, ok := data["id"]; ok && v.(string) != "" {
+			zoneList[i].ID = sl.String(v.(string))
+		}
+	}
+
+	return zoneList
+}
+
+func flattenSatelliteWorkerPools(list []kubernetesserviceapiv1.GetWorkerPoolResponse) []map[string]interface{} {
+	workerPools := make([]map[string]interface{}, len(list))
+	for i, workerPool := range list {
+		l := map[string]interface{}{
+			"id":                         *workerPool.ID,
+			"name":                       *workerPool.PoolName,
+			"isolation":                  *workerPool.Isolation,
+			"flavour":                    *workerPool.Flavor,
+			"size_per_zone":              *workerPool.WorkerCount,
+			"state":                      *workerPool.Lifecycle.ActualState,
+			"default_worker_pool_labels": workerPool.Labels,
+			"host_labels":                workerPool.HostLabels,
+		}
+		zones := workerPool.Zones
+		zonesConfig := make([]map[string]interface{}, len(zones))
+		for j, zone := range zones {
+			z := map[string]interface{}{
+				"zone":         *zone.ID,
+				"worker_count": int(*zone.WorkerCount),
+			}
+			zonesConfig[j] = z
+		}
+		l["zones"] = zonesConfig
+		workerPools[i] = l
+	}
+
+	return workerPools
+}
+
+func flattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {
+	mapped := make([]string, len(hostLabels))
+	idx := 0
+	for k, v := range hostLabels {
+		mapped[idx] = fmt.Sprintf("%s:%v", k, v)
+		idx++
+	}
+
+	return newStringSet(schema.HashString, mapped)
+}
+
+// KMS Private Endpoint
+func updatePrivateURL(kpURL string) (string, error) {
+	var kmsEndpointURL string
+	if !strings.Contains(kpURL, "private") {
+		kmsEndpURL := strings.SplitAfter(kpURL, "https://")
+		if len(kmsEndpURL) == 2 {
+			kmsEndpointURL = kmsEndpURL[0] + "private." + kmsEndpURL[1] + "/api/v2/"
+
+		} else {
+			return "", fmt.Errorf("Error in Kms EndPoint URL ")
+		}
+	}
+	return kmsEndpointURL, nil
 }

@@ -9,11 +9,12 @@ description: |-
 
 # ibm_cis_firewall
 
-Provides a IBM CIS Firewall resource. This resource is associated with an IBM Cloud Internet Services instance and a CIS Domain resource. It allows to create, update, delete firewall of a domain of a CIS instance
 
-## Example Usage
+Create, update, or delete a firewall for a domain that you included in your IBM Cloud Internet Services instance and a CIS domain resource. For more information, about CIS firewall resource, see [using fields, functions, and expressions](https://cloud.ibm.com/docs/cis?topic=cis-fields-and-expressions).
 
-```hcl
+## Example usage
+
+```terraform
 # Add a firewall to the domain
 
 resource "ibm_cis_firewall" "lockdown" {
@@ -60,74 +61,82 @@ resource "ibm_cis_firewall" "ua_rules" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance where you want to create the firewall.
+- `domain_id` - (Required, String) The ID of the domain where you want to apply the firewall rules.
+- `firewall_type` - (Required, String) The type of firewall that you want to create for your domain. Supported values are `lockdowns`, `access_rules`, and `ua_rules`. Consider the following information when choosing your firewall type: <ul><li><strong><code>access_rules</code></strong>: Access rules allow, challenge, or block requests to your website. You can apply access rules to one domain only or all domains in the same service instance.</li><li><strong><code>ua_rules</code></strong>: Apply firewall rules only if the user agent that is used by the client matches the user agent that you defined. </li><li><strong><code>lockdowns</code></strong>: Allow access to your domain for specific IP addresses or IP address ranges only. If you choose this firewall type, you must define your firewall rules in the `lockdown` input parameter.</li></ul>.
+- `access_rule` - (Optional, String)  Create the data the describing access rule. (Maximum item is 1).
+ 
+  Nested scheme for `access_rules`:	
+  - `configuration` - (Required, List)  The Configuration of firewall. (Maximum items is 1).
+  
+    Nested scheme for `configuration`: 
+    - `target` - (Required, String) The request property to target. Valid values are `ip`, `ip_range`, `asn`, `country`.
+    - `value` - (Required, String)  IP address or CIDR or Autonomous or Country code.
+  - `mode` - (Required, String) The mode of access rule. The valid modes are `block`, `challenge`, `whitelist`, `js_challenge`.
+  - `notes` - (Optional, String) The free text for notes.
+- `lockdown`- (Required, List) A list of firewall rules that you want to create for your `lockdowns` firewall. You can specify one item in this list only.
 
-- `cis_id` - (Required,string) The ID of the CIS service instance
-- `domain_id` - (Required,string) The ID of the domain to add the Lockdown.
-- `firewall_type` - (Required,string) The type of firewall. Allowable values are [`lockdowns`],[`access_rules`],[`ua_rules`].
+  Nested scheme for `lockdown`:
+  - `configurations`- (Optional, List) A list of IP address or CIDR ranges that you want to allow access to the URLs that you defined in `urls`.
 
-**NOTE:**
+    Nested scheme for `configurations`:
+    - `target` - (Optional, String) Specify if you want to target an `IP` or `ip_range`.
+    - `value` - (Optional, String) The IP address or IP address range that you want to target. Make sure that the value that you enter here matches the type of target that you specified in `lockdown.configurations.target`.
+  - `description` - (Optional, String) A description for your firewall rule.
+  - `paused`- (Optional, Bool) If set to **true**, the firewall rule is disabled. If set to **false**, the firewall rule is enabled.
+  - `priority` - (Optional, Integer) The priority of the firewall rule. A low number is associated with a high priority.
+  - `urls`- (Optional, List) A list of URLs that you want to include in your firewall rule. You can specify wildcard URLs. The URL pattern is escaped before use.
+- `ua_rule` - (Optional, String) Create the data describing the user agent rule. (Maximum item is 1).
 
-1. [`access_rules`]: Access Rules are a way to allow, challenge, or block requests to your website. You can apply access rules to one domain only or all domains in the same service instance.
-2. [`ua_rules`]: Perform access control when matching the exact UserAgent reported by the client. The access control mechanisms can be defined within a rule to help manage traffic from particular clients. This will enable you to customize the access to your site.
-3. [`lockdowns`]: Lock access to URLs in this domain to only permitted addresses or address ranges.
+  Nested scheme for `ua_rule`:
+  - `configuration` - (Required, List)  The Configuration of firewall. (Maximum item is 1).
+  
+    Nested scheme for `configuration`:
+    - `target` - (Required, String) The request property to target. Valid values are `ua`.
+    - `value` - (Required, String) The exact user agent string to match the rule.
+  - `description ` - (Optional, String) The free text for description.
+  - `mode` - (Optional, String) The mode of access rule. The valid modes are `block`, `challenge`,  `js_challenge`.
+  - `paused` - (Optional, String) Whether the rule is currently disabled.
+  
 
-- `lockdown` - (Optional,list) (MinItems: 1) List of lockdown to be created. It is the data describing a lockdowns rule.
-  - `paused` - (Optional,boolean). Whether this rule is currently disabled.
-  - `description` - (Optional,string). Some useful information about this rule to help identify the purpose of it.
-  - `priority` - (Optional,int) The priority of the record.
-  - `urls` - (Optional,list). URLs included in this rule definition. Wildcards are permitted. The URL pattern entered here is escaped before use. This limits the URL to just simple wildcard patterns.
-  - `configurations` - (Optional,list). List of IP addresses or CIDR ranges to use for this rule. This can include any number of [`ip`] or [`ip_range`].configurations that can access the provided URLs. This can not be modified once it is created.
-    - `target` - (Optional,string). The request property to target. Valid values: [`ip`], [`ip_range`].
-    - `value` - (Optional,string). IP addresses or CIDR.
-- `access_rule` - (Optional) (MaxItem: 1) Access rule to be created. It is the data describing access rule.
-  - `notes` - (Optional, string) Free text for notes.
-  - `mode` - (Required, string) The mode of access rule. The valid modes are [`block`], [`challenge`], [`whitelist`], [`js_challenge`].
-  - `configuration` - (Required, List) (MaxItems: 1) The Configuration of firewall.
-    - `target` - (Required, string) The request property to target. Valid values: [`ip`], [`ip_range`], [`asn`], [`country`].
-    - `value` - (Required, string) IP address or CIDR or Autonomous or Country code.
-- `ua_rule` - (Optional) (MaxItem: 1) User Agent rule to be created. It is the data describing user agent rule.
-  - `description` - (Optional, string) Free text.
-  - `mode` - (Required, string) The mode of access rule. The valid modes are [`block`], [`challenge`], [`js_challenge`].
-  - `paused` - (Optional, boolean) Whether this rule is currently disabled.
-  - `configuration` - (Required, List) (MaxItems: 1) The Configuration of firewall.
-    - `target` - (Required, string) The request property to target. Valid values: [`ua`].
-    - `value` - (Required, string) The exact User Agent string to match with this rule.
+**Note**
 
-**NOTE:**
+Exactly one of `lockdown`, `access_rule`, and `ua_rule` is allowed for the firewall types `lockdowns`, `access_rules`, and `ua_rules`.
 
-- Exactly one of [`lockdown`], [`access_rule`] and [`ua_rule`] is allowed to be given for input for respective firewall types [`lockdowns`], [`access_rules`], [`ua_rules`].
 
-## Attributes Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-- `id` - The firewall ID. It is a combination of <`firewall_type`>,<`lockdown_id/access_rul_id/ua_rule_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
-- `lockdown`
-  - `lockdown_id` - The lockdown ID.
-- `access_rule`
-  - `access_rule_id` - The access rule ID.
-- `ua_rule`
-  - `ua_rule_id` - The User Agent rule ID.
+- `access_rule_id` - (String) The access rule ID.
+- `id` - (String) The ID of the record. The ID is composed of `<firewall_type>,<lockdown_id/access_rule_id/ua_rule_id>,<domain_ID>,<cis_crn>`. Attributes are concatenated with `:`.
+- `lockdown_id` - (String) The lock down ID.
+- `ua_rule_id` - (String) The user agent rule ID.
 
 ## Import
+The `ibm_cis_firewall` resource is imported by using the ID. The ID is formed from the firewall type, the firewall ID, the domain ID of the domain and the CRN (Cloud Resource Name) concatenated  using a `:` character.
 
-The `ibm_cis_firewall` resource can be imported using the `id`. The ID is formed from the `Firewall Type`,the `Firewall ID`, the `Domain ID` of the domain and the `CRN` (Cloud Resource Name) concatentated using a `:` character.
+The domain ID and CRN is located on the **overview** page of the internet services instance of the domain heading of the console, or by using the `ibm cis` command line commands.
 
-The Domain ID and CRN will be located on the **Overview** page of the Internet Services instance under the **Domain** heading of the UI, or via using the `ibm cis` CLI commands.
+- **Domain ID** is a 32 digit character string of the form: `9caf68812ae9b3f0377fdf986751a78f`.
 
-- **Domain ID** is a 32 digit character string of the form: `9caf68812ae9b3f0377fdf986751a78f`
-
-- **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`
+- **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`.
 
 - **Firewall ID** is a 32 digit character string of the form: `489d96f0da6ed76251b475971b097205c`.
 
-- **Firewall Type** is a string. It can be either of [`lockdowns`],[`access_rules`],[`ua_rules`].
+- **Firewall type** is a string. It can be either of `lockdowns`, `access_rules`, `ua_rules`.
+
+**Syntax**
 
 ```
 $ terraform import ibm_cis_firewall.myorg <firewall_type>:<firewall_id>:<domain-id>:<crn>
+```
 
+**Example**
+
+```
 $ terraform import ibm_cis_firewall.myorg lockdowns lockdowns:48996f0da6ed76251b475971b097205c:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
 ```
+

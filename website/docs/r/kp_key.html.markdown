@@ -4,17 +4,21 @@ subcategory: "Key Management Service"
 layout: "ibm"
 page_title: "IBM : kp-key"
 description: |-
-  Manages IBM Keyprotect keys.
+  Manages IBM key protect keys.
 ---
 
-# ibm\_kp_key
+# ibm_kp_key
 
-Provides a key Protect resource. This allows standard as well as root keys to be created, and deleted. Configuration of an key protect key resource requires that the region parameter is set for the IBM provider in the provider.tf to be the same as the target key protect instance location/region. If not specified it will default to us-south. A terraform apply will fail if the key protect instance location is set differently.
+Create, or delete a Key Protect standard or root key. To use the `ibm_kp_key` resource, the region parameter in the `provider.tf` file must be set to the same region that your Key Protect service instance. If region parameter is not specified, `us-south` is used as default. If the region in the `provider.tf` file is different from the Key Protect instance, the instance cannot be retrieved by  Terraform and the  Terraform action fails. 
+
+**Note**
+
+The `ibm_kp_key` resource will be deprecated shortly, as a replacement, you can use `ibm_kms_key` resource.
 
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_resource_instance" "kp_instance" {
   name     = "instance-name"
   service  = "kms"
@@ -34,33 +38,29 @@ resource "ibm_cos_bucket" "flex-us-south" {
   key_protect          = ibm_kp_key.test.id
 }
 ```
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-## Argument Reference
+- `encrypted_nonce` - (Optional, Forces new resource, String) The encrypted nonce value that verifies your request to import a key to Key Protect. This value must be encrypted by using the key that you want to import to the service. To retrieve a nonce, use the `ibmcloud kp import-token get` command. Then, encrypt the value by running `ibmcloud kp import-token encrypt-nonce`. Only for imported root key.
+- `force_delete` - (Optional, Bool) If set to **true**, Key Protect forces the deletion of a root or standard key, even if this key is still in use, such as to protect an IBM Cloud Object Storage bucket. Note, the key cannot be deleted if the protected cloud resource is set up with a retention policy. Successful deletion includes the removal of any registrations that are associated with the key. Default value is **false**. **Note** Before executing Terraform destroy if `force_delete` flag is introduced after provisioning keys, a Terraform apply must be done before Terraform destroy for `force_delete` flag to take effect.
+- `iv_value` - (Optional, Forces new resource, String)  Used with import tokens. The Initialization Vector (IV) that is generated when you encrypt a nonce. The IV value is required to decrypt the encrypted nonce value that you provide when you make a key import request to the service. To generate an IV, encrypt the nonce by running `ibmcloud kp import-token encrypt-nonce`. Only for imported root key.
+- `key_protect_id` - (Required, Forces new resource, String) The Key Protect service instance ID.
+- `key_name` - (Required, Forces new resource, String) The name of the key.
+- `payload` - (Optional, Forces new resource, String) The base64 encoded key that you want to store and manage in the service. To import an existing key, provide a 256-bit key. To generate a new key, omit this parameter.
+- `standard_key` - (Optional, Forces new resource, Bool) Set flag **true** for standard key, and **false** for root key. Default value is **false**.
 
-The following arguments are supported:
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-* `key_protect_id` - (Required, Forces new resource, string) The keyprotect instance id.
-* `key_name` - (Required, Forces new resource, string) The name of the key. 
-* `standard_key` - (Optional, Forces new resource, bool) set to true to create a standard key, to create a root key set this flag to false. Default is false 
-* `payload` - (Optional, Forces new resource, string) The base64 encoded key material that you want to store and manage in the service. To import an existing key, provide a 256-bit key. To generate a new key, omit this parameter. 
-* `encrypted_nonce` - (Optional, Forces new resource, string) The encrypted nonce value that verifies your request to import a key to Key Protect. This value must be encrypted by using the key material that you want to import to the service. To retrieve a nonce, use `ibmcloud kp import-token get`. Then, encrypt the value by running `ibmcloud kp import-token encrypt-nonce`. Only for imported root key.
-* `iv_value` - (Optional, Forces new resource, string) Used with import tokens. The initialization vector (IV) that is generated when you encrypt a nonce. The IV value is required to decrypt the encrypted nonce value that you provide when you make a key import request to the service. To generate an IV, encrypt the nonce by running `ibmcloud kp import-token encrypt-nonce`. Only for imported root key.
-* `force_delete` - (Optional, bool) If set to true, Key Protect forces deletion on a key that is protecting a cloud resource, such as a Cloud Object Storage bucket. The action removes any registrations that are associated with the key. Note: If a key is protecting a cloud resource that has a retention policy, Key Protect cannot delete the key. Default: false.
-    **NOTE**: Before doing terraform destroy if force_delete flag is introduced after provisioning keys, a terraform apply must be done before terraform destroy for force_delete flag to take effect.
-
-
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The crn of the key. 
-* `crn` - The crn of the key. 
-* `status` - The status of the key.
-* `key_id` - The id of the key. 
+- `crn` - (String) The CRN of the key.
+- `id` - (String) The CRN of the key.
+- `key_id` - (String) The ID of the key.
+- `status` - (String) The status of the key.
 
 ## Import
+`ibm_kp_key` can be imported by using the `id` and `crn`.
 
-ibm_kp_key can be imported using id and crn, eg ibm_kp_key.crn
+**Example**
 
 ```
 $ terraform import ibm_kp_key.crn crn:v1:bluemix:public:kms:us-south:a/faf6addbf6bf4768hhhhe342a5bdd702:05f5bf91-ec66-462f-80eb-8yyui138a315:key:52448f62-9272-4d29-a515-15019e3e5asd

@@ -4,18 +4,19 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_access_group_policy"
 description: |-
-  Manages IBM IAM Access Group Policy.
+  Manages IBM IAM access group policy.
 ---
 
-# ibm\_access_group_id
+# ibm_access_group_policy
 
-Provides a resource for IAM Access Group Policy. This allows access group policy to be created, updated and deleted.
+Create, update, or delete an IAM policy for an IAM access group. For more information, about IBM access group policy, see [creating policies for account management service access](https://cloud.ibm.com/docs/account?topic=account-account-services#account-management-access).
 
-## Example Usage
+## Example usage
 
-### Access Group Policy for All Identity and Access enabled services 
+### Access group policy for all Identity and Access enabled services 
+The following example creates an IAM policy that grants members of the access group the IAM `Viewer` platform role to all IAM-enabled services. 
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
@@ -27,9 +28,10 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 ```
 
-### Access Group Policy for All Identity and Access enabled services within a resource group
+### Access group policy for all Identity and Access enabled services within a resource group
+The following example creates an IAM policy that grants members of the access group the IAM `Operator` platform role and the `Writer` service access role to all IAM-enabled services within a resource group. 
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
@@ -48,9 +50,10 @@ resource "ibm_iam_access_group_policy" "policy" {
 }
 ```
 
-### Access Group Policy using service with region
+### Access group policy using service with region
+The following example creates an IAM policy that grants members of the access group the IAM `Viewer` platform role to all service instances of IBM Cloud Object Storage. 
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
@@ -65,9 +68,11 @@ resource "ibm_iam_access_group_policy" "policy" {
 }
 
 ```
-### Access Group Policy using resource instance 
 
-```hcl
+### Access group policy using resource instance 
+The following example creates an IAM policy that grants members of the access group the IAM `Viewer` and `Administrator` platform role, and the `Manager` service access role to a single service instance. 
+
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
@@ -91,9 +96,10 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 ```
 
-### Access Group Policy using resource group 
+### Create a policy to all instances of an IBM Cloud service within a resource group
+The following example creates an IAM policy that grants members of the access group the IAM `Viewer` platform role to all instances of IBM Cloud Kubernetes Service that are created within a specific resource group. 
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
@@ -115,9 +121,9 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 ```
 
-### Access Group Policy using resource and resource type 
+### Access group policy by using resource and resource type 
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
@@ -138,9 +144,9 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 ```
 
-### Access Group Policy using attributes
+### Access group policy by using attributes
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgrp" {
   name = "test"
 }
@@ -166,38 +172,70 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 ```
 
-## Argument Reference
+### Access Group Policy by using resource_attributes
 
-The following arguments are supported:
+```terraform
+resource "ibm_iam_access_group" "accgrp" {
+  name = "access_group"
+}
+resource "ibm_iam_access_group_policy" "policy" {
+  access_group_id = ibm_iam_access_group.accgrp.id
+  roles           = ["Viewer"]
+  resource_attributes {
+    name  = "resource"
+    value = "test123*"
+    operator = "stringMatch"
+  }
+  resource_attributes {
+    name  = "serviceName"
+    value = "messagehub"
+  }
+}
+```
 
-* `access_group_id` - (Required, Forces new resource, string) ID of the access group.
-* `roles` - (Required, list) comma separated list of roles. Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor.
-* `resources` - (Optional, list) A nested block describing the resource of this policy.
-Nested `resources` blocks have the following structure:
-  * `service` - (Optional, string) Service name of the policy definition.  You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
-  * `resource_instance_id` - (Optional, string) ID of resource instance of the policy definition.
-  * `region` - (Optional, string) Region of the policy definition.
-  * `resource_type` - (Optional, string) Resource type of the policy definition.
-  * `resource` - (Optional, string) Resource of the policy definition.
-  * `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. 
-  * `attributes` - (Optional, map) Set resource attributes in the form of `'name=value,name=value...`.
- **NOTE**: Conflicts with `account_management`.
-* `account_management` - (Optional, bool) Gives access to all account management services if set to `true`. Default value `false`. 
- **NOTE**: Conflicts with `resources`.
-* `tags` - (Optional, array of strings) Tags associated with the access group Policy instance.
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-## Attribute Reference
+- `access_group_id` - (Required, Forces new resource, String) The ID of the access group.
+- `account_management` - (Optional, Bool) Gives access to all account management services if set to **true**. Default value **false**. If you set this option, do not specify `resources` at the same time. **Note** Conflicts with `resources` and `resource_attributes`.
+- `roles` - (Required, List)  A comma separated list of roles. Valid roles are `Writer`, `Reader`, `Manager`, `Administrator`, `Operator`, `Viewer`, and `Editor`. For more information, about supported service specific roles, see  [IAM roles and actions](https://cloud.ibm.com/docs/account?topic=account-iam-service-roles-actions)
+- `resources`  (List , Optional) A nested block describes the resource of this policy. **Note** Conflicts with `account_management` and `resource_attributes`.
 
-In addition to all arguments above, the following attributes are exported:
+  Nested scheme for `resources`:
+  - `attributes` (Optional, Map) Set resource attributes in the form of `name=value,name=value`.  If you set this option, do not specify `account_management` at the same time.
+  - `resource_instance_id` - (Optional, String) The ID of resource instance of the policy definition.
+  - `region`  (Optional, String) The region of the policy definition.
+  - `resource_type`  (Optional, String) The resource type of the policy definition.
+  - `resource`  (Optional, String) The resource of the policy definition.
+  - `resources.resource_group_id` - (Optional, String) The ID of the resource group. To retrieve the ID, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
+  - `service` - (Optional, String) The service name that you want to include in your policy definition. For account management services, you can find supported values in the [documentation](https://cloud.ibm.com/docs/account?topic=account-account-services#api-acct-mgmt). For other services, run the `ibmcloud catalog service-marketplace` command and retrieve the value from the **Name** column of your command line output.
 
-* `id` - The unique identifier of the access group policy. The id is composed of \<access_group_id\>/\<access_group_policy_id\>
+- `resource_attributes` - (Optional, List) A nested block describing the resource of this policy. **Note** Conflicts with `account_management` and `resources`.
 
-* `version` - Version of the access group policy.
+  Nested scheme for `resource_attributes`:
+  - `name` - (Required, String) Name of an attribute. Supported values are `serviceName`, `serviceInstance`, `region`,`resourceType`, `resource`, `resourceGroupId`, and other service specific resource attributes.
+  - `value` - (Required, String) Value of an attribute.
+  - `operator` - (Optional, string) Operator of an attribute. Default value is `stringEquals`. **Note** Conflicts with `account_management` and `resources`.
+- `tags` - (Optional, Array of strings) A list of tags that you want to add to the access group policy. **Note** `Tags` are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
+
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+
+- `id` - (String) The unique identifier of the access group policy. The ID is composed of `<access_group_id>/<access_group_policy_id>`.
+- `version` - (String) The version of the access group policy.
 
 ## Import
 
-ibm_iam_access_group_policy can be imported using access group ID and access group policy ID, eg
+The `ibm_iam_access_group_policy` resource can be imported by using access group ID and access group policy ID.
+
+**Syntax**
+
+```
+$ terraform import ibm_iam_access_group_policy.example <access_group_ID>/<access_group_policy_ID>
+```
+
+**Example**
 
 ```
 $ terraform import ibm_iam_access_group_policy.example AccessGroupId-1148204e-6ef2-4ce1-9fd2-05e82a390fcf/bf5d6807-371e-4755-a282-64ebf575b80a

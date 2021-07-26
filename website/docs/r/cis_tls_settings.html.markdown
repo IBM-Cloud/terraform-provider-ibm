@@ -4,16 +4,15 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_tls_settings"
 description: |-
-  Provides a IBM CIS TLS Settings resource.
+  Provides a IBM CIS TLS settings resource.
 ---
 
 # ibm_cis_tls_settings
+Create, update, or delete an IBM Cloud Internet Services TLS settings resources. This resource is associated with an IBM Cloud Internet Services instance and an IBM Cloud Internet Services Domain resource. For more information, about CIS TLS settings, see [setting TLS options](https://cloud.ibm.com/docs/cis?topic=cis-cis-tls-options).
 
-Provides a IBM CIS TLS Settings resource. This resource is associated with an IBM Cloud Internet Services instance and a CIS Domain resource. It allows to change TLS settings of a domain of a CIS instance
+## Example usage
 
-## Example Usage
-
-```hcl
+```terraform
 # Change TLS Settings of the domain
 
 resource "ibm_cis_tls_settings" "tls_settings" {
@@ -26,22 +25,20 @@ resource "ibm_cis_tls_settings" "tls_settings" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource.
 
-The following arguments are supported:
+- `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance.
+- `domain_id` - (Required, String) The ID of the domain to change TLS settings.
+- `min_tls_version` - (Optional, String) The Minimum TLS version setting. Valid values are `1.1`, `1.2`, `1.3`, or `1.4`.
+- `ssl_mode` - (Optional, String) The SSL mode settings. This is yet to support.
+- `tls_1_3` - (Optional, String) The TLS 1.3 version setting. Valid values are `on`, `off`, `zrt`. `zrt` will enable TLS 1.3 and the Zero RTT feature. If `on` is set, then `zrt` is enabled by default.
+- `universal_ssl` - (Optional, Bool) The Universal SSL `enable` or `disable` setting.
 
-- `cis_id` - (Required,string) The ID of the CIS service instance.
-- `domain_id` - (Required,string) The ID of the domain to change TLS settings.
-- `tls_1_3` - (Optional, string) The TLS 1.3 version setting. Valid values are `on`, `off`, `zrt`. `zrt` will enable `tls 1.3` and the `Zero RTT` feature.  If `on` is set, then `zrt` will be enabled by default.
-- `min_tls_version` - (Optional, string) The Minimum TLS version setting. Valid values are `1.1`,`1.2`,`1.3`,`1.4`
-- `universal_ssl` - (Optional, boolean) The Universal SSL enable/disable setting.
-- `ssl_mode` - (Optional, string) The SSL mode settings.  `This is not supported yet`.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-- `id` - The record ID. It is a combination of <`domain_id`>,<`cis_id`> attributes concatenated with ":".
+- `id` - (String) The record ID. It is a combination of <domain_id>,<cis_id> attributes concatenated with `:`.
 
 ## Import
 
@@ -53,8 +50,14 @@ The Domain ID and CRN will be located on the **Overview** page of the Internet S
 
 - **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`
 
+**Syntax**
+
 ```
 $ terraform import ibm_cis_tls_settings.tls_settings <domain-id>:<crn>
+```
 
+**Example**
+
+```
 $ terraform import ibm_cis_tls_settings.tls_settings 9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
 ```

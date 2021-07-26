@@ -6,15 +6,13 @@ description: |-
   Get information about existing service attached to IBM container cluster .
 ---
 
-# ibm\_container_bind_service
+# ibm_container_bind_service
+Retrieve information of a service attached to IBM Cloud cluster. For more information, about service binding, see [Adding services by using IBM Cloud service binding](https://cloud.ibm.com/docs/containers?topic=containers-service-binding).
 
-Import the details of a service attached to IBM Cloud cluster as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+## Example usage
+The following example retrieves service information attached to a cluster.
 
-## Example Usage
-
-In the following example, you can get service info attached to a cluster:
-
-```hcl
+```terraform
 data "ibm_container_bind_service" "bind_service" {
   cluster_name_id       = "cluster_name"
   service_instance_name = "service_name"
@@ -22,19 +20,16 @@ data "ibm_container_bind_service" "bind_service" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source.
+ 
+- `cluster_name_id` - (Required, String) The name or ID of the cluster.
+- `namespace_id` - (Required, String) The Kubernetes namespace.
+- `service_instance_name` - (Optional, String) The name of the service that is attached to the cluster. This conflicts with the `service_instance_id` parameter.
+- `service_instance_id` - (Optional, String) The ID of the service that is attached to the cluster. This conflicts with the `service_instance_name` parameter.
 
-The following arguments are supported:
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-* `cluster_name_id` - (Required, string) The name or ID of the cluster.
-* `namespace_id` - (Required, string) The Kubernetes namespace.
-* `service_instance_name` - (Optional, string) The name of the service that is attached to the cluster. Conflicts with `service_instance_id`.
-* `service_instance_id` - (Optional, string) The ID of the service that is attached to the cluster. Conflicts with `service_instance_name`.
-
-
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the bind service resource. The id is composed of \<cluster_name_id\>/\<service_instance_name or service_instance_id\>/\<namespace_id/>
-* `service_key_name` - The service key name.
+- `id` - (String) The unique Id of the bind service resource. The ID is composed of `<cluster_name_id>/<service_instance_name or service_instance_id>/<namespace_id/>`.
+- `service_key_name` - (String) The service key name.

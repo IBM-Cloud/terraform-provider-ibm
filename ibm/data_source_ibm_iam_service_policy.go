@@ -8,7 +8,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 )
 
 // Data source to find all the policies for a serviceID
@@ -101,15 +103,18 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 	if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
 
 		serviceIDUUID := v.(string)
-		iamClient, err := meta.(ClientSession).IAMAPI()
+		iamClient, err := meta.(ClientSession).IAMIdentityV1API()
 		if err != nil {
 			return err
 		}
-		serviceID, err := iamClient.ServiceIds().Get(serviceIDUUID)
-		if err != nil {
-			return err
+		getServiceIDOptions := iamidentityv1.GetServiceIDOptions{
+			ID: &serviceIDUUID,
 		}
-		iamID = serviceID.IAMID
+		serviceID, resp, err := iamClient.GetServiceID(&getServiceIDOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error] Error Getting Service Id %s %s", err, resp)
+		}
+		iamID = *serviceID.IamID
 	}
 	if v, ok := d.GetOk("iam_id"); ok && v != nil {
 		iamID = v.(string)
@@ -120,22 +125,23 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	iampapClient, err := meta.(ClientSession).IAMPAPAPI()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
 
-	query := iampapv1.SearchParams{
-		AccountID: userDetails.userAccount,
-		Type:      iampapv1.AccessPolicyType,
-		IAMID:     iamID,
+	listPoliciesOptions := &iampolicymanagementv1.ListPoliciesOptions{
+		AccountID: core.StringPtr(userDetails.userAccount),
+		IamID:     core.StringPtr(iamID),
+		Type:      core.StringPtr("access"),
 	}
 
 	if v, ok := d.GetOk("sort"); ok {
-		query.Sort = v.(string)
+		listPoliciesOptions.Sort = core.StringPtr(v.(string))
 	}
 
-	policies, err := iampapClient.V1Policy().List(query)
+	policyList, _, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
+	policies := policyList.Policies
 	if err != nil {
 		return err
 	}
@@ -144,7 +150,7 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 	for _, policy := range policies {
 		roles := make([]string, len(policy.Roles))
 		for i, role := range policy.Roles {
-			roles[i] = role.Name
+			roles[i] = *role.DisplayName
 		}
 		resources := flattenPolicyResource(policy.Resources)
 		p := map[string]interface{}{
@@ -153,10 +159,10 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 		}
 		if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
 			serviceIDUUID := v.(string)
-			p["id"] = fmt.Sprintf("%s/%s", serviceIDUUID, policy.ID)
+			p["id"] = fmt.Sprintf("%s/%s", serviceIDUUID, *policy.ID)
 		} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
 			iamID := v.(string)
-			p["id"] = fmt.Sprintf("%s/%s", iamID, policy.ID)
+			p["id"] = fmt.Sprintf("%s/%s", iamID, *policy.ID)
 		}
 		servicePolicies = append(servicePolicies, p)
 	}

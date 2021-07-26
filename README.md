@@ -7,21 +7,17 @@
 ## Requirements
 
 -	[Terraform](https://www.terraform.io/downloads.html) 0.10.1+
--	[Go](https://golang.org/doc/install) 1.15 (to build the provider plugin)
+-	[Go](https://golang.org/doc/install) 1.16 (to build the provider plugin)
 
 ## Building The Provider
 
-Clone repository to: `$GOPATH/src/github.com/IBM-Cloud/terraform-provider-ibm`
-
+Clone repository
 ```sh
-mkdir -p $GOPATH/src/github.com/IBM-Cloud; cd $GOPATH/src/github.com/IBM-Cloud
 git clone git@github.com:IBM-Cloud/terraform-provider-ibm.git
 ```
-
 Enter the provider directory and build the provider
-
 ```sh
-cd $GOPATH/src/github.com/IBM-Cloud/terraform-provider-ibm
+cd terraform-provider-ibm
 make build
 ```
 

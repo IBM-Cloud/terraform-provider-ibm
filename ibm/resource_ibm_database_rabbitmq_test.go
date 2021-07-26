@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
-	t.Parallel()
+	//t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
 	rnd := fmt.Sprintf("tf-Rmq-%d", acctest.RandIntRange(10, 100))
@@ -86,7 +86,7 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 // TestAccIBMDatabaseInstance_CreateAfterManualDestroy not required as tested by resource_instance tests
 
 func TestAccIBMDatabaseInstanceRabbitmqImport(t *testing.T) {
-	t.Parallel()
+	//t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
 	serviceName := fmt.Sprintf("tf-Rmq-%d", acctest.RandIntRange(10, 100))

@@ -5,7 +5,6 @@ package ibm
 
 import (
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -138,7 +137,7 @@ func dataSourceIBMISVPCDefaultRoutingTableGet(d *schema.ResourceData, meta inter
 
 	getVpcDefaultRoutingTableOptions := sess.NewGetVPCDefaultRoutingTableOptions(vpcID)
 	result, detail, err := sess.GetVPCDefaultRoutingTable(getVpcDefaultRoutingTableOptions)
-	if err != nil {
+	if err != nil || result == nil {
 		log.Printf("Error reading details of VPC Default Routing Table:%s", detail)
 		return err
 	}
@@ -176,11 +175,6 @@ func dataSourceIBMISVPCDefaultRoutingTableGet(d *schema.ResourceData, meta inter
 	}
 	d.Set(isDefaultRoutingTableRoutesList, routesInfo)
 	d.Set(isDefaultRTVpcID, vpcID)
-	d.SetId(dataSourceIBMISVPCDefaultRoutingTableID(d))
+	d.SetId(*result.ID)
 	return nil
-}
-
-// dataSourceIBMISVPCDefaultRoutingTableID returns a reasonable ID for dns zones list.
-func dataSourceIBMISVPCDefaultRoutingTableID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
 }

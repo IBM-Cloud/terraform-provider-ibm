@@ -18,3 +18,14 @@ variable "profile" {
   default = "cx2-2x4"
 }
 
+variable "image_cos_url" {
+  default = "cos://us-south/cosbucket-vpc-image-gen2/rhel-guest-image-7.0-encrypted.qcow2"
+}
+
+variable "image_operating_system" {
+  default = "red-7-amd64"
+}
+
+variable "cidr1" {
+  default = "10.120.0.0/24"
+}

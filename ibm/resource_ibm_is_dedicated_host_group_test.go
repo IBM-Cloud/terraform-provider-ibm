@@ -16,8 +16,6 @@ import (
 
 func TestAccIbmIsDedicatedHostGroupBasic(t *testing.T) {
 	var conf vpcv1.DedicatedHostGroup
-	class := "beta"
-	family := "memory"
 	name := fmt.Sprintf("tfdhgroup%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -25,13 +23,13 @@ func TestAccIbmIsDedicatedHostGroupBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmIsDedicatedHostGroupDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmIsDedicatedHostGroupConfigBasic(class, family, name),
+				Config: testAccCheckIbmIsDedicatedHostGroupConfigBasic(dedicatedHostGroupClass, dedicatedHostGroupFamily, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsDedicatedHostGroupExists("ibm_is_dedicated_host_group.is_dedicated_host_group", conf),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmIsDedicatedHostGroupConfigBasic(class, family, name),
+				Config: testAccCheckIbmIsDedicatedHostGroupConfigBasic(dedicatedHostGroupClass, dedicatedHostGroupFamily, name),
 				Check:  resource.ComposeAggregateTestCheckFunc(),
 			},
 		},

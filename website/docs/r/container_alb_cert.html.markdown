@@ -4,18 +4,16 @@ subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_alb_cert"
 description: |-
-  Manages IBM container alb cert.
+  Manages IBM container Application Load Balancer certificate.
 ---
 
-# ibm\_container_alb_cert
+# ibm_container_alb_cert
+Create, update, or delete an SSL certificate that you store in IBM Cloud Certificate Manager for an Ingress Application Load Balancer (ALB). For more information, about container ALB certificate, see [setting up Kubernetes Ingress](https://cloud.ibm.com/docs/containers?topic=containers-ingress-types).
 
-Create, update or delete a Application load balancer certificate. 
+## Example usage
+The following example adds an SSL certificate that is stored in IBM Cloud Certificate Manager to an Ingress ALB that is set up in a cluster that is named `myCluster`. 
 
-## Example Usage
-
-In the following example, you can configure a alb:
-
-```hcl
+```terraform
 resource "ibm_container_alb_cert" "cert" {
   cert_crn    = "crn:v1:bluemix:public:cloudcerts:us-south:a/e9021a4dc47e3d:faadea8e-a7f4-408f-8b39-2175ed17ae62:certificate:3f2ab474fbbf9564582"
   secret_name = "test-sec"
@@ -25,39 +23,38 @@ resource "ibm_container_alb_cert" "cert" {
 ```
 
 ## Timeouts
+The `ibm_container_alb_cert` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-ibm_container_alb_cert provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
-
-* `create` - (Default 10 minutes) Used for creating Instance.
-* `update` - (Default 10 minutes) Used for updating Instance.
-* `delete` - (Default 10 minutes) Used for deleting Instance.
-
-## Argument Reference
-
-The following arguments are supported:
-
-* `cert_crn` - (Required, string) The certificate CRN.
-* `cluster_id` - (Required, Forces new resource, string)  The cluster ID.
-* `secret_name` - (Required, Forces new resource, string) The name of the ALB certificate secret. 
-* `namespace` - (Optional,Forces new Resource, string) The namespace in which the secret has to be created. Default: `ibm-cert-store`
-* `persistence`  - (Optional, bool) Persist the secret data in your cluster. If the secret is later deleted from the CLI or OpenShift web console, the secret is automatically re-created in your cluster.
+- **Create**: The creation of the SSL certificate is considered `failed` if no response is received for 10 minutes.
+- **Delete**: The deletion of the SSL certificate is considered `failed` if no response is received for 10 minutes.
+- **Update**: The update of the SSL certificate is considered `failed` if no response is received for 10 minutes.
 
 
-## Attribute Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-In addition to all arguments above, the following attributes are exported:
+- `cert_crn` - (Required, String) The CRN of the certificate that you uploaded to IBM Cloud Certificate Manager.
+- `cluster_id` - (Required, Forces new resource, String) The ID of the cluster that hosts the Ingress ALB that you want to configure for SSL traffic.
+- `secret_name` - (Required, Forces new resource, String) The name of the ALB certificate secret.
+- `namespace` - (String)  Optional- The namespace in which the secret is created. Default value is `ibm-cert-store`.
+- `persistence`-(Optional, Bool) Persist the secret data in your cluster. If the secret is later deleted from the command line or OpenShift web console, the secret is automatically re-created in your cluster.
 
-* `id` - The ALB cert ID. The id is composed of \<cluster_name_id\>/\<secret_name\>.<br/>
-* `domain_name` - The Domain name of the certificate.
-* `expires_on` - The Expiry date of the certificate.
-* `issuer_name` - The Issuer name of the certificate.
-* `cluster_crn` - The cluster crn.
-* `status` - The Status of the secret.
-* `cloud_cert_instance_id` - Cloud Certificate instance ID from which certificate is downloaded.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `cluster_crn` - (String) The CRN of the cluster that hosts the Ingress ALB.
+- `cloud_cert_instance_id` - (String) The IBM Cloud Certificate Manager instance ID from which the certificate was downloaded.
+- `domain_name` - (String) The domain name of the certificate.
+- `expires_on` - Date - The date the certificate expires.
+- `id` - (String) The unique identifier of the certificate in the format `<cluster_name_id>/<secret_name>`.
+- `issuer_name` - (String) The name of the issuer of the certificate. 
+- `status` - (String) The Status of the secret.
 
 ## Import
+The `ibm_container_alb_cert` can be imported by using cluster_id, and secret_name.
 
-ibm_container_alb_cert can be imported using cluster_id, secret_name, namespace eg
+**Example**
 
 ```
-$ terraform import ibm_container_alb_cert.example 166179849c9a469581f28939874d0c82/mysecret/ibm-cert-store
+$ terraform import ibm_container_alb_cert.example 166179849c9a469581f28939874d0c82/mysecret
+```

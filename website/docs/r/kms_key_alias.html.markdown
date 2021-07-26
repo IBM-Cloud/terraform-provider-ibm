@@ -4,16 +4,15 @@ subcategory: "Key Management Service"
 layout: "ibm"
 page_title: "IBM : kms-key-alias"
 description: |-
-  Manages IBM hs-crypto and kms key alias.
+  Manages IBM hs-crypto and KMS key alias.
 ---
 
-# ibm\_kms_key_alias
+# ibm_kms_key_alias
+Create, modify, or delete a key management resource for Hyper Protect Crypto Services (HPCS) and Key Protect services by using aliases. For more information, about key management aliases, see [creating key aliases](https://cloud.ibm.com/docs/key-protect?topic=key-protect-create-key-alias).
 
-Provides a key management resource for hs-crypto and key-protect services. This allows aliases for the keys to be created, and deleted.
+## Example usage to provision Key Protect service and Key Management with alias
 
-## Example usage to provision Key Protect service and Key Management With Alias
-
-```hcl
+```terraform
 resource "ibm_resource_instance" "kms_instance" {
   name     = "instance-name"
   service  = "kms"
@@ -40,23 +39,24 @@ resource "ibm_cos_bucket" "flex-us-south" {
 }
 ```
 
-Note : An alias that identifies a key. Each alias is unique only within the given instance and is not reserved across the Key Protect service. Each key can have up to five aliases. There is a limit of 1000 aliases per instance. Alias must be alphanumeric and cannot contain spaces or special characters other than '-' or '_'.
+**Note** 
 
-## Argument Reference
+An alias that identifies a key. Each alias is unique only within the given instance and is not reserved across the Key Protect service. Each key can have up to five aliases. There is a limit of 1000 aliases per instance. Alias must be alphanumeric and cannot contain spaces or special characters other than '-' or '_'.
 
-The following arguments are supported:
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-* `instance_id` - (Required, Forces new resource, string) The hs-crypto or key-protect instance guid.
-* `alias` - (Required, Forces new resource, string) The alias name of the key.
-* `key_id` - (Required, string) The key_id of the key for which alias has to be created.
-* `endpoint_type` - (Optional, Forces new resource, string) The type of the endpoint (public or private) to be used for creating keys.
+- `alias` - (Required, Forces new resource, String) The alias name of the key.
+- `endpoint_type` - (Optional, Forces new resource, String) The type of the public endpoint, or private endpoint to be used for creating keys.
+- `instance_id` - (Required, Forces new resource, String) The hs-crypto or key protect instance GUID.
+- `key_id` - (Required, String) The key ID for which alias has to be created.
 
-## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-* `id` - The crn of the key.
-* `alias` - The crn of the key.
-* `key_id` - The id of the key.
-* `instance_id` - The instance id.
-* `endpoint_type` - The type of endpoint.
+- `alias` - (String) The alias of the key.
+- `endpoint_type` - (String) The type of endpoint.
+- `id` - (String) The CRN of the key.
+- `instance_id` - (String) The instance ID.
+- `key_id` - (String) The ID of the key.

@@ -12,10 +12,11 @@ import (
 )
 
 const (
-	dlSpeeds        = "offering_speeds"
-	dlLinkSpeed     = "link_speed"
-	dlOfferingType  = "offering_type"
-	dlMacSecEnabled = "macsec_enabled"
+	dlSpeeds               = "offering_speeds"
+	dlLinkSpeed            = "link_speed"
+	dlOfferingType         = "offering_type"
+	dlMacSecEnabled        = "macsec_enabled"
+	dlMeteringCapabilities = "capabilities"
 )
 
 func dataSourceIBMDLOfferingSpeeds() *schema.Resource {
@@ -34,6 +35,12 @@ func dataSourceIBMDLOfferingSpeeds() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						dlMeteringCapabilities: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "List of capabilities for billing option",
+						},
 						dlLinkSpeed: {
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -68,6 +75,9 @@ func dataSourceIBMDLOfferingSpeedsRead(d *schema.ResourceData, meta interface{})
 	speeds := make([]map[string]interface{}, 0)
 	for _, instance := range listSpeeds.Speeds {
 		speed := map[string]interface{}{}
+		if instance.Capabilities != nil {
+			speed[dlMeteringCapabilities] = flattenStringList(instance.Capabilities)
+		}
 		if instance.LinkSpeed != nil {
 			speed[dlLinkSpeed] = *instance.LinkSpeed
 		}

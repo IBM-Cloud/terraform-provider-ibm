@@ -6,29 +6,29 @@ description: |-
   Manages IBM Cloud Infrastructure Direct Link Offering Speeds.
 ---
 
-# ibm\_dl_offering_speeds
+# ibm_dl_offering_speeds
 
-Import the details of an existing IBM Cloud Infrastructure direct link offering speed options as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Import the details of an existing IBM Cloud Infrastructure Direct Link offering speed options. For more information, about Direct Link Offering speed, see [arranging for Direct Link connectivity](https://cloud.ibm.com/docs/dl?topic=dl-pricing-for-ibm-cloud-dl#arranging-for-dl-conectivity).
 
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_dl_offering_speeds" "ds_dlspeedoptions" {
   offering_type="dedicated"
 }
 ```
 
-## Argument Reference
+## Argument reference
+Retrieve the argument reference that you need to specify for the data source. 
 
-The following arguments are supported:
+- `offering_type` - (Required, String) The Direct Link offering type. Possible values are `dedicated`,`connect`.| 
 
-* `offering_type` - (Required, string) The Direct Link offering type. Current supported values are "dedicated" and "connect".
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
-## Attribute Reference
+- `offering_speeds` - (String) List of all the Direct Link offering speeds in the IBM Cloud infrastructure.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `offering_speeds` - List of all Direct Link offering speeds in the IBM Cloud Infrastructure.
-  * `link_speed` - Link speed in megabits per second.
-
+  Nested scheme for `offering_speeds`:
+  - `capabilities` - (String) The capabilities for billing option.
+  - `link_speed` - (String) The link speed in megabits per second.

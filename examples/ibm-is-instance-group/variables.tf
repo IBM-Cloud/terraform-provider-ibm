@@ -32,12 +32,24 @@ variable "instance_group_name" {
   default = "myinstancegroup"
 }
 
+variable "instance_group_membership" {
+  default = "myinstancegroupmembership"
+}
+
 variable "instance_count" {
   default = 2
 }
 
 variable "instance_group_manager_name" {
   default = "testmanager"
+}
+
+variable "instance_group_manager_name_scheduled" {
+  default = "testmanagerscheduled"
+}
+
+variable "instance_group_manager_action_name" {
+  default = "testmanageraction"
 }
 
 variable "aggregation_window" {
@@ -50,6 +62,10 @@ variable "cooldown" {
 
 variable "manager_type" {
   default = "autoscale"
+}
+
+variable "manager_type_scheduled" {
+  default = "scheduled"
 }
 
 variable "enable_manager" {
@@ -66,4 +82,8 @@ variable "policy_name" {
 
 variable "metric_value" {
   default = 70
+}
+
+variable "cron_spec" {
+  default = "*/5 1,2,3 * * *"
 }

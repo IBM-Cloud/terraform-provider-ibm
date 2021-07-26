@@ -6,36 +6,34 @@ description: |-
   Manages IBM VPC container cluster worker.
 ---
 ​
-# ibm\_container_vpc_cluster_worker
-​
-Import details of a worker node of a Kubernetes VPC cluster as a read-only data source. 
+# ibm_container_vpc_cluster_worker
+Retrieve information about the worker nodes of your IBM Cloud Kubernetes Service VPC cluster. For more information, about VPC container cluster worker, see [supported infrastructure providers](https://cloud.ibm.com/docs/containers?topic=containers-infrastructure_providers).
 
-## Example Usage
-```hcl
+## Example usage
+The following example retrieves information about a worker node with the ID in the cluster. 
+
+```terraform
 data "ibm_container_cluster_worker" "worker_foo" {
   worker_id       = "dev-mex10-pa70c4414695c041518603bfd0cd6e333a-w1"
   cluster_name_id = "test"
 }
 ```
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-## Argument Reference
+- `cluster_name_id` - (Required, String) The name or ID of the cluster that the worker node belongs to.
+- `flavor` - (Optional, String) The flavor of the worker node.
+- `kube_version` -  (Required, string) The Kubernetes version, including at least the `major.minor` version. To see versions, run `ibmcloud ks versions` command.
+- `resource_group_id` - (Optional, String) The ID of the resource group where your cluster is provisioned into. To find the resource group, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If this parameter is not provided, the `default` resource group is used.
+- `worker_id` - (Required, String) The ID of the worker node for which you want to retrieve information. To find the ID, run `ibmcloud ks worker ls cluster <cluster_name_or_ID>`. 
 
-The following arguments are supported:  
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-* `worker_id` - (Required, string) The name of the worker pool.
-* `cluster_name_id` - (Required, string) The name or id of the cluster.
-* `flavor` - (Required, string) The flavour of the worker node.
-* `kube_version` -  (Required, string) The Kubernetes version, including at least the major.minor version.To see available versions, run 'ibmcloud ks versions'.
-* `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
-
-## Attribute Reference
-​
-In addition to all arguments above, the following attributes are exported:
-
-* `State` - State of worker.
-* `pool_id` - Id of Worker pool.
-* `pool_name`- Name of the worker pool
-* `network_interfaces`- Network Interface of the cluster
- * `cidr`- cidr of the network
- * `ip_address`- Ip Address of the worker pool
- * `subnet_id`- The worker pool subnet id to assign the cluster.
+- `cidr` - (String) The CIDR of the network.
+- `ip_address` - (String) The IP address of the worker pool that the worker node belongs to.
+- `network_interfaces` - (String) The network interface of the cluster.
+- `pool_id` - (String) The ID of the worker pool that the worker node belongs to.
+- `pool_name` - (String) The name of the worker pool that the worker node belongs to.
+- `state` - (String) The state of the worker node. 
+- `subnet_id` - (String) The ID of the worker pool subnet that the worker node is attached to.

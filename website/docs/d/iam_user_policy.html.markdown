@@ -3,16 +3,16 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_user_policy"
 description: |-
-  Manages IBM IAM User Policy.
+  Manages IBM IAM user policy.
 ---
 
-# ibm\_iam_user_policy
+# ibm_iam_user_policy
 
-Import the details of an IAM (Identity and Access Management) user policy on IBM Cloud as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Retrieve information about an IAM user policy. For more information, about IAM role action, see [managing access to resources](https://cloud.ibm.com/docs/account?topic=account-assign-access-resources).
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
   roles  = ["Viewer"]
@@ -29,27 +29,30 @@ data "ibm_iam_user_policy" "testacc_ds_user_policy" {
 
 ```
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument references that you can specify for your data source.
 
-* `ibm_id` - (Required, string) The ibm id or email of user.
-* `sort` - (Optional, string) Single field sort query for policies.
+- `ibm_id` - (Required, String) The IBM ID or email address of the user.
+- `sort`- (Optional, String) The single field sort query for  policies.
 
-## Attribute Reference
+## Attribute reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-* `policies` - A nested block describing IAM Policies assigned to user. Nested `policies` blocks have the following structure:
-  * `id` - The unique identifier of the IAM user policy.The id is composed of \<ibm_id\>/\<user_policy_id\>
-  * `roles` -  Roles assigned to the policy.
-	* `resources` -  A nested block describing the resources in the policy.
-		* `service` - Service name of the policy definition. 
-		* `resource_instance_id` - ID of resource instance of the policy definition.
-		* `region` - Region of the policy definition.
-		* `resource_type` - Resource type of the policy definition.
-		* `resource` - Resource of the policy definition.
-		* `resource_group_id` - The ID of the resource group. 
+- `policies` - (List) A nested block describes IAM Policies assigned to user.
 
-
+  Nested scheme for `policies`:
+  - `id` - (String) The unique identifier of the IAM user policy. The ID is composed of `<ibm_id>/<user_policy_id>`.
+  - `roles`-  (String) The roles that are assigned to the policy.	-
   
+    Nested scheme for `roles`:
+    - `resources`- (List of objects) A nested block describes the resources in the policy.
+
+      Nested scheme for `resources`:
+      -  `service` - (String) The service name of the policy definition. 
+      - `region` - (String) The region of the policy definition.
+      - `resource_type` - (String) The resource type of the policy definition.
+      - `resource` - (String) The resource of the policy definition.
+      - `resource_group_id` - (String) The ID of the resource group.
+      - `resource_instance_id`- (String) The ID of resource instance of the policy definition.

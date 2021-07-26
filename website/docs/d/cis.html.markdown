@@ -3,34 +3,31 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM : Cloud Internet Services instance"
 description: |-
-  Get information on an IBM Cloud Internet Services Instance.
+  Get information on an IBM Cloud Internet Services instance.
 ---
 
-# ibm\_cis
+# ibm_cis
 
-Imports a read only copy of an existing Internet Services resource. This allows CIS sub-resources to be added to an existing CIS instance. This includes domains, DNS records, pools, healthchecks and global load balancers. 
+Retrieve information about an existing CIS resource. This allows CIS sub resources to be added to an existing CIS instance. This includes domains, DNS records, pools, healthchecks and Global Load Balancers. For more information, about CIS instance, see [getting started with CIS](https://cloud.ibm.com/docs/cis?topic=cis-getting-started).
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_cis" "cis_instance" {
   name              = "test"
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `name` - (Required, String) The name of a CIS instance.
 
-* `name` - (Required, string) The name used to identify the Internet Services instance in the IBM Cloud UI. 
+## Attribute reference
+In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of this CIS instance.
-* `plan` - The service plan for this Internet Services' instance
-* `location` - The location for this Internet Services' instance
-* `status` - Status of the CIS instance.
-* `guid` - Unique identifier of resource instance.
-
+- `guid` -  (String) The unique identifier of the instance.
+- `id` - (String) The CRN of your instance.
+- `location` - (String) The location of your instance.
+- `plan` - (String) The service plan for the instance.
+- `status` - (String) The status of your instance.

@@ -8,12 +8,12 @@ description: |-
 ---
 
 # ibm_cis_waf_rule
+Create, update, or delete an IBM Cloud Internet Services WAF rule settings resource. This resource is associated with an IBM Cloud Internet Services instance and a CIS Domain resource. It allows to change WAF rule settings of a domain of a CIS instance. For more information, refer to [IBM Cloud Internet Services rule sets](https://cloud.ibm.com/docs/cis?topic=cis-waf-settings#cis-ruleset-for-waf).
 
-Provides a IBM CIS WAF Rule Settings resource. This resource is associated with an IBM Cloud Internet Services instance and a CIS Domain resource. It allows to change WAF Rule settings of a domain of a CIS instance.
+## Example usage
+The following example shows how you can add a WAF rule resource to an IBM Cloud Internet Services domain.
 
-## Example Usage
-
-```hcl
+```terraform
 resource "ibm_cis_waf_rule" "test" {
 	cis_id     = data.ibm_cis.cis.id
 	domain_id  = data.ibm_cis_domain.cis_domain.id
@@ -23,33 +23,32 @@ resource "ibm_cis_waf_rule" "test" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance.
+- `domain_id` - (Required, String) The ID of the domain where you want to change TLS settings.
+- `package_id` - (Required, String) The WAF rule package ID. This cannot be modified.
+- `rule_id` - (Required, String) The WAF rule ID. The filed cannot be modified.
+- `mode` - (Required, String) The mode to use when the rule is triggered. Value is restricted based on the allowed_modes of the rule. Valid values are `on`, `off`, `default`, `disable`, `simulate`, `block`, `challenge`.
 
-- `cis_id` - (Required,string) The ID of the CIS service instance.
-- `domain_id` - (Required,string) The ID of the domain to change TLS settings.
-- `package_id` - (Required,string) The ID of waf rule package. This field can not be modified.
-- `rule_id` - (Required,string) The ID of waf rule. This field can not be modified.
-- `mode` - (Required,string) The mode to use when the rule is triggered. Value is restricted based on the allowed_modes of the rule. Valid values: `on`, `off`, `default`, `disable`, `simulate`, `block`, `challenge`.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-- `id` - It is a combination of <`rule_id`>,<`package_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":".
-- `description` - The WAF rule description.
-- `priority` - The WAF Rule priority.
-- `group` - The waf rule group.
-  - `id` - The waf rule group id.
-  - `name` - The name of waf rule group.
-- `allowed_modes` - The allowed modes for setting the waf rule mode.
+- `allowed_modes` - (String) The allowed modes for setting the WAF rule mode.
+- `description` - (String) The WAF rule description.
+- `group` - (String) The WAF rule group.
+ 
+  Nested scheme for `group`: 
+	- `id` - (String) The WAF rule group ID.
+	- `name` - (String) The name of the WAF rule group.
+- `id` - (String) The WAF package ID. It is a combination of `<rule_id>,<package_id>,<domain_id>,<cis_id>` attributes concatenated with `:`.
+- `priority` - (String) The WAF rule priority.
 
 ## Import
+The `ibm_cis_waf_rule` resource can be imported by using the ID. The ID is formed from the rule_id, `<package_id>, <domain ID>, <package ID>` of the domain and the CRN (Cloud Resource Name)  Concatenated  by using a `:` character.
 
-The `ibm_cis_waf_rule` resource can be imported using the `id`. The ID is formed from the `rule_id`, `package_id`, `Domain ID` of the domain and the `CRN` (Cloud Resource Name) concatentated using a `:` character.
-
-The Domain ID and CRN will be located on the **Overview** page of the Internet Services instance under the **Domain** heading of the UI, or via using the `ibmcloud cis` CLI commands.
+The domain ID and CRN will be located on the **Overview** page of the Internet Services instance of the domain heading of the console, or by using the `ibmcloud cis` command line commands.
 
 - **Rule ID** is a digit character string of the form: `100000356`
 
@@ -59,8 +58,15 @@ The Domain ID and CRN will be located on the **Overview** page of the Internet S
 
 - **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`
 
+**Syntax**
+
 ```
 $ terraform import ibm_cis_waf_rule.waf_rule <rule_id>:<package_id>:<domain-id>:<crn>
 
+```
+
+**Example**
+
+```
 $ terraform import ibm_cis_waf_rule.waf_rule 100000356:c504870194831cd12c3fc0284f294abb:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
 ```

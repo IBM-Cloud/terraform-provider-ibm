@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package ibm
@@ -28,7 +28,7 @@ func TestAccIBMCrNamespacesDataSourceBasic(t *testing.T) {
 }
 
 func testAccCheckIBMCrNamespacesDataSourceConfig(namespaceName string) string {
-	return testAccCheckIBMCrNamespaceBasic(namespaceName) + fmt.Sprintf(`
+	return testAccCheckIBMCrNamespaceConfigBasic(namespaceName) + fmt.Sprintf(`
 	data "ibm_cr_namespaces" "namespaces" {}
 `)
 }

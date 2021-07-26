@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -100,57 +99,29 @@ func TestAccIBMISLBPoolMember_basic_network(t *testing.T) {
 }
 
 func testAccCheckIBMISLBPoolMemberDestroy(s *terraform.State) error {
-	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	if userDetails.generation == 1 {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_lb_pool_member" {
-				continue
-			}
-			parts, err := idParts(rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			lbID := parts[0]
-			lbPoolID := parts[1]
-			lbPoolMemID := parts[2]
-			getlbpmoptions := &vpcclassicv1.GetLoadBalancerPoolMemberOptions{
-				LoadBalancerID: &lbID,
-				PoolID:         &lbPoolID,
-				ID:             &lbPoolMemID,
-			}
-			_, _, err1 := sess.GetLoadBalancerPoolMember(getlbpmoptions)
-
-			if err1 == nil {
-				return fmt.Errorf("LB Pool member still exists: %s", rs.Primary.ID)
-			}
+	sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_lb_pool_member" {
+			continue
 		}
-	} else {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_lb_pool_member" {
-				continue
-			}
-			parts, err := idParts(rs.Primary.ID)
-			if err != nil {
-				return err
-			}
+		parts, err := idParts(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
 
-			lbID := parts[0]
-			lbPoolID := parts[1]
-			lbPoolMemID := parts[2]
-			getlbpmoptions := &vpcv1.GetLoadBalancerPoolMemberOptions{
-				LoadBalancerID: &lbID,
-				PoolID:         &lbPoolID,
-				ID:             &lbPoolMemID,
-			}
-			_, _, err1 := sess.GetLoadBalancerPoolMember(getlbpmoptions)
+		lbID := parts[0]
+		lbPoolID := parts[1]
+		lbPoolMemID := parts[2]
+		getlbpmoptions := &vpcv1.GetLoadBalancerPoolMemberOptions{
+			LoadBalancerID: &lbID,
+			PoolID:         &lbPoolID,
+			ID:             &lbPoolMemID,
+		}
+		_, _, err1 := sess.GetLoadBalancerPoolMember(getlbpmoptions)
 
-			if err1 == nil {
-				return fmt.Errorf("LB Pool member still exists: %s", rs.Primary.ID)
-			}
+		if err1 == nil {
+			return fmt.Errorf("LB Pool member still exists: %s", rs.Primary.ID)
 		}
 	}
 
@@ -176,32 +147,19 @@ func testAccCheckIBMISLBPoolMemberExists(n, lbPoolMember string) resource.TestCh
 		lbID := parts[0]
 		lbPoolID := parts[1]
 		lbPoolMemID := parts[2]
-		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-		if userDetails.generation == 1 {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getlbpmoptions := &vpcclassicv1.GetLoadBalancerPoolMemberOptions{
-				LoadBalancerID: &lbID,
-				PoolID:         &lbPoolID,
-				ID:             &lbPoolMemID,
-			}
-			foundLBPoolMember, _, err := sess.GetLoadBalancerPoolMember(getlbpmoptions)
-			if err != nil {
-				return err
-			}
-			lbPoolMember = *foundLBPoolMember.ID
-		} else {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getlbpmoptions := &vpcv1.GetLoadBalancerPoolMemberOptions{
-				LoadBalancerID: &lbID,
-				PoolID:         &lbPoolID,
-				ID:             &lbPoolMemID,
-			}
-			foundLBPoolMember, _, err := sess.GetLoadBalancerPoolMember(getlbpmoptions)
-			if err != nil {
-				return err
-			}
-			lbPoolMember = *foundLBPoolMember.ID
+
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		getlbpmoptions := &vpcv1.GetLoadBalancerPoolMemberOptions{
+			LoadBalancerID: &lbID,
+			PoolID:         &lbPoolID,
+			ID:             &lbPoolMemID,
 		}
+		foundLBPoolMember, _, err := sess.GetLoadBalancerPoolMember(getlbpmoptions)
+		if err != nil {
+			return err
+		}
+		lbPoolMember = *foundLBPoolMember.ID
+
 		return nil
 	}
 }

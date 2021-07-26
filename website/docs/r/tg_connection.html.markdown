@@ -3,53 +3,63 @@ subcategory: "Transit Gateway"
 layout: "ibm"
 page_title: "IBM : tg_connection"
 description: |-
-  Manages IBM Transit Gateway Connection.
+  Manages IBM Transit Gateway connection.
 ---
 
-# ibm\_tg_connection
+# ibm_tg_connection
+Create, update and delete for the transit gateway's connection resource. For more information, about Transit Gateway connection, see [adding a cross-account connection](https://cloud.ibm.com/docs/transit-gateway?topic=transit-gateway-edit-gateway#adding-cross-account-connections).
 
-Provides a transit gateway connection resource. This allows transit gateway's connection to be created, and updated and deleted.
+## Example usage
 
-## Example Usage
-
-```hcl
-resource "ibm_tg_connection" "test_ibm_tg_connection"{
-		gateway = ibm_tg_gateway.test_tg_gateway.id
-		network_type = "vpc"
-		name= "myconnection"
-		network_id = ibm_is_vpc.test_tg_vpc.resource_crn
+```terraform
+resource "ibm_tg_connection" "test_ibm_tg_connection" {
+  gateway      = ibm_tg_gateway.test_tg_gateway.id
+  network_type = "vpc"
+  name         = "myconnection"
+  network_id   = ibm_is_vpc.test_tg_vpc.resource_crn
 }
   
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
+ 
+- `base_connection_id` - (Optional, Forces new resource, String) - The ID of a network_type 'classic' connection a tunnel is configured over.  This field only applies to network type 'gre_tunnel' connections.
+- `gateway` - (Required, Forces new resource, String) Enter the transit gateway identifier.
+- `local_gateway_ip` - (Optional, Forces new resource, String) - The local gateway IP address.  This field is required for and only applicable to 'gre_tunnel' connection types.
+- `local_tunnel_ip` - (Optional, Forces new resource, String) - The local tunnel IP address. This field is required for and only applicable to type gre_tunnel connections.
+- `name` -  (Optional, String) Enter a name. If the name is not given, the default name is provided based on the network type, such as `vpc` for network type VPC and `classic` for network type classic.
+- `network_account_id` - (Optional, Forces new resource, String) The ID of the network connected account. This is used if the network is in a different account than the gateway.
+- `network_type` - (Required, Forces new resource, String) Enter the network type. Allowed values are `classic` and `vpc`.
+- `network_id` -  (Optional, Forces new resource, String) Enter the ID of the network being connected through this connection. This parameter is required for network type `vpc`, the CRN of the VPC to be connected. This field is required to be unspecified for network type `classic`. For example, `crn:v1:bluemix:public:is:us-south:a/123456::vpc:4727d842-f94f-4a2d-824a-9bc9b02c523b`.
+- `remote_bgp_asn` - (Optional, Forces new resource, Integer) - The remote network BGP ASN (will be generated for the connection if not specified). This field only applies to network type 'gre_tunnel' connections.
+- `remote_gateway_ip` - (Optional, Forces new resource, String) - The remote gateway IP address. This field only applies to network type 'gre_tunnel' connections.
+- `remote_tunnel_ip` - (Optional, Forces new resource, String) - The remote tunnel IP address. This field only applies to network type 'gre_tunnel' connections.
+- `zone` - (Optional, Forces new resource, String) - The location of the GRE tunnel. This field only applies to network type 'gre_tunnel' connections.
 
-The following arguments are supported:
-* `gateway` - (Required, Forces new resource, string) The Transit Gateway identifier.
-* `name` - (Optional, string) The user-defined name for this transit gateway. If unspecified, the name will be the network name (the name of the VPC in the case of network type 'vpc', and the word Classic, in the case of network type 'classic').
-* `network_type` - (Required, Forces new resource, string) Defines what type of network is connected via this connection.Allowable values: [classic,vpc]. Example: vpc
-* `network_id` - (Optional,Forces new resource,string) The ID of the network being connected via this connection. This field is required for some types, such as 'vpc'. For network type 'vpc' this is the CRN of the VPC to be connected. This field is required to be unspecified for network type 'classic'. Example: crn:v1:bluemix:public:is:us-south:a/123456::vpc:4727d842-f94f-4a2d-824a-9bc9b02c523b   
-* `network_account_id` (Optional,Forces new resource,string) - The ID of the account which owns the network that is being connected. Generally only used if the network is in a different account than the gateway.
+## Attribute reference
 
+In addition to all argument reference list, you can access the following attribute references after your resource is created.
 
-## Attribute Reference
+- `connection_id` - (String) The unique identifier for transit gateway connection to network.
+- `created_at` -  (Timestamp) The date and time the connection was created. 
+- `id` - (String) The unique identifier of the gateway ID or connection ID resource.
+- `local_bgp_asn` - (Integer) The local network BGP ASN. This field only applies to network type 'gre_tunnel' connections.
+- `mtu` - (Integer) GRE tunnel MTU. This field only applies to network type 'gre_tunnel' connections.
+- `status` - (String) The configuration status of the connection, such as **attached**, **failed**, **pending**, **deleting**.
+- `updated_at` - (Timestamp) Last updated date and time of the connection.
 
-In addition to all arguments above, the following attributes are exported:
+**Note**
 
-* `id` - The unique identifier of the resource.Its combination of gatewayID/connectionID
-* `connection_id` - The unique identifier for this Transit Gateway Connection to Network (vpc/classic). 
-* `created_at` - The date and time that this connection was created.
-* `updated_at` - The date and time that this connection was last updated.
-* `status` - What is the current configuration state of this connection
-Possible values: [attached,failed,pending,deleting]
-* `request_status` - Only visible for cross account connections, this field represents the status of the request to connect the given network between accounts . Possible values: [pending,approved,rejected,expired,detached]
+The resource do not wait for the available status, if you are provisioning the cross account gateway or connection. You need to complete the manual approval process for provisioning.
 
-**NOTE** If the the user is provisioning the cross-account gateway/connection the resource doesn't wait for the available status. It goes into provisioning status where the user need to complete the manual approval process
 
 ## Import
+The `ibm_tg_connection` resource can be imported by using transit gateway ID and connection ID.
 
-ibm_tg_connection can be imported using transit gateway id and connection id, eg
+**Example**
 
 ```
 $ terraform import ibm_tg_connection.example 5ffda12064634723b079acdb018ef308/cea6651a-bd0a-4438-9f8a-a0770bbf3ebb
+
 ```

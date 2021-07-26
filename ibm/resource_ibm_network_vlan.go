@@ -419,14 +419,15 @@ func findVlanByOrderId(sess *session.Session, orderId int, timeout time.Duration
 			if len(vlans) == 1 {
 				return vlans[0], "complete", nil
 			} else if len(vlans) == 0 {
-				return nil, "pending", nil
+				return []datatypes.Network_Vlan{}, "pending", nil
 			} else {
 				return nil, "", fmt.Errorf("Expected one vlan: %s", err)
 			}
 		},
-		Timeout:    timeout,
-		Delay:      5 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Timeout:        timeout,
+		Delay:          5 * time.Second,
+		MinTimeout:     3 * time.Second,
+		NotFoundChecks: 300,
 	}
 
 	pendingResult, err := stateConf.WaitForState()

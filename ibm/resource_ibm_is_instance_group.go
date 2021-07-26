@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -87,19 +88,22 @@ func resourceIBMISInstanceGroup() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_is_instance_group", "application_port"),
+				RequiredWith: []string{"load_balancer", "load_balancer_pool"},
 				Description:  "Used by the instance group when scaling up instances to supply the port for the load balancer pool member.",
 			},
 
 			"load_balancer": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "load balancer ID",
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"application_port", "load_balancer_pool"},
+				Description:  "load balancer ID",
 			},
 
 			"load_balancer_pool": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "load balancer pool ID",
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"application_port", "load_balancer"},
+				Description:  "load balancer pool ID",
 			},
 
 			"managers": {
@@ -238,7 +242,7 @@ func resourceIBMISInstanceGroupCreate(d *schema.ResourceData, meta interface{}) 
 	}
 	d.SetId(*instanceGroup.ID)
 
-	_, healthError := waitForHealthyInstanceGroup(d, meta, d.Timeout(schema.TimeoutCreate))
+	_, healthError := waitForHealthyInstanceGroup(d.Id(), meta, d.Timeout(schema.TimeoutCreate))
 	if healthError != nil {
 		return healthError
 	}
@@ -338,7 +342,7 @@ func resourceIBMISInstanceGroupUpdate(d *schema.ResourceData, meta interface{}) 
 		}
 
 		// wait for instance group health update with update timeout configured.
-		_, healthError := waitForHealthyInstanceGroup(d, meta, d.Timeout(schema.TimeoutUpdate))
+		_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
 		if healthError != nil {
 			return healthError
 		}
@@ -397,6 +401,17 @@ func resourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) er
 	return nil
 }
 
+func getLBStatus(sess *vpcv1.VpcV1, lbId string) (string, error) {
+	getlboptions := &vpcv1.GetLoadBalancerOptions{
+		ID: &lbId,
+	}
+	lb, response, err := sess.GetLoadBalancer(getlboptions)
+	if err != nil || lb == nil {
+		return "", fmt.Errorf("Error Getting Load Balancer : %s\n%s", err, response)
+	}
+	return *lb.ProvisioningStatus, nil
+}
+
 func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
@@ -404,6 +419,18 @@ func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) 
 	}
 	instanceGroupID := d.Id()
 
+	// Before we delete the instance group, we need to
+	// know if the load balancer attached is in active state
+
+	// First, get the instance
+	igOpts := vpcv1.GetInstanceGroupOptions{ID: &instanceGroupID}
+	instanceGroup, response, err := sess.GetInstanceGroup(&igOpts)
+	if err != nil || instanceGroup == nil {
+		if response != nil && response.StatusCode == 404 {
+			return fmt.Errorf("Instance Group with id:[%s] not found!!", instanceGroupID)
+		}
+		return fmt.Errorf("Internal Error fetching info for instance group [%s]", instanceGroupID)
+	}
 	// Inorder to delete instance group, need to update membership count to 0
 	zeroMembers := int64(0)
 	instanceGroupUpdateOptions := vpcv1.UpdateInstanceGroupOptions{}
@@ -417,13 +444,40 @@ func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) 
 
 	instanceGroupUpdateOptions.ID = &instanceGroupID
 	instanceGroupUpdateOptions.InstanceGroupPatch = instanceGroupPatch
-	_, response, err := sess.UpdateInstanceGroup(&instanceGroupUpdateOptions)
+	_, response, err = sess.UpdateInstanceGroup(&instanceGroupUpdateOptions)
 	if err != nil {
 		return fmt.Errorf("Error updating instanceGroup's instance count to 0 : %s\n%s", err, response)
 	}
-	_, healthError := waitForHealthyInstanceGroup(d, meta, d.Timeout(schema.TimeoutUpdate))
+	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
 	if healthError != nil {
 		return healthError
+	}
+
+	// If there is any load balancer, please check if it is active
+	if instanceGroup.LoadBalancerPool != nil {
+		loadBalancerPool := *instanceGroup.LoadBalancerPool.Href
+		// The sixth component is the Load Balancer ID
+		loadBalancerID := strings.Split(loadBalancerPool, "/")[5]
+
+		// Now check if the load balancer is in active state or not
+		lbStatus, err := getLBStatus(sess, loadBalancerID)
+		if err != nil {
+			return err
+		}
+		if lbStatus != "active" {
+			log.Printf("Load Balancer [%s] is not active....Waiting it to be active!\n", loadBalancerID)
+			_, err := isWaitForLBAvailable(sess, loadBalancerID, d.Timeout(schema.TimeoutDelete))
+			if err != nil {
+				return err
+			}
+			lbStatus, err = getLBStatus(sess, loadBalancerID)
+			if err != nil {
+				return err
+			}
+			if lbStatus != "active" {
+				return fmt.Errorf("LoadBalancer [%s] is not active yet! Current Load Balancer status is [%s]", loadBalancerID, lbStatus)
+			}
+		}
 	}
 
 	deleteInstanceGroupOptions := vpcv1.DeleteInstanceGroupOptions{ID: &instanceGroupID}
@@ -460,13 +514,12 @@ func resourceIBMISInstanceGroupExists(d *schema.ResourceData, meta interface{}) 
 	return true, nil
 }
 
-func waitForHealthyInstanceGroup(d *schema.ResourceData, meta interface{}, timeout time.Duration) (interface{}, error) {
+func waitForHealthyInstanceGroup(instanceGroupID string, meta interface{}, timeout time.Duration) (interface{}, error) {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return nil, err
 	}
 
-	instanceGroupID := d.Id()
 	getInstanceGroupOptions := vpcv1.GetInstanceGroupOptions{ID: &instanceGroupID}
 
 	healthStateConf := &resource.StateChangeConf{

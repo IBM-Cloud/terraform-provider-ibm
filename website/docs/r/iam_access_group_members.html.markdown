@@ -4,19 +4,20 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_access_group_members"
 description: |-
-  Manages IBM IAM Access Group Members.
+  Manages IBM IAM access group members.
 ---
 
-# ibm\_iam_access_group_members
+# ibm_iam_access_group_members
 
 
-~> **WARNING:** Multiple ibm_iam_access_group_members resources with the same group name will produce inconsistent behavior!
+~> **WARNING:** Multiple `ibm_iam_access_group_members` resources with the same group name produce inconsistent behavior!
 
-Provides a resource for IAM access group members. This allows access group members to be created, updated and deleted.
+Add, update, or remove users from an IAM access group members. For more information, about IAM access group members, see [managing public access to resources](https://cloud.ibm.com/docs/account?topic=account-public).
 
-## Example Usage
+## Example usage
+The following example creates an IAM access group and a service ID. Then, the service ID and a user with the ID `user@ibm.com` is added to the access group.
 
-```hcl
+```terraform
 resource "ibm_iam_access_group" "accgroup" {
   name = "testgroup"
 }
@@ -33,28 +34,38 @@ resource "ibm_iam_access_group_members" "accgroupmem" {
 
 ```
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument references that you can specify for your resource. 
 
-* `access_group_id` - (Required, string) ID of the access group.
-* `ibm_ids` - (Optional, array of strings) List of IBMid's.
-* `iam_service_ids` - (Optional, array of strings) List of serviceID's.  
+- `access_group_id` - (Required, String) The ID of the access group. 
+- `ibm_ids` - (Optional, Array of string)  A list of IBM IDs that you want to add to or remove from the access group. 
+- `iam_service_ids` - (Optional, Array of string)  A list of service IDS that you want to add to or remove from the access group.
   
 
-## Attribute Reference
+## Attribute reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all argument reference list, you can access the following attribute reference after your resource is created. 
 
-* `id` - The unique identifier of the access group members. The id is composed of \<iam_access_group_id\>/\<randomid\>
-* `members` - List of members attached to the access group.
-Nested `members` blocks have the following structure:
-  * `iam_id` - The IBMid or Service Id of the member
-  * `type` - The type of the member, either "user" or "service".
+- `id` - (String) The unique identifier of the access group members. The ID is returned in the format `<iam_access_group_ID>/<random_ID>`. 
+- `members` - (Array of objects) A list of members that are included in the access group.
+
+  Nested scheme for `members`:
+	- `iam_id` - (String) The IBM ID or service ID of the member.
+	- `type` - (String) The type of member. Supported values are `user` or `service`.
+
 
 ## Import
 
-ibm_iam_access_group_members can be imported using access group ID and random id, eg
+The `ibm_iam_access_group_members` can be imported by using access group ID and random ID. 
+
+**Syntax**
+
+```
+$ terraform import ibm_iam_access_group_members.example <accessgroupID>/<random_ID>
+```
+
+**Example**
 
 ```
 $ terraform import ibm_iam_access_group_members.example AccessGroupId-5391772e-1207-45e8-b032-2a21941c11ab/2018-10-04 06:27:40.041599641 +0000 UTC

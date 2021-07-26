@@ -220,6 +220,25 @@ func dataSourceIBMCosBucket() *schema.Resource {
 					},
 				},
 			},
+			"object_versioning": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Protect objects from accidental deletion or overwrites. Versioning allows you to keep multiple versions of an object protecting from unintentional data loss.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enable": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Enable or suspend the versioning for objects in the bucket",
+						},
+					},
+				},
+			},
+			"hard_quota": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "sets a maximum amount of storage (in bytes) available for a bucket",
+			},
 		},
 	}
 }
@@ -353,6 +372,9 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		if bucketPtr.MetricsMonitoring != nil {
 			d.Set("metrics_monitoring", flattenMetricsMonitor(bucketPtr.MetricsMonitoring))
 		}
+		if bucketPtr.HardQuota != nil {
+			d.Set("hard_quota", bucketPtr.HardQuota)
+		}
 
 	}
 
@@ -395,6 +417,22 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		retentionRules := retentionRuleGet(retentionptr.ProtectionConfiguration)
 		if len(retentionRules) > 0 {
 			d.Set("retention_rule", retentionRules)
+		}
+	}
+
+	// Get the object Versioning
+	versionInput := &s3.GetBucketVersioningInput{
+		Bucket: aws.String(bucketName),
+	}
+	versionPtr, err := s3Client.GetBucketVersioning(versionInput)
+
+	if err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
+		return err
+	}
+	if versionPtr != nil {
+		versioningData := flattenCosObejctVersioning(versionPtr)
+		if len(versioningData) > 0 {
+			d.Set("object_versioning", versioningData)
 		}
 	}
 

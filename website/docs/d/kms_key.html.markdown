@@ -37,6 +37,7 @@ resource "ibm_cos_bucket" "flex-us-south" {
 ```
 
 **Note**
+
 1) Data of the key can be retrieved either using a key name or an alias name (if created for the key or keys) .
 2) limit is an optional parameter used with the keyname, which iterates and fetches the key till the limit given. When the limit is not passed then the first 2000 keys are fetched according to SDK default behaviour. 
 
@@ -90,7 +91,12 @@ In addition to all argument reference list, you can access the following attribu
 
 
 
-## Argument Reference
+
+- `alias` - (Optional, String) The alias of the key. If you want to retrieve the key by using the key name, use the `key_name` option. You must provide either the `key_name` or `alias`.
+- `endpoint_type` - (Optional, String) The type of the public or private endpoint to be used for fetching keys.
+- `instance_id` - (Required, String) The key-protect instance ID.
+- `key_name` - (Optional, String) The name of the key. If you want to retrieve the key by using the key alias, use the `alias` option. You must provide either the `key_name` or `alias`.
+
 
 Review the argument references that you can specify for your data source. 
 
@@ -116,6 +122,7 @@ In addition to all argument reference list, you can access the following attribu
 
     Nested scheme for `policy`:
     - `dual_auth_delete` - (String) The data associated with the dual authorization delete policy.
+
 
       Nested scheme for `dual_auth_delete`:
       - `created_by` - (String) The unique ID for the resource that created the policy.

@@ -62,10 +62,10 @@ func resourceIBMKmskey() *schema.Resource {
 			"endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
 				Description:  "public or private",
 				ForceNew:     true,
-				Default:      "public",
 			},
 			"standard_key": {
 				Type:        schema.TypeBool,
@@ -283,10 +283,10 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 
-		if endpointType == "public" {
-			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
-		} else {
+		if endpointType == "private" {
 			hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
+		} else {
+			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
 		}
 
 		u, err := url.Parse(hpcsEndpointURL)
@@ -296,9 +296,12 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 		kpAPI.URL = u
 	} else if crnData[4] == "kms" {
 		if endpointType == "private" {
-			if !strings.HasPrefix(kpAPI.Config.BaseURL, "private") {
-				kpAPI.Config.BaseURL = "private." + kpAPI.Config.BaseURL
+			URL, _ := updatePrivateURL(kpAPI.Config.BaseURL)
+			u, err := url.Parse(URL)
+			if err != nil {
+				return fmt.Errorf("Error Parsing kms EndpointURL")
 			}
+			kpAPI.URL = u
 		}
 	} else {
 		return fmt.Errorf("Invalid or unsupported service Instance")
@@ -380,7 +383,7 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	crn := d.Id()
 	crnData := strings.Split(crn, ":")
-	endpointType := crnData[3]
+	endpointType := d.Get("endpoint_type").(string)
 	instanceID := crnData[len(crnData)-3]
 	keyid := crnData[len(crnData)-1]
 
@@ -399,10 +402,10 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 
-		if endpointType == "public" {
-			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
-		} else {
+		if endpointType == "private" {
 			hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
+		} else {
+			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
 		}
 
 		u, err := url.Parse(hpcsEndpointURL)
@@ -414,9 +417,12 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	} else if crnData[4] == "kms" {
 		instanceType = "kms"
 		if endpointType == "private" {
-			if !strings.HasPrefix(kpAPI.Config.BaseURL, "private") {
-				kpAPI.Config.BaseURL = "private." + kpAPI.Config.BaseURL
+			URL, _ := updatePrivateURL(kpAPI.Config.BaseURL)
+			u, err := url.Parse(URL)
+			if err != nil {
+				return fmt.Errorf("Error Parsing kms EndpointURL")
 			}
+			kpAPI.URL = u
 		}
 	} else {
 		return fmt.Errorf("Invalid or unsupported service Instance")
@@ -430,8 +436,7 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	policies, err := kpAPI.GetPolicies(context.Background(), keyid)
-
-	if err != nil {
+	if err != nil && !strings.Contains(fmt.Sprint(err), "Unauthorized: The user does not have access to the specified resource") {
 		return fmt.Errorf("Failed to read policies: %s", err)
 	}
 	if len(policies) == 0 {
@@ -447,7 +452,11 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("iv_value", key.IV)
 	d.Set("key_name", key.Name)
 	d.Set("crn", key.CRN)
-	d.Set("endpoint_type", endpointType)
+	if strings.Contains((kpAPI.URL).String(), "private") {
+		d.Set("endpoint_type", "private")
+	} else {
+		d.Set("endpoint_type", "public")
+	}
 	d.Set("type", instanceType)
 	d.Set("force_delete", d.Get("force_delete").(bool))
 	d.Set("key_ring_id", key.KeyRingID)
@@ -516,10 +525,10 @@ func resourceIBMKmsKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 				return err
 			}
 
-			if endpointType == "public" {
-				hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
-			} else {
+			if endpointType == "private" {
 				hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
+			} else {
+				hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
 			}
 
 			u, err := url.Parse(hpcsEndpointURL)
@@ -529,9 +538,12 @@ func resourceIBMKmsKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 			kpAPI.URL = u
 		} else if crnData[4] == "kms" {
 			if endpointType == "private" {
-				if !strings.HasPrefix(kpAPI.Config.BaseURL, "private") {
-					kpAPI.Config.BaseURL = "private." + kpAPI.Config.BaseURL
+				URL, _ := updatePrivateURL(kpAPI.Config.BaseURL)
+				u, err := url.Parse(URL)
+				if err != nil {
+					return fmt.Errorf("Error Parsing kms EndpointURL")
 				}
+				kpAPI.URL = u
 			}
 		} else {
 			return fmt.Errorf("Invalid or unsupported service Instance")
@@ -560,7 +572,7 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 	crn := d.Id()
 	crnData := strings.Split(crn, ":")
-	endpointType := crnData[3]
+	endpointType := d.Get("endpoint_type").(string)
 	instanceID := crnData[len(crnData)-3]
 	keyid := crnData[len(crnData)-1]
 	kpAPI.Config.InstanceID = instanceID
@@ -578,10 +590,10 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 
-		if endpointType == "public" {
-			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
-		} else {
+		if endpointType == "private" {
 			hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
+		} else {
+			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
 		}
 
 		u, err := url.Parse(hpcsEndpointURL)
@@ -591,9 +603,12 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 		kpAPI.URL = u
 	} else if crnData[4] == "kms" {
 		if endpointType == "private" {
-			if !strings.HasPrefix(kpAPI.Config.BaseURL, "private") {
-				kpAPI.Config.BaseURL = "private." + kpAPI.Config.BaseURL
+			URL, _ := updatePrivateURL(kpAPI.Config.BaseURL)
+			u, err := url.Parse(URL)
+			if err != nil {
+				return fmt.Errorf("Error Parsing kms EndpointURL")
 			}
+			kpAPI.URL = u
 		}
 	} else {
 		return fmt.Errorf("Invalid or unsupported service Instance")
@@ -622,7 +637,7 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 
 	crn := d.Id()
 	crnData := strings.Split(crn, ":")
-	endpointType := crnData[3]
+	endpointType := d.Get("endpoint_type").(string)
 	instanceID := crnData[len(crnData)-3]
 	keyid := crnData[len(crnData)-1]
 	kpAPI.Config.InstanceID = instanceID
@@ -640,10 +655,10 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 			return false, err
 		}
 
-		if endpointType == "public" {
-			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
-		} else {
+		if endpointType == "private" {
 			hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
+		} else {
+			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
 		}
 
 		u, err := url.Parse(hpcsEndpointURL)
@@ -654,9 +669,12 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 		kpAPI.URL = u
 	} else if crnData[4] == "kms" {
 		if endpointType == "private" {
-			if !strings.HasPrefix(kpAPI.Config.BaseURL, "private") {
-				kpAPI.Config.BaseURL = "private." + kpAPI.Config.BaseURL
+			URL, _ := updatePrivateURL(kpAPI.Config.BaseURL)
+			u, err := url.Parse(URL)
+			if err != nil {
+				return false, fmt.Errorf("Error Parsing kms EndpointURL")
 			}
+			kpAPI.URL = u
 		}
 	} else {
 		return false, fmt.Errorf("Invalid or unsupported service Instance")

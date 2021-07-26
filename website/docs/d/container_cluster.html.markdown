@@ -6,81 +6,100 @@ description: |-
   Get information about a Kubernetes cluster on IBM Cloud.
 ---
 
-# ibm\_container_cluster
+# ibm_container_cluster
+Retrieve information about an existing IBM Cloud Kubernetes Service cluster. For more information, about container cluster, see [about Kubernetes](https://cloud.ibm.com/docs/containers?topic=containers-getting-started).
 
 
-Import the details of a Kubernetes cluster on IBM Cloud as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+## Example usage
+The following example retrieves information about a cluster that is named `mycluster`. 
 
+```terraform
+data "ibm_container_cluster" "cluster" {
+  cluster_name_id = "mycluster"
+}
+```
 
-## Example Usage
+The following example retrieves the name of the cluster.
 
-```hcl
+```terraform
 data "ibm_container_cluster" "cluster_foo" {
   name = "FOO"
 }
 ```
+## Argument reference
+Review the argument references that you can specify for your data source. 
+ 
+- `alb_type` - (Optional, String) Filters the  `albs` based on type. The valid values are `private`, `public`, and `all`. The default value is `all`.
+- `name` - (Optional, String) The name or ID of the cluster.
+- `list_bounded_services`- (Optional, Bool) If set to **false** services which are bound to the cluster are not going to be listed. The default value is **true**.
+- `resource_group_id` - (Optional, String) The ID of the resource group where your cluster is provisioned into. To list resource groups, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
 
-## Argument Reference
+**Deprecated reference**
 
-The following arguments are supported:
+- `account_guid` - (Deprecated, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from the `ibm_account` data source or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
+- `cluster_name_id` - (Deprecated, String) The name or ID of the cluster that you want to retrieve.
+- `org_guid` - (Deprecated, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from the `ibm_org` data source or by running the `ibmcloud iam orgs`.
+- `guid` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
+- `space_guid` - (Deprecated, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from the `ibm_space` data source or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
+- `region` - (Deprecated, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 
-* `cluster_name_id` - (Deprecated, string) Name of the Cluster
-* `name` - (Optional, string) Name or ID of the cluster.
-* `alb_type` - (Optional, string) Used to filter the albs based on type. Valid values are `private`, `public` and `all`. The default value is `all`.
-* `list_bounded_services` - (Optional, bool) If set to false services which are bound to the cluster are not going to be listed. The default value is `true`.
-* `org_guid` - (Deprecated, string) The GUID for the IBM Cloud organization associated with the cluster. You can retrieve the value from the `ibm_org` data source or by running the `ibmcloud iam orgs --guid` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
-* `space_guid` - (Deprecated, string) The GUID for the IBM Cloud space associated with the cluster. You can retrieve the value from the `ibm_space` data source or by running the `ibmcloud iam space <space-name> --guid` command in the IBM Cloud CLI.
-* `account_guid` - (Deprecated, string) The GUID for the IBM Cloud account associated with the cluster. You can retrieve the value from the `ibm_account` data source or by running the `ibmcloud iam accounts` command in the IBM Cloud CLI.
-* `region` - (Deprecated, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
-* `resource_group_id` - (Optional, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
+- `api_key_id` - (String) The ID of the API key.
+- `api_key_owner_name` - (String) The name of the key owner.
+- `api_key_owner_email` - (String) The Email ID of the key owner.
+- `albs` - List of objects - A list of Ingress application load balancers (ALBs) that are attached to the cluster.
 
-In addition to all arguments above, the following attributes are exported:
+  Nested scheme for `albs`:
+  - `alb_ip` - (String) BYOIP VIP to use for application load balancer. Currently supported only for private application load balancer. 
+  - `alb_type` - (String) The type of ALB. Supported values are `public` and `private`. 
+  - `disable_deployment` -  (Bool)  Indicate whether to disable deployment only on disable application load balancer (ALB).
+  - `enable` -  (Bool) Indicates if the ALB is enabled (**true**) or disabled (**false**) in the cluster.
+  - `id` - (String) The unique identifier of the Ingress ALB.
+  - `name` - (String) The name of the Ingress ALB.
+  - `num_of_instances`- (Integer) The number of ALB replicas.
+  - `resize` -  (Bool)  Indicate whether resizing should be done. 
+  - `state` - (String) The state of the ALB. Supported values are `enabled` or `disabled`. 
+- `bounded_services` - List of strings - A list of IBM Cloud services that are bounded to the cluster.
+- `crn` - (String) The CRN of the cluster.
+- `id` - (String) The unique identifier of the cluster.
+- `ingress_hostname` - (String) The Ingress host name.
+- `ingress_secret` - (String) The name of the Ingress secret.
+- `name` - (String) The name of the cluster.
+- `public_service_endpoint` -  (Bool) Indicates if the public service endpoint is enabled (**true**) or disabled (**false**) for a cluster. 
+- `public_service_endpoint_url` - (String) The URL of the public service endpoint for your cluster.
+- `private_service_endpoint` -  (Bool) Indicates if the private service endpoint is enabled (**true**) or disabled (**false**) for a cluster. 
+- `private_service_endpoint_url` - (String) The URL of the private service endpoint for your cluster.
+- `vlans`- (List of objects) A list of VLANs that are attached to the cluster. 
 
-* `id` - The unique identifier of the cluster.
-* `worker_count` - The number of workers that are attached to the cluster.
-* `workers` - The IDs of the workers that are attached to the cluster.
-* `ingress_hostname` - The Ingress hostname.
-* `ingress_secret` - The Ingress secret.
-* `bounded_services` - The services that are bounded to the cluster.
-* `is_trusted` - Is trusted cluster feature enabled.
-* `vlans` - The VLAN'S that are attached to the cluster. Nested `vlans` blocks have the following structure:
-	* `id` - The VLAN id.
-	* `subnets` - The list of subnets attached to VLAN belonging to the cluster. Nested `subnets` blocks have the following structure:
-		* `id` - The Subnet Id.
-		* `cidr` - The cidr range.
-		* `ips` - The list of ip's in the subnet.
-		* `is_byoip` - `true` if user provides a ip range else `false`.
-		* `is_public` - `true` if VLAN is public else `false`.
-* `worker_pools` - Worker pools attached to the cluster
-  * `name` - The name of the worker pool.
-  * `machine_type` - The machine type of the worker node.
-  * `size_per_zone` - Number of workers per zone in this pool.
-  * `hardware` - The level of hardware isolation for your worker node.
-  * `id` - Worker pool id.
-  * `state` - Worker pool state.
-  * `labels` - Labels on all the workers in the worker pool.
-	* `zones` - List of zones attached to the worker_pool.
-		* `zone` - Zone name.
-		* `private_vlan` - The ID of the private VLAN. 
-		* `public_vlan` - The ID of the public VLAN.
-		* `worker_count` - Number of workers attached to this zone.
-* `albs` - Application load balancer (ALB)'s attached to the cluster
-  * `id` - The application load balancer (ALB) id.
-  * `name` - The name of the application load balancer (ALB).
-  * `alb_type` - The application load balancer (ALB) type public or private.
-  * `enable` -  Enable (true) or disable(false) application load balancer (ALB).
-  * `state` - The status of the application load balancer (ALB)(enabled or disabled).
-  * `num_of_instances` - Desired number of application load balancer (ALB) replicas.
-  * `alb_ip` - BYOIP VIP to use for application load balancer (ALB). Currently supported only for private application load balancer (ALB).
-  * `resize` - Indicate whether resizing should be done.
-  * `disable_deployment` - Indicate whether to disable deployment only on disable application load balancer (ALB).
-* `private_service_endpoint_url` - Private service endpoint url.
-* `public_service_endpoint_url` - Public service endpoint url.
-* `public_service_endpoint` - Is public service endpoint enabled to make the master publicly accessible.
-* `private_service_endpoint` - Is private service endpoint enabled to make the master privately accessible.
-* `crn` - CRN of the instance.
-* `api_key_id` - ID of APIkey.
-* `api_key_owner_name` - "Name of the key owner.
-* `api_key_owner_email` - Email id of the key owner
+  Nested scheme for `vlans`:
+  - `id` - (String) The ID of the VLAN. 
+  - `subnets` - List of objects - A list of subnets that belong to the cluster.
+
+    Nested scheme for `subnets`:
+    - `cidr` - (String) The IP address CIDR of the subnet.
+    - `ips` - List of strings - The IP addresses that belong to the subnet.
+    - `id` - (String) The ID of the subnet. 
+    - `isbyoip`-  (Bool) If set to **true**, you provided your own IP address range for the subnet. If set to **false**, the default IP address range is used.
+    - `is_public` -  (Bool) If set to **true**, the VLAN is public. If set to **false**, the VLAN is private. 
+- `workers` - List of objects - A list of worker nodes that belong to the cluster. 
+- `worker_pools` - List of objects - A list of worker pools that exist in the cluster.
+
+  Nested scheme for `worker_pools`:
+  - `hardware` - (String) The level of hardware isolation that is used for the worker node of the worker pool.
+  - `id` - (String) The ID of the worker pool.
+  - `labels` - List of strings - A list of labels that are added to the worker pool.
+
+    Nested scheme for `labels`:
+    - `zones` - List of objects - A list of zones that are attached to the worker pool.
+
+      Nested scheme for `zones`:
+      - `private_vlan` - (String) The ID of the private VLAN that is used in that zone.
+      - `public_vlan` - (String) The ID of the private VLAN that is used in that zone.
+      - `worker_count` - (Integer) The number of worker nodes that are attached to the zone. 
+      - `zone` - (String) The name of the zone.
+  - `machine_type` - (String) The machine type that is used for the worker nodes in the worker pool.
+  - `name` - (String) The name of the worker pool.
+  - `size_per_zone` - (Integer) The number of worker nodes per zone.
+  - `state` - (String) The state of the worker pool.

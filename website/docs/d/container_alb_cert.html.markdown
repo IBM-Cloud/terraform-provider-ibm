@@ -3,18 +3,16 @@ subcategory: "Kubernetes Service"
 layout: "ibm"
 page_title: "IBM: container_alb_cert"
 description: |-
-  Get information about a IBM container alb cert.
+  Get information about a IBM container ALB certificate.
 ---
 
-# ibm\_container_alb_cert
-
-Import the details of a Kubernetes cluster ALB certificate on IBM Cloud as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+# ibm_container_alb_cert
+Retrieve information about all the Kubernetes cluster ALB certificate on IBM Cloud as a read-only data source.
 
 ## Example Usage
+The following example retrieves information of an ALB certificate.
 
-In the following example, you can retrive a alb cert :
-
-```hcl
+```terraform
 data "ibm_container_alb_cert" "cert" {
   secret_name = "test-sec"
   cluster_id  = "myCluster"
@@ -22,25 +20,22 @@ data "ibm_container_alb_cert" "cert" {
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-The following arguments are supported:
+- `cluster_id` - (Required, String) The cluster ID.
+- `namespace` - (Optional, string) The namespace in which the secret has to be **created.Default** `ibm-cert-store`
+- `secret_name` - (Required, String) The name of the ALB certificate secret.
 
-* `cluster_id` - (Required, string)  The cluster ID.
-* `secret_name` - (Required, string) The name of the ALB certificate secret. 
-* `namespace` - (Optional, string) The namespace in which the secret has to be created.Default: `ibm-cert-store`
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The ALB cert ID. The id is composed of \<cluster_name_id\>/\<secret_name\>.<br/>
-* `cert_crn` - The certificate CRN. 
-* `domain_name` - The Domain name of the certificate.
-* `expires_on` - The Expiry date of the certificate.
-* `issuer_name` - The Issuer name of the certificate.
-* `cluster_crn` - The cluster crn.
-* `cloud_cert_instance_id` - Cloud Certificate instance ID from which certificate is downloaded.
-* `persistence`  - (Optional, bool) Persist the secret data in your cluster. If the secret is later deleted from the CLI or OpenShift web console, the secret is automatically re-created in your cluster.
-* `status` - The Status of the secret.
+- `cert_crn` - (String) The certificate CRN.
+- `cloud_cert_instance_id` - (String) The Cloud certificate instance ID from which certificate is downloaded.
+- `cluster_crn` - (String) The cluster CRN.
+- `domain_name` - (String) The domain name of the certificate.
+- `expires_on` - (String) The expiry date of the certificate.
+- `id` - (String) The ALB cert ID. The ID is composed of `<cluster_name_id>/<secret_name>`.
+- `issuer_name` - (String) The issuer name of the certificate.
+- `persistence`  - (Bool) Persist the secret data in your cluster. If the secret is later deleted from the command line or OpenShift web console, the secret is automatically re-created in your cluster.
+- `status` - (String) The Status of the secret.

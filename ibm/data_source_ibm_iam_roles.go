@@ -4,7 +4,7 @@
 package ibm
 
 import (
-	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2"
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -45,7 +45,7 @@ func datasourceIBMIAMRole() *schema.Resource {
 }
 
 func datasourceIBMIAMRoleRead(d *schema.ResourceData, meta interface{}) error {
-	iampapv2Client, err := meta.(ClientSession).IAMPAPAPIV2()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
@@ -56,31 +56,30 @@ func datasourceIBMIAMRoleRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var serviceName string
-	var customRoles, serviceRoles, systemRoles []iampapv2.Role
-	if service, ok := d.GetOk("service"); ok {
-		serviceName = service.(string)
+	var customRoles []iampolicymanagementv1.CustomRole
+	var serviceRoles, systemRoles []iampolicymanagementv1.Role
 
-		customRoles, err = iampapv2Client.IAMRoles().ListCustomRoles(userDetails.userAccount, serviceName)
-		if err != nil {
-			return err
-		}
-
-		serviceRoles, err = iampapv2Client.IAMRoles().ListServiceRoles(serviceName)
-		if err != nil {
-			return err
-		}
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID: &userDetails.userAccount,
 	}
 
-	d.SetId(userDetails.userAccount)
-
-	systemRoles, err = iampapv2Client.IAMRoles().ListSystemDefinedRoles()
+	if service, ok := d.GetOk("service"); ok {
+		serviceName = service.(string)
+		listRoleOptions.ServiceName = &serviceName
+	}
+	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
 	if err != nil {
 		return err
 	}
+	customRoles = roleList.CustomRoles
+	serviceRoles = roleList.ServiceRoles
+	systemRoles = roleList.SystemRoles
+
+	d.SetId(userDetails.userAccount)
 
 	var roles []map[string]string
 
-	roles = append(flattenRoleData(systemRoles, "platform"), append(flattenRoleData(serviceRoles, "service"), flattenRoleData(customRoles, "custom")...)...)
+	roles = append(flattenRoleData(systemRoles, "platform"), append(flattenRoleData(serviceRoles, "service"), flattenCustomRoleData(customRoles, "custom")...)...)
 
 	d.Set("roles", roles)
 

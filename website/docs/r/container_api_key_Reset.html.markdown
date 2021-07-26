@@ -7,15 +7,13 @@ description: |-
   Resets Kubernetes API Key.
 ---
 
-# ibm\_container_api_key_reset
+# ibm_container_api_key_reset
+Create, update, or delete Kubernetes API key. For more information, about Kubernetes API key, see [assigning cluster access](https://cloud.ibm.com/docs/containers?topic=containers-users#access-checklist).
 
-Resets Kubernetes API Key
-
-## Example Usage
-
+## Example usage
 In the following example, you can reset kubernetes api key:
 
-```hcl
+```terraform
 resource "ibm_container_api_key_reset" "reset" {
     region ="us-east"
     resource_group_id = "766f3584b2c840ee96d856bc04551da8"
@@ -25,16 +23,14 @@ resource "ibm_container_api_key_reset" "reset" {
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
+- `region` - (Required, Forces new resource, String) The region in which API key has to be reset.
+- `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
+- `reset_api_key`  - (Optional, Integer) Determines the API key need reset or not. This attribute is added to avoid the state dependencies. You need to increment the attribute to reset the API key on same `region` and `resource_group_id`. The default value is `1`.
 
-* `region` - (Required, Forces new resource, string) The region in which api key has to be reset.
-* `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group.  You can retrieve the value from data source `ibm_resource_group`. If not provided defaults to default resource group.
-* `reset_api_key` - (Optional, int) Default: 1. This attribute determines if the apikey has to be reset or not. Inorder to avoid state dependencies this attribute has been added. To reset apikey on same region and resource_group_id this attribute has to be incremented.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-## Attribute Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The Resource ID. Id is a combination of `<region>/<resource_group_id>`
+- `id` - (String) The resource ID. ID is a combination of `<region>/<resource_group_id>`.

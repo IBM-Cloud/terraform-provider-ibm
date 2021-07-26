@@ -25,6 +25,8 @@ func TestAccIBMISSubnetDatasource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_subnet.ds_subnet", "name", name),
+					resource.TestCheckResourceAttr(
+						"data.ibm_is_subnet.ds_subnet", "vpc_name", vpcname),
 				),
 			},
 		},

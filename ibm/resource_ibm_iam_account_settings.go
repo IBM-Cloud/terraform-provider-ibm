@@ -127,6 +127,12 @@ func resourceIbmIamAccountSettings() *schema.Resource {
 				Computed:    true,
 				Description: "Defines the period of time in seconds in which a session will be invalidated due  to inactivity. Valid values:   * Any whole number between '900' and '7200'   * NOT_SET - To unset account setting and use service default.",
 			},
+			"max_sessions_per_identity": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Defines the max allowed sessions per identity required by the account. Value values: * Any whole number greater than '0'   * NOT_SET - To unset account setting and use service default.",
+			},
 		},
 	}
 }
@@ -243,6 +249,9 @@ func resourceIbmIamAccountSettingsRead(context context.Context, d *schema.Resour
 	if err = d.Set("session_invalidation_in_seconds", accountSettingsResponse.SessionInvalidationInSeconds); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting session_invalidation_in_seconds: %s", err))
 	}
+	if err = d.Set("max_sessions_per_identity", accountSettingsResponse.MaxSessionsPerIdentity); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting max_sessions_per_identity: %s", err))
+	}
 
 	return nil
 }
@@ -306,6 +315,12 @@ func resourceIbmIamAccountSettingsUpdate(context context.Context, d *schema.Reso
 	if d.HasChange("session_invalidation_in_seconds") {
 		session_invalidation_in_seconds_str := d.Get("session_invalidation_in_seconds").(string)
 		updateAccountSettingsOptions.SetSessionInvalidationInSeconds(session_invalidation_in_seconds_str)
+		hasChange = true
+	}
+
+	if d.HasChange("max_sessions_per_identity") {
+		max_sessions_per_identity_str := d.Get("max_sessions_per_identity").(string)
+		updateAccountSettingsOptions.SetMaxSessionsPerIdentity(max_sessions_per_identity_str)
 		hasChange = true
 	}
 

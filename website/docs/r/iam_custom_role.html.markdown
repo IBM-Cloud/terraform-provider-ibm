@@ -4,16 +4,16 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_custom_role"
 description: |-
-  Manages IBM IAM Custom Role.
+  Manages IBM IAM custom role.
 ---
 
-# ibm\_iam_custom_role
+# ibm_iam_custom_role
 
-Provides a resource for IAM custom role. This allows custom_role to be created, updated and deleted.
+Create, update, or delete a custom IAM role. For more information, about IAM custom roles, see [Creating custom roles](https://cloud.ibm.com/docs/account?topic=account-custom-roles).
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_iam_custom_role" "customrole" {
   name         = "Role1"
   display_name = "Role1"
@@ -22,20 +22,34 @@ resource "ibm_iam_custom_role" "customrole" {
   actions      = ["kms.secrets.rotate"]
 }
 ```
+## Creating custon role using iam role actions
 
-## Argument Reference
+```terraform
+data "ibm_iam_role_actions" "example" {
+  service = "cloud-object-storage"
+}
 
-The following arguments are supported:
+resource "ibm_iam_custom_role" "read_write" {
+  name = "Role1"
+  display_name = "Role1"
+  service = "cloud-object-storage"
+  actions = concat(split(",", data.ibm_iam_role_actions.example.actions["Content Reader"]),
+            split(",", data.ibm_iam_role_actions.example.actions["Object Writer"]))
+}
+```
 
-* `name` - (Required, string) Name of the custom role.
-* `display_name` - (Required, string) Display name of the custom role.
-* `description` - (Optional, string) Description of the custom role.
-* `service` - (Required, string) The service name for the custom role. You can retrieve the value by running the `ibmcloud catalog service-marketplace`.
-* `actions` - (Required, array of strings) Action ID associated with the service name for the IAM custom role.  
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-## Attribute Reference
+- `actions` (Array of Strings)Required-A list of action IDs that you want to add to your custom role. The action IDs vary by service. To retrieve supported action IDs, follow the [documentation](https://cloud.ibm.com/docs/account?topic=account-custom-roles) to create the custom role from the console.
+- `description` - (Optional, String) The description of the custom role. Make sure to include information about the level of access this role assignment gives a user.
+- `display_name` - (Required, String) The display name of the custom role.
+- `name` - (Required, String) The name of the custom role.
+- `service` - (Required, String) The name of the service for which you want to create the custom role. To retrieve the name, run `ibmcloud catalog service-marketplace`.
 
-In addition to all arguments above, the following attributes are exported:
 
-* `id` - The unique identifier of the custom role.
-* `crn` - CRN of the custom role.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `id` - (String) The ID of the custom role.
+- `crn` - (String) The CRN of the custom role.

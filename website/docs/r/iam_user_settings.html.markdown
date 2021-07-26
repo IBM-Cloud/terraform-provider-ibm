@@ -4,18 +4,18 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_user_settings"
 description: |-
-  Manages IBM IAM User Settings.
+  Manages IBM IAM user settings.
 ---
 
-# ibm\_iam_user_settings
+# ibm_iam_user_settings
 
-Provides a resource for IAM User Settings. The IP addresses configured here are the only ones from which a particuler user can log in to IBM Cloud.
+Provides a resource for IAM User Settings. The IP addresses configured here are the only ones from which a particuler user can log in to IBM Cloud. For more information, about IAM user settings, see [allowing specific IP addresses](https://cloud.ibm.com/docs/account?topic=account-ips).
 
-## Example Usage
+## Example usage
 
-### Configuraing allowed_ip list for a particular user
+### Configuring allowed_ip list for a particular user
 
-```hcl
+```terraform
 resource "ibm_iam_user_settings" "user_setting" {
   iam_id = "example@in.ibm.com"
   allowed_ip_addresses = ["192.168.0.2","192.168.0.3","192.168.0.4"]
@@ -23,15 +23,13 @@ resource "ibm_iam_user_settings" "user_setting" {
 
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
-
-* `iam_id` - (Required, string) The user's IAM ID or email ID. 
-* `allowed_ip_addresses` - (Optional, list) comma seperated list of IP addresses.
+- `allowed_ip_addresses` - (Optional, List) Lists the IP addresses in common separated format.
+- `iam_id` - (Required, String) The users IAM or Email ID.
 
 ## Attributes
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The unique identifier of the IAM user setting.The id is composed of \<account_id\>/\<iam_id\>.
+- `id` - (String) The unique identifier of the IAM user setting as `account_id/iam_id`.

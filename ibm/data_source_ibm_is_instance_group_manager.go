@@ -70,6 +70,27 @@ func dataSourceIBMISInstanceGroupManager() *schema.Resource {
 				Computed:    true,
 				Description: "list of Policies associated with instancegroup manager",
 			},
+
+			"actions": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"instance_group_manager_action": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"instance_group_manager_action_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"resource_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -90,6 +111,9 @@ func dataSourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interf
 		listInstanceGroupManagerOptions := vpcv1.ListInstanceGroupManagersOptions{
 			InstanceGroupID: &instanceGroupID,
 		}
+		if start != "" {
+			listInstanceGroupManagerOptions.Start = &start
+		}
 		instanceGroupManagerCollections, response, err := sess.ListInstanceGroupManagers(&listInstanceGroupManagerOptions)
 		if err != nil {
 			return fmt.Errorf("Error Getting InstanceGroup Managers %s\n%s", err, response)
@@ -107,20 +131,39 @@ func dataSourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interf
 		instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
 		if instanceGroupManagerName == *instanceGroupManager.Name {
 			d.SetId(fmt.Sprintf("%s/%s", instanceGroupID, *instanceGroupManager.ID))
-			d.Set("aggregation_window", *instanceGroupManager.AggregationWindow)
-			d.Set("cooldown", *instanceGroupManager.Cooldown)
-			d.Set("max_membership_count", *instanceGroupManager.MaxMembershipCount)
-			d.Set("min_membership_count", *instanceGroupManager.MinMembershipCount)
 			d.Set("manager_type", *instanceGroupManager.ManagerType)
 			d.Set("manager_id", *instanceGroupManager.ID)
-			policies := make([]string, 0)
-			if instanceGroupManager.Policies != nil {
-				for i := 0; i < len(instanceGroupManager.Policies); i++ {
-					policies = append(policies, string(*(instanceGroupManager.Policies[i].ID)))
+
+			if *instanceGroupManager.ManagerType == "scheduled" {
+
+				actions := make([]map[string]interface{}, 0)
+				if instanceGroupManager.Actions != nil {
+					for _, action := range instanceGroupManager.Actions {
+						actn := map[string]interface{}{
+							"instance_group_manager_action":      action.ID,
+							"instance_group_manager_action_name": action.Name,
+							"resource_type":                      action.ResourceType,
+						}
+						actions = append(actions, actn)
+					}
+					d.Set("actions", actions)
 				}
+
+			} else {
+				d.Set("aggregation_window", *instanceGroupManager.AggregationWindow)
+				d.Set("cooldown", *instanceGroupManager.Cooldown)
+				d.Set("max_membership_count", *instanceGroupManager.MaxMembershipCount)
+				d.Set("min_membership_count", *instanceGroupManager.MinMembershipCount)
+				policies := make([]string, 0)
+				if instanceGroupManager.Policies != nil {
+					for i := 0; i < len(instanceGroupManager.Policies); i++ {
+						policies = append(policies, string(*(instanceGroupManager.Policies[i].ID)))
+					}
+				}
+
+				d.Set("policies", policies)
 			}
 
-			d.Set("policies", policies)
 			return nil
 		}
 	}

@@ -4,27 +4,27 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_user_invite"
 description: |-
-  Manages IBM IAM User Invite.
+  Manages IBM IAM user invite.
 ---
 
-# ibm\_iam_user_invite
+# ibm_iam_user_invite
 
-Provides a resource for IAM User Invite. This allows batch of users or single user to be invited, updated and deleted. User to be invited can be added to one or more access groups
+Invite, update, or delete IAM users to your IBM Cloud account. User to be invited can be added to one or more access groups. For more information, see [inviting users](https://cloud.ibm.com/docs/account?topic=account-access-getstarted).
 
-## Example Usage
+## Example usage
 
-### Inviting batch of Users
+### Inviting batch of users
 
-```hcl
+```terraform
 resource "ibm_iam_user_invite" "invite_user" {
   users = ["test@in.ibm.com"]
 }
 
 ```
 
-### Inviting batch of Users with access groups
+### Inviting batch of users with access groups
 
-```hcl
+```terraform
 resource "ibm_iam_user_invite" "invite_user" {
   users         = ["test@in.ibm.com"]
   access_groups = ["accessgroup-id-9876543210"]
@@ -32,11 +32,12 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ```
 
-### Inviting batch of Users with Classic Infrastructure roles
+### Inviting batch of users with Classic Infrastructure roles
+The following example provides the Classic Infrastructure permissions, and permission set.
 
-#### Inviting batch of Users with Classic Infrastructure permissions
+#### Inviting batch of users with Classic Infrastructure permissions
 
-```hcl
+```terraform
 resource "ibm_iam_user_invite" "invite_user" {
   users = ["test@in.ibm.com"]
   classic_infra_roles {
@@ -46,9 +47,9 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ```
 
-#### Inviting batch of Users with Classic Infrastructure permission set
+#### Inviting batch of users with Classic Infrastructure permission set
 
-```hcl
+```terraform
 resource "ibm_iam_user_invite" "invite_user" {
   users = ["test@in.ibm.com"]
   classic_infra_roles {
@@ -60,10 +61,11 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 
 ### User invite with access IAM policies
+The following sample provides about user invite with access to IAM policies for all identity and access enables services, and user policy by using service with region and resourse instance, resource group, resource type, and attributes.
 
-#### Inviting batch of Users with User Policy for All Identity and Access enabled services
+#### Inviting batch of users with user policy for All Identity and Access enabled services
 
-```hcl
+```terraform
 resource "ibm_iam_user_invite" "invite_user" {
   users = ["test@in.ibm.com"]
   iam_policy {
@@ -73,9 +75,9 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ```
 
-#### Inviting batch of Users with User Policy using service with region
+#### Inviting batch of users with user policy using service with region
 
-```hcl
+```terraform
 resource "ibm_iam_user_invite" "invite_user" {
   users = ["test@in.ibm.com"]
   iam_policy {
@@ -88,9 +90,9 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ```
 
-#### Inviting batch of Users with User Policy using resource instance
+#### Inviting batch of users with user policy using resource instance
 
-```hcl
+```terraform
 resource "ibm_resource_instance" "instance" {
   name     = "test"
   service  = "kms"
@@ -111,9 +113,9 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ```
 
-#### Inviting batch of Users with User Policy using resource group
+#### Inviting batch of users with user policy using resource group
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
   name = "default"
 }
@@ -131,9 +133,9 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ```
 
-#### Inviting batch of Users with User Policy using resource and resource type
+#### Inviting batch of users with user policy using resource and resource type
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
   name = "default"
 }
@@ -151,9 +153,9 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ```
 
-#### Inviting batch of Users with User Policy using attributes
+#### Inviting batch of users with user policy using attributes
 
-```hcl
+```terraform
 data "ibm_resource_group" "group" {
   name = "default"
 }
@@ -173,9 +175,9 @@ resource "ibm_iam_user_invite" "invite_user" {
 
 ```
 
-### User invite with access cloud foundry roles
+### User invite with access Cloud Foundry roles
 
-```
+```terraform
 provider "ibm" {
 }
 
@@ -199,78 +201,90 @@ resource "ibm_iam_user_invite" "invite_user" {
     }
   }
 }
-
 ```
 
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-## Argument Reference
+- `account_management` - (Optional, Bool) Gives access to all account management services if set to **true**. Default value is **false**. If you set this option, do not set `resources` at the same time.
+- `access_groups` (Optional, List) A comma separated list of access group IDs.
+- `classic_infra_roles` (Optional, Map) A nested block describes the classic infrastructure roles for the inviting users. </br></br>**Note** If you have an IBM Cloud Lite account, you cannot set classic infrastructure roles. For more information, about Lite accounts, see [What's available?](https://cloud.ibm.com/docs/account?topic=account-accounts#lite-account-features).
 
-The following arguments are supported:
+  Nested scheme for `classic_infra_roles`:
+  - `permissions`  (Optional, List) A comma separated list of classic infrastructure permissions.
+  - `permission_set` - (Optional, String) The permission set to be applied. The valid permission sets are `noacess`, `viewonly`, `basicuser`, and `superuser`.
+- `cloud_foundry_roles` -  (Optional, List) A nested block describes the cloud foundry roles of inviting user.
 
-* `users` - (Required, list) comma separated list of users email-id. 
-* `access_groups` - (Optional, list) comma seperated list of access group ids.
-* `classic_infra_roles` - (Optional, map) A nested block describing the classic infrastrucre roles for the inviting users. The nested classic_infra_roles block have the following structure:
-  * `permissions` - (Optional, list) comma seperated list of classic infrastructure permissions. You can obtain the supported permissions from [Permissions List](https://sldn.softlayer.com/article/permission-enforcement-softlayer-api)
-  * `permission_set` - (Optional, string) Permission set to be applied. The valid permission sets are noacess, viewonly, basicuser, superuser
-* `iam_policy` - (Optional, list) A nested block describing the IAM Polocies for inviting users. The nested iam_policy block have the following structure:
-  * `roles` - (Required, list) comma separated list of roles. Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor.
-  * `resources` - (Optional, list) A nested block describing the resource of this policy.
-Nested `resources` blocks have the following structure:
-    * `service` - (Optional, string) Service name of the policy definition.  You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
-    * `resource_instance_id` - (Optional, string) ID of resource instance of the policy definition.
-    * `region` - (Optional, string) Region of the policy definition.
-    * `resource_type` - (Optional, string) Resource type of the policy definition.
-    * `resource` - (Optional, string) Resource of the policy definition.
-    * `resource_group_id` - (Optional, string) The ID of the resource group. You can retrieve the value from data source `ibm_resource_group`. 
-    * `attributes` - (Optional, map) Set resource attributes in the form of `'name=value,name=value...`.
-  * `account_management` - (Optional, bool) Gives access to all account management services if set to `true`. Default value `false`.
-* `cloud_foundry_roles` - (Optional, list) A nested block describing the cloud foundry roles of inviting user. The nested cloud_foundry_roles block have the following structure:
-  * `organization_guid` - (Required, string) ID of the cloud foundry organization.
-  * `org_roles` - (Required, list) The orgnization roles assigned for the inviting user. The supported org_roles are Manager, Auditor, BillingManager.
-  * `spaces` - (Optional, list) A nested block describing the cloud foundry space roles and space details. The nested spaces block have the following structure:
-    * `space_guid` - (Required, string) ID of the cloud foundry space.
-    * `space_roles` - (Required, list) The space roles assigned for the inviting user. The supported space roles are Manager, Developer, Auditor.
+  Nested scheme for `cloud_foundry_roles`:
+  - `organization_guid` - (Required, String) The ID of the Cloud Foundry organization.
+  - `org_roles` - (Required, List) The organization roles that are assigned to invited user. The supported roles are `Manager`, `Auditor`, `BillingManager`.
+  - `spaces`  (Optional, List) A nested block describes the Cloud Foundry space roles and space details.
 
-**NOTE**: ibmcloud `Lite account` does not support classic infrastructure roles. For more info refer [whats available in lite account?](https://cloud.ibm.com/docs/account?topic=account-accounts#lite-account-features).
+    Nested scheme for `spaces`:
+    - `space_guid` - (Required, String) The ID of the Cloud Foundry space.
+    - `space_roles` - (Required, List) The space roles that you want to assign to the invited user. The supported space roles are `Manager`, `Developer`, `Auditor`.
+- `iam_policy` (Optional, List) A nested block describes the IAM policies for invited users.
 
-## Attribute Reference
+  Nested scheme for `iam_policy`:
+  - `roles` - (Required, List) A comma separated list of roles. Valid roles are `Writer`, `Reader`, `Manager`, `Administrator`, `Operator`, `Viewer`, and `Editor`.
+  - `resources` - (List of Objects) Optional- A nested block describes the resource of this policy. For more information, about supported service specific roles, see  [IAM roles and actions](https://cloud.ibm.com/docs/account?topic=account-iam-service-roles-actions)
 
-In addition to all arguments above, the following attributes are exported:
-* `number_of_invited_users` - Number of users invited to a particular account
-* `invited_users` - List of invited users.
-Nested `invited_users` block have the following structure:
-  * `user_id` - Email Id of the member
-  * `user_policies` - List of policies associated to a particular user.
-  Nested `user_policies` block have the following structure:
-    * `id` - Policy ID
-    * `roles` - comma separated list of roles
-    * `resources` - A nested block describes the resource of this policy.
-    Nested `resources` block have the following structure: 
-      * `service` - service name of the policy definition.
-      * `resource_instance_id` - ID of the resource instance of the policy definition.
-      * `region` - region of the policy definition.
-      * `resource_type` - resource type of the policy definition.
-      * `resource` - resource of the policy definition.
-      * `resource_group_id` - ID of the resource group.
-      * `attributes` - set of resource attributes
-* `access_groups` - List of access groups
-Nested `access_groups` block have the following structure: 
-  * `name` - Name of the access group
-  * `policies` - access group policies of invited user
-  Nested `policies` block have the following structure: 
-    * `id` - policy ID
-    * `roles` - roles associted to policy
-    * `resources` - A nested block describes the resource of this policy.
-    Nested `resources` block have the following structure: 
-      * `service` - service name of the policy definition.
-      * `resource_instance_id` - ID of the resource instance of the policy definition.
-      * `region` - region of the policy definition.
-      * `resource_type` - resource type of the policy definition.
-      * `resource` - resource of the policy definition.
-      * `resource_group_id` - ID of the resource group.
-      * `attributes` - set of resource attributes
+    Nested scheme for `resources`:
+    - `attributes` (Optional, Map)  A set of resource attributes in the format `name=value, name=value`. If you set this option, do not specify `account_management` at the same time.
+    - `resource_instance_id` - (Optional, String) The ID of the resource instance of the policy definition.
+    - `region`  (Optional, String) The region of the policy definition.
+    - `resource_type` - (Optional, String) The resource type of the policy definition.
+    - `resource` - (Optional, String) The resource of the policy definition.
+    - `resource_group_id` - (Optional, String) The ID of the resource group. To retrieve the value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
+    - `service` - (Optional, String) The service name of the policy definition. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
+- `users` - (Required, List) A comma separated list of user Email IDs.
+ 
+ **Note** 
+ 
+ IBM Cloud `Lite account` does not support classic infrastructure roles. For more information, see [What's available in lite account?](https://cloud.ibm.com/docs/account?topic=account-accounts#lite-account-features).
 
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `access_groups` - (String) The lock down ID.
+
+  Nested scheme for `access_group`:
+  - `name` - (String) The name of the access group.
+  - `policies` - (String) The access group policies of invited user.
+
+    Nested scheme for `policies`:
+    - `id` - (String) The policy ID.
+    - `roles` - (String) The roles associated to the policy.
+    - `resources` - (String)  A nested block describes the resource of the policy.
+
+      Nested scheme for `resources`:
+      - `attributes` - (String) The set of resource attributes.
+      - `resource_instance_id` - (String) The resource instance ID of the policy definition.
+      - `region` - (String) The region of the policy definition.
+      - `resource_type` - (String) The resource type of the policy definition.
+      - `resource` - (String) The resource of the policy definition.
+      - `resource_group_id` - (String) The ID of the resource group.
+      - `service` - (String)  Service name of the policy definition.
+- `invited_users` - (String) List of invited users. 
+
+  Nested scheme for `invited_users`:
+  - `user_id` - (String) The Email ID of the member.
+  - `user_policies` - (String)  List of policies associated to a particular user.
+
+    Nested scheme for `user_policies`:
+    - `id` - (String) The policy ID.
+    - `roles` - (String) Comma separated list of the roles.
+    - `resources` - (String)  A nested block describes the resource of the policy.
+
+      Nested scheme for `resources`:
+      - `attributes` - (String) The set of resource attributes.
+      - `resource_instance_id` - (String) The resource instance ID of the policy definition.
+      - `region` - (String) The region of the policy definition.
+      - `resource_type` - (String) The resource type of the policy definition.
+      - `resource` - (String) The resource of the policy definition.
+      - `resource_group_id` - (String) The ID of the resource group.
+      - `service` - (String)  Service name of the policy definition.
+- `number_of_invited_users` - (String) Number of users invited to a particular account.
 
 ## Import
-
-Import functionality not supported for this resource.
+The import functionality is not supported for this resource.

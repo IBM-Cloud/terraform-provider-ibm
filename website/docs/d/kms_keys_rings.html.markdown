@@ -6,30 +6,30 @@ description: |-
   Manages key rings for IBM hs-crypto or key-protect.
 ---
 
-# ibm\_kms_key_rings
+# ibm_kms_key_rings
 
-Retreives a list of key rings from the hs-crypto or key-protect instance. Import the details of existing keyrings of hs-crypto and kms instance as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Retrieve a list of key rings from the hs-crypto or key protect instance. For more information, about retrieving key and key rings, see [Retrieving a key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-retrieve-key).
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_kms_key_rings" "test" {
   instance_id = "guid-of-keyprotect-or hs-crypto-instance"
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source.
 
-The following arguments are supported:
+- `endpoint_type` - (Optional, String) The type of the public endpoint, or private endpoint to be used for creating keys.
+- `instance_id` - (Required, String) The key protect instance GUID.
 
-* `instance_id` - (Required, string) The keyprotect instance guid.
-* `endpoint_type` - (Optional, string) The type of the endpoint (public or private) to be used for fetching keys.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attribute Reference
+- `key_rings` - (List of objects) A list of all key rings in the hs-crypto or key protect instance.
 
-In addition to all arguments above, the following attributes are exported:
-
-* `key_rings` - List of all Key Rings in the IBM hs-crypto or Key-protect instance.
-  * `id` - The unique identifier for the key ring
-  * `creation_date` - The date the key ring was created. The date format follows RFC 3339.
-  * `created_by` - The unique identifier for the resource that created the key ring.
+   Nested scheme for `key_rings`:
+   - `created_by` - (String) The unique identifier for the resource that created the key ring.
+   - `creation_date` - (Timestamp) The date the key ring created. The date format follows `RFC 3339` format.
+   - `id` - (String) The unique identifier of the key ring.

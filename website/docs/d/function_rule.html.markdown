@@ -3,38 +3,38 @@ subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_rule"
 description: |-
-  Get information about an IBM Cloud Functions Rule.
+  Get information about an IBM Cloud Functions rule.
 ---
 
-# ibm\_function_rule
+# ibm_function_rule
 
-Import the details of an existing [IBM Cloud Functions rule](https://cloud.ibm.com/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers) as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve the information about an existing [IBM Cloud Functions rule](https://cloud.ibm.com/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers) as a read only data source.
 
-## Example Usage
 
-```hcl
+## Example usage
+The following example retrieves information about the `myrule` rule. 
+
+```terraform
 data "ibm_function_rule" "rule" {
 	name      = "rule-name"
 	namespace = "function-namespace-name"
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument reference that you can specify for your data source. 
 
-The following arguments are supported:
+- `name` - (Required, String) The name of the rule.
+- `namespace` - (Required, String) The name of the function namespace.
 
-* `name` - (Required, string) The name of the rule.
-* `namespace` -  The name of the function namespace.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The ID of the rule.
-* `namespace` -  The name of the function namespace.
-* `publish` - Trigger visibility.
-* `version` - Semantic version of the trigger.
-* `status` - The status of the rule.
-* `trigger_name` - The name of the trigger.
-* `action_name` - The name of the action.
-* `rule_id` - rule ID.
+- `action_name` - (String) The name of the action that the rule belongs to.
+- `id` - (String) The ID of the rule.
+- `namespace` - (String) The name of the function namespace.
+- `publish`- (Bool) Rule visibility.
+- `rule_id` - (String) The rule ID.
+- `status` - (String) The status of the rule.
+- `trigger_name` - (String) The name of the trigger that the rule belongs to.
+- `version` - (String) Semantic version of the rule.

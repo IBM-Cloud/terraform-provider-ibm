@@ -30,6 +30,92 @@ func dataSourceIbmIsDedicatedHostProfile() *schema.Resource {
 				Computed:    true,
 				Description: "The product class this dedicated host profile belongs to.",
 			},
+			"disks": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Collection of the dedicated host profile's disks.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"interface_type": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The interface of the disk for a dedicated host with this profileThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.",
+									},
+								},
+							},
+						},
+						"quantity": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The number of disks of this type for a dedicated host with this profile.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The value for this profile field.",
+									},
+								},
+							},
+						},
+						"size": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The size of the disk in GB (gigabytes).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The size of the disk in GB (gigabytes).",
+									},
+								},
+							},
+						},
+						"supported_instance_interface_types": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The instance disk interfaces supported for a dedicated host with this profile.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"family": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -242,6 +328,14 @@ func dataSourceIbmIsDedicatedHostProfileRead(context context.Context, d *schema.
 	if err = d.Set("class", dedicatedHostProfile.Class); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting class: %s", err))
 	}
+
+	if dedicatedHostProfile.Disks != nil {
+		err = d.Set("disks", dataSourceDedicatedHostProfileFlattenDisks(dedicatedHostProfile.Disks))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting disks %s", err))
+		}
+	}
+
 	if err = d.Set("family", dedicatedHostProfile.Family); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting family: %s", err))
 	}
@@ -441,4 +535,95 @@ func dataSourceDedicatedHostProfileVcpuCountToMap(vcpuCountItem vpcv1.DedicatedH
 	}
 
 	return vcpuCountMap
+}
+
+func dataSourceDedicatedHostProfileFlattenDisks(result []vpcv1.DedicatedHostProfileDisk) (disks []map[string]interface{}) {
+	for _, disksItem := range result {
+		disks = append(disks, dataSourceDedicatedHostProfileDisksToMap(disksItem))
+	}
+
+	return disks
+}
+
+func dataSourceDedicatedHostProfileDisksToMap(disksItem vpcv1.DedicatedHostProfileDisk) (disksMap map[string]interface{}) {
+	disksMap = map[string]interface{}{}
+
+	if disksItem.InterfaceType != nil {
+		interfaceTypeList := []map[string]interface{}{}
+		interfaceTypeMap := dataSourceDedicatedHostProfileDisksInterfaceTypeToMap(*disksItem.InterfaceType)
+		interfaceTypeList = append(interfaceTypeList, interfaceTypeMap)
+		disksMap["interface_type"] = interfaceTypeList
+	}
+	if disksItem.Quantity != nil {
+		quantityList := []map[string]interface{}{}
+		quantityMap := dataSourceDedicatedHostProfileDisksQuantityToMap(*disksItem.Quantity)
+		quantityList = append(quantityList, quantityMap)
+		disksMap["quantity"] = quantityList
+	}
+	if disksItem.Size != nil {
+		sizeList := []map[string]interface{}{}
+		sizeMap := dataSourceDedicatedHostProfileDisksSizeToMap(*disksItem.Size)
+		sizeList = append(sizeList, sizeMap)
+		disksMap["size"] = sizeList
+	}
+	if disksItem.SupportedInstanceInterfaceTypes != nil {
+		supportedInstanceInterfaceTypesList := []map[string]interface{}{}
+		supportedInstanceInterfaceTypesMap := dataSourceDedicatedHostProfileDisksSupportedInstanceInterfaceTypesToMap(*disksItem.SupportedInstanceInterfaceTypes)
+		supportedInstanceInterfaceTypesList = append(supportedInstanceInterfaceTypesList, supportedInstanceInterfaceTypesMap)
+		disksMap["supported_instance_interface_types"] = supportedInstanceInterfaceTypesList
+	}
+
+	return disksMap
+}
+
+func dataSourceDedicatedHostProfileDisksInterfaceTypeToMap(interfaceTypeItem vpcv1.DedicatedHostProfileDiskInterface) (interfaceTypeMap map[string]interface{}) {
+	interfaceTypeMap = map[string]interface{}{}
+
+	if interfaceTypeItem.Type != nil {
+		interfaceTypeMap["type"] = interfaceTypeItem.Type
+	}
+	if interfaceTypeItem.Value != nil {
+		interfaceTypeMap["value"] = interfaceTypeItem.Value
+	}
+
+	return interfaceTypeMap
+}
+
+func dataSourceDedicatedHostProfileDisksQuantityToMap(quantityItem vpcv1.DedicatedHostProfileDiskQuantity) (quantityMap map[string]interface{}) {
+	quantityMap = map[string]interface{}{}
+
+	if quantityItem.Type != nil {
+		quantityMap["type"] = quantityItem.Type
+	}
+	if quantityItem.Value != nil {
+		quantityMap["value"] = quantityItem.Value
+	}
+
+	return quantityMap
+}
+
+func dataSourceDedicatedHostProfileDisksSizeToMap(sizeItem vpcv1.DedicatedHostProfileDiskSize) (sizeMap map[string]interface{}) {
+	sizeMap = map[string]interface{}{}
+
+	if sizeItem.Type != nil {
+		sizeMap["type"] = sizeItem.Type
+	}
+	if sizeItem.Value != nil {
+		sizeMap["value"] = sizeItem.Value
+	}
+
+	return sizeMap
+}
+
+func dataSourceDedicatedHostProfileDisksSupportedInstanceInterfaceTypesToMap(supportedInstanceInterfaceTypesItem vpcv1.DedicatedHostProfileDiskSupportedInterfaces) (supportedInstanceInterfaceTypesMap map[string]interface{}) {
+	supportedInstanceInterfaceTypesMap = map[string]interface{}{}
+
+	if supportedInstanceInterfaceTypesItem.Type != nil {
+		supportedInstanceInterfaceTypesMap["type"] = supportedInstanceInterfaceTypesItem.Type
+	}
+	if supportedInstanceInterfaceTypesItem.Value != nil {
+		supportedInstanceInterfaceTypesMap["value"] = supportedInstanceInterfaceTypesItem.Value
+	}
+
+	return supportedInstanceInterfaceTypesMap
 }

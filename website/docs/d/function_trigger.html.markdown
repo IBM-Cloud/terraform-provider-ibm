@@ -3,38 +3,38 @@ subcategory: "Functions"
 layout: "ibm"
 page_title: "IBM : function_trigger"
 description: |-
-  Get information on an IBM Cloud Functions Trigger.
+  Get information on an IBM Cloud Functions trigger.
 ---
 
-# ibm\_function_trigger
 
-Import the details of an existing [IBM Cloud Functions trigger](https://cloud.ibm.com/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers) as a read-only data source. The fields of the data source can then be referenced by other resources within the same configuration using interpolation syntax.
+# ibm_function_trigger
+
+Retrieve information about an existing [IBM Cloud Functions trigger](https://cloud.ibm.com/docs/openwhisk/openwhisk_triggers_rules.html#openwhisk_triggers) as a read-only data source.
 
 
-## Example Usage
+## Example usage
+The following example retrieves information about the `mytrigger` trigger. 
 
-```hcl
+```terraform
 data "ibm_function_trigger" "trigger" {
 	name      = "trigger-name"		  
 	namespace = "function-namespace-name"
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument reference that you can specify for your data source. 
 
-The following arguments are supported:
+- `name` - (Required, String) The name of the trigger.
+- `namespace` - (Required, String) The name of the function namespace.
 
-* `name` - (Required, string) The name of the trigger.
-* `namespace` - (Required, string) The name of the function namespace.
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `id` - The ID of the trigger.
-* `namespace` - The name of the function namespace.
-* `publish` - Trigger visibility.
-* `version` - Semantic version of the trigger.
-* `annotations` - All annotations to describe the trigger, including those set by you or by IBM Cloud Functions.
-* `parameters` - All parameters passed to the trigger, including those set by you or by IBM Cloud Functions.
-* `trigger_id` - trigger ID.
+- `annotations` - (String) All annotations to describe the trigger, including those set by you or by IBM Cloud Functions.
+- `id` - (String) The ID of the trigger.
+- `namespace` - (String) The name of the function namespace.
+- `parameters` (String) All parameters passed to the trigger, including those set by you or by IBM Cloud Functions.
+- `publish`- (Bool) Trigger visibility.
+- `trigger_id` - (String) The trigger ID.
+- `version` - (String) Semantic version of the trigger.

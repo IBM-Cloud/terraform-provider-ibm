@@ -5,26 +5,17 @@ package ibm
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
+	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
 )
 
 func TestAccFunctionSatelliteHost_Basic(t *testing.T) {
 	name := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
-	managed_from := "wdc04"
-	zones := []string{"us-east-1", "us-east-2", "us-east-3"}
-	resource_group := "default"
-	region := "us-east"
 	resource_prefix := "tf-satellite"
-	host_provider := "ibm"
-	publicKey := strings.TrimSpace(`
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
-`)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -33,10 +24,10 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		Steps: []resource.TestStep{
 
 			resource.TestStep{
-				Config: testAccCheckSatelliteHostCreate(name, managed_from, resource_group, resource_prefix, region, publicKey, host_provider, zones),
+				Config: testAccCheckSatelliteHostCreate(name, resource_prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckSatelliteHostExists("ibm_satellite_host.assign_host.0"),
-					resource.TestCheckResourceAttr("ibm_satellite_host.assign_host.0", "host_provider", host_provider),
+					resource.TestCheckResourceAttr("ibm_satellite_host.assign_host.0", "host_provider", "ibm"),
 				),
 			},
 		},
@@ -117,7 +108,7 @@ func testAccCheckSatelliteHostDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSatelliteHostCreate(name, managed_from, resource_group, resource_prefix, region, publicKey, host_provider string, zones []string) string {
+func testAccCheckSatelliteHostCreate(name, resource_prefix string) string {
 	return fmt.Sprintf(`
 
 	provider "ibm" {
@@ -132,7 +123,7 @@ func testAccCheckSatelliteHostCreate(name, managed_from, resource_group, resourc
 
 	resource "ibm_satellite_location" "location" {
 		location      = "%s"
-		managed_from  = "%s"
+		managed_from  = "wdc04"
 		zones		  = var.location_zones
 	}
 
@@ -143,7 +134,7 @@ func testAccCheckSatelliteHostCreate(name, managed_from, resource_group, resourc
 	}
 
 	data "ibm_resource_group" "resource_group" {
-		name = "%s"
+		is_default = true
 	}
 	  
 	resource "ibm_is_vpc" "satellite_vpc" {
@@ -156,12 +147,12 @@ func testAccCheckSatelliteHostCreate(name, managed_from, resource_group, resourc
 		name                     = "%s-subnet-${count.index}"
 		vpc                      = ibm_is_vpc.satellite_vpc.id
 		total_ipv4_address_count = 256
-		zone                     = "%s-${count.index + 1}"
+		zone                     = "us-east-${count.index + 1}"
 	  }
 	  
-	  resource "ibm_is_ssh_key" "satellite_ssh" {	  
+	  resource "ibm_is_ssh_key" "satellite_ssh" {  
 		name        = "%s-ibm-ssh"
-		public_key  = "%s"
+		public_key  = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
 	  }
 	  
 	  resource "ibm_is_instance" "satellite_instance" {
@@ -169,7 +160,7 @@ func testAccCheckSatelliteHostCreate(name, managed_from, resource_group, resourc
 
 		name           = "%s-instance-${count.index}"
 		vpc            = ibm_is_vpc.satellite_vpc.id
-		zone           = "%s-${count.index + 1}"
+		zone           = "us-east-${count.index + 1}"
 		image          = "r014-931515d2-fcc3-11e9-896d-3baa2797200f"
 		profile        = "mx2-8x64"
 		keys           = [ibm_is_ssh_key.satellite_ssh.id]
@@ -195,8 +186,8 @@ func testAccCheckSatelliteHostCreate(name, managed_from, resource_group, resourc
 		host_id       = element(ibm_is_instance.satellite_instance[*].name, count.index)
 		labels        = ["env:prod"]
 		zone          = element(var.location_zones, count.index)
-		host_provider = "%s"
+		host_provider = "ibm"
 	  }
 
-`, name, managed_from, resource_group, resource_prefix, resource_prefix, region, resource_prefix, publicKey, resource_prefix, region, resource_prefix, host_provider)
+`, name, resource_prefix, resource_prefix, resource_prefix, resource_prefix, resource_prefix)
 }

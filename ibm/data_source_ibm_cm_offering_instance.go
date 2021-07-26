@@ -34,6 +34,11 @@ func dataSourceIBMCmOfferingInstance() *schema.Resource {
 				Computed:    true,
 				Description: "platform CRN for this instance.",
 			},
+			"_rev": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Cloudant Revision for this instance",
+			},
 			"label": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -82,6 +87,26 @@ func dataSourceIBMCmOfferingInstance() *schema.Resource {
 				Computed:    true,
 				Description: "designate to install into all namespaces.",
 			},
+			"schematics_workspace_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "id of the schematics workspace, for offerings installed through schematics",
+			},
+			"resource_group_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "id of the resource group",
+			},
+			"install_plan": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "install plan for the subscription of the operator- can be either Automatic or Manual. Required for operator bundles",
+			},
+			"channel": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "channel to target for the operator subscription. Required for operator bundles",
+			},
 		},
 	}
 }
@@ -110,6 +135,9 @@ func dataSourceIBMCmOfferingInstanceRead(context context.Context, d *schema.Reso
 	if err = d.Set("crn", offeringInstance.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
+	if err = d.Set("_rev", offeringInstance.Rev); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting _rev: %s", err))
+	}
 	if err = d.Set("label", offeringInstance.Label); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting label: %s", err))
 	}
@@ -136,6 +164,18 @@ func dataSourceIBMCmOfferingInstanceRead(context context.Context, d *schema.Reso
 	}
 	if err = d.Set("cluster_all_namespaces", offeringInstance.ClusterAllNamespaces); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting cluster_all_namespaces: %s", err))
+	}
+	if err = d.Set("schematics_workspace_id", offeringInstance.SchematicsWorkspaceID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting schematics_workspace_id: %s", err))
+	}
+	if err = d.Set("resource_group_id", offeringInstance.ResourceGroupID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
+	}
+	if err = d.Set("install_plan", offeringInstance.InstallPlan); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting install_plan: %s", err))
+	}
+	if err = d.Set("channel", offeringInstance.Channel); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting channel: %s", err))
 	}
 
 	return nil

@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
 )
 
 func TestAccSatelliteLocation_Basic(t *testing.T) {
@@ -133,6 +133,7 @@ func testAccCheckSatelliteLocationCreate(name, managed_from string) string {
 		description = "test"
 		zones = ["us-east-1", "us-east-2", "us-east-3"]
 		resource_group_id = data.ibm_resource_group.res_group.id
+		tags = ["env:dev"]
 	}
 	  
 `, name, managed_from)

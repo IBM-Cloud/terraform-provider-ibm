@@ -4,16 +4,16 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_dns_record"
 description: |-
-  Provides a IBM CIS DNS Record resource.
+  Provides a IBM CIS DNS record resource.
 ---
 
 # ibm_cis_dns_record
 
-Provides a IBM CIS DNS Record resource. This resource is associated with an IBM Cloud Internet Services instance and a CIS Domain resource.
+Create, update, or delete an IBM Cloud Internet Services DNS record resource. This resource is associated with an IBM Cloud Internet Services instance and a CIS domain resource. For more information, about CIS DNS record, see [setting up your Domain Name System for CIS](https://cloud.ibm.com/docs/cis?topic=cis-set-up-your-dns-for-cis).
 
-## Example Usage 1 : Create A Record
+## Example usage 1 : Create A Record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_a_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -28,9 +28,9 @@ output "a_record_output" {
 }
 ```
 
-## Example Usage 2 : Create AAAA record
+## Example usage 2 : Create AAAA record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_aaaa_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -45,9 +45,9 @@ output "aaaa_record_output" {
 }
 ```
 
-## Example Usage 3 : Create CNAME record
+## Example usage 3 : Create CNAME record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_cname_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -62,9 +62,9 @@ output "cname_record_output" {
 }
 ```
 
-## Example Usage 4 : Create MX record
+## Example usage 4 : Create MX record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_mx_record" {
   cis_id   = var.cis_crn
   domain_id  = var.zone_id
@@ -80,9 +80,9 @@ output "mx_record_output" {
 }
 ```
 
-## Example Usage 5 : Create LOC record
+## Example usage 5 : Create LOC record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_loc_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -110,9 +110,9 @@ output "loc_record_output" {
 }
 ```
 
-## Example Usage 6 : Create CAA record
+## Example usage 6 : Create CAA record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_caa_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -130,9 +130,9 @@ output "caa_record_output" {
 }
 ```
 
-## Example Usage 7 : Create SRV record
+## Example usage 7 : Create SRV record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_srv_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -154,9 +154,9 @@ output "srv_record_output" {
 }
 ```
 
-## Example Usage 8 : Create SPF record
+## Example usage 8 : Create SPF record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_spf_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -170,9 +170,9 @@ output "spf_record_output" {
 }
 ```
 
-## Example Usage 9 : Create TXT record
+## Example usage 9 : Create TXT record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_txt_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -186,9 +186,9 @@ output "txt_record_output" {
 }
 ```
 
-## Example Usage 10 : Create NS record
+## Example usage 10 : Create NS record
 
-````hcl
+````terraform
 resource "ibm_cis_dns_record" "test_dns_ns_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -205,9 +205,9 @@ output "caa_record_output" {
   value = ibm_cis_dns_record.test_dns_caa_record
 }
 
-## Example Usage 7 : Create SRV record
+## Example usage 7 : Create SRV record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_srv_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -229,9 +229,9 @@ output "srv_record_output" {
 }
 ````
 
-## Example Usage 8 : Create SPF record
+## Example usage 8 : Create SPF record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_spf_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -245,9 +245,9 @@ output "spf_record_output" {
 }
 ```
 
-## Example Usage 9 : Create TXT record
+## Example usage 9 : Create TXT record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_txt_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -261,9 +261,9 @@ output "txt_record_output" {
 }
 ```
 
-## Example Usage 10 : Create NS record
+## Example usage 10 : Create NS record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_ns_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -277,9 +277,9 @@ output "ns_record_output" {
 }
 ```
 
-## Example Usage 11 : Create PTR record
+## Example usage 11 : Create PTR record
 
-```hcl
+```terraform
 resource "ibm_cis_dns_record" "test_dns_ptr_record" {
   cis_id  = var.cis_crn
   domain_id = var.zone_id
@@ -293,64 +293,70 @@ output "ns_record_output" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your resource. 
 
-The following arguments are supported:
 
-- `cis_id` - (Required,string) The ID of the CIS service instance
-- `domain_id` - (Required,string) The ID of the domain to add the DNS record to. IT can either be a combination of <domain_id>:<cis_id> or <domain_id>
-- `type` - (Required, string) The type of the DNS record to be created. Supported Record types are: A, AAAA, CNAME, LOC, TXT, MX, SRV, SPF, NS, CAA, PTR.
-- `name` - (Required, string) The name of a DNS record.
-- `content` - (Optional,string) The (string) value of the record, e.g. "192.168.127.127". Either this or `data` must be specified
-- `ttl`-(Optional,int) TTL of the record. It should be automatic(i.e ttl=1) if the record is proxied. Terraform provider takes ttl in unit seconds. Therefore, it starts with value 120.
-- `priority` - (Optional, int) The priority of the record. Mandatory field for SRV record type.
-- `data` - (Optional,map) Map of attributes that constitute the record value. Only for LOC, CAA and SRV record types. Either this or `content` must be specified
-  - `weight` - (Optional, int) The weight of distributing queries among multiple target servers. Mandatory field for SRV record
-  - `port` - (Optional, int) The port number of the target server. Mandatory field for SRV record.
-  - `service` - (Optional, int) The symbolic name of the desired service, start with an underscore (\_). Mandatory field for SRV record.
-  - `protocol` - (Optional, int) The symbolic name of the desired protocol. Madatory field for SRV record.
-  - `altitude` - (Optional, int) The LOC altitude. Mondatory field for LOC record.
-  - `size` - (Optional, int) The LOC altitude size. Mondatory field for LOC record.
-  - `lat_degrees` - (Optional, int) The LOC latitude degrees. Mondatory field for LOC record.
-  - `lat_direction` - (Optional, string) The LOC latitude direction ("N", "E", "S", "W"). Mondatory field for LOC record.
-  - `lat_minutes` - (Optional, int) The LOC latitude minutes. Mondatory field for LOC record.
-  - `lat_seconds` - (Optional, int) The LOC latitude seconds. Mondatory field for LOC record.
-  - `long_degrees` - (Optional, int) The LOC Longitude degrees. Mondatory field for LOC record.
-  - `long_direction` - (Optional, string) The LOC longitude direction ("N", "E", "S", "W"). Mondatory field for LOC record.
-  - `long_minutes` - (Optional, int) The LOC longitude minutes. Mondatory field for LOC record.
-  - `long_seconds` - (Optional, int) The LOC longitude seconds. Mondatory field for LOC record.
-  - `precision_horz` - (Optional, int) The LOC horizontal precision. Mondatory field for LOC record.
-  - `precision_vert` - (Optional, int) The LOC vertical precision. Mondatory field for LOC record.
-  - `priority` - (Optional,int) The priority of the record
-- `proxied` - (Optional,bool) Whether the record gets CIS's origin protection; defaults to `false`.
+- `content` - (Optional, String) The value of the record. For example, `192.168.127.127`. You need to provide this or data to be specified.
+- `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance.
+- `domain_id` - (Required, String) The ID of the domain to add a DNS record. It can be a combination of `<domain_id>:<cis_id> or <domain_id>`.
+- `data` (Optional, Map) A map of attributes that constitute the record value. This value is required for `LOC`, `CAA` and `SRV` record types.
 
-## Attributes Reference
+  Nested scheme for `data`:
+  - `altitude` - (Optional, Integer) The `LOC` altitude. Mandatory field for `LOC` record type.
+  - `lat_degrees` - (Optional, Integer) The `LOC` latitude degrees. Mandatory field for `LOC` record type.
+  - `lat_direction` - (Optional, String) The `LOC` latitude direction `N`, `E`, `S`, `W`. Mandatory field for `LOC` record type.
+  - `lat_minutes` - (Optional, Integer) The `LOC` latitude minutes. Mandatory field for `LOC` record type.
+  - `lat_seconds` - (Optional, Integer) The `LOC` latitude seconds. Mandatory field for `LOC` record type.
+  - `long_degrees` - (Optional, Integer) The `LOC` longitude degrees. Mandatory field for `LOC` record type.
+  - `long_direction` - (Optional, String) The `LOC` longitude direction `N`, `E`, `S`, `W`. Mandatory field for `LOC` record type.
+  - `long_minutes` - (Optional, Integer) The `LOC` longitude minutes. Mandatory field for `LOC` record type.
+  - `long_seconds` - (Optional, Integer) The `LOC` longitude seconds. Mandatory field for `LOC` record type.
+  - `port` - (Optional, Integer) The port number of the target server. Mandatory field for `SRV` record type.
+  - `protocol` - (Optional, Integer) The symbolic name of the required protocol. Mandatory field for `SRV` record type.
+  - `precision_horz` - (Optional, Integer) The `LOC` horizontal precision. Mandatory field for `LOC` record type.
+  - `precision_vert` - (Optional, Integer) The `LOC` vertical precision. Mandatory field for `LOC` record type.
+  - `priority` - (Optional, Integer) The priority of the record.
+  - `service` - (Optional, Integer) The symbolic name of the required service, start with an underscore `_`. Mandatory field for `SRV` record type.
+  - `size` - (Optional, Integer) The `LOC` altitude size. Mandatory field for `LOC` record type.
+  - `weight` - (Optional, Integer) The weight of distributing queries among multiple target servers. Mandatory field for `SRV` record type.
+- `name` - (Required, String) The name of the DNS record.
+- `proxied`- (Optional, Bool) Indicates the record gets CIS's origin protection. Default is **false**.
+- `priority` - (Optional, String) The priority of the record. Mandatory field for `SRV` record type.
+- `type` - (Required, String) The type of the DNS record to be created. Allowed values are `A`, `AAAA`, `CNAME`, `NS`, `MX`, `TXT`, `LOC`, `SRV`, `SPF`, or `CAA`.
+- `ttl` - (Optional, Integer) The time to live `(TTL)` record. The automatic is `ttl=1`. if the record is proxied. Terraform provider takes `TTL` in unit seconds. Therefore, it starts with value 120.
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - The identifier which consists of record id, zone id and crn with `:` seperator.
-- `record_id` - The DNS record identifier.
-- `name` - The name of a DNS record.
-- `proxiable` - Whether the record has option to set proxied.
-- `proxied` - Whether the record gets CIS's origin protection; defaults to `false`.
-- `created_on` - The DNS record created date.
-- `modified_on`- The DNS record modified date.
-- `zone_name` - The DNS zone name.
+- `created_on` - (String) The created date of the DNS record.
+- `id` - (String) The ID of the record, zone and CRN with `:` separator.
+- `modified_on` - (String) The modified date of the DNS record.
+- `name` - (String) The name of the DNS record.
+- `proxiable`- (Bool) Indicates if the record can be proxied.
+- `proxied`- (Bool) Indicates the record gets CIS's origin protection. Default is **false**.
+- `record_id` - (String) The DNS record ID.
+- `zone_name` - (String) The DNS zone name.
 
 ## Import
+The `ibm_cis_dns_record` resource can be imported by using the ID. The ID is formed from the DNS record ID, the domain ID, and the CRN (Cloud Resource Name). All values are  Concatenated  by using a `:` character. 
 
-The `ibm_cis_dns_record` resource can be imported using the `id`. The ID is formed from the `Dns Record ID`, the `Domain ID` of the domain and the `CRN` (Cloud Resource Name) concatentated using a `:` character.
-
-The Domain ID and CRN will be located on the **Overview** page of the Internet Services instance under the **Domain** heading of the UI, or via using the `ibmcloud cis` CLI commands.
+The domain ID and CRN are located on the **Overview** page of the internet services instance in the **Domain** heading of the console, or via using the `ibmcloud cis` command line commands.
 
 - **Domain ID** is a 32 digit character string of the form: `9caf68812ae9b3f0377fdf986751a78f`
 
 - **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`
 
-- **Dns Record ID** is a 32 digit character string of the form: `489d96f0da6ed76251b475971b097205c`. The id of an existing DNS record is not avaiable via the UI. It can be retrieved programatically via the CIS API or via the CLI using the CIS command to list the defined DNS recordss: `ibmcloud cis dns-records <domain_id>`
+- **DNS Record ID** is a 32 digit character string of the form: `489d96f0da6ed76251b475971b097205c`. The ID of an existing DNS record is not available via the console. You can retrieve programmatically via the CIS API or via the command line using the CIS command `ibmcloud cis dns-records <domain_id>` to list the defined DNS records.
+
+**Syntax**
 
 ```
 $ terraform import ibm_cis_dns_record.myorg <dns_record_id>:<domain-id>:<crn>
+```
 
+**Example**
+
+```
 $ terraform import ibm_cis_dns_record.myorg  48996f0da6ed76251b475971b097205c:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
 ```

@@ -4,7 +4,9 @@
 package ibm
 
 import (
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"strings"
 )
 
 func datasourceIBMIAMRoleAction() *schema.Resource {
@@ -42,28 +44,48 @@ func datasourceIBMIAMRoleAction() *schema.Resource {
 				Description: "writer action ids",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
+			"actions": {
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "List of actions for different services roles",
+			},
 		},
 	}
 
 }
 
 func datasourceIBMIAMRoleActionRead(d *schema.ResourceData, meta interface{}) error {
-	iampapv2Client, err := meta.(ClientSession).IAMPAPAPIV2()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return err
 	}
 
 	serviceName := d.Get("service").(string)
 	d.SetId(serviceName)
-	serviceRoles, err := iampapv2Client.IAMRoles().ListServiceRoles(serviceName)
+
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		ServiceName: &serviceName,
+	}
+
+	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
 	if err != nil {
 		return err
 	}
+	serviceRoles := roleList.ServiceRoles
 
 	d.Set("reader", flattenActionbyDisplayName("Reader", serviceRoles))
 	d.Set("manager", flattenActionbyDisplayName("Manager", serviceRoles))
 	d.Set("reader_plus", flattenActionbyDisplayName("ReaderPlus", serviceRoles))
 	d.Set("writer", flattenActionbyDisplayName("Writer", serviceRoles))
+	d.Set("actions", flattenRoleActions(serviceRoles))
 
 	return nil
+}
+
+func flattenRoleActions(object []iampolicymanagementv1.Role) map[string]string {
+	actions := make(map[string]string)
+	for _, item := range object {
+		actions[*item.DisplayName] = strings.Join(item.Actions, ",")
+	}
+	return actions
 }

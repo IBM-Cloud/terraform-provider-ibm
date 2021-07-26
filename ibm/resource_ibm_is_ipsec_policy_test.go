@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -53,45 +52,28 @@ func TestAccIBMISIPSecPolicy_basic(t *testing.T) {
 }
 
 func checkPolicyDestroy(s *terraform.State) error {
-	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
 
-	if userDetails.generation == 1 {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_ipsec_policy" {
-				continue
-			}
-
-			getipsecpoptions := &vpcclassicv1.GetIpsecPolicyOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetIpsecPolicy(getipsecpoptions)
-			if err == nil {
-				return fmt.Errorf("policy still exists: %s", rs.Primary.ID)
-			}
+	sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_ipsec_policy" {
+			continue
 		}
-	} else {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_ipsec_policy" {
-				continue
-			}
 
-			getipsecpoptions := &vpcv1.GetIpsecPolicyOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetIpsecPolicy(getipsecpoptions)
-			if err == nil {
-				return fmt.Errorf("policy still exists: %s", rs.Primary.ID)
-			}
+		getipsecpoptions := &vpcv1.GetIpsecPolicyOptions{
+			ID: &rs.Primary.ID,
+		}
+		_, _, err := sess.GetIpsecPolicy(getipsecpoptions)
+		if err == nil {
+			return fmt.Errorf("policy still exists: %s", rs.Primary.ID)
 		}
 	}
+
 	return nil
 }
 
 func testAccCheckIBMISIpSecPolicyExists(n, policy string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		fmt.Println("siv ", s.RootModule().Resources)
+
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
@@ -102,29 +84,16 @@ func testAccCheckIBMISIpSecPolicyExists(n, policy string) resource.TestCheckFunc
 			return errors.New("No Record ID is set")
 		}
 
-		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-		if userDetails.generation == 1 {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getipsecpoptions := &vpcclassicv1.GetIpsecPolicyOptions{
-				ID: &rs.Primary.ID,
-			}
-			ipSecPolicy, _, err := sess.GetIpsecPolicy(getipsecpoptions)
-			if err != nil {
-				return err
-			}
-			policy = *ipSecPolicy.ID
-		} else {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getipsecpoptions := &vpcv1.GetIpsecPolicyOptions{
-				ID: &rs.Primary.ID,
-			}
-			ipSecPolicy, _, err := sess.GetIpsecPolicy(getipsecpoptions)
-			if err != nil {
-				return err
-			}
-			policy = *ipSecPolicy.ID
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		getipsecpoptions := &vpcv1.GetIpsecPolicyOptions{
+			ID: &rs.Primary.ID,
 		}
+		ipSecPolicy, _, err := sess.GetIpsecPolicy(getipsecpoptions)
+		if err != nil {
+			return err
+		}
+		policy = *ipSecPolicy.ID
+
 		return nil
 	}
 }

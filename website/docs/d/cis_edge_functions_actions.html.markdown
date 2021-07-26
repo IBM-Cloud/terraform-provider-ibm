@@ -7,35 +7,33 @@ description: |-
 ---
 
 # ibm_cis_edge_functions_actions
+Retrieve information about an IBM Cloud Internet Services edge function actions resource. For more information, about CIS edge functions action, see [working with Edge Functions actions](https://cloud.ibm.com/docs/cis?topic=cis-edge-functions-actions).
 
-Imports a read only copy of an existing Internet Services Edge Function Actions resource.
+## Example usage
 
-## Example Usage
-
-```hcl
+```terraform
 data "ibm_cis_edge_functions_actions" "test_actions" {
     cis_id    = data.ibm_cis.cis.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
 }
 ```
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-## Argument Reference
+- `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance.
+- `domain_id` - (Required, String) The ID of the domain to add an edge functions action.
 
-The following arguments are supported:
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `cis_id` - (Required,string) The ID of the CIS service instance
-- `domain_id` - (Required,string) The ID of the domain to add the edge functions action.
+- `created_on` - (String) An action created date.
+- `etag` - (String) An action E-Tag.
+- `handler` - (String) An action handler methods.
+- `modified_on` - (String) An action modified date.
+- `routes` - (String) An action route detail.
 
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-- `etag` - The Action E-Tag.
-- `handler` - The Action handler methods.
-- `created_on` - The Action created date.
-- `modified_on` - The Action modified date.
-- `routes` - The Action route detail.
-  - `pattern_url` - The Route pattern. It is a domain name which the action will be performed.
-  - `trigger_id` - The Trigger ID of action trigger.
-  - `action_name` - The Action Script for execution.
-  - `request_limit_fail_open` - The Action request limit fail open
+  Nested scheme for `routes`:
+	- `action_name` - (String) An action route detail.
+	- `pattern_url` - (String) The Route pattern. It is a domain name in which the action is performed.
+	- `request_limit_fail_open` - (String) An action request limit fail open.
+	- `trigger_id` - (String) The Trigger ID of an action.

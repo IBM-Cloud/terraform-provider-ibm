@@ -35,6 +35,16 @@ resource "ibm_is_instance_group" "instance_group" {
   subnets           = [ibm_is_subnet.subnet2.id]
 }
 
+data "ibm_is_instance_group_memberships" "is_instance_group_memberships" {
+	instance_group = ibm_is_instance_group.instance_group.id
+}
+
+resource "ibm_is_instance_group_membership" "is_instance_group_membership" {
+	instance_group = ibm_is_instance_group.instance_group.id
+	instance_group_membership = data.ibm_is_instance_group_memberships.is_instance_group_memberships.memberships.0.instance_group_membership
+	name = var.instance_group_membership
+}
+
 resource "ibm_is_instance_group_manager" "instance_group_manager" {
   name                 = var.instance_group_manager_name
   aggregation_window   = var.aggregation_window
@@ -46,6 +56,13 @@ resource "ibm_is_instance_group_manager" "instance_group_manager" {
   min_membership_count = var.min_membership_count
 }
 
+resource "ibm_is_instance_group_manager" "instance_group_manager_scheduled" {
+  name           = var.instance_group_manager_name_scheduled
+  instance_group = ibm_is_instance_group.instance_group.id
+  manager_type   = var.manager_type.scheduled
+  enable_manager = var.enable_manager
+}
+
 resource "ibm_is_instance_group_manager_policy" "cpuPolicy" {
   instance_group         = ibm_is_instance_group.instance_group.id
   instance_group_manager = ibm_is_instance_group_manager.instance_group_manager.manager_id
@@ -53,6 +70,16 @@ resource "ibm_is_instance_group_manager_policy" "cpuPolicy" {
   metric_value           = var.metric_value
   policy_type            = "target"
   name                   = var.policy_name
+}
+
+resource "ibm_is_instance_group_manager_action" "instance_group_manager_action" {
+  name                   = var.instance_group_manager_action_name
+  instance_group         = ibm_is_instance_group.instance_group.id
+  instance_group_manager = ibm_is_instance_group_manager.instance_group_manager_scheduled.manager_id
+  cron_spec              = var.cron_spec
+  target_manager         = ibm_is_instance_group_manager.instance_group_manager.manager_id
+  min_membership_count   = var.max_membership_count
+  max_membership_count   = var.min_membership_count
 }
 
 data "ibm_is_instance_group" "instance_group_data" {
@@ -69,3 +96,15 @@ data "ibm_is_instance_group_manager_policy" "instance_group_manager_policy" {
   instance_group_manager = ibm_is_instance_group_manager_policy.cpuPolicy.instance_group_manager
   name                   = ibm_is_instance_group_manager_policy.cpuPolicy.name
 }
+
+data "ibm_is_instance_group_membership" "is_instance_group_membership" {
+	instance_group = ibm_is_instance_group.instance_group.id
+	name = var.instance_group_membership
+}
+
+data "ibm_is_instance_group_manager_action" "instance_group_manager_action" {
+  instance_group         = ibm_is_instance_group_manager_action.instance_group_manager_action.instance_group
+  instance_group_manager = ibm_is_instance_group_manager_action.instance_group_manager_action.instance_group_manager
+  name                   = ibm_is_instance_group_manager_action.instance_group_manager_action.name
+}
+

@@ -7,12 +7,11 @@ description: |-
 ---
 
 # ibm_cis_waf_groups
+Retrieve information of an existing IBM Cloud Internet Services WAF rule groups. For more information, about WAF refer to [Web Application Firewall concepts](https://cloud.ibm.com/docs/cis?topic=cis-waf-q-and-a).
 
-Import the details of an existing IBM Cloud Internet Service WAF Rule Groups as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+## Example usage
 
-## Example Usage
-
-```hcl
+```terraform
 data "ibm_cis_waf_groups" "waf_groups" {
   cis_id     = data.ibm_cis.cis.id
   domain_id  = data.ibm_cis_domain.cis_domain.id
@@ -20,19 +19,19 @@ data "ibm_cis_waf_groups" "waf_groups" {
 }
 ```
 
-## Argument Reference
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
-- `cis_id` - (Required, string) The resource crn id of the CIS on which zones were created.
-- `domain_id` - (Required, string) The ID of the domain to retrive the load balancers from.
-- `package_id` - (Required, string) The WAF Rule Package ID.
+- `cis_id` - (Required, String) The resource CRN ID of the CIS on which zones were created.
+- `domain_id` - (Required, String) The ID of the domain to retrieve the Load Balancers.
+- `package_id` - (Required, String) The WAF Rule Package ID.
 
-## Attribute Reference
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-In addition to all arguments above, the following attributes are exported:
-
-- `name` - The name of WAF Rule Group.
-- `group_id` - The WAF group ID.
-- `mode` - The `on`/`off` mode setting of WAF rule group.
-- `description` - The WAF rule group description.
-- `rules_count` - No. of rules in WAF Group.
-- `modified_rules_count` - No. of rules modified in WAF Group.
+- `description`  - (String) The WAF rule group description.
+- `group_id` - (String) The WAF group ID.
+- `modified_rules_count` - (String)  Number of rules modified in WAF Group.
+- `mode`  - (String) The `on`, or `off` mode setting of the WAF rule group.
+- `name` - (String) The name of the  WAF rule group.
+- `rules_count` - (String)   Number of rules in WAF Group.
