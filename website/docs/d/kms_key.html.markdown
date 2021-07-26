@@ -6,9 +6,8 @@ description: |-
   Manages an IBM hs-crypto or key-protect key.
 ---
 
-# ibm\_kms_key
-
-Import the details of existing hs-crypto or key-protect keys as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. Retreives a list of keys from the hs-crypto or key-protect instance for the provided key name or an alias name. Configuration of an ibm_kms_key datasource requires that the region parameter is set for the IBM provider in the provider block to be the same as the target key protect instance location/region. If not specified it will default to us-south. A terraform apply will fail if the key protect instance location is set differently.
+# ibm_kms_key
+Retrieves the list of keys from the Hyper Protect Crypto Services (HPCS) and Key Protect services by using the key name or alias. The region parameter in the `provider.tf` file must be set. If region parameter is not specified, `us-south` is used by default. If the region in the `provider.tf` file is different from the Key Protect instance, the instance cannot be retrieved by  Terraform and the  Terraform action fails. For more information, about hs-crypto or key-protect keys, see [getting started tutorial](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial).
 
 ## Example Usage
 
@@ -43,7 +42,7 @@ resource "ibm_cos_bucket" "flex-us-south" {
 
 ## Argument Reference
 
-The following arguments are supported:
+Review the argument references that you can specify for your data source. 
 
 
 - `alias` - (Optional, String) The alias of the key. If you want to retrieve the key by using the key name, use the `key_name` option. You must provide either the `key_name` or `alias`.
@@ -54,9 +53,6 @@ The following arguments are supported:
 - `limit` - (Optional, int) The limit till the keys need to be fetched in the instance.
 
 ## Attribute Reference
-
-The following attributes are exported:
-
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `keys` - (String) Lists the Keys of HPCS or Key-protect instance.
