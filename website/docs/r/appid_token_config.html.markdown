@@ -13,7 +13,7 @@ Create, update, or delete an IBM Cloud AppID Management Services token configura
 ## Example usage
 
 ```terraform
-resource "appid_token_config" "tc" {
+resource "ibm_appid_token_config" "tc" {
   tenant_id = var.tenant_id  
   access_token_expires_in = 7200    
   anonymous_access_enabled = true
