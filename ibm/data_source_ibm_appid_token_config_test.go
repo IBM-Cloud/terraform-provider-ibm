@@ -60,7 +60,7 @@ func TestFlattenTokenClaims(t *testing.T) {
 
 	for _, c := range testcases {
 		actual := flattenTokenClaims(c.claims)
-		assert.Equal(t, actual, c.expected)
+		assert.DeepEqual(t, actual, c.expected)
 	}
 }
 
