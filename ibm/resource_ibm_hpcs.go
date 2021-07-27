@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -505,10 +507,10 @@ func resourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta i
 			d.Set("service_endpoints", endpoint)
 		}
 		if units, ok := instance.Parameters["units"]; ok {
-			d.Set("units", units)
+			d.Set("units", convertInterfaceToInt(units))
 		}
 		if failover_units, ok := instance.Parameters["failover_units"]; ok {
-			d.Set("failover_units", failover_units)
+			d.Set("failover_units", convertInterfaceToInt(failover_units))
 		}
 	}
 	// Set Extensions
@@ -893,4 +895,16 @@ func hsmClient(d *schema.ResourceData, meta interface{}) (tkesdk.CommonInputs, e
 	ci.AuthToken = bluemixSession.Config.IAMAccessToken
 
 	return ci, err
+}
+
+func convertInterfaceToInt(raw interface{}) int {
+	v := reflect.ValueOf(raw)
+	if v.Kind() == reflect.String {
+		rawnum, err := strconv.Atoi(raw.(string))
+		if err != nil {
+			log.Println("[ERROR] Error converting string to integer")
+		}
+		return rawnum
+	}
+	return raw.(int)
 }
