@@ -165,12 +165,16 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"ibm_api_gateway":                        dataSourceIBMApiGateway(),
-			"ibm_account":                            dataSourceIBMAccount(),
-			"ibm_app":                                dataSourceIBMApp(),
-			"ibm_app_domain_private":                 dataSourceIBMAppDomainPrivate(),
-			"ibm_app_domain_shared":                  dataSourceIBMAppDomainShared(),
-			"ibm_app_route":                          dataSourceIBMAppRoute(),
+			"ibm_api_gateway":        dataSourceIBMApiGateway(),
+			"ibm_account":            dataSourceIBMAccount(),
+			"ibm_app":                dataSourceIBMApp(),
+			"ibm_app_domain_private": dataSourceIBMAppDomainPrivate(),
+			"ibm_app_domain_shared":  dataSourceIBMAppDomainShared(),
+			"ibm_app_route":          dataSourceIBMAppRoute(),
+
+			// AppID
+			"ibm_appid_token_config": dataSourceIBMAppIDTokenConfig(),
+
 			"ibm_function_action":                    dataSourceIBMFunctionAction(),
 			"ibm_function_package":                   dataSourceIBMFunctionPackage(),
 			"ibm_function_rule":                      dataSourceIBMFunctionRule(),
@@ -406,12 +410,16 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"ibm_api_gateway_endpoint":                           resourceIBMApiGatewayEndPoint(),
-			"ibm_api_gateway_endpoint_subscription":              resourceIBMApiGatewayEndpointSubscription(),
-			"ibm_app":                                            resourceIBMApp(),
-			"ibm_app_domain_private":                             resourceIBMAppDomainPrivate(),
-			"ibm_app_domain_shared":                              resourceIBMAppDomainShared(),
-			"ibm_app_route":                                      resourceIBMAppRoute(),
+			"ibm_api_gateway_endpoint":              resourceIBMApiGatewayEndPoint(),
+			"ibm_api_gateway_endpoint_subscription": resourceIBMApiGatewayEndpointSubscription(),
+			"ibm_app":                               resourceIBMApp(),
+			"ibm_app_domain_private":                resourceIBMAppDomainPrivate(),
+			"ibm_app_domain_shared":                 resourceIBMAppDomainShared(),
+			"ibm_app_route":                         resourceIBMAppRoute(),
+
+			// AppID
+			"ibm_appid_token_config": resourceIBMAppIDTokenConfig(),
+
 			"ibm_function_action":                                resourceIBMFunctionAction(),
 			"ibm_function_package":                               resourceIBMFunctionPackage(),
 			"ibm_function_rule":                                  resourceIBMFunctionRule(),
