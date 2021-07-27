@@ -40,7 +40,7 @@ resource "appid_token_config" "tc" {
 ```
 
 ## Argument reference
-Review the argument references that you can specify for your data source.
+Review the argument references that you can specify for your resource.
 
 - `tenant_id` - (String) The AppID instance GUID
 - `access_token_claim` - (Set of Object) A set of objects that are created when claims that are related to access tokens are mapped
