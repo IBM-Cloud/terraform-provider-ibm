@@ -238,10 +238,10 @@ func dataSourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta
 	}
 	if instance.Parameters != nil {
 		if units, ok := instance.Parameters["units"]; ok {
-			d.Set("units", units)
+			d.Set("units", convertInterfaceToInt(units))
 		}
 		if failover_units, ok := instance.Parameters["failover_units"]; ok {
-			d.Set("failover_units", failover_units)
+			d.Set("failover_units", convertInterfaceToInt(failover_units))
 		}
 	}
 	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ResourcePlanID)
