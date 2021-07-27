@@ -4,15 +4,16 @@
 package ibm
 
 import (
-	"fmt"
+	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceIbmDnsCrForwardingRules() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIbmDnsCrForwardingRulesRead,
+		ReadContext: dataSourceIbmDnsCrForwardingRulesRead,
 
 		Schema: map[string]*schema.Schema{
 			pdnsInstanceID: {
@@ -25,7 +26,7 @@ func dataSourceIbmDnsCrForwardingRules() *schema.Resource {
 				Required:    true,
 				Description: "The unique identifier of a custom resolver.",
 			},
-			pdnsCRForwardRule: {
+			pdnsCRForwardRules: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -58,16 +59,6 @@ func dataSourceIbmDnsCrForwardingRules() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
-						pdnsCRFRCreatedOn: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "the time when a forwarding rule is created, RFC3339 format.",
-						},
-						pdnsCRFRModifiedOn: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "the recent time when a forwarding rule is modified, RFC3339 format.",
-						},
 					},
 				},
 			},
@@ -75,19 +66,19 @@ func dataSourceIbmDnsCrForwardingRules() *schema.Resource {
 	}
 }
 
-func dataSourceIbmDnsCrForwardingRulesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIbmDnsCrForwardingRulesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	instanceID := d.Get(pdnsInstanceID).(string)
 	resolverID := d.Get(pdnsCRFRResolverID).(string)
 
 	opt := sess.NewListForwardingRulesOptions(instanceID, resolverID)
 
-	result, response, err := sess.ListForwardingRules(opt)
-	if err != nil {
-		return fmt.Errorf("error reading list of available forword rules :%s\n%s", err, response)
+	result, _, err := sess.ListForwardingRulesWithContext(context, opt)
+	if err != nil || result != nil {
+		return diag.FromErr(err)
 	}
 
 	forwardRules := make([]interface{}, 0)
@@ -104,7 +95,7 @@ func dataSourceIbmDnsCrForwardingRulesRead(d *schema.ResourceData, meta interfac
 	d.SetId(dataSourceIBMPrivateDNSForwardrulesID(d))
 	d.Set(pdnsInstanceID, instanceID)
 	d.Set(pdnsCRFRResolverID, resolverID)
-	d.Set(pdnsCRForwardRule, forwardRules)
+	d.Set(pdnsCRForwardRules, forwardRules)
 	return nil
 }
 

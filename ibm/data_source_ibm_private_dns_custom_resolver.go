@@ -4,18 +4,16 @@
 package ibm
 
 import (
-	"fmt"
+	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// const (
-// 	ibmDNSCustomResolvers = "ibm_dns_custom_resolvers"
-// )
 func dataSourceIBMDNSCustomResolver() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMDNSCustomResolverRead,
+		ReadContext: dataSourceIBMDNSCustomResolverRead,
 
 		Schema: map[string]*schema.Schema{
 			pdnsInstanceID: {
@@ -88,17 +86,17 @@ func dataSourceIBMDNSCustomResolver() *schema.Resource {
 	}
 }
 
-func dataSourceIBMDNSCustomResolverRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMDNSCustomResolverRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	instanceID := d.Get(pdnsInstanceID).(string)
 
 	opt := sess.NewListCustomResolversOptions(instanceID)
-	result, response, err := sess.ListCustomResolvers(opt)
+	result, _, err := sess.ListCustomResolversWithContext(context, opt)
 	if err != nil {
-		return fmt.Errorf("error reading list of available custom resolvers:%s\n%s", err, response)
+		return diag.FromErr(err)
 	}
 
 	customResolvers := make([]interface{}, 0)

@@ -8,7 +8,7 @@ description: |-
 
 # ibm_dns_custom_resolvers
 
-Provides a read-only data source for Custom Resolvers. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for Custom Resolvers. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.For more information about Custom Resolver, refer to [List custom resolvers](https://cloud.ibm.com/apidocs/dns-svcs#list-custom-resolvers).
 
 
 ## Example usage
@@ -32,15 +32,15 @@ In addition to the argument references list, you can access the following attrib
  
    Nested scheme for `custom_resolvers`:
    - `custom_resolver_id` - (String) Identifier of the  custom resolver.
-   - `name` - (String) Name of the  custom resolver.
    - `description` - (String) Descriptive text of the custom resolver.
    - `enabled` - (String) Descriptive text of the custom resolver.
    - `health`- (String) The status of DNS Custom Resolver's health. Possible values are `CRITICAL`, `DEGRADED`, `HEALTHY`.
-  
+   - `name` - (String) Name of the  custom resolver.
+   - `locations` (List) The list of locations within the custom resolver. 
     Nested scheme for `locations`:
-    - `healthy`- (String) The health status.
     - `dns_server_ip`- (String) The dns server ip.
     - `enabled`- (String) Whether the location is enabled.
+    - `healthy`- (String) The health status.
     - `location_id`- (String) The location id.
     - `subnet_crn` - (String) The subnet crn
  	 

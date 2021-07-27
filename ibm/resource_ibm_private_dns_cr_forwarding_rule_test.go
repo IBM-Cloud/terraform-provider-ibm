@@ -11,9 +11,7 @@ import (
 )
 
 func TestAccIbmDnsCrForwardingRuleBasic(t *testing.T) {
-
-	instanceID := "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
-	resolverID := "db857778-2aa9-4d81-b954-08bcaba0dadf"
+	subnet_crn := "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-03d54d71-b438-4d20-b943-76d3d2a1a590"
 	description := "test forward rule"
 	typeVar := "zone"
 	match := "test.example.com"
@@ -23,10 +21,8 @@ func TestAccIbmDnsCrForwardingRuleBasic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmDnsCrForwardingRuleConfig(instanceID, resolverID, description, typeVar, match),
+				Config: testAccCheckIbmDnsCrForwardingRuleConfig(subnet_crn, description, typeVar, match),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_dns_cr_forwarding_rule.dns_cr_forwarding_rule", "instance_id", instanceID),
-					resource.TestCheckResourceAttr("ibm_dns_cr_forwarding_rule.dns_cr_forwarding_rule", "resolver_id", resolverID),
 					resource.TestCheckResourceAttr("ibm_dns_cr_forwarding_rule.dns_cr_forwarding_rule", "description", description),
 					resource.TestCheckResourceAttr("ibm_dns_cr_forwarding_rule.dns_cr_forwarding_rule", "type", typeVar),
 					resource.TestCheckResourceAttr("ibm_dns_cr_forwarding_rule.dns_cr_forwarding_rule", "match", match),
@@ -43,16 +39,27 @@ func TestAccIbmDnsCrForwardingRuleBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmDnsCrForwardingRuleConfig(instanceID string, resolverID string, description string, typeVar string, match string) string {
+func testAccCheckIbmDnsCrForwardingRuleConfig(subnet_crn, description, typeVar, match string) string {
 	return fmt.Sprintf(`
 
+		resource "ibm_dns_custom_resolver" "test" {
+			name        = "CRForwardingRule"
+			instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
+			description = "new test CR Forwarding Rules - TF"
+			enabled = true
+			locations {
+				subnet_crn = "%s"
+				enabled    = true
+			}
+		}  
+
 		resource "ibm_dns_cr_forwarding_rule" "dns_cr_forwarding_rule" {
-			instance_id = "%s"
-			resolver_id = "%s"
+			instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
+			resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 			description = "%s"
 			type = "%s"
 			match = "%s"
 			forward_to = ["168.20.22.122"]
 		}
-	`, instanceID, resolverID, description, typeVar, match)
+	`, subnet_crn, description, typeVar, match)
 }

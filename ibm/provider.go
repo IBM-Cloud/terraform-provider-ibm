@@ -601,9 +601,9 @@ func Provider() *schema.Provider {
 			"ibm_dns_glb":               resourceIBMPrivateDNSGLB(),
 
 			//Added for Custom Resolver
-			"ibm_dns_custom_resolver":    resouceIBMPrivateDNSCustomResolver(),
-			"ibm_dns_cr_locations":       resourceIBMPrivateDNSCRLocation(),
-			"ibm_dns_cr_forwarding_rule": resourceIbmDnsCrForwardingRule(),
+			"ibm_dns_custom_resolver":           resouceIBMPrivateDNSCustomResolver(),
+			"ibm_dns_custom_resolver_locations": resourceIBMPrivateDNSCRLocation(),
+			"ibm_dns_cr_forwarding_rule":        resourceIbmDnsCrForwardingRule(),
 
 			//Direct Link related resources
 			"ibm_dl_gateway":            resourceIBMDLGateway(),

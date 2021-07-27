@@ -5,7 +5,6 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"testing"
 
@@ -18,8 +17,8 @@ func TestAccIBMPrivateDNSCustomResolver_Basic(t *testing.T) {
 	var resultprivatedns string
 	name := fmt.Sprintf("testpdnscustomresolver%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
 	description := "new test CR - TF"
-	subnet_crn := "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-6c3a997d-72b2-47f6-8788-6bd95e1bdb03"
-	log.Println("In side TestAccIBMPrivateDNSCustomResolver_Basic")
+	subnet_crn := "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-03d54d71-b438-4d20-b943-76d3d2a1a590"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -42,7 +41,7 @@ func TestAccIBMPrivateDNSCustomResolverImport(t *testing.T) {
 	var resultprivatedns string
 	name := fmt.Sprintf("testpdnscustomresolver%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
 	description := "new test CR - TF"
-	subnet_crn := "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-6c3a997d-72b2-47f6-8788-6bd95e1bdb03"
+	subnet_crn := "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-03d54d71-b438-4d20-b943-76d3d2a1a590"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -75,9 +74,10 @@ func testAccCheckIBMPrivateDNSCustomResolverBasic(name, description, subnet_crn 
 		name        = "%s"
 		instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
 		description = "%s"
+		enabled = true
 		locations {
 			subnet_crn = "%s"
-			enabled    = "true"
+			enabled    = true
 		}
 	}
 	  `, name, description, subnet_crn)

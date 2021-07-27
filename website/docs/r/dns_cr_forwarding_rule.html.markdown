@@ -8,7 +8,7 @@ description: |-
 
 # ibm_dns_cr_forwarding_rule
 
-Provides a resource for dns_cr_forwarding_rule. This allows Forwarding Rule to be created, updated and deleted.
+Provides a resource for dns_cr_forwarding_rule. This allows Forwarding Rule to be created, updated and deleted.For more information, about Forwarding Rules, see [create-forwarding-rule](https://cloud.ibm.com/apidocs/dns-svcs#create-forwarding-rule).
 
 ## Example Usage
 

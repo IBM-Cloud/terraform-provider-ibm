@@ -8,7 +8,7 @@ description: |-
 
 # ibm_dns_custom_resolver
 
-Provides a private DNS Custom Resolver resource. This allows DNS Custom Resolver to  create, update, and delete. 
+Provides a private DNS Custom Resolver resource. This allows DNS Custom Resolver to  create, update, and delete. For more information, about Customer Resolver, see [reate-custom-resolver](https://cloud.ibm.com/apidocs/dns-svcs#create-custom-resolver).
 
 
 ## Example usage
