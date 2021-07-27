@@ -73,7 +73,7 @@ In addition to all argument reference list, you can access the following attribu
     Nested scheme for `rules`:
     - `code`- (String) The ICMP traffic code to allow.
 	- `direction`- (String) The direction of the traffic either inbound or outbound.
-    - `ip_version`-  (String) The IP version either **ipv4** or **IPv6**.
+    - `ip_version`-  (String) The IP version: **ipv4**.
     - `remote` -  (String) Security group ID, an IP address, a CIDR block, or a single security group identifier.
 	- `rule_id` - (String) The rule ID.
     - `port_min` - (String) The inclusive lower bound of TCP port range.

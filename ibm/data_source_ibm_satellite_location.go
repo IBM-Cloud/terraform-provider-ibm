@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
 )
 
 func dataSourceIBMSatelliteLocation() *schema.Resource {

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/vpc-go-sdk/vpcclassicv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -56,37 +55,18 @@ func TestAccIBMISPublicGateway_basic(t *testing.T) {
 }
 
 func testAccCheckIBMISPublicGatewayDestroy(s *terraform.State) error {
-	userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-	if userDetails.generation == 1 {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_public_gateway" {
-				continue
-			}
-
-			getpgwoptions := &vpcclassicv1.GetPublicGatewayOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetPublicGateway(getpgwoptions)
-			if err == nil {
-				return fmt.Errorf("publicgw still exists: %s", rs.Primary.ID)
-			}
+	sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_public_gateway" {
+			continue
 		}
-	} else {
-		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_is_public_gateway" {
-				continue
-			}
 
-			getpgwoptions := &vpcv1.GetPublicGatewayOptions{
-				ID: &rs.Primary.ID,
-			}
-			_, _, err := sess.GetPublicGateway(getpgwoptions)
-			if err == nil {
-				return fmt.Errorf("publicgw still exists: %s", rs.Primary.ID)
-			}
+		getpgwoptions := &vpcv1.GetPublicGatewayOptions{
+			ID: &rs.Primary.ID,
+		}
+		_, _, err := sess.GetPublicGateway(getpgwoptions)
+		if err == nil {
+			return fmt.Errorf("publicgw still exists: %s", rs.Primary.ID)
 		}
 	}
 
@@ -106,29 +86,15 @@ func testAccCheckIBMISPublicGatewayExists(n, publicgw string) resource.TestCheck
 			return errors.New("No Record ID is set")
 		}
 
-		userDetails, _ := testAccProvider.Meta().(ClientSession).BluemixUserDetails()
-
-		if userDetails.generation == 1 {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcClassicV1API()
-			getpgwoptions := &vpcclassicv1.GetPublicGatewayOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundpublicgw, _, err := sess.GetPublicGateway(getpgwoptions)
-			if err != nil {
-				return err
-			}
-			publicgw = *foundpublicgw.ID
-		} else {
-			sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
-			getpgwoptions := &vpcv1.GetPublicGatewayOptions{
-				ID: &rs.Primary.ID,
-			}
-			foundpublicgw, _, err := sess.GetPublicGateway(getpgwoptions)
-			if err != nil {
-				return err
-			}
-			publicgw = *foundpublicgw.ID
+		sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
+		getpgwoptions := &vpcv1.GetPublicGatewayOptions{
+			ID: &rs.Primary.ID,
 		}
+		foundpublicgw, _, err := sess.GetPublicGateway(getpgwoptions)
+		if err != nil {
+			return err
+		}
+		publicgw = *foundpublicgw.ID
 		return nil
 	}
 }

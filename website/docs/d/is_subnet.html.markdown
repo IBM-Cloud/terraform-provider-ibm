@@ -62,7 +62,6 @@ In addition to all argument reference list, you can access the following attribu
 - `available_ipv4_address_count` - (Integer) The total number of available IPv4 addresses.
 - `crn` - (String) The CRN of subnet.
 - `ipv4_cidr_block` -  (String) The IPv4 range of the subnet.
-- `ipv6_cidr_block` - (String) The IPv6 range of the subnet.
 - `ip_version` - (String) The IP version.
 - `name` - (String) The name of the subnet.
 - `network_acl` - (String) The ID of the network ACL for the subnet.
@@ -72,4 +71,5 @@ In addition to all argument reference list, you can access the following attribu
 - `tags`  - (String) Tags associated for the instance.
 - `total_ipv4_address_count` - (Integer) The total number of IPv4 addresses.
 - `vpc` - (String) The ID of the VPC that the subnet belongs to.
+- `vpc_name` - (String) The name of the VPC that the subnet belongs to.
 - `zone` - (String) The subnet zone name.

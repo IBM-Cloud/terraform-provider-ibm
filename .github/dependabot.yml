@@ -1,0 +1,38 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+updates:
+    # Maintain dependencies for Terraform
+  - package-ecosystem: "terraform"
+    directory: "/examples/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "dependabot"
+    labels:
+      - "dependencies"
+      
+    # Maintain dependencies for GO Modules
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "dependabot"
+    open-pull-requests-limit: 0
+    labels:
+      - "dependencies"
+      
+    # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "dependabot"
+    labels:
+      - "dependencies"
+    

@@ -38,6 +38,7 @@ In addition to all argument reference list, you can access the following attribu
 - `iops` - (String) The bandwidth for the volume.
 - `profile` - (String) The profile to use for this volume.
 - `resource_group` - (String) The resource group ID for this volume.
+- `source_snapshot` - ID of the snapshot, if volume was created from it.
 - `status` - (String) The status of the volume. Supported values are **available**, **failed**, **pending**, **unusable**, **pending_deletion**.
 - `status_reasons` - (List) Array of reasons for the current status.
   

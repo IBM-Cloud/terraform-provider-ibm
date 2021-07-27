@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	apigatewaysdk "github.com/IBM/apigateway-go-sdk"
+	apigatewaysdk "github.com/IBM/apigateway-go-sdk/apigatewaycontrollerapiv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -133,6 +133,9 @@ func resourceIBMApiGatewayEndpointSubscriptionGet(d *schema.ResourceData, meta i
 
 	parts := d.Id()
 	partslist := strings.Split(parts, "//")
+	if len(partslist) < 2 {
+		return fmt.Errorf("Incorrect ID %s: Id should be a combination of artifactID//clientID", d.Id())
+	}
 	artifactID := partslist[0]
 	clientID := partslist[1]
 
@@ -268,6 +271,9 @@ func resourceIBMApiGatewayEndpointSubscriptionExists(d *schema.ResourceData, met
 	}
 	parts := d.Id()
 	partslist := strings.Split(parts, "//")
+	if len(partslist) < 2 {
+		return false, fmt.Errorf("Incorrect ID %s: Id should be a combination of artifactID//clientID", d.Id())
+	}
 	artifactID := partslist[0]
 	clientID := partslist[1]
 

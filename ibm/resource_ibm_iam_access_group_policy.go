@@ -199,8 +199,6 @@ func resourceIBMIAMAccessGroupPolicyCreate(d *schema.ResourceData, meta interfac
 		return fmt.Errorf("Error creating access group policy: %s\n%s", err, res)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", accessGroupId, *accessGroupPolicy.ID))
-
 	getPolicyOptions := &iampolicymanagementv1.GetPolicyOptions{
 		PolicyID: accessGroupPolicy.ID,
 	}
@@ -221,8 +219,10 @@ func resourceIBMIAMAccessGroupPolicyCreate(d *schema.ResourceData, meta interfac
 		_, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	}
 	if err != nil {
+		d.SetId(fmt.Sprintf("%s/%s", accessGroupId, *accessGroupPolicy.ID))
 		return fmt.Errorf("Error fetching access group policy: %s\n%s", err, res)
 	}
+	d.SetId(fmt.Sprintf("%s/%s", accessGroupId, *accessGroupPolicy.ID))
 
 	return resourceIBMIAMAccessGroupPolicyRead(d, meta)
 }
@@ -244,9 +244,24 @@ func resourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interface{
 	getPolicyOptions := &iampolicymanagementv1.GetPolicyOptions{
 		PolicyID: &accessGroupPolicyId,
 	}
+	accessGroupPolicy := &iampolicymanagementv1.Policy{}
+	res := &core.DetailedResponse{}
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
+		accessGroupPolicy, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+		if err != nil || accessGroupPolicy == nil {
+			if res != nil && res.StatusCode == 404 {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
 
-	accessGroupPolicy, res, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
-	if err != nil {
+	if isResourceTimeoutError(err) {
+		accessGroupPolicy, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+	}
+	if err != nil || accessGroupPolicy == nil {
 		return fmt.Errorf("Error retrieving access group policy: %s\n%s", err, res)
 	}
 
@@ -377,6 +392,9 @@ func resourceIBMIAMAccessGroupPolicyExists(d *schema.ResourceData, meta interfac
 	parts, err := idParts(d.Id())
 	if err != nil {
 		return false, err
+	}
+	if len(parts) < 2 {
+		return false, fmt.Errorf("Incorrect ID %s: Id should be a combination of accessGroupID/PolicyID", d.Id())
 	}
 
 	accessGroupPolicyId := parts[1]

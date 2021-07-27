@@ -8,7 +8,7 @@ description: |-
 ---
 
 # ibm_kms_key_alias
-Create, modify, or delete a key management resource for hs-crypto and key protect services by using aliases. For more information, about key management aliases, see [creating key aliases](https://cloud.ibm.com/docs/key-protect?topic=key-protect-create-key-alias).
+Create, modify, or delete a key management resource for Hyper Protect Crypto Services (HPCS) and Key Protect services by using aliases. For more information, about key management aliases, see [creating key aliases](https://cloud.ibm.com/docs/key-protect?topic=key-protect-create-key-alias).
 
 ## Example usage to provision Key Protect service and Key Management with alias
 
