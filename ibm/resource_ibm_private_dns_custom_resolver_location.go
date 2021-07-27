@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	ibmCRLocation           = "ibm_dns_custom_resolver_locations"
+	ibmCRLocation           = "ibm_dns_custom_resolver_location"
 	pdnsResolverID          = "resolver_id"
 	pdnsCRLocationID        = "location_id"
 	pdnsCRLocationSubnetCRN = "subnet_crn"

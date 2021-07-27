@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceIbmDnsCrForwardingRules() *schema.Resource {
+func dataSourceIBMPrivateDNSForwardingRules() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIbmDnsCrForwardingRulesRead,
 

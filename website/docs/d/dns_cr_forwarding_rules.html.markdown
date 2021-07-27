@@ -6,14 +6,14 @@ description: |-
   Manages IBM Cloud Infrastructure private domain name service Forwording Rules.
 ---
 
-# ibm_dns_cr_forwarding_rules
+# ibm_dns_custom_resolver_forwarding_rules
 
 Provides a read-only data source for Forwarding rules. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.For more information about Custom Resolver, refer to [list-forwarding-rules](https://cloud.ibm.com/apidocs/dns-svcs#list-forwarding-rules)
 
 ## Example Usage
 
 ```terraform
-data "dns_cr_forwarding_rules" "dns_cr_forwarding_rules" {
+data "dns_custom_resolver_forwarding_rules" "dns_custom_resolver_forwarding_rules" {
 	instance_id = "instance_id"
 	resolver_id = "resolver_id"
 }

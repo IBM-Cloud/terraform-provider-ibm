@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	pdnsCRForwardRule   = "ibm_dns_cr_forwarding_rule"
+	pdnsCRForwardRule   = "ibm_dns_custom_resolver_forwarding_rule"
 	pdnsCRForwardRules  = "rules"
 	pdnsCRFRResolverID  = "resolver_id"
 	pdnsCRFRDesctiption = "description"
@@ -23,7 +23,7 @@ const (
 	pdnsCRFRModifiedOn  = "modified_on"
 )
 
-func resourceIbmDnsCrForwardingRule() *schema.Resource {
+func resourceIBMPrivateDNSForwardingRule() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmDnsCrForwardingRuleCreate,
 		ReadContext:   resourceIbmDnsCrForwardingRuleRead,
@@ -69,21 +69,11 @@ func resourceIbmDnsCrForwardingRule() *schema.Resource {
 				Computed:    true,
 				Description: "the time when a forwarding rule ID is created, RFC3339 format.",
 			},
-			pdnsCRFRCreatedOn: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "the time when a forwarding rule is created, RFC3339 format.",
-			},
-			pdnsCRFRModifiedOn: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "the recent time when a forwarding rule is modified, RFC3339 format.",
-			},
 		},
 	}
 }
 
-func resourceIbmDnsCrForwardingRuleValidator() *ResourceValidator {
+func resourceIBMPrivateDNSForwardingRuleValidator() *ResourceValidator {
 	validateSchema := make([]ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		ValidateSchema{

@@ -23,8 +23,8 @@ func TestAccIBMPrivateDNSCRLocations_Basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPrivateDNSCRLocationsBasic(name, description, subnet_crn, subnet_crn_new),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_locations.test", "subnet_crn", subnet_crn_new),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_locations.test", "enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test", "subnet_crn", subnet_crn_new),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test", "enabled", "false"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -44,13 +44,13 @@ func TestAccIBMPrivateDNSCRLocations_Import(t *testing.T) {
 			{
 				Config: testAccCheckIBMPrivateDNSCRLocationsBasic(name, description, subnet_crn, subnet_crn_new),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_locations.test", "subnet_crn", subnet_crn_new),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_locations.test", "enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test", "subnet_crn", subnet_crn_new),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test", "enabled", "false"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				ResourceName:      "ibm_dns_custom_resolver_locations.test",
+				ResourceName:      "ibm_dns_custom_resolver_location.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
@@ -77,7 +77,7 @@ func testAccCheckIBMPrivateDNSCRLocationsBasic(name, description, subnet_crn, su
 			}
 		}
 
-		resource "ibm_dns_custom_resolver_locations" "test" {
+		resource "ibm_dns_custom_resolver_location" "test" {
 			depends_on  = [ibm_dns_custom_resolver.test]
 			instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
 			resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id

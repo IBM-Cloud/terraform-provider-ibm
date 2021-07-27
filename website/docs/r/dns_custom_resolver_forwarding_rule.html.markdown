@@ -6,14 +6,14 @@ description: |-
   Manages Forwarding Rule.
 ---
 
-# ibm_dns_cr_forwarding_rule
+# ibm_dns_custom_resolver_forwarding_rule
 
-Provides a resource for dns_cr_forwarding_rule. This allows Forwarding Rule to be created, updated and deleted.For more information, about Forwarding Rules, see [create-forwarding-rule](https://cloud.ibm.com/apidocs/dns-svcs#create-forwarding-rule).
+Provides a resource for dns_custom_resolver_forwarding_rule. This allows Forwarding Rule to be created, updated and deleted.For more information, about Forwarding Rules, see [create-forwarding-rule](https://cloud.ibm.com/apidocs/dns-svcs#create-forwarding-rule).
 
 ## Example Usage
 
 ```terraform
-resource "dns_cr_forwarding_rule" "dns_cr_forwarding_rule" {
+resource "dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
   instance_id = "instance_id"
   resolver_id = "resolver_id"
   description = "forwarding rule"
@@ -39,13 +39,13 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - (String) The unique identifier of the dns_cr_forwarding_rule.
+* `id` - (String) The unique identifier of the dns_custom_resolver_forwarding_rule.
 * `created_on` - (String) the time when a forwarding rule is created, RFC3339 format.
 * `modified_on` -(String) the recent time when a forwarding rule is modified, RFC3339 format.
 
 ## Import
 
-You can import the `dns_cr_forwarding_rule` resource by using `id`.
+You can import the `dns_custom_resolver_forwarding_rule` resource by using `id`.
 The `id` property can be formed from `instance_id`, `resolver_id`, and `rule_id` in the following format:
 
 ```
@@ -56,5 +56,5 @@ The `id` property can be formed from `instance_id`, `resolver_id`, and `rule_id`
 * `rule_id`: A string. The unique identifier of a forwarding rule.
 
 ```
-$ terraform import dns_cr_forwarding_rule.dns_cr_forwarding_rule <instance_id>/<resolver_id>/<rule_id>
+$ terraform import dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule <instance_id>/<resolver_id>/<rule_id>
 ```

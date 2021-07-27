@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIbmDnsCrForwardingRuleBasic(t *testing.T) {
+func TestAccIBMPrivateDNSCustomResolverForwardingRuleBasic(t *testing.T) {
 	subnet_crn := "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-03d54d71-b438-4d20-b943-76d3d2a1a590"
 	description := "test forward rule"
 	typeVar := "zone"
@@ -23,13 +23,13 @@ func TestAccIbmDnsCrForwardingRuleBasic(t *testing.T) {
 			{
 				Config: testAccCheckIbmDnsCrForwardingRuleConfig(subnet_crn, description, typeVar, match),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_dns_cr_forwarding_rule.dns_cr_forwarding_rule", "description", description),
-					resource.TestCheckResourceAttr("ibm_dns_cr_forwarding_rule.dns_cr_forwarding_rule", "type", typeVar),
-					resource.TestCheckResourceAttr("ibm_dns_cr_forwarding_rule.dns_cr_forwarding_rule", "match", match),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolverr_forwarding_rule", "description", description),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule", "type", typeVar),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule", "match", match),
 				),
 			},
 			{
-				ResourceName:      "ibm_dns_cr_forwarding_rule.dns_cr_forwarding_rule",
+				ResourceName:      "ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule",
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
@@ -53,7 +53,7 @@ func testAccCheckIbmDnsCrForwardingRuleConfig(subnet_crn, description, typeVar, 
 			}
 		}  
 
-		resource "ibm_dns_cr_forwarding_rule" "dns_cr_forwarding_rule" {
+		resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
 			instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
 			resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 			description = "%s"
