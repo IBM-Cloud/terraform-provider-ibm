@@ -6,6 +6,8 @@ package ibm
 import (
 	"context"
 	"fmt"
+	"log"
+	"strconv"
 
 	"github.com/IBM/ibm-hpcs-tke-sdk/tkesdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -56,7 +58,11 @@ func dataSourceIBMHPCS() *schema.Resource {
 				Computed:    true,
 				Description: "The number of failover crypto units for your service instance",
 			},
-
+			"service_endpoints": {
+				Description: "Types of the service endpoints. Possible values are `public-and-private`, `private-only`.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"plan": {
 				Description: "The plan type of the instance",
 				Type:        schema.TypeString,
@@ -237,11 +243,29 @@ func dataSourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta
 		d.Set("extensions", Flatten(instance.Extensions))
 	}
 	if instance.Parameters != nil {
-		if units, ok := instance.Parameters["units"]; ok {
-			d.Set("units", convertInterfaceToInt(units))
+		instanceParameters := Flatten(instance.Parameters)
+
+		if endpoint, ok := instanceParameters["allowed_network"]; ok {
+			if endpoint != "private-only" {
+				endpoint = "public-and-private"
+			}
+			d.Set("service_endpoints", endpoint)
+		} else {
+			d.Set("service_endpoints", "public-and-private")
 		}
-		if failover_units, ok := instance.Parameters["failover_units"]; ok {
-			d.Set("failover_units", convertInterfaceToInt(failover_units))
+		if u, ok := instanceParameters["units"]; ok {
+			units, err := strconv.Atoi(u)
+			if err != nil {
+				log.Println("[ERROR] Error converting units from string to integer")
+			}
+			d.Set("units", units)
+		}
+		if f, ok := instanceParameters["failover_units"]; ok {
+			failover_units, err := strconv.Atoi(f)
+			if err != nil {
+				log.Println("[ERROR] Error failover_units units from string to integer")
+			}
+			d.Set("failover_units", failover_units)
 		}
 	}
 	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ResourcePlanID)

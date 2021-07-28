@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -503,14 +502,29 @@ func resourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta i
 	d.Set("plan", servicePlan)
 	// Set Instance parameters
 	if instance.Parameters != nil {
-		if endpoint, ok := instance.Parameters["allowed_network"]; ok {
+		instanceParameters := Flatten(instance.Parameters)
+
+		if endpoint, ok := instanceParameters["allowed_network"]; ok {
+			if endpoint != "private-only" {
+				endpoint = "public-and-private"
+			}
 			d.Set("service_endpoints", endpoint)
+		} else {
+			d.Set("service_endpoints", "public-and-private")
 		}
-		if units, ok := instance.Parameters["units"]; ok {
-			d.Set("units", convertInterfaceToInt(units))
+		if u, ok := instanceParameters["units"]; ok {
+			units, err := strconv.Atoi(u)
+			if err != nil {
+				log.Println("[ERROR] Error converting units from string to integer")
+			}
+			d.Set("units", units)
 		}
-		if failover_units, ok := instance.Parameters["failover_units"]; ok {
-			d.Set("failover_units", convertInterfaceToInt(failover_units))
+		if f, ok := instanceParameters["failover_units"]; ok {
+			failover_units, err := strconv.Atoi(f)
+			if err != nil {
+				log.Println("[ERROR] Error failover_units units from string to integer")
+			}
+			d.Set("failover_units", failover_units)
 		}
 	}
 	// Set Extensions
@@ -895,16 +909,4 @@ func hsmClient(d *schema.ResourceData, meta interface{}) (tkesdk.CommonInputs, e
 	ci.AuthToken = bluemixSession.Config.IAMAccessToken
 
 	return ci, err
-}
-
-func convertInterfaceToInt(raw interface{}) int {
-	v := reflect.ValueOf(raw)
-	if v.Kind() == reflect.String {
-		rawnum, err := strconv.Atoi(raw.(string))
-		if err != nil {
-			log.Println("[ERROR] Error converting string to integer")
-		}
-		return rawnum
-	}
-	return raw.(int)
 }

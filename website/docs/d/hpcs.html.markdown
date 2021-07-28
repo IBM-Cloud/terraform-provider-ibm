@@ -48,9 +48,10 @@ In addition to all arguments above, the following attributes are exported:
   * `new_mkvp` - (String) New Master Key Register Verification Pattern
   * `revocation_threshold` - (Int) Revocation Threshold for Crypto Units
   * `signature_threshold`- (Int) Signature Threshold for Crypto Units
-* `failover_units` - (String) The number of failover crypto units for your service instance
+* `failover_units` - (Int) The number of failover crypto units for your service instance
 * `id` - (String) The unique identifier CRN of this HPCS instance.
 * `plan` - (String) The pricing plan for your service instance.
 * `service` - (String) The service type (`hs-crypto`) of the instance.
+* `service_endpoints` - (String) The network access to your service instance. Possible values are `public-and-private`, `private-only`.
 * `status` - (String) Status of the hpcs instance.
-* `units` -(String) The number of operational crypto units for your service instance.
+* `units` -(Int) The number of operational crypto units for your service instance.
