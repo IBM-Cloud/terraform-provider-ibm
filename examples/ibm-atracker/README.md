@@ -26,6 +26,9 @@ atracker_target resource:
 
 ```hcl
 resource "atracker_target" "atracker_target_instance" {
+  name = var.atracker_target_name
+  target_type = var.atracker_target_target_type
+  cos_endpoint = var.atracker_target_cos_endpoint
 }
 ```
 atracker_route resource:
@@ -86,6 +89,9 @@ data "atracker_endpoints" "atracker_endpoints_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| name | The name of the target. The name must be 1000 characters or less, and cannot include any special characters other than `(space) - . _ :`. | `string` | true |
+| target_type | The type of the target. | `string` | true |
+| cos_endpoint | Property values for a Cloud Object Storage Endpoint. | `` | true |
 | name | The name of the route. The name must be 1000 characters or less and cannot include any special characters other than `(space) - . _ :`. | `string` | true |
 | receive_global_events | Indicates whether or not all global events should be forwarded to this region. | `bool` | true |
 | rules | Routing rules that will be evaluated in their order of the array. | `list()` | true |

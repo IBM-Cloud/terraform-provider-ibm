@@ -4,6 +4,14 @@ provider "ibm" {
 
 // Provision atracker_target resource instance
 resource "ibm_atracker_target" "atracker_target_instance" {
+  name = var.atracker_target_name
+  target_type = var.atracker_target_target_type
+  cos_endpoint {
+    endpoint = "endpoint"
+    target_crn = "target_crn"
+    bucket = "bucket"
+    api_key = "api_key"
+  }
 }
 
 // Provision atracker_route resource instance
