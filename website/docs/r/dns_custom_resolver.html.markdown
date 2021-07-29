@@ -31,7 +31,7 @@ Review the argument reference that you can specify for your resource.
 - `instance_id` - (Required, string) The unique identifier of a service instance.
 - `name`- (Required, String) The name of the custom resolver.
 - `description` - (Optional, string) Descriptive text of the  custom resolver.
-- `locations`- (Required, Set) The list of locations where this custom resolver is deployed. 
+- `locations`- (Required, Set) The list of locations where this custom resolver is deployed. There is no update for location argument in  resolver resource.
 
   Nested scheme for `locations`:
   - `subnet_crn` - (Required, String) subnet crn
@@ -44,8 +44,8 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique ID of the private DNS custom resolver.
 - `modified_on` - (Timestamp) The time (modified On) of the DNS Custom Resolver.
 - `health`- (String) The status of DNS Custom Resolver's health. Possible values are `DEGRADED`, `CRITICAL`, `HEALTHY`.
-- `locations`
-  
+- `locations` - (Set) Locations on which the custom resolver will be running.
+
   Nested scheme for `locations`:
   - `healthy`- (String) The health status.
   - `dns_server_ip`- (String) The dns server ip.

@@ -26,7 +26,6 @@ func TestAccIBMPrivateDNSCRLocations_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test", "subnet_crn", subnet_crn_new),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test", "enabled", "false"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -47,7 +46,6 @@ func TestAccIBMPrivateDNSCRLocations_Import(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test", "subnet_crn", subnet_crn_new),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test", "enabled", "false"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				ResourceName:      "ibm_dns_custom_resolver_location.test",

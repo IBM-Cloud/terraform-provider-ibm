@@ -27,7 +27,7 @@ func dataSourceIBMDNSCustomResolver() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						pdnsCRId: {
+						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Identifier of the custom resolver",
@@ -102,7 +102,7 @@ func dataSourceIBMDNSCustomResolverRead(context context.Context, d *schema.Resou
 	customResolvers := make([]interface{}, 0)
 	for _, instance := range result.CustomResolvers {
 		customResolver := map[string]interface{}{}
-		customResolver[pdnsCRId] = *instance.ID
+		customResolver["id"] = *instance.ID
 		customResolver[pdnsCRName] = *instance.Name
 		customResolver[pdnsCRDescription] = *instance.Description
 		customResolver[pdnsCRHealth] = *instance.Health

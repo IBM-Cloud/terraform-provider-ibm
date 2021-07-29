@@ -31,9 +31,9 @@ In addition to the argument references list, you can access the following attrib
 - `custom_resolvers` (List) List of all private DNS custom resolvers.
  
    Nested scheme for `custom_resolvers`:
-   - `custom_resolver_id` - (String) Identifier of the  custom resolver.
+   - `id` - (String) Identifier of the  custom resolver.
    - `description` - (String) Descriptive text of the custom resolver.
-   - `enabled` - (String) Descriptive text of the custom resolver.
+   - `enabled` - (String) Whether custom resolver is enabled.
    - `health`- (String) The status of DNS Custom Resolver's health. Possible values are `CRITICAL`, `DEGRADED`, `HEALTHY`.
    - `name` - (String) Name of the  custom resolver.
    - `locations` (List) The list of locations within the custom resolver. 

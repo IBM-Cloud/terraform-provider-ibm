@@ -33,9 +33,19 @@ func TestAccIBMDNSCustomResolverForwardingRulesDataSource_basic(t *testing.T) {
 
 func testAccCheckIbmDnsCrForwardingRulesDataSourceConfig(forwardingRuleDescription string, forwardingRuleType string, forwardingRuleMatch string) string {
 	return fmt.Sprintf(`
+		resource "ibm_dns_custom_resolver" "test" {
+			name        = "CustomResolverFW"
+			instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
+			description = "FW rules"
+			enabled = true
+			locations {
+				subnet_crn = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-03d54d71-b438-4d20-b943-76d3d2a1a590"
+				enabled    = true
+			}
+		}
 		resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
 			instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
-			resolver_id = "db857778-2aa9-4d81-b954-08bcaba0dadf"
+			resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 			description = "%s"
 			type = "%s"
 			match = "%s"

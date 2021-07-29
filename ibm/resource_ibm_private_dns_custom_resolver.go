@@ -87,9 +87,10 @@ func resouceIBMPrivateDNSCustomResolver() *schema.Resource {
 				Description: "Healthy state of the custom resolver",
 			},
 			pdnsCustomResolverLocations: {
-				Type:        schema.TypeSet,
-				Description: "Locations on which the custom resolver will be running",
-				Required:    true,
+				Type:             schema.TypeSet,
+				Description:      "Locations on which the custom resolver will be running",
+				Required:         true,
+				DiffSuppressFunc: applyOnce,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						pdnsCRLocationId: {
@@ -235,7 +236,7 @@ func resouceIBMPrivateDNSCustomResolverUpdate(context context.Context, d *schema
 			crDescription := des.(string)
 			opt.SetDescription(crDescription)
 		}
-		if enabled, ok := d.GetOk(pdnsCREnabled); ok {
+		if enabled, ok := d.GetOkExists(pdnsCREnabled); ok {
 			crEnabled := enabled.(bool)
 			opt.SetEnabled(crEnabled)
 		}
