@@ -43,41 +43,6 @@ func resourceIBMAtrackerTarget() *schema.Resource {
 				ValidateFunc: InvokeValidator("ibm_atracker_target", "target_type"),
 				Description:  "The type of the target.",
 			},
-			// "cos_endpoint": &schema.Schema{  // MSP
-			// 	Type:        schema.TypeList,
-			// 	MinItems:    1,
-			// 	MaxItems:    1,
-			// 	Required:    true,
-			// 	Description: "Property values for a Cloud Object Storage Endpoint.",
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"endpoint": &schema.Schema{
-			// 				Type:        schema.TypeString,
-			// 				Required:    true,
-			// 				Description: "The host name of the Cloud Object Storage endpoint.",
-			// 			},
-			// 			"target_crn": &schema.Schema{
-			// 				Type:        schema.TypeString,
-			// 				Required:    true,
-			// 				Description: "The CRN of the Cloud Object Storage instance.",
-			// 			},
-			// 			"bucket": &schema.Schema{
-			// 				Type:        schema.TypeString,
-			// 				Required:    true,
-			// 				Description: "The bucket name under the Cloud Object Storage instance.",
-			// 			},
-			// 			"api_key": &schema.Schema{
-			// 				Type:        schema.TypeString,
-			// 				Required:    true,
-			// 				Sensitive:   true,
-			// 				Description: "The IAM API key that has writer access to the Cloud Object Storage instance. This credential is masked in the response.",
-			// 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-			// 					return true
-			// 				},
-			// 			},
-			// 		},
-			// 	},
-			// },
 			"cos_endpoint": &schema.Schema{
 				Type:        schema.TypeList,
 				MinItems:    1,
@@ -310,11 +275,9 @@ func resourceIBMAtrackerTargetUpdate(context context.Context, d *schema.Resource
 
 	hasChange := false
 
-	if d.HasChange("name") {
+	if d.HasChange("name") || d.HasChange("cos_endpoint") || d.HasChange("target_type") {
+		replaceTargetOptions.SetTargetType(d.Get("target_type").(string))
 		replaceTargetOptions.SetName(d.Get("name").(string))
-		hasChange = true
-	}
-	if d.HasChange("cos_endpoint") {
 		cosEndpoint := resourceIBMAtrackerTargetMapToCosEndpoint(d.Get("cos_endpoint.0").(map[string]interface{}))
 		replaceTargetOptions.SetCosEndpoint(&cosEndpoint)
 		hasChange = true

@@ -32,13 +32,6 @@ func TestAccIBMAtrackerTargetsDataSourceBasic(t *testing.T) {
 	})
 }
 
-// cos_endpoint {
-// 	endpoint = "endpoint"
-// 	target_crn = "target_crn"
-// 	bucket = "bucket"
-// 	api_key = "api_key"
-// }
-
 func testAccCheckIBMAtrackerTargetsDataSourceConfigBasic(targetName string, targetTargetType string) string {
 	return fmt.Sprintf(`
 		resource "ibm_atracker_target" "atracker_target" {

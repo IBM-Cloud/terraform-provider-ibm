@@ -32,21 +32,6 @@ func TestAccIBMAtrackerRoutesDataSourceBasic(t *testing.T) {
 	})
 }
 
-// resource "ibm_atracker_route" "atracker_route" {
-// 	name = "%s"
-// 	receive_global_events = %s
-// 	rules {
-// 		target_ids = ["target_ids"]
-// 	}
-// }
-
-// cos_endpoint {
-// 	endpoint = "endpoint"
-// 	target_crn = "target_crn"
-// 	bucket = "bucket"
-// 	api_key = "api_key"
-// }
-
 func testAccCheckIBMAtrackerRoutesDataSourceConfigBasic(routeName string, routeReceiveGlobalEvents string) string {
 	return fmt.Sprintf(`
 		resource "ibm_atracker_target" "atracker_target" {

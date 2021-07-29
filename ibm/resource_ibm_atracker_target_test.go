@@ -33,6 +33,7 @@ func TestAccIBMAtrackerTargetBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target", "target_type", targetType),
 				),
 			},
+
 			resource.TestStep{
 				Config: testAccCheckIBMAtrackerTargetConfigBasic(nameUpdate, targetType),
 				Check: resource.ComposeAggregateTestCheckFunc(

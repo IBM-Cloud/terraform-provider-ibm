@@ -899,14 +899,6 @@ func (sess clientSession) CisFiltersSession() (*cisfiltersv1.FiltersV1, error) {
 
 // Activity Tracking API
 func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
-	//fmt.Println("************ AtrackeV1") //  MSP remove the if block when done
-	if os.Getenv("TF_LOG") != "" {
-		//fmt.Println("************ set logging") // MSP
-		logDestination := log.Writer()
-		goLogger := log.New(logDestination, "", log.LstdFlags)
-		core.SetLogger(core.NewLogger(core.LevelDebug, goLogger))
-	}
-
 	return session.atrackerClient, session.atrackerClientErr
 }
 
