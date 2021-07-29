@@ -43,6 +43,41 @@ func resourceIBMAtrackerTarget() *schema.Resource {
 				ValidateFunc: InvokeValidator("ibm_atracker_target", "target_type"),
 				Description:  "The type of the target.",
 			},
+			// "cos_endpoint": &schema.Schema{  // MSP
+			// 	Type:        schema.TypeList,
+			// 	MinItems:    1,
+			// 	MaxItems:    1,
+			// 	Required:    true,
+			// 	Description: "Property values for a Cloud Object Storage Endpoint.",
+			// 	Elem: &schema.Resource{
+			// 		Schema: map[string]*schema.Schema{
+			// 			"endpoint": &schema.Schema{
+			// 				Type:        schema.TypeString,
+			// 				Required:    true,
+			// 				Description: "The host name of the Cloud Object Storage endpoint.",
+			// 			},
+			// 			"target_crn": &schema.Schema{
+			// 				Type:        schema.TypeString,
+			// 				Required:    true,
+			// 				Description: "The CRN of the Cloud Object Storage instance.",
+			// 			},
+			// 			"bucket": &schema.Schema{
+			// 				Type:        schema.TypeString,
+			// 				Required:    true,
+			// 				Description: "The bucket name under the Cloud Object Storage instance.",
+			// 			},
+			// 			"api_key": &schema.Schema{
+			// 				Type:        schema.TypeString,
+			// 				Required:    true,
+			// 				Sensitive:   true,
+			// 				Description: "The IAM API key that has writer access to the Cloud Object Storage instance. This credential is masked in the response.",
+			// 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+			// 					return true
+			// 				},
+			// 			},
+			// 		},
+			// 	},
+			// },
 			"cos_endpoint": &schema.Schema{
 				Type:        schema.TypeList,
 				MinItems:    1,
@@ -67,10 +102,11 @@ func resourceIBMAtrackerTarget() *schema.Resource {
 							Description: "The bucket name under the Cloud Object Storage instance.",
 						},
 						"api_key": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Sensitive:   true,
-							Description: "The IAM API key that has writer access to the Cloud Object Storage instance. This credential is masked in the response.",
+							Type:             schema.TypeString,
+							Required:         true,
+							Sensitive:        true,
+							Description:      "The IAM API key that has writer access to the Cloud Object Storage instance. This credential is masked in the response.",
+							DiffSuppressFunc: applyOnce,
 						},
 					},
 				},
