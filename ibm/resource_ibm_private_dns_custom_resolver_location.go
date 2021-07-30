@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -88,10 +89,10 @@ func resourceIBMPrivateDNSLocationCreate(context context.Context, d *schema.Reso
 	if enable, ok := d.GetOkExists(pdnsCRLocationEnable); ok {
 		opt.SetEnabled(enable.(bool))
 	}
-	result, _, err := sess.AddCustomResolverLocationWithContext(context, opt)
+	result, resp, err := sess.AddCustomResolverLocationWithContext(context, opt)
 
 	if err != nil || result == nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("Error creating the custom resolver location %s:%s", err, resp))
 	}
 	d.SetId(convertCisToTfThreeVar(*result.ID, resolverID, instanceID))
 	return resourceIBMPrivateDNSLocationRead(context, d, meta)
@@ -116,9 +117,9 @@ func resourceIBMPrivateDNSLocationUpdate(context context.Context, d *schema.Reso
 		if e, ok := d.GetOkExists(pdnsCRLocationEnable); ok {
 			updatelocation.SetEnabled(e.(bool))
 		}
-		_, _, err := sess.UpdateCustomResolverLocationWithContext(context, updatelocation)
-		if err != nil {
-			return diag.FromErr(err)
+		result, resp, err := sess.UpdateCustomResolverLocationWithContext(context, updatelocation)
+		if err != nil || result == nil {
+			return diag.FromErr(fmt.Errorf("Error updating the custom resolver location %s:%s", err, resp))
 		}
 	}
 	return resourceIBMPrivateDNSLocationRead(context, d, meta)
@@ -130,9 +131,12 @@ func resourceIBMPrivateDNSLocationDelete(context context.Context, d *schema.Reso
 	}
 	locationID, resolverID, instanceID, err := convertTfToCisThreeVar(d.Id())
 	deleteCRlocation := sess.NewDeleteCustomResolverLocationOptions(instanceID, resolverID, locationID)
-	_, errDel := sess.DeleteCustomResolverLocationWithContext(context, deleteCRlocation)
+	resp, errDel := sess.DeleteCustomResolverLocationWithContext(context, deleteCRlocation)
 	if errDel != nil {
-		return diag.FromErr(err)
+		if resp != nil && resp.StatusCode == 404 {
+			return nil
+		}
+		return diag.FromErr(fmt.Errorf("Error deleting the custom resolver location %s:%s", errDel, resp))
 	}
 	d.SetId("")
 	return nil

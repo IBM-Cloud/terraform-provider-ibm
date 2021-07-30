@@ -193,11 +193,11 @@ resource "ibm_dns_custom_resolver" "test" {
   description = "testdescription-CR"
   locations {
     subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-6c3a997d-72b2-47f6-8788-6bd95e1bdb03"
-    enabled     = true
+    enabled     = false
   }
 }
 
-data "ibm_dns_custom_resolvers" "test-cr" {
+data "ibm_dns_custom_resolvers" "test-custom-resolver" {
   instance_id = ibm_dns_custom_resolver.test.instance_id
 }
 
@@ -213,7 +213,7 @@ resource "ibm_dns_custom_resolver_location" "test" {
 }
 
 resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
- instance_id = ibm_resource_instance.dns_custom_resolver_forwarding_rule_instance_id
+ instance_id = ibm_resource_instance.test-pdns-instance.guid
  resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
   description = "test forward rule"
   type = "zone"

@@ -13,30 +13,33 @@ Provides a read-only data source for Forwarding rules. You can then reference th
 ## Example Usage
 
 ```terraform
-data "dns_custom_resolver_forwarding_rules" "dns_custom_resolver_forwarding_rules" {
-	instance_id = "instance_id"
-	resolver_id = "resolver_id"
+data "ibm_dns_custom_resolver_forwarding_rules" "dns_custom_resolver_forwarding_rules" {
+  instance_id = ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule.instance_id
+  resolver_id = ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule.resolver_id
 }
 ```
 
 ## Argument Reference
 
-The following arguments are supported:
+Review the argument reference that you can specify for your data source.
 
-* `instance_id` - (Required, string) The unique identifier of a service instance.
-* `resolver_id` - (Required, string) The unique identifier of a custom resolver.
+- `instance_id` - (Required, string) The GUID of the private DNS service instance.
+- `resolver_id` - (Required, string) The unique identifier of a custom resolver.
 
 ## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to the argument references list, you can access the following attribute references after your data source is created.
 
-* `id`- (String) The unique identifier of the forwarding rules.
-* `forwarding_rules` (List of Forwarding rules) Nested `forwarding_rules` blocks have the following structure:
-	* `description` - (String) Descriptive text of the forwarding rule.
-	* `forward_to` - (String) The upstream DNS servers will be forwarded to.
-	* `id` - (String) Identifier of the forwarding rule.
-	* `match` - (String) The matching zone or hostname.
-	* `type` - (String) Type of the forwarding rule.
+- `id`- (String) The unique identifier of the forwarding rules.
+- `forwarding_rules` (List) List of Forwarding rules.
+
+	Nested scheme for `forwarding_rules`:
+	- `description` - (String) Descriptive text of the forwarding rule.
+	- `forward_to` - (String) The upstream DNS servers will be forwarded to.
+	- `id` - (String) Identifier of the forwarding rule.
+	- `match` - (String) The matching zone or hostname.
+	- `type` - (String) Type of the forwarding rule.
+
 	
 	
 	

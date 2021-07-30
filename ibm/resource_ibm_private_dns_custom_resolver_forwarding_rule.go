@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -110,10 +111,10 @@ func resourceIbmDnsCrForwardingRuleCreate(context context.Context, d *schema.Res
 	if _, ok := d.GetOk(pdnsCRFRForwardTo); ok {
 		opt.SetForwardTo(expandStringList(d.Get(pdnsCRFRForwardTo).([]interface{})))
 	}
-	result, _, err := dnsSvcsClient.CreateForwardingRuleWithContext(context, opt)
+	result, resp, err := dnsSvcsClient.CreateForwardingRuleWithContext(context, opt)
 
 	if err != nil || result == nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("Error creating the forwarding rules %s:%s", err, resp))
 	}
 	d.SetId(convertCisToTfThreeVar(*result.ID, resolverID, instanceID))
 
@@ -128,9 +129,13 @@ func resourceIbmDnsCrForwardingRuleRead(context context.Context, d *schema.Resou
 	ruleID, resolverID, instanceID, err := convertTfToCisThreeVar(d.Id())
 	opt := dnsSvcsClient.NewGetForwardingRuleOptions(instanceID, resolverID, ruleID)
 	result, resp, err := dnsSvcsClient.GetForwardingRuleWithContext(context, opt)
-	if err != nil && resp.StatusCode == 404 {
-		d.SetId("")
-		return nil
+
+	if err != nil || result == nil {
+		if resp != nil && resp.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(fmt.Errorf("Error reading the forwarding rules %s:%s", err, resp))
 	}
 	d.Set(pdnsInstanceID, instanceID)
 	d.Set(pdnsCRFRResolverID, resolverID)
@@ -170,13 +175,11 @@ func resourceIbmDnsCrForwardingRuleUpdate(context context.Context, d *schema.Res
 			opt.SetForwardTo(expandStringList(d.Get(pdnsCRFRForwardTo).([]interface{})))
 		}
 
-		result, _, err := dnsSvcsClient.UpdateForwardingRuleWithContext(context, opt)
+		result, resp, err := dnsSvcsClient.UpdateForwardingRuleWithContext(context, opt)
 		if err != nil || result == nil {
-			return diag.FromErr(err)
+			return diag.FromErr(fmt.Errorf("Error updating the forwarding rule %s:%s", err, resp))
 		}
-		if *result.ID == "" {
-			return diag.FromErr(err)
-		}
+
 	}
 	return resourceIbmDnsCrForwardingRuleRead(context, d, meta)
 }
@@ -189,8 +192,11 @@ func resourceIbmDnsCrForwardingRuleDelete(context context.Context, d *schema.Res
 	ruleID, resolverID, instanceID, err := convertTfToCisThreeVar(d.Id())
 	opt := dnsSvcsClient.NewDeleteForwardingRuleOptions(instanceID, resolverID, ruleID)
 	response, err := dnsSvcsClient.DeleteForwardingRuleWithContext(context, opt)
-	if err != nil && response.StatusCode == 404 {
-		return nil
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
+		return diag.FromErr(fmt.Errorf("Error deleting the  Forwarding Rules %s:%s", err, response))
 	}
 	d.SetId("")
 	return nil

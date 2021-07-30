@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -27,7 +28,7 @@ func dataSourceIBMDNSCustomResolver() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						pdnsCRId: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Identifier of the custom resolver",
@@ -94,15 +95,15 @@ func dataSourceIBMDNSCustomResolverRead(context context.Context, d *schema.Resou
 	instanceID := d.Get(pdnsInstanceID).(string)
 
 	opt := sess.NewListCustomResolversOptions(instanceID)
-	result, _, err := sess.ListCustomResolversWithContext(context, opt)
-	if err != nil {
-		return diag.FromErr(err)
+	result, resp, err := sess.ListCustomResolversWithContext(context, opt)
+	if err != nil || result == nil {
+		return diag.FromErr(fmt.Errorf("Error listing the custom resolvers %s:%s", err, resp))
 	}
 
 	customResolvers := make([]interface{}, 0)
 	for _, instance := range result.CustomResolvers {
 		customResolver := map[string]interface{}{}
-		customResolver["id"] = *instance.ID
+		customResolver[pdnsCRId] = *instance.ID
 		customResolver[pdnsCRName] = *instance.Name
 		customResolver[pdnsCRDescription] = *instance.Description
 		customResolver[pdnsCRHealth] = *instance.Health

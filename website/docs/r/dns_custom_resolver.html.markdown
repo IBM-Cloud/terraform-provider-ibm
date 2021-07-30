@@ -19,7 +19,7 @@ resource "ibm_dns_custom_resolver" "example" {
   instance_id               = "instance_id"
   description               = "new test CR TF desc"
   locations {
-    subnet_crn  = "subnet_crn"
+    subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-03d54d71-b438-4d20-b943-76d3d2a1a590"
     enabled     = true
   }
 }
@@ -28,7 +28,7 @@ resource "ibm_dns_custom_resolver" "example" {
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
 
-- `instance_id` - (Required, string) The unique identifier of a service instance.
+- `instance_id` - (Required, string) The GUID of the private DNS service instance.
 - `name`- (Required, String) The name of the custom resolver.
 - `description` - (Optional, string) Descriptive text of the  custom resolver.
 - `locations`- (Required, Set) The list of locations where this custom resolver is deployed. There is no update for location argument in  resolver resource.

@@ -161,9 +161,9 @@ func resouceIBMPrivateDNSCustomResolverCreate(context context.Context, d *schema
 	customResolverOption.SetDescription(crDescription)
 	customResolverOption.SetLocations(expandPdnsCRLocations(crLocations))
 
-	result, _, err := sess.CreateCustomResolverWithContext(context, customResolverOption)
-	if err != nil {
-		return diag.FromErr(err)
+	result, resp, err := sess.CreateCustomResolverWithContext(context, customResolverOption)
+	if err != nil || result == nil {
+		return diag.FromErr(fmt.Errorf("Error reading the  custom resolver %s:%s", err, resp))
 	}
 
 	d.SetId(convertCisToTfTwoVar(*result.ID, crn))
@@ -195,11 +195,10 @@ func resouceIBMPrivateDNSCustomResolverRead(context context.Context, d *schema.R
 
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
-			log.Printf("Error Custom Resolver not found ")
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("Error reading the  custom resolver %s:%s", err, response))
 	}
 	d.Set(pdnsInstanceID, crn)
 	d.Set(pdnsCRId, *result.ID)
@@ -241,13 +240,11 @@ func resouceIBMPrivateDNSCustomResolverUpdate(context context.Context, d *schema
 			opt.SetEnabled(crEnabled)
 		}
 
-		result, _, err := sess.UpdateCustomResolverWithContext(context, opt)
-		if err != nil {
-			return diag.FromErr(err)
+		result, resp, err := sess.UpdateCustomResolverWithContext(context, opt)
+		if err != nil || result == nil {
+			return diag.FromErr(fmt.Errorf("Error updating the  custom resolver %s:%s", err, resp))
 		}
-		if *result.ID == "" {
-			return diag.FromErr(err)
-		}
+
 	}
 
 	return resouceIBMPrivateDNSCustomResolverRead(context, d, meta)
@@ -267,9 +264,9 @@ func resouceIBMPrivateDNSCustomResolverDelete(context context.Context, d *schema
 	// Disable Cutsom Resolver before deleting
 	optEnabled := sess.NewUpdateCustomResolverOptions(crn, customResolverID)
 	optEnabled.SetEnabled(false)
-	_, _, errEnabled := sess.UpdateCustomResolverWithContext(context, optEnabled)
-	if errEnabled != nil {
-		return diag.FromErr(err)
+	result, resp, errEnabled := sess.UpdateCustomResolverWithContext(context, optEnabled)
+	if err != nil || result == nil {
+		return diag.FromErr(fmt.Errorf("Error updating the  custom resolver to disable before deleting %s:%s", errEnabled, resp))
 	}
 
 	opt := sess.NewDeleteCustomResolverOptions(crn, customResolverID)
@@ -279,7 +276,7 @@ func resouceIBMPrivateDNSCustomResolverDelete(context context.Context, d *schema
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("Error deleting the  custom resolver %s:%s", err, response))
 	}
 
 	d.SetId("")

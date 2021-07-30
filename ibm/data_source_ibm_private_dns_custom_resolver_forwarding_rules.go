@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -76,9 +77,9 @@ func dataSourceIbmDnsCrForwardingRulesRead(context context.Context, d *schema.Re
 
 	opt := sess.NewListForwardingRulesOptions(instanceID, resolverID)
 
-	result, _, err := sess.ListForwardingRulesWithContext(context, opt)
-	if err != nil || result != nil {
-		return diag.FromErr(err)
+	result, resp, err := sess.ListForwardingRulesWithContext(context, opt)
+	if err != nil || result == nil {
+		return diag.FromErr(fmt.Errorf("Error listing the forwarding rules %s:%s", err, resp))
 	}
 
 	forwardRules := make([]interface{}, 0)

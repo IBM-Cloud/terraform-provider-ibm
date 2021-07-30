@@ -25,9 +25,9 @@ resource "ibm_dns_custom_resolver_location" "test" {
 
 ## Argument Reference
 
-The following arguments are supported:
+Review the argument reference that you can specify for your resource.
 
-* `instance_id` - (Required, string) The unique identifier of a service instance.
+* `instance_id` - (Required, string) The GUID of the private DNS service instance.
 * `resolver_id` - (Required, string) The unique identifier of a custom resolver.
 * `subnet_crn` - (Required, string) The subnet crn of the VPC.
 * `enabled` - (Optional, Bool) The Custom resolver location will enable.
@@ -35,25 +35,10 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all argument reference list, you can access the following attribute references after your resource is created.
 
 * `dns_server_ip` - (Computed, string) Custom resolver location server ip.
 * `healthy` - (Computed, Bool) The Custom resolver location will enable.
 * `id` - (String) The unique identifier of the ibm_dns_custom_resolver_location.
 * `location_id` - (Computed, string) Type of the custom resolver loaction id.
 
-## Import
-
-You can import the `ibm_dns_custom_resolver_location` resource by using `id`.
-The `id` property can be formed from `instance_id`, `resolver_id`, and `location_id` in the following format:
-
-```
-<instance_id>/<resolver_id>/<rule_id>
-```
-* `instance_id`: A string. The unique identifier of a service instance.
-* `resolver_id`: A string. The unique identifier of a custom resolver locations.
-* `location_id`: A string. The unique identifier of a custom resolver locations.
-
-```
-$ terraform import ibm_dns_custom_resolver_location <instance_id>/<resolver_id>/<location_id>
-```
