@@ -1137,9 +1137,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 	var authenticator core.Authenticator
 
 	if c.BluemixAPIKey != "" {
+		iamURL := iamidentity.DefaultServiceURL
+		if c.Visibility == "private" || c.Visibility == "public-and-private" {
+			if c.Region == "us-south" || c.Region == "us-east" {
+				iamURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+			} else {
+				iamURL = contructEndpoint("private.iam", cloudEndpoint)
+			}
+		}
 		authenticator = &core.IamAuthenticator{
 			ApiKey: c.BluemixAPIKey,
-			URL:    envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, "https://iam.cloud.ibm.com") + "/identity/token",
+			URL:    envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
 		}
 	} else if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
 		authenticator = &core.BearerTokenAuthenticator{

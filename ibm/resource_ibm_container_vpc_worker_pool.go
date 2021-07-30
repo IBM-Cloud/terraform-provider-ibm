@@ -104,7 +104,7 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 						"effect": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Effect for taint. Accepted values are NoSchedule, PreferNoSchedule, and NoExecute.",
+							Description: "Effect for taint. Accepted values are NoSchedule, PreferNoSchedule and NoExecute.",
 							ValidateFunc: InvokeValidator(
 								"ibm_container_vpc_worker_pool",
 								"worker_taints"),
@@ -146,7 +146,7 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 	}
 }
 func resourceContainerVPCWorkerPoolValidator() *ResourceValidator {
-	tainteffects := "NoSchedule, PreferNoSchedule, and NoExecute"
+	tainteffects := "NoSchedule,PreferNoSchedule,NoExecute"
 	validateSchema := make([]ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		ValidateSchema{

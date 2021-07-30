@@ -31,9 +31,10 @@ In addition to the argument reference list, you can access the following attribu
 - `ips` - (List) The unique identifier for the reserved IP.
 
   Nested scheme for `ips`:
-	- `id` - (String) The collection of reserved IPs bound to an endpoint gateway.
-	- `name` - (String) The user defined or system provided name of the resource IP.
-	- `resource_type` - (String) The endpoint gateway IP resource type.
+  - `address` - (String) The endpoint gateway IP Address.
+  - `id` - (String) The collection of reserved IPs bound to an endpoint gateway.
+  - `name` - (String) The user defined or system provided name of the resource IP.
+  - `resource_type` - (String) The endpoint gateway IP resource type.
 - `resource_group` - (String) The unique identifier for the resource group.
 - `target` - (List) The endpoint gateway target.
 

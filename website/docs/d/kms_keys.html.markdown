@@ -15,6 +15,7 @@ Retrieves the list of keys from the Hyper Protect Crypto Services (HPCS) and Key
 ```terraform
 data "ibm_kms_keys" "test" {
   instance_id = "guid-of-keyprotect-or hs-crypto-instance"
+  limit = 100
 }
 resource "ibm_cos_bucket" "flex-us-south" {
   bucket_name          = "atest-bucket"
@@ -32,6 +33,8 @@ Review the argument references that you can specify for your resource.
 - `endpoint_type` - (Optional, String) The type of the public or private endpoint to be used for fetching keys.
 - `instance_id` - (Required, String) The key-protect instance ID.
 - `key_name` - (Optional, String) The name of the key. Only matching name of the keys are retrieved.
+- `key_id` - (Optional, In conflict with alias_name,key_name, string) The keyID of the key to be fetched.
+- `limit` - (Optional, int) The limit till the keys need to be fetched in the instance.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
