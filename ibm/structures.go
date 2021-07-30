@@ -2509,13 +2509,16 @@ func getIBMUniqueId(accountID, userEmail string, meta interface{}) (string, erro
 func immutableResourceCustomizeDiff(resourceList []string, diff *schema.ResourceDiff) error {
 
 	for _, rName := range resourceList {
-		if diff.Id() != "" && diff.HasChange(rName) {
+		if diff.Id() != "" && diff.HasChange(rName) && rName != sateLocZone {
+			return fmt.Errorf("'%s' attribute is immutable and can't be changed", rName)
+		}
+		if diff.Id() != "" && diff.HasChange(rName) && rName == sateLocZone {
 			o, n := diff.GetChange(rName)
 			old := o.(string)
 			new := n.(string)
 			if len(old) > 0 && old != new {
 				if !(rName == sateLocZone && strings.Contains(old, new)) {
-					return fmt.Errorf("'%s' attribute is immutable and can't be changed from %s to %s.", rName, old, new)
+					return fmt.Errorf("'%s' attribute is immutable and can't be changed from %s to %s", rName, old, new)
 				}
 			}
 		}
