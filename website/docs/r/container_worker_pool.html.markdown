@@ -22,7 +22,6 @@ resource "ibm_container_worker_pool" "testacc_workerpool" {
   size_per_zone    = 1
   hardware         = "shared"
   disk_encryption  = "true"
-  region           = "eu-de"
 
   labels = {
     "test" = "test-pool"
