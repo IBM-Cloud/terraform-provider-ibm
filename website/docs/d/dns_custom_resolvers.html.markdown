@@ -27,11 +27,10 @@ Review the argument reference that you can specify for your data source.
 ## Attribute reference
 In addition to the argument references list, you can access the following attribute references after your data source is created. 
 
-- `id`- (String) The unique identifier of the custom resolvers.
 - `custom_resolvers` (List) List of all private DNS custom resolvers.
  
    Nested scheme for `custom_resolvers`:
-   - `id` - (String) Identifier of the  custom resolver.
+   - `custom_resolver_id` - (String) Identifier of the  custom resolver.
    - `description` - (String) Descriptive text of the custom resolver.
    - `enabled` - (String) Whether custom resolver is enabled.
    - `health`- (String) The status of DNS Custom Resolver's health. Possible values are `CRITICAL`, `DEGRADED`, `HEALTHY`.
