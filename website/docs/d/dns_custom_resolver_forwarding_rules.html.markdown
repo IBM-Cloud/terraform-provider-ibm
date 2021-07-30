@@ -30,14 +30,13 @@ Review the argument reference that you can specify for your data source.
 
 In addition to the argument references list, you can access the following attribute references after your data source is created.
 
-- `id`- (String) The unique identifier of the forwarding rules.
 - `forwarding_rules` (List) List of Forwarding rules.
 
 	Nested scheme for `forwarding_rules`:
 	- `description` - (String) Descriptive text of the forwarding rule.
 	- `forward_to` - (String) The upstream DNS servers will be forwarded to.
-	- `id` - (String) Identifier of the forwarding rule.
 	- `match` - (String) The matching zone or hostname.
+	- `rule_id` - (String) Identifier of the forwarding rule.
 	- `type` - (String) Type of the forwarding rule.
 
 	
