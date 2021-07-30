@@ -697,6 +697,7 @@ func Validator() ValidatorDict {
 				"ibm_function_rule":                       resourceIBMFuncRuleValidator(),
 				"ibm_function_trigger":                    resourceIBMFuncTriggerValidator(),
 				"ibm_function_namespace":                  resourceIBMFuncNamespaceValidator(),
+				"ibm_hpcs":                                resourceIBMHPCSValidator(),
 				"ibm_is_dedicated_host_group":             resourceIbmIsDedicatedHostGroupValidator(),
 				"ibm_is_dedicated_host":                   resourceIbmIsDedicatedHostValidator(),
 				"ibm_is_dedicated_host_disk_management":   resourceIBMISDedicatedHostDiskManagementValidator(),
