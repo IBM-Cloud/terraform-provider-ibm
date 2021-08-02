@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_atracker_routes"
 description: |-
   Get information about atracker_routes
-subcategory: "Activity Tracking API"
+subcategory: "Activity Tracker API"
 ---
 
 # ibm_atracker_routes
@@ -20,23 +20,25 @@ data "ibm_atracker_routes" "atracker_routes" {
 
 ## Argument Reference
 
-The following arguments are supported:
+Review the argument reference that you can specify for your data source.
 
-* `name` - (Optional, string) The name of the route.
+* `name` - (Optional, String) The name of the route.
 
 ## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the atracker_routes.
-* `routes` - A list of route resources. Nested `routes` blocks have the following structure:
-	* `id` - The uuid of the route resource.
-	* `name` - The name of the route.
-	* `crn` - The crn of the route resource.
-	* `version` - The version of the route.
-	* `receive_global_events` - Indicates whether or not all global events should be forwarded to this region.
-	* `rules` - The routing rules that will be evaluated in their order of the array. Nested `rules` blocks have the following structure:
-		* `target_ids` - The target ID List. Only 1 target id is supported.
-	* `created` - The timestamp of the route creation time.
-	* `updated` - The timestamp of the route last updated time.
+* `routes` - (Required, List) A list of route resources.
+Nested scheme for **routes**:
+	* `id` - (Required, String) The uuid of the route resource.
+	* `name` - (Required, String) The name of the route.
+	* `crn` - (Required, String) The crn of the route resource.
+	* `version` - (Optional, Integer) The version of the route.
+	* `receive_global_events` - (Required, Boolean) Indicates whether or not all global events should be forwarded to this region.
+	* `rules` - (Required, List) The routing rules that will be evaluated in their order of the array.
+	Nested scheme for **rules**:
+		* `target_ids` - (Required, List) The target ID List. Only 1 target id is supported.
+	* `created` - (Optional, String) The timestamp of the route creation time.
+	* `updated` - (Optional, String) The timestamp of the route last updated time.
 

@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_atracker_endpoints"
 description: |-
   Get information about atracker_endpoints
-subcategory: "Activity Tracking API"
+subcategory: "Activity Tracker API"
 ---
 
 # ibm_atracker_endpoints
@@ -17,19 +17,16 @@ data "ibm_atracker_endpoints" "atracker_endpoints" {
 }
 ```
 
-## Argument Reference
-
-The following arguments are supported:
-
 
 ## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the atracker_endpoints.
-* `api_endpoint` - Activity Tracking API endpoint. Nested `api_endpoint` blocks have the following structure:
-	* `public_url` - The public URL of Activity Tracking in a region.
-	* `public_enabled` - Indicates whether or not the public endpoint is enabled in the account.
-	* `private_url` - The private URL of Activity Tracking. This URL cannot be disabled.
-	* `private_enabled` - The private endpoint is always enabled.
+* `api_endpoint` - (Required, List) Activity Tracker API endpoint.
+Nested scheme for **api_endpoint**:
+	* `public_url` - (Required, String) The public URL of Activity Tracker in a region.
+	* `public_enabled` - (Required, Boolean) Indicates whether or not the public endpoint is enabled in the account.
+	* `private_url` - (Required, String) The private URL of Activity Tracker. This URL cannot be disabled.
+	* `private_enabled` - (Optional, Boolean) The private endpoint is always enabled.
 

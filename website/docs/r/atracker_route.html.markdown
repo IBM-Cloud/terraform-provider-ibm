@@ -2,13 +2,13 @@
 layout: "ibm"
 page_title: "IBM : ibm_atracker_route"
 description: |-
-  Manages Activity Tracking Route.
-subcategory: "Activity Tracking API"
+  Manages Activity Tracker Route.
+subcategory: "Activity Tracker API"
 ---
 
 # ibm_atracker_route
 
-Provides a resource for Activity Tracking Route. This allows Activity Tracking Route to be created, updated and deleted.
+Provides a resource for Activity Tracker Route. This allows Activity Tracker Route to be created, updated and deleted.
 
 ## Example Usage
 
@@ -20,38 +20,37 @@ resource "ibm_atracker_route" "atracker_route" {
 }
 ```
 
-## Timeouts
-
-atracker_route provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
-
-* `create` - (Default 60 minutes) Used for creating a Activity Tracking Route.
-* `update` - (Default 20 minutes) Used for updating a Activity Tracking Route.
-* `delete` - (Default 10 minutes) Used for deleting a Activity Tracking Route.
-
 ## Argument Reference
 
-The following arguments are supported:
+Review the argument reference that you can specify for your resource.
 
-* `name` - (Required, string) The name of the route. The name must be 1000 characters or less and cannot include any special characters other than `(space) - . _ :`.
+* `name` - (Required, String) The name of the route. The name must be 1000 characters or less and cannot include any special characters other than `(space) - . _ :`.
   * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 -._:]+$/`
-* `receive_global_events` - (Required, bool) Indicates whether or not all global events should be forwarded to this region.
+* `receive_global_events` - (Required, Boolean) Indicates whether or not all global events should be forwarded to this region.
 * `rules` - (Required, List) Routing rules that will be evaluated in their order of the array.
-  * `target_ids` - (Required, []interface{}) The target ID List. Only 1 target id is supported.
+Nested scheme for **rules**:
+	* `target_ids` - (Required, List) The target ID List. Only 1 target id is supported.
 
 ## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the Activity Tracking Route.
-* `created` - The timestamp of the route creation time.
-* `crn` - The crn of the route resource.
-* `updated` - The timestamp of the route last updated time.
-* `version` - The version of the route.
+* `id` - The unique identifier of the Activity Tracker Route.
+* `created` - (Optional, String) The timestamp of the route creation time.
+* `crn` - (Required, String) The crn of the route resource.
+* `updated` - (Optional, String) The timestamp of the route last updated time.
+* `version` - (Optional, Integer) The version of the route.
 
 ## Import
 
 You can import the `ibm_atracker_route` resource by using `id`. The uuid of the route resource.
 
+# Syntax
+```
+$ terraform import ibm_atracker_route.atracker_route <id>
+```
+
+# Example
 ```
 $ terraform import ibm_atracker_route.atracker_route c3af557f-fb0e-4476-85c3-0889e7fe7bc4
 ```

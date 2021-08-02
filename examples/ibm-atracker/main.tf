@@ -7,10 +7,10 @@ resource "ibm_atracker_target" "atracker_target_instance" {
   name = var.atracker_target_name
   target_type = var.atracker_target_target_type
   cos_endpoint {
-    endpoint = "endpoint"
-    target_crn = "target_crn"
-    bucket = "bucket"
-    api_key = "api_key"
+    endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
+    target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+    bucket = "my-atracker-bucket"
+    api_key = "xxxxxxxxxxxxxx"
   }
 }
 

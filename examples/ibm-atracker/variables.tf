@@ -12,7 +12,7 @@ variable "atracker_target_name" {
 variable "atracker_target_target_type" {
   description = "The type of the target."
   type        = string
-  default     = "target_type"
+  default     = "cloud_object_storage"
 }
 
 // Resource arguments for atracker_route

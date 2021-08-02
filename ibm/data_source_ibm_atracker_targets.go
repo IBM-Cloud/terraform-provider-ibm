@@ -54,7 +54,7 @@ func dataSourceIBMAtrackerTargets() *schema.Resource {
 						"encrypt_key": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The encryption key that is used to encrypt events before Activity Tracking services buffer them on storage. This credential is masked in the response.",
+							Description: "The encryption key that is used to encrypt events before Activity Tracker services buffer them on storage. This credential is masked in the response.",
 						},
 						"cos_endpoint": &schema.Schema{
 							Type:        schema.TypeList,

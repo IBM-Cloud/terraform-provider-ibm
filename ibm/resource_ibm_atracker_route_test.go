@@ -50,24 +50,6 @@ func TestAccIBMAtrackerRouteBasic(t *testing.T) {
 	})
 }
 
-// resource "ibm_atracker_target" "atracker_target" {
-// 	name = "my-cos-target"
-// 	target_type = "target_type"
-// 	cos_endpoint {
-// 		endpoint = "endpoint"
-// 		target_crn = "target_crn"
-// 		bucket = "bucket"
-// 		api_key = "api_key"
-// 	}
-// }
-
-// resource "ibm_atracker_route" "atracker_route" {
-// 	name = "%s"
-// 	receive_global_events = %s
-// 	rules {
-// 		target_ids = ["target_ids"]
-// 	}
-// }
 func testAccCheckIBMAtrackerRouteConfigBasic(name string, receiveGlobalEvents string) string {
 	return fmt.Sprintf(`
 
@@ -139,9 +121,9 @@ func testAccCheckIBMAtrackerRouteDestroy(s *terraform.State) error {
 		_, response, err := atrackerClient.GetRoute(getRouteOptions)
 
 		if err == nil {
-			return fmt.Errorf("Activity Tracking Route still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("Activity Tracker Route still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for Activity Tracking Route (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for Activity Tracker Route (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

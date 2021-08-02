@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -23,11 +22,6 @@ func resourceIBMAtrackerTarget() *schema.Resource {
 		UpdateContext: resourceIBMAtrackerTargetUpdate,
 		DeleteContext: resourceIBMAtrackerTargetDelete,
 		Importer:      &schema.ResourceImporter{},
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(60 * time.Minute),
-			Update: schema.DefaultTimeout(20 * time.Minute),
-			Delete: schema.DefaultTimeout(10 * time.Minute),
-		},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
@@ -84,7 +78,7 @@ func resourceIBMAtrackerTarget() *schema.Resource {
 			"encrypt_key": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The encryption key that is used to encrypt events before Activity Tracking services buffer them on storage. This credential is masked in the response.",
+				Description: "The encryption key that is used to encrypt events before Activity Tracker services buffer them on storage. This credential is masked in the response.",
 			},
 			"cos_write_status": &schema.Schema{
 				Type:        schema.TypeList,

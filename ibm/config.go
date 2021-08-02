@@ -897,7 +897,7 @@ func (sess clientSession) CisFiltersSession() (*cisfiltersv1.FiltersV1, error) {
 	return sess.cisFiltersClient.Clone(), nil
 }
 
-// Activity Tracking API
+// Activity Tracker API
 func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
 	return session.atrackerClient, session.atrackerClientErr
 }
@@ -1208,7 +1208,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
-		session.atrackerClientErr = fmt.Errorf("Error occurred while configuring Activity Tracking API service: %q", err)
+		session.atrackerClientErr = fmt.Errorf("Error occurred while configuring Activity Tracker API service: %q", err)
 	}
 
 	// Construct the service client.

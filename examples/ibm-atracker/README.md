@@ -4,8 +4,8 @@ This example illustrates how to use the AtrackerV1
 
 These types of resources are supported:
 
-* Activity Tracking Target
-* Activity Tracking Route
+* Activity Tracker Target
+* Activity Tracker Route
 
 ## Usage
 

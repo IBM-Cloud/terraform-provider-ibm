@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,11 +21,6 @@ func resourceIBMAtrackerRoute() *schema.Resource {
 		UpdateContext: resourceIBMAtrackerRouteUpdate,
 		DeleteContext: resourceIBMAtrackerRouteDelete,
 		Importer:      &schema.ResourceImporter{},
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(60 * time.Minute),
-			Update: schema.DefaultTimeout(20 * time.Minute),
-			Delete: schema.DefaultTimeout(10 * time.Minute),
-		},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{

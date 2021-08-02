@@ -50,13 +50,6 @@ func TestAccIBMAtrackerTargetBasic(t *testing.T) {
 	})
 }
 
-// cos_endpoint {
-// 	endpoint = "endpoint"
-// 	target_crn = "target_crn"
-// 	bucket = "bucket"
-// 	api_key = "api_key"
-// }
-
 func testAccCheckIBMAtrackerTargetConfigBasic(name string, targetType string) string {
 	return fmt.Sprintf(`
 
@@ -118,9 +111,9 @@ func testAccCheckIBMAtrackerTargetDestroy(s *terraform.State) error {
 		_, response, err := atrackerClient.GetTarget(getTargetOptions)
 
 		if err == nil {
-			return fmt.Errorf("Activity Tracking Target still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("Activity Tracker Target still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for Activity Tracking Target (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for Activity Tracker Target (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

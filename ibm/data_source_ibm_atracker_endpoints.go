@@ -23,13 +23,13 @@ func dataSourceIBMAtrackerEndpoints() *schema.Resource {
 			"api_endpoint": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Activity Tracking API endpoint.",
+				Description: "Activity Tracker API endpoint.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"public_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The public URL of Activity Tracking in a region.",
+							Description: "The public URL of Activity Tracker in a region.",
 						},
 						"public_enabled": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -39,7 +39,7 @@ func dataSourceIBMAtrackerEndpoints() *schema.Resource {
 						"private_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The private URL of Activity Tracking. This URL cannot be disabled.",
+							Description: "The private URL of Activity Tracker. This URL cannot be disabled.",
 						},
 						"private_enabled": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -58,7 +58,6 @@ func dataSourceIBMAtrackerEndpointsRead(context context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	// fmt.Println("******** dataSourceIBMAtrackerEndpointsRead") //MPS
 
 	getEndpointsOptions := &atrackerv1.GetEndpointsOptions{}
 
