@@ -747,7 +747,7 @@ func getDatabaseServiceDefaults(service string, meta interface{}) (*icdv4.Group,
 
 	groupDefaults, err := icdClient.Groups().GetDefaultGroups(dbType)
 	if err != nil {
-		return nil, fmt.Errorf("ICD API is down for plan validation, set plan_validation=false")
+		return nil, fmt.Errorf("ICD API is down for plan validation, set plan_validation=false %s", err)
 	}
 	return &groupDefaults.Groups[0], nil
 }
