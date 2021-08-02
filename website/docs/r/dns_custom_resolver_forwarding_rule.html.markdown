@@ -1,5 +1,5 @@
 ---
-subcategory: "DNS Svcs"
+subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : Forwarding Rule"
 description: |-
