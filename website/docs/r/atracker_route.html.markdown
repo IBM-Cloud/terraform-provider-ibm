@@ -16,7 +16,7 @@ Provides a resource for Activity Tracker Route. This allows Activity Tracker Rou
 resource "ibm_atracker_route" "atracker_route" {
   name = "my-route"
   receive_global_events = false
-  rules = { "target_ids" : [ "target_ids" ] }
+  target_ids = [ ibm_atracker_target.atracker_target.id ]
 }
 ```
 
