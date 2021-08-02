@@ -14,13 +14,14 @@ Manages HPCS resource. This allows hpcs sub-resources to be added to an existing
 
 
 
-### Set up crypto unit administrator signature keys. 
+## Set up crypto unit administrator signature keys. 
 You can select one of the following ways to create administrator signature keys:
-  #### 1. Using the IBM Cloud Trusted Key Entry (TKE) CLI plug-in
+
+  ### 1. Using the IBM Cloud Trusted Key Entry (TKE) CLI plug-in
 
   After you install and configure the TKE CLI plug-in by following these instructions, you can use the command `ibmcloud tke sigkey-add` to create administrator signature keys. The signature keys are stored in files that are protected by passwords on your local workstation. The file path is specified by the environment variable `CLOUDTKEFILES`.
 
-  #### 2. Using a third-party signing service
+  ### 2. Using a third-party signing service
 
   A third-party signing service can be used to create, store, and access the signature keys used by both the TKE CLI plug-in and Terraform. To enable the signing service in the TKE CLI plug-in, you need to set the TKE_SIGNSERV_URL environment variable on the local workstation to the URL and port number where the signing service is running. To enable the signing service in Terraform, you need to set the `signature_server_url` parameter in the resource block to the same value.
 
