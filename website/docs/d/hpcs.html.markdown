@@ -1,14 +1,14 @@
 ---
-subcategory: "Hyper Protect Crypto Service (HPCS)"
+subcategory: "Hyper Protect Crypto Services"
 layout: "ibm"
-page_title: "IBM : Hyper Protect Crypto Service instance"
+page_title: "IBM : Hyper Protect Crypto Services instance"
 description: |-
-  Get information on an IBM Cloud Hyper Protect Crypto Service Instance.
+  Get information on an IBM Cloud Hyper Protect Crypto Services Instance.
 ---
 
 # ibm\_hpcs
 
-Imports a read only copy of an existing HPCS resource.
+Imports a read only copy of an existing Hyper Protect Crypto Services resource.
 
 ## Example Usage
 
@@ -22,20 +22,20 @@ data "ibm_hpcs" "hpcs_instance" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The name used to identify the HPCS instance in the IBM Cloud UI.
+* `name` - (Required, string) The name used to identify the Hyper Protect Crypto Services instance in the IBM Cloud UI.
 * `resource_group_id` -(Optional, string) The Id of Resource Group.
-* `location` - (Optional, String) The location for this HPCS instance
+* `location` - (Optional, String) The location for this Hyper Protect Crypto Services instance
 
 ## Attribute Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `crn` - (String) CRN of HPCS Instance
+* `crn` - (String) CRN of the Hyper Protect Crypto Services instance
 * `extensions` - (List) The extended metadata as a map associated with the resource instance.
 * `guid` - (String) Unique identifier of resource instance.
-* `hsm_info` - (List) HSM config of HPCS Instance Crypto Units.
+* `hsm_info` - (List) HSM config of the crypto units.
   Nested scheme for `hsm_info`:
-  * `admins` - (List) List of Admins for Crypto Units
+  * `admins` - (List) List of Admins for crypto units
     Nested scheme for `admins`:
       * `name` - (String) Name of Admin
       * `ski` - (String) Subject Key Identifier of the administrator signature key
@@ -49,9 +49,9 @@ In addition to all arguments above, the following attributes are exported:
   * `revocation_threshold` - (Int) Revocation Threshold for Crypto Units
   * `signature_threshold`- (Int) Signature Threshold for Crypto Units
 * `failover_units` - (Int) The number of failover crypto units for your service instance
-* `id` - (String) The unique identifier CRN of this HPCS instance.
+* `id` - (String) The unique identifier CRN of this Hyper Protect Crypto Services instance.
 * `plan` - (String) The pricing plan for your service instance.
 * `service` - (String) The service type (`hs-crypto`) of the instance.
 * `service_endpoints` - (String) The network access to your service instance. Possible values are `public-and-private`, `private-only`.
-* `status` - (String) Status of the hpcs instance.
+* `status` - (String) Status of the Hyper Protect Crypto Services instance.
 * `units` -(Int) The number of operational crypto units for your service instance.
