@@ -1,14 +1,14 @@
 ---
-subcategory: "Hyper Protect Crypto Service (HPCS)"
+subcategory: "Hyper Protect Crypto Services"
 layout: "ibm"
-page_title: "IBM : Hyper Protect Crypto Service instance"
+page_title: "IBM : Hyper Protect Crypto Services instance"
 description: |-
-  Manages IBM Cloud Hyper Protect Crypto Service Instance.
+  Manages IBM Cloud Hyper Protect Crypto Services Instance.
 ---
 
 # ibm\_hpcs
 
-Manages HPCS resource. This allows hpcs sub-resources to be added to an existing hpcs instance.
+Manages the Hyper Protect Crypto Services resource. This allows hpcs sub-resources to be added to an existing Hyper Protect Crypto Services instance.
 
 ~> **Note:** As recovery crypto units are currently available only in the us-south and us-east regions, using Terraform to initialize Hyper Protect Crypto Services instances is supported only in these two regions. For more information about manual initialization, see [Introducing service instance initialization approaches.](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-initialize-instance-mode)
 
@@ -64,7 +64,7 @@ The following arguments are supported:
     ~> **Note:** If you are using a signing service (`signature_server_url`) to provide signature keys, specify the token that authorizes use of the signature key depending on the signing service definition.
 * `failover_units` - (Optional, int) The number of failover crypto units for your service instance. Valid values are 0, 2, or 3, and it must be less than or equal to the number of operational crypto units. If you set it 0, cross-region high availability will not be enabled. Currently, you can enable this option only in the us-south and us-east region. If you do not specify the value, the default value is 0. 
 * `location` - (Required, string) The region abbreviation, such as us-south, that represents the geographic area where the operational crypto units of your service instance are located. For more information, see Regions and locations. As recovery crypto units are available only in us-south and us-east, only these two regions are supported if you want to use Terraform for instance initialization.
-* `name` - (Required, string) The name of your Hyper Protect Crypto Service instance.
+* `name` - (Required, string) The name of your Hyper Protect Crypto Services instance.
 * `plan` - (Required, string) The pricing plan for your service instance. Currently, only the standard plan is supportd.
 * `resource_group_id` - (Optional, string) The Id of resource group where you want to organize and manage your service instance.
 * `revocation_threshold` - (Required, int) The number of administrator signatures that is required to remove an administrator after you leave imprint mode. The valid value is between 1 and 8.
@@ -81,12 +81,12 @@ In addition to all arguments above, the following attributes are exported:
 
 * `created_at` - (String) The date when the instance was created.
 * `created_by` - (String) The subject who created the instance.
-* `crn` - (String) CRN of HPCS Instance.
+* `crn` - (String) CRN of the Hyper Protect Crypto Services instance.
 * `deleted_at` - (String) The date when the instance was deleted.
 * `deleted_by` - (String) The subject who deleted the instance.
 * `extensions` - (List) The extended metadata as a map associated with the resource instance.
 * `guid` - (String) Unique identifier of resource instance.
-* `hsm_info` - (List) HSM config of HPCS Instance Crypto Units.
+* `hsm_info` - (List) HSM config of the crypto units.
   Nested scheme for `hsm_info`:
   * `admins` - (List) List of Admins for Crypto Units
     Nested scheme for `admins`:
@@ -101,8 +101,8 @@ In addition to all arguments above, the following attributes are exported:
   * `new_mkvp` - (String) New Master Key Register Verification Pattern.
   * `revocation_threshold` - (Int) Revocation Threshold for Crypto Units.
   * `signature_threshold`- (Int) Signature Threshold for Crypto Units.
-* `id` - (String) The unique identifier CRN of this HPCS instance.
-* `location` - (String) The location for this HPCS instance.
+* `id` - (String) The unique identifier CRN of this Hyper Protect Crypto Services instance.
+* `location` - (String) The location for this Hyper Protect Crypto Services instance.
 * `plan` - (String) The pricing plan for your service instance.
 * `resource_aliases_url` - (String) The relative path to the resource aliases for the instance.
 * `resource_bindings_url` - (String) The relative path to the resource bindings for the instance.
