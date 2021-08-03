@@ -20,7 +20,7 @@ data "ibm_appid_token_config" "tc" {
 ## Argument reference
 Review the argument references that you can specify for your data source.
 
-- `tenant_id` - (String) The AppID instance GUID
+- `tenant_id` - (Required, String) The AppID instance GUID
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created

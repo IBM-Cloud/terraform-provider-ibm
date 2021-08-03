@@ -42,26 +42,26 @@ resource "ibm_appid_token_config" "tc" {
 ## Argument reference
 Review the argument references that you can specify for your resource.
 
-- `tenant_id` - (String) The AppID instance GUID
-- `access_token_claim` - (Set of Object) A set of objects that are created when claims that are related to access tokens are mapped
+- `tenant_id` - (Required, Forces new resource, String) The AppID instance GUID
+- `access_token_claim` - (Optional, Set of Object) A set of objects that are created when claims that are related to access tokens are mapped
 
   Nested scheme for `access_token_claim`:
-    - `destination_claim` - (String) Defines the custom attribute that can override the current claim in token
-    - `source` - (String) Defines the source of the claim. Options include: `saml`, `cloud_directory`, `facebook`, `google`, `appid_custom`, and `attributes`
-    - `source_claim` - (String) Defines the claim as provided by the source. It can refer to the identity provider's user information or the user's App ID custom attributes
+    - `destination_claim` - (Optional, String) Defines the custom attribute that can override the current claim in token
+    - `source` - (Required, String) Defines the source of the claim. Options include: `saml`, `cloud_directory`, `facebook`, `google`, `appid_custom`, and `attributes`
+    - `source_claim` - (Optional, String) Defines the claim as provided by the source. It can refer to the identity provider's user information or the user's App ID custom attributes
 
-- `access_token_expires_in` - (Number) The length of time for which access tokens are valid in seconds
-- `anonymous_access_enabled` - (Bool) Enable anonymous access
-- `anonymous_token_expires_in` - (Number) The length of time for which an anonymous token is valid in seconds
-- `id_token_claim` - (Set of Object) A set of objects that are created when claims that are related to identity tokens are mapped
+- `access_token_expires_in` - (Optional, Number) The length of time for which access tokens are valid in seconds
+- `anonymous_access_enabled` - (Optional, Bool) Enable anonymous access
+- `anonymous_token_expires_in` - (Optional, Number) The length of time for which an anonymous token is valid in seconds
+- `id_token_claim` - (Optional, Set of Object) A set of objects that are created when claims that are related to identity tokens are mapped
 
   Nested scheme for `id_token_claim`:
-    - `destination_claim` - (String) Defines the custom attribute that can override the current claim in token
-    - `source` - (String) Defines the source of the claim. Options include: `saml`, `cloud_directory`, `facebook`, `google`, `appid_custom`, and `attributes`
-    - `source_claim` - (String) Defines the claim as provided by the source. It can refer to the identity provider's user information or the user's App ID custom attributes
+    - `destination_claim` - (Optional, String) Defines the custom attribute that can override the current claim in token
+    - `source` - (Required, String) Defines the source of the claim. Options include: `saml`, `cloud_directory`, `facebook`, `google`, `appid_custom`, and `attributes`
+    - `source_claim` - (Optional, String) Defines the claim as provided by the source. It can refer to the identity provider's user information or the user's App ID custom attributes
 
-- `refresh_token_enabled` - (Bool) Enable refresh token
-- `refresh_token_expires_in` - (Number) The length of time for which refresh tokens are valid in seconds
+- `refresh_token_enabled` - (Optional, Bool) Enable refresh token
+- `refresh_token_expires_in` - (Optional, Number) The length of time for which refresh tokens are valid in seconds
 
 ## Import
 
