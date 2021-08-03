@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
-	//t.Parallel()
+	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
 	testName := fmt.Sprintf("tf-Pgress-%s", acctest.RandString(16))

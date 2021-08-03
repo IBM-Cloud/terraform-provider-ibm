@@ -1037,17 +1037,13 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error creating database instance: %s %s", err, response)
 	}
-
-	// Moved d.SetId(instance.ID) to after waiting for resource to finish creation. Otherwise Terraform initates depedent tasks too early.
-	// Original flow had SetId here as its required as input to waitForDatabaseInstanceCreate
+	d.SetId(*instance.ID)
 
 	_, err = waitForDatabaseInstanceCreate(d, meta, *instance.ID)
 	if err != nil {
 		return fmt.Errorf(
 			"[ERROR] Error waiting for create database instance (%s) to complete: %s", *instance.ID, err)
 	}
-
-	d.SetId(*instance.ID)
 
 	if node_count, ok := d.GetOk("node_count"); ok {
 		if initialNodeCount != node_count {
@@ -1321,7 +1317,7 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 
 	autoSclaingGroup, err := icdClient.AutoScaling().GetAutoScaling(icdId, "member")
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database groups: %s", err)
+		return fmt.Errorf("[ERROR] Error getting database autoscaling groups: %s", err)
 	}
 	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
 
@@ -1843,12 +1839,12 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 			if err != nil || instance == nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return nil, "", fmt.Errorf("[ERROR] The resource instance %s does not exist anymore: %v %s", d.Id(), err, response)
+					return nil, "", fmt.Errorf("[ERROR] The resource instance %s does not exist anymore: %s %s", d.Id(), err, response)
 				}
-				return nil, "", err
+				return nil, "", fmt.Errorf("[ERROR] GetResourceInstance on %s failed with error %s %s", d.Id(), err, response)
 			}
 			if *instance.State == databaseInstanceFailStatus {
-				return *instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed: %v %s", d.Id(), err, response)
+				return *instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed: %s %s", d.Id(), err, response)
 			}
 			return *instance, *instance.State, nil
 		},
@@ -1877,12 +1873,12 @@ func waitForDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return nil, "", fmt.Errorf("[ERROR] The resource instance %s does not exist anymore: %v %s", d.Id(), err, response)
+					return nil, "", fmt.Errorf("[ERROR] The resource instance %s does not exist anymore: %s %s", d.Id(), err, response)
 				}
-				return nil, "", err
+				return nil, "", fmt.Errorf("[ERROR] GetResourceInstance on %s failed with error %s %s", d.Id(), err, response)
 			}
 			if *instance.State == databaseInstanceFailStatus {
-				return *instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed: %v %s", d.Id(), err, response)
+				return *instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed: %s %s", d.Id(), err, response)
 			}
 			return *instance, *instance.State, nil
 		},
@@ -1944,10 +1940,10 @@ func waitForDatabaseInstanceDelete(d *schema.ResourceData, meta interface{}) (in
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 					return instance, databaseInstanceSuccessStatus, nil
 				}
-				return nil, "", err
+				return nil, "", fmt.Errorf("[ERROR] GetResourceInstance on %s failed with error %s %s", d.Id(), err, response)
 			}
 			if *instance.State == databaseInstanceFailStatus {
-				return instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed to delete: %v %s", d.Id(), err, response)
+				return instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed to delete: %s %s", d.Id(), err, response)
 			}
 			return *instance, *instance.State, nil
 		},
