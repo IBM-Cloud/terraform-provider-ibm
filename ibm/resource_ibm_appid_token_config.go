@@ -145,11 +145,16 @@ func resourceIBMAppIDTokenConfigRead(ctx context.Context, d *schema.ResourceData
 
 	tenantID := d.Id()
 
-	tokenConfig, _, err := appidClient.GetTokensConfigWithContext(ctx, &appid.GetTokensConfigOptions{
+	tokenConfig, response, err := appidClient.GetTokensConfigWithContext(ctx, &appid.GetTokensConfigOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+
 		return diag.Errorf("Error reading AppID token configuration: %s", err)
 	}
 
