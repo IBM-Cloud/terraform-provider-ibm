@@ -73,6 +73,28 @@ func dataSourceIBMISInstances() *schema.Resource {
 							Computed:    true,
 							Description: "Instance status",
 						},
+
+						isInstanceStatusReasons: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The reasons for the current status (if any).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isInstanceStatusReasonsCode: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A snake case string succinctly identifying the status reason",
+									},
+
+									isInstanceStatusReasonsMessage: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An explanation of the status reason",
+									},
+								},
+							},
+						},
+
 						"resource_group": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -403,6 +425,19 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			bootVolList = append(bootVolList, bootVol)
 			l["boot_volume"] = bootVolList
 		}
+		//set the status reasons
+		statusReasonsList := make([]map[string]interface{}, 0)
+		if instance.StatusReasons != nil {
+			for _, sr := range instance.StatusReasons {
+				currentSR := map[string]interface{}{}
+				if sr.Code != nil && sr.Message != nil {
+					currentSR[isInstanceStatusReasonsCode] = *sr.Code
+					currentSR[isInstanceStatusReasonsMessage] = *sr.Message
+					statusReasonsList = append(statusReasonsList, currentSR)
+				}
+			}
+		}
+		l[isInstanceStatusReasons] = statusReasonsList
 
 		if instance.VolumeAttachments != nil {
 			volList := make([]map[string]interface{}, 0)

@@ -1833,17 +1833,24 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 		remove[i] = fmt.Sprint(v)
 	}
 
-	schematicTags := os.Getenv("IC_ENV_TAGS")
-	var envTags []string
-	if schematicTags != "" {
-		envTags = strings.Split(schematicTags, ",")
-		add = append(add, envTags...)
+	if strings.TrimSpace(tagType) == "" || tagType == "user" {
+		schematicTags := os.Getenv("IC_ENV_TAGS")
+		var envTags []string
+		if schematicTags != "" {
+			envTags = strings.Split(schematicTags, ",")
+			add = append(add, envTags...)
+		}
 	}
 
 	if len(remove) > 0 {
-		detachTagOptions := &globaltaggingv1.DetachTagOptions{
-			Resources: resources,
-			TagNames:  remove,
+		detachTagOptions := &globaltaggingv1.DetachTagOptions{}
+		detachTagOptions.Resources = resources
+		detachTagOptions.TagNames = remove
+		if len(tagType) > 0 {
+			detachTagOptions.TagType = ptrToString(tagType)
+			if tagType == service {
+				detachTagOptions.AccountID = ptrToString(acctID)
+			}
 		}
 
 		_, resp, err := gtClient.DetachTag(detachTagOptions)
@@ -2509,13 +2516,16 @@ func getIBMUniqueId(accountID, userEmail string, meta interface{}) (string, erro
 func immutableResourceCustomizeDiff(resourceList []string, diff *schema.ResourceDiff) error {
 
 	for _, rName := range resourceList {
-		if diff.Id() != "" && diff.HasChange(rName) {
+		if diff.Id() != "" && diff.HasChange(rName) && rName != sateLocZone {
+			return fmt.Errorf("'%s' attribute is immutable and can't be changed", rName)
+		}
+		if diff.Id() != "" && diff.HasChange(rName) && rName == sateLocZone {
 			o, n := diff.GetChange(rName)
 			old := o.(string)
 			new := n.(string)
 			if len(old) > 0 && old != new {
 				if !(rName == sateLocZone && strings.Contains(old, new)) {
-					return fmt.Errorf("'%s' attribute is immutable and can't be changed from %s to %s.", rName, old, new)
+					return fmt.Errorf("'%s' attribute is immutable and can't be changed from %s to %s", rName, old, new)
 				}
 			}
 		}

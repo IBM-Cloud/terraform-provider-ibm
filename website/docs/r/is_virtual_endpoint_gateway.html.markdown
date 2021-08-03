@@ -63,7 +63,6 @@ Review the argument references that you can specify for your resource.
   - `id` - (Optional, String) The endpoint gateway resource group IPs ID.
   - `name` - (Optional, String) The endpoint gateway resource group IPs name.
   - `subnet` - (Optional, String) The endpoint gateway resource group subnet ID.
-  - `resource_type` - (Required, String) The endpoint gateway resource group VPC resource type.
   
   **NOTE**: `id` and `subnet` are mutually exclusive.
 
@@ -85,9 +84,16 @@ In addition to all argument reference list, you can access the following attribu
 - `created_at` - (Timestamp) The created date and time of the endpoint gateway.
 - `health_state` - (String) The health state of the endpoint gateway.
 - `id` - (String) The unique identifier of the VPE Gateway. The ID is composed of `<gateway_id>`.
+- `ips`  (List) The endpoint gateway resource group.
+
+  Nested scheme for `ips`:
+  - `address` -  The endpoint gateway IPs Address.
+  - `id` -  The endpoint gateway resource group IPs ID.
+  - `name` -  The endpoint gateway resource group IPs name.
+  - `resource_type` -  The endpoint gateway resource group VPC resource type.
+
 - `lifecycle_state` - (String) The lifecycle state of the endpoint gateway.
 - `resource_type` - (String) The endpoint gateway resource type.
-
 
 ## Import
 The `ibm_is_virtual_endpoint_gateway` resource can be imported by using virtual endpoint gateway ID.

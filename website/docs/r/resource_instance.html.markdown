@@ -33,35 +33,39 @@ resource "ibm_resource_instance" "resource_instance" {
   }
 }
 ```
-### Example to provision a Hyper Protect DBaaS PostgreSQL Service
+### Example to provision a Hyper Protect DBaaS PostgreSQL Service instance
 The following example enables you to create a service instance of IBM Cloud Hyper Protect DBaaS for PostgreSQL. For detailed argument reference, see the tables in the [Hyper Protect DBaaS for PostgreSQL documentation](/docs/hyper-protect-dbaas-for-postgresql?topic=hyper-protect-dbaas-for-postgresql-create-service#cli-create-service), or the [Hyper Protect DBaaS for MongoDB documentation](/docs/hyper-protect-dbaas-for-mongodb?topic=hyper-protect-dbaas-for-monbgodb-create-service#cli-create-service) to create MongoDB service instances.
 
 ```terraform
 data "ibm_resource_group" "group" {
   name = "default"
 }
-
 resource "ibm_resource_instance" "myhpdbcluster" {
-  name = "0001-postgresql"
-  service = "hyperp-dbaas-postgresql"
-  plan = "postgresql-free"
+  name = "0001-mongodb"
+  service = "hyperp-dbaas-mongodb"
+  plan = "mongodb-flexible"
   location = "us-south"
   resource_group_id = data.ibm_resource_group.group.id
-
-  //User can increase timeouts
-  timeouts {
-    create = "15m"
-    update = "15m"
-    delete = "15m"
-  }
-
-  parameters = {
-    name: "cluster01",
-    admin_name: "admin",
-    password: "Hyperprotectdbaas0001"
-    confirm_password: "Hyperprotectdbaas0001",
-    db_version: "10"
-  }
+ //User can increase timeouts
+ timeouts {
+   create = "15m"
+   update = "15m"
+   delete = "15m"
+ }
+ parameters = {
+   name: "cluster01",
+   admin_name: "admin",
+   password: "Hyperprotectdbaas0001"
+   confirm_password: "Hyperprotectdbaas0001",
+   db_version: "4.4"
+   cpu: "1",
+   kms_instance: "crn:v1:staging:public:kms:us-south:a/23a24a3e3fe7a115473f07be1c44bdb5:9eeb285a-88e4-4378-b7cf-dbdcd97b5e4e::",
+   kms_key: "ee742940-d87c-48de-abc9-d26a6184ba5a",
+   memory: "2gib",
+   private_endpoint_type: "vpe",
+   service-endpoints: "public-and-private",
+   storage: "5gib"
+ }
 }
 ```
 

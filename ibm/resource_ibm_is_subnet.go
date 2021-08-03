@@ -39,6 +39,10 @@ const (
 	isSubnetDeleting         = "deleting"
 	isSubnetDeleted          = "done"
 	isSubnetRoutingTableID   = "routing_table"
+	isSubnetInUse            = "resources_attached"
+	isSubnetAccessTags       = "access_tags"
+	isUserTagType            = "user"
+	isAccessTagType          = "access"
 )
 
 func resourceIBMISSubnet() *schema.Resource {
@@ -110,6 +114,15 @@ func resourceIBMISSubnet() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_subnet", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "List of tags",
+			},
+
+			isSubnetAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_subnet", "accesstag")},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access management tags",
 			},
 
 			isSubnetCRN: {
@@ -230,6 +243,16 @@ func resourceIBMISSubnetValidator() *ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([ ]*[A-Za-z0-9:_.-]+[ ]*)+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
 	ibmISSubnetResourceValidator := ResourceValidator{ResourceName: "ibm_is_subnet", Schema: validateSchema}
 	return &ibmISSubnetResourceValidator
 }
@@ -286,6 +309,7 @@ func resourceIBMISSubnetCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv4cidr, acl, gw, rtID string, ipv4addrcount64 int64) error {
+
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -336,7 +360,7 @@ func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv
 	subnet, response, err := sess.CreateSubnet(createSubnetOptions)
 	if err != nil {
 		log.Printf("[DEBUG] Subnet err %s\n%s", err, response)
-		return fmt.Errorf("Error while creating Subnet %s\n%s", err, response)
+		return fmt.Errorf("Error while creating Subnet %s\n%v", err, response)
 	}
 	d.SetId(*subnet.ID)
 	log.Printf("[INFO] Subnet : %s", *subnet.ID)
@@ -347,12 +371,22 @@ func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isSubnetTags); ok || v != "" {
 		oldList, newList := d.GetChange(isSubnetTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *subnet.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *subnet.CRN, "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource subnet (%s) tags: %s", d.Id(), err)
 		}
 	}
+
+	if _, ok := d.GetOk(isSubnetAccessTags); ok {
+		oldList, newList := d.GetChange(isSubnetAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *subnet.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource subnet (%s) access tags: %s", d.Id(), err)
+		}
+	}
+
 	return nil
 }
 
@@ -442,12 +476,21 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
-	tags, err := GetTagsUsingCRN(meta, *subnet.CRN)
+
+	tags, err := GetGlobalTagsUsingCRN(meta, *subnet.CRN, "", isUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource subnet (%s) tags: %s", d.Id(), err)
 	}
+
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *subnet.CRN, "", isAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource subnet (%s) access tags: %s", d.Id(), err)
+	}
+
 	d.Set(isSubnetTags, tags)
+	d.Set(isSubnetAccessTags, accesstags)
 	d.Set(isSubnetCRN, *subnet.CRN)
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/subnets")
 	d.Set(ResourceName, *subnet.Name)
@@ -462,14 +505,25 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 
 func resourceIBMISSubnetUpdate(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
+
 	if d.HasChange(isSubnetTags) {
 		oldList, newList := d.GetChange(isSubnetTags)
-		err := UpdateTagsUsingCRN(oldList, newList, meta, d.Get(isSubnetCRN).(string))
+		err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(isSubnetCRN).(string), "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource subnet (%s) tags: %s", d.Id(), err)
 		}
 	}
+
+	if d.HasChange(isSubnetAccessTags) {
+		oldList, newList := d.GetChange(isSubnetAccessTags)
+		err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(isSubnetCRN).(string), "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource subnet (%s) access tags: %s", d.Id(), err)
+		}
+	}
+
 	err := subnetUpdate(d, meta, id)
 	if err != nil {
 		return err
@@ -610,7 +664,11 @@ func subnetDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	response, err = sess.DeleteSubnet(deleteSubnetOptions)
 	if err != nil {
-		return fmt.Errorf("Error Deleting Subnet : %s\n%s", err, response)
+		if response != nil && response.StatusCode == 409 {
+			_, err = isWaitForSubnetDeleteRetry(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
+		} else {
+			return fmt.Errorf("Error Deleting Subnet : %s\n%s", err, response)
+		}
 	}
 	_, err = isWaitForSubnetDeleted(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -618,6 +676,34 @@ func subnetDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.SetId("")
 	return nil
+}
+
+func isWaitForSubnetDeleteRetry(vpcClient *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Retrying subnet (%s) delete", id)
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{isSubnetInUse},
+		Target:  []string{isSubnetDeleting, isSubnetDeleted, ""},
+		Refresh: func() (interface{}, string, error) {
+			deleteSubnetOptions := &vpcv1.DeleteSubnetOptions{
+				ID: &id,
+			}
+			log.Printf("Retrying subnet (%s) delete", id)
+			response, err := vpcClient.DeleteSubnet(deleteSubnetOptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 409 {
+					return response, isSubnetInUse, nil
+				} else if response != nil && response.StatusCode == 404 {
+					return response, isSubnetDeleted, nil
+				}
+				return response, "", fmt.Errorf("Error deleting subnet: %s\n%s", err, response)
+			}
+			return response, isSubnetDeleting, nil
+		},
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForState()
 }
 
 func isWaitForSubnetDeleted(subnetC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {

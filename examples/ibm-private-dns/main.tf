@@ -186,3 +186,42 @@ data "ibm_dns_glbs" "test1" {
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   zone_id     = ibm_dns_zone.test-pdns-zone.zone_id
 }
+
+resource "ibm_dns_custom_resolver" "test" {
+  name        = "testCR-TF"
+  instance_id = ibm_resource_instance.test-pdns-instance.guid
+  description = "testdescription-CR"
+  locations {
+    subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-6c3a997d-72b2-47f6-8788-6bd95e1bdb03"
+    enabled     = false
+  }
+}
+
+data "ibm_dns_custom_resolvers" "test-custom-resolver" {
+  instance_id = ibm_dns_custom_resolver.test.instance_id
+}
+
+output "ibm_dns_custom_resolvers_output" {
+  value = data.ibm_dns_custom_resolvers.test-cr.custom_resolvers
+}
+
+resource "ibm_dns_custom_resolver_location" "test" {
+  instance_id = ibm_resource_instance.test-pdns-instance.guid
+  resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
+  subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-03d54d71-b438-4d20-b943-76d3d2a1a590"
+  enabled     = false
+}
+
+resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
+ instance_id = ibm_resource_instance.test-pdns-instance.guid
+ resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
+  description = "test forward rule"
+  type = "zone"
+  match = "test.example.com"
+  forward_to = ["168.20.22.122"]
+}
+
+data "ibm_dns_custom_resolver_forwarding_rules" "dns_custom_resolver_forwarding_rules" {
+  instance_id = ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule.instance_id
+  resolver_id = ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule.resolver_id
+}
