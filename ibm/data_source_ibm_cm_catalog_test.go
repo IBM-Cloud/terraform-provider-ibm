@@ -21,6 +21,15 @@ func TestAccIBMCmCatalogDataSource(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog_data", "label"),
 					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog_data", "crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog_data", "kind"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMCmCatalogDataSourceConfigDefault(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog_data", "label"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog_data", "crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog_data", "kind"),
 				),
 			},
 		},
@@ -28,6 +37,20 @@ func TestAccIBMCmCatalogDataSource(t *testing.T) {
 }
 
 func testAccCheckIBMCmCatalogDataSourceConfig() string {
+	return fmt.Sprintf(`
+
+		resource "ibm_cm_catalog" "cm_catalog" {
+			label = "tf_test_datasource_catalog"
+			short_description = "testing terraform provider with catalog"
+		}
+		
+		data "ibm_cm_catalog" "cm_catalog_data" {
+			catalog_identifier = ibm_cm_catalog.cm_catalog.id
+		}
+		`)
+}
+
+func testAccCheckIBMCmCatalogDataSourceConfigDefault() string {
 	return fmt.Sprintf(`
 
 		resource "ibm_cm_catalog" "cm_catalog" {
