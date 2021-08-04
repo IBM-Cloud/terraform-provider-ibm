@@ -32,6 +32,7 @@ In addition to the argument reference list, you can access the following attribu
 - `crn` - (String) The CRN associated with the catalog.
 - `id` - (String) The unique identifier of the `cm_catalog`.
 - `label` - (String) Display the name in the requested language.
+- `kind` - (String) Kind of catalog, offering or vpe.
 - `offerings_url` - (String) URL path to the offerings.
 - `short_description` - (String) The description in the requested language.
 - `tags` - (String) The list of tags associated with this catalog.
