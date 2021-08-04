@@ -77,7 +77,6 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/hpcs"
-	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
@@ -193,7 +192,6 @@ type ClientSession interface {
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
 	GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error)
 	ICDAPI() (icdv4.ICDServiceAPI, error)
-	IAMAPI() (iamv1.IAMServiceAPI, error)
 	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
 	IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
@@ -299,9 +297,6 @@ type clientSession struct {
 
 	iamUUMConfigErrV2  error
 	iamUUMServiceAPIV2 iamuumv2.IAMUUMServiceAPIv2
-
-	iamConfigErr  error
-	iamServiceAPI iamv1.IAMServiceAPI
 
 	userManagementErr error
 	userManagementAPI usermanagementv2.UserManagementAPI
@@ -563,11 +558,6 @@ func (sess clientSession) GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1,
 // HpcsEndpointAPI provides Hpcs Endpoint generator APIs ...
 func (sess clientSession) HpcsEndpointAPI() (hpcs.HPCSV2, error) {
 	return sess.hpcsEndpointAPI, sess.hpcsEndpointErr
-}
-
-// IAMAPI provides IAM PAP APIs ...
-func (sess clientSession) IAMAPI() (iamv1.IAMServiceAPI, error) {
-	return sess.iamServiceAPI, sess.iamConfigErr
 }
 
 // UserManagementAPI provides User management APIs ...
@@ -933,7 +923,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.globalTaggingConfigErr = errEmptyBluemixCredentials
 		session.globalTaggingConfigErrV1 = errEmptyBluemixCredentials
 		session.hpcsEndpointErr = errEmptyBluemixCredentials
-		session.iamConfigErr = errEmptyBluemixCredentials
 		session.iamUUMConfigErrV2 = errEmptyBluemixCredentials
 		session.icdConfigErr = errEmptyBluemixCredentials
 		session.resourceCatalogConfigErr = errEmptyBluemixCredentials
@@ -1389,12 +1378,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.globalTaggingServiceAPIV1 = *globalTaggingAPIV1
 		session.globalTaggingServiceAPIV1.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
-
-	iam, err := iamv1.New(sess.BluemixSession)
-	if err != nil {
-		session.iamConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAM Service: %q", err)
-	}
-	session.iamServiceAPI = iam
 
 	iamuumv2, err := iamuumv2.New(sess.BluemixSession)
 	if err != nil {
