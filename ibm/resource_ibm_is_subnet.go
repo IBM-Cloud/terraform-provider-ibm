@@ -666,6 +666,9 @@ func subnetDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		if response != nil && response.StatusCode == 409 {
 			_, err = isWaitForSubnetDeleteRetry(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
+			if err != nil {
+				return fmt.Errorf("Error Deleting Subnet : %s", err)
+			}
 		} else {
 			return fmt.Errorf("Error Deleting Subnet : %s\n%s", err, response)
 		}
