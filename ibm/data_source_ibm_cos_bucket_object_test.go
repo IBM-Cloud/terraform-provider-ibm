@@ -25,6 +25,7 @@ func TestAccIBMCOSBucketObjectDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cos_bucket_object.testacc", "content_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_cos_bucket_object.testacc", "etag"),
 					resource.TestCheckResourceAttrSet("data.ibm_cos_bucket_object.testacc", "last_modified"),
+					resource.TestCheckResourceAttrSet("data.ibm_cos_bucket_object.testacc", "object_sql_url"),
 				),
 			},
 		},

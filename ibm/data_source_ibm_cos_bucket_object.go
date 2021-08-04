@@ -73,6 +73,10 @@ func dataSourceIBMCosBucketObject() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"object_sql_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -148,5 +152,6 @@ func dataSourceIBMCosBucketObjectRead(ctx context.Context, d *schema.ResourceDat
 	objectID := getObjectId(bucketCRN, objectKey, bucketLocation)
 	d.SetId(objectID)
 	d.Set("version_id", out.VersionId)
+	d.Set("object_sql_url", "cos://"+bucketLocation+"/"+bucketName+"/"+objectKey)
 	return nil
 }
