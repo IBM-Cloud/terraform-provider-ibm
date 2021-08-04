@@ -52,3 +52,4 @@ In addition to all argument reference list, you can access the following attribu
 - `content_type` - (String) A standard MIME type describing the format of an object data.
 - `etag` - (String) Computed MD5 hexdigest of an object content.
 - `last_modified` - (Timestamp) Last modified date of the object. A GMT formatted date.
+- `object_sql_url` - (String) Access the object using an SQL Query instance. The SQL URL is a reference url used inside of an SQL statement. The reference url is used to perform queries against objects storing structured data.
