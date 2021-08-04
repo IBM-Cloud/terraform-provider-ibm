@@ -24,6 +24,7 @@ import (
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
+	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -36,7 +37,6 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
@@ -2134,21 +2134,23 @@ func GetNextIAM(next interface{}) string {
 
 /* Return the default resource group */
 func defaultResourceGroup(meta interface{}) (string, error) {
-	rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
+
+	rMgtClient, err := meta.(ClientSession).ResourceManagerV2API()
 	if err != nil {
 		return "", err
 	}
-	resourceGroupQuery := managementv2.ResourceGroupQuery{
-		Default: true,
+	defaultGrp := true
+	resourceGroupList := rg.ListResourceGroupsOptions{
+		Default: &defaultGrp,
 	}
-	grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
-	if err != nil {
-		return "", err
+	grpList, resp, err := rMgtClient.ListResourceGroups(&resourceGroupList)
+	if err != nil || grpList == nil || grpList.Resources == nil {
+		return "", fmt.Errorf("[ERROR] Error retrieving resource group: %s %s", err, resp)
 	}
-	if len(grpList) <= 0 {
-		return "", fmt.Errorf("The default resource group could not be found. Make sure you have required permissions to access the resource group.")
+	if len(grpList.Resources) <= 0 {
+		return "", fmt.Errorf("[ERROR] The default resource group could not be found. Make sure you have required permissions to access the resource group")
 	}
-	return grpList[0].ID, nil
+	return *grpList.Resources[0].ID, nil
 }
 
 func flattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
