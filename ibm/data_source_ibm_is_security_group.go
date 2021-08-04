@@ -323,7 +323,6 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 			return nil
 		}
 	}
-
-	return nil
+	return fmt.Errorf("No Security Group found with name %s", name)
 
 }
