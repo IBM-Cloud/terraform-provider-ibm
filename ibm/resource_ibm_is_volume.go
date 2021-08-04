@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -227,6 +228,16 @@ func resourceIBMISVolumeValidator() *ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([ ]*[A-Za-z0-9:_.-]+[ ]*)+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
 	ibmISVolumeResourceValidator := ResourceValidator{ResourceName: "ibm_is_volume", Schema: validateSchema}
 	return &ibmISVolumeResourceValidator
 }
@@ -299,7 +310,9 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 	if err != nil {
 		return err
 	}
-	if _, ok := d.GetOk(isVolumeTags); ok {
+
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isVolumeTags); ok || v != "" {
 		oldList, newList := d.GetChange(isVolumeTags)
 		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, "", isVolumeUserTagType)
 		if err != nil {
