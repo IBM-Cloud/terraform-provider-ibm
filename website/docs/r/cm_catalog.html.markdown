@@ -26,6 +26,7 @@ Review the argument reference that you can specify for your resource.
 
 - `label` - (Required, Forces new resource, String) The display name in the requested language.
 - `short_description` - (Optional, Forces new resource, String) The short description in the requested language.
+- `kind` - (Optional, Forces new resource, Defaults to offering, String) The kind of the catalog, offering or vpe.
 
 
 ## Attribute reference
