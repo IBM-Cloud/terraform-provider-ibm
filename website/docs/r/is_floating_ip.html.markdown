@@ -49,9 +49,9 @@ Review the argument references that you can specify for your resource.
 
 - `name` - (Required, String) Enter a name for the floating IP address. 
 - `resource_group` - (Optional, String) The resource group ID where you want to create the floating IP.
-- `target` - (Optional, String) Enter the ID of the network interface that you want to use to allocate the IP address. If you specify this option, do not specify `zone` at the same time. **Note** conflicts with `zone`.
+- `target` - (Optional, String) Enter the ID of the network interface that you want to use to allocate the IP address. If you specify this option, do not specify `zone` at the same time. **Note** conflicts with `zone`. A change in `target` which is in a different `zone` will show a change to replace current floating ip with a new one.
 - `tags` (Optional, Array of Strings) Enter any tags that you want to associate with your VPC. Tags might help you find your VPC more easily after it is created. Separate multiple tags with a comma (`,`).
-- `zone` - (Optional, String) Enter the name of the zone where you want to create the floating IP address. To list available zones, run `ibmcloud is zones`. If you specify this option, do not specify `target` at the same time. **Note** Conflicts with `target` and one of `target`, or `zone` is mandatory.
+- `zone` - (Optional, Force New Resource, String) Enter the name of the zone where you want to create the floating IP address. To list available zones, run `ibmcloud is zones`. If you specify this option, do not specify `target` at the same time. **Note** Conflicts with `target` and one of `target`, or `zone` is mandatory.
 
 
 ## Attribute reference
