@@ -367,6 +367,16 @@ func resourceIbmIsDedicatedHostValidator() *ResourceValidator {
 			MaxValueLength:             63,
 		})
 
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([ ]*[A-Za-z0-9:_.-]+[ ]*)+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
 	resourceValidator := ResourceValidator{ResourceName: "ibm_is_dedicated_host", Schema: validateSchema}
 	return &resourceValidator
 }

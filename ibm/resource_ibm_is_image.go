@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -226,6 +227,16 @@ func resourceIBMISImageValidator() *ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([ ]*[A-Za-z0-9:_.-]+[ ]*)+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
 	ibmISImageResourceValidator := ResourceValidator{ResourceName: "ibm_is_image", Schema: validateSchema}
 	return &ibmISImageResourceValidator
 }
@@ -297,7 +308,8 @@ func imgCreateByFile(d *schema.ResourceData, meta interface{}, href, name, opera
 	if err != nil {
 		return err
 	}
-	if _, ok := d.GetOk(isImageTags); ok {
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isImageTags); ok || v != "" {
 		oldList, newList := d.GetChange(isImageTags)
 		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *image.CRN, "", isImageUserTagType)
 		if err != nil {
@@ -393,7 +405,8 @@ func imgCreateByVolume(d *schema.ResourceData, meta interface{}, name, volume st
 	if err != nil {
 		return err
 	}
-	if _, ok := d.GetOk(isImageTags); ok {
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isImageTags); ok || v != "" {
 		oldList, newList := d.GetChange(isImageTags)
 		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *image.CRN, "", isImageUserTagType)
 		if err != nil {

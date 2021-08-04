@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -622,7 +623,15 @@ func resourceIBMISInstanceValidator() *ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
-
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([ ]*[A-Za-z0-9:_.-]+[ ]*)+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 	ibmISInstanceValidator := ResourceValidator{ResourceName: "ibm_is_instance", Schema: validateSchema}
 	return &ibmISInstanceValidator
 }
@@ -823,7 +832,8 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		return err
 	}
 
-	if _, ok := d.GetOk(isInstanceTags); ok {
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isInstanceTags); ok || v != "" {
 		oldList, newList := d.GetChange(isInstanceTags)
 		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceUserTagType)
 		if err != nil {
@@ -1030,7 +1040,8 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		return err
 	}
 
-	if _, ok := d.GetOk(isInstanceTags); ok {
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isInstanceTags); ok || v != "" {
 		oldList, newList := d.GetChange(isInstanceTags)
 		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceUserTagType)
 		if err != nil {
@@ -1233,7 +1244,8 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		return err
 	}
 
-	if _, ok := d.GetOk(isInstanceTags); ok {
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isInstanceTags); ok || v != "" {
 		oldList, newList := d.GetChange(isInstanceTags)
 		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceUserTagType)
 		if err != nil {

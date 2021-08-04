@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -150,6 +151,16 @@ func resourceIBMISSHKeyValidator() *ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([ ]*[A-Za-z0-9:_.-]+[ ]*)+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
 	ibmISSSHKeyResourceValidator := ResourceValidator{ResourceName: "ibm_is_ssh_key", Schema: validateSchema}
 	return &ibmISSSHKeyResourceValidator
 }
@@ -191,7 +202,8 @@ func keyCreate(d *schema.ResourceData, meta interface{}, name, publickey string)
 	d.SetId(*key.ID)
 	log.Printf("[INFO] Key : %s", *key.ID)
 
-	if _, ok := d.GetOk(isKeyTags); ok {
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isKeyTags); ok || v != "" {
 		oldList, newList := d.GetChange(isKeyTags)
 		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *key.CRN, "", isKeyUserTagType)
 		if err != nil {
