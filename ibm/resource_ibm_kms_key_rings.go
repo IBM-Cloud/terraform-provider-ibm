@@ -6,7 +6,6 @@ package ibm
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"strings"
 
 	kp "github.com/IBM/keyprotect-go-client"
@@ -23,10 +22,11 @@ func resourceIBMKmskeyRings() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Key protect Instance GUID",
-				ForceNew:    true,
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "Key protect Instance GUID",
+				ForceNew:         true,
+				DiffSuppressFunc: suppressKMSInstanceIDDiff,
 			},
 			"key_ring_id": {
 				Type:         schema.TypeString,
@@ -72,6 +72,10 @@ func resourceIBMKmsKeyRingCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	instanceID := d.Get("instance_id").(string)
+	CrnInstanceID := strings.Split(instanceID, ":")
+	if len(CrnInstanceID) > 3 {
+		instanceID = CrnInstanceID[len(CrnInstanceID)-3]
+	}
 	endpointType := d.Get("endpoint_type").(string)
 	keyRingID := d.Get("key_ring_id").(string)
 
@@ -89,17 +93,11 @@ func resourceIBMKmsKeyRingCreate(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
 	}
 	extensions := instanceData.Extensions
-	exturl := extensions["endpoints"].(map[string]interface{})["public"]
-	if endpointType == "private" || strings.Contains(kpAPI.Config.BaseURL, "private") {
-		exturl = extensions["endpoints"].(map[string]interface{})["private"]
-
-	}
-	u, err := url.Parse(exturl.(string))
+	URL, err := KmsEndpointURL(kpAPI, endpointType, extensions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Parsing KMS EndpointURL")
+		return err
 	}
-	kpAPI.URL = u
-
+	kpAPI.URL = URL
 	kpAPI.Config.InstanceID = instanceID
 
 	err = kpAPI.CreateKeyRing(context.Background(), keyRingID)
@@ -136,7 +134,7 @@ func resourceIBMKmsKeyRingRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	crn := id[1]
 	crnData := strings.Split(crn, ":")
-	endpointType := crnData[3]
+	endpointType := d.Get("endpoint_type").(string)
 	instanceID := crnData[len(crnData)-3]
 
 	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
@@ -152,16 +150,11 @@ func resourceIBMKmsKeyRingRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
 	}
 	extensions := instanceData.Extensions
-	exturl := extensions["endpoints"].(map[string]interface{})["public"]
-	if endpointType == "private" || strings.Contains(kpAPI.Config.BaseURL, "private") {
-		exturl = extensions["endpoints"].(map[string]interface{})["private"]
-
-	}
-	u, err := url.Parse(exturl.(string))
+	URL, err := KmsEndpointURL(kpAPI, endpointType, extensions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Parsing KMS EndpointURL")
+		return err
 	}
-	kpAPI.URL = u
+	kpAPI.URL = URL
 	kpAPI.Config.InstanceID = instanceID
 	_, err = kpAPI.GetKeyRings(context.Background())
 	if err != nil {
@@ -191,7 +184,7 @@ func resourceIBMKmsKeyRingDelete(d *schema.ResourceData, meta interface{}) error
 	id := strings.Split(d.Id(), ":keyRing:")
 	crn := id[1]
 	crnData := strings.Split(crn, ":")
-	endpointType := crnData[3]
+	endpointType := d.Get("endpoint_type").(string)
 	instanceID := crnData[len(crnData)-3]
 
 	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
@@ -207,16 +200,11 @@ func resourceIBMKmsKeyRingDelete(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
 	}
 	extensions := instanceData.Extensions
-	exturl := extensions["endpoints"].(map[string]interface{})["public"]
-	if endpointType == "private" || strings.Contains(kpAPI.Config.BaseURL, "private") {
-		exturl = extensions["endpoints"].(map[string]interface{})["private"]
-
-	}
-	u, err := url.Parse(exturl.(string))
+	URL, err := KmsEndpointURL(kpAPI, endpointType, extensions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Parsing KMS EndpointURL")
+		return err
 	}
-	kpAPI.URL = u
+	kpAPI.URL = URL
 	kpAPI.Config.InstanceID = instanceID
 	err1 := kpAPI.DeleteKeyRing(context.Background(), id[0])
 	if err1 != nil {

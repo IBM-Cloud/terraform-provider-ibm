@@ -272,6 +272,11 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	instanceID := d.Get("instance_id").(string)
+	CrnInstanceID := strings.Split(instanceID, ":")
+	if len(CrnInstanceID) > 3 {
+		instanceID = CrnInstanceID[len(CrnInstanceID)-3]
+	}
+
 	endpointType := d.Get("endpoint_type").(string)
 
 	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
@@ -287,18 +292,11 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
 	}
 	extensions := instanceData.Extensions
-	exturl := extensions["endpoints"].(map[string]interface{})["public"]
-	if endpointType == "private" || strings.Contains(kpAPI.Config.BaseURL, "private") {
-		exturl = extensions["endpoints"].(map[string]interface{})["private"]
-
-	}
-	u, err := url.Parse(exturl.(string))
+	URL, err := KmsEndpointURL(kpAPI, endpointType, extensions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Parsing KMS EndpointURL")
+		return err
 	}
-	kpAPI.URL = u
-
-	log.Printf("KEY_ENDPOINT_URL", kpAPI.URL)
+	kpAPI.URL = URL
 
 	kpAPI.Config.InstanceID = instanceID
 
@@ -395,16 +393,13 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
 	}
 	extensions := instanceData.Extensions
-	exturl := extensions["endpoints"].(map[string]interface{})["public"]
-	if endpointType == "private" || strings.Contains(kpAPI.Config.BaseURL, "private") {
-		exturl = extensions["endpoints"].(map[string]interface{})["private"]
 
-	}
-	u, err := url.Parse(exturl.(string))
+	URL, err := KmsEndpointURL(kpAPI, endpointType, extensions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Parsing KMS EndpointURL")
+		return err
 	}
-	kpAPI.URL = u
+	kpAPI.URL = URL
+
 	kpAPI.Config.InstanceID = instanceID
 	// keyid := d.Id()
 	key, err := kpAPI.GetKey(context.Background(), keyid)
@@ -415,6 +410,9 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		}
 		return fmt.Errorf("Get Key failed with error while reading policies: %s", err)
+	} else if key.State == 5 { //Refers to Deleted state of the Key
+		d.SetId("")
+		return nil
 	}
 
 	policies, err := kpAPI.GetPolicies(context.Background(), keyid)
@@ -497,16 +495,11 @@ func resourceIBMKmsKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 			return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
 		}
 		extensions := instanceData.Extensions
-		exturl := extensions["endpoints"].(map[string]interface{})["public"]
-		if endpointType == "private" || strings.Contains(kpAPI.Config.BaseURL, "private") {
-			exturl = extensions["endpoints"].(map[string]interface{})["private"]
-
-		}
-		u, err := url.Parse(exturl.(string))
+		URL, err := KmsEndpointURL(kpAPI, endpointType, extensions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Parsing KMS EndpointURL")
+			return err
 		}
-		kpAPI.URL = u
+		kpAPI.URL = URL
 		kpAPI.Config.InstanceID = instanceID
 
 		err = handlePolicies(d, kpAPI, meta, key_id)
@@ -542,16 +535,11 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
 	}
 	extensions := instanceData.Extensions
-	exturl := extensions["endpoints"].(map[string]interface{})["public"]
-	if endpointType == "private" || strings.Contains(kpAPI.Config.BaseURL, "private") {
-		exturl = extensions["endpoints"].(map[string]interface{})["private"]
-
-	}
-	u, err := url.Parse(exturl.(string))
+	URL, err := KmsEndpointURL(kpAPI, endpointType, extensions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Parsing KMS EndpointURL")
+		return err
 	}
-	kpAPI.URL = u
+	kpAPI.URL = URL
 	kpAPI.Config.InstanceID = instanceID
 
 	force := d.Get("force_delete").(bool)
@@ -594,16 +582,11 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 		return false, fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
 	}
 	extensions := instanceData.Extensions
-	exturl := extensions["endpoints"].(map[string]interface{})["public"]
-	if endpointType == "private" || strings.Contains(kpAPI.Config.BaseURL, "private") {
-		exturl = extensions["endpoints"].(map[string]interface{})["private"]
-
-	}
-	u, err := url.Parse(exturl.(string))
+	URL, err := KmsEndpointURL(kpAPI, endpointType, extensions)
 	if err != nil {
 		return false, err
 	}
-	kpAPI.URL = u
+	kpAPI.URL = URL
 	kpAPI.Config.InstanceID = instanceID
 
 	_, err = kpAPI.GetKey(context.Background(), keyid)
@@ -648,4 +631,21 @@ func handlePolicies(d *schema.ResourceData, kpAPI *kp.Client, meta interface{}, 
 		}
 	}
 	return nil
+}
+
+//Construct KMS URL
+func KmsEndpointURL(kpAPI *kp.Client, endpointType string, extensions map[string]interface{}) (*url.URL, error) {
+
+	exturl := extensions["endpoints"].(map[string]interface{})["public"]
+	if endpointType == "private" || strings.Contains(kpAPI.Config.BaseURL, "private") {
+		exturl = extensions["endpoints"].(map[string]interface{})["private"]
+	}
+	endpointURL := fmt.Sprintf("%s/api/v2/keys", exturl.(string))
+
+	url1 := envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, endpointURL)
+	u, err := url.Parse(url1)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error Parsing KMS EndpointURL")
+	}
+	return u, nil
 }
