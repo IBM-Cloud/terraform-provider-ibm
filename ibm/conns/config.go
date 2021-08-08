@@ -17,13 +17,13 @@ import (
 	"time"
 
 	// Added code for the Power Colo Offering
-
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM-Cloud/container-services-go-sdk/satellitelinkv1"
 	apigateway "github.com/IBM/apigateway-go-sdk/apigatewaycontrollerapiv1"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
+	"github.com/IBM/cloudant-go-sdk/cloudantv1"
 	"github.com/IBM/container-registry-go-sdk/containerregistryv1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
@@ -284,6 +284,7 @@ type ClientSession interface {
 	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
 	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
 	PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error)
+	CloudantV1() (*cloudantv1.CloudantV1, error)
 }
 
 type clientSession struct {
@@ -582,6 +583,10 @@ type clientSession struct {
 	// context Based Restrictions (CBR)
 	contextBasedRestrictionsClient    *contextbasedrestrictionsv1.ContextBasedRestrictionsV1
 	contextBasedRestrictionsClientErr error
+
+	//Cloudant service
+	cloudantClient    *cloudantv1.CloudantV1
+	cloudantClientErr error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -1111,6 +1116,11 @@ func (session clientSession) ContextBasedRestrictionsV1() (*contextbasedrestrict
 	return session.contextBasedRestrictionsClient, session.contextBasedRestrictionsClientErr
 }
 
+// Cloudant
+func (session clientSession) CloudantV1() (*cloudantv1.CloudantV1, error) {
+	return session.cloudantClient, session.cloudantClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1201,6 +1211,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.postureManagementClientErr = errEmptyBluemixCredentials
 		session.postureManagementClientErrv2 = errEmptyBluemixCredentials
 		session.configServiceApiClientErr = errEmptyBluemixCredentials
+		session.cloudantClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -3018,6 +3029,25 @@ func (c *Config) ClientSession() (interface{}, error) {
 		logDestination := log.Writer()
 		goLogger := log.New(logDestination, "", log.LstdFlags)
 		core.SetLogger(core.NewLogger(core.LevelDebug, goLogger, goLogger))
+	}
+
+	cloudantEndpoint := cloudantv1.DefaultServiceURL
+	cloudantClientOptions := &cloudantv1.CloudantV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_CLOUDANT_API_ENDPOINT"}, cloudantEndpoint),
+		Authenticator: authenticator,
+	}
+
+	// Construct the service client.
+	session.cloudantClient, err = cloudantv1.NewCloudantV1(cloudantClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.cloudantClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.cloudantClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.cloudantClientErr = fmt.Errorf("Error occurred while configuring Cloudant service: %q", err)
 	}
 	return session, nil
 }
