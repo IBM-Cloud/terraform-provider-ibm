@@ -15,12 +15,12 @@ import (
 	"time"
 
 	// Added code for the Power Colo Offering
-
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM-Cloud/container-services-go-sdk/satellitelinkv1"
 	apigateway "github.com/IBM/apigateway-go-sdk/apigatewaycontrollerapiv1"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
+	"github.com/IBM/cloudant-go-sdk/cloudantv1"
 	"github.com/IBM/container-registry-go-sdk/containerregistryv1"
 	"github.com/IBM/go-sdk-core/v4/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
@@ -252,6 +252,7 @@ type ClientSession interface {
 	SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error)
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
+	CloudantV1() (*cloudantv1.CloudantV1, error)
 }
 
 type clientSession struct {
@@ -495,6 +496,10 @@ type clientSession struct {
 	//Satellite link service
 	satelliteLinkClient    *satellitelinkv1.SatelliteLinkV1
 	satelliteLinkClientErr error
+
+	//Cloudant service
+	cloudantClient    *cloudantv1.CloudantV1
+	cloudantClientErr error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -913,6 +918,11 @@ func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
 	return session.atrackerClient, session.atrackerClientErr
 }
 
+// Cloudant
+func (session clientSession) CloudantV1() (*cloudantv1.CloudantV1, error) {
+	return session.cloudantClient, session.cloudantClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -996,6 +1006,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.satelliteClientErr = errEmptyBluemixCredentials
 		session.iamPolicyManagementErr = errEmptyBluemixCredentials
 		session.satelliteLinkClientErr = errEmptyBluemixCredentials
+		session.cloudantClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -2183,6 +2194,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.satelliteLinkClientErr = fmt.Errorf("Error occurred while configuring Satellite Link service: %q", err)
 	}
 
+	cloudantEndpoint := cloudantv1.DefaultServiceURL
+	cloudantClientOptions := &cloudantv1.CloudantV1Options{
+		URL:           envFallBack([]string{"IBMCLOUD_CLOUDANT_API_ENDPOINT"}, cloudantEndpoint),
+		Authenticator: authenticator,
+	}
+
+	// Construct the service client.
+	session.cloudantClient, err = cloudantv1.NewCloudantV1(cloudantClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.cloudantClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.cloudantClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.cloudantClientErr = fmt.Errorf("Error occurred while configuring Cloudant service: %q", err)
+	}
 	return session, nil
 }
 

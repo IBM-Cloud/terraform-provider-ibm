@@ -440,6 +440,10 @@ func Provider() *schema.Provider {
 			"ibm_atracker_targets":   dataSourceIBMAtrackerTargets(),
 			"ibm_atracker_routes":    dataSourceIBMAtrackerRoutes(),
 			"ibm_atracker_endpoints": dataSourceIBMAtrackerEndpoints(),
+
+			//Cloudant database resources
+			"ibm_cloudant_database":    dataSourceIbmCloudantDatabase(),
+			"ibm_cloudant_replication": dataSourceIbmCloudantReplication(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -708,6 +712,10 @@ func Provider() *schema.Provider {
 			// Atracker
 			"ibm_atracker_target": resourceIBMAtrackerTarget(),
 			"ibm_atracker_route":  resourceIBMAtrackerRoute(),
+
+			//Cloudant resource
+			"ibm_cloudant_database":    resourceIbmCloudantDatabase(),
+			"ibm_cloudant_replication": resourceIbmCloudantReplication(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -814,6 +822,7 @@ func Validator() ValidatorDict {
 				"ibm_atracker_target":                     resourceIBMAtrackerTargetValidator(),
 				"ibm_atracker_route":                      resourceIBMAtrackerRouteValidator(),
 				"ibm_satellite_endpoint":                  resourceIbmSatelliteEndpointValidator(),
+				"ibm_cloudant_replication":                resourceIbmCloudantReplicationValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),
