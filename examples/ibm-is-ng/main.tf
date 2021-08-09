@@ -80,6 +80,11 @@ resource "ibm_is_instance_template" "instancetemplate2" {
     }
 }
 
+// datasource for instance template
+data "ibm_is_instance_template" "instancetemplates" {
+	identifier = ibm_is_instance_template.instancetemplate2.id
+}
+
 resource "ibm_is_lb" "lb2" {
   name    = "mylb"
   subnets = [ibm_is_subnet.subnet1.id]

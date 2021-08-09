@@ -264,6 +264,7 @@ func Provider() *schema.Provider {
 			"ibm_is_virtual_endpoint_gateways":       dataSourceIBMISEndpointGateways(),
 			"ibm_is_virtual_endpoint_gateway_ips":    dataSourceIBMISEndpointGatewayIPs(),
 			"ibm_is_virtual_endpoint_gateway":        dataSourceIBMISEndpointGateway(),
+			"ibm_is_instance_template":               dataSourceIBMISInstanceTemplate(),
 			"ibm_is_instance_templates":              dataSourceIBMISInstanceTemplates(),
 			"ibm_is_instance_profile":                dataSourceIBMISInstanceProfile(),
 			"ibm_is_instance_profiles":               dataSourceIBMISInstanceProfiles(),
