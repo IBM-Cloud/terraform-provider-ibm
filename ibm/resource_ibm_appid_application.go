@@ -125,8 +125,9 @@ func resourceIBMAppIDApplicationRead(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("[WARN] AppID application '%s' is not found", clientID)
-			d.SetId("")
-			return nil
+			// we may not want to clear ID here, if user accidentally uses wrong API key it would also get 404
+			// if remote resource is deleted, it should show the error and let the user decide if he wants to taint, replace (recommended)
+			// or remove it from HCL
 		}
 
 		return diag.Errorf("Error getting AppID application: %s", err)
