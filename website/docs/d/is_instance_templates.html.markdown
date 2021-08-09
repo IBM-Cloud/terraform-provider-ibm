@@ -1,7 +1,7 @@
 ---
 subcategory: "VPC infrastructure"
 layout: "ibm"
-page_title: "IBM: istance_templates"
+page_title: "IBM: instance_templates"
 description: |-
   Retrives all the IBM VPC instance templates.
 ---
@@ -31,6 +31,8 @@ You can access the following attribute references after your data source is crea
 		- `name` - (String) The name of the boot volume.
 		- `profile` - (String) The profile for the boot volume configuration.
 		- `size` - (String) The boot volume size to configure in giga bytes.
+	- `crn` - (String) The CRN of the instance template.
+	- `href` - (String) The URL of the instance template.
 	- `id` - (String) The ID of the instance template.
 	- `image` - (String) The ID of the image to create the template.
 	- `keys` - (String) List of SSH key IDs used to allow log in user to the instances.
