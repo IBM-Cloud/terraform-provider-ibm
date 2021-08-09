@@ -138,7 +138,7 @@ func resourceIBMISVPCRoutingTable() *schema.Resource {
 
 func resourceIBMISVPCRoutingTableValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 2)
+	validateSchema := make([]ValidateSchema, 0)
 	actionAllowedValues := "delegate, delegate_vpc, deliver, drop"
 
 	validateSchema = append(validateSchema,

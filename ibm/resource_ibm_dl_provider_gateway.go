@@ -153,7 +153,7 @@ func resourceIBMDLProviderGateway() *schema.Resource {
 
 func resourceIBMDLProviderGatewayValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 2)
+	validateSchema := make([]ValidateSchema, 0)
 
 	validateSchema = append(validateSchema,
 		ValidateSchema{
