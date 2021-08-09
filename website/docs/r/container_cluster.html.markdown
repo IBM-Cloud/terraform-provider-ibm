@@ -233,13 +233,14 @@ Review the argument references that you can specify for your resource.
   - `value` - (Required, String) Value for taint.
   - `effect` - (Required, String) Effect for taint. Accepted values are `NoSchedule`, `PreferNoSchedule`, and `NoExecute`.
  
-- `update_all_workers` - (Optional, Bool) If set to **true**, the Kubernetes version of the worker nodes is updated along with the Kubernetes version of the cluster that you specify in `kube_version`.  **Note**: setting `wait_for_worker_update` to `false` is not recommended. This results in upgrading all the worker nodes in the cluster at the same time causing the cluster downtime. 
+- `update_all_workers` - (Optional, Bool) If set to **true**, the Kubernetes version of the worker nodes is updated along with the Kubernetes version of the cluster that you specify in `kube_version`.  **Note**: setting `wait_for_worker_update` to `false` is not recommended. This results in upgrading all the worker nodes in the cluster at the same time causing the cluster downtime.
 - `webhook` - (Optional, String) The webhook that you want to add to the cluster. For available options, see the [`webhook create` command](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli).
 - `workers_info` - (Optional, Array of objects) The worker nodes that you want to update.
 
   Nested scheme for `workers_info`:
   - `id` - (Optional, String) The ID of the worker node that you want to update.
   - `version` - (Optional, String) The Kubernetes version that you want to update your worker nodes to.
+- `default_worker_pool` - (Optional, String) Set the name of the default worker pool.
 - `worker_num`- (Optional, Integer) The number of worker nodes in your cluster. This attribute creates a worker node that is not associated with a worker pool. **Note**: Conflicts with `workers`.
 - `wait_for_worker_update` - (Optional, Bool) Set to **true** to wait and update the Kubernetes version of worker nodes. **NOTE** Setting wait_for_worker_update to **false** is not recommended. Setting **false** results in upgrading all the worker nodes in the cluster at the same time causing the cluster downtime.
 - `wait_till` - (Optional, String) The cluster creation happens in multi-stages. To avoid the longer wait times for resource execution.This argument in the resource will wait for the specified stage and complete the execution. The default stage value is `IngressReady`. The supported stages are  `MasterNodeReady` Resource waits till the master node is ready.  `OneWorkerNodeReady` Resource waits till one worker node is in to ready state.  `IngressReady` Resource waits till the ingress-host and ingress-secret are available.

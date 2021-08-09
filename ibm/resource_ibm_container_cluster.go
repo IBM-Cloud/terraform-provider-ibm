@@ -40,7 +40,6 @@ const (
 	isolationPublic   = "public"
 	isolationPrivate  = "private"
 
-	defaultWorkerPool = "default"
 	computeWorkerPool = "compute"
 	gatewayWorkerpool = "gateway"
 )
@@ -139,6 +138,12 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "list of labels to the default worker pool",
+			},
+			"default_pool_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "default",
+				Description: "Name of the default worker pool",
 			},
 			"taints": {
 				Type:        schema.TypeSet,
@@ -644,6 +649,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	noSubnet := d.Get("no_subnet").(bool)
 	diskEncryption := d.Get("disk_encryption").(bool)
 	defaultPoolSize := d.Get("default_pool_size").(int)
+	defaultPoolName := d.Get("default_pool_name").(string)
 	gatewayEnabled := d.Get("gateway_enabled").(bool)
 	hardware := d.Get("hardware").(string)
 	switch strings.ToLower(hardware) {
@@ -654,15 +660,16 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	params := v1.ClusterCreateRequest{
-		Name:           name,
-		Datacenter:     datacenter,
-		WorkerNum:      defaultPoolSize,
-		MachineType:    machineType,
-		PublicVlan:     publicVlanID,
-		PrivateVlan:    privateVlanID,
-		NoSubnet:       noSubnet,
-		Isolation:      hardware,
-		DiskEncryption: diskEncryption,
+		Name:                  name,
+		Datacenter:            datacenter,
+		WorkerNum:             defaultPoolSize,
+		DefaultWorkerPoolName: defaultPoolName,
+		MachineType:           machineType,
+		PublicVlan:            publicVlanID,
+		PrivateVlan:           privateVlanID,
+		NoSubnet:              noSubnet,
+		Isolation:             hardware,
+		DiskEncryption:        diskEncryption,
 	}
 
 	// Update params with Entitlement option if provided
@@ -763,7 +770,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	d.Set("worker_num", workerCount)
-
+	defaultPoolName := d.Get("default_pool_name").(string)
 	workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID, targetEnv)
 	if err != nil {
 		return err
@@ -771,8 +778,8 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	var poolName string
 	var poolContains bool
 
-	if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
-		poolName = defaultWorkerPool
+	if len(workerPools) > 0 && workerPoolContains(workerPools, defaultPoolName) {
+		poolName = defaultPoolName
 		poolContains = true
 	} else if len(workerPools) > 0 && workerPoolContains(workerPools, computeWorkerPool) && workerPoolContains(workerPools, gatewayWorkerpool) {
 		poolName = computeWorkerPool
@@ -1009,9 +1016,9 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		}
 		var poolName string
 		var poolContains bool
-
-		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
-			poolName = defaultWorkerPool
+		defaultPoolName := d.Get("default_pool_name").(string)
+		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultPoolName) {
+			poolName = defaultPoolName
 
 			poolContains = true
 		} else if len(workerPools) > 0 && workerPoolContains(workerPools, computeWorkerPool) && workerPoolContains(workerPools, gatewayWorkerpool) {
@@ -1045,9 +1052,9 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		}
 		var poolName string
 		var poolContains bool
-
-		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
-			poolName = defaultWorkerPool
+		defaultPoolName := d.Get("default_pool_name").(string)
+		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultPoolName) {
+			poolName = defaultPoolName
 			poolContains = true
 		} else if len(workerPools) > 0 && workerPoolContains(workerPools, computeWorkerPool) && workerPoolContains(workerPools, gatewayWorkerpool) {
 			poolName = computeWorkerPool
@@ -1084,9 +1091,9 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		}
 		var poolName string
 		var poolContains bool
-
-		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
-			poolName = defaultWorkerPool
+		defaultPoolName := d.Get("default_pool_name").(string)
+		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultPoolName) {
+			poolName = defaultPoolName
 			poolContains = true
 		} else if len(workerPools) > 0 && workerPoolContains(workerPools, computeWorkerPool) && workerPoolContains(workerPools, gatewayWorkerpool) {
 			poolName = computeWorkerPool
@@ -1471,9 +1478,9 @@ func waitForClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{}) 
 			}
 			var poolName string
 			var poolContains bool
-
-			if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
-				poolName = defaultWorkerPool
+			defaultPoolName := d.Get("default_pool_name").(string)
+			if len(workerPools) > 0 && workerPoolContains(workerPools, defaultPoolName) {
+				poolName = defaultPoolName
 				poolContains = true
 			} else if len(workerPools) > 0 && workerPoolContains(workerPools, computeWorkerPool) && workerPoolContains(workerPools, gatewayWorkerpool) {
 				poolName = computeWorkerPool
