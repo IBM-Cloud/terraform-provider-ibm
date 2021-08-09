@@ -29,6 +29,8 @@ const (
 	//Added timeout values for warning  and active status
 	warningTimeOut = 30 * time.Second
 	activeTimeOut  = 2 * time.Minute
+	// power service instance capabilities
+	CUSTOM_VIRTUAL_CORES = "custom-virtualcores"
 )
 
 func resourceIBMPIInstance() *schema.Resource {
@@ -541,13 +543,13 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 	processortype := d.Get(helpers.PIInstanceProcType).(string)
 	assignedVirtualCores := int64(d.Get(helpers.PIVirtualCoresAssigned).(int))
 
+	if d.Get("health_status") == "WARNING" {
+		return fmt.Errorf("the operation cannot be performed when the lpar health in the WARNING State")
+	}
+
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
 		return fmt.Errorf("failed to get the session from the IBM Cloud Service")
-	}
-	if d.Get("health_status") == "WARNING" {
-
-		return fmt.Errorf("the operation cannot be performed when the lpar health in the WARNING State")
 	}
 
 	parts, err := idParts(d.Id())
@@ -557,33 +559,49 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 	powerinstanceid := parts[0]
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
 
-	//if d.HasChange(helpers.PIInstanceName) || d.HasChange(helpers.PIInstanceProcessors) || d.HasChange(helpers.PIInstanceProcType) || d.HasChange(helpers.PIInstancePinPolicy){
+	// Check if cloud instance is capable of changing virtual cores
+	cloudInstanceClient := st.NewIBMPICloudInstanceClient(sess, powerinstanceid)
+	cloudInstance, err := cloudInstanceClient.Get(powerinstanceid)
+	if err != nil {
+		return fmt.Errorf("failed to get cloud instance %v", err)
+	}
+	cores_enabled := checkCloudInstanceCapability(cloudInstance, CUSTOM_VIRTUAL_CORES)
+
+	if d.HasChange(helpers.PIInstanceName) {
+		body := &models.PVMInstanceUpdate{
+			ServerName: name,
+		}
+		_, err = client.Update(parts[1], powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesPutParams{Body: body}, updateTimeOut)
+		if err != nil {
+			return fmt.Errorf("failed to update the lpar with the change for name %s", err)
+		}
+		_, err = isWaitForPIInstanceAvailable(client, parts[1], d.Timeout(schema.TimeoutUpdate), powerinstanceid, "OK")
+		if err != nil {
+			return err
+		}
+	}
+
 	if d.HasChange(helpers.PIInstanceProcType) {
 
 		// Stop the lpar
 		if d.Get("status") == "SHUTOFF" {
 			log.Printf("the lpar is in the shutoff state. Nothing to do . Moving on ")
 		} else {
-
-			body := &models.PVMInstanceAction{
-				Action: ptrToString("immediate-shutdown"),
-			}
-			_, err = client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: body}, parts[1], powerinstanceid, postTimeOut)
+			err := stopLparForResourceChange(client, parts[1], powerinstanceid, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
-				return fmt.Errorf("failed to perform the stop action on the pvm instance %v", err)
-
-			}
-
-			_, err = isWaitForPIInstanceStopped(client, parts[1], d.Timeout(schema.TimeoutUpdate), powerinstanceid)
-			if err != nil {
-				return fmt.Errorf("failed to perform the stop action on the pvm instance %v", err)
+				return err
 			}
 		}
 
 		// Modify
-
 		log.Printf("At this point the lpar should be off. Executing the Processor Update Change")
 		updatebody := &models.PVMInstanceUpdate{ProcType: processortype}
+		if cores_enabled == true {
+			log.Printf("support for %s is enabled", CUSTOM_VIRTUAL_CORES)
+			updatebody.VirtualCores = &models.VirtualCores{Assigned: &assignedVirtualCores}
+		} else {
+			log.Printf("no virtual cores support enabled for this customer..")
+		}
 		_, err = client.Update(parts[1], powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesPutParams{Body: updatebody}, updateTimeOut)
 		if err != nil {
 			return fmt.Errorf("failed to perform the modify operation on the pvm instance %v", err)
@@ -593,33 +611,15 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 			return err
 		}
 
-		// Start
-
-		startbody := &models.PVMInstanceAction{
-			Action: ptrToString("start"),
-		}
-		_, err = client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: startbody}, parts[1], powerinstanceid, postTimeOut)
-		if err != nil {
-			return fmt.Errorf("failed to perform the start action on the pvm instance %v", err)
-		}
-
-		_, err = isWaitForPIInstanceAvailable(client, parts[1], d.Timeout(schema.TimeoutUpdate), powerinstanceid, "OK")
+		// Start the lpar
+		err := startLparAfterResourceChange(client, parts[1], powerinstanceid, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return err
 		}
-
 	}
 
-	// Start of the change for Memory and Processors
+	// Virtual core will be updated only if service instance capability is enabled
 	if d.HasChange(helpers.PIVirtualCoresAssigned) {
-		parts, err := idParts(d.Id())
-		if err != nil {
-			return err
-		}
-		powerinstanceid := parts[0]
-
-		client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
-
 		body := &models.PVMInstanceUpdate{
 			VirtualCores: &models.VirtualCores{Assigned: &assignedVirtualCores},
 		}
@@ -633,6 +633,7 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 		}
 	}
 
+	// Start of the change for Memory and Processors
 	if d.HasChange(helpers.PIInstanceMemory) || d.HasChange(helpers.PIInstanceProcessors) || d.HasChange("pi_migratable") {
 
 		maxMemLpar := d.Get("max_memory").(float64)
@@ -641,7 +642,6 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 
 		if mem > maxMemLpar || procs > maxCPULpar {
 			log.Printf("Will require a shutdown to perform the change")
-
 		} else {
 			log.Printf("maxMemLpar is set to %f", maxMemLpar)
 			log.Printf("maxCPULpar is set to %f", maxCPULpar)
@@ -651,42 +651,37 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 
 		if mem > maxMemLpar || procs > maxCPULpar {
 
-			_, err = performChangeAndReboot(client, parts[1], powerinstanceid, mem, procs)
-			//_, err = stopLparForResourceChange(client, parts[1], powerinstanceid)
-			if err != nil {
-				return fmt.Errorf("failed to perform the operation for the change")
-			}
-
-		} else {
-			parts, err := idParts(d.Id())
+			err = performChangeAndReboot(client, parts[1], powerinstanceid, mem, procs)
 			if err != nil {
 				return err
 			}
-			powerinstanceid := parts[0]
 
-			client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
+		} else {
 
 			body := &models.PVMInstanceUpdate{
 				Memory:     mem,
 				Processors: procs,
-				ServerName: name,
 			}
 			if m, ok := d.GetOk("pi_migratable"); ok {
 				migratable := m.(bool)
 				body.Migratable = &migratable
 			}
+			if cores_enabled == true {
+				log.Printf("support for %s is enabled", CUSTOM_VIRTUAL_CORES)
+				body.VirtualCores = &models.VirtualCores{Assigned: &assignedVirtualCores}
+			} else {
+				log.Printf("no virtual cores support enabled for this customer..")
+			}
 
 			_, err = client.Update(parts[1], powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesPutParams{Body: body}, updateTimeOut)
 			if err != nil {
-				return fmt.Errorf("failed to update the lpar with the change %s", err)
+				return fmt.Errorf("failed to update the lpar with the change %v", err)
 			}
 			_, err = isWaitForPIInstanceAvailable(client, parts[1], d.Timeout(schema.TimeoutUpdate), powerinstanceid, "OK")
 			if err != nil {
 				return err
 			}
-
 		}
-
 	}
 
 	return resourceIBMPIInstanceRead(d, meta)
@@ -855,50 +850,40 @@ func isPIInstanceRefreshFuncOff(client *st.IBMPIInstanceClient, id, powerinstanc
 	}
 }
 
-func stopLparForResourceChange(client *st.IBMPIInstanceClient, id, powerinstanceid string) (interface{}, error) {
-	//TODO
-
-	log.Printf("Callin the stop lpar for Resource Change code ..")
+func stopLparForResourceChange(client *st.IBMPIInstanceClient, id, powerinstanceid string, stopUpdateTimeOut time.Duration) error {
 	body := &models.PVMInstanceAction{
 		//Action: ptrToString("stop"),
 		Action: ptrToString("immediate-shutdown"),
 	}
 	_, err := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: body}, id, powerinstanceid, postTimeOut)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("failed to perform the stop action on the pvm instance %v", err)
 	}
 
-	_, err = isWaitForPIInstanceStopped(client, id, 30, powerinstanceid)
-	if err != nil {
-		return nil, fmt.Errorf("failed to stop the lpar")
-	}
+	_, err = isWaitForPIInstanceStopped(client, id, stopUpdateTimeOut, powerinstanceid)
 
-	return nil, err
+	return err
 }
 
 // Start the lpar
 
-func startLparAfterResourceChange(client *st.IBMPIInstanceClient, id, powerinstanceid string) (interface{}, error) {
-	//TODO
+func startLparAfterResourceChange(client *st.IBMPIInstanceClient, id, powerinstanceid string, startUpdateTimeOut time.Duration) error {
 	body := &models.PVMInstanceAction{
 		Action: ptrToString("start"),
 	}
 	_, err := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: body}, id, powerinstanceid, postTimeOut)
 	if err != nil {
-		return nil, fmt.Errorf("start Action failed on [%s] %s", id, err)
+		return fmt.Errorf("failed to perform the start action on the pvm instance %v", err)
 	}
 
-	_, err = isWaitForPIInstanceAvailable(client, id, 30, powerinstanceid, "OK")
-	if err != nil {
-		return nil, fmt.Errorf("failed to stop the lpar")
-	}
+	_, err = isWaitForPIInstanceAvailable(client, id, startUpdateTimeOut, powerinstanceid, "OK")
 
-	return nil, err
+	return err
 }
 
 // Stop / Modify / Start only when the lpar is off limits
 
-func performChangeAndReboot(client *st.IBMPIInstanceClient, id, powerinstanceid string, mem, procs float64) (interface{}, error) {
+func performChangeAndReboot(client *st.IBMPIInstanceClient, id, powerinstanceid string, mem, procs float64) error {
 	/*
 		These are the steps
 		1. Stop the lpar - Check if the lpar is SHUTOFF
@@ -909,57 +894,34 @@ func performChangeAndReboot(client *st.IBMPIInstanceClient, id, powerinstanceid 
 	//Execute the stop
 
 	log.Printf("Callin the stop lpar for Resource Change code ..")
-	stopbody := &models.PVMInstanceAction{
-		//Action: ptrToString("stop"),
-		Action: ptrToString("immediate-shutdown"),
-	}
-
-	_, err := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: stopbody}, id, powerinstanceid, postTimeOut)
+	err := stopLparForResourceChange(client, id, powerinstanceid, 30)
 	if err != nil {
-		return nil, fmt.Errorf("Stop Action failed on [%s]: %s", id, err)
-	}
-	_, err = isWaitForPIInstanceStopped(client, id, 30, powerinstanceid)
-	if err != nil {
-		return nil, fmt.Errorf("failed to stop the lpar")
+		return err
 	}
 
 	body := &models.PVMInstanceUpdate{
-		Memory: mem,
-		//ProcType:   processortype,
+		Memory:     mem,
 		Processors: procs,
-		//ServerName: name,
 	}
 
 	_, updateErr := client.Update(id, powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesPutParams{Body: body}, updateTimeOut)
 	if updateErr != nil {
-		return nil, fmt.Errorf("failed to update the lpar with the change, %s", updateErr)
+		return fmt.Errorf("failed to update the lpar with the change, %s", updateErr)
 	}
 
 	_, err = isWaitforPIInstanceUpdate(client, id, 30, powerinstanceid)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get an update from the Service after the resource change, %s", err)
+		return fmt.Errorf("failed to get an update from the Service after the resource change, %s", err)
 	}
 
 	// Now we can start the lpar
-
 	log.Printf("Calling the start lpar After the  Resource Change code ..")
-	startbody := &models.PVMInstanceAction{
-		//Action: ptrToString("stop"),
-		Action: ptrToString("start"),
-	}
-	_, starterr := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{Body: startbody}, id, powerinstanceid, postTimeOut)
-	if starterr != nil {
-		log.Printf("Start Action failed on [%s]", id)
-
-		return nil, fmt.Errorf("the error from the start is %s", starterr)
-	}
-
-	_, err = isWaitForPIInstanceAvailable(client, id, 30, powerinstanceid, "OK")
+	err = startLparAfterResourceChange(client, id, powerinstanceid, 30)
 	if err != nil {
-		return nil, fmt.Errorf("failed to stop the lpar %s", err)
+		return err
 	}
 
-	return nil, err
+	return nil
 
 }
 
@@ -1008,4 +970,15 @@ func buildPVMNetworks(networks []string) []*models.PVMInstanceAddNetwork {
 
 	}
 	return pvmNetworks
+}
+
+func checkCloudInstanceCapability(cloudInstance *models.CloudInstance, custom_capability string) bool {
+	log.Printf("Checking for the following capability %s", custom_capability)
+	log.Printf("the instance features are %s", cloudInstance.Capabilities)
+	for _, v := range cloudInstance.Capabilities {
+		if v == custom_capability {
+			return true
+		}
+	}
+	return false
 }
