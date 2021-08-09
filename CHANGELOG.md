@@ -1,3 +1,45 @@
+## 1.29.0 (Jul30, 2021)
+FEATURES:
+* Support VPC datasource
+    - **DataSources**
+        - ibm_is_vpcs
+* Support Private DNS Custom Resolver
+    - **DataSources**
+        - ibm_dns_custom_resolvers
+        - ibm_dns_custom_resolver_forwarding_rules
+    - **Resources**
+        - ibm_dns_custom_resolver
+        - ibm_dns_custom_resolver_forwarding_rule
+        - ibm_dns_custom_resolver_location
+* Support Hyper Protect Crypto Service
+     - **DataSources**
+        - ibm_hpcs
+    - **Resources**
+        - ibm_hpcs
+
+ENHANCEMENTS
+
+* Support `status_reasons` attribute in ibm_is_instance ([2900](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2900))
+
+* Support pagination for dedicated hosts datasources ([2906](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2906))
+
+* Support Limit Feature for Keys ([2538](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2538))
+
+* Support `address` in `ips` attribute for ibm_is_virtual_endpoint_gateway ([2913](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2913))
+
+* Support `worker_pool_id` attribute in container worker pool ([2910](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2910))
+
+
+BUGFIXES
+* Fix doc format for ibm_cos_bucket ([2891](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2891))
+* Fix Creating a resource group with IBMCLOUD_VISIBILITY=private seems to require a call to public IAM API ([2890](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2890))
+* Fix the tainteffects ([2862](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2862))
+* Fix ibm_satellite_cluster resource - kube_version upgrade, provider never returns ([2827](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2827))
+* Fix subnet destroy fails immediately after cluster destroy unless delay added ([2779](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2779))
+* Fix return error when topic creation failed ([2912](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2912))
+* Fix deprecated field in ibm_container_worker_pool doc example ([2915](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2915))
+* Update example of Hyper Protect DBaaS ([2917](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2917))
+
 ## 1.28.0 (Jul16, 2021)
 FEATURES:
 * Support VPC address prefixes

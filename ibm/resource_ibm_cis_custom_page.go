@@ -96,7 +96,7 @@ func resourceIBMCISCustomPage() *schema.Resource {
 func resourceIBMCISCustomPageValidator() *ResourceValidator {
 	customPageIDs := "basic_challenge, waf_challenge, waf_block, ratelimit_block," +
 		"country_challenge, ip_block, under_attack, 500_errors, 1000_errors, always_online"
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 
 	validateSchema = append(validateSchema,
 		ValidateSchema{

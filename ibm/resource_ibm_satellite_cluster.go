@@ -232,7 +232,7 @@ func resourceIBMSatelliteCluster() *schema.Resource {
 }
 
 func resourceIBMSatelliteClusterValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "tags",
@@ -549,7 +549,6 @@ func resourceIBMSatelliteClusterUpdate(d *schema.ResourceData, meta interface{})
 					"Error waiting for cluster (%s) version to be updated: %s", d.Id(), err)
 			}
 		}
-		patchVersion := d.Get("patch_version").(string)
 		satClient, err := meta.(ClientSession).SatelliteClientSession()
 		if err != nil {
 			return err
@@ -573,7 +572,7 @@ func resourceIBMSatelliteClusterUpdate(d *schema.ResourceData, meta interface{})
 		if workerFields != nil {
 			for _, w := range workerFields {
 				//kubeversion update done if there is a change in Major.Minor version
-				if strings.Split(*w.KubeVersion.Actual, "_")[0] != strings.Split(*cluster.MasterKubeVersion, "_")[0] || (strings.Split(*w.KubeVersion.Actual, ".")[2] != patchVersion && strings.Split(*w.KubeVersion.Target, ".")[2] == patchVersion) {
+				if *w.KubeVersion.Actual != *w.KubeVersion.Target {
 					params := v1.WorkerUpdateParam{
 						Action: "update",
 					}
@@ -850,10 +849,14 @@ func WaitForSatelliteWorkerVersionUpdate(d *schema.ResourceData, meta interface{
 			}
 
 			// Check active updates
+			count := 0
 			for _, worker := range workerFields {
-				if *worker.Health.State == "normal" || strings.Split(*worker.KubeVersion.Actual, "_")[0] == strings.Split(masterVersion, "_")[0] {
-					return workerFields, workerNormal, nil
+				if *worker.KubeVersion.Actual == *worker.KubeVersion.Target {
+					count = count + 1
 				}
+			}
+			if count == len(workerFields) {
+				return workerFields, workerNormal, nil
 			}
 			return workerFields, versionUpdating, nil
 		},

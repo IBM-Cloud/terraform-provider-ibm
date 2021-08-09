@@ -1,6 +1,6 @@
 
 module "satellite-location" {
-  source            = "./modules/location"
+  source = "./modules/location"
 
   is_location_exist = var.is_location_exist
   location          = var.location

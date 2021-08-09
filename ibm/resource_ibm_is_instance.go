@@ -55,14 +55,16 @@ const (
 	isInstanceDisks                   = "disks"
 	isInstanceDedicatedHost           = "dedicated_host"
 	isInstanceStatus                  = "status"
-
-	isEnableCleanDelete        = "wait_before_delete"
-	isInstanceProvisioning     = "provisioning"
-	isInstanceProvisioningDone = "done"
-	isInstanceAvailable        = "available"
-	isInstanceDeleting         = "deleting"
-	isInstanceDeleteDone       = "done"
-	isInstanceFailed           = "failed"
+	isInstanceStatusReasons           = "status_reasons"
+	isInstanceStatusReasonsCode       = "code"
+	isInstanceStatusReasonsMessage    = "message"
+	isEnableCleanDelete               = "wait_before_delete"
+	isInstanceProvisioning            = "provisioning"
+	isInstanceProvisioningDone        = "done"
+	isInstanceAvailable               = "available"
+	isInstanceDeleting                = "deleting"
+	isInstanceDeleteDone              = "done"
+	isInstanceFailed                  = "failed"
 
 	isInstanceActionStatusStopping = "stopping"
 	isInstanceActionStatusStopped  = "stopped"
@@ -484,7 +486,26 @@ func resourceIBMISInstance() *schema.Resource {
 				Computed:    true,
 				Description: "instance status",
 			},
+			isInstanceStatusReasons: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current status (if any).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceStatusReasonsCode: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the status reason",
+						},
 
+						isInstanceStatusReasonsMessage: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the status reason",
+						},
+					},
+				},
+			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -570,7 +591,7 @@ func resourceIBMISInstance() *schema.Resource {
 
 func resourceIBMISInstanceValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isInstanceName,
@@ -1440,6 +1461,21 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 
 	d.Set(isInstanceStatus, *instance.Status)
+
+	//set the status reasons
+	if instance.StatusReasons != nil {
+		statusReasonsList := make([]map[string]interface{}, 0)
+		for _, sr := range instance.StatusReasons {
+			currentSR := map[string]interface{}{}
+			if sr.Code != nil && sr.Message != nil {
+				currentSR[isInstanceStatusReasonsCode] = *sr.Code
+				currentSR[isInstanceStatusReasonsMessage] = *sr.Message
+				statusReasonsList = append(statusReasonsList, currentSR)
+			}
+		}
+		d.Set(isInstanceStatusReasons, statusReasonsList)
+	}
+
 	d.Set(isInstanceVPC, *instance.VPC.ID)
 	d.Set(isInstanceZone, *instance.Zone.Name)
 

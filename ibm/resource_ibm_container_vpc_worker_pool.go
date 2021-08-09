@@ -85,6 +85,12 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "Labels",
 			},
+
+			"worker_pool_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			"taints": {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -104,7 +110,7 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 						"effect": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Effect for taint. Accepted values are NoSchedule, PreferNoSchedule, and NoExecute.",
+							Description: "Effect for taint. Accepted values are NoSchedule, PreferNoSchedule and NoExecute.",
 							ValidateFunc: InvokeValidator(
 								"ibm_container_vpc_worker_pool",
 								"worker_taints"),
@@ -146,8 +152,8 @@ func resourceIBMContainerVpcWorkerPool() *schema.Resource {
 	}
 }
 func resourceContainerVPCWorkerPoolValidator() *ResourceValidator {
-	tainteffects := "NoSchedule, PreferNoSchedule, and NoExecute"
-	validateSchema := make([]ValidateSchema, 1)
+	tainteffects := "NoSchedule,PreferNoSchedule,NoExecute"
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "worker_taints",
@@ -448,6 +454,7 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 	d.Set("worker_pool_name", workerPool.PoolName)
 	d.Set("flavor", workerPool.Flavor)
 	d.Set("worker_count", workerPool.WorkerCount)
+	d.Set("worker_pool_id", workerPoolID)
 	// d.Set("provider", workerPool.Provider)
 	d.Set("labels", IgnoreSystemLabels(workerPool.Labels))
 	d.Set("zones", zones)

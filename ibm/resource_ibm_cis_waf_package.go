@@ -81,7 +81,7 @@ func resourceIBMCISWAFPackage() *schema.Resource {
 
 func resourceIBMCISWAFPackageValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	sesitivity := "high, medium, low, off"
 	actionMode := "simulate, block, challenge"
 

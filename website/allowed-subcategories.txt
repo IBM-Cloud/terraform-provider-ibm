@@ -1,4 +1,6 @@
+Activity Tracker API
 API Gateway
+AppID Management
 App Configuration
 Catalog Management
 Certificate Manager
@@ -12,6 +14,7 @@ Enterprise Management
 Event Streams
 Functions
 Global Tagging
+Hyper Protect Crypto Service (HPCS)
 Identity & Access Management (IAM)
 Internet services
 Key Management Service

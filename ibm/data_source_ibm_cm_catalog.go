@@ -25,6 +25,11 @@ func dataSourceIBMCmCatalog() *schema.Resource {
 				ForceNew:    true,
 				Description: "ID for catalog",
 			},
+			"kind": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Kind of catalog, offering or vpe.",
+			},
 			"label": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -102,6 +107,9 @@ func dataSourceIBMCmCatalogRead(context context.Context, d *schema.ResourceData,
 	}
 	if err = d.Set("offerings_url", catalog.OfferingsURL); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting offerings_url: %s", err))
+	}
+	if err = d.Set("kind", catalog.Kind); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting kind: %s", err))
 	}
 	return nil
 }

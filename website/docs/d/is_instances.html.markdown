@@ -79,6 +79,11 @@ In addition to all argument reference list, you can access the following attribu
 		- `security_groups` (List)A list of security groups that were created for the interface.
 		- `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses.- `resource_group` - (String) The name of the resource group where the instance was created.
 	- `status` - (String) The status of the instance.
+	- `status_reasons` - (List) Array of reasons for the current status. 
+
+		Nested scheme for `status_reasons`:
+		- `code` - (String)  A snake case string identifying the status reason.
+		- `message` - (String)  An explanation of the status reason
 	- `volume_attachments`- (List) A list of volume attachments that were created for the instance.
 
 	  Nested scheme for `volume_attachments`: 

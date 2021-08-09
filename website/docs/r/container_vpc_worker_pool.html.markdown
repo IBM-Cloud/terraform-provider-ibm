@@ -83,6 +83,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - (String) The unique identifier of the worker pool. The ID is composed of `<cluster_name_id>/<worker_pool_id>`.
+- `worker_pool_id` -  (String) The unique identifier of the worker pool.
 
 ## Import
 

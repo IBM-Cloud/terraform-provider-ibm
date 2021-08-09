@@ -22,7 +22,7 @@ func TestAccIBMIAMAuthorizationPolicy_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMAuthorizationPolicyBasic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
@@ -43,7 +43,7 @@ func TestAccIBMIAMAuthorizationPolicy_Resource_Instance(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMAuthorizationPolicyResourceInstance(instanceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
@@ -51,7 +51,7 @@ func TestAccIBMIAMAuthorizationPolicy_Resource_Instance(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "kms"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -71,7 +71,7 @@ func TestAccIBMIAMAuthorizationPolicy_Resource_Group(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMAuthorizationPolicyResourceGroup(sResourceGroup, tResourceGroup),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
@@ -79,7 +79,7 @@ func TestAccIBMIAMAuthorizationPolicy_Resource_Group(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "kms"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -96,7 +96,7 @@ func TestAccIBMIAMAuthorizationPolicy_ResourceType(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMAuthorizationPolicyResourceType(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
@@ -155,21 +155,23 @@ func testAccCheckIBMIAMAuthorizationPolicyExists(n string, obj iampolicymanageme
 			authPolicyID,
 		)
 
-		policy, _, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+		policy, resp, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+		if err != nil {
+			return fmt.Errorf("Error Getting Policy %s, %s", err, resp)
+		}
 		obj = *policy
 		return nil
 	}
 }
 
 func testAccCheckIBMIAMAuthorizationPolicyBasic() string {
-	return fmt.Sprintf(`
-		  
+	return `
 	resource "ibm_iam_authorization_policy" "policy" {
 		source_service_name = "cloud-object-storage"
 		target_service_name = "kms"
 		roles               = ["Reader"]
 	  }
-	`)
+	`
 }
 
 func testAccCheckIBMIAMAuthorizationPolicyResourceInstance(instanceName string) string {
@@ -201,15 +203,14 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceInstance(instanceName string) 
 }
 
 func testAccCheckIBMIAMAuthorizationPolicyResourceType() string {
-	return fmt.Sprintf(`
-		  
+	return `
 	resource "ibm_iam_authorization_policy" "policy" {
 		source_service_name  = "is"
 		source_resource_type = "load-balancer"
 		target_service_name  = "cloudcerts"
 		roles                = ["Reader"]
 	  }
-	`)
+	`
 }
 
 func testAccCheckIBMIAMAuthorizationPolicyResourceGroup(sResourceGroup, tResourceGroup string) string {

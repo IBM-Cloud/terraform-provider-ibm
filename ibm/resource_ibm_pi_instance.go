@@ -561,7 +561,6 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 	if d.HasChange(helpers.PIInstanceProcType) {
 
 		// Stop the lpar
-		processortype := d.Get(helpers.PIInstanceProcType).(string)
 		if d.Get("status") == "SHUTOFF" {
 			log.Printf("the lpar is in the shutoff state. Nothing to do . Moving on ")
 		} else {
@@ -669,11 +668,9 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 
 			body := &models.PVMInstanceUpdate{
 				Memory:     mem,
-				ProcType:   processortype,
 				Processors: procs,
 				ServerName: name,
 			}
-			body.VirtualCores = &models.VirtualCores{Assigned: &assignedVirtualCores}
 			if m, ok := d.GetOk("pi_migratable"); ok {
 				migratable := m.(bool)
 				body.Migratable = &migratable

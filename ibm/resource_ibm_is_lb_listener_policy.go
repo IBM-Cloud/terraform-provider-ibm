@@ -227,7 +227,7 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 
 func resourceIBMISLBListenerPolicyValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	action := "forward, redirect, reject"
 	validateSchema = append(validateSchema,
 		ValidateSchema{

@@ -355,7 +355,7 @@ func resourceIBMISVPC() *schema.Resource {
 
 func resourceIBMISVPCValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	address_prefix_management := "auto, manual"
 
 	validateSchema = append(validateSchema,

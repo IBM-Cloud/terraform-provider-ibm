@@ -194,49 +194,58 @@ resource "ibm_cos_bucket" "objectversioning" {
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `bucket_name` - (Required, String) The name of the bucket.
+- `cross_region_location` - (Optional, String) Specify the cross-regional bucket location. Supported values are `us`, `eu`, and `ap`. If you use this parameter, do not set `single_site_location` or `region_location` at the same time.
+- `endpoint_type`- (Optional, String) The type of the endpoint either public or private to be used for buckets. Default value is `public`.
+- `resource_instance_id` - (Required, String) The ID of the IBM Cloud Object Storage service instance for which you want to create a bucket.
+- `region_location` - (Optional, String) The location of a regional bucket. Supported values are `au-syd`, `eu-de`, `eu-gb`, `jp-tok`, `us-east`, `us-south`. If you set this parameter, do not set `single_site_location` or `cross_region_location` at the same time.
+- `single_site_location` - (Optional, String) The location for a single site bucket. Supported values are: `ams03`, `che01`, `hkg02`, `mel01`, `mex01`, `mil01`, `mon01`, `osl01`, `par01`, `sjc04`, `sao01`, `seo01`, `sng01`, and `tor01`. If you set this parameter, do not set `region_location` or `cross_region_location` at the same time.
+- `storage_class` - (Required, String) The storage class that you want to use for the bucket. Supported values are `standard`, `vault`, `cold`, `flex`, and `smart`. For more information, about storage classes, see [Use storage classes](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-classes).
+- `allowed_ip` - (Optional, Array of string)  A list of IPv4 or IPv6 addresses in CIDR notation that you want to allow access to your IBM Cloud Object Storage bucket.
 - `activity_tracking`- (List of objects) Object to enable auditing with IBM Cloud Activity Tracker - Optional - Configure your IBM Cloud Activity Tracker service instance and the type of events that you want to send to your service to audit activity against your bucket. For a list of supported actions, see [Bucket actions](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-at-events#at-actions-mngt-2).
 
-   Nested scheme for `activity_tracking`:
-   - `activity_tracker_crn`-  (Required, String) The CRN of your IBM Cloud Activity Tracker service instance that you want to send your events to. This value is required only when you configure your instance for the first time.
-   - `read_data_events`-  (Required, Bool)  If set to **true**, all read events against a bucket are sent to your IBM Cloud Activity Tracker service instance.
-   - `request_metrics_enabled` : (Optional, Bool) If set to **true**, all request metrics `ibm_cos_bucket_all_request` is sent to the monitoring service `@1mins` granulatiy.
-   - `write_data_events`-  (Required, Bool) If set to **true**, all write events against a bucket are sent to your IBM Cloud Activity Tracker service instance.
-   - `usage_metrics_enabled` : (Optional, Bool) If set to **true**, all usage metrics that is `bytes_used` is sent to the monitoring service.
-- `allowed_ip` - (Optional, Array of string)  A list of IPv4 or IPv6 addresses in CIDR notation that you want to allow access to your IBM Cloud Object Storage bucket.
+  Nested scheme for `activity_tracking`:
+  - `read_data_events`-  (Required, Bool)  If set to **true**, all read events against a bucket are sent to your IBM Cloud Activity Tracker service instance.
+  - `write_data_events`-  (Required, Bool) If set to **true**, all write events against a bucket are sent to your IBM Cloud Activity Tracker service instance.
+  - `activity_tracker_crn`-  (Required, String) The CRN of your IBM Cloud Activity Tracker service instance that you want to send your events to. This value is required only when you configure your instance for the first time. 
+- `metrics_monitoring`- (Object) to enable metrics tracking with IBM Cloud Monitoring - Optional- Set up your IBM Cloud Monitoring service instance to receive metrics for your IBM Cloud Object Storage bucket.
+
+  Nested scheme for `metrics_monitoring`:
+  - `usage_metrics_enabled` : (Optional, Bool) If set to **true**, all usage metrics that is `bytes_used` is sent to the monitoring service.e.
+  - `request_metrics_enabled` : (Optional, Bool) If set to **true**, all request metrics `ibm_cos_bucket_all_request` is sent to the monitoring service `@1mins` granulatiy.
+  - `metrics_monitoring_crn` - (Required, string) Required the first time `metrics_monitoring` is configured. The instance of IBM Cloud Monitoring receives the bucket metrics. 
+
+    **Note:** 
+    - Request metrics are supported in all regions and console has the support. For more details check the [cloud documention](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-mm-cos-integration).
+    - One of the location option must be present. 
 - `archive_rule` - (Required, List) Nested archive_rule block has following structure.
-    **Note** Archive is available in certain regions only. For more informaton, see [Integrated Services](https://cloud.ibm.com/docs/cloud-object-storage/basics?topic=cloud-object-storage-service-availability).
   
   Nested scheme for `archive_rule`:
   - `days` - (Required, String) Specifies the number of days when the specific rule action takes effect.
   - `enable` - (Required, Bool) Specifies archive rule status either `enable` or `disable` for a bucket.
   - `rule_id` -  (Optional, Computed, String) The unique ID for the rule. Archive rules allow you to set a specific time frame after the objects transition to the archive.
-  - `type` - (Required, String) Specifies the storage class or archive type to which you want the object to transition. Allowed values are `Glacier` or `Accelerated`. **Note** Archive is available in certain regions only. For more information, see [Integrated Services](https://cloud.ibm.com/docs/cloud-object-storage/basics?topic=cloud-object-storage-service-availability).
-- `bucket_name` - (Required, String) The name of the bucket.
-- `cross_region_location` - (Optional, String) Specify the cross-regional bucket location. Supported values are `us`, `eu`, and `ap`. If you use this parameter, do not set `single_site_location` or `region_location` at the same time.
-- `endpoint_type`- (Optional, String) The type of the endpoint either public or private to be used for buckets. Default value is `public`.
+  - `type` - (Required, String) Specifies the storage class or archive type to which you want the object to transition. Allowed values are `Glacier` or `Accelerated`. 
+  
+    **Note:** Archive is available in certain regions only. For more information, see [Integrated Services](https://cloud.ibm.com/docs/cloud-object-storage/basics?topic=cloud-object-storage-service-availability).
 - `expire_rule` - (Required, List) Nested expire_rule block has following structure.
-
+  
   Nested scheme for `expire_rule`:
   - `rule_id` -  (Optional, Computed, String) Unique ID for the rule. Expire rules allow you to set a specific time frame after which objects are deleted.
   - `enable` - (Required, Bool) Specifies expire rule status either `enable` or `disable` for a bucket.
   - `days` - (Required, String) Specifies the number of days when the specific rule action takes effect.
   - `prefix` - (Optional, String) Specifies a prefix filter to apply to only a subset of objects with names that match the prefix.
 
-Both `archive_rule` and `expire_rule` must be managed by  Terraform as they use the same lifecycle configuration. If user creates any of the rule outside of  Terraform by using command line or console, you can see unexpected difference like removal of any of the rule or one rule overrides another. The policy cannot match as expected due to API limitations, as the lifecycle is a single API request for both archive and expire.
-- `force_delete`- (Optional, Bool) As the default value set to **true**, it will delete all the objects in the COS Bucket and then delete the bucket. **Note:** `force_delete` will timeout on buckets with a large amount of objects. 24 hours before you delete the bucket you can set an expire rule to remove all the files over a day old. * **Note** Both `archive_rule` and `expire_rule` must be managed by Terraform as they use the same lifecycle configuration. If user creates any of the rule outside of Terraform by using command line, or console, you can see unexpected difference such as removal of any of the rule, or one rule overrides another, the policy may not match as expected due to API limitation because the lifecycle is a single API request for both archive and expire.
-- `key_protect` - (Optional, String) The CRN of the IBM Key Protect root key that you want to use to encrypt data that is sent and stored in IBM Cloud Object Storage. Before you can enable IBM Key Protect encryption, you must provision an instance of IBM Key Protect and authorize the service to access IBM Cloud Object Storage. For more information, see [Server-Side Encryption with IBM Key Protect or Hyper Protect Crypto Services (SSE-KP)](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-encryption).
-- `metrics_monitoring_crn` - (Required, string) Required the first time `metrics_monitoring` is configured. The instance of IBM Cloud Monitoring receives the bucket metrics. **Note** Request metrics are supported in all regions and console has the support. For more details check the [cloud documention](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-mm-cos-integration) **Note** One of the location option must be present.
-- `metrics_monitoring`- (Object) to enable metrics tracking with IBM Cloud Monitoring - Optional- Set up your IBM Cloud Monitoring service instance to receive metrics for your IBM Cloud Object Storage bucket.
+  **Note:** Both `archive_rule` and `expire_rule` must be managed by  Terraform as they use the same lifecycle configuration. If user creates any of the rule outside of  Terraform by using command line or console, you can see unexpected difference like removal of any of the rule or one rule overrides another. The policy cannot match as expected due to API limitations, as the lifecycle is a single API request for both archive and expire.
+- `force_delete`- (Optional, Bool) As the default value set to **true**, it will delete all the objects in the COS Bucket and then delete the bucket. 
 
-  Nested scheme for `metrics_monitoring`:
-  - `usage_metrics_enabled` - (Optional, Bool) If set to **true**, all metrics are sent to your IBM Cloud Monitoring service instance.
-  - `request_metrics_enabled` : (Optional, Bool) If set to **true**, all request metrics `ibm_cos_bucket_all_request` is sent to the monitoring service `@1mins` granulatiy.
+  **Note:** `force_delete` will timeout on buckets with a large amount of objects. 24 hours before you delete the bucket you can set an expire rule to remove all the files over a day old.
+- `key_protect` - (Optional, String) The CRN of the IBM Key Protect root key that you want to use to encrypt data that is sent and stored in IBM Cloud Object Storage. Before you can enable IBM Key Protect encryption, you must provision an instance of IBM Key Protect and authorize the service to access IBM Cloud Object Storage. For more information, see [Server-Side Encryption with IBM Key Protect or Hyper Protect Crypto Services (SSE-KP)](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-encryption).
 - `object_versioning` - (List) Nested block have the following structure:
 
   Nested scheme for `object_versioning`:
   - `enable` : (Optional, Bool) Specifies Versioning status either enable or Suspended for the objects in the bucket.Default value set to false.
 
-    **Note**
+    **Note:**
     - Versioning allows multiple revisions of a single object to exist in the same bucket. Each version of an object can be queried, read, restored from an archived state, or deleted.
     - If cos bucket has versioning enabled and set to false, versioning will be suspended.
     - Versioning can only be suspended, we cannot disabled once after it is enabled.
@@ -246,8 +255,6 @@ Both `archive_rule` and `expire_rule` must be managed by  Terraform as they use 
     - Containers with proxy configuration cannot use versioning and vice versa.
     - SoftLayer accounts cannot use versioning.
     - Currently, you cannot support `MFA_Delete`, that is a feature to add additional security to version delete.
-- `resource_instance_id` - (Required, String) The ID of the IBM Cloud Object Storage service instance for which you want to create a bucket.
-- `region_location` - (Optional, String) The location of a regional bucket. Supported values are `au-syd`, `eu-de`, `eu-gb`, `jp-tok`, `us-east`, `us-south`. If you set this parameter, do not set `single_site_location` or `cross_region_location` at the same time.
 - `retention_rule` - (List) Nested block have the following structure:
   
   Nested scheme for `retention rule`:
@@ -256,15 +263,12 @@ Both `archive_rule` and `expire_rule` must be managed by  Terraform as they use 
   - `minimum` - (Required, Integer) Specifies minimum duration of time an object must be kept unmodified in the bucket.
   - `permanent` : (Optional, Bool) Specifies a permanent retention status either enable or disable for a bucket.
 
-    **Note**
+    **Note:**
      - Retention policies cannot be removed. For a new bucket, ensure that you are creating the bucket in a supported region. For more information, see [Integrated Services](https://cloud.ibm.com/docs/cloud-object-storage/basics?topic=cloud-object-storage-service-availability).
      - The minimum retention period must be less than or equal to the default retention period, that in turn must be less than or equal to the maximum retention period.
      - Permanent retention can only be enabled at a IBM Cloud Object Storage bucket level with retention policy enabled and users are able to select the permanent retention period option during object uploads. Once enabled, this process can't be reversed and objects uploaded that use a permanent retention period cannot be deleted. It's the responsibility of the users to validate at their end if there's a legitimate need to permanently store objects by using Object Storage buckets with a retention policy.
      - force deleting the bucket will not work if any object is still under retention. As objects cannot be deleted or overwritten until the retention period has expired and all the legal holds have been removed.
 - `hard_quota` - (Optional, Integer) sets a maximum amount of storage (in bytes) available for a bucket. For more details check the [cloud documention](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-quota)
-- `single_site_location` - (Optional, String) The location for a single site bucket. Supported values are: `ams03`, `che01`, `hkg02`, `mel01`, `mex01`, `mil01`, `mon01`, `osl01`, `par01`, `sjc04`, `sao01`, `seo01`, `sng01`, and `tor01`. If you set this parameter, do not set `region_location` or `cross_region_location` at the same time.
-- `storage_class` - (Required, String) The storage class that you want to use for the bucket. Supported values are `standard`, `vault`, `cold`, `flex`, and `smart`. For more information, about storage classes, see [Use storage classes](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-classes).
-
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

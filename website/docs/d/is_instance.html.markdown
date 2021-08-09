@@ -119,6 +119,11 @@ In addition to all argument reference list, you can access the following attribu
 - `resource_controller_url` - (String) The URL of the IBM Cloud dashboard that you can use to see details for your instance.  
 - `resource_group` - (String) The name of the resource group where the instance was created.
 - `status` - (String) The status of the instance.
+- `status_reasons` - (List) Array of reasons for the current status. 
+  
+  Nested scheme for `status_reasons`:
+  - `code` - (String)  A snake case string identifying the status reason.
+  - `message` - (String)  An explanation of the status reason
 - `vpc` - (String) The ID of the VPC that the instance belongs to.
 - `vcpu`- (List) A list of virtual CPUs that were allocated to the instance.
 

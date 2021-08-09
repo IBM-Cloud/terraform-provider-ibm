@@ -19,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	apigateway "github.com/IBM/apigateway-go-sdk/apigatewaycontrollerapiv1"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
+	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
 	"github.com/IBM/container-registry-go-sdk/containerregistryv1"
 	"github.com/IBM/go-sdk-core/v4/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
@@ -50,6 +51,7 @@ import (
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
+	"github.com/IBM/platform-services-go-sdk/atrackerv1"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
@@ -76,7 +78,6 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/hpcs"
-	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
@@ -179,6 +180,7 @@ type Session struct {
 
 // ClientSession ...
 type ClientSession interface {
+	AppIDAPI() (*appid.AppIDManagementV4, error)
 	BluemixSession() (*bxsession.Session, error)
 	BluemixAcccountAPI() (accountv2.AccountServiceAPI, error)
 	BluemixAcccountv1API() (accountv1.AccountServiceAPI, error)
@@ -192,7 +194,6 @@ type ClientSession interface {
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
 	GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error)
 	ICDAPI() (icdv4.ICDServiceAPI, error)
-	IAMAPI() (iamv1.IAMServiceAPI, error)
 	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
 	IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
@@ -248,10 +249,14 @@ type ClientSession interface {
 	SchematicsV1() (*schematicsv1.SchematicsV1, error)
 	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
+	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 }
 
 type clientSession struct {
 	session *Session
+
+	appidErr error
+	appidAPI *appid.AppIDManagementV4
 
 	apigatewayErr error
 	apigatewayAPI *apigateway.ApiGatewayControllerApiV1
@@ -297,9 +302,6 @@ type clientSession struct {
 
 	iamUUMConfigErrV2  error
 	iamUUMServiceAPIV2 iamuumv2.IAMUUMServiceAPIv2
-
-	iamConfigErr  error
-	iamServiceAPI iamv1.IAMServiceAPI
 
 	userManagementErr error
 	userManagementAPI usermanagementv2.UserManagementAPI
@@ -483,6 +485,15 @@ type clientSession struct {
 	// CIS Filters options
 	cisFiltersClient *cisfiltersv1.FiltersV1
 	cisFiltersErr    error
+
+	//Atracker
+	atrackerClient    *atrackerv1.AtrackerV1
+	atrackerClientErr error
+}
+
+// AppIDAPI provides AppID Service APIs ...
+func (session clientSession) AppIDAPI() (*appid.AppIDManagementV4, error) {
+	return session.appidAPI, session.appidErr
 }
 
 func (session clientSession) CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error) {
@@ -557,11 +568,6 @@ func (sess clientSession) GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1,
 // HpcsEndpointAPI provides Hpcs Endpoint generator APIs ...
 func (sess clientSession) HpcsEndpointAPI() (hpcs.HPCSV2, error) {
 	return sess.hpcsEndpointAPI, sess.hpcsEndpointErr
-}
-
-// IAMAPI provides IAM PAP APIs ...
-func (sess clientSession) IAMAPI() (iamv1.IAMServiceAPI, error) {
-	return sess.iamServiceAPI, sess.iamConfigErr
 }
 
 // UserManagementAPI provides User management APIs ...
@@ -891,6 +897,11 @@ func (sess clientSession) CisFiltersSession() (*cisfiltersv1.FiltersV1, error) {
 	return sess.cisFiltersClient.Clone(), nil
 }
 
+// Activity Tracker API
+func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
+	return session.atrackerClient, session.atrackerClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -922,7 +933,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.globalTaggingConfigErr = errEmptyBluemixCredentials
 		session.globalTaggingConfigErrV1 = errEmptyBluemixCredentials
 		session.hpcsEndpointErr = errEmptyBluemixCredentials
-		session.iamConfigErr = errEmptyBluemixCredentials
 		session.iamUUMConfigErrV2 = errEmptyBluemixCredentials
 		session.icdConfigErr = errEmptyBluemixCredentials
 		session.resourceCatalogConfigErr = errEmptyBluemixCredentials
@@ -1137,9 +1147,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 	var authenticator core.Authenticator
 
 	if c.BluemixAPIKey != "" {
+		iamURL := iamidentity.DefaultServiceURL
+		if c.Visibility == "private" || c.Visibility == "public-and-private" {
+			if c.Region == "us-south" || c.Region == "us-east" {
+				iamURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+			} else {
+				iamURL = contructEndpoint("private.iam", cloudEndpoint)
+			}
+		}
 		authenticator = &core.IamAuthenticator{
 			ApiKey: c.BluemixAPIKey,
-			URL:    envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, "https://iam.cloud.ibm.com") + "/identity/token",
+			URL:    envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
 		}
 	} else if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
 		authenticator = &core.BearerTokenAuthenticator{
@@ -1151,6 +1169,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 	}
 
+	appIDEndpoint := fmt.Sprintf("https://%s.appid.cloud.ibm.com", c.Region)
+	appIDClientOptions := &appid.AppIDManagementV4Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_APPID_MANAGEMENT_API_ENDPOINT"}, appIDEndpoint),
+	}
+
+	appIDClient, err := appid.NewAppIDManagementV4(appIDClientOptions)
+
+	if err != nil {
+		session.appidErr = fmt.Errorf("error occured while configuring AppID service: #{err}")
+	}
+
+	if appIDClient != nil {
+		appIDClient.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+
+	session.appidAPI = appIDClient
+
 	// Construct an "options" struct for creating the service client.
 	catalogManagementURL := "https://cm.globalcatalog.cloud.ibm.com/api/v1-beta"
 	if c.Visibility == "private" {
@@ -1159,6 +1195,37 @@ func (c *Config) ClientSession() (interface{}, error) {
 	catalogManagementClientOptions := &catalogmanagementv1.CatalogManagementV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT"}, catalogManagementURL),
 		Authenticator: authenticator,
+	}
+
+	// Construct an "options" struct for creating the atracker service client.
+	var atrackerClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		atrackerClientURL, err = atrackerv1.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			atrackerClientURL, err = atrackerv1.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		atrackerClientURL, err = atrackerv1.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		atrackerClientURL = atrackerv1.DefaultServiceURL
+	}
+	atrackerClientOptions := &atrackerv1.AtrackerV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_ATRACKER_API_ENDPOINT"}, atrackerClientURL),
+	}
+
+	// Construct the service client.
+	session.atrackerClient, err = atrackerv1.NewAtrackerV1(atrackerClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.atrackerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.atrackerClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.atrackerClientErr = fmt.Errorf("Error occurred while configuring Activity Tracker API service: %q", err)
 	}
 
 	// Construct the service client.
@@ -1339,12 +1406,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.globalTaggingServiceAPIV1 = *globalTaggingAPIV1
 		session.globalTaggingServiceAPIV1.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
-
-	iam, err := iamv1.New(sess.BluemixSession)
-	if err != nil {
-		session.iamConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAM Service: %q", err)
-	}
-	session.iamServiceAPI = iam
 
 	iamuumv2, err := iamuumv2.New(sess.BluemixSession)
 	if err != nil {

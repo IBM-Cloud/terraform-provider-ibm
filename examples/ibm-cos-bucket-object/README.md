@@ -76,3 +76,4 @@ data "ibm_cos_bucket_object" "object" {
 | content\_type | A standard MIME type describing the format of the object data. | `string` |
 | etag | Computed MD5 hexdigest of the object content. | `string` |
 | last\_modified | Last modified date of the object. A GMT formatted date. | `string` |
+| object_sql_url | Access the object using an SQL Query instance. | `string` |

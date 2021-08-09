@@ -201,7 +201,7 @@ func resourceIBMISVPNGateway() *schema.Resource {
 func resourceIBMISVPNGatewayValidator() *ResourceValidator {
 
 	modeCheckTypes := "route,policy"
-	validateSchema := make([]ValidateSchema, 2)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isVPNGatewayName,

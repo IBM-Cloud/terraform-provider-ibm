@@ -297,15 +297,9 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 			d.SetId(*group.ID)
 
 			if group.ResourceGroup != nil {
-				rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
-				if err != nil {
-					return err
+				if group.ResourceGroup.Name != nil {
+					d.Set(ResourceGroupName, *group.ResourceGroup.Name)
 				}
-				grp, err := rsMangClient.ResourceGroup().Get(*group.ResourceGroup.ID)
-				if err != nil {
-					return err
-				}
-				d.Set(ResourceGroupName, grp.Name)
 			}
 
 			controller, err := getBaseController(meta)
@@ -323,7 +317,6 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 			return nil
 		}
 	}
-
-	return nil
+	return fmt.Errorf("No Security Group found with name %s", name)
 
 }

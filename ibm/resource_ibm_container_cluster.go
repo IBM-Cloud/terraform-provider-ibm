@@ -164,7 +164,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 						"effect": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Effect for taint. Accepted values are NoSchedule, PreferNoSchedule, and NoExecute.",
+							Description: "Effect for taint. Accepted values are NoSchedule, PreferNoSchedule and NoExecute.",
 							ValidateFunc: InvokeValidator(
 								"ibm_container_cluster",
 								"worker_taints"),
@@ -612,8 +612,8 @@ func resourceIBMContainerCluster() *schema.Resource {
 }
 
 func resourceIBMContainerClusterValidator() *ResourceValidator {
-	tainteffects := "NoSchedule, PreferNoSchedule, and NoExecute"
-	validateSchema := make([]ValidateSchema, 1)
+	tainteffects := "NoSchedule,PreferNoSchedule,NoExecute"
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "tag",

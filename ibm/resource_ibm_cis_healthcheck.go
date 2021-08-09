@@ -167,7 +167,7 @@ func resourceIBMCISHealthCheckValidator() *ResourceValidator {
 	healthCheckTypes := "http, https, tcp"
 	methods := "GET, HEAD"
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 cisGLBHealthCheckType,

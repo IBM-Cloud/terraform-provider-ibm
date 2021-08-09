@@ -4,14 +4,13 @@
 
 This is a collection of resources that make it easier to provision and manage HPCS Instance IBM Cloud Platform:
 
-* Provisioning HPCS Instances - `ibm_resource_instance`
-* [Initialising HPCS Instance](https://github.com/terraform-ibm-modules/terraform-ibm-hpcs) - Initialises and Configured zeroised crypto units.
-* Managing Keys on HPCS Instance - [ Key Management Service Resource](https://cloud.ibm.com/docs/terraform?topic=terraform-kp-resources#kms-key)
+* Provisioning HPCS Instances - [Hyper Protect Crypto Service instance](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/hpcs) `ibm_hpcs` 
+* Managing Keys on HPCS Instance - [ Key Management Service Resource](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/kms_key)
 
 
 ## Terraform versions
 
-Terraform 0.12.
+Terraform 0.13 and above.
 
 ## Usage
 
@@ -31,28 +30,30 @@ Run `terraform destroy` when you don't need these resources.
 
 ### Provision HPCS Instance
 
-Note: `provision_instance` will determine if the instance has to be provisioned or not. If `provision_instance` is true, count will be 1 and the instance will be provisioned..
-```hcl
-resource "ibm_resource_instance" "hpcs_instance" {
-  count    = (var.provision_instance == true ? 1 : 0)
-  name     = var.hpcs_instance_name
-  service  = "hs-crypto"
-  plan     = var.plan
-  location = var.location
-  parameters = {
-    units = var.units
+
+```terraform
+resource ibm_hpcs hpcs {
+  location             = var.location
+  name                 = var.hpcs_instance_name
+  plan                 = var.plan
+  units                = var.units
+  signature_threshold  = var.signature_threshold
+  revocation_threshold = var.revocation_threshold
+  dynamic admins {
+    for_each = var.admins
+    content {
+      name   = admins.value.name
+      key   = admins.value.key
+      token   = admins.value.token
+    }
   }
 }
 ```
-
-
-
 ### Manage HPCS Keys
-`Note:` To Manage Keys, Instance should be Initialized..
 
-```hcl
+```terraform
 resource "ibm_kms_key" "key" {
-  instance_id  = data.ibm_resource_instance.hpcs_instance.guid
+  instance_id  = ibm_hpcs.hpcs.guid
   key_name     = var.key_name
   standard_key = false
   force_delete = true
@@ -64,7 +65,7 @@ resource "ibm_kms_key" "key" {
 
 | Name | Version |
 |------|---------|
-| terraform | ~> 0.12 |
+| terraform | ~> 0.13 |
 
 ## Providers
 
@@ -81,10 +82,13 @@ resource "ibm_kms_key" "key" {
 | location | Location of HPCS Instance. | `string` | Yes |
 | plan | Plan of HPCS Instance.Default: `standard` | `string` | No |
 | units | No of crypto units that has to be attached to the instance. | `number` | Yes |
+| signature_threshold | The number of administrator signatures. | `number` | Yes |
+| revocation_threshold | The number of administrator signatures that is required to remove an administrator after you leave imprint mode. | `number` | Yes |
+| admins | The list of administrators for the instance crypto units.  | `list` | Yes |
 | key\_name | Name of the key. | `string` | Yes |
 
-Note: COS Credententials are required when `download_from_cos` and `upload_to_cos` null resources are used
-
+### Note: Please refer [docs](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/hpcs#admins) for `admins` object details
+## Outputs
  Name | Description |
 |------|-------------|
 | keyID | The ID of the key.|

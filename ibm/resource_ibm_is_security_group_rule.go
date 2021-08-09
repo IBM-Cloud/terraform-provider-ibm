@@ -173,7 +173,7 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 }
 
 func resourceIBMISSecurityGroupRuleValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	direction := "inbound, outbound"
 	ip_version := "ipv4"
 

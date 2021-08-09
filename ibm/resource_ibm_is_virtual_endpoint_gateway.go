@@ -99,7 +99,7 @@ func resourceIBMISEndpointGateway() *schema.Resource {
 				Type:             schema.TypeList,
 				Optional:         true,
 				Computed:         true,
-				Description:      "Endpoint gateway resource group",
+				Description:      "Endpoint gateway IPs",
 				DiffSuppressFunc: applyOnce,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -118,13 +118,17 @@ func resourceIBMISEndpointGateway() *schema.Resource {
 						isVirtualEndpointGatewayIPsSubnet: {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "The Subnet id",
 						},
 						isVirtualEndpointGatewayIPsResourceType: {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The VPC Resource Type",
+							Description: "The VPE Resource Type",
+						},
+						isVirtualEndpointGatewayIPsAddress: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IP Address",
 						},
 					},
 				},
@@ -184,7 +188,7 @@ func resourceIBMISEndpointGateway() *schema.Resource {
 }
 
 func resourceIBMISEndpointGatewayValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "tag",
@@ -399,6 +403,7 @@ func flattenIPs(ipsList []vpcv1.ReservedIPReference) interface{} {
 		ips[isVirtualEndpointGatewayIPsID] = *item.ID
 		ips[isVirtualEndpointGatewayIPsName] = *item.Name
 		ips[isVirtualEndpointGatewayIPsResourceType] = *item.ResourceType
+		ips[isVirtualEndpointGatewayIPsAddress] = *item.Address
 
 		ipsListOutput = append(ipsListOutput, ips)
 	}

@@ -265,7 +265,7 @@ func resourceIBMCISFirewallRecord() *schema.Resource {
 
 func resourceIBMCISFirewallValidator() *ResourceValidator {
 	firewallTypes := "access_rules, ua_rules, lockdowns"
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 cisFirewallType,

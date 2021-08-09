@@ -187,7 +187,7 @@ func resourceIBMSatelliteLocation() *schema.Resource {
 func resourceIBMSatelliteLocationValidator() *ResourceValidator {
 	managedFromAllowedValues := "wdc, lon, fra, wdc04, lon04, fra02"
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "tags",
