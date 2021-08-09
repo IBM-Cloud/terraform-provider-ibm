@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"log"
 	"strings"
 )
 
@@ -116,12 +117,18 @@ func resourceIBMAppIDApplicationRead(ctx context.Context, d *schema.ResourceData
 	tenantID := idParts[0]
 	clientID := idParts[1]
 
-	app, _, err := appIDClient.GetApplicationWithContext(ctx, &appid.GetApplicationOptions{
+	app, resp, err := appIDClient.GetApplicationWithContext(ctx, &appid.GetApplicationOptions{
 		TenantID: &tenantID,
 		ClientID: &clientID,
 	})
 
 	if err != nil {
+		if resp != nil && resp.StatusCode == 404 {
+			log.Printf("[WARN] AppID application '%s' is not found", clientID)
+			d.SetId("")
+			return nil
+		}
+
 		return diag.Errorf("Error getting AppID application: %s", err)
 	}
 
