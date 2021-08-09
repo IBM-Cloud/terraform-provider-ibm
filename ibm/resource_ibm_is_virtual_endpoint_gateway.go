@@ -254,7 +254,7 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 	result, response, err := sess.CreateEndpointGateway(opt)
 	if err != nil {
 		log.Printf("Create Endpoint Gateway failed: %v", response)
-		return err
+		return fmt.Errorf("Create Endpoint Gateway failed %s\n%s", err, response)
 	}
 
 	d.SetId(*result.ID)
@@ -287,7 +287,7 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 		_, response, err := sess.UpdateEndpointGateway(opt)
 		if err != nil {
 			log.Printf("Update Endpoint Gateway failed: %v", response)
-			return err
+			return fmt.Errorf("Update Endpoint Gateway failed : %s\n%s", err, response)
 		}
 
 	}
@@ -316,8 +316,12 @@ func resourceIBMisVirtualEndpointGatewayRead(d *schema.ResourceData, meta interf
 	opt := sess.NewGetEndpointGatewayOptions(d.Id())
 	result, response, err := sess.GetEndpointGateway(opt)
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		log.Printf("Get Endpoint Gateway failed: %v", response)
-		return err
+		return fmt.Errorf("Get Endpoint Gateway failed %s\n%s", err, response)
 	}
 	d.Set(isVirtualEndpointGatewayName, result.Name)
 	d.Set(isVirtualEndpointGatewayHealthState, result.HealthState)
@@ -348,6 +352,7 @@ func resourceIBMisVirtualEndpointGatewayDelete(d *schema.ResourceData, meta inte
 	response, err := sess.DeleteEndpointGateway(opt)
 	if err != nil {
 		log.Printf("Delete Endpoint Gateway failed: %v", response)
+		return fmt.Errorf("Delete Endpoint Gateway failed : %s\n%s", err, response)
 	}
 	return nil
 }
