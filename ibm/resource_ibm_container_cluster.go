@@ -142,6 +142,7 @@ func resourceIBMContainerCluster() *schema.Resource {
 			"default_pool_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Default:     "default",
 				Description: "Name of the default worker pool",
 			},
