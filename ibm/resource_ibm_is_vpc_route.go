@@ -97,7 +97,7 @@ func resourceIBMISVpcRoute() *schema.Resource {
 
 func resourceIBMISRouteValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isVPCRouteName,

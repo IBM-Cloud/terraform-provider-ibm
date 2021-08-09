@@ -232,7 +232,7 @@ func dataSourceIBMSecretsManagerSecrets() *schema.Resource {
 
 func datasourceIBMSecretsManagerSecretsValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	secretType := "arbitrary, iam_credentials, username_password"
 	endpointType := "public, private"
 	validateSchema = append(validateSchema,

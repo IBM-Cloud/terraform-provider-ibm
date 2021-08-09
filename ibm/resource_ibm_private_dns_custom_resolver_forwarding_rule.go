@@ -75,7 +75,7 @@ func resourceIBMPrivateDNSForwardingRule() *schema.Resource {
 }
 
 func resourceIBMPrivateDNSForwardingRuleValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "type",

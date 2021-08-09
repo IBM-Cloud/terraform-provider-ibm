@@ -147,7 +147,7 @@ func vpcClient(meta interface{}) (*vpcv1.VpcV1, error) {
 
 func resourceIBMISFloatingIPValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isFloatingIPName,

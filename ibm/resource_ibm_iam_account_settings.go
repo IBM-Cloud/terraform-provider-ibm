@@ -138,7 +138,7 @@ func resourceIbmIamAccountSettings() *schema.Resource {
 }
 
 func resourceIBMIAMAccountSettingsValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 
 	restrict_values := "RESTRICTED, NOT_RESTRICTED, NOT_SET"
 	mfa_values := "NONE, TOTP, TOTP4ALL, LEVEL1, LEVEL2, LEVEL3"

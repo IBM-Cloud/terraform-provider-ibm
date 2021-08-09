@@ -215,7 +215,7 @@ func resourceIBMCISFilterDelete(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 func resourceIBMCISFilterValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 cisFilterDescription,

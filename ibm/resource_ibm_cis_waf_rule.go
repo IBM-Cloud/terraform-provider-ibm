@@ -105,7 +105,7 @@ func resourceIBMCISWAFRule() *schema.Resource {
 
 func resourceIBMCISWAFRuleValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	modes := "on, off, default, disable, simulate, block, challenge"
 
 	validateSchema = append(validateSchema,

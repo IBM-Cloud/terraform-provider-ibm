@@ -142,7 +142,7 @@ func resourceIBMISIKEPolicy() *schema.Resource {
 
 func resourceIBMISIKEValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	authentication_algorithm := "md5, sha1, sha256, sha512"
 	encryption_algorithm := "triple_des, aes128, aes256"
 	dh_group := "2, 5, 14, 19"

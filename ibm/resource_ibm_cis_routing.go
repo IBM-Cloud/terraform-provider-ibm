@@ -47,7 +47,7 @@ func resourceIBMCISRouting() *schema.Resource {
 
 func resourceIBMCISRoutingValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	smartRoutingValues := "on, off"
 
 	validateSchema = append(validateSchema,

@@ -379,7 +379,7 @@ func resourceIBMDLGateway() *schema.Resource {
 
 func resourceIBMDLGatewayValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 2)
+	validateSchema := make([]ValidateSchema, 0)
 	dlTypeAllowedValues := "dedicated, connect"
 
 	validateSchema = append(validateSchema,

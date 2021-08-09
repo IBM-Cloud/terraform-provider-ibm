@@ -53,7 +53,7 @@ func resourceIBMISDedicatedHostDiskManagement() *schema.Resource {
 
 func resourceIBMISDedicatedHostDiskManagementValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "name",
