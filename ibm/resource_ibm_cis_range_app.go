@@ -161,7 +161,7 @@ func resourceIBMCISRangeApp() *schema.Resource {
 }
 func resourceIBMCISRangeAppValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	proxyProtocol := "off, v1, v2, simple"
 	connectivity := "ipv4, ipv6, all"
 	trafficType := "direct, http, https"

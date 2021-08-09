@@ -252,7 +252,7 @@ func resourceIBMCISRateLimit() *schema.Resource {
 }
 func resourceIBMCISRateLimitValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	byValues := "nat"
 	modeValues := "simulate, ban, challenge, js_challenge"
 	ctypeValues := "text/plain, text/xml, application/json"

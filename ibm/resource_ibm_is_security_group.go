@@ -117,7 +117,7 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 
 func resourceIBMISSecurityGroupValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isSecurityGroupName,

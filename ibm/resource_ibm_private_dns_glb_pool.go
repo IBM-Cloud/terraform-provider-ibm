@@ -173,7 +173,7 @@ func resourceIBMPrivateDNSGLBPool() *schema.Resource {
 func resourceIBMPrivateDNSGLBPoolValidator() *ResourceValidator {
 	regions := "us-south,us-east,eu-gb,eu-du,au-syd,jp-tok"
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 pdnsGlbPoolRegion,

@@ -71,7 +71,7 @@ func resourceIBMISInstanceGroupManagerPolicy() *schema.Resource {
 
 func resourceIBMISInstanceGroupManagerPolicyValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	metricTypes := "cpu,memory,network_in,network_out"
 	policyType := "target"
 	validateSchema = append(validateSchema,

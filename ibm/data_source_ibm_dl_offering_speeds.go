@@ -98,7 +98,7 @@ func dataSourceIBMDLOfferingSpeedsID(d *schema.ResourceData) string {
 
 func datasourceIBMDLOfferingSpeedsValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 2)
+	validateSchema := make([]ValidateSchema, 0)
 	dlTypeAllowedValues := "dedicated, connect"
 
 	validateSchema = append(validateSchema,

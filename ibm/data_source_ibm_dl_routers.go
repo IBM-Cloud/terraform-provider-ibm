@@ -106,7 +106,7 @@ func dataSourceIBMDLRoutersID(d *schema.ResourceData) string {
 
 func datasourceIBMDLRoutersValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 2)
+	validateSchema := make([]ValidateSchema, 0)
 	dlTypeAllowedValues := "dedicated"
 
 	validateSchema = append(validateSchema,
