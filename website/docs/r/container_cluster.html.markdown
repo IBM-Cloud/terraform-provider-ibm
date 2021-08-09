@@ -197,6 +197,7 @@ Review the argument references that you can specify for your resource.
 
 - `datacenter` - (Required, Forces new resource, String) The datacenter where you want to provision the worker nodes. The zone that you choose must be supported in the region where you want to create the cluster. To find supported zones, run `ibmcloud ks zones` [command line](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 - `default_pool_size`  - (Optional, Integer) The number of worker nodes that you want to add to the default worker pool.
+- `default_worker_pool` - (Optional, String) Set the name of the default worker pool.
 - `disk_encryption` - (Optional, Forces new resource, Bool) If set to **true**, the worker node disks are set up with an AES 256-bit encryption. If set to **false**, the disk encryption for the worker node is disabled. For more information, see [Encrypted disks for worker node](https://cloud.ibm.com/docs/containers?topic=containers-security#workernodes).
 - `entitlement` - (Optional, String) If you purchased an IBM Cloud Cloud Pak that includes an entitlement to run worker nodes that are installed with OpenShift Container Platform, enter `entitlement` to create your cluster with that entitlement so that you are not charged twice for the OpenShift license. Note that this option can be set only when you create the cluster. After the cluster is created, the cost for the OpenShift license occurred and you cannot disable this charge. **Note**
   1. Set only for the first time creation of the cluster, modification do not have any impacts.
@@ -240,7 +241,6 @@ Review the argument references that you can specify for your resource.
   Nested scheme for `workers_info`:
   - `id` - (Optional, String) The ID of the worker node that you want to update.
   - `version` - (Optional, String) The Kubernetes version that you want to update your worker nodes to.
-- `default_worker_pool` - (Optional, String) Set the name of the default worker pool.
 - `worker_num`- (Optional, Integer) The number of worker nodes in your cluster. This attribute creates a worker node that is not associated with a worker pool. **Note**: Conflicts with `workers`.
 - `wait_for_worker_update` - (Optional, Bool) Set to **true** to wait and update the Kubernetes version of worker nodes. **NOTE** Setting wait_for_worker_update to **false** is not recommended. Setting **false** results in upgrading all the worker nodes in the cluster at the same time causing the cluster downtime.
 - `wait_till` - (Optional, String) The cluster creation happens in multi-stages. To avoid the longer wait times for resource execution.This argument in the resource will wait for the specified stage and complete the execution. The default stage value is `IngressReady`. The supported stages are  `MasterNodeReady` Resource waits till the master node is ready.  `OneWorkerNodeReady` Resource waits till one worker node is in to ready state.  `IngressReady` Resource waits till the ingress-host and ingress-secret are available.
