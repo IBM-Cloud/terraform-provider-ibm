@@ -19,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	apigateway "github.com/IBM/apigateway-go-sdk/apigatewaycontrollerapiv1"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
+	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
 	"github.com/IBM/container-registry-go-sdk/containerregistryv1"
 	"github.com/IBM/go-sdk-core/v4/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
@@ -179,6 +180,7 @@ type Session struct {
 
 // ClientSession ...
 type ClientSession interface {
+	AppIDAPI() (*appid.AppIDManagementV4, error)
 	BluemixSession() (*bxsession.Session, error)
 	BluemixAcccountAPI() (accountv2.AccountServiceAPI, error)
 	BluemixAcccountv1API() (accountv1.AccountServiceAPI, error)
@@ -252,6 +254,9 @@ type ClientSession interface {
 
 type clientSession struct {
 	session *Session
+
+	appidErr error
+	appidAPI *appid.AppIDManagementV4
 
 	apigatewayErr error
 	apigatewayAPI *apigateway.ApiGatewayControllerApiV1
@@ -484,6 +489,11 @@ type clientSession struct {
 	//Atracker
 	atrackerClient    *atrackerv1.AtrackerV1
 	atrackerClientErr error
+}
+
+// AppIDAPI provides AppID Service APIs ...
+func (session clientSession) AppIDAPI() (*appid.AppIDManagementV4, error) {
+	return session.appidAPI, session.appidErr
 }
 
 func (session clientSession) CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error) {
@@ -1158,6 +1168,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
 		}
 	}
+
+	appIDEndpoint := fmt.Sprintf("https://%s.appid.cloud.ibm.com", c.Region)
+	appIDClientOptions := &appid.AppIDManagementV4Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_APPID_MANAGEMENT_API_ENDPOINT"}, appIDEndpoint),
+	}
+
+	appIDClient, err := appid.NewAppIDManagementV4(appIDClientOptions)
+
+	if err != nil {
+		session.appidErr = fmt.Errorf("error occured while configuring AppID service: #{err}")
+	}
+
+	if appIDClient != nil {
+		appIDClient.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+
+	session.appidAPI = appIDClient
 
 	// Construct an "options" struct for creating the service client.
 	catalogManagementURL := "https://cm.globalcatalog.cloud.ibm.com/api/v1-beta"

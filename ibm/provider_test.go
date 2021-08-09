@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+var appIDTenantID string
 var cfOrganization string
 var cfSpace string
 var cisDomainStatic string
@@ -107,6 +108,11 @@ var tg_cross_network_id string
 var account_to_be_imported string
 
 func init() {
+	appIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
+	if appIDTenantID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_APPID_TENANT_ID for testing AppID resources, AppID tests will fail if this is not set")
+	}
+
 	cfOrganization = os.Getenv("IBM_ORG")
 	if cfOrganization == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_ORG for testing ibm_org  resource Some tests for that resource will fail if this is not set correctly")
