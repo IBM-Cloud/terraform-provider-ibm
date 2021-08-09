@@ -446,7 +446,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	serviceSubnet := d.Get("service_subnet").(string)
 	vpcID := d.Get("vpc_id").(string)
 	flavor := d.Get("flavor").(string)
-	defaultPoolName := d.Get("default_pool_name").(string)
+	defaultWorkerPool := d.Get("default_pool_name").(string)
 	workerCount := d.Get("worker_count").(int)
 
 	// timeoutStage will define the timeout stage
@@ -473,7 +473,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	workerpool := v2.WorkerPoolConfig{
 		VpcID:       vpcID,
 		Flavor:      flavor,
-		Name:        defaultPoolName,
+		Name:        defaultWorkerPool,
 		WorkerCount: workerCount,
 		Zones:       zonesList,
 	}
