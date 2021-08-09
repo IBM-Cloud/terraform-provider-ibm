@@ -68,7 +68,7 @@ func TestAccIBMContainerVpcClusterBasic(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_till", "update_all_workers", "kms_config"},
+					"wait_till", "update_all_workers", "kms_config", "force_delete_storage", "wait_for_worker_update"},
 			},
 		},
 	})
