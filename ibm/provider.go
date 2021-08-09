@@ -173,6 +173,7 @@ func Provider() *schema.Provider {
 			"ibm_app_route":          dataSourceIBMAppRoute(),
 
 			// AppID
+			"ibm_appid_role":         dataSourceIBMAppIDRole(),
 			"ibm_appid_token_config": dataSourceIBMAppIDTokenConfig(),
 
 			"ibm_function_action":                    dataSourceIBMFunctionAction(),
