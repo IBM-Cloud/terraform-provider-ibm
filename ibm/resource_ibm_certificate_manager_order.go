@@ -290,8 +290,8 @@ func waitForCertificateOrder(d *schema.ResourceData, meta interface{}) (interfac
 			return getcert, getcert.Status, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      60 * time.Second,
-		MinTimeout: 60 * time.Second,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
 	}
 
 	return stateConf.WaitForState()
@@ -320,8 +320,8 @@ func waitForCertificateRenew(d *schema.ResourceData, meta interface{}) (interfac
 			return getcert, getcert.Status, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutUpdate),
-		Delay:      60 * time.Second,
-		MinTimeout: 60 * time.Second,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
 	}
 
 	return stateConf.WaitForState()
