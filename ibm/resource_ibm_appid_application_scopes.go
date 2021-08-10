@@ -38,7 +38,7 @@ func resourceIBMAppIDApplicationScopes() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Optional: true,
+				Required: true,
 			},
 		},
 	}
