@@ -1,20 +1,19 @@
 ---
 subcategory: "Catalog Management"
 layout: "ibm"
-page_title: "IBM : cm_offering"
+page_title: "IBM : ibm_cm_offering"
 description: |-
-  Get information about cm_offering.
+  Get information about ibm_cm_offering.
 ---
 
 # ibm_cm_offering
 
-Create, modify, or delete an `cm_offering` data source. You can manage the settings for all catalogs across your account. For more information, about managing catalog, refer to [catalog management settings](https://cloud.ibm.com/docs/account?topic=account-account-getting-started).
-
+Provides a read-only data source for `ibm_cm_offering`. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example usage
 
 ```terraform
-data "cm_offering" "cm_offering" {
+data "ibm_cm_offering" "cm_offering" {
 	catalog_identifier = "catalog_identifier"
 	offering_id = "offering_id"
 }
@@ -37,7 +36,7 @@ In addition to all argument references list, you can access the following attrib
 - `disclaimer` - (String) A disclaimer for the offering.
 - `hidden` - (String) Determine if the offering should be displayed in the consumption console.
 - `ibm_publish_approved` - (String) Indicates if the offering has been approved for use by all IBMers.
-- `id` - (String) The unique identifier of the `cm_offering`.
+- `id` - (String) The unique identifier of the `ibm_cm_offering`.
 - `label` - (String) Display the name in the requested language.
 - `long_description` - (String) The long description in the requested language.
 - `name` - (String) The programmatic name of the offering.
