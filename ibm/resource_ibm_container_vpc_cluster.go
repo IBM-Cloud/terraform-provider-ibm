@@ -886,12 +886,21 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	}
 
 	clusterID := d.Id()
-	defaultWorkerPool := d.Get("default_pool_name").(string)
+
 	cls, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving conatiner vpc cluster: %s", err)
 	}
-
+	workerPools, err := csClient.WorkerPools().ListWorkerPools(clusterID, targetEnv)
+	if err != nil {
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() != 404 && !strings.Contains(apiErr.Description(), "Worker Pools could not be found") {
+				return fmt.Errorf("[ERROR] Error retrieving worker pools of the cluster %s: %s", clusterID, err)
+			}
+		}
+	}
+	// There is no concept of default worker pool after creation. So get the first worker pool that was created
+	defaultWorkerPool := workerPools[0].PoolName
 	workerPool, err := csClient.WorkerPools().GetWorkerPool(clusterID, defaultWorkerPool, targetEnv)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
@@ -928,6 +937,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	} else {
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
 	}
+	d.Set("default_pool_name", defaultWorkerPool)
 	d.Set("worker_count", workerPool.WorkerCount)
 	d.Set("worker_labels", IgnoreSystemLabels(workerPool.Labels))
 	if cls.Vpcs != nil {

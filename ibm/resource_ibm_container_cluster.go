@@ -771,7 +771,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	d.Set("worker_num", workerCount)
-	defaultWorkerPool := d.Get("default_pool_name").(string)
+
 	workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID, targetEnv)
 	if err != nil {
 		return err
@@ -779,6 +779,8 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	var poolName string
 	var poolContains bool
 
+	// There is no concept of default worker pool after creation. So get the first worker pool that was created
+	defaultWorkerPool := workerPools[0].Name
 	if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
 		poolName = defaultWorkerPool
 		poolContains = true
@@ -857,6 +859,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("pod_subnet", cls.PodSubnet)
 	d.Set("subnet_id", d.Get("subnet_id").(*schema.Set))
 	d.Set("workers_info", workers)
+	d.Set("default_pool_name", defaultWorkerPool)
 	if strings.HasSuffix(cls.MasterKubeVersion, "_openshift") {
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0]+"_openshift")
 	} else {
