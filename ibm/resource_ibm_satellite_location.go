@@ -67,8 +67,7 @@ func resourceIBMSatelliteLocation() *schema.Resource {
 					}
 					return o == n
 				},
-				Description:  "The IBM Cloud metro from which the Satellite location is managed",
-				ValidateFunc: InvokeValidator("ibm_satellite_location", sateLocZone),
+				Description: "The IBM Cloud metro from which the Satellite location is managed",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -185,7 +184,7 @@ func resourceIBMSatelliteLocation() *schema.Resource {
 }
 
 func resourceIBMSatelliteLocationValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "tags",
@@ -195,12 +194,6 @@ func resourceIBMSatelliteLocationValidator() *ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
-	validateSchema = append(validateSchema,
-		ValidateSchema{
-			Identifier:                 sateLocZone,
-			ValidateFunctionIdentifier: ValidateAllowedStringValue,
-			Type:                       TypeString,
-			Optional:                   false})
 
 	ibmSatelliteLocationValidator := ResourceValidator{ResourceName: "ibm_satellite_location", Schema: validateSchema}
 	return &ibmSatelliteLocationValidator
