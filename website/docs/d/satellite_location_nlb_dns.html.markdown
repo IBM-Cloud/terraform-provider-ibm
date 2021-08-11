@@ -3,7 +3,7 @@ subcategory: "Satellite"
 layout: "ibm"
 page_title: "IBM: ibm_satellite_location_nlb_dns"
 description: |-
-  Get information about a Kubernetes cluster on IBM Cloud.
+  Get information about registered NLB subdomains of Satellite location.
 ---
 
 # ibm_satellite_location_nlb_dns
@@ -30,12 +30,11 @@ In addition to all argument reference list, you can access the following attribu
 - `nlb_config` - List of objects 
 
   Nested scheme for `nlb_config`:
-  - `secret_name` - (String) Name of the secret.
-  - `secret_status` - (String) Status of Secret.
-  - `cluster` -  (String)  Cluster Id.
   - `dns_type` -  (String) Type of DNS.
   - `lb_hostname` - (String) Host Name of load Balancer.
   - `nlb_ips` - (List(String)) NLB IPs.
   - `nlb_sub_domain`- (String) NLB Sub-Domain.
-  - `type` -  (String)  Nlb Type.
+  - `secret_name` - (String) Name of the secret.
   - `secret_namespace` - (String) Namespace of Secret.
+  - `secret_status` - (String) Status of Secret.
+  - `type` -  (String)  Nlb Type.
