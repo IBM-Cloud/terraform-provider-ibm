@@ -34,8 +34,8 @@ func dataSourceIBMAppIDRole() *schema.Resource {
 				Computed:    true,
 			},
 			"access": {
-				Type:     schema.TypeSet,
-				Computed: true,
+				Type:        schema.TypeSet,
+				Computed:    true,
 				Description: "A set of access policies that bind specific application scopes to the role",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
