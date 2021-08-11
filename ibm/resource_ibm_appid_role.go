@@ -99,8 +99,6 @@ func resourceIBMAppIDRoleCreate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceIBMAppIDRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	appIDClient, err := meta.(ClientSession).AppIDAPI()
 
 	if err != nil {
@@ -139,7 +137,7 @@ func resourceIBMAppIDRoleRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set("tenant_id", tenantID)
 	d.Set("role_id", roleID)
 
-	return diags
+	return nil
 }
 
 func resourceIBMAppIDRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

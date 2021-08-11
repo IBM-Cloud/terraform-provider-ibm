@@ -57,8 +57,6 @@ func dataSourceIBMAppIDRole() *schema.Resource {
 }
 
 func dataSourceIBMAppIDRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	appIDClient, err := meta.(ClientSession).AppIDAPI()
 
 	if err != nil {
@@ -89,7 +87,7 @@ func dataSourceIBMAppIDRoleRead(ctx context.Context, d *schema.ResourceData, met
 
 	d.SetId(fmt.Sprintf("%s/%s", tenantID, *role.ID))
 
-	return diags
+	return nil
 }
 
 func flattenAppIDRoleAccess(ra []appid.RoleAccessItem) []interface{} {
