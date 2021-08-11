@@ -73,8 +73,6 @@ func resourceIBMAppIDApplicationScopesCreate(ctx context.Context, d *schema.Reso
 }
 
 func resourceIBMAppIDApplicationScopesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	appIDClient, err := meta.(ClientSession).AppIDAPI()
 
 	if err != nil {
@@ -100,7 +98,7 @@ func resourceIBMAppIDApplicationScopesRead(ctx context.Context, d *schema.Resour
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("[WARN] AppID application '%s' is not found, removing scopes from state", clientID)
 			d.SetId("")
-			return diags
+			return nil
 		}
 
 		return diag.Errorf("Error getting AppID application scopes: %s", err)
@@ -113,7 +111,7 @@ func resourceIBMAppIDApplicationScopesRead(ctx context.Context, d *schema.Resour
 	d.Set("tenant_id", tenantID)
 	d.Set("client_id", clientID)
 
-	return diags
+	return nil
 }
 
 func resourceIBMAppIDApplicationScopesUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -35,8 +35,6 @@ func dataSourceIBMAppIDApplicationScopes() *schema.Resource {
 }
 
 func dataSourceIBMAppIDApplicationScopesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	appIDClient, err := meta.(ClientSession).AppIDAPI()
 
 	if err != nil {
@@ -60,5 +58,5 @@ func dataSourceIBMAppIDApplicationScopesRead(ctx context.Context, d *schema.Reso
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", tenantID, clientID))
-	return diags
+	return nil
 }
