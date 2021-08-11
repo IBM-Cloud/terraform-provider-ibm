@@ -1776,7 +1776,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	}
 
-	if d.HasChange(isInstanceName) {
+	if d.HasChange(isInstanceName) && !d.IsNewResource() {
 		name := d.Get(isInstanceName).(string)
 		updnetoptions := &vpcv1.UpdateInstanceOptions{
 			ID: &id,
