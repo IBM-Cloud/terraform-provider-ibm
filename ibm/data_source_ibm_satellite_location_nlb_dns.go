@@ -19,49 +19,59 @@ func dataSourceIBMSatelliteLocationNLBDNS() *schema.Resource {
 			"location": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "A unique name of the cluster",
+				Description: "A unique name of the Location",
 			},
 			"nlb_config": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of nlb config of Location",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"secret_name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Name of the secret.",
 						},
 						"secret_status": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Status of Secret.",
 						},
 						"cluster": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Cluster Id.",
 						},
 						"dns_type": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of DNS.",
 						},
 						"lb_hostname": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Host Name of load Balancer.",
 						},
 						"nlb_ips": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: " NLB IPs.",
 						},
 						"nlb_sub_domain": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "NLB Sub-Domain.",
 						},
 						"type": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: " Nlb Type.",
 						},
 						"secret_namespace": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Namespace of Secret.",
 						},
 					},
 				},
@@ -84,6 +94,7 @@ func dataSourceIBMSatelliteLocationNLBDNSRead(context context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("[ERROR] Error Listing Satellite NLB DNS (%s): %s", location, err))
 	}
 	d.SetId(location)
+	d.Set("location", location)
 	d.Set("nlb_config", flattenNlbConfigs(nlbData))
 	return nil
 }

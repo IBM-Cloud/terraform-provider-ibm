@@ -4,18 +4,21 @@
 package ibm
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMContainerNLBDNSDatasourceBasic(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMContainerNLBDNSDataSourceConfig(),
+				Config: testAccCheckIBMContainerNLBDNSDataSourceConfig(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_container_nlb_dns.dns", "id"),
 				),
@@ -24,10 +27,10 @@ func TestAccIBMContainerNLBDNSDatasourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMContainerNLBDNSDataSourceConfig() string {
-	return `
+func testAccCheckIBMContainerNLBDNSDataSourceConfig(name string) string {
+	return testAccCheckIBMContainerVpcClusterBasic(name) + fmt.Sprintf(`
 	data "ibm_container_nlb_dns" "dns" {
-	    name = "c48mibfw00d5bj2919pg"
+	    cluster = ibm_container_vpc_cluster.cluster.id
 	}
-`
+`)
 }
