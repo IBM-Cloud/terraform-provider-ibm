@@ -16,7 +16,7 @@ func TestAccIBMAppIDApplicationDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMApplicationDataSourceConfig(appIDTenantID, appName),
+				Config: testAccCheckIBMAppIDApplicationDataSourceConfig(appIDTenantID, appName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_appid_application.test_app", "tenant_id", appIDTenantID),
 					resource.TestCheckResourceAttr("data.ibm_appid_application.test_app", "name", appName),
@@ -28,7 +28,7 @@ func TestAccIBMAppIDApplicationDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMApplicationDataSourceConfig(tenantID string, name string) string {
+func testAccCheckIBMAppIDApplicationDataSourceConfig(tenantID string, name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_appid_application" "test_app" {
 			tenant_id = "%s"

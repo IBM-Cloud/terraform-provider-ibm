@@ -19,7 +19,7 @@ func TestAccIBMAppIDApplicationScopes_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMAppIDApplicationScopesDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMApplicationScopesConfig(appIDTenantID, appName),
+				Config: testAccCheckIBMAppIDApplicationScopesConfig(appIDTenantID, appName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_appid_application_scopes.scopes", "scopes.#", "3"),
 					resource.TestCheckResourceAttr("ibm_appid_application_scopes.scopes", "scopes.0", "scope1"),
@@ -31,7 +31,7 @@ func TestAccIBMAppIDApplicationScopes_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMApplicationScopesConfig(tenantID string, name string) string {
+func testAccCheckIBMAppIDApplicationScopesConfig(tenantID string, name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_appid_application" "test_app" {
 			tenant_id = "%s"

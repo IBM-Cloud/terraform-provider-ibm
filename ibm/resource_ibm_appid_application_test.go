@@ -19,7 +19,7 @@ func TestAccIBMAppIDApplication_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMAppIDApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMApplicationConfig(appIDTenantID, appName),
+				Config: testAccCheckIBMAppIDApplicationConfig(appIDTenantID, appName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_appid_application.test_app", "tenant_id", appIDTenantID),
 					resource.TestCheckResourceAttr("ibm_appid_application.test_app", "name", appName),
@@ -31,7 +31,7 @@ func TestAccIBMAppIDApplication_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMApplicationConfig(tenantID string, name string) string {
+func testAccCheckIBMAppIDApplicationConfig(tenantID string, name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_appid_application" "test_app" {
 			tenant_id = "%s"
