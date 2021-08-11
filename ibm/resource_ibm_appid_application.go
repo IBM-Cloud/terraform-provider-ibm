@@ -99,8 +99,6 @@ func resourceIBMAppIDApplicationCreate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceIBMAppIDApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	appIDClient, err := meta.(ClientSession).AppIDAPI()
 
 	if err != nil {
@@ -126,7 +124,7 @@ func resourceIBMAppIDApplicationRead(ctx context.Context, d *schema.ResourceData
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("[WARN] AppID application '%s' is not found, removing from state", clientID)
 			d.SetId("")
-			return diags
+			return nil
 		}
 
 		return diag.Errorf("Error getting AppID application: %s", err)
@@ -159,7 +157,7 @@ func resourceIBMAppIDApplicationRead(ctx context.Context, d *schema.ResourceData
 	d.Set("tenant_id", tenantID)
 	d.Set("client_id", clientID)
 
-	return diags
+	return nil
 }
 
 func resourceIBMAppIDApplicationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
