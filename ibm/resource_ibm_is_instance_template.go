@@ -440,7 +440,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 		var volTemplate = &vpcv1.VolumePrototypeInstanceByImageContext{}
 		name, ok := bootvol[isInstanceTemplateBootName]
 		namestr := name.(string)
-		if ok {
+		if ok && namestr != "" {
 			volTemplate.Name = &namestr
 		}
 
