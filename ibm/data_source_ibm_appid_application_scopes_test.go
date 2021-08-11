@@ -16,7 +16,7 @@ func TestAccIBMAppIDApplicationScopesDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMApplicationScopesDataSourceConfig(appIDTenantID, appName),
+				Config: testAccCheckIBMAppIDApplicationScopesDataSourceConfig(appIDTenantID, appName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_appid_application_scopes.scopes", "scopes.#", "3"),
 					resource.TestCheckResourceAttr("data.ibm_appid_application_scopes.scopes", "scopes.0", "scope1"),
@@ -28,7 +28,7 @@ func TestAccIBMAppIDApplicationScopesDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMApplicationScopesDataSourceConfig(tenantID string, name string) string {
+func testAccCheckIBMAppIDApplicationScopesDataSourceConfig(tenantID string, name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_appid_application" "test_app" {
 			tenant_id = "%s"
