@@ -46,8 +46,6 @@ func dataSourceIBMAppIDApplicationRoles() *schema.Resource {
 }
 
 func dataSourceIBMAppIDApplicationRolesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	appIDClient, err := meta.(ClientSession).AppIDAPI()
 
 	if err != nil {
@@ -71,7 +69,7 @@ func dataSourceIBMAppIDApplicationRolesRead(ctx context.Context, d *schema.Resou
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", tenantID, clientID))
-	return diags
+	return nil
 }
 
 func flattenAppIDApplicationRoles(r []appid.GetUserRolesResponseRolesItem) []interface{} {

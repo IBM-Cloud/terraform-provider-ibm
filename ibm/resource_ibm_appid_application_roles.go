@@ -75,8 +75,6 @@ func resourceIBMAppIDApplicationRolesCreate(ctx context.Context, d *schema.Resou
 }
 
 func resourceIBMAppIDApplicationRolesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	appIDClient, err := meta.(ClientSession).AppIDAPI()
 
 	if err != nil {
@@ -102,7 +100,7 @@ func resourceIBMAppIDApplicationRolesRead(ctx context.Context, d *schema.Resourc
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("[WARN] AppID application '%s' is not found, removing roles from state", clientID)
 			d.SetId("")
-			return diags
+			return nil
 		}
 
 		return diag.Errorf("Error getting AppID application roles: %s", err)
@@ -123,7 +121,7 @@ func resourceIBMAppIDApplicationRolesRead(ctx context.Context, d *schema.Resourc
 	d.Set("tenant_id", tenantID)
 	d.Set("client_id", clientID)
 
-	return diags
+	return nil
 }
 
 func resourceIBMAppIDApplicationRolesUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -155,8 +153,6 @@ func resourceIBMAppIDApplicationRolesUpdate(ctx context.Context, d *schema.Resou
 }
 
 func resourceIBMAppIDApplicationRolesDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	appIDClient, err := meta.(ClientSession).AppIDAPI()
 
 	if err != nil {
@@ -182,5 +178,5 @@ func resourceIBMAppIDApplicationRolesDelete(ctx context.Context, d *schema.Resou
 
 	d.SetId("")
 
-	return diags
+	return nil
 }
