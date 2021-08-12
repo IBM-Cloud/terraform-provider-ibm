@@ -21,7 +21,7 @@ func TestAccIBMAppIDApplicationRolesDataSource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_appid_application_roles.roles", "roles.#", "1"),
 					resource.TestCheckResourceAttrSet("data.ibm_appid_application_roles.roles", "roles.0.id"),
-					resource.TestCheckResourceAttr("data.ibm_appid_application_roles.roles", "roles.0.name", "test role"),
+					resource.TestCheckResourceAttr("data.ibm_appid_application_roles.roles", "roles.0.name", roleName),
 				),
 			},
 		},
