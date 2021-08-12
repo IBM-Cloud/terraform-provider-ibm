@@ -187,8 +187,6 @@ func resourceIBMAppIDApplicationUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceIBMAppIDApplicationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	appIDClient, err := meta.(ClientSession).AppIDAPI()
 
 	if err != nil {
@@ -209,5 +207,5 @@ func resourceIBMAppIDApplicationDelete(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId("")
 
-	return diags
+	return nil
 }
