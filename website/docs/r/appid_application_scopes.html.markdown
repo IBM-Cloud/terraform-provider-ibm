@@ -24,7 +24,7 @@ resource "ibm_appid_application_scopes" "scopes" {
 Review the argument references that you can specify for your resource.
 
 - `tenant_id` - (Required, String) The AppID instance GUID
-- `name` - (Required, String) The AppID application name
+- `client_id` - (Required, String) The AppID application identifier
 - `scopes` - (Required, List of String) A `scope` is a runtime action in your application that you register with IBM Cloud App ID to create access permission
 
 ## Import
