@@ -135,8 +135,6 @@ func resourceIBMAppIDTokenConfigCreate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceIBMAppIDTokenConfigRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	appidClient, err := meta.(ClientSession).AppIDAPI()
 
 	if err != nil {
@@ -198,7 +196,7 @@ func resourceIBMAppIDTokenConfigRead(ctx context.Context, d *schema.ResourceData
 
 	d.Set("tenant_id", tenantID)
 
-	return diags
+	return nil
 }
 
 func expandTokenClaims(l []interface{}) []appid.TokenClaimMapping {
@@ -307,8 +305,6 @@ func tokenConfigDefaults(tenantID string) *appid.PutTokensConfigOptions {
 }
 
 func resourceIBMAppIDTokenConfigDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	appidClient, err := meta.(ClientSession).AppIDAPI()
 
 	if err != nil {
@@ -326,5 +322,5 @@ func resourceIBMAppIDTokenConfigDelete(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId("")
 
-	return diags
+	return nil
 }
