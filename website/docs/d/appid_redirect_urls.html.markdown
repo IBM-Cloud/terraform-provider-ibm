@@ -6,7 +6,7 @@ description: |-
 Retrieves AppID Cloud Directory Redirect URLs.
 ---
 
-# ibm_appid_application_scopes
+# ibm_appid_redirect_urls
 Retrieve IBM Cloud AppID Management Services Cloud Directory redirect URLs.
 
 ## Example usage
