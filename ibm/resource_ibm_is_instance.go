@@ -70,6 +70,8 @@ const (
 	isInstanceDeleteDone              = "done"
 	isInstanceFailed                  = "failed"
 
+	isInstanceStatusRestarting     = "restarting"
+	isInstanceStatusStarting       = "starting"
 	isInstanceActionStatusStopping = "stopping"
 	isInstanceActionStatusStopped  = "stopped"
 	isInstanceStatusPending        = "pending"
@@ -81,12 +83,12 @@ const (
 	isInstanceBootIOPS           = "iops"
 	isInstanceBootEncryption     = "encryption"
 	isInstanceBootProfile        = "profile"
-
-	isInstanceVolumeAttachments = "volume_attachments"
-	isInstanceVolumeAttaching   = "attaching"
-	isInstanceVolumeAttached    = "attached"
-	isInstanceVolumeDetaching   = "detaching"
-	isInstanceResourceGroup     = "resource_group"
+	isInstanceAction             = "action"
+	isInstanceVolumeAttachments  = "volume_attachments"
+	isInstanceVolumeAttaching    = "attaching"
+	isInstanceVolumeAttached     = "attached"
+	isInstanceVolumeDetaching    = "detaching"
+	isInstanceResourceGroup      = "resource_group"
 
 	isPlacementTargetDedicatedHost      = "dedicated_host"
 	isPlacementTargetDedicatedHostGroup = "dedicated_host_group"
@@ -259,6 +261,21 @@ func resourceIBMISInstance() *schema.Resource {
 				Default:          true,
 				DiffSuppressFunc: suppressEnableCleanDelete,
 				Description:      "Enables stopping of instance before deleting and waits till deletion is complete",
+			},
+
+			isInstanceAction: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: InvokeValidator("ibm_is_instance", isInstanceAction),
+				Description:  "Enables stopping of instance before deleting and waits till deletion is complete",
+			},
+
+			isInstanceActionForce: {
+				Type:         schema.TypeBool,
+				Optional:     true,
+				RequiredWith: []string{isInstanceAction},
+				Default:      false,
+				Description:  "If set to true, the action will be forced immediately, and all queued actions deleted. Ignored for the start action.",
 			},
 
 			isInstanceVolumeAttachments: {
@@ -678,7 +695,7 @@ func resourceIBMISInstance() *schema.Resource {
 }
 
 func resourceIBMISInstanceValidator() *ResourceValidator {
-
+	actions := "stop, start, reboot"
 	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
@@ -705,6 +722,13 @@ func resourceIBMISInstanceValidator() *ResourceValidator {
 			Type:                       TypeInt,
 			Optional:                   true,
 			MinValue:                   "500"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isInstanceAction,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Optional:                   true,
+			AllowedValues:              actions})
 
 	validateSchema = append(validateSchema,
 		ValidateSchema{
@@ -1733,6 +1757,51 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	id := d.Id()
+
+	if d.HasChange(isInstanceAction) && !d.IsNewResource() {
+
+		actiontype := d.Get(isInstanceAction).(string)
+		if actiontype != "" {
+			getinsOptions := &vpcv1.GetInstanceOptions{
+				ID: &id,
+			}
+			instance, response, err := instanceC.GetInstance(getinsOptions)
+			if err != nil {
+				return fmt.Errorf("Error Getting Instance (%s): %s\n%s", id, err, response)
+			}
+			if (actiontype == "stop" || actiontype == "reboot") && *instance.Status != isInstanceStatusRunning {
+				d.Set(isInstanceAction, nil)
+				return fmt.Errorf("Error with stop/reboot action: Cannot invoke stop/reboot action while instance is not in running state")
+			} else if actiontype == "start" && *instance.Status != isInstanceActionStatusStopped {
+				d.Set(isInstanceAction, nil)
+				return fmt.Errorf("Error with start action: Cannot invoke start action while instance is not in stopped state")
+			}
+			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+				InstanceID: &id,
+				Type:       &actiontype,
+			}
+			if instanceActionForceIntf, ok := d.GetOk(isInstanceActionForce); ok {
+				force := instanceActionForceIntf.(bool)
+				createinsactoptions.Force = &force
+			}
+			_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+			if err != nil {
+				return fmt.Errorf("Error Creating Instance Action: %s\n%s", err, response)
+			}
+			if actiontype == "stop" {
+				_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
+				if err != nil {
+					return err
+				}
+			} else if actiontype == "start" || actiontype == "reboot" {
+				_, err = isWaitForInstanceActionStart(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
+				if err != nil {
+					return err
+				}
+			}
+
+		}
+	}
 	if d.HasChange(isInstanceVolumes) {
 		ovs, nvs := d.GetChange(isInstanceVolumes)
 		ov := ovs.(*schema.Set)
@@ -2273,6 +2342,45 @@ func isWaitForInstanceActionStop(instanceC *vpcv1.VpcV1, timeout time.Duration, 
 				// let know the isRestartStopAction() to stop
 				close(communicator)
 				return instance, *instance.Status, fmt.Errorf("The  instance %s failed to stop: %v", id, err)
+			}
+			return instance, *instance.Status, nil
+		},
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	if v, ok := d.GetOk("force_recovery_time"); ok {
+		forceTimeout := v.(int)
+		go isRestartStopAction(instanceC, id, d, forceTimeout, communicator)
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isWaitForInstanceActionStart(instanceC *vpcv1.VpcV1, timeout time.Duration, id string, d *schema.ResourceData) (interface{}, error) {
+	communicator := make(chan interface{})
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{isInstanceActionStatusStopped, isInstanceStatusPending, isInstanceActionStatusStopping, isInstanceStatusStarting, isInstanceStatusRestarting},
+		Target:  []string{isInstanceStatusRunning, isInstanceStatusFailed, ""},
+		Refresh: func() (interface{}, string, error) {
+			getinsoptions := &vpcv1.GetInstanceOptions{
+				ID: &id,
+			}
+			instance, response, err := instanceC.GetInstance(getinsoptions)
+			if err != nil {
+				return nil, "", fmt.Errorf("Error Getting Instance: %s\n%s", err, response)
+			}
+			select {
+			case data := <-communicator:
+				return nil, "", data.(error)
+			default:
+				fmt.Println("no message sent")
+			}
+			if *instance.Status == isInstanceStatusFailed {
+				// let know the isRestartStopAction() to stop
+				close(communicator)
+				return instance, *instance.Status, fmt.Errorf("The  instance %s failed to start: %v", id, err)
 			}
 			return instance, *instance.Status, nil
 		},
