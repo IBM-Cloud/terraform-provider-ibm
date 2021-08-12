@@ -39,5 +39,5 @@ $ terraform import ibm_appid_application_scopes.scopes <tenant_id>/<client_id>
 **Example**
 
 ```bash
-$ tf import ibm_appid_application_scopes.scopes 4be72312-63b7-45fa-9b58-3ae6cd2c90e7/ace469ef-5e1a-4991-8a65-2201b1c5c362
+$ terraform import ibm_appid_application_scopes.scopes 4be72312-63b7-45fa-9b58-3ae6cd2c90e7/ace469ef-5e1a-4991-8a65-2201b1c5c362
 ```
