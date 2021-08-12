@@ -141,8 +141,6 @@ func resourceIBMAppIDRoleRead(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceIBMAppIDRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	appIDClient, err := meta.(ClientSession).AppIDAPI()
 
 	if err != nil {
@@ -169,7 +167,7 @@ func resourceIBMAppIDRoleDelete(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	d.SetId("")
-	return diags
+	return nil
 }
 
 func resourceIBMAppIDRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
