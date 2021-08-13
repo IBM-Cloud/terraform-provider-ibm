@@ -176,7 +176,9 @@ func resourceIBMIAMAccessGroupMembersRead(context context.Context, d *schema.Res
 	}
 
 	d.Set("members", flattenAccessGroupMembers(members, res, allrecs))
-
+	ibmID, serviceID := flattenMembersData(members, res, allrecs)
+	d.Set("ibm_ids", ibmID)
+	d.Set("iam_service_ids", serviceID)
 	return nil
 }
 
