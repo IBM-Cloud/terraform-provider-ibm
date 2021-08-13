@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	isInstances = "instances"
+	isInstances         = "instances"
+	isInstanceGroupName = "instance_group_name"
 )
 
 func dataSourceIBMISInstances() *schema.Resource {
@@ -20,24 +21,36 @@ func dataSourceIBMISInstances() *schema.Resource {
 		Read: dataSourceIBMISInstancesRead,
 
 		Schema: map[string]*schema.Schema{
+			isInstanceGroup: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"vpc", "vpc_crn", "vpc_name", isInstanceGroupName},
+				Description:   "Instance group ID to filter the instances attached to it",
+			},
+			isInstanceGroupName: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"vpc", "vpc_crn", "vpc_name", isInstanceGroup},
+				Description:   "Instance group name to filter the instances attached to it",
+			},
 			"vpc_name": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{"vpc", "vpc_crn"},
+				ConflictsWith: []string{"vpc", "vpc_crn", "instance_group"},
 				Description:   "Name of the vpc to filter the instances attached to it",
 			},
 
 			"vpc": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{"vpc_name", "vpc_crn"},
+				ConflictsWith: []string{"vpc_name", "vpc_crn", "instance_group"},
 				Description:   "VPC ID to filter the instances attached to it",
 			},
 
 			"vpc_crn": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{"vpc_name", "vpc"},
+				ConflictsWith: []string{"vpc_name", "vpc", "instance_group"},
 				Description:   "VPC CRN to filter the instances attached to it",
 			},
 
@@ -348,7 +361,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	var vpcName, vpcID, vpcCrn, resourceGroup string
+	var vpcName, vpcID, vpcCrn, resourceGroup, insGrp string
 
 	if vpc, ok := d.GetOk("vpc_name"); ok {
 		vpcName = vpc.(string)
@@ -364,6 +377,38 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 
 	if rg, ok := d.GetOk("resource_group"); ok {
 		resourceGroup = rg.(string)
+	}
+
+	if insGrpInf, ok := d.GetOk(isInstanceGroup); ok {
+		insGrp = insGrpInf.(string)
+	} else if insGrpNameInf, ok := d.GetOk(isInstanceGroupName); ok {
+		insGrpName := insGrpNameInf.(string)
+		start := ""
+		allrecs := []vpcv1.InstanceGroup{}
+		for {
+			listInstanceGroupOptions := vpcv1.ListInstanceGroupsOptions{}
+			if start != "" {
+				listInstanceGroupOptions.Start = &start
+			}
+			instanceGroupsCollection, response, err := sess.ListInstanceGroups(&listInstanceGroupOptions)
+			if err != nil {
+				return fmt.Errorf("Error Fetching InstanceGroups %s\n%s", err, response)
+			}
+			start = GetNext(instanceGroupsCollection.Next)
+			allrecs = append(allrecs, instanceGroupsCollection.InstanceGroups...)
+
+			if start == "" {
+				break
+			}
+
+		}
+
+		for _, instanceGroup := range allrecs {
+			if *instanceGroup.Name == insGrpName {
+				insGrp = *instanceGroup.ID
+				break
+			}
+		}
 	}
 
 	listInstancesOptions := &vpcv1.ListInstancesOptions{}
@@ -399,6 +444,44 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			break
 		}
 	}
+
+	if insGrp != "" {
+		membershipMap := map[string]bool{}
+		start := ""
+		for {
+			listInstanceGroupMembershipsOptions := vpcv1.ListInstanceGroupMembershipsOptions{
+				InstanceGroupID: &insGrp,
+			}
+			if start != "" {
+				listInstanceGroupMembershipsOptions.Start = &start
+			}
+			instanceGroupMembershipCollection, response, err := sess.ListInstanceGroupMemberships(&listInstanceGroupMembershipsOptions)
+			if err != nil {
+				return fmt.Errorf("Error Getting InstanceGroup Membership Collection %s\n%s", err, response)
+			}
+
+			start = GetNext(instanceGroupMembershipCollection.Next)
+			for _, membershipItem := range instanceGroupMembershipCollection.Memberships {
+				membershipMap[*membershipItem.Instance.ID] = true
+			}
+
+			if start == "" {
+				break
+			}
+
+		}
+
+		//Filtering instance allrecs to contain instance group members only
+		i := 0
+		for _, ins := range allrecs {
+			if membershipMap[*ins.ID] {
+				allrecs[i] = ins
+				i++
+			}
+		}
+		allrecs = allrecs[:i]
+	}
+
 	instancesInfo := make([]map[string]interface{}, 0)
 	for _, instance := range allrecs {
 		id := *instance.ID

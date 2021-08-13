@@ -207,7 +207,7 @@ func testAccCheckIBMISInstanceGroupConfig(vpcName, subnetName, sshKeyName, publi
 	
 	resource "ibm_is_instance_template" "instancetemplate1" {
 	   name    = "%s"
-	   image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
+	   image   = "%s"
 	   profile = "bx2-8x32"
 	
 	   primary_network_interface {
@@ -225,6 +225,6 @@ func testAccCheckIBMISInstanceGroupConfig(vpcName, subnetName, sshKeyName, publi
 		instance_count =  2
 		subnets = [ibm_is_subnet.subnet2.id]
 	}
-	`, vpcName, subnetName, sshKeyName, publicKey, templateName, instanceGroupName)
+	`, vpcName, subnetName, sshKeyName, publicKey, templateName, isImage, instanceGroupName)
 
 }

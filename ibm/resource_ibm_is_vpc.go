@@ -642,8 +642,10 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(subnetsList, subnetsInfo)
 
 	//Set Security group list
-
-	listSgOptions := &vpcv1.ListSecurityGroupsOptions{}
+	vpcid := d.Id()
+	listSgOptions := &vpcv1.ListSecurityGroupsOptions{
+		VPCID: &vpcid,
+	}
 	sgs, _, err := sess.ListSecurityGroups(listSgOptions)
 	if err != nil {
 		return err

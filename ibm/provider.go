@@ -173,8 +173,10 @@ func Provider() *schema.Provider {
 			"ibm_app_route":          dataSourceIBMAppRoute(),
 
 			// AppID
-			"ibm_appid_application":  dataSourceIBMAppIDApplication(),
-			"ibm_appid_token_config": dataSourceIBMAppIDTokenConfig(),
+			"ibm_appid_application":        dataSourceIBMAppIDApplication(),
+			"ibm_appid_application_scopes": dataSourceIBMAppIDApplicationScopes(),
+			"ibm_appid_token_config":       dataSourceIBMAppIDTokenConfig(),
+			"ibm_appid_role":               dataSourceIBMAppIDRole(),
 
 			"ibm_function_action":                    dataSourceIBMFunctionAction(),
 			"ibm_function_package":                   dataSourceIBMFunctionPackage(),
@@ -218,6 +220,7 @@ func Provider() *schema.Provider {
 			"ibm_container_cluster_config":           dataSourceIBMContainerClusterConfig(),
 			"ibm_container_cluster_versions":         dataSourceIBMContainerClusterVersions(),
 			"ibm_container_cluster_worker":           dataSourceIBMContainerClusterWorker(),
+			"ibm_container_nlb_dns":                  dataSourceIBMContainerNLBDNS(),
 			"ibm_container_vpc_cluster_alb":          dataSourceIBMContainerVPCClusterALB(),
 			"ibm_container_vpc_alb":                  dataSourceIBMContainerVPCClusterALB(),
 			"ibm_container_vpc_cluster":              dataSourceIBMContainerVPCCluster(),
@@ -400,6 +403,7 @@ func Provider() *schema.Provider {
 
 			//Added for Satellite
 			"ibm_satellite_location":            dataSourceIBMSatelliteLocation(),
+			"ibm_satellite_location_nlb_dns":    dataSourceIBMSatelliteLocationNLBDNS(),
 			"ibm_satellite_attach_host_script":  dataSourceIBMSatelliteAttachHostScript(),
 			"ibm_satellite_cluster":             dataSourceIBMSatelliteCluster(),
 			"ibm_satellite_cluster_worker_pool": dataSourceIBMSatelliteClusterWorkerPool(),
@@ -428,8 +432,10 @@ func Provider() *schema.Provider {
 			"ibm_app_route":                         resourceIBMAppRoute(),
 
 			// AppID
-			"ibm_appid_application":  resourceIBMAppIDApplication(),
-			"ibm_appid_token_config": resourceIBMAppIDTokenConfig(),
+			"ibm_appid_application":        resourceIBMAppIDApplication(),
+			"ibm_appid_application_scopes": resourceIBMAppIDApplicationScopes(),
+			"ibm_appid_token_config":       resourceIBMAppIDTokenConfig(),
+			"ibm_appid_role":               resourceIBMAppIDRole(),
 
 			"ibm_function_action":                                resourceIBMFunctionAction(),
 			"ibm_function_package":                               resourceIBMFunctionPackage(),
