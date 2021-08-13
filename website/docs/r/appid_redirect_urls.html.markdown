@@ -23,7 +23,7 @@ resource "ibm_appid_redirect_urls" "urls" {
 ```
 
 ## Argument reference
-Review the argument references that you can specify for your data source.
+Review the argument references that you can specify for your resource.
 
 - `tenant_id` - (Required, String) The AppID instance GUID
 - `urls` - (Required, List of String) A list of redirect URLs
