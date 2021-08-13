@@ -1,21 +1,20 @@
 ---
 subcategory: "Catalog Management"
 layout: "ibm"
-page_title: "IBM : cm_offering_instance"
+page_title: "IBM : ibm_cm_offering_instance"
 description: |-
-  Get information about cm_offering_instance.
+  Get information about ibm_cm_offering_instance.
 ---
 
 
 # ibm_cm_offering_instance
 
-Create, modify, or delete an `ibm_cm_offering_instance` data source.  For more information, about managing catalog, refer to [catalog management settings](https://cloud.ibm.com/docs/account?topic=account-account-getting-started).
-
+Provides a read-only data source for `ibm_cm_offering_instance`. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example usage
 
 ```terraform
-data "cm_offering_instance" "cm_offering_instance" {
+data "ibm_cm_offering_instance" "cm_offering_instance" {
 	instance_identifier = "instance_identifier"
 }
 ```
@@ -36,7 +35,7 @@ In addition to the argument reference list, you can access the following attribu
 - `cluster_all_namespaces` - (String) Designate to install into all namespaces.
 - `crn` - (String) The platform CRN for an instance.
 - `_rev` - (string) The cloudant revisionn of this object
-- `id` - (String) The unique identifier of the `cm_offering_instance`.
+- `id` - (String) The unique identifier of the `ibm_cm_offering_instance`.
 - `install_plan` - (String) Install plan for the subscription of the operator- can be either Automatic or Manual. Required for operator bundles
 - `kind_format` - (String) The format this instance has such as `helm`, `operator`.
 - `label` - (String) The label for an instance.
