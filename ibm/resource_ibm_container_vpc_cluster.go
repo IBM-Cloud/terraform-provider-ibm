@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -936,7 +935,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("public_service_endpoint_url", cls.ServiceEndpoints.PublicServiceEndpointURL)
 	d.Set("private_service_endpoint_url", cls.ServiceEndpoints.PrivateServiceEndpointURL)
-	if cls.ServiceEndpoints.PublicServiceEndpointURL != "" {
+	if cls.ServiceEndpoints.PublicServiceEndpointEnabled {
 		d.Set("disable_public_service_endpoint", false)
 	} else {
 		d.Set("disable_public_service_endpoint", true)
@@ -987,27 +986,6 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 
 		}
 	}
-	var region = ""
-	if len(zonesList) > 0 {
-		splitZone := strings.Split(zonesList[0].ID, "-")
-		region = splitZone[0] + "-" + splitZone[1]
-	}
-
-	bxsession, err := meta.(ClientSession).BluemixSession()
-	if err != nil {
-		return err
-	}
-
-	var authenticator *core.BearerTokenAuthenticator
-	if strings.HasPrefix(bxsession.Config.IAMAccessToken, "Bearer") {
-		authenticator = &core.BearerTokenAuthenticator{
-			BearerToken: bxsession.Config.IAMAccessToken[7:],
-		}
-	} else {
-		authenticator = &core.BearerTokenAuthenticator{
-			BearerToken: bxsession.Config.IAMAccessToken,
-		}
-	}
 
 	forceDeleteStorage := d.Get("force_delete_storage").(bool)
 	err = csClient.Clusters().Delete(clusterID, targetEnv, forceDeleteStorage)
@@ -1019,17 +997,8 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	if region != "" {
-
-		vpcurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", region)
-		vpcoptions := &vpcv1.VpcV1Options{
-			URL:           envFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
-			Authenticator: authenticator,
-		}
-		sess1, err := vpcv1.NewVpcV1(vpcoptions)
-		if err != nil {
-			log.Println("error creating vpc session", err)
-		}
+	sess1, err := vpcClient(meta)
+	if err == nil {
 		listlbOptions := &vpcv1.ListLoadBalancersOptions{}
 		lbs, response, err1 := sess1.ListLoadBalancers(listlbOptions)
 		if err1 != nil {
@@ -1048,7 +1017,8 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 				}
 			}
 		}
-
+	} else {
+		log.Printf("Error connecting to VPC client %s", err)
 	}
 	return nil
 }
@@ -1177,7 +1147,7 @@ func waitForVpcClusterIngressAvailable(d *schema.ResourceData, meta interface{})
 			clusterInfo, clusterInfoErr := csClient.Clusters().GetCluster(clusterID, targetEnv)
 
 			if err != nil || clusterInfoErr != nil {
-				return clusterInfo, deployInProgress, err
+				return clusterInfo, deployInProgress, clusterInfoErr
 			}
 
 			if clusterInfo.Ingress.HostName != "" {

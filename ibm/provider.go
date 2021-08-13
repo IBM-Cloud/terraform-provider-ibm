@@ -221,6 +221,7 @@ func Provider() *schema.Provider {
 			"ibm_container_cluster_config":           dataSourceIBMContainerClusterConfig(),
 			"ibm_container_cluster_versions":         dataSourceIBMContainerClusterVersions(),
 			"ibm_container_cluster_worker":           dataSourceIBMContainerClusterWorker(),
+			"ibm_container_nlb_dns":                  dataSourceIBMContainerNLBDNS(),
 			"ibm_container_vpc_cluster_alb":          dataSourceIBMContainerVPCClusterALB(),
 			"ibm_container_vpc_alb":                  dataSourceIBMContainerVPCClusterALB(),
 			"ibm_container_vpc_cluster":              dataSourceIBMContainerVPCCluster(),
@@ -403,6 +404,7 @@ func Provider() *schema.Provider {
 
 			//Added for Satellite
 			"ibm_satellite_location":            dataSourceIBMSatelliteLocation(),
+			"ibm_satellite_location_nlb_dns":    dataSourceIBMSatelliteLocationNLBDNS(),
 			"ibm_satellite_attach_host_script":  dataSourceIBMSatelliteAttachHostScript(),
 			"ibm_satellite_cluster":             dataSourceIBMSatelliteCluster(),
 			"ibm_satellite_cluster_worker_pool": dataSourceIBMSatelliteClusterWorkerPool(),
