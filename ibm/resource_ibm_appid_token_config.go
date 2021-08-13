@@ -307,8 +307,6 @@ func tokenConfigDefaults(tenantID string) *appid.PutTokensConfigOptions {
 }
 
 func resourceIBMAppIDTokenConfigDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	appidClient, err := meta.(ClientSession).AppIDAPI()
 
 	if err != nil {
@@ -326,5 +324,5 @@ func resourceIBMAppIDTokenConfigDelete(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId("")
 
-	return diags
+	return nil
 }
