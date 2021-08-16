@@ -2158,6 +2158,7 @@ func flattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
 	rotationMap := make([]map[string]interface{}, 0, 1)
 	dualAuthMap := make([]map[string]interface{}, 0, 1)
 	for _, policy := range policies {
+		log.Println("Policy CRN Data =============>", policy.CRN)
 		policyCRNData := strings.Split(policy.CRN, ":")
 		policyInstance := map[string]interface{}{
 			"id":               policyCRNData[9],
@@ -2167,7 +2168,6 @@ func flattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
 			"updated_by":       policy.UpdatedBy,
 			"last_update_date": (*(policy.UpdatedAt)).String(),
 		}
-
 		if policy.Rotation != nil {
 			policyInstance["interval_month"] = policy.Rotation.Interval
 			rotationMap = append(rotationMap, policyInstance)
@@ -2182,6 +2182,36 @@ func flattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
 	}
 	policyMap = append(policyMap, tempMap)
 	return policyMap
+}
+
+func flattenKeyIndividualPolicy(policy string, policies []kp.Policy) []map[string]interface{} {
+	rotationMap := make([]map[string]interface{}, 0, 1)
+	dualAuthMap := make([]map[string]interface{}, 0, 1)
+	for _, policy := range policies {
+		log.Println("Policy CRN Data =============>", policy.CRN)
+		policyCRNData := strings.Split(policy.CRN, ":")
+		policyInstance := map[string]interface{}{
+			"id":               policyCRNData[9],
+			"crn":              policy.CRN,
+			"created_by":       policy.CreatedBy,
+			"creation_date":    (*(policy.CreatedAt)).String(),
+			"updated_by":       policy.UpdatedBy,
+			"last_update_date": (*(policy.UpdatedAt)).String(),
+		}
+		if policy.Rotation != nil {
+			policyInstance["interval_month"] = policy.Rotation.Interval
+			rotationMap = append(rotationMap, policyInstance)
+		} else if policy.DualAuth != nil {
+			policyInstance["enabled"] = *(policy.DualAuth.Enabled)
+			dualAuthMap = append(dualAuthMap, policyInstance)
+		}
+	}
+	if policy == "rotation" {
+		return rotationMap
+	} else if policy == "dual_auth_delete" {
+		return dualAuthMap
+	}
+	return nil
 }
 
 // IgnoreSystemLabels returns non-IBM tag keys.

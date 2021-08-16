@@ -115,8 +115,6 @@ func flattenTokenClaims(c []appid.TokenClaimMapping) []interface{} {
 }
 
 func dataSourceIBMAppIDTokenConfigRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	appidClient, err := meta.(ClientSession).AppIDAPI()
 
 	if err != nil {
@@ -165,5 +163,5 @@ func dataSourceIBMAppIDTokenConfigRead(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId(tenantID)
 
-	return diags
+	return nil
 }

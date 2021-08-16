@@ -23,7 +23,7 @@ func TestAccIBMKMSKeyRingDataSource_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMKmsKeyRingDataSourceConfig(instanceName, keyRing),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_kms_key_rings.test", "key_ring_id", keyRing),
+					resource.TestCheckResourceAttr("data.ibm_kms_key_rings.test2", "key_ring_id", keyRing),
 				),
 			},
 		},
