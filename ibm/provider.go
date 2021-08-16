@@ -173,12 +173,13 @@ func Provider() *schema.Provider {
 			"ibm_app_route":          dataSourceIBMAppRoute(),
 
 			// AppID
-			"ibm_appid_application":        dataSourceIBMAppIDApplication(),
-			"ibm_appid_application_scopes": dataSourceIBMAppIDApplicationScopes(),
-			"ibm_appid_application_roles":  dataSourceIBMAppIDApplicationRoles(),
-			"ibm_appid_token_config":       dataSourceIBMAppIDTokenConfig(),
-			"ibm_appid_redirect_urls":      dataSourceIBMAppIDRedirectURLs(),
-			"ibm_appid_role":               dataSourceIBMAppIDRole(),
+			"ibm_appid_application":         dataSourceIBMAppIDApplication(),
+			"ibm_appid_application_scopes":  dataSourceIBMAppIDApplicationScopes(),
+			"ibm_appid_application_roles":   dataSourceIBMAppIDApplicationRoles(),
+			"ibm_appid_idp_cloud_directory": dataSourceIBMAppIDIDPCloudDirectory(),
+			"ibm_appid_token_config":        dataSourceIBMAppIDTokenConfig(),
+			"ibm_appid_redirect_urls":       dataSourceIBMAppIDRedirectURLs(),
+			"ibm_appid_role":                dataSourceIBMAppIDRole(),
 
 			"ibm_function_action":                    dataSourceIBMFunctionAction(),
 			"ibm_function_package":                   dataSourceIBMFunctionPackage(),
@@ -436,12 +437,13 @@ func Provider() *schema.Provider {
 
 			// AppID
 
-			"ibm_appid_application":        resourceIBMAppIDApplication(),
-			"ibm_appid_application_scopes": resourceIBMAppIDApplicationScopes(),
-			"ibm_appid_application_roles":  resourceIBMAppIDApplicationRoles(),
-			"ibm_appid_token_config":       resourceIBMAppIDTokenConfig(),
-			"ibm_appid_redirect_urls":      resourceIBMAppIDRedirectURLs(),
-			"ibm_appid_role":               resourceIBMAppIDRole(),
+			"ibm_appid_application":         resourceIBMAppIDApplication(),
+			"ibm_appid_application_scopes":  resourceIBMAppIDApplicationScopes(),
+			"ibm_appid_application_roles":   resourceIBMAppIDApplicationRoles(),
+			"ibm_appid_idp_cloud_directory": resourceIBMAppIDIDPCloudDirectory(),
+			"ibm_appid_token_config":        resourceIBMAppIDTokenConfig(),
+			"ibm_appid_redirect_urls":       resourceIBMAppIDRedirectURLs(),
+			"ibm_appid_role":                resourceIBMAppIDRole(),
 
 			"ibm_function_action":                                resourceIBMFunctionAction(),
 			"ibm_function_package":                               resourceIBMFunctionPackage(),
