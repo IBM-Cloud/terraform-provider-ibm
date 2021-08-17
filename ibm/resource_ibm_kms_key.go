@@ -112,7 +112,7 @@ func resourceIBMKmskey() *schema.Resource {
 			},
 			"policies": {
 				Type:        schema.TypeList,
-				Deprecated:  "Support for creating Policies with the key will soon be removed, Utilise the new resource for creating policies for the keys => ibm_kms_key_policy",
+				Deprecated:  "Support for creating Policies with the key will soon be removed, Utilise the new resource for creating policies for the keys => ibm_kms_key_policies",
 				Optional:    true,
 				Computed:    true,
 				Description: "Creates or updates one or more policies for the specified key",
