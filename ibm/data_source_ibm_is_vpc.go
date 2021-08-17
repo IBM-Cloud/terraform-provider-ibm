@@ -80,6 +80,14 @@ func dataSourceIBMISVPC() *schema.Resource {
 				Set:      resourceIBMVPCHash,
 			},
 
+			isVPCAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access tags",
+			},
+
 			isVPCCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -329,12 +337,18 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			} else {
 				d.Set(isVPCDefaultSecurityGroup, nil)
 			}
-			tags, err := GetTagsUsingCRN(meta, *vpc.CRN)
+			tags, err := GetGlobalTagsUsingCRN(meta, *vpc.CRN, "", isVPCUserTagType)
 			if err != nil {
 				log.Printf(
 					"An error occured during reading of vpc (%s) tags : %s", d.Id(), err)
 			}
 			d.Set(isVPCTags, tags)
+			accesstags, err := GetGlobalTagsUsingCRN(meta, *vpc.CRN, "", isVPCAccessTagType)
+			if err != nil {
+				log.Printf(
+					"An error occured during reading of vpc (%s) access tags: %s", d.Id(), err)
+			}
+			d.Set(isVPCAccessTags, accesstags)
 			d.Set(isVPCCRN, *vpc.CRN)
 
 			controller, err := getBaseController(meta)

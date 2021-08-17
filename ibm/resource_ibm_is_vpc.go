@@ -39,6 +39,9 @@ const (
 	isVPCFailed                     = "failed"
 	isVPCPending                    = "pending"
 	isVPCAddressPrefixManagement    = "address_prefix_management"
+	isVPCAccessTags                 = "access_tags"
+	isVPCUserTagType                = "user"
+	isVPCAccessTagType              = "access"
 	cseSourceAddresses              = "cse_source_addresses"
 	subnetsList                     = "subnets"
 	totalIPV4AddressCount           = "total_ipv4_address_count"
@@ -170,6 +173,15 @@ func resourceIBMISVPC() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_vpc", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "List of tags",
+			},
+
+			isVPCAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_vpc", "accesstag")},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access management tags",
 			},
 
 			isVPCCRN: {
@@ -413,6 +425,16 @@ func resourceIBMISVPCValidator() *ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([ ]*[A-Za-z0-9:_.-]+[ ]*)+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
 	ibmISVPCResourceValidator := ResourceValidator{ResourceName: "ibm_is_vpc", Schema: validateSchema}
 	return &ibmISVPCResourceValidator
 }
@@ -486,10 +508,18 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isVPCTags); ok || v != "" {
 		oldList, newList := d.GetChange(isVPCTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpc.CRN, "", isVPCUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if _, ok := d.GetOk(isVPCAccessTags); ok {
+		oldList, newList := d.GetChange(isVPCAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpc.CRN, "", isVPCAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -575,12 +605,18 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID)
 		d.Set(isVPCDefaultRoutingTableName, *vpc.DefaultRoutingTable.Name)
 	}
-	tags, err := GetTagsUsingCRN(meta, *vpc.CRN)
+	tags, err := GetGlobalTagsUsingCRN(meta, *vpc.CRN, "", isVPCUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isVPCTags, tags)
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *vpc.CRN, "", isVPCAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vpc (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(isVPCAccessTags, accesstags)
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
@@ -792,10 +828,25 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 			return fmt.Errorf("Error getting VPC : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isVPCTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpc.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpc.CRN, "", isVPCUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if d.HasChange(isVPCAccessTags) {
+		getvpcOptions := &vpcv1.GetVPCOptions{
+			ID: &id,
+		}
+		vpc, response, err := sess.GetVPC(getvpcOptions)
+		if err != nil {
+			return fmt.Errorf("Error getting VPC : %s\n%s", err, response)
+		}
+		oldList, newList := d.GetChange(isVPCAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpc.CRN, "", isVPCAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource VPC (%s) access tags: %s", d.Id(), err)
 		}
 	}
 

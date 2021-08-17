@@ -39,7 +39,7 @@ Review the argument references that you can specify for your resource.
 - `name` - (Required, String) Enter a name for your VPC. No.
 - `resource_group` - (Optional, Forces new resource, String) Enter the ID of the resource group where you want to create the VPC. To list available resource groups, run `ibmcloud resource groups`. If you do not specify a resource group, the VPC is created in the `default` resource group. 
 - `tags` - (Optional, Array of Strings) Enter any tags that you want to associate with your VPC. Tags might help you find your VPC more easily after it is created. Separate multiple tags with a comma (`,`).
-
+- `access_tags` - (Optional, List of Strings) A list of access management tags to attach to the VPC. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
