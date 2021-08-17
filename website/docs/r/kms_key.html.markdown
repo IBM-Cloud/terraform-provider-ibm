@@ -97,7 +97,7 @@ resource "ibm_kms_key" "key" {
 ```
 
 **Deprecated** :
-1) Support for creating Policies along with the Key will be deprecated after 30 days.
+1) Support for creating Policies along with the Key will be deprecated in future releases.
 2) A new resource for creating Key pollicies has been released which can be used to create policies for existing key.
 3) Use either "ibm_kms_key" or "ibm_kms_key_policies" to manage key policies but not both together.
 4) If both the resources have been utilised to create policies then add licycle ignore block to "ibm_kms_key" resource to avoid any changes kms_key_policies resource to the policies.
