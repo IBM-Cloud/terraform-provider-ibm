@@ -48,9 +48,22 @@ resource "ibm_is_instance" "testacc_instance" {
 resource "ibm_is_snapshot" "testacc_snapshot" {
   name            = "testsnapshot"
   source_volume   = ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
+
+  //User can configure timeouts
+  timeouts {
+    create = "15m"
+    delete = "15m"
+  }
 }
 
 ```
+
+
+## Timeouts
+The `ibm_is_snapshot` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+
+- **create** - (Default 10 minutes) Used for creating Snapshot.
+- **delete** - (Default 10 minutes) Used for deleting Snaphsot.
 
 
 ## Argument reference
