@@ -14,12 +14,24 @@ Provides a private DNS Custom Resolver resource. This allows DNS Custom Resolver
 ## Example usage
 
 ```terraform
-resource "ibm_dns_custom_resolver" "example" {
-  name                      = "testCR-TF"
-  instance_id               = "instance_id"
-  description               = "new test CR TF desc"
+data "ibm_resource_group" "rg" {
+  name = "default"
+}
+
+resource "ibm_resource_instance" "test-pdns-instance" {
+  name              = "test-pdns"
+  resource_group_id = data.ibm_resource_group.rg.id
+  location          = "global"
+  service           = "dns-svcs"
+  plan              = "standard-dns"
+}
+
+resource "ibm_dns_custom_resolver" "test" {
+  name        = "testCR-TF"
+  instance_id = ibm_resource_instance.test-pdns-instance.guid
+  description = "testdescription-CR"
   locations {
-    subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-03d54d71-b438-4d20-b943-76d3d2a1a590"
+    subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-6c3a997d-72b2-47f6-8788-6bd95e1bdb03"
     enabled     = true
   }
 }
@@ -41,7 +53,7 @@ Review the argument reference that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute references after your resource is created. 
 
 - `created_on` - (Timestamp) The time (created On) of the DNS Custom Resolver. 
-- `id` - (String) The unique ID of the private DNS custom resolver.
+- `custom_resolver_id` - (String) The unique ID of the private DNS custom resolver.
 - `modified_on` - (Timestamp) The time (modified On) of the DNS Custom Resolver.
 - `health`- (String) The status of DNS Custom Resolver's health. Possible values are `DEGRADED`, `CRITICAL`, `HEALTHY`.
 - `locations` - (Set) Locations on which the custom resolver will be running.
@@ -54,7 +66,7 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 The `ibm_dns_custom_resolver` can be imported by using private DNS instance ID, Custom Resolver ID.
-The `id` property can be formed from `custom_resolver_id` and `instance_id` in the following format:
+The `id` property can be formed from `custom resolver id` and `instance_id` in the following format:
 <custom_resolver_id>:<instance_id>
 
 **Example**

@@ -14,6 +14,28 @@ Provides a private DNS Custom Resolver Locations resource. This allows DNS Custo
 ## Example usage
 
 ```terraform
+data "ibm_resource_group" "rg" {
+  name = "default"
+}
+
+resource "ibm_resource_instance" "test-pdns-instance" {
+  name              = "test-pdns"
+  resource_group_id = data.ibm_resource_group.rg.id
+  location          = "global"
+  service           = "dns-svcs"
+  plan              = "standard-dns"
+}
+
+resource "ibm_dns_custom_resolver" "test" {
+  name        = "testCR-TF"
+  instance_id = ibm_resource_instance.test-pdns-instance.guid
+  description = "testdescription-CR"
+  locations {
+    subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-6c3a997d-72b2-47f6-8788-6bd95e1bdb03"
+    enabled     = true
+  }
+}
+
 resource "ibm_dns_custom_resolver_location" "test" {
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
