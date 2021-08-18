@@ -41,10 +41,10 @@ Review the argument reference that you can specify for your resource.
 - `cluster_namespaces`- (Required, List) The list of target namespaces to install into.
 - `cluster_all_namespaces`- (Required, Bool) Designate to install into all namespaces.
 - `channel` - (Optional, String) Channel to target for the operator subscription. Required for operator bundles
-- `install_plan` - (Optional, String) Install plan for the subscription of the operator- can be either Automatic or Manual. Required for operator bundles
-- `kind_format` - (Required, String) The format an instance such as `helm`, `operator`, `operator-bundle`, `ova`. **Note** Currently the only supported formats are `operator` and `operator-bundle`.
+- `install_plan` - (Optional, String) Install plan for the subscription of the operator. Supported values are **Automatic** or **Manual**. Required for operator bundles.
+- `kind_format` - (Required, String) The format an instance such as **helm**, **operator**, **operator-bundle**, **ova**. **Note** Currently the only supported formats are **operator** and **operator-bundle**.
 - `label` - (Required, String) The label for this instance.
-- `offering_id` - (Required, String) The offering ID an instance is created .
+- `offering_id` - (Required, String) The offering ID an instance is created.
 - `version` - (Required, String) The version an instance was installed from (but not from the version ID).
 
 
@@ -54,4 +54,4 @@ In addition to all argument references list, you can access the following attrib
 - `crn` - (String) The platform CRN for an instance.
 - `id` - (String) The unique identifier of the `cm_offering_instance`.
 - `url` - (String) The URL reference to an object.
-- `schematics_workspace_id` - (String) The ID of the schematics workspace used to install this offering, if applicable
+- `schematics_workspace_id` - (String) The ID of the Schematics workspace used to install this offering, if applicable.

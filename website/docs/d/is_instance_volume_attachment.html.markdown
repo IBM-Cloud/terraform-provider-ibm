@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_is_instance_volume_attachment
-Retrieve information of an existing IBM Cloud Infrastructure instance volume attachment as a read-only data source. For more information, about VPC virtual server instances, see [Managing virtual server instances](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-virtual-server-instances).
+Retrieve information of an existing IBM Cloud infrastructure instance volume attachment as a read-only data source. For more information, about VPC virtual server instances, see [Managing virtual server instances](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-virtual-server-instances).
 
 
 ## Example usage
@@ -25,7 +25,7 @@ data "ibm_is_instance_volume_attachment" "ds_vsi_va" {
 Review the argument references that you can specify for your data source.
 
 - `name` - (Required, String) The name of the volume attachment.
-- `instance` - (Required, String) The id of the instance.
+- `instance` - (Required, String) The ID of the instance.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
@@ -35,8 +35,8 @@ In addition to all argument reference list, you can access the following attribu
 - `href` - (String) The URL for this volume attachment.
 - `id` - (String) The ID of the instance volume attachment. The ID is composed of `<instance_id>/<volume_attachment_id>`.
 - `name`-  (String) The user-defined name for this volume attachment.
-- `status` - (String) The status of this volume attachment [ attached, attaching, deleting, detaching ].
-- `type` - (String) The type of volume attachment [ boot, data ].
+- `status` - (String) The status of this volume attachment. Supported values are **attached**, **attaching**, **deleting**, **detaching**.
+- `type` - (String) The type of volume attachment. Supported values are **boot**, **data**.
 - `volume_attachment_id` - (String) The unique identifier for this volume attachment.
 - `volume` - (List) The attached volume.
 
