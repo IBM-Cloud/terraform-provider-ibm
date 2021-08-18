@@ -7,8 +7,8 @@ description: |-
   Manages IBM Cloud infrastructure instance volume attachment.
 ---
 
-# ibm_is_vpc_route
-Create, update, or delete a volume attachment on an instance. For more information, about VPC virtual server instances, see [Managing virtual server instances](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-virtual-server-instances).
+# ibm_is_instance_volume_attachment
+Create, update, or delete a volume attachment on an existing instance. For more information, about VPC virtual server instances, see [Managing virtual server instances](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-virtual-server-instances).
 
 ## Example usage (using capacity)
 
