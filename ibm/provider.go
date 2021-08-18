@@ -173,6 +173,7 @@ func Provider() *schema.Provider {
 			"ibm_app_route":          dataSourceIBMAppRoute(),
 
 			// AppID
+			"ibm_appid_apm":                 dataSourceIBMAppIDAPM(),
 			"ibm_appid_application":         dataSourceIBMAppIDApplication(),
 			"ibm_appid_application_scopes":  dataSourceIBMAppIDApplicationScopes(),
 			"ibm_appid_application_roles":   dataSourceIBMAppIDApplicationRoles(),
@@ -437,7 +438,7 @@ func Provider() *schema.Provider {
 			"ibm_app_route":                         resourceIBMAppRoute(),
 
 			// AppID
-
+			"ibm_appid_apm":                 resourceIBMAppIDAPM(),
 			"ibm_appid_application":         resourceIBMAppIDApplication(),
 			"ibm_appid_application_scopes":  resourceIBMAppIDApplicationScopes(),
 			"ibm_appid_application_roles":   resourceIBMAppIDApplicationRoles(),
