@@ -7,15 +7,12 @@ import (
 	"context"
 	"github.com/IBM-Cloud/bluemix-go/helpers"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 )
-
-func int64Ptr(v int64) *int64 {
-	return &v
-}
 
 func resourceIBMAppIDTokenConfig() *schema.Resource {
 	return &schema.Resource{
@@ -237,19 +234,19 @@ func expandTokenConfig(d *schema.ResourceData) *appid.PutTokensConfigOptions {
 
 	if accessExpiresIn, ok := d.GetOk("access_token_expires_in"); ok {
 		config.Access = &appid.AccessTokenConfigParams{
-			ExpiresIn: int64Ptr(int64(accessExpiresIn.(int))),
+			ExpiresIn: core.Int64Ptr(int64(accessExpiresIn.(int))),
 		}
 	}
 
 	if anonymousExpiresIn, ok := d.GetOk("anonymous_token_expires_in"); ok {
 		config.AnonymousAccess = &appid.TokenConfigParams{
-			ExpiresIn: int64Ptr(int64(anonymousExpiresIn.(int))),
+			ExpiresIn: core.Int64Ptr(int64(anonymousExpiresIn.(int))),
 		}
 	}
 
 	if refreshExpiresIn, ok := d.GetOk("refresh_token_expires_in"); ok {
 		config.Refresh = &appid.TokenConfigParams{
-			ExpiresIn: int64Ptr(int64(refreshExpiresIn.(int))),
+			ExpiresIn: core.Int64Ptr(int64(refreshExpiresIn.(int))),
 		}
 	}
 
@@ -293,15 +290,15 @@ func tokenConfigDefaults(tenantID string) *appid.PutTokensConfigOptions {
 	return &appid.PutTokensConfigOptions{
 		TenantID: helpers.String(tenantID),
 		Access: &appid.AccessTokenConfigParams{
-			ExpiresIn: int64Ptr(3600),
+			ExpiresIn: core.Int64Ptr(3600),
 		},
 		Refresh: &appid.TokenConfigParams{
 			Enabled:   helpers.Bool(false),
-			ExpiresIn: int64Ptr(2592000),
+			ExpiresIn: core.Int64Ptr(2592000),
 		},
 		AnonymousAccess: &appid.TokenConfigParams{
 			Enabled:   helpers.Bool(true),
-			ExpiresIn: int64Ptr(2592000),
+			ExpiresIn: core.Int64Ptr(2592000),
 		},
 	}
 }
