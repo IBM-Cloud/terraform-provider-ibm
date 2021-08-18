@@ -3,7 +3,7 @@ subcategory: "AppID Management"
 layout: "ibm"
 page_title: "IBM: AppID APM"
 description: |-
-Provides AppID Advanced Password Management resource.
+  Provides AppID Advanced Password Management resource.
 ---
 
 # ibm_appid_apm

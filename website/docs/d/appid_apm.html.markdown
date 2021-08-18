@@ -3,7 +3,7 @@ subcategory: "AppID Management"
 layout: "ibm"
 page_title: "IBM: AppID APM"
 description: |-
-Retrieves AppID information for Advanced Password Management.
+    Retrieves AppID information for Advanced Password Management.
 ---
 
 # ibm_appid_apm

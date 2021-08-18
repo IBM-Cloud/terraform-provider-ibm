@@ -25,6 +25,7 @@ func resourceIBMAppIDAPM() *schema.Resource {
 				Description: "The AppID instance GUID",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"enabled": {
 				Description: "`true` if APM is enabled",
