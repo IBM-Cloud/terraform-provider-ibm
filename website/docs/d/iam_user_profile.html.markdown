@@ -37,6 +37,7 @@ In addition to the argument reference list, you can access the following attribu
 - `allowed_ip_addresses` (List) List of invited users IP's to access the IBM cloud console.
 - `email` - (String) The email address of the user.
 - `firstname`-  (String) The first name of the user.
+- `ibm_id` - (String) An alphanumeric value identifying the user's IAM ID.
 - `id` - (String) The unique identifier or email address of the IAM user.
 - `lastname`-  (String) The last name of the user.
 - `phonenumber` - (String) The contact number of the user.
