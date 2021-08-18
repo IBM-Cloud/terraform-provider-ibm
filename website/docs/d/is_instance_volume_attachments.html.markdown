@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_is_instance_volume_attachments
-Retrieve information of an existing IBM Cloud Infrastructure instance volume attachments as a read-only data source. For more information, about VPC virtual server instances, see [Managing virtual server instances](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-virtual-server-instances).
+Retrieve information of an existing IBM Cloud infrastructure instance volume attachments as a read-only data source. For more information, about VPC virtual server instances, see [Managing virtual server instances](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-virtual-server-instances).
 
 
 ## Example usage
@@ -31,12 +31,12 @@ In addition to all argument reference list, you can access the following attribu
 - `volume_attachments`- (List of Object) A list of volume attachments on an instance.
    
    Nested scheme for `volume_attachments`:
-  - `delete_volume_on_instance_delete` - (Boolean) If set to true, when deleting the instance the volume will also be deleted.
+  - `delete_volume_on_instance_delete` - (Boolean) If set to **true**, when deleting the instance the volume will also be deleted.
   - `device`-  (String) A unique identifier for the device which is exposed to the instance operating system.
   - `href` - (String) The URL for this volume attachment.
   - `name`-  (String) The user-defined name for this volume attachment.
-  - `status` - (String) The status of this volume attachment [ attached, attaching, deleting, detaching ].
-  - `type` - (String) The type of volume attachment [ boot, data ].
+  - `status` - (String) The status of this volume attachment. Supported values are **attached**, **attaching**, **deleting**, **detaching**.
+  - `type` - (String) The type of volume attachment. Supported values are **boot**, **data**.
   - `volume_attachment_id` - (String) The unique identifier for this volume attachment.
   - `volume` - (List) The attached volume.
 

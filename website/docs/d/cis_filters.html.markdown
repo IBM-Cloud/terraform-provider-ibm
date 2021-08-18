@@ -3,14 +3,14 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_filters"
 description: |-
-  Get information on an IBM Cloud Internet Services Filters.
+  Get information on an IBM Cloud Internet Services filters.
 ---
 
 # ibm_cis_filters
 
-Imports a read only copy of an existing Internet Services Filters resource.
+Imports a read only copy of an existing Internet Services filters resource.
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_cis_filters" "test" {
@@ -19,7 +19,7 @@ data "ibm_cis_filters" "test" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
@@ -33,6 +33,6 @@ In addition to all arguments above, the following attributes are exported:
 - `cis_filters_list` - (List of Filters)
   - `expression` - (String) The expression of filter.
   - `paused` - (Boolean). Whether this filter is currently disabled.
-  - `description` - (String) Some useful information about this filter to help identify the purpose of it.
-  - `filter_id` - (String) The Filter ID.
+  - `description` - (String) The information about this filter to help identify the purpose of it.
+  - `filter_id` - (String) The filter ID.
 
