@@ -3,7 +3,7 @@ subcategory: "AppID Management"
 layout: "ibm"
 page_title: "IBM: AppID Role"
 description: |-
-Retrieves AppID Role information.
+    Retrieves AppID Role information.
 ---
 
 # ibm_appid_role

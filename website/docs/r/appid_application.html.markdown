@@ -3,7 +3,7 @@ subcategory: "AppID Management"
 layout: "ibm"
 page_title: "IBM: AppID Application"
 description: |-
-Provides AppID Application resource.
+    Provides AppID Application resource.
 ---
 
 # ibm_appid_application
