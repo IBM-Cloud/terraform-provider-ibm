@@ -3,12 +3,12 @@ subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : ibm_dns_custom_resolver_location"
 description: |-
-  Manages IBM Private DNS Custom Resolver Locations.
+  Manages IBM Private DNS custom resolver locations.
 ---
 
 # ibm_dns_custom_resolver_location
 
-Provides a private DNS Custom Resolver Locations resource. This allows DNS Custom Resolver Location to create, update, and delete. For more information, about Customer Resolver Locations, see [add-custom-resolver-location](https://cloud.ibm.com/apidocs/dns-svcs#add-custom-resolver-location).
+Provides a private DNS custom resolver locations resource. This allows DNS custom resolver location to create, update, and delete. For more information, about custom resolver locations, see [add-custom-resolver-location](https://cloud.ibm.com/apidocs/dns-svcs#add-custom-resolver-location).
 
 
 ## Example usage
@@ -45,22 +45,22 @@ resource "ibm_dns_custom_resolver_location" "test" {
 
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your resource.
 
-* `instance_id` - (Required, string) The GUID of the private DNS service instance.
-* `resolver_id` - (Required, string) The unique identifier of a custom resolver.
-* `subnet_crn` - (Required, string) The subnet crn of the VPC.
-* `enabled` - (Optional, Bool) The Custom resolver location will enable.
+* `instance_id` - (Required, String) The GUID of the private DNS service instance.
+* `resolver_id` - (Required, String) The unique identifier of a custom resolver.
+* `subnet_crn` - (Required, String) The subnet CRN of the VPC.
+* `enabled` - (Optional, Bool) The custom resolver location will enable.
 
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument reference list, you can access the following attribute references after your resource is created.
 
-* `dns_server_ip` - (Computed, string) Custom resolver location server ip.
+* `dns_server_ip` - (Computed, String) Custom resolver location server ip.
 * `healthy` - (Computed, Bool) The Custom resolver location will enable.
-* `id` - (String) The unique identifier of the ibm_dns_custom_resolver_location.
-* `location_id` - (Computed, string) Type of the custom resolver loaction id.
+* `id` - (String) The unique identifier of the IBM DNS custom resolver location.
+* `location_id` - (Computed, String) Type of the custom resolver loaction ID.
 

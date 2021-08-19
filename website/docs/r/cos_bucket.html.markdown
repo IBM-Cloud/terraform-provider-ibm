@@ -268,7 +268,7 @@ Review the argument references that you can specify for your resource.
      - The minimum retention period must be less than or equal to the default retention period, that in turn must be less than or equal to the maximum retention period.
      - Permanent retention can only be enabled at a IBM Cloud Object Storage bucket level with retention policy enabled and users are able to select the permanent retention period option during object uploads. Once enabled, this process can't be reversed and objects uploaded that use a permanent retention period cannot be deleted. It's the responsibility of the users to validate at their end if there's a legitimate need to permanently store objects by using Object Storage buckets with a retention policy.
      - force deleting the bucket will not work if any object is still under retention. As objects cannot be deleted or overwritten until the retention period has expired and all the legal holds have been removed.
-- `hard_quota` - (Optional, Integer) sets a maximum amount of storage (in bytes) available for a bucket. For more details check the [cloud documention](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-quota)
+- `hard_quota` - (Optional, Integer) Sets a maximum amount of storage (in bytes) available for a bucket. For more information, check the [cloud documention](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-quota).
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

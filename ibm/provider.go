@@ -175,7 +175,9 @@ func Provider() *schema.Provider {
 			// AppID
 			"ibm_appid_application":        dataSourceIBMAppIDApplication(),
 			"ibm_appid_application_scopes": dataSourceIBMAppIDApplicationScopes(),
+			"ibm_appid_application_roles":  dataSourceIBMAppIDApplicationRoles(),
 			"ibm_appid_token_config":       dataSourceIBMAppIDTokenConfig(),
+			"ibm_appid_redirect_urls":      dataSourceIBMAppIDRedirectURLs(),
 			"ibm_appid_role":               dataSourceIBMAppIDRole(),
 
 			"ibm_function_action":                    dataSourceIBMFunctionAction(),
@@ -321,6 +323,7 @@ func Provider() *schema.Provider {
 			"ibm_org_quota":                          dataSourceIBMOrgQuota(),
 			"ibm_kp_key":                             dataSourceIBMkey(),
 			"ibm_kms_key_rings":                      dataSourceIBMKMSkeyRings(),
+			"ibm_kms_key_policies":                   dataSourceIBMKMSkeyPolicies(),
 			"ibm_kms_keys":                           dataSourceIBMKMSkeys(),
 			"ibm_pn_application_chrome":              dataSourceIBMPNApplicationChrome(),
 			"ibm_app_config_environment":             dataSourceIbmAppConfigEnvironment(),
@@ -435,7 +438,9 @@ func Provider() *schema.Provider {
 
 			"ibm_appid_application":        resourceIBMAppIDApplication(),
 			"ibm_appid_application_scopes": resourceIBMAppIDApplicationScopes(),
+			"ibm_appid_application_roles":  resourceIBMAppIDApplicationRoles(),
 			"ibm_appid_token_config":       resourceIBMAppIDTokenConfig(),
+			"ibm_appid_redirect_urls":      resourceIBMAppIDRedirectURLs(),
 			"ibm_appid_role":               resourceIBMAppIDRole(),
 
 			"ibm_function_action":                                resourceIBMFunctionAction(),
@@ -593,6 +598,7 @@ func Provider() *schema.Provider {
 			"ibm_kms_key":                                        resourceIBMKmskey(),
 			"ibm_kms_key_alias":                                  resourceIBMKmskeyAlias(),
 			"ibm_kms_key_rings":                                  resourceIBMKmskeyRings(),
+			"ibm_kms_key_policies":                               resourceIBMKmskeyPolicies(),
 			"ibm_kp_key":                                         resourceIBMkey(),
 			"ibm_resource_group":                                 resourceIBMResourceGroup(),
 			"ibm_resource_instance":                              resourceIBMResourceInstance(),

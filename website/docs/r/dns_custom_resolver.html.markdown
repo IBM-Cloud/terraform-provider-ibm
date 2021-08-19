@@ -3,12 +3,12 @@ subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : dns_custom_resolver"
 description: |-
-  Manages IBM Private DNS Custom Resolver.
+  Manages IBM Private DNS custom resolver.
 ---
 
 # ibm_dns_custom_resolver
 
-Provides a private DNS Custom Resolver resource. This allows DNS Custom Resolver to  create, update, and delete. For more information, about Customer Resolver, see [reate-custom-resolver](https://cloud.ibm.com/apidocs/dns-svcs#create-custom-resolver).
+Provides a private DNS custom resolver resource. This allows DNS custom resolver to create, update, and delete. For more information, about customer resolver, see [create-custom-resolver](https://cloud.ibm.com/apidocs/dns-svcs#create-custom-resolver).
 
 
 ## Example usage
@@ -40,13 +40,13 @@ resource "ibm_dns_custom_resolver" "test" {
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
 
-- `instance_id` - (Required, string) The GUID of the private DNS service instance.
+- `instance_id` - (Required, String) The GUID of the private DNS service instance.
 - `name`- (Required, String) The name of the custom resolver.
-- `description` - (Optional, string) Descriptive text of the  custom resolver.
-- `locations`- (Required, Set) The list of locations where this custom resolver is deployed. There is no update for location argument in  resolver resource.
+- `description` - (Optional, String) Descriptive text of the custom resolver.
+- `locations`- (Required, Set) The list of locations where this custom resolver is deployed. There is no update for location argument in resolver resource.
 
   Nested scheme for `locations`:
-  - `subnet_crn` - (Required, String) subnet crn
+  - `subnet_crn` - (Required, String) subnet CRN.
   - `enabled`- (Optional, Bool) Whether the location is enabled.
 
 ## Attribute reference
@@ -60,9 +60,9 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `locations`:
   - `healthy`- (String) The health status.
-  - `dns_server_ip`- (String) The dns server ip.
+  - `dns_server_ip`- (String) The DNS server IP.
   - `enabled`- (String) Whether the location is enabled.
-  - `location_id`- (String) The location id.
+  - `location_id`- (String) The location ID.
 
 ## Import
 The `ibm_dns_custom_resolver` can be imported by using private DNS instance ID, Custom Resolver ID.

@@ -3,14 +3,14 @@ subcategory: "DNS Services"
 layout: "ibm"
 page_title: "IBM : Forwarding Rule"
 description: |-
-  Manages Forwarding Rule.
+  Manages forwarding rule.
 ---
 
 # ibm_dns_custom_resolver_forwarding_rule
 
 Provides a resource for ibm_dns_custom_resolver_forwarding_rule. This allows Forwarding Rule to be created, updated and deleted.For more information, about Forwarding Rules, see [create-forwarding-rule](https://cloud.ibm.com/apidocs/dns-svcs#create-forwarding-rule).
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_resource_group" "rg" {
@@ -45,25 +45,25 @@ resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwardi
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your resource.
 
-* `instance_id` - (Required, string) The GUID of the private DNS service instance.
-* `resolver_id` - (Required, string) The unique identifier of a custom resolver.
-* `description` - (Optional, string) Descriptive text of the forwarding rule.
-* `type` - (Optional, string) Type of the forwarding rule.
-  * Constraints: Allowable values are: zone, hostname
-* `match` - (Optional, string) The matching zone or hostname.
+* `instance_id` - (Required, String) The GUID of the private DNS service instance.
+* `resolver_id` - (Required, String) The unique identifier of a custom resolver.
+* `description` - (Optional, String) Descriptive text of the forwarding rule.
+* `type` - (Optional, String) Type of the forwarding rule.
+  * Constraints: Allowable values are: `zone`, `hostname`.
+* `match` - (Optional, String) The matching zone or hostname.
 * `forward_to` - (Optional, List) The upstream DNS servers will be forwarded to.
 
 ## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute references after your resource is created.
 
-* `id` - (String) The unique identifier of the ibm_dns_custom_resolver_forwarding_rule.
-* `created_on` - (String) the time when a forwarding rule is created, RFC3339 format.
-* `modified_on` -(String) the recent time when a forwarding rule is modified, RFC3339 format.
+* `id` - (String) The unique identifier of the DNS custom resolver forwarding rule.
+* `created_on` - (String) The time when a forwarding rule is created, RFC3339 format.
+* `modified_on` -(String) The recent time when a forwarding rule is modified, RFC3339 format.
 
 ## Import
 
@@ -73,9 +73,9 @@ The `id` property can be formed from `instance_id`, `resolver_id`, and `rule_id`
 ```
 <instance_id>/<resolver_id>/<rule_id>
 ```
-* `instance_id`: A string. The GUID of the private DNS service instance.
-* `resolver_id`: A string. The unique identifier of a custom resolver.
-* `rule_id`: A string. The unique identifier of a forwarding rule.
+* `instance_id`: A String. The GUID of the private DNS service instance.
+* `resolver_id`: A String. The unique identifier of a custom resolver.
+* `rule_id`: A String. The unique identifier of a forwarding rule.
 
 ```
 $ terraform import ibm_dns_custom_resolver_forwarding_rule.ibm_dns_custom_resolver_forwarding_rule <instance_id>/<resolver_id>/<rule_id>
