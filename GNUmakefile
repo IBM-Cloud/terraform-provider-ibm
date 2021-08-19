@@ -15,6 +15,9 @@ tools:
 build: fmtcheck vet
 	go install
 
+build-dbg:
+	go install -gcflags "all=-N -l"
+
 bin: fmtcheck vet tools
 	@TF_RELEASE=1 sh -c "'$(CURDIR)/scripts/build.sh'"
 

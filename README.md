@@ -120,6 +120,47 @@ You will also need to export the following environment variables for running the
 
 Additional environment variables may be required depending on the tests being run. Check console log for warning messages about required variables. 
 
+## Debugging the Provider
+
+First, build the provider for debugging: `make build-dbg`
+
+Run your debugger (eg. [delve](https://github.com/go-delve/delve)), and pass it the provider binary as the command to run, specifying whatever flags, environment variables, or other input is necessary to start the provider in debug mode
+
+Example for `VSCode`:
+
+```bash
+dlv exec --listen=:54526 --headless $GOPATH/bin/terraform-provider-ibm -- --debug
+```
+
+Example for `IntelliJ`:
+
+```bash
+dlv exec --api-version=2 --listen=:54526 --headless $GOPATH/bin/terraform-provider-ibm -- --debug
+```
+
+Connect your debugger (whether it's your IDE or the debugger client) to the debugger server. Example launch configuration for VSCode:
+
+```json
+{
+    "apiVersion": 1,
+    "name": "Debug",
+    "type": "go",
+    "request": "attach",
+    "mode": "remote",
+    "port": 54526, 
+    "host": "127.0.0.1",
+    "showLog": true
+}
+```
+
+Let it continue execution, it will print output like the following to stdout:
+
+```bash
+Provider started, to attach Terraform set the TF_REATTACH_PROVIDERS env var:
+
+        TF_REATTACH_PROVIDERS='{"IBM-Cloud/ibm":{"Protocol":"grpc","ProtocolVersion":5,"Pid":55933,"Test":true,"Addr":{"Network":"unix","String":"/var/folders/mq/00hw97gj08323ybqfm763plr0000gn/T/plugin816369936"}}}'
+```
+Copy the line starting with `TF_REATTACH_PROVIDERS` from your provider's output. Either export it, or prefix every Terraform command with it. Run Terraform as usual. Any breakpoints you have set will halt execution and show you the current variable values.
 
 # IBM Cloud Ansible Modules
 
