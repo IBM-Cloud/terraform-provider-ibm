@@ -20,6 +20,7 @@ func TestAccIBMTransitGatewayConnection_basic(t *testing.T) {
 	gatewayName := fmt.Sprintf("tg-gateway-name-%d", acctest.RandIntRange(10, 100))
 	updateVcName := fmt.Sprintf("newtg-connection-name-%d", acctest.RandIntRange(10, 100))
 	vpcName := fmt.Sprintf("vpc-name-%d", acctest.RandIntRange(10, 100))
+	dlGatewayName := fmt.Sprintf("dl-gateway-name-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -58,6 +59,15 @@ func TestAccIBMTransitGatewayConnection_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMTransitGatewayConnectionExists("ibm_tg_connection.test_ibm_tg_gre_connection", tgConnection),
 					resource.TestCheckResourceAttr("ibm_tg_connection.test_ibm_tg_gre_connection", "name", tgSecondConnectionName),
+				),
+			},
+			// tg directlink test
+			resource.TestStep{
+				//Create test case
+				Config: testAccCheckIBMTransitGatewayDirectlinkConnectionConfig(dlGatewayName, gatewayName, tgConnectionName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMTransitGatewayConnectionExists("ibm_tg_connection.test_ibm_tg_dl_connection", tgConnection),
+					resource.TestCheckResourceAttr("ibm_tg_connection.test_ibm_tg_dl_connection", "name", tgConnectionName),
 				),
 			},
 		},
@@ -139,6 +149,37 @@ resource "ibm_tg_connection" "test_ibm_tg_gre_connection"{
 }
 	   
 	  `, gatewayName, classicConnName, greConnName)
+}
+
+func testAccCheckIBMTransitGatewayDirectlinkConnectionConfig(dlGatewayName, gatewayName, dlConnectionName string) string {
+	return fmt.Sprintf(`	
+data "ibm_dl_ports" "test_dl_ports" {
+}
+resource "ibm_dl_gateway" "test_dl_gateway"{
+		bgp_asn = 64999
+		global = true
+		name ="%s"
+		speed_mbps = 1000
+		metered = false
+		connection_mode = "transit"
+		type = "connect"
+		port = data.ibm_dl_ports.test_dl_ports.ports[0].port_id
+}
+
+resource "ibm_tg_gateway" "test_tg_gateway"{
+		name="%s"
+		location="us-south"
+		global=true
+}
+	 
+resource "ibm_tg_connection" "test_ibm_tg_dl_connection"{
+		gateway = "${ibm_tg_gateway.test_tg_gateway.id}"
+		network_type = "directlink"
+		name= "%s"
+		network_id = "${ibm_dl_gateway.test_dl_gateway.crn}"
+}
+	  `, dlGatewayName, gatewayName, dlConnectionName)
+
 }
 
 func testAccCheckIBMTransitGatewayConnectionDestroy(s *terraform.State) error {
