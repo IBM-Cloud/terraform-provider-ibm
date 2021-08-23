@@ -87,7 +87,7 @@ func TestAccIBMKMSKeyPolicy_invalid_interval_check(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config:      testAccCheckIBMKmsKeyPolicyStandardConfig(instanceName, keyName, rotation_interval, dual_auth_delete),
+				Config:      testAccCheckIBMKmsKeyPolicyStandardConfigCheck(instanceName, keyName, rotation_interval, dual_auth_delete),
 				ExpectError: regexp.MustCompile("must contain a valid int value should be in range(1, 12)"),
 			},
 		},
