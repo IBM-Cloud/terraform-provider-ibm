@@ -81,12 +81,12 @@ func resourceIBMISVPC() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isVPCAddressPrefixManagement: {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          "auto",
-				DiffSuppressFunc: applyOnce,
-				ValidateFunc:     InvokeValidator("ibm_is_vpc", isVPCAddressPrefixManagement),
-				Description:      "Address Prefix management value",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "auto",
+				ForceNew:     true,
+				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCAddressPrefixManagement),
+				Description:  "Address Prefix management value",
 			},
 
 			isVPCDefaultNetworkACL: {
