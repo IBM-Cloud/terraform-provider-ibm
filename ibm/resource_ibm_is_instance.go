@@ -667,13 +667,11 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 				CRN: &encstr,
 			}
 		}
-		volcap := 100
-		volcapint64 := int64(volcap)
+
 		volprof := "general-purpose"
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
 		}
-		volTemplate.Capacity = &volcapint64
 		deletebool := true
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
 			DeleteVolumeOnInstanceDelete: &deletebool,
@@ -866,14 +864,12 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 				CRN: &encstr,
 			}
 		}
-		volcap := 100
-		volcapint64 := int64(volcap)
+
 		volprof := "general-purpose"
 
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
 		}
-		volTemplate.Capacity = &volcapint64
 		deletebool := true
 
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
@@ -1056,9 +1052,7 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 				CRN: &encstr,
 			}
 		}
-		volcap := 100
-		volcapint64 := int64(volcap)
-		volTemplate.Capacity = &volcapint64
+
 		volprof := "general-purpose"
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
