@@ -40,7 +40,6 @@ const (
 	isolationPublic   = "public"
 	isolationPrivate  = "private"
 
-	defaultWorkerPool = "default"
 	computeWorkerPool = "compute"
 	gatewayWorkerpool = "gateway"
 )
@@ -139,6 +138,13 @@ func resourceIBMContainerCluster() *schema.Resource {
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "list of labels to the default worker pool",
+			},
+			"default_pool_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     "default",
+				Description: "Name of the default worker pool",
 			},
 			"taints": {
 				Type:        schema.TypeSet,
@@ -644,6 +650,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	noSubnet := d.Get("no_subnet").(bool)
 	diskEncryption := d.Get("disk_encryption").(bool)
 	defaultPoolSize := d.Get("default_pool_size").(int)
+	defaultWorkerPool := d.Get("default_pool_name").(string)
 	gatewayEnabled := d.Get("gateway_enabled").(bool)
 	hardware := d.Get("hardware").(string)
 	switch strings.ToLower(hardware) {
@@ -654,15 +661,16 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	params := v1.ClusterCreateRequest{
-		Name:           name,
-		Datacenter:     datacenter,
-		WorkerNum:      defaultPoolSize,
-		MachineType:    machineType,
-		PublicVlan:     publicVlanID,
-		PrivateVlan:    privateVlanID,
-		NoSubnet:       noSubnet,
-		Isolation:      hardware,
-		DiskEncryption: diskEncryption,
+		Name:                  name,
+		Datacenter:            datacenter,
+		WorkerNum:             defaultPoolSize,
+		DefaultWorkerPoolName: defaultWorkerPool,
+		MachineType:           machineType,
+		PublicVlan:            publicVlanID,
+		PrivateVlan:           privateVlanID,
+		NoSubnet:              noSubnet,
+		Isolation:             hardware,
+		DiskEncryption:        diskEncryption,
 	}
 
 	// Update params with Entitlement option if provided
@@ -771,6 +779,8 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	var poolName string
 	var poolContains bool
 
+	// There is no concept of default worker pool after creation. So get the first worker pool that was created
+	defaultWorkerPool := workerPools[0].Name
 	if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
 		poolName = defaultWorkerPool
 		poolContains = true
@@ -849,6 +859,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("pod_subnet", cls.PodSubnet)
 	d.Set("subnet_id", d.Get("subnet_id").(*schema.Set))
 	d.Set("workers_info", workers)
+	d.Set("default_pool_name", defaultWorkerPool)
 	if strings.HasSuffix(cls.MasterKubeVersion, "_openshift") {
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0]+"_openshift")
 	} else {
@@ -1009,7 +1020,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		}
 		var poolName string
 		var poolContains bool
-
+		defaultWorkerPool := d.Get("default_pool_name").(string)
 		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
 			poolName = defaultWorkerPool
 
@@ -1045,7 +1056,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		}
 		var poolName string
 		var poolContains bool
-
+		defaultWorkerPool := d.Get("default_pool_name").(string)
 		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
 			poolName = defaultWorkerPool
 			poolContains = true
@@ -1084,7 +1095,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		}
 		var poolName string
 		var poolContains bool
-
+		defaultWorkerPool := d.Get("default_pool_name").(string)
 		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
 			poolName = defaultWorkerPool
 			poolContains = true
@@ -1471,7 +1482,7 @@ func waitForClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{}) 
 			}
 			var poolName string
 			var poolContains bool
-
+			defaultWorkerPool := d.Get("default_pool_name").(string)
 			if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
 				poolName = defaultWorkerPool
 				poolContains = true

@@ -197,6 +197,7 @@ Review the argument references that you can specify for your resource.
 
 - `datacenter` - (Required, Forces new resource, String) The datacenter where you want to provision the worker nodes. The zone that you choose must be supported in the region where you want to create the cluster. To find supported zones, run `ibmcloud ks zones` [command line](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 - `default_pool_size`  - (Optional, Integer) The number of worker nodes that you want to add to the default worker pool.
+- `default_worker_pool` - (Optional, String) Set the name of the default worker pool.
 - `disk_encryption` - (Optional, Forces new resource, Bool) If set to **true**, the worker node disks are set up with an AES 256-bit encryption. If set to **false**, the disk encryption for the worker node is disabled. For more information, see [Encrypted disks for worker node](https://cloud.ibm.com/docs/containers?topic=containers-security#workernodes).
 - `entitlement` - (Optional, String) If you purchased an IBM Cloud Cloud Pak that includes an entitlement to run worker nodes that are installed with OpenShift Container Platform, enter `entitlement` to create your cluster with that entitlement so that you are not charged twice for the OpenShift license. Note that this option can be set only when you create the cluster. After the cluster is created, the cost for the OpenShift license occurred and you cannot disable this charge. **Note**
   1. Set only for the first time creation of the cluster, modification do not have any impacts.
@@ -233,7 +234,7 @@ Review the argument references that you can specify for your resource.
   - `value` - (Required, String) Value for taint.
   - `effect` - (Required, String) Effect for taint. Accepted values are `NoSchedule`, `PreferNoSchedule`, and `NoExecute`.
  
-- `update_all_workers` - (Optional, Bool) If set to **true**, the Kubernetes version of the worker nodes is updated along with the Kubernetes version of the cluster that you specify in `kube_version`.  **Note**: setting `wait_for_worker_update` to `false` is not recommended. This results in upgrading all the worker nodes in the cluster at the same time causing the cluster downtime. 
+- `update_all_workers` - (Optional, Bool) If set to **true**, the Kubernetes version of the worker nodes is updated along with the Kubernetes version of the cluster that you specify in `kube_version`.  **Note**: setting `wait_for_worker_update` to `false` is not recommended. This results in upgrading all the worker nodes in the cluster at the same time causing the cluster downtime.
 - `webhook` - (Optional, String) The webhook that you want to add to the cluster. For available options, see the [`webhook create` command](https://cloud.ibm.com/docs/containers?topic=containers-cli-plugin-kubernetes-service-cli).
 - `workers_info` - (Optional, Array of objects) The worker nodes that you want to update.
 
