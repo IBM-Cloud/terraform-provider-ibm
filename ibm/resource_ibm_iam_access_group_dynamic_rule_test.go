@@ -7,8 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"strings"
-
+	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -69,7 +68,8 @@ func TestAccIBMIAMDynamicRuleimport(t *testing.T) {
 }
 
 func testAccCheckIBMIAMDynamicRuleDestroy(s *terraform.State) error {
-	accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPIV2()
+	accClient, err := testAccProvider.Meta().(ClientSession).IAMAccessGroupsV2()
+
 	if err != nil {
 		return err
 	}
@@ -87,11 +87,15 @@ func testAccCheckIBMIAMDynamicRuleDestroy(s *terraform.State) error {
 		ruleID := parts[1]
 
 		// Try to find the key
-		_, _, err = accClient.DynamicRule().Get(grpID, ruleID)
+		getAccessGroupRuleOptions := &iamaccessgroupsv2.GetAccessGroupRuleOptions{
+			AccessGroupID: &grpID,
+			RuleID:        &ruleID,
+		}
+		_, detailResponse, err := accClient.GetAccessGroupRule(getAccessGroupRuleOptions)
 
 		if err == nil {
 			return fmt.Errorf("Dynamic rule still exists: %s", rs.Primary.ID)
-		} else if !strings.Contains(err.Error(), "404") {
+		} else if detailResponse.StatusCode != 404 {
 			return fmt.Errorf("Error waiting for Dynamic rule (%s) to be destroyed: %s", ruleID, err)
 		}
 	}

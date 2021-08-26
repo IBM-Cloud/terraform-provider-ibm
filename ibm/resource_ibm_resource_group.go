@@ -109,7 +109,7 @@ func resourceIBMResourceGroupCreate(d *schema.ResourceData, meta interface{}) er
 
 	resourceGroup, resp, err := rMgtClient.CreateResourceGroup(&resourceGroupCreate)
 	if err != nil {
-		return fmt.Errorf("Error creating resource group: %s with responce code  %s", err, resp)
+		return fmt.Errorf("Error creating resource group: %s with response code  %s", err, resp)
 	}
 
 	d.SetId(*resourceGroup.ID)
@@ -134,7 +134,7 @@ func resourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) erro
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error retrieving resource group: %swith responce code  %s", err, resp)
+		return fmt.Errorf("Error retrieving resource group: %s with response code  %s", err, resp)
 	}
 
 	d.Set("name", *resourceGroup.Name)
@@ -197,7 +197,7 @@ func resourceIBMResourceGroupUpdate(d *schema.ResourceData, meta interface{}) er
 	if hasChange {
 		_, resp, err := rMgtClient.UpdateResourceGroup(&resourceGroupUpdate)
 		if err != nil {
-			return fmt.Errorf("Error updating resource group: %s with responce code  %s", err, resp)
+			return fmt.Errorf("Error updating resource group: %s with response code  %s", err, resp)
 		}
 
 	}
@@ -221,7 +221,7 @@ func resourceIBMResourceGroupDelete(d *schema.ResourceData, meta interface{}) er
 			log.Printf("[WARN] Resource Group is not found")
 			return nil
 		}
-		return fmt.Errorf("Error Deleting resource group: %s with responce code  %s", err, resp)
+		return fmt.Errorf("Error Deleting resource group: %s with response code  %s", err, resp)
 	}
 
 	d.SetId("")
@@ -244,7 +244,7 @@ func resourceIBMResourceGroupExists(d *schema.ResourceData, meta interface{}) (b
 		if resp != nil && resp.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s with responce code  %s", err, resp)
+		return false, fmt.Errorf("Error communicating with the API: %s with response code  %s", err, resp)
 	}
 
 	return *resourceGroup.ID == resourceGroupID, nil
