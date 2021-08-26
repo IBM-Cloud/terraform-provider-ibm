@@ -1113,7 +1113,7 @@ func waitForVpcClusterMasterAvailable(d *schema.ResourceData, meta interface{}) 
 			clusterInfo, clusterInfoErr := csClient.Clusters().GetCluster(clusterID, targetEnv)
 
 			if err != nil || clusterInfoErr != nil {
-				return clusterInfo, deployInProgress, err
+				return clusterInfo, deployInProgress, clusterInfoErr
 			}
 
 			if clusterInfo.Lifecycle.MasterStatus == ready {

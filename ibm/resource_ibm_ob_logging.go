@@ -39,7 +39,7 @@ func resourceIBMObLogging() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
+			Create: schema.DefaultTimeout(45 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
@@ -116,6 +116,35 @@ func resourceIBMObLogging() *schema.Resource {
 		},
 	}
 }
+func waitForClusterIntegration(d *schema.ResourceData, meta interface{}, clusterID string) (interface{}, error) {
+	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	if err != nil {
+		return nil, err
+	}
+	csClient, err := meta.(ClientSession).VpcContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{deployRequested, deployInProgress},
+		Target:  []string{ready},
+		Refresh: func() (interface{}, string, error) {
+			clusterFields, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
+			if err != nil {
+				return nil, "", fmt.Errorf("[ERROR] Error retrieving cluster: %s", err)
+			}
+			if clusterFields.Lifecycle.MasterStatus == ready || clusterFields.MasterStatus == ready {
+				return clusterFields, ready, nil
+			}
+			return clusterFields, deployInProgress, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForState()
+}
 
 func resourceIBMLoggingCreate(d *schema.ResourceData, meta interface{}) error {
 	client, err := meta.(ClientSession).VpcContainerAPI()
@@ -128,6 +157,11 @@ func resourceIBMLoggingCreate(d *schema.ResourceData, meta interface{}) error {
 
 	//Read cluster ID and logging instanceID
 	clusterName := d.Get(obLoggingCluster).(string)
+	_, err = waitForClusterIntegration(d, meta, clusterName)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error waiting for master node to be availabe before integrating Logging Instance: %s", err)
+	}
+
 	loggingInstanceID := d.Get(obLoggingInstanceID).(string)
 
 	//Read Ingestionkey
