@@ -39,7 +39,7 @@ func resourceIBMObMonitoring() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
+			Create: schema.DefaultTimeout(45 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
@@ -129,6 +129,10 @@ func resourceIBMMonitoringCreate(d *schema.ResourceData, meta interface{}) error
 
 	//Read cluster ID and sysdif instanceID
 	clusterName := d.Get(obMonitoringCluster).(string)
+	_, err = waitForClusterIntegration(d, meta, clusterName)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error waiting for master node to be availabe before integrating Monitoring Instance: %s", err)
+	}
 	sysdigInstanceID := d.Get(obMonitoringInstanceID).(string)
 
 	//Read Ingestionkey
