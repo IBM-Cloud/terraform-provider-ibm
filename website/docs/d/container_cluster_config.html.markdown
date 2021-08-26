@@ -29,7 +29,6 @@ data "ibm_container_cluster_config" "cluster_foo" {
 }
 
 provider "kubernetes" {
-  load_config_file       = "false"
   host                   = data.ibm_container_cluster_config.cluster_foo.host
   client_certificate     = data.ibm_container_cluster_config.cluster_foo.admin_certificate
   client_key             = data.ibm_container_cluster_config.cluster_foo.admin_key
@@ -51,7 +50,6 @@ data "ibm_container_cluster_config" "cluster_foo" {
 }
 
 provider "kubernetes" {
-  load_config_file       = "false"
   host                   = data.ibm_container_cluster_config.cluster_foo.host
   token                  = data.ibm_container_cluster_config.cluster_foo.token
   cluster_ca_certificate = data.ibm_container_cluster_config.cluster_foo.ca_certificate
@@ -73,7 +71,6 @@ data "ibm_container_cluster_config" "cluster_foo" {
 }
 
 provider "kubernetes" {
-  load_config_file       = "false"
   host                   = data.ibm_container_cluster_config.cluster_foo.host
   client_certificate     = data.ibm_container_cluster_config.cluster_foo.admin_certificate
   client_key             = data.ibm_container_cluster_config.cluster_foo.admin_key
@@ -94,7 +91,6 @@ data "ibm_container_cluster_config" "cluster_foo" {
 }
 
 provider "kubernetes" {
-  load_config_file       = "false"
   host                   = data.ibm_container_cluster_config.cluster_foo.host
   token                  = data.ibm_container_cluster_config.cluster_foo.token
 }
