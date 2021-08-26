@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -104,6 +105,20 @@ func dataSourceIBMISVPNGateways() *schema.Resource {
 							Computed:    true,
 							Description: " VPN gateway mode(policy/route) ",
 						},
+						isVPNGatewayTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         resourceIBMVPCHash,
+							Description: "VPN Gateway tags list",
+						},
+						isVPNGatewayAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         resourceIBMVPCHash,
+							Description: "List of access management tags",
+						},
 					},
 				},
 			},
@@ -149,7 +164,19 @@ func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 		gateway[isVPNGatewayResourceGroup] = *data.ResourceGroup.ID
 		gateway[isVPNGatewaySubnet] = *data.Subnet.ID
 		gateway[isVPNGatewayCrn] = *data.CRN
+		tags, err := GetGlobalTagsUsingCRN(meta, *data.CRN, "", isUserTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
+		}
+		gateway[isVPNGatewayTags] = tags
 
+		accesstags, err := GetGlobalTagsUsingCRN(meta, *data.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource VPC VPN Gateway (%s) access tags: %s", d.Id(), err)
+		}
+		gateway[isVPNGatewayAccessTags] = accesstags
 		if data.Members != nil {
 			vpcMembersIpsList := make([]map[string]interface{}, 0)
 			for _, memberIP := range data.Members {

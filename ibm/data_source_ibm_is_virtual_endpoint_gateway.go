@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -104,6 +105,20 @@ func dataSourceIBMISEndpointGateway() *schema.Resource {
 				Computed:    true,
 				Description: "The VPC id",
 			},
+			isVirtualEndpointGatewayTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of tags for VPE",
+			},
+			isVirtualEndpointGatewayAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access management tags",
+			},
 		},
 	}
 }
@@ -135,20 +150,33 @@ func dataSourceIBMISEndpointGatewayRead(
 			break
 		}
 	}
-	for _, result := range allrecs {
-		if *result.Name == name {
-			d.SetId(*result.ID)
-			d.Set(isVirtualEndpointGatewayName, result.Name)
-			d.Set(isVirtualEndpointGatewayCRN, result.CRN)
-			d.Set(isVirtualEndpointGatewayHealthState, result.HealthState)
-			d.Set(isVirtualEndpointGatewayCreatedAt, result.CreatedAt.String())
-			d.Set(isVirtualEndpointGatewayLifecycleState, result.LifecycleState)
-			d.Set(isVirtualEndpointGatewayResourceType, result.ResourceType)
-			d.Set(isVirtualEndpointGatewayIPs, flattenIPs(result.Ips))
-			d.Set(isVirtualEndpointGatewayResourceGroupID, result.ResourceGroup.ID)
+	for _, endpointGateway := range allrecs {
+		if *endpointGateway.Name == name {
+			d.SetId(*endpointGateway.ID)
+			d.Set(isVirtualEndpointGatewayName, endpointGateway.Name)
+			d.Set(isVirtualEndpointGatewayCRN, endpointGateway.CRN)
+			d.Set(isVirtualEndpointGatewayHealthState, endpointGateway.HealthState)
+			d.Set(isVirtualEndpointGatewayCreatedAt, endpointGateway.CreatedAt.String())
+			d.Set(isVirtualEndpointGatewayLifecycleState, endpointGateway.LifecycleState)
+			d.Set(isVirtualEndpointGatewayResourceType, endpointGateway.ResourceType)
+			d.Set(isVirtualEndpointGatewayIPs, flattenIPs(endpointGateway.Ips))
+			d.Set(isVirtualEndpointGatewayResourceGroupID, endpointGateway.ResourceGroup.ID)
 			d.Set(isVirtualEndpointGatewayTarget, flattenEndpointGatewayTarget(
-				result.Target.(*vpcv1.EndpointGatewayTarget)))
-			d.Set(isVirtualEndpointGatewayVpcID, result.VPC.ID)
+				endpointGateway.Target.(*vpcv1.EndpointGatewayTarget)))
+			d.Set(isVirtualEndpointGatewayVpcID, endpointGateway.VPC.ID)
+			tags, err := GetGlobalTagsUsingCRN(meta, *endpointGateway.CRN, "", isUserTagType)
+			if err != nil {
+				log.Printf(
+					"Error on get of VPE (%s) tags: %s", d.Id(), err)
+			}
+			d.Set(isVirtualEndpointGatewayTags, tags)
+
+			accesstags, err := GetGlobalTagsUsingCRN(meta, *endpointGateway.CRN, "", isAccessTagType)
+			if err != nil {
+				log.Printf(
+					"Error on get of VPE (%s) access tags: %s", d.Id(), err)
+			}
+			d.Set(isVirtualEndpointGatewayAccessTags, accesstags)
 			found = true
 			break
 		}

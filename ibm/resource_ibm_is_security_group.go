@@ -21,6 +21,7 @@ const (
 	isSecurityGroupRules         = "rules"
 	isSecurityGroupResourceGroup = "resource_group"
 	isSecurityGroupTags          = "tags"
+	isSecurityGroupAccessTags    = "access_tags"
 	isSecurityGroupCRN           = "crn"
 )
 
@@ -34,10 +35,16 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 		Exists:   resourceIBMISSecurityGroupExists,
 		Importer: &schema.ResourceImporter{},
 
-		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return resourceTagsCustomizeDiff(diff)
-			},
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceValidateAccessTags(diff, v)
+				}),
 		),
 
 		Schema: map[string]*schema.Schema{
@@ -63,6 +70,15 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_security_group", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "List of tags",
+			},
+
+			isSecurityGroupAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_security_group", "accesstag")},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access management tags",
 			},
 
 			isSecurityGroupCRN: {
@@ -138,6 +154,16 @@ func resourceIBMISSecurityGroupValidator() *ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
 	ibmISSecurityGroupResourceValidator := ResourceValidator{ResourceName: "ibm_is_security_group", Schema: validateSchema}
 	return &ibmISSecurityGroupResourceValidator
 }
@@ -173,10 +199,18 @@ func resourceIBMISSecurityGroupCreate(d *schema.ResourceData, meta interface{}) 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isSecurityGroupTags); ok || v != "" {
 		oldList, newList := d.GetChange(isSecurityGroupTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *sg.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *sg.CRN, "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error while creating Security Group tags : %s\n%s", *sg.ID, err)
+		}
+	}
+	if _, ok := d.GetOk(isSecurityGroupAccessTags); ok {
+		oldList, newList := d.GetChange(isSecurityGroupAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *sg.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of Security Group (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return resourceIBMISSecurityGroupRead(d, meta)
@@ -200,12 +234,18 @@ func resourceIBMISSecurityGroupRead(d *schema.ResourceData, meta interface{}) er
 		}
 		return fmt.Errorf("Error getting Security Group : %s\n%s", err, response)
 	}
-	tags, err := GetTagsUsingCRN(meta, *group.CRN)
+	tags, err := GetGlobalTagsUsingCRN(meta, *group.CRN, "", isUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error getting Security Group tags : %s\n%s", d.Id(), err)
 	}
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *group.CRN, "", isAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of Security Group (%s) access tags: %s", d.Id(), err)
+	}
 	d.Set(isSecurityGroupTags, tags)
+	d.Set(isSecurityGroupAccessTags, accesstags)
 	d.Set(isSecurityGroupCRN, *group.CRN)
 	d.Set(isSecurityGroupName, *group.Name)
 	d.Set(isSecurityGroupVPC, *group.VPC.ID)
@@ -324,13 +364,20 @@ func resourceIBMISSecurityGroupUpdate(d *schema.ResourceData, meta interface{}) 
 
 	if d.HasChange(isSecurityGroupTags) {
 		oldList, newList := d.GetChange(isSecurityGroupTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, d.Get(isSecurityGroupCRN).(string))
+		err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(isSecurityGroupCRN).(string), "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error Updating Security Group tags: %s\n%s", d.Id(), err)
 		}
 	}
-
+	if d.HasChange(isSecurityGroupAccessTags) {
+		oldList, newList := d.GetChange(isSecurityGroupAccessTags)
+		err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(isSecurityGroupCRN).(string), "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of Security Group (%s) access tags: %s", d.Id(), err)
+		}
+	}
 	if d.HasChange(isSecurityGroupName) {
 		name = d.Get(isSecurityGroupName).(string)
 		hasChanged = true

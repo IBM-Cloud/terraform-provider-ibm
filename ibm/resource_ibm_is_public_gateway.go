@@ -24,6 +24,7 @@ const (
 	isPublicGatewayZone              = "zone"
 	isPublicGatewayFloatingIPAddress = "address"
 	isPublicGatewayTags              = "tags"
+	isPublicGatewayAccessTags        = "access_tags"
 
 	isPublicGatewayProvisioning     = "provisioning"
 	isPublicGatewayProvisioningDone = "available"
@@ -47,10 +48,16 @@ func resourceIBMISPublicGateway() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return resourceTagsCustomizeDiff(diff)
-			},
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceValidateAccessTags(diff, v)
+				}),
 		),
 
 		Schema: map[string]*schema.Schema{
@@ -104,6 +111,15 @@ func resourceIBMISPublicGateway() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_public_gateway", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "Service tags for the public gateway instance",
+			},
+
+			isPublicGatewayAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_public_gateway", "accesstag")},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access management tags",
 			},
 
 			ResourceControllerURL: {
@@ -167,6 +183,16 @@ func resourceIBMISPublicGatewayValidator() *ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
 	ibmISPublicGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_is_public_gateway", Schema: validateSchema}
 	return &ibmISPublicGatewayResourceValidator
 }
@@ -227,12 +253,22 @@ func resourceIBMISPublicGatewayCreate(d *schema.ResourceData, meta interface{}) 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isPublicGatewayTags); ok || v != "" {
 		oldList, newList := d.GetChange(isPublicGatewayTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *publicgw.CRN, "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of vpc public gateway (%s) tags: %s", d.Id(), err)
 		}
 	}
+
+	if _, ok := d.GetOk(isPublicGatewayAccessTags); ok {
+		oldList, newList := d.GetChange(isPublicGatewayAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *publicgw.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of vpc public gateway (%s) access tags: %s", d.Id(), err)
+		}
+	}
+
 	return resourceIBMISPublicGatewayRead(d, meta)
 }
 
@@ -298,12 +334,21 @@ func resourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) er
 	d.Set(isPublicGatewayStatus, *publicgw.Status)
 	d.Set(isPublicGatewayZone, *publicgw.Zone.Name)
 	d.Set(isPublicGatewayVPC, *publicgw.VPC.ID)
-	tags, err := GetTagsUsingCRN(meta, *publicgw.CRN)
+	tags, err := GetGlobalTagsUsingCRN(meta, *publicgw.CRN, "", isUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of vpc public gateway (%s) tags: %s", id, err)
 	}
 	d.Set(isPublicGatewayTags, tags)
+
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *publicgw.CRN, "", isAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of vpc public gateway (%s) access tags: %s", d.Id(), err)
+	}
+
+	d.Set(isPublicGatewayAccessTags, accesstags)
+
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
@@ -335,20 +380,23 @@ func resourceIBMISPublicGatewayUpdate(d *schema.ResourceData, meta interface{}) 
 		hasChanged = true
 	}
 	if d.HasChange(isPublicGatewayTags) {
-		getPublicGatewayOptions := &vpcv1.GetPublicGatewayOptions{
-			ID: &id,
-		}
-		publicgw, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
-		if err != nil {
-			return fmt.Errorf("Error getting Public Gateway : %s\n%s", err, response)
-		}
 		oldList, newList := d.GetChange(isPublicGatewayTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *publicgw.CRN)
+		err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(ResourceCRN).(string), "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource Public Gateway (%s) tags: %s", id, err)
 		}
 	}
+
+	if d.HasChange(isPublicGatewayAccessTags) {
+		oldList, newList := d.GetChange(isPublicGatewayAccessTags)
+		err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(ResourceCRN).(string), "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource Public Gateway (%s) access tags: %s", d.Id(), err)
+		}
+	}
+
 	if hasChanged {
 		updatePublicGatewayOptions := &vpcv1.UpdatePublicGatewayOptions{
 			ID: &id,

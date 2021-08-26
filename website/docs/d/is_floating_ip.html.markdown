@@ -22,6 +22,7 @@ Retrieve an information of VPC floating IP on IBM Cloud as a read-only data sour
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
+- `access_tags`  - (String) Access management tags associated for the floating ip.
 - `name` - (Required, String) The name of the floating IP.
 
 ## Attribute reference

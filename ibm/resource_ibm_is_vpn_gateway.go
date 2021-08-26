@@ -34,6 +34,7 @@ const (
 	isVPNGatewayPublicIPAddress2  = "public_ip_address2"
 	isVPNGatewayPrivateIPAddress  = "private_ip_address"
 	isVPNGatewayPrivateIPAddress2 = "private_ip_address2"
+	isVPNGatewayAccessTags        = "access_tags"
 )
 
 func resourceIBMISVPNGateway() *schema.Resource {
@@ -50,10 +51,16 @@ func resourceIBMISVPNGateway() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return resourceTagsCustomizeDiff(diff)
-			},
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceValidateAccessTags(diff, v)
+				}),
 		),
 
 		Schema: map[string]*schema.Schema{
@@ -118,6 +125,15 @@ func resourceIBMISVPNGateway() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_vpn_gateway", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "VPN Gateway tags list",
+			},
+
+			isVPNGatewayAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_vpn_gateway", "accesstag")},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access management tags",
 			},
 
 			ResourceControllerURL: {
@@ -236,6 +252,16 @@ func resourceIBMISVPNGatewayValidator() *ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
 	ibmISVPNGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_is_vpn_gateway", Schema: validateSchema}
 	return &ibmISVPNGatewayResourceValidator
 }
@@ -294,12 +320,22 @@ func vpngwCreate(d *schema.ResourceData, meta interface{}, name, subnetID, mode 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isVPNGatewayTags); ok || v != "" {
 		oldList, newList := d.GetChange(isVPNGatewayTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpnGateway.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpnGateway.CRN, "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
 		}
 	}
+
+	if _, ok := d.GetOk(isVPNGatewayAccessTags); ok {
+		oldList, newList := d.GetChange(isVPNGatewayAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpnGateway.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource VPN Gateway (%s) access tags: %s", d.Id(), err)
+		}
+	}
+
 	return nil
 }
 
@@ -385,12 +421,20 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 
 	}
-	tags, err := GetTagsUsingCRN(meta, *vpnGateway.CRN)
+	tags, err := GetGlobalTagsUsingCRN(meta, *vpnGateway.CRN, "", isUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isVPNGatewayTags, tags)
+
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *vpnGateway.CRN, "", isAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource VPC VPN Gateway (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(isVPNGatewayAccessTags, accesstags)
+
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
@@ -450,20 +494,19 @@ func vpngwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 		return err
 	}
 	if d.HasChange(isVPNGatewayTags) {
-		getVpnGatewayOptions := &vpcv1.GetVPNGatewayOptions{
-			ID: &id,
-		}
-		vpnGatewayIntf, response, err := sess.GetVPNGateway(getVpnGatewayOptions)
-		if err != nil {
-			return fmt.Errorf("Error getting Volume : %s\n%s", err, response)
-		}
-		vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
-
 		oldList, newList := d.GetChange(isVPNGatewayTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vpnGateway.CRN)
+		err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(ResourceCRN).(string), "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc Vpn Gateway (%s) tags: %s", id, err)
+		}
+	}
+	if d.HasChange(isVPNGatewayAccessTags) {
+		oldList, newList := d.GetChange(isVPNGatewayAccessTags)
+		err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(ResourceCRN).(string), "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource VPC VPN Gateway  (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	if hasChanged {

@@ -47,6 +47,11 @@ The `ibm_is_instance` provides the following [Timeouts](https://www.terraform.io
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the floating ip. 
+  **Note** 
+  - Create access tag using `ibm_resource_tag` resource. You can attach only the access tags that already exists.
+  - For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
+  - You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for creating `access_tags`
 - `name` - (Required, String) Enter a name for the floating IP address. 
 - `resource_group` - (Optional, String) The resource group ID where you want to create the floating IP.
 - `target` - (Optional, String) Enter the ID of the network interface that you want to use to allocate the IP address. If you specify this option, do not specify `zone` at the same time. **Note** conflicts with `zone`. A change in `target` which is in a different `zone` will show a change to replace current floating ip with a new one.

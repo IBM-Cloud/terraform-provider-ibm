@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -119,6 +120,20 @@ func dataSourceIBMISEndpointGateways() *schema.Resource {
 							Computed:    true,
 							Description: "The VPC id",
 						},
+						isVirtualEndpointGatewayTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         resourceIBMVPCHash,
+							Description: "List of tags for VPE",
+						},
+						isVirtualEndpointGatewayAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         resourceIBMVPCHash,
+							Description: "List of access management tags",
+						},
 					},
 				},
 			},
@@ -165,6 +180,20 @@ func dataSourceIBMISEndpointGatewaysRead(d *schema.ResourceData, meta interface{
 			flattenEndpointGatewayTarget(endpointGateway.Target.(*vpcv1.EndpointGatewayTarget))
 		endpointGatewayOutput[isVirtualEndpointGatewayIPs] =
 			flattenDataSourceIPs(endpointGateway.Ips)
+
+		tags, err := GetGlobalTagsUsingCRN(meta, *endpointGateway.CRN, "", isUserTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of VPE (%s) tags: %s", d.Id(), err)
+		}
+		endpointGatewayOutput[isVirtualEndpointGatewayTags] = tags
+
+		accesstags, err := GetGlobalTagsUsingCRN(meta, *endpointGateway.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of VPE (%s) access tags: %s", d.Id(), err)
+		}
+		endpointGatewayOutput[isVirtualEndpointGatewayAccessTags] = accesstags
 		endpointGateways = append(endpointGateways, endpointGatewayOutput)
 	}
 	d.SetId(dataSourceIBMISEndpointGatewaysCheckID(d))

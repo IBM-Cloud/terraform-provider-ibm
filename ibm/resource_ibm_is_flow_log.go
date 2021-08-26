@@ -30,6 +30,7 @@ const (
 	isFlowLogAutoDelete            = "auto_delete"
 	isFlowLogVpc                   = "vpc"
 	isFlowLogTags                  = "tags"
+	isFlowLogAccessTags            = "access_tags"
 )
 
 func resourceIBMISFlowLog() *schema.Resource {
@@ -47,10 +48,16 @@ func resourceIBMISFlowLog() *schema.Resource {
 			Update: schema.DefaultTimeout(30 * time.Minute),
 		},
 
-		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return resourceTagsCustomizeDiff(diff)
-			},
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceValidateAccessTags(diff, v)
+				}),
 		),
 
 		Schema: map[string]*schema.Schema{
@@ -136,6 +143,15 @@ func resourceIBMISFlowLog() *schema.Resource {
 				Description: "Tags for the VPC Flow logs",
 			},
 
+			isFlowLogAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_flow_log", "accesstag")},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access management tags",
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -191,6 +207,15 @@ func resourceIBMISFlowLogValidator() *ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 
 	ibmISFlowLogValidator := ResourceValidator{ResourceName: "ibm_is_flow_log", Schema: validateSchema}
 	return &ibmISFlowLogValidator
@@ -238,13 +263,20 @@ func resourceIBMISFlowLogCreate(d *schema.ResourceData, meta interface{}) error 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isFlowLogTags); ok || v != "" {
 		oldList, newList := d.GetChange(isFlowLogTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *flowlogCollector.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *flowlogCollector.CRN, "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc flow log (%s) tags: %s", d.Id(), err)
 		}
 	}
-
+	if _, ok := d.GetOk(isFlowLogAccessTags); ok {
+		oldList, newList := d.GetChange(isFlowLogAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *flowlogCollector.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource VPC Flow Log (%s) access tags: %s", d.Id(), err)
+		}
+	}
 	return resourceIBMISFlowLogRead(d, meta)
 }
 
@@ -304,12 +336,19 @@ func resourceIBMISFlowLogRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set(isFlowLogStorageBucket, *bucket.Name)
 	}
 
-	tags, err := GetTagsUsingCRN(meta, *flowlogCollector.CRN)
+	tags, err := GetGlobalTagsUsingCRN(meta, *flowlogCollector.CRN, "", isUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc flow log (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isFlowLogTags, tags)
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *flowlogCollector.CRN, "", isAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource VPC Flow Log (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(isFlowLogAccessTags, accesstags)
+
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
@@ -347,10 +386,19 @@ func resourceIBMISFlowLogUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	if d.HasChange(isFlowLogTags) {
 		oldList, newList := d.GetChange(isFlowLogTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *flowlogCollector.CRN)
+		err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, *flowlogCollector.CRN, "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource flow log (%s) tags: %s", *flowlogCollector.ID, err)
+		}
+	}
+
+	if d.HasChange(isFlowLogAccessTags) {
+		oldList, newList := d.GetChange(isFlowLogAccessTags)
+		err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, *flowlogCollector.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource flow log (%s) access tags: %s", d.Id(), err)
 		}
 	}
 

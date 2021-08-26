@@ -178,12 +178,21 @@ func publicGatewaysGet(d *schema.ResourceData, meta interface{}, name string) er
 			}
 			l[isPublicGatewayFloatingIP] = floatIP
 		}
-		tags, err := GetTagsUsingCRN(meta, *publicgw.CRN)
+		tags, err := GetGlobalTagsUsingCRN(meta, *publicgw.CRN, "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on get of vpc public gateway (%s) tags: %s", *publicgw.ID, err)
 		}
 		l[isPublicGatewayTags] = tags
+
+		accesstags, err := GetGlobalTagsUsingCRN(meta, *publicgw.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of vpc public gateway (%s) access tags: %s", d.Id(), err)
+		}
+
+		l[isPublicGatewayAccessTags] = accesstags
+
 		controller, err := getBaseController(meta)
 		if err != nil {
 			return err

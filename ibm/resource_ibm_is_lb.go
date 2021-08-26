@@ -38,6 +38,8 @@ const (
 	isLBLogging                 = "logging"
 	isLBSecurityGroups          = "security_groups"
 	isLBSecurityGroupsSupported = "security_group_supported"
+
+	isLBAccessTags = "access_tags"
 )
 
 func resourceIBMISLB() *schema.Resource {
@@ -54,10 +56,16 @@ func resourceIBMISLB() *schema.Resource {
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 
-		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return resourceTagsCustomizeDiff(diff)
-			},
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceValidateAccessTags(diff, v)
+				}),
 		),
 
 		Schema: map[string]*schema.Schema{
@@ -149,6 +157,15 @@ func resourceIBMISLB() *schema.Resource {
 				Set:      resourceIBMVPCHash,
 			},
 
+			isLBAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_lb", "accesstag")},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access management tags",
+			},
+
 			isLBResourceGroup: {
 				Type:     schema.TypeString,
 				ForceNew: true,
@@ -226,6 +243,16 @@ func resourceIBMISLBValidator() *ResourceValidator {
 			Type:                       TypeString,
 			Optional:                   true,
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
@@ -340,10 +367,19 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isLBTags); ok || v != "" {
 		oldList, newList := d.GetChange(isLBTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *lb.CRN, "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
+		}
+	}
+
+	if _, ok := d.GetOk(isLBAccessTags); ok {
+		oldList, newList := d.GetChange(isLBAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *lb.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource load balancer (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -442,12 +478,18 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 
 	d.Set(isLBResourceGroup, *lb.ResourceGroup.ID)
 	d.Set(isLBHostName, *lb.Hostname)
-	tags, err := GetTagsUsingCRN(meta, *lb.CRN)
+	tags, err := GetGlobalTagsUsingCRN(meta, *lb.CRN, "", isUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isLBTags, tags)
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *lb.CRN, "", isAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource load balancer (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(isLBAccessTags, accesstags)
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
@@ -500,7 +542,7 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 	if err != nil {
 		return err
 	}
-	if d.HasChange(isLBTags) {
+	if d.HasChange(isLBTags) || d.HasChange(isLBAccessTags) {
 		getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
 			ID: &id,
 		}
@@ -508,13 +550,24 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		if err != nil {
 			return fmt.Errorf("Error getting Load Balancer : %s\n%s", err, response)
 		}
-		oldList, newList := d.GetChange(isLBTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *lb.CRN)
-		if err != nil {
-			log.Printf(
-				"Error on update of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
+		if d.HasChange(isLBTags) {
+			oldList, newList := d.GetChange(isLBTags)
+			err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *lb.CRN, "", isUserTagType)
+			if err != nil {
+				log.Printf(
+					"Error on update of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
+			}
+		}
+		if d.HasChange(isLBAccessTags) {
+			oldList, newList := d.GetChange(isLBAccessTags)
+			err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, *lb.CRN, "", isAccessTagType)
+			if err != nil {
+				log.Printf(
+					"Error on update of resource load balancer (%s) access tags: %s", d.Id(), err)
+			}
 		}
 	}
+
 	if hasChanged {
 		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
 			ID: &id,

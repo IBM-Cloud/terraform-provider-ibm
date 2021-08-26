@@ -112,6 +112,14 @@ func dataSourceIBMISLB() *schema.Resource {
 				Description: "Tags associated to Load Balancer",
 			},
 
+			isLBAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access tags",
+			},
+
 			isLBResourceGroup: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -403,12 +411,18 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 
 			d.Set(isLBResourceGroup, *lb.ResourceGroup.ID)
 			d.Set(isLBHostName, *lb.Hostname)
-			tags, err := GetTagsUsingCRN(meta, *lb.CRN)
+			tags, err := GetGlobalTagsUsingCRN(meta, *lb.CRN, "", isUserTagType)
 			if err != nil {
 				log.Printf(
 					"Error on get of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
 			}
 			d.Set(isLBTags, tags)
+			accesstags, err := GetGlobalTagsUsingCRN(meta, *lb.CRN, "", isAccessTagType)
+			if err != nil {
+				log.Printf(
+					"Error on get of resource Load Balancer (%s) access tags: %s", d.Id(), err)
+			}
+			d.Set(isLBAccessTags, accesstags)
 			controller, err := getBaseController(meta)
 			if err != nil {
 				return err

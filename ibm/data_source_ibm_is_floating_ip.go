@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -69,6 +70,14 @@ func dataSourceIBMISFloatingIP() *schema.Resource {
 				Set:         resourceIBMVPCHash,
 				Description: "Floating IP tags",
 			},
+
+			isFloatingIPAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access management tags",
+			},
 		},
 	}
 }
@@ -121,12 +130,18 @@ func floatingIPGet(d *schema.ResourceData, meta interface{}, name string) error 
 				d.Set(floatingIPTarget, target.ID)
 			}
 
-			tags, err := GetTagsUsingCRN(meta, *ip.CRN)
+			tags, err := GetGlobalTagsUsingCRN(meta, *ip.CRN, "", isUserTagType)
 			if err != nil {
 				fmt.Printf("Error on get of vpc Floating IP (%s) tags: %s", *ip.Address, err)
 			}
 
 			d.Set(floatingIPTags, tags)
+			accesstags, err := GetGlobalTagsUsingCRN(meta, *ip.CRN, "", isAccessTagType)
+			if err != nil {
+				log.Printf(
+					"Error on get of resource floating ip (%s) access tags: %s", d.Id(), err)
+			}
+			d.Set(isFloatingIPAccessTags, accesstags)
 			d.SetId(*ip.ID)
 
 			return nil

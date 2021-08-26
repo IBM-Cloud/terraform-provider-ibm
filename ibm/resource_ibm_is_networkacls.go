@@ -42,6 +42,7 @@ const (
 	isNetworkACLVPC               = "vpc"
 	isNetworkACLResourceGroup     = "resource_group"
 	isNetworkACLTags              = "tags"
+	isNetworkACLAccessTags        = "access_tags"
 	isNetworkACLCRN               = "crn"
 )
 
@@ -59,10 +60,16 @@ func resourceIBMISNetworkACL() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return resourceTagsCustomizeDiff(diff)
-			},
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceValidateAccessTags(diff, v)
+				}),
 		),
 
 		Schema: map[string]*schema.Schema{
@@ -93,6 +100,15 @@ func resourceIBMISNetworkACL() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_network_acl", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "List of tags",
+			},
+
+			isNetworkACLAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_network_acl", "accesstag")},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access management tags",
 			},
 
 			isNetworkACLCRN: {
@@ -369,6 +385,15 @@ func resourceIBMISNetworkACLValidator() *ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 
 	ibmISNetworkACLResourceValidator := ResourceValidator{ResourceName: "ibm_is_network_acl", Schema: validateSchema}
 	return &ibmISNetworkACLResourceValidator
@@ -445,10 +470,18 @@ func nwaclCreate(d *schema.ResourceData, meta interface{}, name string) error {
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isNetworkACLTags); ok || v != "" {
 		oldList, newList := d.GetChange(isNetworkACLTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *nwacl.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *nwacl.CRN, "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource network acl (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if _, ok := d.GetOk(isNetworkACLAccessTags); ok {
+		oldList, newList := d.GetChange(isNetworkACLAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *nwacl.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource network acl (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -485,12 +518,20 @@ func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isNetworkACLResourceGroup, *nwacl.ResourceGroup.ID)
 		d.Set(ResourceGroupName, *nwacl.ResourceGroup.Name)
 	}
-	tags, err := GetTagsUsingCRN(meta, *nwacl.CRN)
+	tags, err := GetGlobalTagsUsingCRN(meta, *nwacl.CRN, "", isUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource network acl (%s) tags: %s", d.Id(), err)
 	}
+
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *nwacl.CRN, "", isAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource network acl (%s) access tags: %s", d.Id(), err)
+	}
+
 	d.Set(isNetworkACLTags, tags)
+	d.Set(isNetworkACLAccessTags, accesstags)
 	d.Set(isNetworkACLCRN, *nwacl.CRN)
 	rules := make([]interface{}, 0)
 	if len(nwacl.Rules) > 0 {
@@ -626,10 +667,18 @@ func nwaclUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 	}
 	if d.HasChange(isNetworkACLTags) {
 		oldList, newList := d.GetChange(isNetworkACLTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, d.Get(isNetworkACLCRN).(string))
+		err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(isNetworkACLCRN).(string), "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource network acl (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if d.HasChange(isNetworkACLAccessTags) {
+		oldList, newList := d.GetChange(isNetworkACLAccessTags)
+		err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(isNetworkACLCRN).(string), "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource network acl (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	if d.HasChange(isNetworkACLRules) {

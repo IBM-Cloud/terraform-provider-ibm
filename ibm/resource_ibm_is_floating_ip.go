@@ -30,6 +30,8 @@ const (
 	isFloatingIPAvailable = "available"
 	isFloatingIPDeleting  = "deleting"
 	isFloatingIPDeleted   = "done"
+
+	isFloatingIPAccessTags = "access_tags"
 )
 
 func resourceIBMISFloatingIP() *schema.Resource {
@@ -50,6 +52,11 @@ func resourceIBMISFloatingIP() *schema.Resource {
 			customdiff.Sequence(
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 					return resourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceValidateAccessTags(diff, v)
 				},
 			),
 			customdiff.Sequence(
@@ -131,6 +138,15 @@ func resourceIBMISFloatingIP() *schema.Resource {
 				Description: "Floating IP tags",
 			},
 
+			isFloatingIPAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_floating_ip", "accesstag")},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access management tags",
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -194,6 +210,16 @@ func resourceIBMISFloatingIPValidator() *ResourceValidator {
 			Type:                       TypeString,
 			Optional:                   true,
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
@@ -264,10 +290,19 @@ func fipCreate(d *schema.ResourceData, meta interface{}, name string) error {
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isFloatingIPTags); ok || v != "" {
 		oldList, newList := d.GetChange(isFloatingIPTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *floatingip.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *floatingip.CRN, "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of vpc Floating IP (%s) tags: %s", d.Id(), err)
+		}
+	}
+
+	if _, ok := d.GetOk(isFloatingIPAccessTags); ok {
+		oldList, newList := d.GetChange(isFloatingIPAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *floatingip.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource Floating IP (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -308,12 +343,21 @@ func fipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if ok {
 		d.Set(isFloatingIPTarget, target.ID)
 	}
-	tags, err := GetTagsUsingCRN(meta, *floatingip.CRN)
+	tags, err := GetGlobalTagsUsingCRN(meta, *floatingip.CRN, "", isUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of vpc Floating IP (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isFloatingIPTags, tags)
+
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *floatingip.CRN, "", isAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource Floating IP (%s) access tags: %s", d.Id(), err)
+	}
+
+	d.Set(isFloatingIPAccessTags, accesstags)
+
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
@@ -344,21 +388,24 @@ func fipUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
+
 	if d.HasChange(isFloatingIPTags) {
-		options := &vpcv1.GetFloatingIPOptions{
-			ID: &id,
-		}
-		fip, response, err := sess.GetFloatingIP(options)
-		if err != nil {
-			return fmt.Errorf("Error getting Floating IP: %s\n%s", err, response)
-		}
 		oldList, newList := d.GetChange(isFloatingIPTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *fip.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(ResourceCRN).(string), "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on update of vpc Floating IP (%s) tags: %s", id, err)
 		}
 	}
+	if d.HasChange(isFloatingIPAccessTags) {
+		oldList, newList := d.GetChange(isFloatingIPAccessTags)
+		err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(ResourceCRN).(string), "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource Floating IP (%s) access tags: %s", d.Id(), err)
+		}
+	}
+
 	hasChanged := false
 	options := &vpcv1.UpdateFloatingIPOptions{
 		ID: &id,

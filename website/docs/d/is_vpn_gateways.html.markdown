@@ -26,6 +26,7 @@ In addition to all argument reference list, you can access the following attribu
 - `vpn_gateways` - (List) Collection of VPN Gateways.
 
   Nested scheme for `vpn_gateways`:
+  - `access_tags`  - (String) Access management tags associated for the vpn gateway.
   - `crn` - (String) The VPN gateway's CRN.
   - `created_at`- (Timestamp) The date and time the VPN gateway was created.
   - `id` - (String) The ID of the VPN gateway.
