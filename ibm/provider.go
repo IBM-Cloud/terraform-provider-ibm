@@ -186,6 +186,7 @@ func Provider() *schema.Provider {
 			"ibm_appid_token_config":        dataSourceIBMAppIDTokenConfig(),
 			"ibm_appid_redirect_urls":       dataSourceIBMAppIDRedirectURLs(),
 			"ibm_appid_role":                dataSourceIBMAppIDRole(),
+			"ibm_appid_theme_color":         dataSourceIBMAppIDThemeColor(),
 			"ibm_appid_theme_text":          dataSourceIBMAppIDThemeText(),
 
 			"ibm_function_action":                    dataSourceIBMFunctionAction(),
@@ -456,6 +457,7 @@ func Provider() *schema.Provider {
 			"ibm_appid_token_config":        resourceIBMAppIDTokenConfig(),
 			"ibm_appid_redirect_urls":       resourceIBMAppIDRedirectURLs(),
 			"ibm_appid_role":                resourceIBMAppIDRole(),
+			"ibm_appid_theme_color":         resourceIBMAppIDThemeColor(),
 			"ibm_appid_theme_text":          resourceIBMAppIDThemeText(),
 
 			"ibm_function_action":                                resourceIBMFunctionAction(),
