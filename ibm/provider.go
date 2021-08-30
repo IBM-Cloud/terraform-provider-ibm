@@ -183,6 +183,7 @@ func Provider() *schema.Provider {
 			"ibm_appid_idp_cloud_directory":      dataSourceIBMAppIDIDPCloudDirectory(),
 			"ibm_appid_idp_custom":               dataSourceIBMAppIDIDPCustom(),
 			"ibm_appid_idp_saml":                 dataSourceIBMAppIDIDPSAML(),
+			"ibm_appid_idp_saml_metadata":        dataSourceIBMAppIDIDPSAMLMetadata(),
 			"ibm_appid_languages":                dataSourceIBMAppIDLanguages(),
 			"ibm_appid_password_regex":           dataSourceIBMAppIDPasswordRegex(),
 			"ibm_appid_token_config":             dataSourceIBMAppIDTokenConfig(),
