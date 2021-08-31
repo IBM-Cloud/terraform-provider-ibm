@@ -445,6 +445,11 @@ func Provider() *schema.Provider {
 			"ibm_atracker_targets":   dataSourceIBMAtrackerTargets(),
 			"ibm_atracker_routes":    dataSourceIBMAtrackerRoutes(),
 			"ibm_atracker_endpoints": dataSourceIBMAtrackerEndpoints(),
+
+			//Security and Compliance Center
+			"ibm_scc_si_providers": dataSourceIBMSccSiProviders(),
+			"ibm_scc_si_note":      dataSourceIBMSccSiNote(),
+			"ibm_scc_si_notes":     dataSourceIBMSccSiNotes(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -717,6 +722,9 @@ func Provider() *schema.Provider {
 			// Atracker
 			"ibm_atracker_target": resourceIBMAtrackerTarget(),
 			"ibm_atracker_route":  resourceIBMAtrackerRoute(),
+
+			//Security and Compliance Center
+			"ibm_scc_si_note": resourceIBMSccSiNote(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -825,6 +833,7 @@ func Validator() ValidatorDict {
 				"ibm_atracker_target":                     resourceIBMAtrackerTargetValidator(),
 				"ibm_atracker_route":                      resourceIBMAtrackerRouteValidator(),
 				"ibm_satellite_endpoint":                  resourceIbmSatelliteEndpointValidator(),
+				"ibm_scc_si_note":                         resourceIBMSccSiNoteValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),
@@ -833,6 +842,7 @@ func Validator() ValidatorDict {
 				"ibm_dl_routers":              datasourceIBMDLRoutersValidator(),
 				"ibm_is_vpc":                  dataSourceIBMISVpcValidator(),
 				"ibm_is_volume":               dataSourceIBMISVolumeValidator(),
+				"ibm_scc_si_notes":            dataSourceIBMSccSiNotesValidator(),
 				"ibm_secrets_manager_secret":  datasourceIBMSecretsManagerSecretValidator(),
 				"ibm_secrets_manager_secrets": datasourceIBMSecretsManagerSecretsValidator(),
 			},

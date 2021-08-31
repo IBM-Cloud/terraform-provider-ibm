@@ -107,6 +107,9 @@ var tg_cross_network_id string
 //Enterprise Management
 var account_to_be_imported string
 
+//Security and Compliance Center, SI
+var scc_si_account string
+
 func init() {
 	appIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
 	if appIDTenantID == "" {
@@ -581,6 +584,10 @@ func init() {
 	hpcsToken2 = os.Getenv("IBM_HPCS_TOKEN2")
 	if hpcsToken2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_TOKEN2 with a VALID token for HPCS Admin Key2")
+	}
+	scc_si_account = os.Getenv("SCC_SI_ACCOUNT")
+	if scc_si_account == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_SI_ACCOUNT for testing SCC SI resources resource else  tests will fail if this is not set correctly")
 	}
 
 }
