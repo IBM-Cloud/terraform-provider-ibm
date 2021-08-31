@@ -1,3 +1,19 @@
+## 1.30.2 (Aug31, 2021)
+ENHANCEMENTS
+
+* removed 100GB constraint to support any size (10-250GB) size boot volumes ([3030](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3030))
+
+* upgraded the vpc-go-sdk to use the 0.9.0 version ([3023](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3023))
+
+*  Add crn_token attribute to satellite cluster resource to support remote location ([3032](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3032))
+
+
+BUGFIXES
+
+* Doc fixes for ibm_database and ibm_container_cluster_config ([3033](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3033))
+
+* Updated argument desc for zones and entitlement ([3016](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3016))
+
 ## 1.30.1 (Aug25, 2021)
 ENHANCEMENTS
 
