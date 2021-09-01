@@ -162,9 +162,10 @@ func resourceIBMISEndpointGateway() *schema.Resource {
 							Description: "The target crn",
 						},
 						isVirtualEndpointGatewayTargetResourceType: {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The target resource type",
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: InvokeValidator("ibm_is_virtual_endpoint_gateway", isVirtualEndpointGatewayTargetResourceType),
+							Description:  "The target resource type",
 						},
 					},
 				},
@@ -198,6 +199,13 @@ func resourceIBMISEndpointGatewayValidator() *ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVirtualEndpointGatewayTargetResourceType,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              "provider_cloud_service, provider_infrastructure_service"})
 
 	ibmEndpointGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_is_virtual_endpoint_gateway", Schema: validateSchema}
 	return &ibmEndpointGatewayResourceValidator
