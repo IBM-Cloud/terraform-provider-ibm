@@ -14,28 +14,25 @@ Create, update, or delete of an VPC routing tables. For more information, about 
 ## Example usage
 
 ```terraform
+resource "ibm_is_vpc" "testacc_vpc" {
+  name = "testvpc"
+}
+resource "ibm_is_vpc_routing_table" "test_ibm_is_vpc_routing_table" {
+  vpc = ibm_is_vpc.testacc_vpc.id
+  name = "routTabletest"
+  route_direct_link_ingress = true
+  route_transit_gateway_ingress = false
+  route_vpc_zone_ingress = false
+}
 resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" {
-  vpc = ""
-  routing_table = ""
+  vpc = ibm_is_vpc.testacc_vpc.id
+  routing_table = ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table.routing_table
   zone = "us-south-1"
   name = "custom-route-2"
   destination = "192.168.4.0/24"
   action = "deliver"
-  next_hop = "10.0.0.4"
+  next_hop = ibm_is_vpn_gateway_connection.VPNGatewayConnection.gateway_connection // Example value "10.0.0.4"
 }
-```
-
-```terraform
-resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" {
-  vpc = ""
-  routing_table = ""
-  zone = "us-south-1"
-  name = "custom-route-2"
-  destination = "192.168.4.0/24"
-  action = "deliver"
-  next_hop = ibm_is_vpn_gateway_connection.VPNGatewayConnection.gateway_connection
-}
-
 ```
 
 ## Argument reference
