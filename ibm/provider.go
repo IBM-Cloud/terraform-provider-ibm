@@ -383,11 +383,13 @@ func Provider() *schema.Provider {
 			"ibm_space":                              dataSourceIBMSpace(),
 
 			// Added for Schematics
-			"ibm_schematics_workspace": dataSourceIBMSchematicsWorkspace(),
-			"ibm_schematics_output":    dataSourceIBMSchematicsOutput(),
-			"ibm_schematics_state":     dataSourceIBMSchematicsState(),
-			"ibm_schematics_action":    dataSourceIBMSchematicsAction(),
-			"ibm_schematics_job":       dataSourceIBMSchematicsJob(),
+			"ibm_schematics_workspace":      dataSourceIBMSchematicsWorkspace(),
+			"ibm_schematics_output":         dataSourceIBMSchematicsOutput(),
+			"ibm_schematics_state":          dataSourceIBMSchematicsState(),
+			"ibm_schematics_action":         dataSourceIBMSchematicsAction(),
+			"ibm_schematics_job":            dataSourceIBMSchematicsJob(),
+			"ibm_schematics_inventory":      dataSourceIBMSchematicsInventory(),
+			"ibm_schematics_resource_query": dataSourceIBMSchematicsResourceQuery(),
 
 			// Added for Power Resources
 
@@ -762,9 +764,11 @@ func Provider() *schema.Provider {
 			"ibm_enterprise_account":       resourceIbmEnterpriseAccount(),
 
 			//Added for Schematics
-			"ibm_schematics_workspace": resourceIBMSchematicsWorkspace(),
-			"ibm_schematics_action":    resourceIBMSchematicsAction(),
-			"ibm_schematics_job":       resourceIBMSchematicsJob(),
+			"ibm_schematics_workspace":      resourceIBMSchematicsWorkspace(),
+			"ibm_schematics_action":         resourceIBMSchematicsAction(),
+			"ibm_schematics_job":            resourceIBMSchematicsJob(),
+			"ibm_schematics_inventory":      resourceIBMSchematicsInventory(),
+			"ibm_schematics_resource_query": resourceIBMSchematicsResourceQuery(),
 
 			//satellite  resources
 			"ibm_satellite_location":            resourceIBMSatelliteLocation(),
@@ -891,6 +895,8 @@ func Validator() ValidatorDict {
 				"ibm_schematics_action":                   resourceIBMSchematicsActionValidator(),
 				"ibm_schematics_job":                      resourceIBMSchematicsJobValidator(),
 				"ibm_schematics_workspace":                resourceIBMSchematicsWorkspaceValidator(),
+				"ibm_schematics_inventory":                resourceIBMSchematicsInventoryValidator(),
+				"ibm_schematics_resource_query":           resourceIBMSchematicsResourceQueryValidator(),
 				"ibm_resource_instance":                   resourceIBMResourceInstanceValidator(),
 				"ibm_is_virtual_endpoint_gateway":         resourceIBMISEndpointGatewayValidator(),
 				"ibm_resource_tag":                        resourceIBMResourceTagValidator(),
