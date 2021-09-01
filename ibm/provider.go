@@ -178,6 +178,7 @@ func Provider() *schema.Provider {
 			"ibm_appid_application":              dataSourceIBMAppIDApplication(),
 			"ibm_appid_application_scopes":       dataSourceIBMAppIDApplicationScopes(),
 			"ibm_appid_application_roles":        dataSourceIBMAppIDApplicationRoles(),
+			"ibm_appid_applications":             dataSourceIBMAppIDApplications(),
 			"ibm_appid_audit_status":             dataSourceIBMAppIDAuditStatus(),
 			"ibm_appid_cloud_directory_template": dataSourceIBMAppIDCloudDirectoryTemplate(),
 			"ibm_appid_idp_cloud_directory":      dataSourceIBMAppIDIDPCloudDirectory(),
