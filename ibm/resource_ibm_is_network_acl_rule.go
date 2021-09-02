@@ -75,14 +75,14 @@ func resourceIBMISNetworkACLRule() *schema.Resource {
 				Optional:     true,
 				ForceNew:     false,
 				Description:  "The user-defined name for this rule. Names must be unique within the network ACL the rule resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
-				ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleName),
+				ValidateFunc: InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleName),
 			},
 			isNetworkACLRuleAction: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
 				Description:  "Whether to allow or deny matching traffic",
-				ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleAction),
+				ValidateFunc: InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleAction),
 			},
 			isNetworkACLRuleIPVersion: {
 				Type:        schema.TypeString,
@@ -94,13 +94,13 @@ func resourceIBMISNetworkACLRule() *schema.Resource {
 				Required:     true,
 				ForceNew:     false,
 				Description:  "The source CIDR block. The CIDR block 0.0.0.0/0 applies to all addresses.",
-				ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleSource),
+				ValidateFunc: InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleSource),
 			},
 			isNetworkACLRuleDestination: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleDestination),
+				ValidateFunc: InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleDestination),
 				Description:  "The destination CIDR block. The CIDR block 0.0.0.0/0 applies to all addresses.",
 			},
 			isNetworkACLRuleDirection: {
@@ -108,7 +108,7 @@ func resourceIBMISNetworkACLRule() *schema.Resource {
 				Required:     true,
 				ForceNew:     false,
 				Description:  "Direction of traffic to enforce, either inbound or outbound",
-				ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleDirection),
+				ValidateFunc: InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleDirection),
 			},
 			isNetworkACLRuleICMP: {
 				Type:          schema.TypeList,
@@ -122,13 +122,13 @@ func resourceIBMISNetworkACLRule() *schema.Resource {
 						isNetworkACLRuleICMPCode: {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleICMPCode),
+							ValidateFunc: InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleICMPCode),
 							Description:  "The ICMP traffic code to allow. Valid values from 0 to 255.",
 						},
 						isNetworkACLRuleICMPType: {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleICMPType),
+							ValidateFunc: InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleICMPType),
 							Description:  "The ICMP traffic type to allow. Valid values from 0 to 254.",
 						},
 					},
@@ -148,28 +148,28 @@ func resourceIBMISNetworkACLRule() *schema.Resource {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							Default:      65535,
-							ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRulePortMax),
+							ValidateFunc: InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRulePortMax),
 							Description:  "The highest port in the range of ports to be matched",
 						},
 						isNetworkACLRulePortMin: {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							Default:      1,
-							ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRulePortMin),
+							ValidateFunc: InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRulePortMin),
 							Description:  "The lowest port in the range of ports to be matched",
 						},
 						isNetworkACLRuleSourcePortMax: {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							Default:      65535,
-							ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleSourcePortMax),
+							ValidateFunc: InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleSourcePortMax),
 							Description:  "The highest port in the range of ports to be matched",
 						},
 						isNetworkACLRuleSourcePortMin: {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							Default:      1,
-							ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleSourcePortMin),
+							ValidateFunc: InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleSourcePortMin),
 							Description:  "The lowest port in the range of ports to be matched",
 						},
 					},
@@ -189,28 +189,28 @@ func resourceIBMISNetworkACLRule() *schema.Resource {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							Default:      65535,
-							ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRulePortMax),
+							ValidateFunc: InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRulePortMax),
 							Description:  "The highest port in the range of ports to be matched",
 						},
 						isNetworkACLRulePortMin: {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							Default:      1,
-							ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRulePortMin),
+							ValidateFunc: InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRulePortMin),
 							Description:  "The lowest port in the range of ports to be matched",
 						},
 						isNetworkACLRuleSourcePortMax: {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							Default:      65535,
-							ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleSourcePortMax),
+							ValidateFunc: InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleSourcePortMax),
 							Description:  "The highest port in the range of ports to be matched",
 						},
 						isNetworkACLRuleSourcePortMin: {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							Default:      1,
-							ValidateFunc: InvokeValidator("ibm_is_network_acl", isNetworkACLRuleSourcePortMin),
+							ValidateFunc: InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleSourcePortMin),
 							Description:  "The lowest port in the range of ports to be matched",
 						},
 					},
@@ -322,7 +322,7 @@ func resourceIBMISNetworkACLRuleValidator() *ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
-	ibmISNetworkACLRuleResourceValidator := ResourceValidator{ResourceName: "ibm_is_network_acl", Schema: validateSchema}
+	ibmISNetworkACLRuleResourceValidator := ResourceValidator{ResourceName: "ibm_is_network_acl_rule", Schema: validateSchema}
 	return &ibmISNetworkACLRuleResourceValidator
 }
 
