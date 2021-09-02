@@ -368,7 +368,7 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(ResourceCRN, *vol.CRN)
 	d.Set(ResourceStatus, *vol.Status)
 	if vol.ResourceGroup != nil {
-		d.Set(ResourceGroupName, *vol.ResourceGroup.Name)
+		d.Set(ResourceGroupName, vol.ResourceGroup.Name)
 		d.Set(isVolumeResourceGroup, *vol.ResourceGroup.ID)
 	}
 	return nil
