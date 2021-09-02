@@ -21,6 +21,7 @@ const (
 	isVolumeProfileName          = "profile"
 	isVolumeZone                 = "zone"
 	isVolumeEncryptionKey        = "encryption_key"
+	isVolumeEncryptionType       = "encryption_type"
 	isVolumeCapacity             = "capacity"
 	isVolumeIops                 = "iops"
 	isVolumeCrn                  = "crn"
@@ -84,9 +85,14 @@ func resourceIBMISVolume() *schema.Resource {
 			isVolumeEncryptionKey: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				ForceNew:    true,
 				Description: "Volume encryption key info",
+			},
+
+			isVolumeEncryptionType: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Volume encryption type info",
 			},
 
 			isVolumeCapacity: {
@@ -332,6 +338,9 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isVolumeZone, *vol.Zone.Name)
 	if vol.EncryptionKey != nil {
 		d.Set(isVolumeEncryptionKey, vol.EncryptionKey.CRN)
+	}
+	if vol.Encryption != nil {
+		d.Set(isVolumeEncryptionType, vol.Encryption)
 	}
 	d.Set(isVolumeIops, *vol.Iops)
 	d.Set(isVolumeCapacity, *vol.Capacity)
