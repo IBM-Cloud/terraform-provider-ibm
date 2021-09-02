@@ -71,6 +71,18 @@ func dataSourceIBMISVPCs() *schema.Resource {
 							Description: "Default security group name",
 						},
 
+						isVPCDefaultSecurityGroupCRN: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Default security group CRN",
+						},
+
+						isVPCDefaultNetworkACLCRN: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Default Network ACL CRN",
+						},
+
 						isVPCDefaultRoutingTableName: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -328,6 +340,7 @@ func dataSourceIBMISVPCListRead(context context.Context, d *schema.ResourceData,
 		if vpc.DefaultNetworkACL != nil {
 			l[isVPCDefaultNetworkACL] = *vpc.DefaultNetworkACL.ID
 			l[isVPCDefaultNetworkACLName] = *vpc.DefaultNetworkACL.Name
+			l[isVPCDefaultNetworkACLCRN] = vpc.DefaultNetworkACL.CRN
 		}
 		if vpc.DefaultRoutingTable != nil {
 			l[isVPCDefaultRoutingTable] = *vpc.DefaultRoutingTable.ID
@@ -336,6 +349,7 @@ func dataSourceIBMISVPCListRead(context context.Context, d *schema.ResourceData,
 		if vpc.DefaultSecurityGroup != nil {
 			l[isVPCDefaultSecurityGroup] = *vpc.DefaultSecurityGroup.ID
 			l[isVPCDefaultSecurityGroupName] = *vpc.DefaultSecurityGroup.Name
+			l[isVPCDefaultSecurityGroupCRN] = vpc.DefaultSecurityGroup.CRN
 		}
 		tags, err := GetTagsUsingCRN(meta, *vpc.CRN)
 		if err != nil {
