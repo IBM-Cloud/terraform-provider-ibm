@@ -91,12 +91,12 @@ In addition to all argument reference list, you can access the following attribu
 - `health_status` - (String) The health status of the VM.
 - `id` - (String) The unique identifier of the instance. The ID is composed of `<power_instance_id>/<instance_id>`.
 - `instance_id` - (String) The unique identifier of the instance. 
-- `max_processors`- Integer- The maximum number of processors that can be allocated to the instance with shutting down or rebooting the `LPAR`.
+- `max_processors`- (Float) The maximum number of processors that can be allocated to the instance with shutting down or rebooting the `LPAR`.
 - `max_virtual_cores` - (Integer) The maximum number of virtual cores.
 - `migratable` - (Bool) Indicates the VM is migrated or not.This attribute is Deprecated use `pi_migratable` instead
-- `min_processors` - Float - The minimum number of processors that the instance can have. 
-- `min_memory` - (Integer) The minimum memory that was allocated to the instance.
-- `max_memory`- (Integer) The maximum amount of memory that can be allocated to the instance without shut down or reboot the `LPAR`.
+- `min_processors` - (Float) The minimum number of processors that the instance can have. 
+- `min_memory` - (Float) The minimum memory that was allocated to the instance.
+- `max_memory`- (Float) The maximum amount of memory that can be allocated to the instance without shut down or reboot the `LPAR`.
 - `min_virtual_cores` - (Integer) The minimum number of virtual cores.
 - `status` - (String) The status of the instance.
 - `pin_policy`  - (String) The pinning policy of the instance.

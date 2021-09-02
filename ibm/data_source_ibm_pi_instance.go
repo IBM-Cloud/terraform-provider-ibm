@@ -36,16 +36,12 @@ func dataSourceIBMPIInstance() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"state": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"memory": {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
 			"processors": {
-				Type:     schema.TypeInt,
+				Type:     schema.TypeFloat,
 				Computed: true,
 			},
 			"health_status": {
@@ -99,19 +95,19 @@ func dataSourceIBMPIInstance() *schema.Resource {
 			},
 
 			"minproc": {
-				Type:     schema.TypeInt,
+				Type:     schema.TypeFloat,
 				Computed: true,
 			},
 			"minmem": {
-				Type:     schema.TypeInt,
+				Type:     schema.TypeFloat,
 				Computed: true,
 			},
 			"maxproc": {
-				Type:     schema.TypeInt,
+				Type:     schema.TypeFloat,
 				Computed: true,
 			},
 			"maxmem": {
-				Type:     schema.TypeInt,
+				Type:     schema.TypeFloat,
 				Computed: true,
 			},
 			"pin_policy": {
