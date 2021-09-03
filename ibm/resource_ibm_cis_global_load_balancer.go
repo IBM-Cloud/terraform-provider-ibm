@@ -84,7 +84,7 @@ func resourceIBMCISGlb() *schema.Resource {
 			},
 			cisGLBSteeringPolicy: {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"off", "geo", "random", "dynamic_latency"}),
 				Description:  "Steering policy info",
 			},
