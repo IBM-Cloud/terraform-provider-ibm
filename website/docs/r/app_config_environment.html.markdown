@@ -8,11 +8,11 @@ description: |-
 
 # ibm_app_config_environment
 
-Provides a resource for `environment`. This allows environment to be created, updated and deleted.
+Create, update, or delete an environment by using IBM Cloud™ App Configuration. For more information, about App Configuration, see [getting started with App Configuration](https://cloud.ibm.com/docs/app-configuration?topic=app-configuration-getting-started).
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_app_config_environment" "app_config_environment" {
   guid = "guid"
   environment_id = "environment_id"
@@ -23,25 +23,25 @@ resource "ibm_app_config_environment" "app_config_environment" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument reference that you can specify for your resource. 
 
-- `guid` - (Required, string) guid of the App Configuration service. Get it from the service instance credentials section of the dashboard.
-- `name` - (Required, string) Environment name.
-- `environment_id` - (Required, string) Environment id.
-- `description` - (Optional, string) Environment description.
-- `tags` - (Optional, string) Tags associated with the environment.
-- `color_code` - (Optional, string) Color code to distinguish the environment. The Hex code for the color. For example `#FF0000` for `red`.
+- `guid` - (Required, String) The GUID of the App Configuration service. Fetch GUID from the service instance credentials section of the dashboard.
+- `name` - (Required, String) The environment name.
+- `environment_id` - (Required, String) The environment ID.
+- `description` - (Optional, String) The environment description.
+- `tags` - (Optional, String) The tags associated with an environment.
+- `color_code` - (Optional, String) The color code to distinguish an environment in the Hexademical code format. For example, `#FF0000` for `red`.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references list, you can access the following attribute references after your resource is created.
 
-- `id` - The unique identifier of the environment resource.
-- `created_time` - Creation time of the environment.
-- `updated_time` - Last modified time of the environment data.
-- `href` - Environment URL.
+- `id` - (String) The unique identifier of an environment resource.
+- `created_time` - (Timestamp) the creation time of an environment.
+- `updated_time` - (Timestamp) the last modified time of an environment data.
+- `href` - (String) the environment URL.
 
 ## Import
 
