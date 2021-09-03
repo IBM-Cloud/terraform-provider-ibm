@@ -771,6 +771,7 @@ func Validator() ValidatorDict {
 				"ibm_is_floating_ip":                      resourceIBMISFloatingIPValidator(),
 				"ibm_is_ike_policy":                       resourceIBMISIKEValidator(),
 				"ibm_is_image":                            resourceIBMISImageValidator(),
+				"ibm_is_instance_template":                resourceIBMISInstanceTemplateValidator(),
 				"ibm_is_instance":                         resourceIBMISInstanceValidator(),
 				"ibm_is_instance_disk_management":         resourceIBMISInstanceDiskManagementValidator(),
 				"ibm_is_instance_volume_attachment":       resourceIBMISInstanceVolumeAttachmentValidator(),

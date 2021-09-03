@@ -356,9 +356,10 @@ func resourceIBMISInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isInstanceBootAttachmentName: {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: InvokeValidator("ibm_is_instance", isInstanceBootAttachmentName),
 						},
 
 						isInstanceVolumeSnapshot: {
@@ -610,6 +611,16 @@ func resourceIBMISInstanceValidator() *ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isInstanceBootAttachmentName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
 
 	ibmISInstanceValidator := ResourceValidator{ResourceName: "ibm_is_instance", Schema: validateSchema}
 	return &ibmISInstanceValidator
