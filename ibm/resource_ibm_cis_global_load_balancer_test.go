@@ -34,6 +34,7 @@ func TestAccIBMCisGlb_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "pop_pools.#", "0"),
 					resource.TestCheckResourceAttr(name, "region_pools.#", "0"),
 					resource.TestCheckResourceAttr(name, "proxied", "false"), // default value
+					resource.TestCheckResourceAttr(name, "steering_policy", "dynamic_latency"),
 				),
 			},
 			{
@@ -45,6 +46,7 @@ func TestAccIBMCisGlb_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "pop_pools.#", "1"),
 					resource.TestCheckResourceAttr(name, "region_pools.#", "1"),
 					resource.TestCheckResourceAttr(name, "proxied", "false"), // default value
+					resource.TestCheckResourceAttr(name, "steering_policy", "dynamic_latency"),
 				),
 			},
 		},
@@ -283,6 +285,7 @@ func testAccCheckCisGlbConfigCisDSBasic(id string, cisDomain string) string {
 		name             = "%[2]s"
 		fallback_pool_id = ibm_cis_origin_pool.origin_pool.id
 		default_pool_ids = [ibm_cis_origin_pool.origin_pool.id]
+		steering_policy = "dynamic_latency" 
 	  }
 	`, id, cisDomainStatic)
 }
@@ -295,6 +298,7 @@ func testAccCheckCisGlbConfigCisDSUpdate(id string, cisDomain string) string {
 		name             = "%[2]s"
 		fallback_pool_id = ibm_cis_origin_pool.origin_pool.id
 		default_pool_ids = [ibm_cis_origin_pool.origin_pool.id]
+		steering_policy = "dynamic_latency"
 		region_pools{
 			region="WEU"
 			pool_ids = [ibm_cis_origin_pool.origin_pool.id]
@@ -315,6 +319,7 @@ func testAccCheckCisGlbConfigCisRIBasic(id string, cisDomain string) string {
 		name             = "%[2]s"
 		fallback_pool_id = ibm_cis_origin_pool.origin_pool.id
 		default_pool_ids = [ibm_cis_origin_pool.origin_pool.id]
+		steering_policy = "dynamic_latency" 
 	  }
 	`, id, cisDomain, "testacc_ds_cis")
 }
@@ -328,6 +333,7 @@ func testAccCheckCisGlbConfigSessionAffinity(id string, cisDomainStatic string) 
 		fallback_pool_id = ibm_cis_origin_pool.origin_pool.id
 		default_pool_ids = [ibm_cis_origin_pool.origin_pool.id]
 		session_affinity = "cookie"
+		steering_policy = "dynamic_latency" 
 	  }
 	`, id, cisDomainStatic)
 }

@@ -19,6 +19,7 @@ const (
 	cisGLBDesc               = "description"
 	cisGLBProxied            = "proxied"
 	cisGLBTTL                = "ttl"
+	cisGLBSteeringPolicy     = "steering_policy"
 	cisGLBSessionAffinity    = "session_affinity"
 	cisGLBEnabled            = "enabled"
 	cisGLBPopPools           = "pop_pools"
@@ -80,6 +81,13 @@ func resourceIBMCISGlb() *schema.Resource {
 				ConflictsWith: []string{"proxied"},
 				Description:   "TTL value", // this is set to zero regardless of config when proxied=true
 
+			},
+			cisGLBSteeringPolicy: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "random",
+				ValidateFunc: validateAllowedStringValue([]string{"off", "geo", "random", "dynamic_latency"}),
+				Description:  "Steering policy info",
 			},
 			cisGLBProxied: {
 				Type:          schema.TypeBool,
@@ -186,6 +194,7 @@ func resourceCISGlbCreate(d *schema.ResourceData, meta interface{}) error {
 	opt.SetFallbackPool(fallbackPool)
 	opt.SetProxied(d.Get(cisGLBProxied).(bool))
 	opt.SetSessionAffinity(d.Get(cisGLBSessionAffinity).(string))
+	opt.SetSteeringPolicy(d.Get(cisGLBSteeringPolicy).(string))
 
 	if description, ok := d.GetOk(cisGLBDesc); ok {
 		opt.SetDescription(description.(string))
@@ -248,9 +257,10 @@ func resourceCISGlbRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(cisGLBDesc, glbObj.Description)
 	d.Set(cisGLBFallbackPoolID, convertCisToTfTwoVar(*glbObj.FallbackPool, crn))
 	d.Set(cisGLBTTL, glbObj.TTL)
+	d.Set(cisGLBSessionAffinity, glbObj.SessionAffinity)
 	d.Set(cisGLBProxied, glbObj.Proxied)
 	d.Set(cisGLBEnabled, glbObj.Enabled)
-	d.Set(cisGLBSessionAffinity, glbObj.SessionAffinity)
+	d.Set(cisGLBSteeringPolicy, glbObj.SteeringPolicy)
 	flattenPopPools := flattenPools(
 		glbObj.PopPools, cisGLBPopPoolsPop, crn)
 	d.Set(cisGLBPopPools, flattenPopPools)
@@ -278,7 +288,7 @@ func resourceCISGlbUpdate(d *schema.ResourceData, meta interface{}) error {
 		d.HasChange(cisGLBFallbackPoolID) || d.HasChange(cisGLBProxied) ||
 		d.HasChange(cisGLBSessionAffinity) || d.HasChange(cisGLBDesc) ||
 		d.HasChange(cisGLBTTL) || d.HasChange(cisGLBEnabled) ||
-		d.HasChange(cisGLBPopPools) || d.HasChange(cisGLBRegionPools) {
+		d.HasChange(cisGLBPopPools) || d.HasChange(cisGLBRegionPools) || d.HasChange(cisGLBSteeringPolicy) {
 
 		tfDefaultPools := expandStringList(d.Get(cisGLBDefaultPoolIDs).(*schema.Set).List())
 		defaultPoolIds, _, err := convertTfToCisTwoVarSlice(tfDefaultPools)
@@ -291,11 +301,15 @@ func resourceCISGlbUpdate(d *schema.ResourceData, meta interface{}) error {
 		opt.SetSessionAffinity(d.Get(cisGLBSessionAffinity).(string))
 		opt.SetDefaultPools(defaultPoolIds)
 		opt.SetFallbackPool(fallbackPool)
+
 		if description, ok := d.GetOk(cisGLBDesc); ok {
 			opt.SetDescription(description.(string))
 		}
 		if ttl, ok := d.GetOk(cisGLBTTL); ok {
 			opt.SetTTL(int64(ttl.(int)))
+		}
+		if sp, ok := d.GetOk(cisGLBSteeringPolicy); ok {
+			opt.SetSteeringPolicy(sp.(string))
 		}
 		if enabled, ok := d.GetOk(cisGLBEnabled); ok {
 			opt.SetEnabled(enabled.(bool))
