@@ -252,22 +252,19 @@ func resourceIBMISSecurityGroupRuleCreate(d *schema.ResourceData, meta interface
 		{
 			sgrule := rule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
 			d.Set(isSecurityGroupRuleID, *sgrule.ID)
-			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
-			d.SetId(tfID)
+			d.SetId(fmt.Sprintf("%s/%s", parsed.secgrpID, *sgrule.ID))
 		}
 	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
 		{
 			sgrule := rule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
 			d.Set(isSecurityGroupRuleID, *sgrule.ID)
-			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
-			d.SetId(tfID)
+			d.SetId(fmt.Sprintf("%s/%s", parsed.secgrpID, *sgrule.ID))
 		}
 	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
 		{
 			sgrule := rule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
 			d.Set(isSecurityGroupRuleID, *sgrule.ID)
-			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
-			d.SetId(tfID)
+			d.SetId(fmt.Sprintf("%s/%s", parsed.secgrpID, *sgrule.ID))
 		}
 	}
 	return resourceIBMISSecurityGroupRuleRead(d, meta)
@@ -278,9 +275,20 @@ func resourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return err
 	}
-	secgrpID, ruleID, err := parseISTerraformID(d.Id())
-	if err != nil {
-		return err
+	var secgrpID, ruleID string
+
+	if strings.Contains(d.Id(), ".") {
+		secgrpID, ruleID, err = parseISTerraformID(d.Id())
+		if err != nil {
+			return err
+		}
+	} else {
+		parts, err := idParts(d.Id())
+		if err != nil {
+			return err
+		}
+		secgrpID = parts[0]
+		ruleID = parts[1]
 	}
 
 	getSecurityGroupRuleOptions := &vpcv1.GetSecurityGroupRuleOptions{
@@ -309,8 +317,8 @@ func resourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 		{
 			rule := sgrule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
 			d.Set(isSecurityGroupRuleID, *rule.ID)
-			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
-			d.SetId(tfID)
+			d.SetId(fmt.Sprintf("%s/%s", secgrpID, *rule.ID))
+			d.Set(isSecurityGroupRuleDirection, *rule.Direction)
 			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
 			icmpProtocol := map[string]interface{}{}
@@ -341,8 +349,8 @@ func resourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 		{
 			rule := sgrule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
 			d.Set(isSecurityGroupRuleID, *rule.ID)
-			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
-			d.SetId(tfID)
+			d.SetId(fmt.Sprintf("%s/%s", secgrpID, *rule.ID))
+			d.Set(isSecurityGroupRuleDirection, *rule.Direction)
 			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
 			remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
@@ -362,8 +370,8 @@ func resourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 		{
 			rule := sgrule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
 			d.Set(isSecurityGroupRuleID, *rule.ID)
-			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
-			d.SetId(tfID)
+			d.SetId(fmt.Sprintf("%s/%s", secgrpID, *rule.ID))
+			d.Set(isSecurityGroupRuleDirection, *rule.Direction)
 			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
 			tcpProtocol := map[string]interface{}{}
@@ -666,10 +674,4 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 	//		tag, parsed.secgrpID, parsed.ruleID, parsed.direction, parsed.ipversion, parsed.protocol, parsed.remoteAddress,
 	//		parsed.remoteCIDR, parsed.remoteSecGrpID, parsed.icmpType, parsed.icmpCode, parsed.portMin, parsed.portMax)
 	return parsed, sgTemplate, sgTemplateUpdate, nil
-}
-
-func makeTerraformRuleID(id1, id2 string) string {
-	// Include both group and rule id to create a unique Terraform id.  As a bonus,
-	// we can extract the group id as needed for API calls such as READ.
-	return id1 + "." + id2
 }
