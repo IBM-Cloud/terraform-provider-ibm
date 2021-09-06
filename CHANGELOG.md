@@ -1,3 +1,74 @@
+## 1.31.0 (Sep06, 2021)
+FEATURES:
+
+* Support APP ID 
+    - **Resources**
+        - ibm_appid_idp_cloud_directory
+		- ibm_appid_idp_saml
+        - ibm_appid_password_regex
+        - ibm_appid_theme_text
+        - ibm_appid_idp_custom
+        - ibm_appid_audit_status
+        - ibm_appid_action_url
+        - ibm_appid_languages
+        - ibm_appid_theme_color
+        - ibm_appid_cloud_directory_template
+    - **DataSources**
+        - ibm_appid_idp_cloud_directory
+		- ibm_appid_idp_saml
+		- ibm_appid_password_regex 
+        - ibm_appid_theme_text
+        - ibm_appid_idp_custom
+        - ibm_appid_audit_status
+        - ibm_appid_action_url
+        - ibm_appid_languages
+        - ibm_appid_theme_color
+        - ibm_appid_cloud_directory_template
+        - ibm_appid_idp_saml_metadata
+        - ibm_appid_roles
+        - ibm_appid_applications
+
+* Support Satellite endpoint/link
+    - **Resources**
+        - ibm_satellite_link
+        - ibm_satellite_endpoint
+    - **DataSources**
+        - ibm_satellite_link
+        - ibm_satellite_endpoint
+
+ENHANCEMENTS
+
+* changed the validator invoked in nacl rule  ([3052](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3052))
+
+* added forcenew for address_prefix_management in ibm_is_vpc ([3025](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3025))
+
+* added support for identifier in is_image datasource ([3012](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3012))
+
+* Add wait for master ready before cluster integrations ([3035](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3035))
+
+* Adding Steering_Policy property ([3061](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3061))
+
+* Add support for vSCSI pi_instance deployment ([3070](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3070))
+
+
+
+BUGFIXES
+
+* DocUpdate: add routing table route example ([3046](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3046))
+
+* Documentation for endpoint gateway ([3034](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3034))
+
+* updated cdn and app config resource ([3060](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3060))
+
+* Removed dereferencing in resource group name for is_volume ([3058](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3058))
+
+* Change the instance attribute types ([3053](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3053))
+
+* Increase robustness of openshift login flow ([3035](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3035))
+
+* Remove the references to duplicate KMS Key policies docs ([3055](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3055))
+
+
 ## 1.30.2 (Aug31, 2021)
 ENHANCEMENTS
 
