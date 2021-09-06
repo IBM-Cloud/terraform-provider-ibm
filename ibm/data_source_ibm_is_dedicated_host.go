@@ -25,6 +25,13 @@ func dataSourceIbmIsDedicatedHost() *schema.Resource {
 				Required:    true,
 				Description: "The unique name of this dedicated host",
 			},
+			isDedicatedHostAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access tags",
+			},
 			"host_group": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
@@ -370,6 +377,13 @@ func dataSourceIbmIsDedicatedHostRead(context context.Context, d *schema.Resourc
 				if err = d.Set("crn", dedicatedHost.CRN); err != nil {
 					return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 				}
+				accesstags, err := GetGlobalTagsUsingCRN(meta, *dedicatedHost.CRN, "", isDedicatedHostAccessTagType)
+				if err != nil {
+					log.Printf(
+						"Error on get of resource dedicated host (%s) access tags: %s", d.Id(), err)
+				}
+				d.Set(isDedicatedHostAccessTags, accesstags)
+
 				if dedicatedHost.Disks != nil {
 					err = d.Set("disks", dataSourceDedicatedHostFlattenDisks(dedicatedHost.Disks))
 					if err != nil {

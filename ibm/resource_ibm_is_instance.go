@@ -87,6 +87,10 @@ const (
 	isPlacementTargetDedicatedHost      = "dedicated_host"
 	isPlacementTargetDedicatedHostGroup = "dedicated_host_group"
 	isInstancePlacementTarget           = "placement_target"
+
+	isInstanceAccessTags    = "access_tags"
+	isInstanceUserTagType   = "user"
+	isInstanceAccessTagType = "access"
 )
 
 func resourceIBMISInstance() *schema.Resource {
@@ -197,6 +201,15 @@ func resourceIBMISInstance() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_instance", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "list of tags for the instance",
+			},
+
+			isInstanceAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_instance", "accesstag")},
+				Set:         resourceIBMVPCHash,
+				Description: "list of access tags for the instance",
 			},
 
 			isEnableCleanDelete: {
@@ -610,7 +623,15 @@ func resourceIBMISInstanceValidator() *ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
-
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([ ]*[A-Za-z0-9:_.-]+[ ]*)+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 	ibmISInstanceValidator := ResourceValidator{ResourceName: "ibm_is_instance", Schema: validateSchema}
 	return &ibmISInstanceValidator
 }
@@ -812,10 +833,18 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isInstanceTags); ok || v != "" {
 		oldList, newList := d.GetChange(isInstanceTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource instance (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if _, ok := d.GetOk(isInstanceAccessTags); ok {
+		oldList, newList := d.GetChange(isInstanceAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource instance (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -1010,10 +1039,19 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isInstanceTags); ok || v != "" {
 		oldList, newList := d.GetChange(isInstanceTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource instance (%s) tags: %s", d.Id(), err)
+		}
+	}
+
+	if _, ok := d.GetOk(isInstanceAccessTags); ok {
+		oldList, newList := d.GetChange(isInstanceAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource instance (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -1203,10 +1241,19 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isInstanceTags); ok || v != "" {
 		oldList, newList := d.GetChange(isInstanceTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource instance (%s) tags: %s", d.Id(), err)
+		}
+	}
+
+	if _, ok := d.GetOk(isInstanceAccessTags); ok {
+		oldList, newList := d.GetChange(isInstanceAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource instance (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -1513,12 +1560,19 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		bootVolList = append(bootVolList, bootVol)
 		d.Set(isInstanceBootVolume, bootVolList)
 	}
-	tags, err := GetTagsUsingCRN(meta, *instance.CRN)
+	tags, err := GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource Instance (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isInstanceTags, tags)
+
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource Instance (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(isInstanceAccessTags, accesstags)
 
 	controller, err := getBaseController(meta)
 	if err != nil {
@@ -1874,10 +1928,18 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	if d.HasChange(isInstanceTags) {
 		oldList, newList := d.GetChange(isInstanceTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource Instance (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if d.HasChange(isInstanceAccessTags) {
+		oldList, newList := d.GetChange(isInstanceAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource Instance (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil

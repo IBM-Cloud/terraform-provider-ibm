@@ -73,6 +73,7 @@ Review the argument references that you can specify for your resource.
   - Creating image from volume requires instance to which volume is attached to be in stopped status, running instance will be stopped on using this option.
   - increase the default timeout as per the volume size.
 - `tags` (Optional, Array of Strings) A list of tags that you want to your image. Tags can help you find the image more easily later.
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the image. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

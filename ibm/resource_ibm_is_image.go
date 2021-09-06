@@ -37,6 +37,10 @@ const (
 	isImageProvisioningDone = "done"
 	isImageDeleting         = "deleting"
 	isImageDeleted          = "done"
+
+	isImageAccessTags    = "access_tags"
+	isImageUserTagType   = "user"
+	isImageAccessTagType = "access"
 )
 
 func resourceIBMISImage() *schema.Resource {
@@ -98,6 +102,15 @@ func resourceIBMISImage() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_image", "tag")},
 				Set:         resourceIBMVPCHash,
 				Description: "Tags for the image",
+			},
+
+			isImageAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_image", "accesstag")},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access management tags",
 			},
 
 			isImageOperatingSystem: {
@@ -214,6 +227,16 @@ func resourceIBMISImageValidator() *ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([ ]*[A-Za-z0-9:_.-]+[ ]*)+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
 	ibmISImageResourceValidator := ResourceValidator{ResourceName: "ibm_is_image", Schema: validateSchema}
 	return &ibmISImageResourceValidator
 }
@@ -288,10 +311,18 @@ func imgCreateByFile(d *schema.ResourceData, meta interface{}, href, name, opera
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isImageTags); ok || v != "" {
 		oldList, newList := d.GetChange(isImageTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *image.CRN, "", isImageUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc Image (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if _, ok := d.GetOk(isImageAccessTags); ok {
+		oldList, newList := d.GetChange(isImageAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *image.CRN, "", isImageAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc Image (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -377,10 +408,18 @@ func imgCreateByVolume(d *schema.ResourceData, meta interface{}, name, volume st
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isImageTags); ok || v != "" {
 		oldList, newList := d.GetChange(isImageTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *image.CRN, "", isImageUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc Image (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if _, ok := d.GetOk(isImageAccessTags); ok {
+		oldList, newList := d.GetChange(isImageAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *image.CRN, "", isImageAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc Image (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -450,10 +489,25 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 			return fmt.Errorf("Error getting Image IP: %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isImageTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *image.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *image.CRN, "", isImageUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc Image (%s) tags: %s", id, err)
+		}
+	}
+	if d.HasChange(isImageAccessTags) {
+		options := &vpcv1.GetImageOptions{
+			ID: &id,
+		}
+		image, response, err := sess.GetImage(options)
+		if err != nil {
+			return fmt.Errorf("Error getting Image IP: %s\n%s", err, response)
+		}
+		oldList, newList := d.GetChange(isImageAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *image.CRN, "", isImageAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource vpc Image (%s) access tags: %s", id, err)
 		}
 	}
 	if hasChanged {
@@ -534,12 +588,18 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if image.File != nil && image.File.Checksums != nil {
 		d.Set(isImageCheckSum, *image.File.Checksums.Sha256)
 	}
-	tags, err := GetTagsUsingCRN(meta, *image.CRN)
+	tags, err := GetGlobalTagsUsingCRN(meta, *image.CRN, "", isImageUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc Image (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isImageTags, tags)
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *image.CRN, "", isImageAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vpc Image (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(isImageAccessTags, accesstags)
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
