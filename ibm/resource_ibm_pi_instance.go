@@ -124,9 +124,10 @@ func resourceIBMPIInstance() *schema.Resource {
 			},
 
 			helpers.PIInstanceStorageConnection: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Storage Connectivity Group for server deployment",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateAllowedStringValue([]string{"vSCSI"}),
+				Description:  "Storage Connectivity Group for server deployment",
 			},
 
 			"addresses": {
