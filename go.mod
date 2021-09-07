@@ -8,7 +8,7 @@ require (
 	github.com/IBM-Cloud/power-go-client v1.0.74
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.1.0
-	github.com/IBM/appid-management-go-sdk v0.0.0-20210727091553-7e0e5823e707
+	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/container-registry-go-sdk v0.0.13
 	github.com/IBM/go-sdk-core/v4 v4.10.0
 	github.com/IBM/go-sdk-core/v5 v5.5.1

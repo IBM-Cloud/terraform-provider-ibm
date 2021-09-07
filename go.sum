@@ -50,6 +50,8 @@ github.com/IBM/appconfiguration-go-admin-sdk v0.1.0 h1:9rdOk32VQFnMqsBB7cTpkZbD7
 github.com/IBM/appconfiguration-go-admin-sdk v0.1.0/go.mod h1:6x6KbqIwrEi07OvEM1+EnU4Lyk+JFm2O0vrSPPGTleU=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210727091553-7e0e5823e707 h1:oLTHGdqJxWxBWChaVsIm0cdDBvFb4QMm3j7Rzw9F0YU=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210727091553-7e0e5823e707/go.mod h1:d22kTYY7RYBWcQlZpqrSdshpB/lJ16viWS5Sbjtlc8s=
+github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f h1:4c1kqY4GqmkQ+tO03rneDb74Tv7BhTj8jDiDB1p8mdM=
+github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f/go.mod h1:d22kTYY7RYBWcQlZpqrSdshpB/lJ16viWS5Sbjtlc8s=
 github.com/IBM/container-registry-go-sdk v0.0.13 h1:nifb9L0dpMaECkZy7MsNvXaH8vxRW2ARBRbF8cV7S5g=
 github.com/IBM/container-registry-go-sdk v0.0.13/go.mod h1:GYi1VN59VaJWWq2xP06o9Vpi6+K8V5vtmji6WjMJf0w=
 github.com/IBM/go-sdk-core v1.1.0 h1:pV73lZqr9r1xKb3h08c1uNG3AphwoV5KzUzhS+pfEqY=
