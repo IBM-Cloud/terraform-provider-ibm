@@ -440,6 +440,13 @@ func Provider() *schema.Provider {
 			"ibm_atracker_targets":   dataSourceIBMAtrackerTargets(),
 			"ibm_atracker_routes":    dataSourceIBMAtrackerRoutes(),
 			"ibm_atracker_endpoints": dataSourceIBMAtrackerEndpoints(),
+
+			// Compliance Posture Management
+			"ibm_list_scopes": dataSourceIBMListScopes(),
+			"ibm_list_latest_scans": dataSourceIBMListLatestScans(),
+			"ibm_list_profiles": dataSourceIBMListProfiles(),
+			"ibm_scans_summary": dataSourceIBMScansSummary(),
+			"ibm_scan_summaries": dataSourceIBMScanSummaries(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{

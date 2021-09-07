@@ -94,6 +94,7 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	"github.com/IBM/scc-go-sdk/posturemanagementv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -252,6 +253,7 @@ type ClientSession interface {
 	SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error)
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
+	PostureManagementV1()   (*posturemanagementv1.PostureManagementV1, error)
 }
 
 type clientSession struct {
@@ -495,6 +497,11 @@ type clientSession struct {
 	//Satellite link service
 	satelliteLinkClient    *satellitelinkv1.SatelliteLinkV1
 	satelliteLinkClientErr error
+
+	//Compliance posture
+	postureManagementClientErr  error
+	postureManagementClient     *posturemanagementv1.PostureManagementV1
+
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -911,6 +918,14 @@ func (sess clientSession) CisFiltersSession() (*cisfiltersv1.FiltersV1, error) {
 // Activity Tracker API
 func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
 	return session.atrackerClient, session.atrackerClientErr
+}
+
+// Posture Management
+func (session clientSession) PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error) {
+	if session.postureManagementClientErr != nil {
+		return session.postureManagementClient, session.postureManagementClientErr
+	}
+	return session.postureManagementClient.Clone(), nil
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -2183,6 +2198,25 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.satelliteLinkClientErr = fmt.Errorf("Error occurred while configuring Satellite Link service: %q", err)
 	}
 
+	// Construct an "options" struct for creating the service client.
+	postureManagementClientOptions := &posturemanagementv1.PostureManagementV1Options{
+		Authenticator: authenticator,
+		URL: envFallBack([]string{"IBMCLOUD_COMPLIANCE_API_ENDPOINT"}, posturemanagementv1.DefaultServiceURL),
+		AccountID: core.StringPtr(userConfig.userAccount),
+	}
+
+	// Construct the service client.
+	session.postureManagementClient, err = posturemanagementv1.NewPostureManagementV1(postureManagementClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.postureManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.postureManagementClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": { fmt.Sprintf("terraform-provider-ibm/%s", version.Version) },
+		})
+	} else {
+		session.postureManagementClientErr = fmt.Errorf("Error occurred while configuring Posture Management service: %q", err)
+	}
 	return session, nil
 }
 

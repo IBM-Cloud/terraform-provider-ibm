@@ -28,4 +28,5 @@ Schematics
 Secrets Manager
 Transit Gateway
 VPC infrastructure
+Posture Management
 

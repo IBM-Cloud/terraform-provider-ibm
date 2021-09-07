@@ -41,6 +41,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 )
 
 const (
