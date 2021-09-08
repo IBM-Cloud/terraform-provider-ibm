@@ -39,6 +39,7 @@ In addition to the argument reference list, you can access the following attribu
 - `created_at` - (String) The date and time resource is created.
 - `crn` - (String) The CRN of the gateway.
 - `completion_notice_reject_reason` - (String) The reason for completion notice rejection. Only included on a dedicated gateways type with a rejected completion notice.
+- `connection_mode` - (String) Type of network connection that you want to bind to your direct link.
 - `cross_connect_router` - (String) The cross connect router. Only included on a dedicated gateways type.
 - `global` - (Bool) Gateway with global routing as **true** can connect networks outside your associated region.
 - `id` - (String) The unique identifier of the gateway.

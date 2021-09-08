@@ -14,7 +14,7 @@ require (
 	github.com/IBM/ibm-cos-sdk-go v1.7.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/keyprotect-go-client v0.7.0
-	github.com/IBM/networking-go-sdk v0.18.0
+	github.com/IBM/networking-go-sdk v0.20.0
 	github.com/IBM/platform-services-go-sdk v0.18.16
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/schematics-go-sdk v0.0.2
@@ -41,6 +41,7 @@ require (
 	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/softlayer/softlayer-go v1.0.3
+	github.ibm.com/ibmcloud/networking-go-sdk v1.0.0
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
 	golang.org/x/tools v0.0.0-20210107193943-4ed967dd8eff // indirect
 	gotest.tools v2.2.0+incompatible
