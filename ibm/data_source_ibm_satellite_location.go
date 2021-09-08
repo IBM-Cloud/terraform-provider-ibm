@@ -6,8 +6,11 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -106,10 +109,24 @@ func dataSourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}
 		Controller: &location,
 	}
 
-	instance, resp, err := satClient.GetSatelliteLocation(getSatLocOptions)
-	if err != nil || instance == nil {
-		return fmt.Errorf("Error retrieving IBM cloud satellite location %s : %s\n%s", name, err, resp)
+	var instance *kubernetesserviceapiv1.MultishiftGetController
+	var response *core.DetailedResponse
+	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+		instance, response, err = satClient.GetSatelliteLocation(getSatLocOptions)
+		if err != nil || instance == nil {
+			if response != nil && response.StatusCode == 404 {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
 
+	if isResourceTimeoutError(err) {
+		instance, response, err = satClient.GetSatelliteLocation(getSatLocOptions)
+	}
+	if err != nil || instance == nil {
+		return fmt.Errorf("Error retrieving IBM cloud satellite location %s : %s\n%s", location, err, response)
 	}
 
 	d.SetId(*instance.ID)

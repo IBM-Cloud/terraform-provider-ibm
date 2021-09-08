@@ -129,7 +129,7 @@ func resourceIBMCISCertificateUpload() *schema.Resource {
 
 func resourceCISCertificateUploadValidator() *ResourceValidator {
 	bundleMethod := "ubiquitous, optimal, force"
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 cisCertificateUploadBundleMethod,

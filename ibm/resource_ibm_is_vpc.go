@@ -81,12 +81,12 @@ func resourceIBMISVPC() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isVPCAddressPrefixManagement: {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          "auto",
-				DiffSuppressFunc: applyOnce,
-				ValidateFunc:     InvokeValidator("ibm_is_vpc", isVPCAddressPrefixManagement),
-				Description:      "Address Prefix management value",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "auto",
+				ForceNew:     true,
+				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCAddressPrefixManagement),
+				Description:  "Address Prefix management value",
 			},
 
 			isVPCDefaultNetworkACL: {
@@ -355,7 +355,7 @@ func resourceIBMISVPC() *schema.Resource {
 
 func resourceIBMISVPCValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	address_prefix_management := "auto, manual"
 
 	validateSchema = append(validateSchema,
@@ -642,8 +642,10 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(subnetsList, subnetsInfo)
 
 	//Set Security group list
-
-	listSgOptions := &vpcv1.ListSecurityGroupsOptions{}
+	vpcid := d.Id()
+	listSgOptions := &vpcv1.ListSecurityGroupsOptions{
+		VPCID: &vpcid,
+	}
 	sgs, _, err := sess.ListSecurityGroups(listSgOptions)
 	if err != nil {
 		return err

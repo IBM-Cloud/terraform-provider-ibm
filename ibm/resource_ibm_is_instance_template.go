@@ -119,9 +119,10 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 							Description: "If set to true, when deleting the instance the volume will also be deleted.",
 						},
 						isInstanceTemplateVolAttachmentName: {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The user-defined name for this volume attachment.",
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: InvokeValidator("ibm_is_instance_template", isInstanceTemplateVolAttachmentName),
+							Description:  "The user-defined name for this volume attachment.",
 						},
 						isInstanceTemplateVolAttVol: {
 							Type:        schema.TypeString,
@@ -344,6 +345,23 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 	}
 }
 
+func resourceIBMISInstanceTemplateValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isInstanceTemplateVolAttachmentName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISInstanceTemplateValidator := ResourceValidator{ResourceName: "ibm_is_instance_template", Schema: validateSchema}
+	return &ibmISInstanceTemplateValidator
+}
+
 func resourceIBMisInstanceTemplateCreate(d *schema.ResourceData, meta interface{}) error {
 	profile := d.Get(isInstanceTemplateProfile).(string)
 	name := d.Get(isInstanceTemplateName).(string)
@@ -440,7 +458,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 		var volTemplate = &vpcv1.VolumePrototypeInstanceByImageContext{}
 		name, ok := bootvol[isInstanceTemplateBootName]
 		namestr := name.(string)
-		if ok {
+		if ok && namestr != "" {
 			volTemplate.Name = &namestr
 		}
 

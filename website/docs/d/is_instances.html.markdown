@@ -30,10 +30,12 @@ data "ibm_is_instances" "ds_instances1" {
 ## Argument reference
 The input parameters that you need to specify for the data source. 
 
-- `resource_group` - (optional, string) Resource Group ID to filter the instances attached to it.
+- `resource_group` - (optional, String) Resource Group ID to filter the instances attached to it.
 - `vpc` - (Optional, String) The VPC ID to filter the instances attached.
-- `vpc_crn` - (optional, string) VPC CRN to filter the instances attached to it.
+- `vpc_crn` - (optional, String) VPC CRN to filter the instances attached to it.
 - `vpc_name` - (Optional, String) The name of the VPC to filter the instances attached.
+- `instance_group` - (Optional, String) Instance group ID to filter the instances attached to it.
+- `instance_group_name` - (Optional, String) Instance group name to filter the instances attached to it.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
@@ -79,6 +81,11 @@ In addition to all argument reference list, you can access the following attribu
 		- `security_groups` (List)A list of security groups that were created for the interface.
 		- `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses.- `resource_group` - (String) The name of the resource group where the instance was created.
 	- `status` - (String) The status of the instance.
+	- `status_reasons` - (List) Array of reasons for the current status. 
+
+		Nested scheme for `status_reasons`:
+		- `code` - (String)  A snake case string identifying the status reason.
+		- `message` - (String)  An explanation of the status reason
 	- `volume_attachments`- (List) A list of volume attachments that were created for the instance.
 
 	  Nested scheme for `volume_attachments`: 

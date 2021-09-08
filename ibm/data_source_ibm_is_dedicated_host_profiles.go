@@ -20,39 +20,6 @@ func dataSourceIbmIsDedicatedHostProfiles() *schema.Resource {
 		ReadContext: dataSourceIbmIsDedicatedHostProfilesRead,
 
 		Schema: map[string]*schema.Schema{
-			"first": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "A link to the first page of resources.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for a page of resources.",
-						},
-					},
-				},
-			},
-			"limit": &schema.Schema{
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The maximum number of resources that can be returned by the request.",
-			},
-			"next": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "A link to the next page of resources. This property is present for all pagesexcept the last page.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for a page of resources.",
-						},
-					},
-				},
-			},
 			"profiles": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -362,40 +329,34 @@ func dataSourceIbmIsDedicatedHostProfilesRead(context context.Context, d *schema
 
 	listDedicatedHostProfilesOptions := &vpcv1.ListDedicatedHostProfilesOptions{}
 
-	dedicatedHostProfileCollection, response, err := vpcClient.ListDedicatedHostProfilesWithContext(context, listDedicatedHostProfilesOptions)
-	if err != nil {
-		log.Printf("[DEBUG] ListDedicatedHostProfilesWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
-	}
-
-	if dedicatedHostProfileCollection.First != nil {
-		err = d.Set("first", dataSourceDedicatedHostProfileCollectionFlattenFirst(*dedicatedHostProfileCollection.First))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting first %s", err))
+	start := ""
+	allrecs := []vpcv1.DedicatedHostProfile{}
+	for {
+		if start != "" {
+			listDedicatedHostProfilesOptions.Start = &start
 		}
-	}
-	if err = d.Set("limit", dedicatedHostProfileCollection.Limit); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
-	}
-
-	if dedicatedHostProfileCollection.Next != nil {
-		err = d.Set("next", dataSourceDedicatedHostProfileCollectionFlattenNext(*dedicatedHostProfileCollection.Next))
+		dedicatedHostProfileCollection, response, err := vpcClient.ListDedicatedHostProfilesWithContext(context, listDedicatedHostProfilesOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting next %s", err))
+			log.Printf("[DEBUG] ListDedicatedHostProfilesWithContext failed %s\n%s", err, response)
+			return diag.FromErr(err)
+		}
+		start = GetNext(dedicatedHostProfileCollection.Next)
+		allrecs = append(allrecs, dedicatedHostProfileCollection.Profiles...)
+		if start == "" {
+			break
 		}
 	}
 
-	if len(dedicatedHostProfileCollection.Profiles) != 0 {
+	if len(allrecs) > 0 {
 
 		d.SetId(dataSourceIbmIsDedicatedHostProfilesID(d))
 
-		if dedicatedHostProfileCollection.Profiles != nil {
-			err = d.Set("profiles", dataSourceDedicatedHostProfileCollectionFlattenProfiles(dedicatedHostProfileCollection.Profiles))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting profiles %s", err))
-			}
+		err = d.Set("profiles", dataSourceDedicatedHostProfileCollectionFlattenProfiles(allrecs))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting profiles %s", err))
 		}
-		if err = d.Set("total_count", dedicatedHostProfileCollection.TotalCount); err != nil {
+
+		if err = d.Set("total_count", len(allrecs)); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
 		}
 	}

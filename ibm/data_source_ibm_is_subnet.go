@@ -55,6 +55,14 @@ func dataSourceIBMISSubnet() *schema.Resource {
 				Description: "List of tags",
 			},
 
+			isSubnetAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "List of access tags",
+			},
+
 			isSubnetCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -130,7 +138,7 @@ func dataSourceIBMISSubnet() *schema.Resource {
 }
 
 func dataSourceIBMISSubnetValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "identifier",
@@ -160,7 +168,6 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	var subnet *vpcv1.Subnet
-
 	if v, ok := d.GetOk("identifier"); ok {
 		id := v.(string)
 		getSubnetOptions := &vpcv1.GetSubnetOptions{
@@ -225,12 +232,21 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	tags, err := GetTagsUsingCRN(meta, *subnet.CRN)
+
+	tags, err := GetGlobalTagsUsingCRN(meta, *subnet.CRN, "", isUserTagType)
 	if err != nil {
 		log.Printf(
 			"An error occured during reading of subnet (%s) tags : %s", d.Id(), err)
 	}
+
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *subnet.CRN, "", isAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource subnet (%s) access tags: %s", d.Id(), err)
+	}
+
 	d.Set(isSubnetTags, tags)
+	d.Set(isSubnetAccessTags, accesstags)
 	d.Set(isSubnetCRN, *subnet.CRN)
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/subnets")
 	d.Set(ResourceName, *subnet.Name)

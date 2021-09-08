@@ -173,7 +173,7 @@ func resourceIBMTransitGatewayConnection() *schema.Resource {
 }
 func resourceIBMTransitGatewayConnectionValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	networkType := "classic, vpc, gre_tunnel"
 	validateSchema = append(validateSchema,
 		ValidateSchema{

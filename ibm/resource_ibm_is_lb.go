@@ -185,7 +185,7 @@ func resourceIBMISLB() *schema.Resource {
 
 func resourceIBMISLBValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	lbtype := "public, private"
 	isLBProfileAllowedValues := "network-fixed"
 

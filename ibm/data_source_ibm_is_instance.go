@@ -347,6 +347,27 @@ func dataSourceIBMISInstance() *schema.Resource {
 				Description: "instance status",
 			},
 
+			isInstanceStatusReasons: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current status (if any).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceStatusReasonsCode: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the status reason",
+						},
+
+						isInstanceStatusReasonsMessage: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the status reason",
+						},
+					},
+				},
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -645,6 +666,19 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			}
 
 			d.Set(isInstanceStatus, *instance.Status)
+			//set the status reasons
+			if instance.StatusReasons != nil {
+				statusReasonsList := make([]map[string]interface{}, 0)
+				for _, sr := range instance.StatusReasons {
+					currentSR := map[string]interface{}{}
+					if sr.Code != nil && sr.Message != nil {
+						currentSR[isInstanceStatusReasonsCode] = *sr.Code
+						currentSR[isInstanceStatusReasonsMessage] = *sr.Message
+						statusReasonsList = append(statusReasonsList, currentSR)
+					}
+				}
+				d.Set(isInstanceStatusReasons, statusReasonsList)
+			}
 			d.Set(isInstanceVPC, *instance.VPC.ID)
 			d.Set(isInstanceZone, *instance.Zone.Name)
 

@@ -20,6 +20,13 @@ func resourceIBMCmCatalog() *schema.Resource {
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"kind": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     "offering",
+				Description: "Kind of catalog, offering or vpe.",
+			},
 			"label": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
@@ -84,6 +91,9 @@ func resourceIBMCmCatalogCreate(d *schema.ResourceData, meta interface{}) error 
 	if _, ok := d.GetOk("tags"); ok {
 		createCatalogOptions.SetTags(d.Get("tags").([]string))
 	}
+	if _, ok := d.GetOk("kind"); ok {
+		createCatalogOptions.SetKind(d.Get("kind").(string))
+	}
 
 	catalog, response, err := catalogManagementClient.CreateCatalog(createCatalogOptions)
 	if err != nil {
@@ -138,6 +148,9 @@ func resourceIBMCmCatalogRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if err = d.Set("offerings_url", catalog.OfferingsURL); err != nil {
 		return fmt.Errorf("Error setting offerings_url: %s", err)
+	}
+	if err = d.Set("kind", catalog.Kind); err != nil {
+		return fmt.Errorf("Error setting kind: %s", err)
 	}
 
 	return nil

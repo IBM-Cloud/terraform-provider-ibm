@@ -18,11 +18,11 @@ resource "ibm_is_vpc" "testacc_vpc" {
   name = "testvpc"
 }
 resource "ibm_is_vpc_routing_table" "test_ibm_is_vpc_routing_table" {
-	vpc = ibm_is_vpc.testacc_vpc.id
-	name = "routTabletest"
-	route_direct_link_ingress = true
-	route_transit_gateway_ingress = false
-        route_vpc_zone_ingress = false
+  vpc = ibm_is_vpc.testacc_vpc.id
+  name = "routTabletest"
+  route_direct_link_ingress = true
+  route_transit_gateway_ingress = false
+  route_vpc_zone_ingress = false
 }
 
 ```

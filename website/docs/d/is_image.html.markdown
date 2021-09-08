@@ -17,13 +17,21 @@ Retrieve information of an existing IBM Cloud Infrastructure image as a read-onl
 data "ibm_is_image" "ds_image" {
   name = "centos-7.x-amd64"
 }
+```
+```terraform
 
+data "ibm_is_image" "ds_image1" {
+  identifier = "d7bec597-4726-451f-8a63-e62e6f121c32c"
+}
 ```
 
 ## Argument reference
 Review the argument references that you can specify for your data source.
 
-- `name` - (Required, String) The name of the image.
+- `identifier` - (Optional, String) The id of the image.
+    **NOTE** : One of `identifier` or  `name` is required
+- `name` - (Optional, String) The name of the image.
+    **NOTE** : One of `identifier` or  `name` is required
 - `visibility` - (Optional, String) The visibility of the image. Accepted values are `public` or `private`.
 
 ## Attribute reference

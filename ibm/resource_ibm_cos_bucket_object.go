@@ -119,6 +119,11 @@ func resourceIBMCOSBucketObject() *schema.Resource {
 				Default:     true,
 				Description: "COS buckets need to be empty before they can be deleted. force_delete option empty the bucket and delete it.",
 			},
+			"object_sql_url": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Access the object using an SQL Query instance.The reference url is used to perform queries against objects storing structured data.",
+			},
 		},
 	}
 }
@@ -274,7 +279,7 @@ func resourceIBMCOSBucketObjectRead(ctx context.Context, d *schema.ResourceData,
 
 	d.Set("key", objectKey)
 	d.Set("version_id", out.VersionId)
-
+	d.Set("object_sql_url", "cos://"+bucketLocation+"/"+bucketName+"/"+objectKey)
 	return nil
 }
 

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -67,8 +68,7 @@ func resourceIBMSatelliteLocation() *schema.Resource {
 					}
 					return o == n
 				},
-				Description:  "The IBM Cloud metro from which the Satellite location is managed",
-				ValidateFunc: InvokeValidator("ibm_satellite_location", sateLocZone),
+				Description: "The IBM Cloud metro from which the Satellite location is managed",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -185,9 +185,7 @@ func resourceIBMSatelliteLocation() *schema.Resource {
 }
 
 func resourceIBMSatelliteLocationValidator() *ResourceValidator {
-	managedFromAllowedValues := "wdc, lon, fra, wdc04, lon04, fra02"
-
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "tags",
@@ -197,13 +195,6 @@ func resourceIBMSatelliteLocationValidator() *ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
-	validateSchema = append(validateSchema,
-		ValidateSchema{
-			Identifier:                 sateLocZone,
-			ValidateFunctionIdentifier: ValidateAllowedStringValue,
-			Type:                       TypeString,
-			Optional:                   false,
-			AllowedValues:              managedFromAllowedValues})
 
 	ibmSatelliteLocationValidator := ResourceValidator{ResourceName: "ibm_satellite_location", Schema: validateSchema}
 	return &ibmSatelliteLocationValidator
@@ -441,9 +432,23 @@ func waitForLocationToReady(loc string, d *schema.ResourceData, meta interface{}
 			getSatLocOptions := &kubernetesserviceapiv1.GetSatelliteLocationOptions{
 				Controller: ptrToString(loc),
 			}
-			location, response, err := satClient.GetSatelliteLocation(getSatLocOptions)
-			if err != nil {
-				return nil, "", fmt.Errorf("Error Getting location : %s\n%s", err, response)
+
+			var location *kubernetesserviceapiv1.MultishiftGetController
+			var response *core.DetailedResponse
+			var err error
+			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+				location, response, err = satClient.GetSatelliteLocation(getSatLocOptions)
+				if err != nil || location == nil {
+					if response != nil && response.StatusCode == 404 {
+						return resource.RetryableError(err)
+					}
+					return resource.NonRetryableError(err)
+				}
+				return nil
+			})
+
+			if isResourceTimeoutError(err) {
+				location, response, err = satClient.GetSatelliteLocation(getSatLocOptions)
 			}
 
 			if location != nil && *location.State == isLocationDeployFailed {
