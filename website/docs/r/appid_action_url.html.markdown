@@ -3,7 +3,7 @@ subcategory: "AppID Management"
 layout: "ibm"
 page_title: "IBM: AppID Action URL"
 description: |-
-Provides AppID Action URL resource.
+    Provides AppID Action URL resource.
 ---
 
 # ibm_appid_action_url
