@@ -98,13 +98,13 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Description:  "The name of the Cloud Internet database service",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"databases-for-etcd", "databases-for-postgresql", "databases-for-redis", "databases-for-elasticsearch", "databases-for-mongodb", "messages-for-rabbitmq", "databases-for-mysql"}),
+				ValidateFunc: validateAllowedStringValue([]string{"databases-for-etcd", "databases-for-postgresql", "databases-for-cassandra", "databases-for-enterprisedb", "databases-for-redis", "databases-for-elasticsearch", "databases-for-mongodb", "messages-for-rabbitmq", "databases-for-mysql"}),
 			},
 			"plan": {
 				Description:  "The plan type of the Database instance",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"standard"}),
+				ValidateFunc: validateAllowedStringValue([]string{"standard", "enterprise"}),
 			},
 
 			"status": {
