@@ -64,7 +64,7 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 			isSecurityGroupRuleIPVersion: {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Description:  "IP version: ipv4 or ipv6",
+				Description:  "IP version: ipv4",
 				Default:      isSecurityGroupRuleIPVersionDefault,
 				ValidateFunc: InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleIPVersion),
 			},
@@ -173,9 +173,9 @@ func resourceIBMISSecurityGroupRule() *schema.Resource {
 }
 
 func resourceIBMISSecurityGroupRuleValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	direction := "inbound, outbound"
-	ip_version := "ipv4, ipv6"
+	ip_version := "ipv4"
 
 	validateSchema = append(validateSchema,
 		ValidateSchema{
@@ -311,6 +311,7 @@ func resourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
+			d.Set(isSecurityGroupRuleDirection, *rule.Direction)
 			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
 			icmpProtocol := map[string]interface{}{}
@@ -343,6 +344,7 @@ func resourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
+			d.Set(isSecurityGroupRuleDirection, *rule.Direction)
 			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
 			remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
@@ -364,6 +366,7 @@ func resourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
+			d.Set(isSecurityGroupRuleDirection, *rule.Direction)
 			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
 			tcpProtocol := map[string]interface{}{}

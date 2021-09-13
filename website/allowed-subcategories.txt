@@ -1,4 +1,6 @@
+Activity Tracker API
 API Gateway
+AppID Management
 App Configuration
 Catalog Management
 Certificate Manager
@@ -13,6 +15,7 @@ Event Streams
 Functions
 Global Tagging
 IBM Cloud Shell
+Hyper Protect Crypto Service (HPCS)
 Identity & Access Management (IAM)
 Internet services
 Key Management Service

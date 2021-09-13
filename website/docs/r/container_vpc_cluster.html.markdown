@@ -152,8 +152,8 @@ ibm_container_vpc_cluster provides the following [Timeouts](https://www.terrafor
 Review the argument references that you can specify for your resource. 
 
 - `cos_instance_crn` - (Optional, String) Required for OpenShift clusters only. The standard IBM Cloud Object Storage instance CRN to back up the internal registry in your OpenShift on VPC Generation 2 cluster.
-- `disable_public_service_endpoint` - (Optional, Bool) Disable the public service endpoint to prevent public access to the Kubernetes master. Default value is `false`.
-- `entitlement` - (Optional, String) The OpenShift cluster entitlement avoids the OCP license charges incurred. Use Cloud Pak with OCP Licence entitlement to create the OpenShift cluster. **Note** <ul><li> It is set only the first time creation of the cluster, further modifications are not impacted. </li></ul> <ul><li> Set this argument to `cloud_pak` only if you use the cluster with a Cloud Pak that has an OpenShift entitlement.</li></ul>.
+- `disable_public_service_endpoint` - (Optional, Bool) Disable the public service endpoint to prevent public access to the Kubernetes master. Default value is `false`. 
+- `entitlement` - (Optional, String) Entitlement reduces additional OCP Licence cost in OpenShift clusters. Use Cloud Pak with OCP Licence entitlement to create the OpenShift cluster. **Note** <ul><li> It is set only when the first time creation of the cluster, further modifications are not impacted. </li></ul> <ul><li> Set this argument to `cloud_pak` only if you use the cluster with a Cloud Pak that has an OpenShift entitlement.</li></ul>.
 - `force_delete_storage` - (Optional, Bool) If set to **true**,force the removal of persistent storage associated with the cluster during cluster deletion. Default value is **false**. **Note** If `force_delete_storage` parameter is used after provisioning the cluster, then, you need to execute `terraform apply` before `terraform destroy` for `force_delete_storage` parameter to take effect.
 - `flavor` - (Required, Forces new resource, String) The flavor of the VPC worker node that you want to use.
 - `name` - (Required, Forces new resource, String) The name of the cluster.
@@ -177,17 +177,17 @@ Review the argument references that you can specify for your resource.
  
 - `wait_for_worker_update` - (Optional, Bool) Set to **true** to wait and update the Kubernetes  version of worker nodes. **NOTE** Setting wait_for_worker_update to **false** is not recommended. Setting **false** results in upgrading all the worker nodes in the cluster at the same time causing the cluster downtime.
 - `wait_till` - (Optional, String) The creation of a cluster can take a few minutes (for virtual servers) or even hours (for Bare Metal servers) to complete. To avoid long wait times when you run your  Terraform code, you can specify the stage when you want  Terraform to mark the cluster resource creation as completed. Depending on what stage you choose, the cluster creation might not be fully completed and continues to run in the background. However, your  Terraform code can continue to run without waiting for the cluster to be fully created. Supported stages are: <ul><li><strong>`MasterNodeReady`</strong>:  Terraform marks the creation of your cluster complete when the cluster master is in a <code>ready</code> state.</li><li><strong>`OneWorkerNodeReady`</strong>:  Terraform marks the creation of your cluster complete when the master and at least one worker node are in a <code>ready</code> state.</li><li><strong>`IngressReady`</strong>:  Terraform marks the creation of your cluster complete when the cluster master and all worker nodes are in a <code>ready</code> state, and the Ingress subdomain is fully set up.</li></ul> If you do not specify this option, <code>`IngressReady`</code> is used by default. You can set this option only when the cluster is created. If this option is set during a cluster update or deletion, the parameter is ignored by the  Terraform provider.
-- `worker_count` - (Optional, Forces new resource, Integer) The number of worker nodes per zone in the default worker pool. Default value `1`.
+- `worker_count` - (Optional, Forces new resource, Integer) The number of worker nodes per zone in the default worker pool. Default value `1`. **Note** If the requested number of worker nodes is fewer than the minimum 2 worker nodes that are required for an OpenShift cluster, cluster creation does not happen.
 - `worker_labels` (Optional, Map)  Labels on all the workers in the default worker pool.
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group. You can retrieve the value by running `ibmcloud resource groups` or by using the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
 - `tags` (Optional, Array of Strings) A list of tags that you want to associate with your VPC cluster. **Note** For users on account to add tags to a resource, they must be assigned the [appropriate permissions]/docs/account?topic=account-access).
 - `update_all_workers` - (Optional, Bool)  Set to true, if you want to update workers Kubernetes version with the cluster kube_version.
 - `vpc_id` - (Required, Forces new resource, String) The ID of the VPC that you want to use for your cluster. To list available VPCs, run `ibmcloud is vpcs`.
-- `zones` - (Required, List) A nested block describes the zones of this VPC cluster.
+- `zones` - (Required, List) A nested block describes the zones of this VPC cluster's default worker pool.
 
   Nested scheme for `zones`:
-  - `name` - (Required, Forces new resource, String) The name of the zone.
-  - `subnet_id` - (Required, Forces new resource, String) The VPC subnet to assign the cluster.
+  - `name` - (Required, Forces new resource, String) The zone name for the default worker pool in a multizone cluster.
+  - `subnet_id` - (Required, Forces new resource, String) The VPC subnet to assign the cluster's default worker pool.
 
 **Note**
 

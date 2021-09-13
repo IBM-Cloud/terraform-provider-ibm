@@ -1047,6 +1047,18 @@ const (
 	ValidateOverlappingAddress
 )
 
+// MarshalText implements the encoding.TextMarshaler interface.
+//	Without this function, when FunctionalIdentifier is marshaled, it prints 0,1,2.. instead
+//	of printing IntBetween, IntAtLeast, IntAtMost.. in JSON Output
+func (f FunctionIdentifier) MarshalText() ([]byte, error) {
+	return []byte(f.String()), nil
+}
+
+// Use stringer tool to generate this later.
+func (i FunctionIdentifier) String() string {
+	return [...]string{"IntBetween", "IntAtLeast", "IntAtMost", "ValidateAllowedStringValue", "StringLenBetween", "ValidateIPorCIDR", "ValidateAllowedIntValue", "ValidateRegexpLen", "ValidateRegexp", "ValidateNoZeroValues", "ValidateJSONString", "ValidateJSONParam", "ValidateBindedPackageName", "ValidateOverlappingAddress"}[i]
+}
+
 // ValueType -- Copied from Terraform for now. You can refer to Terraform ValueType directly.
 // ValueType is an enum of the type that can be represented by a schema.
 type ValueType int
@@ -1059,6 +1071,16 @@ const (
 	TypeString
 )
 
+// MarshalText implements the encoding.TextMarshaler interface.
+func (vt ValueType) MarshalText() ([]byte, error) {
+	return []byte(vt.String()), nil
+}
+
+// Use Stringer tool to generate this later.
+func (i ValueType) String() string {
+	return [...]string{"TypeInvalid", "TypeBool", "TypeInt", "TypeFloat", "TypeString"}[i]
+}
+
 // Type of constraints required for validation
 type ValueConstraintType int
 
@@ -1070,6 +1092,16 @@ const (
 	AllowedValues
 	MatchesValue
 )
+
+// MarshalText implements the encoding.TextMarshaler interface.
+func (vct ValueConstraintType) MarshalText() ([]byte, error) {
+	return []byte(vct.String()), nil
+}
+
+// Use Stringer tool to generate this later.
+func (i ValueConstraintType) String() string {
+	return [...]string{"MinValue", "MaxValue", "MinValueLength", "MaxValueLength", "AllowedValues", "MatchesValue"}[i]
+}
 
 // Schema is used to describe the validation schema.
 type ValidateSchema struct {
@@ -1281,21 +1313,6 @@ func (vs ValidateSchema) GetValue(valueConstraint ValueConstraintType) interface
 	default:
 		panic(fmt.Sprintf("unknown type %s", vs.Type))
 	}
-}
-
-// Use stringer tool to generate this later.
-func (i FunctionIdentifier) String() string {
-	return [...]string{"IntBetween", "IntAtLeast", "IntAtMost"}[i]
-}
-
-// Use Stringer tool to generate this later.
-func (i ValueType) String() string {
-	return [...]string{"TypeInvalid", "TypeBool", "TypeInt", "TypeFloat", "TypeString"}[i]
-}
-
-// Use Stringer tool to generate this later.
-func (i ValueConstraintType) String() string {
-	return [...]string{"MinValue", "MaxValue", "MinValueLength", "MaxValueLength", "AllowedValues", "MatchesValue"}[i]
 }
 
 // Zero returns the zero value for a type.

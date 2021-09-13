@@ -21,6 +21,7 @@ const (
 	isVolumeProfileName          = "profile"
 	isVolumeZone                 = "zone"
 	isVolumeEncryptionKey        = "encryption_key"
+	isVolumeEncryptionType       = "encryption_type"
 	isVolumeCapacity             = "capacity"
 	isVolumeIops                 = "iops"
 	isVolumeCrn                  = "crn"
@@ -84,9 +85,14 @@ func resourceIBMISVolume() *schema.Resource {
 			isVolumeEncryptionKey: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				ForceNew:    true,
 				Description: "Volume encryption key info",
+			},
+
+			isVolumeEncryptionType: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Volume encryption type info",
 			},
 
 			isVolumeCapacity: {
@@ -195,7 +201,7 @@ func resourceIBMISVolume() *schema.Resource {
 
 func resourceIBMISVolumeValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isVolumeName,
@@ -333,6 +339,9 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if vol.EncryptionKey != nil {
 		d.Set(isVolumeEncryptionKey, vol.EncryptionKey.CRN)
 	}
+	if vol.Encryption != nil {
+		d.Set(isVolumeEncryptionType, vol.Encryption)
+	}
 	d.Set(isVolumeIops, *vol.Iops)
 	d.Set(isVolumeCapacity, *vol.Capacity)
 	d.Set(isVolumeCrn, *vol.CRN)
@@ -368,7 +377,7 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(ResourceCRN, *vol.CRN)
 	d.Set(ResourceStatus, *vol.Status)
 	if vol.ResourceGroup != nil {
-		d.Set(ResourceGroupName, *vol.ResourceGroup.Name)
+		d.Set(ResourceGroupName, vol.ResourceGroup.Name)
 		d.Set(isVolumeResourceGroup, *vol.ResourceGroup.ID)
 	}
 	return nil

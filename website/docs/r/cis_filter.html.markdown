@@ -8,7 +8,7 @@ description: |-
 
 # ibm_cis_filter
 
-Provides a IBM CIS Filter. This resource is associated with an IBM Cloud Internet Services instance and a CIS Domain resource. It allows to create, update, delete filter of a domain of a CIS instance
+Provides a IBM CIS Filter. This resource is associated with an IBM Cloud Internet Services (CIS) instance and a CIS Domain resource. It allows to create, update, delete filter of a domain of a CIS instance.
 
 ## Example Usage
 
@@ -29,11 +29,11 @@ resource "ibm_cis_filter" "test" {
 
 The following arguments are supported:
 
-- `cis_id` - (Required,String) The ID of the CIS service instance
-- `domain_id` - (Required,String) The ID of the domain to add the Filter.
-- `expression` - (Required,String) The expression of filter.
-- `paused` - (Optional, Bool). Whether this filter is currently disabled.
-- `description` - (Optional, String) Some useful information about this filter to help identify the purpose of it.
+- `cis_id` - (Required, String) The ID of the CIS service instance.
+- `domain_id` - (Required, String) The ID of the domain to add the Filter.
+- `expression` - (Required, String) The expression of filter.
+- `paused` - (Optional, Bool) Whether this filter is currently disabled.
+- `description` - (Optional, String) The information about this filter to help identify the purpose of it.
 
 ## Attributes Reference
 
@@ -54,9 +54,15 @@ The Domain ID and CRN will be located on the **Overview** page of the Internet S
 
 - **Filter ID** is a 32 digit character string of the form: `d72c91492cc24d8286fb713d406abe91`. 
 
+**Syntax**
+
 ```
 $ terraform import ibm_cis_filter.myorg <filter_id>:<domain-id>:<crn>
+```
 
+**Example**
+
+```
 $ terraform import ibm_cis_filter.myorg
 d72c91492cc24d8286fb713d406abe91:0b30801280dc2dacac1c3960c33b9ccb:crn:v1:bluemix:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:9054ad06-3485-421a-9300-fe3fb4b79e1d::
 ```

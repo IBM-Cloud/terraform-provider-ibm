@@ -6,7 +6,7 @@ description: |-
   Manages IBM snapshot.
 ---
 
-# ibm\_is_snapshot
+# ibm_is_snapshot
 
 Create, update, or delete a snapshot. For more information, about subnet, see [creating snapshots](https://cloud.ibm.com/docs/vpc?topic=vpc-snapshots-vpc-create).
 
@@ -48,9 +48,21 @@ resource "ibm_is_instance" "testacc_instance" {
 resource "ibm_is_snapshot" "testacc_snapshot" {
   name            = "testsnapshot"
   source_volume   = ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
+
+  //User can configure timeouts
+  timeouts {
+    create = "15m"
+    delete = "15m"
+  }
 }
 
 ```
+
+## Timeouts
+The `ibm_is_snapshot` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+
+- **create** - (Default 10 minutes) Used for creating Snapshot.
+- **delete** - (Default 10 minutes) Used for deleting Snaphsot.
 
 
 ## Argument reference
@@ -65,12 +77,12 @@ In addition to all argument reference list, you can access the following attribu
 
 - `bootable` - (Bool) Indicates if a boot volume attachment can be created with a volume created from this snapshot.
 - `crn` - (String) The CRN for this snapshot.
-- `encryption` - (String) The type of encryption used on the source volume(One of [ **provider_managed**, **user_managed** ]).
+- `encryption` - (String) The type of encryption used on the source volume. Supported values are **provider_managed**, **user_managed**.
 - `href` - (String) The URL for this snapshot.
 - `id` - (String) The unique identifier for this snapshot.
 - `lifecycle_state` - (String) The lifecycle state of this snapshot. Supported values are **deleted**, **deleting**, **failed**, **pending**, **stable**, **updating**, **waiting**, **suspended**.
 - `minimum_capacity` - (Integer) The minimum capacity of a volume created from this snapshot. When a snapshot is created, this will be set to the capacity of the source_volume.
-- `operating_system` - (String) The globally unique name for the operating system included in this image.
+- `operating_system` - (String) The globally unique name for an Operating System included in this image.
 - `resource_type` - (String) The resource type.
 - `size` - (Integer) The size of this snapshot rounded up to the next gigabyte.
 - `source_image` - (String) If present, the unique identifier for the image from which the data on this volume was most directly provisioned.

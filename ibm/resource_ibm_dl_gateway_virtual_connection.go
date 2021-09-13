@@ -100,7 +100,7 @@ func resourceIBMDLGatewayVC() *schema.Resource {
 }
 func resourceIBMdlGatewayVCValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	vcType := "classic, vpc"
 	validateSchema = append(validateSchema,
 		ValidateSchema{

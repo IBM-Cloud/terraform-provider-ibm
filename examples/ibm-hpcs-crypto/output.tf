@@ -1,5 +1,5 @@
 output "InstanceGUID" {
-  value = data.ibm_resource_instance.hpcs_instance.guid
+  value = ibm_hpcs.hpcs.guid
 }
 output "keyID" {
   value = ibm_kms_key.key.id

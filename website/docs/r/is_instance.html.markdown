@@ -266,6 +266,7 @@ Review the argument references that you can specify for your resource.
      - `snapshot` conflicts with `image` id and `instance_template`
 - `dedicated_host` - (Optional, Forces new resource, String) The placement restrictions to use the virtual server instance. Unique ID of the dedicated host where the instance id placed.
 - `dedicated_host_group` - (Optional, Forces new resource, String) The placement restrictions to use for the virtual server instance. Unique ID of the dedicated host group where the instance is placed.
+- `placement_group` - (Optional, string) Unique Identifier of the Placement Group for restricting the placement of the instance
 - `force_recovery_time` - (Optional, Integer) Define timeout (in minutes), to force the `is_instance` to recover from a perpetual "starting" state, during provisioning. And to force the is_instance to recover from a perpetual "stopping" state, during removal of user access. **Note** The force_recovery_time is used to retry multiple times until timeout.
 - `image` - (Optional, String) The ID of the virtual server image that you want to use. To list supported images, run `ibmcloud is images`.
   **Note** 
@@ -332,6 +333,14 @@ In addition to all argument reference list, you can access the following attribu
   - `manufacture` - (String) The manufacturer of the GPU.
   - `memory`- (Integer) The amount of memory of the GPU in gigabytes.
   - `model` - (String) The model of the GPU.
+- `placement_target` - The placement restrictions for the virtual server instance.
+  - `crn` - The CRN of the placement target
+  - `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
+    `more_info` - Link to documentation about deleted resources.
+  - `href` - The URL for this placement target
+  - `id` - The unique identifier for this placement target
+  - `name` - The unique user-defined name for this placement target
+  - `resource_type` - (String) The resource type.
 - `id` - (String) The ID of the instance.
 - `memory`- (Integer) The amount of memory that is allocated to the instance in gigabytes.
 - `network_interfaces`- (List of Strings) A list of more network interfaces that are attached to the instance.
@@ -353,6 +362,11 @@ In addition to all argument reference list, you can access the following attribu
   - `security_groups`-List of strings-A list of security groups that are used in the primary network interface.
   - `primary_ipv4_address` - (String) The primary IPv4 address.
 - `status` - (String) The status of the instance.
+- `status_reasons` - (List) Array of reasons for the current status.
+
+  Nested scheme for `status_reasons`:
+  - `code` - (String) A string with an underscore as a special character identifying the status reason.
+  - `message` - (String) An explanation of the status reason.
 - `volume_attachments`- (List of Strings) A list of volume attachments for the instance.
 
   Nested scheme for `volume_attachements`:

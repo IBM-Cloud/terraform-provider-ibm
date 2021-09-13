@@ -227,7 +227,7 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 
 func resourceIBMISLBListenerPolicyValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	action := "forward, redirect, reject"
 	validateSchema = append(validateSchema,
 		ValidateSchema{
@@ -841,10 +841,31 @@ func lbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, listene
 	if policy.Rules != nil {
 		policyRules := policy.Rules
 		rulesInfo := make([]map[string]interface{}, 0)
-		for _, index := range policyRules {
+		for _, policyRuleItem := range policyRules {
+			ruleId := *policyRuleItem.ID
+			getLbListenerPolicyRuleOptions := &vpcv1.GetLoadBalancerListenerPolicyRuleOptions{
+				LoadBalancerID: &lbID,
+				ListenerID:     &listenerID,
+				PolicyID:       &id,
+				ID:             &ruleId,
+			}
+
+			//Getting lb listener policy rule
+			rule, response, err := sess.GetLoadBalancerListenerPolicyRule(getLbListenerPolicyRuleOptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					d.SetId("")
+					return nil
+				}
+				return err
+			}
 
 			l := map[string]interface{}{
-				isLBListenerPolicyRuleID: index.ID,
+				isLBListenerPolicyRuleCondition: rule.Condition,
+				isLBListenerPolicyRuleType:      rule.Type,
+				isLBListenerPolicyRuleField:     rule.Field,
+				isLBListenerPolicyRuleValue:     rule.Value,
+				isLBListenerPolicyRuleID:        rule.ID,
 			}
 			rulesInfo = append(rulesInfo, l)
 		}

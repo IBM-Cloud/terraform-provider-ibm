@@ -57,7 +57,7 @@ resource "ibm_ob_monitoring" "test2" {
 
 ibm_ob_monitoring provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-- **create**: The enablement of the feature is considered `failed` if no response is received for 10 minutes.
+- **create**: The enablement of the feature is considered `failed` if no response is received for 45 minutes.
 - **delete**: The delete of the feature is considered `failed` if no response is received for 10 minutes. 
 - **update**: The update of the feature is considered `failed` if no response is received for 10 minutes. 
 

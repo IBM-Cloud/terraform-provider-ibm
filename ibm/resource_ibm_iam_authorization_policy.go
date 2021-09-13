@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 
@@ -211,10 +210,9 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 		roles,
 		[]iampolicymanagementv1.PolicyResource{*policyResource},
 	)
-	authPolicy, _, err := iampapClient.CreatePolicy(createPolicyOptions)
-
+	authPolicy, resp, err := iampapClient.CreatePolicy(createPolicyOptions)
 	if err != nil {
-		return fmt.Errorf("Error creating authorization policy: %s", err)
+		return fmt.Errorf("[ERROR] Error creating authorization policy: %s %s", err, resp)
 	}
 
 	d.SetId(*authPolicy.ID)
@@ -233,9 +231,9 @@ func resourceIBMIAMAuthorizationPolicyRead(d *schema.ResourceData, meta interfac
 		PolicyID: core.StringPtr(d.Id()),
 	}
 
-	authorizationPolicy, _, err := iampapClient.GetPolicy(getPolicyOptions)
+	authorizationPolicy, resp, err := iampapClient.GetPolicy(getPolicyOptions)
 	if err != nil {
-		return fmt.Errorf("Error retrieving authorizationPolicy: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving authorizationPolicy: %s %s", err, resp)
 	}
 	roles := make([]string, len(authorizationPolicy.Roles))
 	for i, role := range authorizationPolicy.Roles {
@@ -272,10 +270,10 @@ func resourceIBMIAMAuthorizationPolicyDelete(d *schema.ResourceData, meta interf
 	deletePolicyOptions := &iampolicymanagementv1.DeletePolicyOptions{
 		PolicyID: core.StringPtr(authorizationPolicyID),
 	}
-	_, err = iampapClient.DeletePolicy(deletePolicyOptions)
+	resp, err := iampapClient.DeletePolicy(deletePolicyOptions)
 	if err != nil {
 		log.Printf(
-			"Error deleting authorization policy: %s", err)
+			"Error deleting authorization policy: %s, %s", err, resp)
 	}
 
 	d.SetId("")
@@ -297,7 +295,7 @@ func resourceIBMIAMAuthorizationPolicyExists(d *schema.ResourceData, meta interf
 		if resp != nil && resp.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s\n%s", err, resp)
+		return false, fmt.Errorf("[ERROR] Error communicating with the API: %s\n%s", err, resp)
 	}
 
 	if authorizationPolicy != nil && authorizationPolicy.State != nil && *authorizationPolicy.State == "deleted" {
@@ -307,23 +305,27 @@ func resourceIBMIAMAuthorizationPolicyExists(d *schema.ResourceData, meta interf
 	return *authorizationPolicy.ID == d.Id(), nil
 }
 
-// TODO: Refactor to remove ListAuthorizationRoles (which lives in bluemix-go-sdk) ?
 func getAuthorizationRolesByName(roleNames []string, sourceServiceName string, targetServiceName string, meta interface{}) ([]iampolicymanagementv1.PolicyRole, error) {
 
-	iamClient, err := meta.(ClientSession).IAMAPI()
+	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return []iampolicymanagementv1.PolicyRole{}, err
 	}
-
-	iamRepo := iamClient.ServiceRoles()
-	roles, err := iamRepo.ListAuthorizationRoles(sourceServiceName, targetServiceName)
-	convertedRoles := convertRoleModels(roles)
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
 		return []iampolicymanagementv1.PolicyRole{}, err
 	}
-
-	filteredRoles := []iampolicymanagementv1.PolicyRole{}
-	filteredRoles, err = getRolesFromRoleNames(roleNames, convertedRoles)
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID:   &userDetails.userAccount,
+		ServiceName: &targetServiceName,
+	}
+	roleList, resp, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
+	if err != nil || roleList == nil {
+		return []iampolicymanagementv1.PolicyRole{}, fmt.Errorf("[ERROR] Error in listing roles %s, %s", err, resp)
+	}
+	serviceRoles := roleList.ServiceRoles
+	convertedRoles := convertRoleModels(serviceRoles)
+	filteredRoles, err := getRolesFromRoleNames(roleNames, convertedRoles)
 	if err != nil {
 		return []iampolicymanagementv1.PolicyRole{}, err
 	}
@@ -331,12 +333,12 @@ func getAuthorizationRolesByName(roleNames []string, sourceServiceName string, t
 }
 
 // ConvertRoleModels will transform role models returned from "/v1/roles" to the model used by policy
-func convertRoleModels(roles []models.PolicyRole) []iampolicymanagementv1.PolicyRole {
-	results := make([]iampolicymanagementv1.PolicyRole, len(roles))
-	for i, r := range roles {
+func convertRoleModels(serviceRoles []iampolicymanagementv1.Role) []iampolicymanagementv1.PolicyRole {
+	results := make([]iampolicymanagementv1.PolicyRole, len(serviceRoles))
+	for i, r := range serviceRoles {
 		results[i] = iampolicymanagementv1.PolicyRole{
-			RoleID:      core.StringPtr(r.ID.String()),
-			DisplayName: core.StringPtr(r.DisplayName),
+			RoleID:      r.CRN,
+			DisplayName: r.DisplayName,
 		}
 	}
 	return results

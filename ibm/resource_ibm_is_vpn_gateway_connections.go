@@ -206,7 +206,7 @@ func resourceIBMISVPNGatewayConnection() *schema.Resource {
 }
 
 func resourceIBMISVPNGatewayConnectionValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	action := "restart, clear, hold, none"
 
 	validateSchema = append(validateSchema,

@@ -22,7 +22,6 @@ resource "ibm_container_worker_pool" "testacc_workerpool" {
   size_per_zone    = 1
   hardware         = "shared"
   disk_encryption  = "true"
-  region           = "eu-de"
 
   labels = {
     "test" = "test-pool"
@@ -90,6 +89,7 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the worker pool in the format `<cluster_name_id>/<worker_pool_id>`. **Note** To reference the worker pool ID in other resources use below interpolation syntax. For example, 
 `: ${element(split("/",ibm_container_worker_pool.testacc_workerpool.id),1)}`
 - `state` - (String) The state of the worker pool.
+- `worker_pool_id` - (String) The unique identifier of the worker pool.
 - `zones` - List - A list of zones that are attached to the worker pool. 
 
   Nested scheme for `zones`:

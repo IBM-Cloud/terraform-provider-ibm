@@ -45,10 +45,27 @@ func resourceIBMISFloatingIP() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return resourceTagsCustomizeDiff(diff)
-			},
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					if diff.HasChange(isFloatingIPTarget) {
+						old, new := diff.GetChange(isFloatingIPTarget)
+						sess, err := vpcClient(v)
+						if err != nil {
+							return err
+						}
+						if checkIfZoneChanged(old.(string), new.(string), sess) {
+							diff.ForceNew(isFloatingIPTarget)
+						}
+					}
+					return nil
+				},
+			),
 		),
 
 		Schema: map[string]*schema.Schema{
@@ -147,7 +164,7 @@ func vpcClient(meta interface{}) (*vpcv1.VpcV1, error) {
 
 func resourceIBMISFloatingIPValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isFloatingIPName,
@@ -493,4 +510,41 @@ func isInstanceFloatingIPRefreshFunc(floatingipC *vpcv1.VpcV1, id string) resour
 
 		return instance, isFloatingIPPending, nil
 	}
+}
+
+func checkIfZoneChanged(oldNic, newNic string, floatingipC *vpcv1.VpcV1) bool {
+	var oldZone, newZone string
+	listInstancesOptions := &vpcv1.ListInstancesOptions{}
+	start := ""
+	allrecs := []vpcv1.Instance{}
+	for {
+
+		if start != "" {
+			listInstancesOptions.Start = &start
+		}
+
+		instances, _, err := floatingipC.ListInstances(listInstancesOptions)
+		if err != nil {
+			return false
+		}
+		start = GetNext(instances.Next)
+		allrecs = append(allrecs, instances.Instances...)
+		if start == "" {
+			break
+		}
+	}
+	for _, instance := range allrecs {
+		for _, nic := range instance.NetworkInterfaces {
+			if oldNic == *nic.ID {
+				oldZone = *instance.Zone.Name
+			}
+			if newNic == *nic.ID {
+				newZone = *instance.Zone.Name
+			}
+		}
+	}
+	if newZone != oldZone {
+		return true
+	}
+	return false
 }

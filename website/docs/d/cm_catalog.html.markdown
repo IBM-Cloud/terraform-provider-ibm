@@ -1,20 +1,20 @@
 ---
 subcategory: "Catalog Management"
 layout: "ibm"
-page_title: "IBM : cm_catalog"
+page_title: "IBM : ibm_cm_catalog"
 description: |-
-  Get information about cm_catalog.
+  Get information about ibm_cm_catalog.
 ---
 
 # ibm_cm_catalog
 
-Create, modify, or delete an `cm_catalog` resources. You can manage the settings for all catalogs across your account. For more information, about managing catalog, refer to [catalog management settings](https://cloud.ibm.com/docs/account?topic=account-account-getting-started).
+Provides a read-only data source for `ibm_cm_catalog`. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 
 ## Example usage
 
 ```terraform
-data "cm_catalog" "cm_catalog" {
+data "ibm_cm_catalog" "cm_catalog" {
 	catalog_identifier = "catalog_identifier"
 }
 ```
@@ -30,8 +30,9 @@ In addition to the argument reference list, you can access the following attribu
 
 - `catalog_icon_url` - (String) The URL for an icon associated with the catalog.
 - `crn` - (String) The CRN associated with the catalog.
-- `id` - (String) The unique identifier of the `cm_catalog`.
+- `id` - (String) The unique identifier of the `ibm_cm_catalog`.
 - `label` - (String) Display the name in the requested language.
+- `kind` - (String) Kind of catalog, offering or vpe.
 - `offerings_url` - (String) URL path to the offerings.
 - `short_description` - (String) The description in the requested language.
 - `tags` - (String) The list of tags associated with this catalog.

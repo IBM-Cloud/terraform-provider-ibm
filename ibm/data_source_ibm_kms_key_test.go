@@ -29,6 +29,28 @@ func TestAccIBMKMSKeyDataSource_basic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMKMSKeyDataSource_Key(t *testing.T) {
+	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
+	// bucketName := fmt.Sprintf("bucket", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMKmsKeyDataSourceKeyConfig(instanceName, keyName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_kms_key.test", "keys.0.name", keyName),
+					resource.TestCheckResourceAttr("data.ibm_kms_key.test2", "keys.0.name", keyName),
+					resource.TestCheckResourceAttr("data.ibm_kms_key.test2", "keys.1.name", keyName),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMKMSKeyDataSourceHPCS_basic(t *testing.T) {
 	// bucketName := fmt.Sprintf("bucket", acctest.RandIntRange(10, 100))
 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
@@ -69,6 +91,44 @@ func TestAccIBMKmsDataSourceKeyPolicy_basic(t *testing.T) {
 	})
 }
 
+func testAccCheckIBMKmsKeyDataSourceKeyConfig(instanceName, keyName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_instance" "kms_instance" {
+		name              = "%s"
+		service           = "kms"
+		plan              = "tiered-pricing"
+		location          = "us-south"
+	  }
+	resource "ibm_kms_key" "test" {
+		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		key_name = "%s"
+		standard_key =  true
+		force_delete = true
+	}
+	resource "ibm_kms_key" "test2" {
+		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		key_name = "${ibm_kms_key.test.key_name}"
+		standard_key =  true
+		force_delete = true
+	}
+	resource "ibm_kms_key" "test3" {
+		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		key_name = "${ibm_kms_key.test.key_name}"
+		standard_key =  true
+		force_delete = true
+	}
+	data "ibm_kms_key" "test" {
+		instance_id = "${ibm_kms_key.test3.instance_id}"
+		key_id = "${ibm_kms_key.test.key_id}"
+	}
+	data "ibm_kms_key" "test2" {
+		instance_id = "${ibm_kms_key.test3.instance_id}"
+		limit = 2
+		key_name = "${ibm_kms_key.test.key_name}"
+	}
+`, instanceName, keyName)
+}
+
 func testAccCheckIBMKmsKeyDataSourceConfig(instanceName, keyName string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_instance" "kms_instance" {
@@ -84,8 +144,8 @@ func testAccCheckIBMKmsKeyDataSourceConfig(instanceName, keyName string) string 
 		force_delete = true
 	}
 	data "ibm_kms_key" "test" {
-		instance_id = "${ibm_kms_key.test.instance_id}" 
-		key_name = "${ibm_kms_key.test.key_name}" 
+		instance_id = "${ibm_kms_key.test.instance_id}"
+		key_name = "${ibm_kms_key.test.key_name}"
 	}
 `, instanceName, keyName)
 }
@@ -99,10 +159,10 @@ func testAccCheckIBMKmsKeyDataSourceHpcsConfig(hpcsInstanceID, KeyName string) s
 		force_delete = true
 	}
 	data "ibm_kms_key" "test" {
-		instance_id = "${ibm_kms_key.test.instance_id}" 
-		key_name = "${ibm_kms_key.test.key_name}" 
+		instance_id = "${ibm_kms_key.test.instance_id}"
+		key_name = "${ibm_kms_key.test.key_name}"
 	}
-	
+
 `, hpcsInstanceID, KeyName)
 }
 
@@ -114,7 +174,7 @@ func testAccCheckIBMKmsDataSourceKeyPolicyConfig(instanceName, keyName string, i
 		plan     = "tiered-pricing"
 		location = "us-south"
 	}
-	  
+
 	resource "ibm_kms_key" "test" {
 		instance_id = ibm_resource_instance.kp_instance.guid
 		key_name       = "%s"
@@ -130,7 +190,7 @@ func testAccCheckIBMKmsDataSourceKeyPolicyConfig(instanceName, keyName string, i
 	}
 	data "ibm_kms_key" "test" {
 		instance_id = "${ibm_kms_key.test.instance_id}"
-		key_name = "${ibm_kms_key.test.key_name}" 
+		key_name = "${ibm_kms_key.test.key_name}"
 	}
 `, instanceName, keyName, interval_month, enabled)
 }

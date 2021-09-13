@@ -17,18 +17,19 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
+	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
-	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
 
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -36,7 +37,6 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
@@ -1833,17 +1833,24 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 		remove[i] = fmt.Sprint(v)
 	}
 
-	schematicTags := os.Getenv("IC_ENV_TAGS")
-	var envTags []string
-	if schematicTags != "" {
-		envTags = strings.Split(schematicTags, ",")
-		add = append(add, envTags...)
+	if strings.TrimSpace(tagType) == "" || tagType == "user" {
+		schematicTags := os.Getenv("IC_ENV_TAGS")
+		var envTags []string
+		if schematicTags != "" {
+			envTags = strings.Split(schematicTags, ",")
+			add = append(add, envTags...)
+		}
 	}
 
 	if len(remove) > 0 {
-		detachTagOptions := &globaltaggingv1.DetachTagOptions{
-			Resources: resources,
-			TagNames:  remove,
+		detachTagOptions := &globaltaggingv1.DetachTagOptions{}
+		detachTagOptions.Resources = resources
+		detachTagOptions.TagNames = remove
+		if len(tagType) > 0 {
+			detachTagOptions.TagType = ptrToString(tagType)
+			if tagType == service {
+				detachTagOptions.AccountID = ptrToString(acctID)
+			}
 		}
 
 		_, resp, err := gtClient.DetachTag(detachTagOptions)
@@ -1991,6 +1998,27 @@ func resourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 	return nil
 }
 
+func resourceIBMISLBPoolCookieValidate(diff *schema.ResourceDiff) error {
+	_, sessionPersistenceTypeIntf := diff.GetChange(isLBPoolSessPersistenceType)
+	_, sessionPersistenceCookieNameIntf := diff.GetChange(isLBPoolSessPersistenceAppCookieName)
+	sessionPersistenceType := sessionPersistenceTypeIntf.(string)
+	sessionPersistenceCookieName := sessionPersistenceCookieNameIntf.(string)
+
+	if sessionPersistenceType == "app_cookie" {
+		if sessionPersistenceCookieName == "" {
+			return fmt.Errorf("Load Balancer Pool: %s is required for %s 'app_cookie'", isLBPoolSessPersistenceAppCookieName, isLBPoolSessPersistenceType)
+		}
+		if strings.HasPrefix(sessionPersistenceCookieName, "IBM") {
+			return fmt.Errorf("Load Balancer Pool: %s starting with IBM are not allowed", isLBPoolSessPersistenceAppCookieName)
+		}
+	}
+
+	if sessionPersistenceCookieName != "" && sessionPersistenceType != "app_cookie" {
+		return fmt.Errorf("Load Balancer Pool: %s is only applicable for %s 'app_cookie'.", isLBPoolSessPersistenceAppCookieName, isLBPoolSessPersistenceType)
+	}
+	return nil
+}
+
 func resourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
 
 	if volsintf, ok := diff.GetOk("volume_attachments"); ok {
@@ -2106,21 +2134,23 @@ func GetNextIAM(next interface{}) string {
 
 /* Return the default resource group */
 func defaultResourceGroup(meta interface{}) (string, error) {
-	rsMangClient, err := meta.(ClientSession).ResourceManagementAPIv2()
+
+	rMgtClient, err := meta.(ClientSession).ResourceManagerV2API()
 	if err != nil {
 		return "", err
 	}
-	resourceGroupQuery := managementv2.ResourceGroupQuery{
-		Default: true,
+	defaultGrp := true
+	resourceGroupList := rg.ListResourceGroupsOptions{
+		Default: &defaultGrp,
 	}
-	grpList, err := rsMangClient.ResourceGroup().List(&resourceGroupQuery)
-	if err != nil {
-		return "", err
+	grpList, resp, err := rMgtClient.ListResourceGroups(&resourceGroupList)
+	if err != nil || grpList == nil || grpList.Resources == nil {
+		return "", fmt.Errorf("[ERROR] Error retrieving resource group: %s %s", err, resp)
 	}
-	if len(grpList) <= 0 {
-		return "", fmt.Errorf("The default resource group could not be found. Make sure you have required permissions to access the resource group.")
+	if len(grpList.Resources) <= 0 {
+		return "", fmt.Errorf("[ERROR] The default resource group could not be found. Make sure you have required permissions to access the resource group")
 	}
-	return grpList[0].ID, nil
+	return *grpList.Resources[0].ID, nil
 }
 
 func flattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
@@ -2128,6 +2158,7 @@ func flattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
 	rotationMap := make([]map[string]interface{}, 0, 1)
 	dualAuthMap := make([]map[string]interface{}, 0, 1)
 	for _, policy := range policies {
+		log.Println("Policy CRN Data =============>", policy.CRN)
 		policyCRNData := strings.Split(policy.CRN, ":")
 		policyInstance := map[string]interface{}{
 			"id":               policyCRNData[9],
@@ -2137,7 +2168,6 @@ func flattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
 			"updated_by":       policy.UpdatedBy,
 			"last_update_date": (*(policy.UpdatedAt)).String(),
 		}
-
 		if policy.Rotation != nil {
 			policyInstance["interval_month"] = policy.Rotation.Interval
 			rotationMap = append(rotationMap, policyInstance)
@@ -2152,6 +2182,36 @@ func flattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
 	}
 	policyMap = append(policyMap, tempMap)
 	return policyMap
+}
+
+func flattenKeyIndividualPolicy(policy string, policies []kp.Policy) []map[string]interface{} {
+	rotationMap := make([]map[string]interface{}, 0, 1)
+	dualAuthMap := make([]map[string]interface{}, 0, 1)
+	for _, policy := range policies {
+		log.Println("Policy CRN Data =============>", policy.CRN)
+		policyCRNData := strings.Split(policy.CRN, ":")
+		policyInstance := map[string]interface{}{
+			"id":               policyCRNData[9],
+			"crn":              policy.CRN,
+			"created_by":       policy.CreatedBy,
+			"creation_date":    (*(policy.CreatedAt)).String(),
+			"updated_by":       policy.UpdatedBy,
+			"last_update_date": (*(policy.UpdatedAt)).String(),
+		}
+		if policy.Rotation != nil {
+			policyInstance["interval_month"] = policy.Rotation.Interval
+			rotationMap = append(rotationMap, policyInstance)
+		} else if policy.DualAuth != nil {
+			policyInstance["enabled"] = *(policy.DualAuth.Enabled)
+			dualAuthMap = append(dualAuthMap, policyInstance)
+		}
+	}
+	if policy == "rotation" {
+		return rotationMap
+	} else if policy == "dual_auth_delete" {
+		return dualAuthMap
+	}
+	return nil
 }
 
 // IgnoreSystemLabels returns non-IBM tag keys.
@@ -2509,13 +2569,16 @@ func getIBMUniqueId(accountID, userEmail string, meta interface{}) (string, erro
 func immutableResourceCustomizeDiff(resourceList []string, diff *schema.ResourceDiff) error {
 
 	for _, rName := range resourceList {
-		if diff.Id() != "" && diff.HasChange(rName) {
+		if diff.Id() != "" && diff.HasChange(rName) && rName != sateLocZone {
+			return fmt.Errorf("'%s' attribute is immutable and can't be changed", rName)
+		}
+		if diff.Id() != "" && diff.HasChange(rName) && rName == sateLocZone {
 			o, n := diff.GetChange(rName)
 			old := o.(string)
 			new := n.(string)
 			if len(old) > 0 && old != new {
 				if !(rName == sateLocZone && strings.Contains(old, new)) {
-					return fmt.Errorf("'%s' attribute is immutable and can't be changed from %s to %s.", rName, old, new)
+					return fmt.Errorf("'%s' attribute is immutable and can't be changed from %s to %s", rName, old, new)
 				}
 			}
 		}

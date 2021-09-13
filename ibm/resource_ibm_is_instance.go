@@ -27,7 +27,6 @@ const (
 	isInstanceNicPortSpeed            = "port_speed"
 	isInstanceNicAllowIPSpoofing      = "allow_ip_spoofing"
 	isInstanceNicPrimaryIpv4Address   = "primary_ipv4_address"
-	isInstanceNicPrimaryIpv6Address   = "primary_ipv6_address"
 	isInstanceNicSecondaryAddress     = "secondary_addresses"
 	isInstanceNicSecurityGroups       = "security_groups"
 	isInstanceNicSubnet               = "subnet"
@@ -56,14 +55,16 @@ const (
 	isInstanceDisks                   = "disks"
 	isInstanceDedicatedHost           = "dedicated_host"
 	isInstanceStatus                  = "status"
-
-	isEnableCleanDelete        = "wait_before_delete"
-	isInstanceProvisioning     = "provisioning"
-	isInstanceProvisioningDone = "done"
-	isInstanceAvailable        = "available"
-	isInstanceDeleting         = "deleting"
-	isInstanceDeleteDone       = "done"
-	isInstanceFailed           = "failed"
+	isInstanceStatusReasons           = "status_reasons"
+	isInstanceStatusReasonsCode       = "code"
+	isInstanceStatusReasonsMessage    = "message"
+	isEnableCleanDelete               = "wait_before_delete"
+	isInstanceProvisioning            = "provisioning"
+	isInstanceProvisioningDone        = "done"
+	isInstanceAvailable               = "available"
+	isInstanceDeleting                = "deleting"
+	isInstanceDeleteDone              = "done"
+	isInstanceFailed                  = "failed"
 
 	isInstanceActionStatusStopping = "stopping"
 	isInstanceActionStatusStopped  = "stopped"
@@ -86,6 +87,7 @@ const (
 	isPlacementTargetDedicatedHost      = "dedicated_host"
 	isPlacementTargetDedicatedHostGroup = "dedicated_host_group"
 	isInstancePlacementTarget           = "placement_target"
+	isPlacementTargetPlacementGroup     = "placement_group"
 )
 
 func resourceIBMISInstance() *schema.Resource {
@@ -178,6 +180,30 @@ func resourceIBMISInstance() *schema.Resource {
 				Computed:    true,
 				Optional:    true,
 				Description: "Profile info",
+			},
+
+			isPlacementTargetDedicatedHost: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{isPlacementTargetDedicatedHostGroup, isPlacementTargetPlacementGroup},
+				Description:   "Unique Identifier of the Dedicated Host where the instance will be placed",
+			},
+
+			isPlacementTargetDedicatedHostGroup: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{isPlacementTargetDedicatedHost, isPlacementTargetPlacementGroup},
+				Description:   "Unique Identifier of the Dedicated Host Group where the instance will be placed",
+			},
+
+			isPlacementTargetPlacementGroup: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{isPlacementTargetDedicatedHost, isPlacementTargetDedicatedHostGroup},
+				Description:   "Unique Identifier of the Placement Group for restricting the placement of the instance",
 			},
 
 			isInstanceKeys: {
@@ -355,9 +381,10 @@ func resourceIBMISInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isInstanceBootAttachmentName: {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: InvokeValidator("ibm_is_instance", isInstanceBootAttachmentName),
 						},
 
 						isInstanceVolumeSnapshot: {
@@ -409,22 +436,6 @@ func resourceIBMISInstance() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "Instance resource group",
-			},
-
-			isPlacementTargetDedicatedHost: {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{isPlacementTargetDedicatedHostGroup},
-				Description:   "Unique Identifier of the Dedicated Host where the instance will be placed",
-			},
-
-			isPlacementTargetDedicatedHostGroup: {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{isPlacementTargetDedicatedHost},
-				Description:   "Unique Identifier of the Dedicated Host Group where the instance will be placed",
 			},
 
 			isInstanceCPU: {
@@ -485,7 +496,26 @@ func resourceIBMISInstance() *schema.Resource {
 				Computed:    true,
 				Description: "instance status",
 			},
+			isInstanceStatusReasons: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current status (if any).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceStatusReasonsCode: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the status reason",
+						},
 
+						isInstanceStatusReasonsMessage: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the status reason",
+						},
+					},
+				},
+			},
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -565,13 +595,61 @@ func resourceIBMISInstance() *schema.Resource {
 					},
 				},
 			},
+			isInstancePlacementTarget: &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The placement restrictions for the virtual server instance.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this placement target.",
+						},
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this placement target.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this placement target.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique user-defined name for this placement target.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of resource referenced.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
 
 func resourceIBMISInstanceValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isInstanceName,
@@ -590,6 +668,16 @@ func resourceIBMISInstanceValidator() *ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isInstanceBootAttachmentName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
 
 	ibmISInstanceValidator := ResourceValidator{ResourceName: "ibm_is_instance", Schema: validateSchema}
 	return &ibmISInstanceValidator
@@ -622,14 +710,18 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			ID: &dHostIdStr,
 		}
 		instanceproto.PlacementTarget = dHostPlaementTarget
-	}
-
-	if dHostGrpIdInf, ok := d.GetOk(isPlacementTargetDedicatedHostGroup); ok {
+	} else if dHostGrpIdInf, ok := d.GetOk(isPlacementTargetDedicatedHostGroup); ok {
 		dHostGrpIdStr := dHostGrpIdInf.(string)
 		dHostGrpPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostGroupIdentity{
 			ID: &dHostGrpIdStr,
 		}
 		instanceproto.PlacementTarget = dHostGrpPlaementTarget
+	} else if placementGroupInf, ok := d.GetOk(isPlacementTargetPlacementGroup); ok {
+		placementGrpStr := placementGroupInf.(string)
+		placementGrp := &vpcv1.InstancePlacementTargetPrototypePlacementGroupIdentity{
+			ID: &placementGrpStr,
+		}
+		instanceproto.PlacementTarget = placementGrp
 	}
 
 	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
@@ -647,13 +739,11 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 				CRN: &encstr,
 			}
 		}
-		volcap := 100
-		volcapint64 := int64(volcap)
+
 		volprof := "general-purpose"
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
 		}
-		volTemplate.Capacity = &volcapint64
 		deletebool := true
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
 			DeleteVolumeOnInstanceDelete: &deletebool,
@@ -831,6 +921,26 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		}
 	}
 
+	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
+		dHostIdStr := dHostIdInf.(string)
+		dHostPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
+			ID: &dHostIdStr,
+		}
+		instanceproto.PlacementTarget = dHostPlaementTarget
+	} else if dHostGrpIdInf, ok := d.GetOk(isPlacementTargetDedicatedHostGroup); ok {
+		dHostGrpIdStr := dHostGrpIdInf.(string)
+		dHostGrpPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostGroupIdentity{
+			ID: &dHostGrpIdStr,
+		}
+		instanceproto.PlacementTarget = dHostGrpPlaementTarget
+	} else if placementGroupInf, ok := d.GetOk(isPlacementTargetPlacementGroup); ok {
+		placementGrpStr := placementGroupInf.(string)
+		placementGrp := &vpcv1.InstancePlacementTargetPrototypePlacementGroupIdentity{
+			ID: &placementGrpStr,
+		}
+		instanceproto.PlacementTarget = placementGrp
+	}
+
 	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
 		bootvol := boot.([]interface{})[0].(map[string]interface{})
 		var volTemplate = &vpcv1.VolumePrototypeInstanceByImageContext{}
@@ -846,14 +956,12 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 				CRN: &encstr,
 			}
 		}
-		volcap := 100
-		volcapint64 := int64(volcap)
+
 		volprof := "general-purpose"
 
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
 		}
-		volTemplate.Capacity = &volcapint64
 		deletebool := true
 
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
@@ -1020,6 +1128,26 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			ID: &vpcID,
 		},
 	}
+	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
+		dHostIdStr := dHostIdInf.(string)
+		dHostPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
+			ID: &dHostIdStr,
+		}
+		instanceproto.PlacementTarget = dHostPlaementTarget
+	} else if dHostGrpIdInf, ok := d.GetOk(isPlacementTargetDedicatedHostGroup); ok {
+		dHostGrpIdStr := dHostGrpIdInf.(string)
+		dHostGrpPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostGroupIdentity{
+			ID: &dHostGrpIdStr,
+		}
+		instanceproto.PlacementTarget = dHostGrpPlaementTarget
+	} else if placementGroupInf, ok := d.GetOk(isPlacementTargetPlacementGroup); ok {
+		placementGrpStr := placementGroupInf.(string)
+		placementGrp := &vpcv1.InstancePlacementTargetPrototypePlacementGroupIdentity{
+			ID: &placementGrpStr,
+		}
+		instanceproto.PlacementTarget = placementGrp
+	}
+
 	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
 		bootvol := boot.([]interface{})[0].(map[string]interface{})
 		var volTemplate = &vpcv1.VolumeAttachmentVolumePrototypeInstanceByVolumeContext{}
@@ -1036,9 +1164,7 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 				CRN: &encstr,
 			}
 		}
-		volcap := 100
-		volcapint64 := int64(volcap)
-		volTemplate.Capacity = &volcapint64
+
 		volprof := "general-purpose"
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
@@ -1441,6 +1567,21 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 
 	d.Set(isInstanceStatus, *instance.Status)
+
+	//set the status reasons
+	if instance.StatusReasons != nil {
+		statusReasonsList := make([]map[string]interface{}, 0)
+		for _, sr := range instance.StatusReasons {
+			currentSR := map[string]interface{}{}
+			if sr.Code != nil && sr.Message != nil {
+				currentSR[isInstanceStatusReasonsCode] = *sr.Code
+				currentSR[isInstanceStatusReasonsMessage] = *sr.Message
+				statusReasonsList = append(statusReasonsList, currentSR)
+			}
+		}
+		d.Set(isInstanceStatusReasons, statusReasonsList)
+	}
+
 	d.Set(isInstanceVPC, *instance.VPC.ID)
 	d.Set(isInstanceZone, *instance.Zone.Name)
 
@@ -1513,6 +1654,15 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		if err = d.Set(isInstanceDisks, disks); err != nil {
 			return fmt.Errorf("Error setting disks: %s", err)
 		}
+	}
+
+	placementTarget := []map[string]interface{}{}
+	if instance.PlacementTarget != nil {
+		placementTargetMap := resourceIbmIsInstanceInstancePlacementToMap(*instance.PlacementTarget.(*vpcv1.InstancePlacementTarget))
+		placementTarget = append(placementTarget, placementTargetMap)
+	}
+	if err = d.Set(isInstancePlacementTarget, placementTarget); err != nil {
+		return fmt.Errorf("Error setting placement_target: %s", err)
 	}
 	return nil
 }
@@ -1741,7 +1891,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	}
 
-	if d.HasChange(isInstanceName) {
+	if d.HasChange(isInstanceName) && !d.IsNewResource() {
 		name := d.Get(isInstanceName).(string)
 		updnetoptions := &vpcv1.UpdateInstanceOptions{
 			ID: &id,
@@ -2161,4 +2311,28 @@ func resourceIbmIsInstanceInstanceDiskToMap(instanceDisk vpcv1.InstanceDisk) map
 	instanceDiskMap["size"] = intValue(instanceDisk.Size)
 
 	return instanceDiskMap
+}
+
+func resourceIbmIsInstanceInstancePlacementToMap(instancePlacement vpcv1.InstancePlacementTarget) map[string]interface{} {
+	instancePlacementMap := map[string]interface{}{}
+
+	instancePlacementMap["crn"] = instancePlacement.CRN
+	if instancePlacement.Deleted != nil {
+		DeletedMap := resourceIbmIsInstanceDedicatedHostGroupReferenceDeletedToMap(*instancePlacement.Deleted)
+		instancePlacementMap["deleted"] = []map[string]interface{}{DeletedMap}
+	}
+	instancePlacementMap["href"] = instancePlacement.Href
+	instancePlacementMap["id"] = instancePlacement.ID
+	instancePlacementMap["name"] = instancePlacement.Name
+	instancePlacementMap["resource_type"] = instancePlacement.ResourceType
+
+	return instancePlacementMap
+}
+
+func resourceIbmIsInstanceDedicatedHostGroupReferenceDeletedToMap(dedicatedHostGroupReferenceDeleted vpcv1.DedicatedHostGroupReferenceDeleted) map[string]interface{} {
+	dedicatedHostGroupReferenceDeletedMap := map[string]interface{}{}
+
+	dedicatedHostGroupReferenceDeletedMap["more_info"] = dedicatedHostGroupReferenceDeleted.MoreInfo
+
+	return dedicatedHostGroupReferenceDeletedMap
 }

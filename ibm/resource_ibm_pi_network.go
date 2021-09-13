@@ -104,7 +104,7 @@ func resourceIBMPINetworkCreate(d *schema.ResourceData, meta interface{}) error 
 	if networktype == "vlan" {
 		networkgateway, firstip, lastip = generateIPData(networkcidr)
 	}
-	networkResponse, _, err := client.Create(networkname, networktype, networkcidr, networkdns, networkgateway, firstip, lastip, powerinstanceid, postTimeOut)
+	networkResponse, err := client.Create(networkname, networktype, networkcidr, networkdns, networkgateway, firstip, lastip, false, powerinstanceid, postTimeOut)
 	if err != nil {
 		return err
 	}

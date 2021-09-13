@@ -152,7 +152,7 @@ func resourceCISPageRuleValidator() *ResourceValidator {
 		"response_buffering, image_size_optimization, script_load_optimization, " +
 		"true_client_ip_header, sort_query_string_for_cache, respect_strong_etag"
 	status := "active, disabled"
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 cisPageRuleActionsID,

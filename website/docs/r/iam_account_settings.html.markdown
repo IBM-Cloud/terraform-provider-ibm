@@ -29,7 +29,7 @@ Review the argument references that you can specify for your resource.
 - `max_sessions_per_identity` - (Optional, String) Defines the maximum allowed sessions per identity required by the account. Supported valid values are
   * Any whole number greater than '0' 
   * NOT_SET - To unset account setting and use service default.
-- `mfa` - (Optional, String) Defines the session expiration in seconds for the account. Supported valid values are 
+- `mfa` - (Optional, String) Defines the MFA trait for the account. Supported valid values are
   * NONE - No MFA trait set  
   * TOTP - For all non-federated IBMId users
   * TOTP4ALL - For all users

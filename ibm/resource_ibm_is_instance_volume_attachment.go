@@ -59,10 +59,11 @@ func resourceIBMISInstanceVolumeAttachment() *schema.Resource {
 			},
 
 			isInstanceVolAttName: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The user-defined name for this volume attachment.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: InvokeValidator("ibm_is_instance_volume_attachment", isInstanceVolAttName),
+				Description:  "The user-defined name for this volume attachment.",
 			},
 
 			isInstanceVolumeDeleteOnInstanceDelete: {
@@ -96,10 +97,11 @@ func resourceIBMISInstanceVolumeAttachment() *schema.Resource {
 			},
 
 			isInstanceVolumeAttVolumeReferenceName: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The unique user-defined name for this volume",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: InvokeValidator("ibm_is_instance_volume_attachment", isInstanceVolumeAttVolumeReferenceName),
+				Description:  "The unique user-defined name for this volume",
 			},
 
 			isInstanceVolProfile: {
@@ -180,7 +182,7 @@ func resourceIBMISInstanceVolumeAttachment() *schema.Resource {
 
 func resourceIBMISInstanceVolumeAttachmentValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isInstanceId,
@@ -191,7 +193,7 @@ func resourceIBMISInstanceVolumeAttachmentValidator() *ResourceValidator {
 			Identifier:                 isInstanceVolAttName,
 			ValidateFunctionIdentifier: ValidateRegexpLen,
 			Type:                       TypeString,
-			Required:                   true,
+			Optional:                   true,
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
@@ -203,6 +205,16 @@ func resourceIBMISInstanceVolumeAttachmentValidator() *ResourceValidator {
 			Type:                       TypeInt,
 			MinValue:                   "10",
 			MaxValue:                   "2000"})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isInstanceVolumeAttVolumeReferenceName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
 
 	ibmISInstanceVolumeAttachmentValidator := ResourceValidator{ResourceName: "ibm_is_instance_volume_attachment", Schema: validateSchema}
 	return &ibmISInstanceVolumeAttachmentValidator
