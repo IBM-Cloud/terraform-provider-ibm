@@ -28,6 +28,7 @@ func TestAccIBMIAMAuthorizationPolicy_Basic(t *testing.T) {
 					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "cloud-object-storage"),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "kms"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "description", "Authorization Policy for test scenario"),
 				),
 			},
 		},
@@ -170,6 +171,7 @@ func testAccCheckIBMIAMAuthorizationPolicyBasic() string {
 		source_service_name = "cloud-object-storage"
 		target_service_name = "kms"
 		roles               = ["Reader"]
+		description = "Authorization Policy for test scenario"
 	  }
 	`
 }

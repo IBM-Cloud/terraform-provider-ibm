@@ -45,6 +45,7 @@ In addition to all argument reference list, you can access the following attribu
 - `policies` - (List) A nested block describes IAM service policies that are assigned to a service ID.
 
   Nested scheme for `policies`:
+  - `description`  (String) The description of the IAM Service Policy.
 	- `id` - (String) The unique identifier of the IAM service policy. The ID is composed of `<iam_service_id>/<service_policy_id>`. If policy is created by using <iam_service_id>. The ID is composed of `<iam_id>/<service_policy_id>` if policy is created by using <iam_id>.
   - `roles`-  (String) The roles that are assigned to the policy.
   - `resources`- (List of objects) A nested block describes the resources in the policy.
