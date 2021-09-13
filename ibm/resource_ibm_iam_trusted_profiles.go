@@ -142,7 +142,7 @@ func resourceIBMIamTrustedProfilesCreate(context context.Context, d *schema.Reso
 		return diag.FromErr(fmt.Errorf("CreateProfileWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*trustedProfile.AccountID)
+	d.SetId(*trustedProfile.ID)
 
 	return resourceIBMIamTrustedProfilesRead(context, d, meta)
 }
