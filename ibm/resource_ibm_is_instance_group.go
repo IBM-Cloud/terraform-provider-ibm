@@ -145,7 +145,7 @@ func resourceIBMISInstanceGroup() *schema.Resource {
 
 func resourceIBMISInstanceGroupValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "name",

@@ -5,12 +5,12 @@ page_title: "IBM : snapshot"
 description: |-
   Reads IBM Cloud snapshots.
 ---
-# ibm\_is_snapshot
+# ibm_is_snapshot
 
-Import the details of existing IBM Cloud Infrastructure snapshot as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.For more information, about infrastructure snapshots, see [viewing snapshots](https://cloud.ibm.com/docs/vpc?topic=vpc-snapshots-vpc-view).
+Import the details of existing IBM Cloud infrastructure snapshot as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information, about infrastructure snapshots, see [viewing snapshots](https://cloud.ibm.com/docs/vpc?topic=vpc-snapshots-vpc-view).
 
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_is_vpc" "testacc_vpc" {
@@ -75,10 +75,10 @@ In addition to all argument reference list, you can access the following attribu
 
 - `bootable` - (Bool) Indicates if a boot volume attachment can be created with a volume created from this snapshot.
 - `crn` - (String) The CRN for this snapshot.
-- `encryption` - (String) The type of encryption used on the source volume(One of [ provider_managed, user_managed ]).
+- `encryption` - (String) The type of encryption used on the source volume. Supported values are **provider_managed**, **user_managed**.
 - `href` - (String) The URL for this snapshot.
 - `lifecycle_state` - (String) The lifecycle state of this snapshot. Supported values are **deleted**, **deleting**, **failed**, **pending**, **stable**, **updating**, **waiting**, **suspended**.
-- `minimum_capacity` - (Integer) The minimum capacity of a volume created from this snapshot. When a snapshot is created, this will be set to the capacity of the source_volume.
+- `minimum_capacity` - (Integer) The minimum capacity of a volume created from this snapshot. When a snapshot is created, this sets to the capacity of the source_volume.
 - `operating_system` - (String) The globally unique name for the operating system included in this image.
 - `resource_type` - (String) The resource type.
 - `size` - (Integer) The size of this snapshot rounded up to the next gigabyte.

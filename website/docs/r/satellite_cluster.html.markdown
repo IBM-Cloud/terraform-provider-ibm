@@ -20,7 +20,7 @@ resource "ibm_satellite_cluster" "create_cluster" {
 	name                   = "%s"  
 	location               = var.location
 	enable_config_admin    = true
-	kube_version           = "4.5_openshift"
+	kube_version           = "4.6_openshift"
 	resource_group_id      = data.ibm_resource_group.rg.id
 	wait_for_worker_update = true
 	dynamic "zones" {

@@ -11,7 +11,7 @@ description: |-
 Create, update, or delete a VPC endpoint gateway IP by using virtual endpoint gateway resource. For more information, about the VPC endpoint gateway, see [about VPC gateways](https://cloud.ibm.com/docs/vpc?topic=vpc-about-vpe).
 
 ## Example usage
-The following example creates a VPN gateway IP.
+The following example creates a Virtual Private Endpoint gateway IP.
 
 ```terraform
 resource "ibm_is_virtual_endpoint_gateway_ip" "virtual_endpoint_gateway_ip" {
@@ -35,7 +35,7 @@ In addition to all argument reference list, you can access the following attribu
 - `address` - (String) The endpoint gateway IP address.
 - `auto_delete` - (String) The endpoint gateway IP auto delete.
 - `created_at` - (Timestamp) The created date and time of the endpoint gateway IP.
-- `id` - (String) The unique identifier of the VPN gateway connection. The ID is composed of `<gateway_id>/<gateway_ip_id>`.
+- `id` - (String) The unique identifier of the VPE gateway. The ID is composed of `<gateway_id>/<gateway_ip_id>`.
 - `name` - (String) The endpoint gateway IP name.
 - `resource_type` - (String) The endpoint gateway IP resource type.
 - `target` - (List) The endpoint gateway target details.

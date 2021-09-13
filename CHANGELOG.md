@@ -1,3 +1,274 @@
+## 1.31.0 (Sep06, 2021)
+FEATURES:
+
+* Support APP ID 
+    - **Resources**
+        - ibm_appid_idp_cloud_directory
+		- ibm_appid_idp_saml
+        - ibm_appid_password_regex
+        - ibm_appid_theme_text
+        - ibm_appid_idp_custom
+        - ibm_appid_audit_status
+        - ibm_appid_action_url
+        - ibm_appid_languages
+        - ibm_appid_theme_color
+        - ibm_appid_cloud_directory_template
+    - **DataSources**
+        - ibm_appid_idp_cloud_directory
+		- ibm_appid_idp_saml
+		- ibm_appid_password_regex 
+        - ibm_appid_theme_text
+        - ibm_appid_idp_custom
+        - ibm_appid_audit_status
+        - ibm_appid_action_url
+        - ibm_appid_languages
+        - ibm_appid_theme_color
+        - ibm_appid_cloud_directory_template
+        - ibm_appid_idp_saml_metadata
+        - ibm_appid_roles
+        - ibm_appid_applications
+
+* Support Satellite endpoint/link
+    - **Resources**
+        - ibm_satellite_link
+        - ibm_satellite_endpoint
+    - **DataSources**
+        - ibm_satellite_link
+        - ibm_satellite_endpoint
+
+ENHANCEMENTS
+
+* changed the validator invoked in nacl rule  ([3052](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3052))
+
+* added forcenew for address_prefix_management in ibm_is_vpc ([3025](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3025))
+
+* added support for identifier in is_image datasource ([3012](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3012))
+
+* Add wait for master ready before cluster integrations ([3035](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3035))
+
+* Adding Steering_Policy property ([3061](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3061))
+
+* Add support for vSCSI pi_instance deployment ([3070](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3070))
+
+
+
+BUGFIXES
+
+* DocUpdate: add routing table route example ([3046](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3046))
+
+* Documentation for endpoint gateway ([3034](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3034))
+
+* updated cdn and app config resource ([3060](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3060))
+
+* Removed dereferencing in resource group name for is_volume ([3058](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3058))
+
+* Change the instance attribute types ([3053](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3053))
+
+* Increase robustness of openshift login flow ([3035](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3035))
+
+* Remove the references to duplicate KMS Key policies docs ([3055](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3055))
+
+
+## 1.30.2 (Aug31, 2021)
+ENHANCEMENTS
+
+* removed 100GB constraint to support any size (10-250GB) size boot volumes ([3030](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3030))
+
+* upgraded the vpc-go-sdk to use the 0.9.0 version ([3023](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3023))
+
+*  Add crn_token attribute to satellite cluster resource to support remote location ([3032](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3032))
+
+
+BUGFIXES
+
+* Doc fixes for ibm_database and ibm_container_cluster_config ([3033](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3033))
+
+* Updated argument desc for zones and entitlement ([3016](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3016))
+
+## 1.30.1 (Aug25, 2021)
+ENHANCEMENTS
+
+* fix: setting listener policy rule values ([2964](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2964))
+
+* fix for updating serviceIds and IBMIds in read method ([2987](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2987))
+
+* Include the IBM ID in the ibm_iam_user_profile data source ([2940](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2940))
+
+* Added new San Paolo (SAO) MZR support for cos ([3022](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3022))
+
+* Added retry logic to get location information ([3020](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3020))
+
+
+BUGFIXES
+
+* Argument reference description for MFA setting is incorrect ([2984](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2984))
+
+* Doc fixes for APPID Management resources and datasources ([3001](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3001))
+
+* fixed the header for is_instance_volume_attachment doc ([3005](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3005))
+
+## 1.30.0 (Aug18, 2021)
+FEATURES:
+
+* Support ATracker 
+    - **Resources**
+        - ibm_atracker_target
+		- ibm_atracker_route
+    - **DataSources**
+        - ibm_atracker_targets
+		- ibm_atracker_routes
+		- ibm_atracker_endpoints 
+    
+* Support APP ID
+    - **Resources**
+        -ibm_appid_application
+	    - ibm_appid_token_config
+        - ibm_appid_application_roles
+        - ibm_appid_application_scopes
+        - ibm_appid_redirect_urls
+        - ibm_appid_role
+    - **DataSources**
+        - ibm_appid_application
+        - ibm_appid_application_roles
+        - ibm_appid_application_scopes
+        - ibm_appid_token_config
+        - ibm_appid_redirect_urls
+        - ibm_appid_role
+
+* Support KMS Policies 
+    - **Resources**
+        - ibm_kms_key_policies
+    - **DataSources**
+        - ibm_kms_key_policies
+    
+* Support VPC Instance Template 
+    - **DataSources**
+        - ibm_is_instance_template
+
+* Support NLB DNS for cluster and Satellite Location
+    - **DataSources**
+        - ibm_container_nlb_dns
+        - ibm_satellite_location_nlb_dns
+   
+
+ENHANCEMENTS
+
+* Support access management tags in subnet resource and datasource ([2778](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2778))
+
+* Added pagination support for endpoint gateway targets datasource ([2904](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2904))
+
+* Support lb cookie session persistence ([#2884](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2884))
+
+* Expose catalog type for catalog management ([#2924](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2924))
+
+* Support COS Object SQL URL for Cloud Object Storage ([#2934](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2934))
+
+* Migrate ibm_resource_group datasource to platform SDK and support other computed attributes ([2936](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2936))
+
+* Migrate authorisation policy to platform-go-SDK ([#2926](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2926))
+
+* Filter instances datasource by instance group ([#2947](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2947)) 
+
+* Enable filter for security group by VPC ([#2982](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2982)) 
+
+* Deprecate creation of KMS policies from ibm_kms_key resource ([#2832](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2832))
+
+BUGFIXES
+
+* Session timeout to 15 minutes and terraform cannot refresh the token ([2892](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2892))
+* Added missing rule_id in tcp/udp and vpcId in sg filtering on ibm_is_vpc datasource ([2855](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2855))
+* Return error statement if security group with name is not found in datasource ([#2932](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2932))
+* Return error during Subnet detroy failure ([#2779](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2779))
+* Update pi_instance virtual cores and processors after checking the capability ([2939](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2939))
+* Reduce delay from 1m to 10s on cmr_order resource ([#2944](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2944))
+* ibm_is_floating_ip target change results in a failure ([#2911](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2911))
+* Added a new resource check on name update which was tainting the is_instance resource ([#2970](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2970))
+* Fix Error handling during `waitForVpcClusterIngressAvailable` and fix condition check while setting `disable_public_service_endpoint` ([2971](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2971))
+* VPE gateway creation suppresses error message ([#2923](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2923))
+* Doc fix catalog management ([2965](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2965))
+* Doc fix for DNS Forwarding rule ([2919](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2919))
+* Remove location validaton on ibm_satellite_location resource ([2931](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2931)) 
+* Set Id immediately after Creation in ibm_database resource ([2928](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2928))
+* Fix: delete topic does not fail when topic does not exist ([#2976](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2976)) 
+
+
+## 1.29.0 (Jul30, 2021)
+FEATURES:
+* Support VPC datasource
+    - **DataSources**
+        - ibm_is_vpcs
+* Support Private DNS Custom Resolver
+    - **DataSources**
+        - ibm_dns_custom_resolvers
+        - ibm_dns_custom_resolver_forwarding_rules
+    - **Resources**
+        - ibm_dns_custom_resolver
+        - ibm_dns_custom_resolver_forwarding_rule
+        - ibm_dns_custom_resolver_location
+* Support Hyper Protect Crypto Service
+     - **DataSources**
+        - ibm_hpcs
+    - **Resources**
+        - ibm_hpcs
+
+ENHANCEMENTS
+
+* Support `status_reasons` attribute in ibm_is_instance ([2900](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2900))
+
+* Support pagination for dedicated hosts datasources ([2906](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2906))
+
+* Support Limit Feature for Keys ([2538](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2538))
+
+* Support `address` in `ips` attribute for ibm_is_virtual_endpoint_gateway ([2913](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2913))
+
+* Support `worker_pool_id` attribute in container worker pool ([2910](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2910))
+
+
+BUGFIXES
+* Fix doc format for ibm_cos_bucket ([2891](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2891))
+* Fix Creating a resource group with IBMCLOUD_VISIBILITY=private seems to require a call to public IAM API ([2890](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2890))
+* Fix the tainteffects ([2862](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2862))
+* Fix ibm_satellite_cluster resource - kube_version upgrade, provider never returns ([2827](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2827))
+* Fix subnet destroy fails immediately after cluster destroy unless delay added ([2779](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2779))
+* Fix return error when topic creation failed ([2912](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2912))
+* Fix deprecated field in ibm_container_worker_pool doc example ([2915](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2915))
+* Update example of Hyper Protect DBaaS ([2917](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2917))
+
+## 1.28.0 (Jul16, 2021)
+FEATURES:
+* Support VPC address prefixes
+    - **DataSources**
+        - ibm_is_vpc_address_prefixes
+* Support VPC Instance Volume attachment
+    - **Resources**
+        - ibm_is_instance_volume_attachment
+    - **DataSources**
+        - ibm_is_instance_volume_attachment
+        - ibm_is_instance_volume_attachments
+* Support VPC Snapshots
+    - **Resources**
+        - ibm_is_snapshot
+    - **DataSources**
+        - ibm_is_snapshot
+        - ibm_is_snapshots
+
+ENHANCEMENTS
+
+* Support to provision an instance from `instance_template` and instance boot volume from `snapshot` ([2672](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2672))
+
+* Support Worker Pool Taints for IBM Cloud Clusters ([#2862](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2862))
+
+* Clean up the reference for Gen1 code from all VPC resources and datasources
+
+BUGFIXES
+* ibm_is_security_group datasource does not find existing SGs ([#2868](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2868))
+* Apply for ibm_iam_access_group_members fails with 404 when using IBMCLOUD_VISIBILITY=private ([#2828](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2828))
+* Removed IPV6 References in vpc resources ([2697](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2697))
+* IBM Cloud Provider - ibm_satellite_location silent correction ([2724](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2724))
+* fix: set required cluster_name_id attribute ([2836](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2836))
+* Doc fix for IAM policies and COS bucket ([2861](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2861))
+
+
 ## 1.27.2 (Jul09, 2021)
 
 ENHANCEMENTS

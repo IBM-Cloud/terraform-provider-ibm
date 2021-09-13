@@ -30,10 +30,16 @@ data "ibm_is_instances" "ds_instances1" {
 ## Argument reference
 The input parameters that you need to specify for the data source. 
 
-- `resource_group` - (optional, string) Resource Group ID to filter the instances attached to it.
+- `resource_group` - (optional, String) Resource Group ID to filter the instances attached to it.
 - `vpc` - (Optional, String) The VPC ID to filter the instances attached.
-- `vpc_crn` - (optional, string) VPC CRN to filter the instances attached to it.
+- `vpc_crn` - (optional, String) VPC CRN to filter the instances attached to it.
 - `vpc_name` - (Optional, String) The name of the VPC to filter the instances attached.
+- `instance_group` - (Optional, String) Instance group ID to filter the instances attached to it.
+- `instance_group_name` - (Optional, String) Instance group name to filter the instances attached to it.
+- `dedicated_host_name` - (Optional, String) Dedicated host name to filter the instances attached to it.
+- `dedicated_host` - (Optional, String) Dedicated host ID to filter the instances attached to it.
+- `placement_group_name` - (Optional, String) Placement group name to filter the instances attached to it.
+- `placement_group` - (Optional, String) Placement group ID to filter the instances attached to it.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
@@ -70,6 +76,16 @@ In addition to all argument reference list, you can access the following attribu
 		- `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses.
 		- `subnet` - (String) The ID of the subnet that is used in the more network interface.
 		- `security_groups` (List)A list of security groups that were created for the interface.
+	- `placement_target`- (List) The placement restrictions for the virtual server instance.
+
+	  Nested scheme for `placement_target`: 
+		- `crn` - (String) The CRN for this placement target resource.
+		- `deleted` - (String) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
+			- `more_info` -  (String) Link to documentation about deleted resources. 
+		- `href` - (String) The URL for this placement target resource.
+		- `id` - (String) The unique identifier for this placement target resource.
+		- `name` - (String) The unique user-defined name for this placement target resource. If unspecified, the name will be a hyphenated list of randomly-selected words.
+		- `resource_type` - (String) The type of resource referenced.
 	- `primary_network_interface`- (List) A list of primary network interfaces that were created for the instance. 
 
 	  Nested scheme for `primary_network_interface`:
@@ -79,6 +95,11 @@ In addition to all argument reference list, you can access the following attribu
 		- `security_groups` (List)A list of security groups that were created for the interface.
 		- `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses.- `resource_group` - (String) The name of the resource group where the instance was created.
 	- `status` - (String) The status of the instance.
+	- `status_reasons` - (List) Array of reasons for the current status. 
+
+		Nested scheme for `status_reasons`:
+		- `code` - (String)  A snake case string identifying the status reason.
+		- `message` - (String)  An explanation of the status reason
 	- `volume_attachments`- (List) A list of volume attachments that were created for the instance.
 
 	  Nested scheme for `volume_attachments`: 

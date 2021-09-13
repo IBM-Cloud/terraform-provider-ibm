@@ -115,6 +115,11 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 				},
 			},
 
+			"worker_pool_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			"labels": {
 				Type:        schema.TypeMap,
 				Optional:    true,
@@ -141,7 +146,7 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 						"effect": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Effect for taint. Accepted values are NoSchedule, PreferNoSchedule, and NoExecute.",
+							Description: "Effect for taint. Accepted values are NoSchedule, PreferNoSchedule and NoExecute.",
 							ValidateFunc: InvokeValidator(
 								"ibm_container_worker_pool",
 								"worker_taints"),
@@ -175,8 +180,8 @@ func resourceIBMContainerWorkerPool() *schema.Resource {
 }
 
 func resourceContainerWorkerPoolValidator() *ResourceValidator {
-	tainteffects := "NoSchedule, PreferNoSchedule, and NoExecute"
-	validateSchema := make([]ValidateSchema, 1)
+	tainteffects := "NoSchedule,PreferNoSchedule,NoExecute"
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "worker_taints",
@@ -274,6 +279,7 @@ func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}
 	d.Set("worker_pool_name", workerPool.Name)
 	d.Set("machine_type", strings.Split(machineType, ".encrypted")[0])
 	d.Set("size_per_zone", workerPool.Size)
+	d.Set("worker_pool_id", workerPoolID)
 	hardware := workerPool.Isolation
 	switch strings.ToLower(hardware) {
 	case "":

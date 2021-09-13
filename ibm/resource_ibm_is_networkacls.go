@@ -270,7 +270,7 @@ func resourceIBMISNetworkACL() *schema.Resource {
 
 func resourceIBMISNetworkACLValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	direction := "inbound, outbound"
 	action := "allow, deny"
 

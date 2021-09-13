@@ -191,7 +191,7 @@ func resourceIBMPrivateDNSGLBMonitorValidator() *ResourceValidator {
 	methods := "GET, HEAD"
 	expectedcode := "200,201,202,203,204,205,206,207,208,226,2xx"
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 pdnsGlbMonitorType,

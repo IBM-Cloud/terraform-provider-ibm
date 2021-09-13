@@ -35,6 +35,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `capacity` - (String) The capacity of the volume in gigabytes.
 - `encryption_key` - (String) The key to use for encrypting this volume.
+- `encryption_type` - (String) The type of ecryption used in the volume [**provider_managed**, **user_managed**].
 - `iops` - (String) The bandwidth for the volume.
 - `profile` - (String) The profile to use for this volume.
 - `resource_group` - (String) The resource group ID for this volume.

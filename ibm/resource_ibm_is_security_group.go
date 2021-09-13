@@ -117,7 +117,7 @@ func resourceIBMISSecurityGroup() *schema.Resource {
 
 func resourceIBMISSecurityGroupValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isSecurityGroupName,
@@ -458,7 +458,7 @@ func makeIBMISSecurityRuleSchema() map[string]*schema.Schema {
 		isSecurityGroupRuleIPVersion: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "IP version: ipv4 or ipv6",
+			Description: "IP version: ipv4",
 		},
 
 		isSecurityGroupRuleRemote: {

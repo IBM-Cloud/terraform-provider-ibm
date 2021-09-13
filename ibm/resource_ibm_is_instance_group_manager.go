@@ -126,7 +126,7 @@ func resourceIBMISInstanceGroupManager() *schema.Resource {
 
 func resourceIBMISInstanceGroupManagerValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	managerType := "autoscale, scheduled"
 	validateSchema = append(validateSchema,
 		ValidateSchema{

@@ -85,7 +85,7 @@ func resourceIBMCISWAFGroup() *schema.Resource {
 
 func resourceIBMCISWAFGroupValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	mode := "on, off"
 
 	validateSchema = append(validateSchema,

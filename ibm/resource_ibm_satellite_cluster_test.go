@@ -8,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.ibm.com/ibmcloud/kubernetesservice-go-sdk/kubernetesserviceapiv1"
 )
 
 func TestAccSatelliteCluster_Basic(t *testing.T) {
@@ -228,7 +228,7 @@ func testAccCheckSatelliteClusterCreate(clusterName, locationName, managed_from,
 		name                   = "%s"  
 		location               = ibm_satellite_host.assign_host.0.location
 		enable_config_admin    = true
-		kube_version           = "4.5_openshift"
+		kube_version           = "4.6_openshift"
 		wait_for_worker_update = true
 		dynamic "zones" {
 			for_each = var.location_zones

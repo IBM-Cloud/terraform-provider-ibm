@@ -75,6 +75,11 @@ func dataSourceIBMIAMUserProfile() *schema.Resource {
 				Computed:    true,
 				Description: "An alphanumeric value identifying the account ID. ",
 			},
+			"ibm_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "An alphanumeric value identifying the user's IAM ID.",
+			},
 		},
 	}
 }
@@ -111,6 +116,7 @@ func dataSourceIBMIAMUserProfileRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("phonenumber", userInfo.Phonenumber)
 	d.Set("altphonenumber", userInfo.Altphonenumber)
 	d.Set("account_id", userInfo.AccountID)
+	d.Set("ibm_id", userInfo.IamID)
 
 	UserSettings, UserSettingError := client.GetUserSettings(accountID, iamID)
 	if UserSettingError != nil {

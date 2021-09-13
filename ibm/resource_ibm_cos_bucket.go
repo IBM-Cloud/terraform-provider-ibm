@@ -26,7 +26,7 @@ var singleSiteLocation = []string{
 }
 
 var regionLocation = []string{
-	"au-syd", "ca-tor", "eu-de", "eu-gb", "jp-tok", "jp-osa", "us-east", "us-south",
+	"au-syd", "ca-tor", "eu-de", "eu-gb", "jp-tok", "jp-osa", "us-east", "us-south", "br-sao",
 }
 
 var crossRegionLocation = []string{

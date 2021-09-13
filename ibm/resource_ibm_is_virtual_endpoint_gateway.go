@@ -99,7 +99,7 @@ func resourceIBMISEndpointGateway() *schema.Resource {
 				Type:             schema.TypeList,
 				Optional:         true,
 				Computed:         true,
-				Description:      "Endpoint gateway resource group",
+				Description:      "Endpoint gateway IPs",
 				DiffSuppressFunc: applyOnce,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -118,13 +118,17 @@ func resourceIBMISEndpointGateway() *schema.Resource {
 						isVirtualEndpointGatewayIPsSubnet: {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "The Subnet id",
 						},
 						isVirtualEndpointGatewayIPsResourceType: {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The VPC Resource Type",
+							Description: "The VPE Resource Type",
+						},
+						isVirtualEndpointGatewayIPsAddress: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IP Address",
 						},
 					},
 				},
@@ -158,9 +162,10 @@ func resourceIBMISEndpointGateway() *schema.Resource {
 							Description: "The target crn",
 						},
 						isVirtualEndpointGatewayTargetResourceType: {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The target resource type",
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: InvokeValidator("ibm_is_virtual_endpoint_gateway", isVirtualEndpointGatewayTargetResourceType),
+							Description:  "The target resource type",
 						},
 					},
 				},
@@ -184,7 +189,7 @@ func resourceIBMISEndpointGateway() *schema.Resource {
 }
 
 func resourceIBMISEndpointGatewayValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 "tag",
@@ -194,6 +199,13 @@ func resourceIBMISEndpointGatewayValidator() *ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVirtualEndpointGatewayTargetResourceType,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              "provider_cloud_service, provider_infrastructure_service"})
 
 	ibmEndpointGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_is_virtual_endpoint_gateway", Schema: validateSchema}
 	return &ibmEndpointGatewayResourceValidator
@@ -250,7 +262,7 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 	result, response, err := sess.CreateEndpointGateway(opt)
 	if err != nil {
 		log.Printf("Create Endpoint Gateway failed: %v", response)
-		return err
+		return fmt.Errorf("Create Endpoint Gateway failed %s\n%s", err, response)
 	}
 
 	d.SetId(*result.ID)
@@ -283,7 +295,7 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 		_, response, err := sess.UpdateEndpointGateway(opt)
 		if err != nil {
 			log.Printf("Update Endpoint Gateway failed: %v", response)
-			return err
+			return fmt.Errorf("Update Endpoint Gateway failed : %s\n%s", err, response)
 		}
 
 	}
@@ -312,8 +324,12 @@ func resourceIBMisVirtualEndpointGatewayRead(d *schema.ResourceData, meta interf
 	opt := sess.NewGetEndpointGatewayOptions(d.Id())
 	result, response, err := sess.GetEndpointGateway(opt)
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		log.Printf("Get Endpoint Gateway failed: %v", response)
-		return err
+		return fmt.Errorf("Get Endpoint Gateway failed %s\n%s", err, response)
 	}
 	d.Set(isVirtualEndpointGatewayName, result.Name)
 	d.Set(isVirtualEndpointGatewayHealthState, result.HealthState)
@@ -344,6 +360,7 @@ func resourceIBMisVirtualEndpointGatewayDelete(d *schema.ResourceData, meta inte
 	response, err := sess.DeleteEndpointGateway(opt)
 	if err != nil {
 		log.Printf("Delete Endpoint Gateway failed: %v", response)
+		return fmt.Errorf("Delete Endpoint Gateway failed : %s\n%s", err, response)
 	}
 	return nil
 }
@@ -399,6 +416,7 @@ func flattenIPs(ipsList []vpcv1.ReservedIPReference) interface{} {
 		ips[isVirtualEndpointGatewayIPsID] = *item.ID
 		ips[isVirtualEndpointGatewayIPsName] = *item.Name
 		ips[isVirtualEndpointGatewayIPsResourceType] = *item.ResourceType
+		ips[isVirtualEndpointGatewayIPsAddress] = *item.Address
 
 		ipsListOutput = append(ipsListOutput, ips)
 	}

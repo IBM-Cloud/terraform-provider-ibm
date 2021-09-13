@@ -61,6 +61,7 @@ const (
 	dlGatewayProvisioningDone      = "provisioned"
 	dlGatewayProvisioningRejected  = "create_rejected"
 	dlAuthenticationKey            = "authentication_key"
+	dlConnectionMode               = "connection_mode"
 )
 
 func resourceIBMDLGateway() *schema.Resource {
@@ -112,7 +113,14 @@ func resourceIBMDLGateway() *schema.Resource {
 				Description:   "Gateway port",
 				ConflictsWith: []string{"location_name", "cross_connect_router", "carrier_name", "customer_name"},
 			},
-
+			dlConnectionMode: {
+				Type:         schema.TypeString,
+				Computed:     true,
+				Optional:     true,
+				ForceNew:     false,
+				Description:  "Type of services this Gateway is attached to. Mode transit means this Gateway will be attached to Transit Gateway Service and direct means this Gateway will be attached to vpc or classic connection",
+				ValidateFunc: InvokeValidator("ibm_dl_gateway", dlConnectionMode),
+			},
 			dlCrossConnectRouter: {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -379,8 +387,9 @@ func resourceIBMDLGateway() *schema.Resource {
 
 func resourceIBMDLGatewayValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 2)
+	validateSchema := make([]ValidateSchema, 0)
 	dlTypeAllowedValues := "dedicated, connect"
+	dlConnectionModeAllowedValues := "direct, transit"
 
 	validateSchema = append(validateSchema,
 		ValidateSchema{
@@ -407,6 +416,13 @@ func resourceIBMDLGatewayValidator() *ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 dlConnectionMode,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              dlConnectionModeAllowedValues})
 
 	ibmISDLGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_dl_gateway", Schema: validateSchema}
 	return &ibmISDLGatewayResourceValidator
@@ -516,6 +532,11 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 			gatewayDedicatedTemplateModel.AuthenticationKey = &directlinkv1.GatewayTemplateAuthenticationKey{Crn: &authKeyCrnStr}
 		}
 
+		if connectionMode, ok := d.GetOk(dlConnectionMode); ok {
+			connectionModeStr := connectionMode.(string)
+			gatewayDedicatedTemplateModel.ConnectionMode = &connectionModeStr
+		}
+
 		createGatewayOptionsModel.GatewayTemplate = gatewayDedicatedTemplateModel
 
 	} else if dtype == "connect" {
@@ -550,6 +571,11 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 			if authKeyCrn, ok := d.GetOk(dlAuthenticationKey); ok {
 				authKeyCrnStr := authKeyCrn.(string)
 				gatewayConnectTemplateModel.AuthenticationKey = &directlinkv1.GatewayTemplateAuthenticationKey{Crn: &authKeyCrnStr}
+			}
+
+			if connectionMode, ok := d.GetOk(dlConnectionMode); ok {
+				connectionModeStr := connectionMode.(string)
+				gatewayConnectTemplateModel.ConnectionMode = &connectionModeStr
 			}
 
 			createGatewayOptionsModel.GatewayTemplate = gatewayConnectTemplateModel
@@ -687,6 +713,9 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if instance.AuthenticationKey != nil {
 		d.Set(dlAuthenticationKey, *instance.AuthenticationKey.Crn)
+	}
+	if instance.ConnectionMode != nil {
+		d.Set(dlConnectionMode, *instance.ConnectionMode)
 	}
 	if dtype == "dedicated" {
 		if instance.MacsecConfig != nil {
@@ -862,6 +891,11 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 		authenticationKeyPatchTemplate := new(directlinkv1.GatewayPatchTemplateAuthenticationKey)
 		authenticationKeyPatchTemplate.Crn = &authenticationKeyCrn
 		updateGatewayOptionsModel = updateGatewayOptionsModel.SetAuthenticationKey(authenticationKeyPatchTemplate)
+	}
+
+	if mode, ok := d.GetOk(dlConnectionMode); ok && d.HasChange(dlConnectionMode) {
+		updatedConnectionMode := mode.(string)
+		updateGatewayOptionsModel.ConnectionMode = &updatedConnectionMode
 	}
 
 	if dtype == "dedicated" {

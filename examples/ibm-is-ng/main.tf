@@ -80,6 +80,11 @@ resource "ibm_is_instance_template" "instancetemplate2" {
     }
 }
 
+// datasource for instance template
+data "ibm_is_instance_template" "instancetemplates" {
+	identifier = ibm_is_instance_template.instancetemplate2.id
+}
+
 resource "ibm_is_lb" "lb2" {
   name    = "mylb"
   subnets = [ibm_is_subnet.subnet1.id]
@@ -114,6 +119,46 @@ resource "ibm_is_lb_listener_policy_rule" "lb_listener_policy_rule" {
   type      = "header"
   field     = "MY-APP-HEADER"
   value     = "UpdateVal"
+}
+
+resource "ibm_is_lb_pool" "testacc_pool" {
+  name           = "test_pool"
+  lb             = ibm_is_lb.lb2.id
+  algorithm      = "round_robin"
+  protocol       = "https"
+  health_delay   = 60
+  health_retries = 5
+  health_timeout = 30
+  health_type    = "https"
+  proxy_protocol = "v1"
+  session_persistence_type = "app_cookie"
+  session_persistence_app_cookie_name = "cookie1"
+}
+
+resource "ibm_is_lb_pool" "testacc_pool" {
+  name           = "test_pool"
+  lb             = ibm_is_lb.lb2.id
+  algorithm      = "round_robin"
+  protocol       = "https"
+  health_delay   = 60
+  health_retries = 5
+  health_timeout = 30
+  health_type    = "https"
+  proxy_protocol = "v1"
+  session_persistence_type = "http_cookie"
+}
+
+resource "ibm_is_lb_pool" "testacc_pool" {
+  name           = "test_pool"
+  lb             = ibm_is_lb.lb2.id
+  algorithm      = "round_robin"
+  protocol       = "https"
+  health_delay   = 60
+  health_retries = 5
+  health_timeout = 30
+  health_type    = "https"
+  proxy_protocol = "v1"
+  session_persistence_type = "source_ip"
 }
 
 resource "ibm_is_vpn_gateway" "VPNGateway1" {
@@ -392,6 +437,10 @@ data "ibm_is_vpc" "vpc1" {
   name = ibm_is_vpc.vpc1.name
 }
 
+// added for vpcs datasource
+data "ibm_is_vpc" "vpcs"{
+}
+
 data "ibm_is_volume_profile" "volprofile"{
   name = "general-purpose"
 }
@@ -608,4 +657,17 @@ data "ibm_is_operating_system" "os"{
 }
 
 data "ibm_is_operating_systems" "oslist"{
+}
+
+resource "ibm_is_placement_group" "is_placement_group" {
+  strategy = "%s"
+  name = "%s"
+  resource_group = data.ibm_resource_group.default.id
+}
+
+data "ibm_is_placement_group" "is_placement_group" {
+  name = ibm_is_placement_group.is_placement_group.name
+}
+
+data "ibm_is_placement_groups" "is_placement_groups" {
 }

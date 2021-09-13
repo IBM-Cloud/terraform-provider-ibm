@@ -48,7 +48,7 @@ func resourceIBMKmskeyRings() *schema.Resource {
 
 func resourceIBMKeyRingValidator() *ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 1)
+	validateSchema := make([]ValidateSchema, 0)
 
 	validateSchema = append(validateSchema,
 		ValidateSchema{

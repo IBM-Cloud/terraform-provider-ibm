@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Shopify/sarama"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,7 +23,8 @@ const (
 )
 
 var (
-	brokerVersion       = sarama.V2_3_0_0
+	brokerVersion       = sarama.V2_6_0_0
+	adminClientTimeout  = 30 * time.Second
 	allowedTopicConfigs = []string{
 		"cleanup.policy",
 		"retention.ms",
@@ -30,6 +32,7 @@ var (
 		"segment.ms",
 		"segment.bytes",
 		"segment.index.bytes",
+		"message.audit.enable", // enterprise only
 	}
 	defaultConfigs = map[string]interface{}{
 		"cleanup.policy":  defaultCleanupPolicy,
@@ -121,6 +124,7 @@ func resourceIBMEventStreamsTopicCreate(d *schema.ResourceData, meta interface{}
 	err = adminClient.CreateTopic(topicName, &topicDetail, false)
 	if err != nil {
 		log.Printf("[DEBUG] resourceIBMEventStreamsTopicCreate CreateTopic err %s", err)
+		return err
 	}
 	log.Printf("[INFO] resourceIBMEventStreamsTopicCreate CreateTopic: topic is %s, detail is %v", topicName, topicDetail)
 	d.SetId(getTopicID(instanceCRN, topicName))
@@ -205,6 +209,13 @@ func resourceIBMEventStreamsTopicDelete(d *schema.ResourceData, meta interface{}
 	topicName := d.Get("name").(string)
 	err = adminClient.DeleteTopic(topicName)
 	if err != nil {
+		if kerr, ok := err.(sarama.KError); ok {
+			if kerr == sarama.ErrUnknownTopicOrPartition {
+				d.SetId("")
+				log.Printf("[INFO]resourceIBMEventStreamsTopicDelete topic %s does not exist", topicName)
+				return nil
+			}
+		}
 		log.Printf("[DEBUG] resourceIBMEventStreamsTopicDelete DeleteTopic err %s", err)
 		return err
 	}
@@ -266,6 +277,7 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 	config.Net.SASL.Password = apiKey
 	config.Net.TLS.Enable = true
 	config.Version = brokerVersion
+	config.Admin.Timeout = adminClientTimeout
 	adminClient, err := sarama.NewClusterAdmin(brokerAddress, config)
 	if err != nil {
 		log.Printf("[DEBUG] createSaramaAdminClient NewClusterAdmin err %s", err)
