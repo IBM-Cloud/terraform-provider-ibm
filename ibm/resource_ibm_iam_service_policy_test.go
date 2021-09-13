@@ -29,6 +29,7 @@ func TestAccIBMIAMServicePolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "tags.#", "1"),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "description", "IAM Service Policy Creation for test scenario"),
 				),
 			},
 			{
@@ -37,6 +38,7 @@ func TestAccIBMIAMServicePolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "tags.#", "2"),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "description", "IAM Service Policy Update for test scenario"),
 				),
 			},
 		},
@@ -320,6 +322,7 @@ func testAccCheckIBMIAMServicePolicyBasic(name string) string {
 			iam_service_id = ibm_iam_service_id.serviceID.id
 			roles          = ["Viewer"]
 			tags           = ["tag1"]
+			description    = "IAM Service Policy Creation for test scenario"
 	  	}
 
 	`, name)
@@ -336,6 +339,7 @@ func testAccCheckIBMIAMServicePolicyUpdateRole(name string) string {
 			iam_service_id = ibm_iam_service_id.serviceID.id
 			roles          = ["Viewer", "Manager"]
 			tags           = ["tag1", "tag2"]
+			description    = "IAM Service Policy Update for test scenario"
 	  	}
 	`, name)
 }
