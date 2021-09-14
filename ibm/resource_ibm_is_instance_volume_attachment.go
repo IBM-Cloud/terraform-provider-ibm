@@ -262,6 +262,13 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 				ID: &volSnapshotStr,
 			}
 		}
+		encryptionCRNStr := ""
+		if encryptionCRN, ok := d.GetOk(isInstanceVolEncryptionKey); ok {
+			encryptionCRNStr = encryptionCRN.(string)
+			volProtoVol.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
+				CRN: &encryptionCRNStr,
+			}
+		}
 		var snapCapacity int64
 		if volSnapshotStr != "" {
 			snapshotGet, _, err := sess.GetSnapshot(&vpcv1.GetSnapshotOptions{
