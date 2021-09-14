@@ -24,11 +24,6 @@ func dataSourceIBMCloudShellAccountSettings() *schema.Resource {
 				Required:    true,
 				Description: "The account ID in which the account settings belong to.",
 			},
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Unique id of the settings object.",
-			},
 			"rev": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -132,10 +127,7 @@ func dataSourceIBMCloudShellAccountSettingsRead(context context.Context, d *sche
 		return diag.FromErr(fmt.Errorf("GetAccountSettingsWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s", *getAccountSettingsOptions.AccountID))
-	if err = d.Set("id", accountSettings.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
-	}
+	d.SetId(*accountSettings.ID)
 	if err = d.Set("rev", accountSettings.Rev); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting rev: %s", err))
 	}

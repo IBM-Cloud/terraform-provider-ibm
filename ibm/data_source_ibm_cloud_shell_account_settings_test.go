@@ -40,7 +40,7 @@ func TestAccIBMCloudShellAccountSettingsDataSourceAllArgs(t *testing.T) {
 			{
 				Config: testAccCheckIBMCloudShellAccountSettingsDataSourceConfig(cloudShellAccountID, accountSettingsDefaultEnableNewFeatures, accountSettingsDefaultEnableNewRegions, accountSettingsEnabled),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_cloud_shell_account_settings.account_settings_after_update", "id", cloudShellAccountID),
+					resource.TestCheckResourceAttr("data.ibm_cloud_shell_account_settings.account_settings_after_update", "id", fmt.Sprintf("ac-%s", cloudShellAccountID)),
 					resource.TestCheckResourceAttr("data.ibm_cloud_shell_account_settings.account_settings_after_update", "account_id", cloudShellAccountID),
 					resource.TestCheckResourceAttrSet("data.ibm_cloud_shell_account_settings.account_settings_after_update", "rev"),
 					resource.TestCheckResourceAttrSet("data.ibm_cloud_shell_account_settings.account_settings_after_update", "created_at"),

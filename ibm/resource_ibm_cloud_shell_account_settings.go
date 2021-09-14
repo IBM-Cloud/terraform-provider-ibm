@@ -88,11 +88,6 @@ func resourceIBMCloudShellAccountSettings() *schema.Resource {
 					},
 				},
 			},
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Unique id of the settings object.",
-			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -168,7 +163,7 @@ func resourceIBMCloudShellAccountSettingsCreate(context context.Context, d *sche
 		return diag.FromErr(fmt.Errorf("UpdateAccountSettingsWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *updateAccountSettingsOptions.AccountID, *accountSettings.AccountID))
+	d.SetId(*accountSettings.ID)
 
 	return resourceIBMCloudShellAccountSettingsRead(context, d, meta)
 }
@@ -207,13 +202,7 @@ func resourceIBMCloudShellAccountSettingsRead(context context.Context, d *schema
 
 	getAccountSettingsOptions := &ibmcloudshellv1.GetAccountSettingsOptions{}
 
-	parts, err := sepIdParts(d.Id(), "/")
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	getAccountSettingsOptions.SetAccountID(parts[0])
-	getAccountSettingsOptions.SetAccountID(parts[1])
+	getAccountSettingsOptions.SetAccountID(d.Get("account_id").(string))
 
 	accountSettings, response, err := ibmCloudShellClient.GetAccountSettingsWithContext(context, getAccountSettingsOptions)
 	if err != nil {
@@ -260,9 +249,7 @@ func resourceIBMCloudShellAccountSettingsRead(context context.Context, d *schema
 			return diag.FromErr(fmt.Errorf("Error setting regions: %s", err))
 		}
 	}
-	if err = d.Set("id", accountSettings.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
-	}
+	d.SetId(*accountSettings.ID)
 	if err = d.Set("created_at", intValue(accountSettings.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}

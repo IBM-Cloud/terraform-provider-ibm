@@ -47,7 +47,6 @@ resource "ibm_cloud_shell_account_settings" "cloud_shell_account_settings" {
 The following arguments are supported:
 
 * `account_id` - (Required, Forces new resource, string) The account ID in which the account settings belong to.
-* `rev` - (Optional, string) Unique revision number for the settings object.
 * `default_enable_new_features` - (Optional, bool) You can choose which Cloud Shell features are available in the account and whether any new features are enabled as they become available. The feature settings apply only to the enabled Cloud Shell locations.
 * `default_enable_new_regions` - (Optional, bool) Set whether Cloud Shell is enabled in a specific location for the account. The location determines where user and session data are stored. By default, users are routed to the nearest available location.
 * `enabled` - (Optional, bool) When enabled, Cloud Shell is available to all users in the account.
@@ -57,15 +56,13 @@ The following arguments are supported:
 * `regions` - (Optional, List) List of Cloud Shell region settings.
   * `enabled` - (Optional, bool) State of the region.
   * `key` - (Optional, string) Name of the region.
-* `tags` - (Optional, array of strings) Tags associated with the cloud_shell_account_settings.
-  **NOTE**: `Tags` are managed locally and not stored on the IBM Cloud service endpoint at this moment.
+* `rev` - (Optional, string) Unique revision number for the settings object.
 
 ## Attribute Reference
 
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the cloud_shell_account_settings.
-* `rev` - Unique revision number for the settings object.
 * `created_at` - Creation timestamp in Unix epoch time.
 * `created_by` - IAM ID of creator.
 * `default_enable_new_features` - You can choose which Cloud Shell features are available in the account and whether any new features are enabled as they become available. The feature settings apply only to the enabled Cloud Shell locations.
@@ -77,6 +74,7 @@ In addition to all arguments above, the following attributes are exported:
 * `regions` - List of Cloud Shell region settings. Nested `regions` blocks have the following structure:
 	* `enabled` - State of the region.
 	* `key` - Name of the region.
+* `rev` - Unique revision number for the settings object.
 * `type` - Type of api response object.
 * `updated_at` - Timestamp of last update in Unix epoch time.
 * `updated_by` - IAM ID of last updater.

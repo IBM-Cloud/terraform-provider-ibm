@@ -44,6 +44,7 @@ func TestAccIBMCloudShellAccountSettingsAllArgs(t *testing.T) {
 			{
 				Config: testAccCheckIBMCloudShellAccountSettingsConfig("1", cloudShellAccountID, defaultEnableNewFeatures, defaultEnableNewRegions, enabled, featureWebPreview, regionJpTok),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "id", fmt.Sprintf("ac-%s", cloudShellAccountID)),
 					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "account_id", cloudShellAccountID),
 					resource.TestCheckResourceAttrSet("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "rev"),
 					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings1", "default_enable_new_features", defaultEnableNewFeatures),
@@ -60,6 +61,7 @@ func TestAccIBMCloudShellAccountSettingsAllArgs(t *testing.T) {
 			{
 				Config: testAccCheckIBMCloudShellAccountSettingsConfig("2", cloudShellAccountID, defaultEnableNewFeaturesUpdate, defaultEnableNewRegionsUpdate, enabledUpdate, featureWebPreviewUpdate, regionJpTokUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "id", fmt.Sprintf("ac-%s", cloudShellAccountID)),
 					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "account_id", cloudShellAccountID),
 					resource.TestCheckResourceAttrSet("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "rev"),
 					resource.TestCheckResourceAttr("ibm_cloud_shell_account_settings.cloud_shell_account_settings2", "default_enable_new_features", defaultEnableNewFeaturesUpdate),
