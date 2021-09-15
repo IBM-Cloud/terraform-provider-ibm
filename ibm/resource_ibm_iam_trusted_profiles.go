@@ -176,12 +176,6 @@ func resourceIBMIamTrustedProfilesRead(context context.Context, d *schema.Resour
 	if err = d.Set("description", trustedProfile.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
-	if trustedProfile.Context != nil {
-		contextMap := resourceIBMIamTrustedProfilesResponseContextToMap(*trustedProfile.Context)
-		if err = d.Set("context", []map[string]interface{}{contextMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting context: %s", err))
-		}
-	}
 	if err = d.Set("id", trustedProfile.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
 	}
@@ -281,6 +275,7 @@ func resourceIBMIamTrustedProfilesUpdate(context context.Context, d *schema.Reso
 
 	updateProfileOptions := &iamidentityv1.UpdateProfileOptions{}
 
+	updateProfileOptions.SetIfMatch("*")
 	updateProfileOptions.SetProfileID(d.Id())
 	updateProfileOptions.SetName(d.Get("name").(string))
 	if _, ok := d.GetOk("description"); ok {
@@ -289,8 +284,8 @@ func resourceIBMIamTrustedProfilesUpdate(context context.Context, d *schema.Reso
 
 	_, response, err := iamIdentityClient.UpdateProfile(updateProfileOptions)
 	if err != nil {
-		log.Printf("[DEBUG] UpdateProfileWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("UpdateProfileWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] UpdateProfile failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("UpdateProfile failed %s\n%s", err, response))
 	}
 
 	return resourceIBMIamTrustedProfilesRead(context, d, meta)
@@ -308,8 +303,8 @@ func resourceIBMIamTrustedProfilesDelete(context context.Context, d *schema.Reso
 
 	response, err := iamIdentityClient.DeleteProfile(deleteProfileOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteProfileWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteProfileWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] DeleteProfile failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("DeleteProfile failed %s\n%s", err, response))
 	}
 
 	d.SetId("")
