@@ -1281,6 +1281,14 @@ func contains(s []int, e int) bool {
 	}
 	return false
 }
+func StringContains(s []string, str string) bool {
+	for _, a := range s {
+		if a == str {
+			return true
+		}
+	}
+	return false
+}
 
 func flattenMembersData(list []models.AccessGroupMemberV2, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) ([]string, []string) {
 	var ibmid []string

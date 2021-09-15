@@ -6,6 +6,7 @@ package ibm
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -127,12 +128,11 @@ func resourceIBMContainerAddOnsCreate(d *schema.ResourceData, meta interface{}) 
 	cluster := d.Get("cluster").(string)
 	existingAddons, err := addOnAPI.GetAddons(cluster, targetEnv)
 	if err != nil {
-		fmt.Println("[ WARN ] Error getting Addons.")
+		log.Println("[ WARN ] Error getting Addons.")
 	}
-
 	payload, err := expandAddOns(d, meta, cluster, targetEnv, existingAddons)
 	if err != nil {
-		return fmt.Errorf("Error in getting addons from expandAddOns %s", err)
+		return fmt.Errorf("[ERROR] Error in getting addons from expandAddOns during Create: %s", err)
 	}
 	payload.Enable = true
 	_, err = addOnAPI.ConfigureAddons(cluster, &payload, targetEnv)
@@ -141,8 +141,7 @@ func resourceIBMContainerAddOnsCreate(d *schema.ResourceData, meta interface{}) 
 	}
 	_, err = waitForContainerAddOns(d, meta, cluster, schema.TimeoutCreate)
 	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for Enabling Addon (%s) : %s", d.Id(), err)
+		return fmt.Errorf("[ERROR] Error waiting for Addon to reach normal during create (%s) : %s", d.Id(), err)
 	}
 	d.SetId(cluster)
 
@@ -162,7 +161,12 @@ func expandAddOns(d *schema.ResourceData, meta interface{}, cluster string, targ
 			addOns.AddonsList = append(addOns.AddonsList, addOn)
 		}
 	}
-	if existingAddons != nil && len(existingAddons) > 0 {
+	if len(existingAddons) > 0 {
+		csClient, err := meta.(ClientSession).ContainerAPI()
+		if err != nil {
+			return addOns, err
+		}
+		addOnAPI := csClient.AddOns()
 		for _, aoSet := range addOnSet {
 			ao, _ := aoSet.(map[string]interface{})
 			exist := false
@@ -170,9 +174,45 @@ func expandAddOns(d *schema.ResourceData, meta interface{}, cluster string, targ
 				if existAddon.Name == ao["name"].(string) {
 					exist = true
 					if existAddon.Version != ao["version"].(string) {
-						err := updateAddOnVersion(d, meta, ao, cluster, targetEnv)
-						if err != nil {
-							return addOns, err
+						if (ao["version"].(string) == existAddon.TargetVersion) && (StringContains(existAddon.AllowedUpgradeVersion, ao["version"].(string))) {
+							// This block upgrates addon version if addon has `allowed_upgrade_versions`
+							err := updateAddOnVersion(d, meta, ao, cluster, targetEnv)
+							if err != nil {
+								return addOns, err
+							}
+						} else if (ao["version"].(string) == existAddon.TargetVersion) && (!StringContains(existAddon.AllowedUpgradeVersion, ao["version"].(string))) {
+							// This block reinstalls addons that dont have upgradation capability
+							//Uninstall AddOn with old version
+							rmParams := v1.ConfigureAddOns{}
+							rmParam := v1.AddOn{
+								Name: existAddon.Name,
+							}
+							if existAddon.Version != "" {
+								rmParam.Version = existAddon.Version
+							}
+							rmParams.AddonsList = append(rmParams.AddonsList, rmParam)
+							rmParams.Enable = false
+							_, err = addOnAPI.ConfigureAddons(cluster, &rmParams, targetEnv)
+							if err != nil {
+								return addOns, fmt.Errorf("[ERROR] Error uninstalling addon %s  on %s during create : %s", d.Id(), existAddon.Name, err)
+							}
+							//Install AddOn with new version
+							addParams := v1.ConfigureAddOns{}
+							addParam := v1.AddOn{
+								Name: ao["name"].(string),
+							}
+							if ao["version"] != nil {
+								rmParam.Version = ao["version"].(string)
+							}
+							addParams.AddonsList = append(addParams.AddonsList, addParam)
+							addParams.Enable = true
+							_, err = addOnAPI.ConfigureAddons(cluster, &addParams, targetEnv)
+							if err != nil {
+								return addOns, fmt.Errorf("[ERROR] Error installing addon %s  on %s during update : %s", d.Id(), ao["name"], err)
+							}
+
+						} else {
+							return addOns, fmt.Errorf("[ERROR] The given addon is not provided with upgradable or updatable version")
 						}
 					}
 				}
@@ -210,13 +250,6 @@ func updateAddOnVersion(d *schema.ResourceData, meta interface{}, u map[string]i
 	_, err = addOnAPI.ConfigureAddons(cluster, &updateList, targetEnv)
 	if err != nil {
 		return err
-	}
-	if !d.IsNewResource() {
-		_, err = waitForContainerAddOns(d, meta, cluster, schema.TimeoutUpdate)
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for Updating Addon (%s) : %s", d.Id(), err)
-		}
 	}
 
 	return nil
@@ -256,15 +289,10 @@ func flattenAddOns(result []v1.AddOn) (resp *schema.Set, err error) {
 		if len(addOn.AllowedUpgradeVersion) > 0 {
 			record["allowed_upgrade_versions"] = addOn.AllowedUpgradeVersion
 		}
-		if &addOn.Deprecated != nil {
-			record["deprecated"] = addOn.Deprecated
-		}
-		if &addOn.HealthState != nil {
-			record["health_state"] = addOn.HealthState
-		}
-		if &addOn.HealthStatus != nil {
-			record["health_status"] = addOn.HealthStatus
-		}
+		record["deprecated"] = addOn.Deprecated
+		record["health_state"] = addOn.HealthState
+		record["health_status"] = addOn.HealthStatus
+
 		if addOn.MinKubeVersion != "" {
 			record["min_kube_version"] = addOn.MinKubeVersion
 		}
@@ -277,9 +305,9 @@ func flattenAddOns(result []v1.AddOn) (resp *schema.Set, err error) {
 		if addOn.TargetVersion != "" {
 			record["target_version"] = addOn.TargetVersion
 		}
-		if &addOn.VlanSpanningRequired != nil {
-			record["vlan_spanning_required"] = addOn.VlanSpanningRequired
-		}
+
+		record["vlan_spanning_required"] = addOn.VlanSpanningRequired
+
 		addOns = append(addOns, record)
 	}
 
@@ -312,13 +340,51 @@ func resourceIBMContainerAddOnsUpdate(d *schema.ResourceData, meta interface{}) 
 			newPack := nA.(map[string]interface{})
 			for _, oA := range os.List() {
 				oldPack := oA.(map[string]interface{})
-				if (strings.Compare(newPack["name"].(string), oldPack["name"].(string)) == 0) && (strings.Compare(newPack["version"].(string), oldPack["version"].(string)) != 0) && (newPack["version"].(string) != "") {
-					err := updateAddOnVersion(d, meta, newPack, cluster, targetEnv)
-					if err != nil {
-						return err
+				if (strings.Compare(newPack["name"].(string), oldPack["name"].(string)) == 0) && (strings.Compare(newPack["version"].(string), oldPack["version"].(string)) != 0) {
+					if (newPack["version"].(string) == oldPack["target_version"].(string)) && (StringContains(expandStringList(oldPack["allowed_upgrade_versions"].([]interface{})), newPack["version"].(string))) {
+						// This block upgrates addon version if addon has `allowed_upgrade_versions`
+						err := updateAddOnVersion(d, meta, newPack, cluster, targetEnv)
+						if err != nil {
+							return err
+						}
+						ns.Remove(nA)
+						os.Remove(oA)
+					} else if (newPack["version"].(string) == oldPack["target_version"].(string)) && (!StringContains(expandStringList(oldPack["allowed_upgrade_versions"].([]interface{})), newPack["version"].(string))) {
+						// This block reinstalls addons that dont have upgradation capability
+						//Uninstall AddOn with old version
+						rmParams := v1.ConfigureAddOns{}
+						rmParam := v1.AddOn{
+							Name: oldPack["name"].(string),
+						}
+						if oldPack["version"] != nil {
+							rmParam.Version = oldPack["version"].(string)
+						}
+						rmParams.AddonsList = append(rmParams.AddonsList, rmParam)
+						rmParams.Enable = false
+						_, err = addOnAPI.ConfigureAddons(cluster, &rmParams, targetEnv)
+						if err != nil {
+							return fmt.Errorf("[ERROR] Error uninstalling addon %s  on %s during update : %s", d.Id(), oldPack["name"], err)
+						}
+						//Install AddOn with new version
+						addParams := v1.ConfigureAddOns{}
+						addParam := v1.AddOn{
+							Name: newPack["name"].(string),
+						}
+						if newPack["version"] != nil {
+							rmParam.Version = newPack["version"].(string)
+						}
+						addParams.AddonsList = append(addParams.AddonsList, addParam)
+						addParams.Enable = true
+						_, err = addOnAPI.ConfigureAddons(cluster, &addParams, targetEnv)
+						if err != nil {
+							return fmt.Errorf("[ERROR] Error installing addon %s  on %s during update : %s", d.Id(), newPack["name"], err)
+						}
+						ns.Remove(nA)
+						os.Remove(oA)
+
+					} else {
+						return fmt.Errorf("[ERROR] The given addon is not provided with upgradable or updatable version")
 					}
-					ns.Remove(nA)
-					os.Remove(oA)
 				}
 			}
 		}
@@ -343,11 +409,6 @@ func resourceIBMContainerAddOnsUpdate(d *schema.ResourceData, meta interface{}) 
 			if err != nil {
 				return err
 			}
-			_, err = waitForContainerAddOns(d, meta, cluster, schema.TimeoutCreate)
-			if err != nil {
-				return fmt.Errorf(
-					"Error waiting for Enabling Addon (%s) : %s", d.Id(), err)
-			}
 		}
 		if len(remove) > 0 {
 			addOnParams := v1.ConfigureAddOns{}
@@ -367,10 +428,15 @@ func resourceIBMContainerAddOnsUpdate(d *schema.ResourceData, meta interface{}) 
 				return err
 			}
 		}
+		_, err = waitForContainerAddOns(d, meta, cluster, schema.TimeoutUpdate)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error waiting for Addon to reach normal during update (%s) : %s", d.Id(), err)
+		}
 	}
 
 	return resourceIBMContainerAddOnsRead(d, meta)
 }
+
 func resourceIBMContainerAddOnsDelete(d *schema.ResourceData, meta interface{}) error {
 	csClient, err := meta.(ClientSession).ContainerAPI()
 	if err != nil {
@@ -385,7 +451,7 @@ func resourceIBMContainerAddOnsDelete(d *schema.ResourceData, meta interface{}) 
 	cluster := d.Id()
 	payload, err := expandAddOns(d, meta, cluster, targetEnv, nil)
 	if err != nil {
-		return fmt.Errorf("Error in getting addons from expandAddOns %s", err)
+		return fmt.Errorf("[ERROR] Error in getting addons from expandAddOns during Destroy %s", err)
 	}
 
 	payload.Enable = false
@@ -413,7 +479,7 @@ func waitForContainerAddOns(d *schema.ResourceData, meta interface{}, cluster, t
 			addOns, err := addOnClient.AddOns().GetAddons(cluster, targetEnv)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return nil, "", fmt.Errorf("The resource addons %s does not exist anymore: %v", d.Id(), err)
+					return nil, "", fmt.Errorf("[ERROR] The resource addons %s does not exist anymore: %v", d.Id(), err)
 				}
 				return nil, "", err
 			}
@@ -452,7 +518,7 @@ func resourceIBMContainerAddOnsExists(d *schema.ResourceData, meta interface{}) 
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error communicating with the API: %s", err)
 	}
 
 	return true, nil
