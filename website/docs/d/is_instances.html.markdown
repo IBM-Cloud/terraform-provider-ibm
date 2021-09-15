@@ -66,6 +66,12 @@ In addition to all argument reference list, you can access the following attribu
 	  	- `name` - (String) The user-defined name for this disk.
 	  	- `resource_type` - (String) The resource type.
 	  	- `size` - (String) The size of the disk in GB (gigabytes).
+	- `gpu` - A nested block describing the gpu of this instance.
+      Nested `gpu` blocks have the following structure:
+        - `count` - Count of the gpu.
+        - `manufacture` - Manufacture of the gpu.
+        - `memory` - Memory of the gpu.
+        - `model` - Model of the gpu.
 	- `id` - (String) The ID that was assigned to the Virtual Servers for VPC instance.
 	- `image` - (String) The ID of the virtual server image that is used in the instance.
 	- `memory`- (Integer) The amount of memory that was allocated to the instance.

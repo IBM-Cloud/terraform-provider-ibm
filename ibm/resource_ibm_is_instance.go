@@ -464,30 +464,30 @@ func resourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstanceGpu: {
-				Type:       schema.TypeList,
-				Computed:   true,
-				Deprecated: "This field is deprecated",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The virtual server instance GPU configuration",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						isInstanceGpuCores: {
-							Type:     schema.TypeInt,
-							Computed: true,
-						},
 						isInstanceGpuCount: {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The number of GPUs assigned to the instance",
 						},
 						isInstanceGpuMemory: {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The overall amount of GPU memory in GiB (gibibytes)",
 						},
 						isInstanceGpuManufacturer: {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The GPU manufacturer",
 						},
 						isInstanceGpuModel: {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The GPU model",
 						},
 					},
 				},
@@ -1497,16 +1497,14 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 
 	d.Set(isInstanceMemory, *instance.Memory)
 	gpuList := make([]map[string]interface{}, 0)
-	// if instance.Gpu != nil {
-	// 	currentGpu := map[string]interface{}{}
-	// 	currentGpu[isInstanceGpuManufacturer] = instance.Gpu.Manufacturer
-	// 	currentGpu[isInstanceGpuModel] = instance.Gpu.Model
-	// 	currentGpu[isInstanceGpuCores] = instance.Gpu.Cores
-	// 	currentGpu[isInstanceGpuCount] = instance.Gpu.Count
-	// 	currentGpu[isInstanceGpuMemory] = instance.Gpu.Memory
-	// 	gpuList = append(gpuList, currentGpu)
-
-	// }
+	if instance.Gpu != nil {
+		currentGpu := map[string]interface{}{}
+		currentGpu[isInstanceGpuManufacturer] = instance.Gpu.Manufacturer
+		currentGpu[isInstanceGpuModel] = instance.Gpu.Model
+		currentGpu[isInstanceGpuCount] = instance.Gpu.Count
+		currentGpu[isInstanceGpuMemory] = instance.Gpu.Memory
+		gpuList = append(gpuList, currentGpu)
+	}
 	d.Set(isInstanceGpu, gpuList)
 
 	if instance.PrimaryNetworkInterface != nil {
