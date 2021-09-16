@@ -35,6 +35,7 @@ var publicSubnetID string
 var subnetID string
 var lbaasDatacenter string
 var lbaasSubnetId string
+var lbListerenerCertificateInstance string
 var ipsecDatacenter string
 var customersubnetid string
 var customerpeerip string
@@ -292,6 +293,11 @@ func init() {
 	if lbaasSubnetId == "" {
 		lbaasSubnetId = "2144241"
 		fmt.Println("[WARN] Set the environment variable IBM_LBAAS_SUBNETID for testing ibm_lbaas resource else it is set to default value '2144241'")
+	}
+	lbListerenerCertificateInstance = os.Getenv("IBM_LB_LISTENER_CERTIFICATE_INSTANCE")
+	if lbListerenerCertificateInstance == "" {
+		lbListerenerCertificateInstance = "crn:v1:staging:public:cloudcerts:us-south:a/2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
+		fmt.Println("[WARN] Set the environment variable IBM_LB_LISTENER_CERTIFICATE_INSTANCE for testing ibm_is_lb_listener resource for https redirect else it is set to default value 'crn:v1:staging:public:cloudcerts:us-south:a/2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed'")
 	}
 
 	dedicatedHostName = os.Getenv("IBM_DEDICATED_HOSTNAME")

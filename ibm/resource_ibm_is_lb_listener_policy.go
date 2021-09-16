@@ -4,42 +4,47 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
-	isLBListenerPolicyLBID                 = "lb"
-	isLBListenerPolicyListenerID           = "listener"
-	isLBListenerPolicyAction               = "action"
-	isLBListenerPolicyPriority             = "priority"
-	isLBListenerPolicyName                 = "name"
-	isLBListenerPolicyID                   = "policy_id"
-	isLBListenerPolicyRules                = "rules"
-	isLBListenerPolicyRulesInfo            = "rule_info"
-	isLBListenerPolicyTargetID             = "target_id"
-	isLBListenerPolicyTargetHTTPStatusCode = "target_http_status_code"
-	isLBListenerPolicyTargetURL            = "target_url"
-	isLBListenerPolicyStatus               = "provisioning_status"
-	isLBListenerPolicyRuleID               = "rule_id"
-	isLBListenerPolicyAvailable            = "active"
-	isLBListenerPolicyFailed               = "failed"
-	isLBListenerPolicyPending              = "pending"
-	isLBListenerPolicyDeleting             = "deleting"
-	isLBListenerPolicyDeleted              = "done"
-	isLBListenerPolicyRetry                = "retry"
-	isLBListenerPolicyRuleCondition        = "condition"
-	isLBListenerPolicyRuleType             = "type"
-	isLBListenerPolicyRuleValue            = "value"
-	isLBListenerPolicyRuleField            = "field"
-	isLBListenerPolicyProvisioning         = "provisioning"
-	isLBListenerPolicyProvisioningDone     = "done"
+	isLBListenerPolicyLBID                    = "lb"
+	isLBListenerPolicyListenerID              = "listener"
+	isLBListenerPolicyAction                  = "action"
+	isLBListenerPolicyPriority                = "priority"
+	isLBListenerPolicyName                    = "name"
+	isLBListenerPolicyID                      = "policy_id"
+	isLBListenerPolicyRules                   = "rules"
+	isLBListenerPolicyRulesInfo               = "rule_info"
+	isLBListenerPolicyTargetID                = "target_id"
+	isLBListenerPolicyTargetHTTPStatusCode    = "target_http_status_code"
+	isLBListenerPolicyTargetURL               = "target_url"
+	isLBListenerPolicyStatus                  = "provisioning_status"
+	isLBListenerPolicyRuleID                  = "rule_id"
+	isLBListenerPolicyAvailable               = "active"
+	isLBListenerPolicyFailed                  = "failed"
+	isLBListenerPolicyPending                 = "pending"
+	isLBListenerPolicyDeleting                = "deleting"
+	isLBListenerPolicyDeleted                 = "done"
+	isLBListenerPolicyRetry                   = "retry"
+	isLBListenerPolicyRuleCondition           = "condition"
+	isLBListenerPolicyRuleType                = "type"
+	isLBListenerPolicyRuleValue               = "value"
+	isLBListenerPolicyRuleField               = "field"
+	isLBListenerPolicyProvisioning            = "provisioning"
+	isLBListenerPolicyProvisioningDone        = "done"
+	isLBListenerPolicyHTTPSRedirectStatusCode = "target_https_redirect_status_code"
+	isLBListenerPolicyHTTPSRedirectURI        = "target_https_redirect_uri"
+	isLBListenerPolicyHTTPSRedirectListener   = "target_https_redirect_listener"
 )
 
 func resourceIBMISLBListenerPolicy() *schema.Resource {
@@ -50,6 +55,14 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 		Delete:   resourceIBMISLBListenerPolicyDelete,
 		Exists:   resourceIBMISLBListenerPolicyExists,
 		Importer: &schema.ResourceImporter{},
+
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceLBListenerPolicyCustomizeDiff(diff)
+				},
+			),
+		),
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -92,6 +105,27 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 					return false
 				},
 				Description: "Listener ID",
+			},
+
+			isLBListenerPolicyHTTPSRedirectStatusCode: {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				RequiredWith: []string{isLBListenerPolicyHTTPSRedirectListener},
+				Description:  "The HTTP status code to be returned in the redirect response",
+			},
+
+			isLBListenerPolicyHTTPSRedirectURI: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{isLBListenerPolicyHTTPSRedirectListener, isLBListenerPolicyHTTPSRedirectStatusCode},
+				Description:  "Target URI where traffic will be redirected",
+			},
+
+			isLBListenerPolicyHTTPSRedirectListener: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{isLBListenerPolicyHTTPSRedirectStatusCode},
+				Description:  "ID of the listener that will be set as http redirect target",
 			},
 
 			isLBListenerPolicyAction: {
@@ -228,7 +262,7 @@ func resourceIBMISLBListenerPolicy() *schema.Resource {
 func resourceIBMISLBListenerPolicyValidator() *ResourceValidator {
 
 	validateSchema := make([]ValidateSchema, 0)
-	action := "forward, redirect, reject"
+	action := "forward, redirect, reject, https_redirect"
 	validateSchema = append(validateSchema,
 		ValidateSchema{
 			Identifier:                 isLBListenerPolicyName,
@@ -322,6 +356,10 @@ func lbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, list
 
 	var target vpcv1.LoadBalancerListenerPolicyTargetPrototypeIntf
 
+	listener, listenerSet := d.GetOk(isLBListenerPolicyHTTPSRedirectListener)
+	httpsStatusCode, httpsStatusSet := d.GetOk(isLBListenerPolicyHTTPSRedirectStatusCode)
+	uri, uriSet := d.GetOk(isLBListenerPolicyHTTPSRedirectURI)
+
 	if actionChk.(string) == "forward" {
 		if targetIDSet {
 
@@ -353,6 +391,32 @@ func lbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, list
 			urlPrototype.URL = &link
 		} else {
 			return fmt.Errorf("When action is redirect please specify target_url")
+		}
+
+		target = &urlPrototype
+	} else if actionChk.(string) == "https_redirect" {
+
+		urlPrototype := vpcv1.LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerHTTPSRedirectPrototype{}
+
+		if listenerSet {
+			listener := listener.(string)
+			urlPrototype.Listener = &vpcv1.LoadBalancerListenerIdentity{
+				ID: &listener,
+			}
+		} else {
+			return fmt.Errorf("When action is https_redirect please specify target_https_redirect_listener")
+		}
+
+		if httpsStatusSet {
+			sc := int64(httpsStatusCode.(int))
+			urlPrototype.HTTPStatusCode = &sc
+		} else {
+			return fmt.Errorf("When action is https_redirect please specify target_https_redirect_status_code")
+		}
+
+		if uriSet {
+			link := uri.(string)
+			urlPrototype.URI = &link
 		}
 
 		target = &urlPrototype
@@ -615,6 +679,7 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 		loadBalancerListenerPolicyPatchModel.Priority = &priority
 		hasChanged = true
 	}
+	httpsURIRemoved := false
 
 	var target vpcv1.LoadBalancerListenerPolicyTargetPatchIntf
 	//If Action is forward and TargetID is changed, set the target to pool ID
@@ -658,12 +723,52 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 			target = &redirectPatch
 			loadBalancerListenerPolicyPatchModel.Target = target
 		}
+	} else if d.Get(isLBListenerPolicyAction).(string) == "https_redirect" {
+
+		httpsRedirectPatch := vpcv1.LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerHTTPSRedirectPatch{}
+
+		targetChange := false
+		if d.HasChange(isLBListenerPolicyHTTPSRedirectListener) {
+			listener := d.Get(isLBListenerPolicyHTTPSRedirectListener).(string)
+			httpsRedirectPatch.Listener = &vpcv1.LoadBalancerListenerIdentity{
+				ID: &listener,
+			}
+			hasChanged = true
+			targetChange = true
+		}
+
+		if d.HasChange(isLBListenerPolicyHTTPSRedirectStatusCode) {
+			status := d.Get(isLBListenerPolicyHTTPSRedirectStatusCode).(int)
+			sc := int64(status)
+			httpsRedirectPatch.HTTPStatusCode = &sc
+			hasChanged = true
+			targetChange = true
+		}
+
+		if d.HasChange(isLBListenerPolicyHTTPSRedirectURI) {
+			uri := d.Get(isLBListenerPolicyHTTPSRedirectURI).(string)
+			httpsRedirectPatch.URI = &uri
+			hasChanged = true
+			targetChange = true
+			if uri == "" {
+				httpsURIRemoved = true
+			}
+		}
+
+		//Update the target only if there is a change in either listener, statusCode or URI
+		if targetChange {
+			target = &httpsRedirectPatch
+			loadBalancerListenerPolicyPatchModel.Target = target
+		}
 	}
 
 	if hasChanged {
 		loadBalancerListenerPolicyPatch, err := loadBalancerListenerPolicyPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for LoadBalancerListenerPolicyPatch: %s", err)
+		}
+		if httpsURIRemoved {
+			loadBalancerListenerPolicyPatch["target"].(map[string]interface{})["uri"] = nil
 		}
 		updatePolicyOptions.LoadBalancerListenerPolicyPatch = loadBalancerListenerPolicyPatch
 		isLBKey := "load_balancer_key_" + lbID
@@ -889,6 +994,15 @@ func lbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, listene
 			if ok {
 				d.Set(isLBListenerPolicyTargetURL, target.URL)
 				d.Set(isLBListenerPolicyTargetHTTPStatusCode, target.HTTPStatusCode)
+			}
+		}
+	} else if *(policy.Action) == "https_redirect" {
+		if reflect.TypeOf(policy.Target).String() == "*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerHTTPSRedirect" {
+			target, ok := policy.Target.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerHTTPSRedirect)
+			if ok {
+				d.Set(isLBListenerPolicyHTTPSRedirectListener, target.Listener.ID)
+				d.Set(isLBListenerPolicyHTTPSRedirectStatusCode, target.HTTPStatusCode)
+				d.Set(isLBListenerPolicyHTTPSRedirectURI, target.URI)
 			}
 		}
 	}
