@@ -683,7 +683,6 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			if initParms.Keys != nil {
 				initKeyList := make([]map[string]interface{}, 0)
 				for _, key := range initParms.Keys {
-					key := key.(*vpcv1.KeyReferenceInstanceInitializationContext)
 					initKey := map[string]interface{}{}
 					id := ""
 					if key.ID != nil {

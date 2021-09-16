@@ -48,7 +48,9 @@ In addition to all argument reference list, you can access the following attribu
 - `cse_source_addresses`- (List) A list of the cloud service endpoints that are associated with your VPC, including their source IP address and zone.
 	- `address` - (String) The IP address of the cloud service endpoint.
 	- `zone_name` - (String) The zone where the cloud service endpoint is located.
+- `default_security_group_crn` - (String) CRN of the default security group created and attached to the VPC. 
 - `default_security_group` - (String) The default security group ID created and attached to the VPC. 
+- `default_network_acl_crn`-  (String) CRN of the default network ACL ID created and attached to the VPC.
 - `default_network_acl`-  (String) The default network ACL ID created and attached to the VPC.
 - `default_routing_table`-  (String) The unique identifier of the VPC default routing table.
 - `id` - (String) The unique identifier of the VPC that you created.
