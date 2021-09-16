@@ -55,6 +55,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `crn` - (String) The CRN for this load balancer.
 - `hostname` - (String) The fully qualified domain name assigned to this load balancer.
 - `id` - (String) The unique identifier of the load balancer.
 - `operating_status` - (String) The operating status of this load balancer.

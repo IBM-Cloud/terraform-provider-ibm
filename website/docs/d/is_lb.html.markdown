@@ -42,6 +42,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
+- `crn` - (String) The CRN for this load balancer.
 - `hostname` - (String) Fully qualified domain name assigned to this load balancer.
 - `id` - (String) The ID of the load balancer.
 - `listeners` - (String) The ID of the listeners attached to this load balancer.

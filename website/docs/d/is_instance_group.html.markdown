@@ -28,7 +28,8 @@ Review the argument references that you can specify for your data source.
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
 - `application_port` - (String) Scales an instances to supply the port for the Load Balancer pool member.
-- `id`- (Object) The ID of an instance group.
+- `crn`- (String) The CRN for this instance group.
+- `id`- (String) The ID of an instance group.
 - `instance_template` -  (String) The ID of an instance template to create an instance group.
 - `instance_count` - (String) The number of instances created in an instance group.
 - `load_balancer_pool` - (String) The Load Balancer pool ID.
