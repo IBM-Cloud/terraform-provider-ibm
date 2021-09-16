@@ -79,13 +79,12 @@ func dataIBMCISFiltersRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error Listing all filters %q: %s %s", d.Id(), err, resp)
 	}
 
-	filters := result.Result
-
 	filtersList := make([]map[string]interface{}, 0)
-	for _, filtersObj := range filters {
+
+	for _, filtersObj := range result.Result {
 		filtersOutput := map[string]interface{}{}
 		filtersOutput[cisFilterID] = *filtersObj.ID
-		filtersOutput[cisFilterDescription] = *filtersObj.Description
+		filtersOutput[cisFilterDescription] = filtersObj.Description
 		filtersOutput[cisFilterExpression] = *filtersObj.Expression
 		filtersOutput[cisFilterPaused] = *filtersObj.Paused
 		filtersList = append(filtersList, filtersOutput)
