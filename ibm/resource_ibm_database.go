@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 
@@ -139,7 +140,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Description:  "The name of the Cloud Internet database service",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"databases-for-etcd", "databases-for-postgresql", "databases-for-redis", "databases-for-elasticsearch", "databases-for-mongodb", "messages-for-rabbitmq", "databases-for-mysql", "databases-for-cassandra"}),
+				ValidateFunc: validateAllowedStringValue([]string{"databases-for-etcd", "databases-for-postgresql", "databases-for-redis", "databases-for-elasticsearch", "databases-for-mongodb", "messages-for-rabbitmq", "databases-for-mysql", "databases-for-cassandra", "databases-for-enterprisedb"}),
 			},
 			"plan": {
 				Description:  "The plan type of the Database instance",
@@ -908,7 +909,7 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 	}
 
 	service := diff.Get("service").(string)
-	if service == "databases-for-postgresql" || service == "databases-for-elasticsearch" || service == "databases-for-cassandra" {
+	if service == "databases-for-postgresql" || service == "databases-for-elasticsearch" || service == "databases-for-cassandra" || service == "databases-for-enterprisedb" {
 		planPhase := diff.Get("plan_validation").(bool)
 
 		if planPhase {
@@ -965,7 +966,7 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 			}
 		}
 	} else if diff.HasChange("node_count") || diff.HasChange("node_memory_allocation_mb") || diff.HasChange("node_disk_allocation_mb") || diff.HasChange("node_cpu_allocation_count") {
-		return fmt.Errorf("[ERROR] node_count, node_memory_allocation_mb, node_disk_allocation_mb, node_cpu_allocation_count only supported for postgresql and elasticsearch")
+		return fmt.Errorf("[ERROR] node_count, node_memory_allocation_mb, node_disk_allocation_mb, node_cpu_allocation_count only supported for postgresql, elasticsearch and cassandra")
 	}
 
 	return nil
@@ -1504,10 +1505,6 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 			params.GroupBdy.Cpu = &CpuReq
 		}
 
-		//task, err := retryTask(func() (task icdv4.Task, err error) {
-		//	return icdClient.Groups().UpdateGroup(icdId, "member", params)
-		//})
-
 		task, err := icdClient.Groups().UpdateGroup(icdId, "member", params)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error updating database scaling group: %s", err)
@@ -1791,11 +1788,13 @@ func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint st
 		dbConnection = connection.Grpc
 	case "messages-for-rabbitmq":
 		dbConnection = connection.Amqps
+	case "databases-for-enterprisedb":
+		dbConnection = connection.Postgres
 	default:
 		return csEntry, fmt.Errorf("[ERROR] Unrecognised database type during connection string lookup: %s", service)
 	}
 
-	if &cassandraConnection != nil {
+	if !reflect.DeepEqual(cassandraConnection, icdv4.CassandraUri{}) {
 		csEntry = CsEntry{
 			Name:         userName,
 			Hosts:        cassandraConnection.Hosts,
