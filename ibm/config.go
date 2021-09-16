@@ -94,6 +94,7 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -252,6 +253,7 @@ type ClientSession interface {
 	SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error)
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
+	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 }
 
 type clientSession struct {
@@ -495,6 +497,9 @@ type clientSession struct {
 	//Satellite link service
 	satelliteLinkClient    *satellitelinkv1.SatelliteLinkV1
 	satelliteLinkClientErr error
+
+	esSchemaRegistryClient *schemaregistryv1.SchemaregistryV1
+	esSchemaRegistryErr    error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -911,6 +916,10 @@ func (sess clientSession) CisFiltersSession() (*cisfiltersv1.FiltersV1, error) {
 // Activity Tracker API
 func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
 	return session.atrackerClient, session.atrackerClientErr
+}
+
+func (session clientSession) ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error) {
+	return session.esSchemaRegistryClient, session.esSchemaRegistryErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -2181,6 +2190,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.satelliteLinkClientErr = fmt.Errorf("Error occurred while configuring Satellite Link service: %q", err)
+	}
+
+	esSchemaRegistryV1Options := &schemaregistryv1.SchemaregistryV1Options{
+		Authenticator: authenticator,
+	}
+	session.esSchemaRegistryClient, err = schemaregistryv1.NewSchemaregistryV1(esSchemaRegistryV1Options)
+	if err != nil {
+		session.esSchemaRegistryErr = fmt.Errorf("Error occured while configuring event streams schema registry: %q", err)
 	}
 
 	return session, nil
