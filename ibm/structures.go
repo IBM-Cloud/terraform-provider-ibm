@@ -2047,6 +2047,34 @@ func resourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
 	return nil
 }
 
+func resourceVolumeCapacityValidate(diff *schema.ResourceDiff) error {
+	if diff.Id() != "" && diff.HasChange(isVolumeCapacity) {
+		o, n := diff.GetChange(isVolumeCapacity)
+		old := int64(o.(int))
+		new := int64(n.(int))
+		if new < old {
+			return fmt.Errorf("'%s' attribute has a constraint, it supports only expansion and can't be changed from %d to %d.", isVolumeCapacity, old, new)
+		}
+	}
+	if profileOk, ok := diff.GetOk(isVolumeProfileName); ok {
+		profile := profileOk.(string)
+		var capacity int64
+		if capacityOk, ok := diff.GetOk(isVolumeCapacity); ok {
+			capacity = int64(capacityOk.(int))
+		}
+		if capacity == int64(0) {
+			capacity = int64(100)
+		}
+		if profile == "5iops-tier" && capacity > 9600 {
+			return fmt.Errorf("'%s' storage block supports capacity up to %d.", profile, 9600)
+		} else if profile == "10iops-tier" && capacity > 4800 {
+			return fmt.Errorf("'%s' storage block supports capacity up to %d.", profile, 4800)
+		}
+	}
+
+	return nil
+}
+
 func flattenRoleData(object []iampolicymanagementv1.Role, roleType string) []map[string]string {
 	var roles []map[string]string
 

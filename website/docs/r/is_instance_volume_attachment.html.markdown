@@ -121,8 +121,14 @@ The `ibm_is_instance_volume_attachment` resource provides the following [[Timeou
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `capacity` - (Optional, Integer) The capacity of the volume in gigabytes. **NOTE** The specified minimum and maximum capacity values for creating or updating volumes may expand in the future. Accepted value is in [10-2000].
-  - If this property is not provided or less than the minimum_capacity. The minimum_capacity of the snapshot will be used as the capacity for the volume.
+- `capacity` - (Optional, Integer) The capacity of the volume in gigabytes. 
+
+  **NOTE** 
+    - The specified minimum and maximum capacity values for creating or updating volumes may expand in the future. Accepted value is in [10-16000].
+    - If unspecified, the capacity will be the source snapshot's `minimum_capacity` when `snapshot` is provided.
+    - Supports only expansion on update (must not be less than the current volume capacity)
+    - Can be updated only if volume is attached to an running virtual server instance.
+    - Stopped instance will be started on update of capacity of the volume.
 
 - `delete_volume_on_attachment_delete` - (Optional, Bool) If set to **true**, when deleting the attachment, the volume will also be deleted. By default it is **true**
 - `delete_volume_on_instance_delete` - (Optional, Bool) If set to **true**, when deleting the instance, the volume will also be deleted. By default it is **false**
