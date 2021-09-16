@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMDatabaseInstance_Cassandra_Basic(t *testing.T) {
+func TestAccIBMCassandraDatabaseInstanceBasic(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
@@ -237,8 +237,8 @@ func testAccCheckIBMDatabaseInstanceCassandraBasic(databaseResourceGroup string,
 		}
 
 		timeouts {
-			create = "120m"
-			update = "120m"
+			create = "480m"
+			update = "480m"
 			delete = "15m"
 		}
 	}
@@ -279,8 +279,8 @@ func testAccCheckIBMDatabaseInstanceCassandraFullyspecified(databaseResourceGrou
 		}
 
 		timeouts {
-			create = "120m"
-			update = "120m"
+			create = "480m"
+			update = "480m"
 			delete = "15m"
 		}
 	}
@@ -306,8 +306,8 @@ func testAccCheckIBMDatabaseInstanceCassandraReduced(databaseResourceGroup strin
 		members_disk_allocation_mb   = 61440
 
 		timeouts {
-			create = "120m"
-			update = "120m"
+			create = "480m"
+			update = "480m"
 			delete = "15m"
 		}
 	}
@@ -343,8 +343,8 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeBasic(databaseResourceGroup str
 		}
 
 		timeouts {
-			create = "120m"
-			update = "120m"
+			create = "480m"
+			update = "480m"
 			delete = "15m"
 		}
 	}
@@ -388,8 +388,8 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeFullyspecified(databaseResource
 		}
 
 		timeouts {
-			create = "120m"
-			update = "120m"
+			create = "480m"
+			update = "480m"
 			delete = "15m"
 		}
 	}
@@ -417,8 +417,8 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeReduced(databaseResourceGroup s
         node_cpu_allocation_count    = 6
 
 		timeouts {
-			create = "120m"
-			update = "120m"
+			create = "480m"
+			update = "480m"
 			delete = "15m"
 		}
 	}
@@ -445,8 +445,8 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeScaleOut(databaseResourceGroup 
         node_cpu_allocation_count    = 6
 
 		timeouts {
-			create = "120m"
-			update = "120m"
+			create = "480m"
+			update = "480m"
 			delete = "15m"
 		}
 	}
@@ -468,8 +468,8 @@ func testAccCheckIBMDatabaseInstanceCassandraImport(databaseResourceGroup string
 		location          = "us-south"
 
 		timeouts {
-			create = "120m"
-			update = "120m"
+			create = "480m"
+			update = "480m"
 			delete = "15m"
 		}
 
