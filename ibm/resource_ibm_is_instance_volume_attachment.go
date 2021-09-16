@@ -4,12 +4,14 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -43,6 +45,11 @@ func resourceIBMISInstanceVolumeAttachment() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
 		},
+
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return resourceVolumeCapacityValidate(diff)
+			}),
 
 		Schema: map[string]*schema.Schema{
 			isInstanceId: {
@@ -115,7 +122,6 @@ func resourceIBMISInstanceVolumeAttachment() *schema.Resource {
 				Type:          schema.TypeInt,
 				Optional:      true,
 				Computed:      true,
-				ForceNew:      true,
 				AtLeastOneOf:  []string{isInstanceVolAttVol, isInstanceVolCapacity, isInstanceVolumeSnapshot},
 				ConflictsWith: []string{isInstanceVolAttVol},
 				ValidateFunc:  InvokeValidator("ibm_is_instance_volume_attachment", isInstanceVolCapacity),
@@ -204,7 +210,7 @@ func resourceIBMISInstanceVolumeAttachmentValidator() *ResourceValidator {
 			ValidateFunctionIdentifier: IntBetween,
 			Type:                       TypeInt,
 			MinValue:                   "10",
-			MaxValue:                   "2000"})
+			MaxValue:                   "16000"})
 
 	validateSchema = append(validateSchema,
 		ValidateSchema{
@@ -436,6 +442,69 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 		instanceVolAttUpdate, response, err := instanceC.UpdateInstanceVolumeAttachment(updateInstanceVolAttOptions)
 		if err != nil || instanceVolAttUpdate == nil {
 			log.Printf("[DEBUG] Instance volume attachment creation err %s\n%s", err, response)
+			return err
+		}
+	}
+
+	if d.HasChange(isInstanceVolCapacity) {
+
+		id := d.Get(isInstanceVolAttVol).(string)
+		getvolumeoptions := &vpcv1.GetVolumeOptions{
+			ID: &id,
+		}
+		vol, response, err := instanceC.GetVolume(getvolumeoptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			return fmt.Errorf("Error Getting Volume (%s): %s\n%s", id, err, response)
+		}
+
+		if vol.VolumeAttachments == nil || len(vol.VolumeAttachments) == 0 || *vol.VolumeAttachments[0].Name == "" {
+			return fmt.Errorf("Error volume capacity can't be updated since volume %s is not attached to any instance for VolumePatch", id)
+		}
+
+		getinsOptions := &vpcv1.GetInstanceOptions{
+			ID: &instanceId,
+		}
+		instance, response, err := instanceC.GetInstance(getinsOptions)
+		if err != nil || instance == nil {
+			return fmt.Errorf("Error retrieving Instance (%s) : %s\n%s", instanceId, err, response)
+		}
+		if instance != nil && *instance.Status != "running" {
+			actiontype := "start"
+			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+				InstanceID: &instanceId,
+				Type:       &actiontype,
+			}
+			_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+			if err != nil {
+				return fmt.Errorf("Error starting Instance (%s) : %s\n%s", instanceId, err, response)
+			}
+			_, err = isWaitForInstanceAvailable(instanceC, instanceId, d.Timeout(schema.TimeoutCreate), d)
+			if err != nil {
+				return err
+			}
+		}
+
+		capacity := int64(d.Get(isVolumeCapacity).(int))
+		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
+			ID: &id,
+		}
+		volumePatchModel := &vpcv1.VolumePatch{}
+		volumePatchModel.Capacity = &capacity
+		volumePatch, err := volumePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for VolumePatch: %s", err)
+		}
+		updateVolumeOptions.VolumePatch = volumePatch
+		_, response, err = instanceC.UpdateVolume(updateVolumeOptions)
+		if err != nil {
+			return fmt.Errorf("Error updating volume: %s\n%s", err, response)
+		}
+		_, err = isWaitForVolumeAvailable(instanceC, id, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
 			return err
 		}
 	}
