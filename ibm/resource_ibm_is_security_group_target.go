@@ -46,6 +46,11 @@ func resourceIBMISSecurityGroupTarget() *schema.Resource {
 				Computed:    true,
 				Description: "Security group target name",
 			},
+			"crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN for this Security group target",
+			},
 
 			isSecurityGroupResourceType: {
 				Type:        schema.TypeString,
@@ -134,6 +139,7 @@ func resourceIBMISSecurityGroupTargetRead(d *schema.ResourceData, meta interface
 
 	target := data.(*vpcv1.SecurityGroupTargetReference)
 	d.Set("name", *target.Name)
+	d.Set("crn", target.CRN)
 	if target.ResourceType != nil && *target.ResourceType != "" {
 		d.Set(isSecurityGroupResourceType, *target.ResourceType)
 	}

@@ -26,6 +26,7 @@ Review the argument references that you can specify for your data source.
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
 - `created_at` - (Timestamp) The created date and time of the endpoint gateway.
+- `crn` - (String) The CRN for this endpoint gateway.
 - `health_state` - (String) Endpoint gateway health state. `ok: Healthy`, `degraded: Suffering from compromised performance, capacity, or connectivity`, `faulted: Completely unreachable, inoperative, or entirely incapacitated`, `inapplicable: The health state does not apply because of the current lifecycle state`. A resource with a lifecycle state of failed or deleting will have a health state of inapplicable. A pending resource may have this state.
 - `lifecycle_state` - (String) The endpoint gateway lifecycle state, supported values are **deleted**, **deleting**, **failed**, **pending**, **stable**, **updating**, **waiting**, **suspended**.
 - `ips` - (List) The unique identifier for the reserved IP.

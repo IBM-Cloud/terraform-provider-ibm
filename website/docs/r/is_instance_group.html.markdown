@@ -83,6 +83,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `crn` - (String) The CRN for this instance group.
 - `id` - (String) The ID of an instance group.
 - `instances` - (String) The number of instances in the instances group.
 - `managers` - (String) List of managers associated with the instance group.
