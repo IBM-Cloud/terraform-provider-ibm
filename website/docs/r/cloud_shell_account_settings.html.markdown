@@ -82,13 +82,12 @@ In addition to all arguments above, the following attributes are exported:
 ## Import
 
 You can import the `cloud_shell_account_settings` resource by using `account_id`.
-The `account_id` property can be formed from `account_id`, and `account_id` in the following format:
 
 ```
-<account_id>/<account_id>
+<account_id>
 ```
 * `account_id`: A string. The account ID in which the account settings belong to.
 
 ```
-$ terraform import cloud_shell_account_settings.cloud_shell_account_settings <account_id>/<account_id>
+$ terraform import cloud_shell_account_settings.cloud_shell_account_settings <account_id>
 ```
