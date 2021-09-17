@@ -112,6 +112,13 @@ func dataSourceIBMISVolume() *schema.Resource {
 				Computed:    true,
 				Description: "Identifier of the snapshot from which this volume was cloned",
 			},
+			isVolumeAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
+				Description: "Access management tags for the volume instance",
+			},
 
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
@@ -229,12 +236,18 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 			}
 			d.Set(isVolumeStatusReasons, statusReasonsList)
 		}
-		tags, err := GetTagsUsingCRN(meta, *vol.CRN)
+		tags, err := GetGlobalTagsUsingCRN(meta, *vol.CRN, "", isVolumeUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
 		}
 		d.Set(isVolumeTags, tags)
+		accesstags, err := GetGlobalTagsUsingCRN(meta, *vol.CRN, "", isVolumeAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource vpc volume (%s) access tags: %s", d.Id(), err)
+		}
+		d.Set(isVolumeAccessTags, accesstags)
 		controller, err := getBaseController(meta)
 		if err != nil {
 			return err

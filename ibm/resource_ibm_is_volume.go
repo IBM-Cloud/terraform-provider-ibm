@@ -26,6 +26,9 @@ const (
 	isVolumeIops                 = "iops"
 	isVolumeCrn                  = "crn"
 	isVolumeTags                 = "tags"
+	isVolumeAccessTags           = "access_tags"
+	isVolumeUserTagType          = "user"
+	isVolumeAccessTagType        = "access"
 	isVolumeStatus               = "status"
 	isVolumeStatusReasons        = "status_reasons"
 	isVolumeStatusReasonsCode    = "code"
@@ -166,6 +169,15 @@ func resourceIBMISVolume() *schema.Resource {
 				Description: "Tags for the volume instance",
 			},
 
+			isVolumeAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_volume", "accesstag")},
+				Set:         resourceIBMVPCHash,
+				Description: "Access management tags for the volume instance",
+			},
+
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -219,6 +231,16 @@ func resourceIBMISVolumeValidator() *ResourceValidator {
 			Type:                       TypeString,
 			Optional:                   true,
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^([ ]*[A-Za-z0-9:_.-]+[ ]*)+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
@@ -294,13 +316,23 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 	if err != nil {
 		return err
 	}
+
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isVolumeTags); ok || v != "" {
 		oldList, newList := d.GetChange(isVolumeTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.CRN)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, "", isVolumeUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource Volume (%s) tags: %s", d.Id(), err)
+		}
+	}
+
+	if _, ok := d.GetOk(isVolumeAccessTags); ok {
+		oldList, newList := d.GetChange(isVolumeAccessTags)
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, "", isVolumeAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc volume (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -362,12 +394,19 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		d.Set(isVolumeStatusReasons, statusReasonsList)
 	}
-	tags, err := GetTagsUsingCRN(meta, *vol.CRN)
+
+	tags, err := GetGlobalTagsUsingCRN(meta, *vol.CRN, "", isVolumeUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
 	}
+	accesstags, err := GetGlobalTagsUsingCRN(meta, *vol.CRN, "", isVolumeAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource subnet (%s) access tags: %s", d.Id(), err)
+	}
 	d.Set(isVolumeTags, tags)
+	d.Set(isVolumeAccessTags, accesstags)
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
@@ -424,10 +463,27 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 			return fmt.Errorf("Error getting Volume : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isVolumeTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.CRN)
+
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, "", isVolumeUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc volume (%s) tags: %s", id, err)
+		}
+	}
+	if d.HasChange(isVolumeAccessTags) {
+		options := &vpcv1.GetVolumeOptions{
+			ID: &id,
+		}
+		vol, response, err := sess.GetVolume(options)
+		if err != nil {
+			return fmt.Errorf("Error getting Volume : %s\n%s", err, response)
+		}
+		oldList, newList := d.GetChange(isVolumeAccessTags)
+
+		err = UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, "", isVolumeAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource vpc volume (%s) access tags: %s", id, err)
 		}
 	}
 	if hasChanged {
