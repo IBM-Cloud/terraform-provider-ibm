@@ -2078,6 +2078,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	ibmCloudShellClientOptions := &ibmcloudshellv1.IBMCloudShellV1Options{
 		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_CLOUD_SHELL_API_ENDPOINT"}, ibmcloudshellv1.DefaultServiceURL),
 	}
 	session.ibmCloudShellClient, err = ibmcloudshellv1.NewIBMCloudShellV1(ibmCloudShellClientOptions)
 	if err == nil {
