@@ -6,8 +6,10 @@ package ibm
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -95,6 +97,17 @@ func resourceIBMPrivateDNSLocationCreate(context context.Context, d *schema.Reso
 		return diag.FromErr(fmt.Errorf("Error creating the custom resolver location %s:%s", err, resp))
 	}
 	d.SetId(convertCisToTfThreeVar(*result.ID, resolverID, instanceID))
+	_, err = waitForPDNSCustomResolverHealthy(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	optCr := sess.NewUpdateCustomResolverOptions(instanceID, resolverID)
+	optCr.SetEnabled(true)
+	resultCr, respCr, errCr := sess.UpdateCustomResolverWithContext(context, optCr)
+	if errCr != nil || resultCr == nil {
+		return diag.FromErr(fmt.Errorf("Error updating the  custom resolver %s:%s", errCr, respCr))
+	}
+
 	return resourceIBMPrivateDNSLocationRead(context, d, meta)
 }
 
@@ -130,6 +143,12 @@ func resourceIBMPrivateDNSLocationDelete(context context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 	locationID, resolverID, instanceID, err := convertTfToCisThreeVar(d.Id())
+	updatelocation := sess.NewUpdateCustomResolverLocationOptions(instanceID, resolverID, locationID)
+	updatelocation.SetEnabled(false)
+	result, resp, err := sess.UpdateCustomResolverLocationWithContext(context, updatelocation)
+	if err != nil || result == nil {
+		return diag.FromErr(fmt.Errorf("Error updating the custom resolver location %s:%s", err, resp))
+	}
 	deleteCRlocation := sess.NewDeleteCustomResolverLocationOptions(instanceID, resolverID, locationID)
 	resp, errDel := sess.DeleteCustomResolverLocationWithContext(context, deleteCRlocation)
 	if errDel != nil {
@@ -140,4 +159,33 @@ func resourceIBMPrivateDNSLocationDelete(context context.Context, d *schema.Reso
 	}
 	d.SetId("")
 	return nil
+}
+
+func waitForPDNSCustomResolverHealthy(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	sess, err := meta.(ClientSession).PrivateDNSClientSession()
+	if err != nil {
+		return nil, err
+	}
+	_, customResolverID, crn, _ := convertTfToCisThreeVar(d.Id())
+	opt := sess.NewGetCustomResolverOptions(crn, customResolverID)
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{pdnsCustomResolverCritical},
+		Target:  []string{pdnsCustomResolverDegraded, pdnsCustomResolverHealthy},
+		Refresh: func() (interface{}, string, error) {
+			res, detail, err := sess.GetCustomResolver(opt)
+			if err != nil {
+				if detail != nil && detail.StatusCode == 404 {
+					return nil, "", fmt.Errorf("The custom resolver %s does not exist anymore: %v", customResolverID, err)
+				}
+				return nil, "", fmt.Errorf("Get the custom resolver %s failed with resp code: %s, err: %v", customResolverID, detail, err)
+			}
+			return res, *res.Health, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      5 * time.Second,
+		MinTimeout: 60 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }

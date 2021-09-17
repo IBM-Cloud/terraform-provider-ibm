@@ -14,8 +14,8 @@ import (
 func TestAccIBMPrivateDNSCRLocations_Basic(t *testing.T) {
 	name := fmt.Sprintf("testpdnscustomresolver%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
 	description := "new test CR Locations - TF"
-	subnet_crn := "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-03d54d71-b438-4d20-b943-76d3d2a1a590"
-	subnet_crn_new := "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-84dcb64e-3ada-45fd-b0f7-94de1ac0d16b"
+	subnet_crn := "crn:v1:staging:public:is:us-south-2:a/01652b251c3ae2787110a995d8db0135::subnet:0726-b6f3cb83-48f0-4c55-9023-202fe4570c83"
+	subnet_crn_new := "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-a094c4e8-02cd-4b04-858d-7f31205b93b9"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -34,8 +34,8 @@ func TestAccIBMPrivateDNSCRLocations_Basic(t *testing.T) {
 func TestAccIBMPrivateDNSCRLocations_Import(t *testing.T) {
 	name := fmt.Sprintf("testpdnscustomresolver%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
 	description := "new test CR Locations - TF"
-	subnet_crn := "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-03d54d71-b438-4d20-b943-76d3d2a1a590"
-	subnet_crn_new := "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-84dcb64e-3ada-45fd-b0f7-94de1ac0d16b"
+	subnet_crn := "crn:v1:staging:public:is:us-south-2:a/01652b251c3ae2787110a995d8db0135::subnet:0726-b6f3cb83-48f0-4c55-9023-202fe4570c83"
+	subnet_crn_new := "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-a094c4e8-02cd-4b04-858d-7f31205b93b9"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -69,18 +69,20 @@ func testAccCheckIBMPrivateDNSCRLocationsBasic(name, description, subnet_crn, su
 			instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
 			description = "%s"
 			enabled = true
-			locations {
-				subnet_crn = "%s"
-				enabled    = true
-			}
 		}
-
 		resource "ibm_dns_custom_resolver_location" "test" {
 			depends_on  = [ibm_dns_custom_resolver.test]
 			instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
 			resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 			subnet_crn = "%s"
-			enabled    = false
+			enabled    = true
+		}
+		resource "ibm_dns_custom_resolver_location" "test" {
+			depends_on  = [ibm_dns_custom_resolver.test]
+			instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
+			resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
+			subnet_crn = "%s"
+			enabled    = true
 		}
 	  	`, name, description, subnet_crn, subnet_crn_new)
 }
