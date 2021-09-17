@@ -45,7 +45,7 @@ Review the argument references that you can specify for your resource.
 
 - `logging`- (Optional, Bool) Enable or disable datapath logging for the load balancer. This is applicable only for application load balancer. Supported values are **true** or **false**. Default value is **false**.
 - `name` - (Required, String) The name of the VPC load balancer.
-- `profile` - (Required, Forces new resource, String) The profile to use for this load balancer. Supported value is `network-fixed`.
+- `profile` - (Optional, Forces new resource, String) For a Network Load Balancer, this attribute is required and should be set to `network-fixed`. For Application Load Balancer, profile is not a required attribute.
 - `resource_group` - (Optional, Forces new resource, String) The resource group where the load balancer to be created.
 - `security_groups`  (Optional, List) A list of security groups to use for this load balancer. This option is supported only for application load balancers.
 - `subnets` - (Required, List) List of the subnets IDs to connect to the load balancer.
