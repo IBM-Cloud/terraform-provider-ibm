@@ -19,6 +19,7 @@ var cisDomainStatic string
 var cisDomainTest string
 var cisInstance string
 var cisResourceGroup string
+var cloudShellAccountID string
 var cosCRN string
 var ibmid1 string
 var ibmid2 string
@@ -583,6 +584,11 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_TOKEN2 with a VALID token for HPCS Admin Key2")
 	}
 
+	cloudShellAccountID = os.Getenv("IBM_CLOUD_SHELL_ACCOUNT_ID")
+	if cloudShellAccountID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CLOUD_SHELL_ACCOUNT_ID for ibm-cloud-shell resource or datasource else tests will fail if this is not set correctly")
+	}
+
 }
 
 var testAccProviders map[string]*schema.Provider
@@ -648,6 +654,14 @@ func testAccPreCheckCis(t *testing.T) {
 		t.Fatal("IBM_CIS_DOMAIN_TEST must be set for acceptance tests")
 	}
 }
+
+func testAccPreCheckCloudShell(t *testing.T) {
+	testAccPreCheck(t)
+	if cloudShellAccountID == "" {
+		t.Fatal("IBM_CLOUD_SHELL_ACCOUNT_ID must be set for acceptance tests")
+	}
+}
+
 func testAccPreCheckHPCS(t *testing.T) {
 	testAccPreCheck(t)
 	if hpcsAdmin1 == "" {
@@ -663,6 +677,7 @@ func testAccPreCheckHPCS(t *testing.T) {
 		t.Fatal("IBM_HPCS_TOKEN2 must be set for acceptance tests")
 	}
 }
+
 func testAccPreCheckCOS(t *testing.T) {
 	testAccPreCheck(t)
 	if cosCRN == "" {
