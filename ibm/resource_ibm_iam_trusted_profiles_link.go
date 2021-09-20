@@ -62,6 +62,11 @@ func resourceIBMIamTrustedProfilesLink() *schema.Resource {
 					},
 				},
 			},
+			"id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique identifier of the link.",
+			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -109,7 +114,7 @@ func resourceIBMIamTrustedProfilesLinkCreate(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("CreateLink failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *createLinkOptions.ProfileID, *profileLink.ID))
+	d.SetId(*profileLink.ID)
 
 	return resourceIBMIamTrustedProfilesLinkRead(context, d, meta)
 }
@@ -135,7 +140,7 @@ func resourceIBMIamTrustedProfilesLinkRead(context context.Context, d *schema.Re
 	getLinkOptions := &iamidentityv1.GetLinkOptions{}
 
 	getLinkOptions.SetProfileID(d.Get("profile_id").(string))
-	getLinkOptions.SetLinkID(d.Get("link_id").(string))
+	getLinkOptions.SetLinkID(d.Id())
 
 	profileLink, response, err := iamIdentityClient.GetLink(getLinkOptions)
 	if err != nil {
@@ -194,7 +199,7 @@ func resourceIBMIamTrustedProfilesLinkDelete(context context.Context, d *schema.
 	deleteLinkOptions := &iamidentityv1.DeleteLinkOptions{}
 
 	deleteLinkOptions.SetProfileID(d.Get("profile_id").(string))
-	deleteLinkOptions.SetLinkID(d.Get("link_id").(string))
+	deleteLinkOptions.SetLinkID(d.Id())
 
 	response, err := iamIdentityClient.DeleteLink(deleteLinkOptions)
 	if err != nil {

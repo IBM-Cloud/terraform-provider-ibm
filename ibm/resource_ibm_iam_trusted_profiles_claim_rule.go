@@ -136,11 +136,11 @@ func resourceIBMIamTrustedProfilesClaimRuleCreate(context context.Context, d *sc
 
 	profileClaimRule, response, err := iamIdentityClient.CreateClaimRule(createClaimRuleOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateClaimRuleWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateClaimRuleWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] CreateClaimRule failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("CreateClaimRule failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *createClaimRuleOptions.ProfileID, *profileClaimRule.ID))
+	d.SetId(*profileClaimRule.ID)
 
 	return resourceIBMIamTrustedProfilesClaimRuleRead(context, d, meta)
 }
@@ -203,7 +203,7 @@ func resourceIBMIamTrustedProfilesClaimRuleRead(context context.Context, d *sche
 
 	getClaimRuleOptions := &iamidentityv1.GetClaimRuleOptions{}
 
-	getClaimRuleOptions.SetRuleID(d.Get("rule_id").(string))
+	getClaimRuleOptions.SetRuleID(d.Id())
 	getClaimRuleOptions.SetProfileID(d.Get("profile_id").(string))
 
 	profileClaimRule, response, err := iamIdentityClient.GetClaimRule(getClaimRuleOptions)
@@ -357,7 +357,7 @@ func resourceIBMIamTrustedProfilesClaimRuleDelete(context context.Context, d *sc
 	deleteClaimRuleOptions := &iamidentityv1.DeleteClaimRuleOptions{}
 
 	deleteClaimRuleOptions.SetProfileID(d.Get("profile_id").(string))
-	deleteClaimRuleOptions.SetRuleID(d.Get("rule_id").(string))
+	deleteClaimRuleOptions.SetRuleID(d.Id())
 
 	response, err := iamIdentityClient.DeleteClaimRule(deleteClaimRuleOptions)
 	if err != nil {
