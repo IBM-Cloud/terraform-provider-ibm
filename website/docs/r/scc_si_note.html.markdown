@@ -149,7 +149,7 @@ Nested scheme for **kpi**:
 	* `aggregation_type` - (Required, String) The aggregation type of the KPI values. - SUM&#58; A single-value metrics aggregation type that sums up numeric values  that are extracted from KPI occurrences.
 	  * Constraints: The default value is `SUM`. Allowable values are: SUM
 * `long_description` - (Required, String) A more detailed description of your note.
-* `account_id` - (Optional, String) Account ID is optional, if not provided value will be inferred from the token retrieved from the IBM Cloud API key.
+* `account_id` - (Optional, Forces new resource, String) Account ID is optional, if not provided value will be inferred from the token retrieved from the IBM Cloud API key.
 * `note_id` - (Required, Forces new resource, String) The ID of the note.
 * `provider_id` - (Required, Forces new resource, String) Part of the parent. This field contains the provider ID. For example: providers/{provider_id}.
 * `related_url` - (Optional, List) 
