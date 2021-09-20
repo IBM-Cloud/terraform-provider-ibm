@@ -580,6 +580,7 @@ func Provider() *schema.Provider {
 			"ibm_container_worker_pool":                          resourceIBMContainerWorkerPool(),
 			"ibm_container_worker_pool_zone_attachment":          resourceIBMContainerWorkerPoolZoneAttachment(),
 			"ibm_container_storage_attachment":                   resourceIBMContainerVpcWorkerVolumeAttachment(),
+			"ibm_container_nlb_dns":                              resourceIbmContainerNlbDns(),
 			"ibm_cr_namespace":                                   resourceIBMCrNamespace(),
 			"ibm_cr_retention_policy":                            resourceIBMCrRetentionPolicy(),
 			"ibm_ob_logging":                                     resourceIBMObLogging(),
@@ -763,6 +764,7 @@ func Provider() *schema.Provider {
 			"ibm_satellite_cluster_worker_pool": resourceIBMSatelliteClusterWorkerPool(),
 			"ibm_satellite_link":                resourceIbmSatelliteLink(),
 			"ibm_satellite_endpoint":            resourceIbmSatelliteEndpoint(),
+			"ibm_satellite_location_nlb_dns":    resourceIbmSatelliteLocationNlbDns(),
 
 			//Added for Resource Tag
 			"ibm_resource_tag": resourceIBMResourceTag(),

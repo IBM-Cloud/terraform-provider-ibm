@@ -1,7 +1,7 @@
 // Provision satellite_endpoint resource instance
 resource "ibm_satellite_endpoint" "instance" {
   count = var.is_endpoint_provision ? 1 : 0
-  
+
   location           = var.location
   connection_type    = var.connection_type
   display_name       = var.display_name
@@ -16,12 +16,5 @@ resource "ibm_satellite_endpoint" "instance" {
   timeout            = var.timeout
   created_by         = var.created_by
 
-  certs {
-    client {
-      cert {
-        filename      = "client.pem"
-        file_contents = var.client_certificate
-      }
-    }
-  }
+
 }
