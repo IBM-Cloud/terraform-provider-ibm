@@ -10,5 +10,4 @@ module "satellite-location" {
   ibm_region        = var.ibm_region
   resource_group    = var.resource_group
   host_labels       = var.host_labels
-  tags              = var.tags
 }
