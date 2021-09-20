@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-subcategory: "Security and Compliance Center (SCC)"
+subcategory: "Security and Compliance Center"
 page_title: "IBM : ibm_scc_si_note"
 description: |-
   Get information about scc_si_note
@@ -22,7 +22,7 @@ data "ibm_scc_si_notes" "notes" {
 
 Review the argument reference that you can specify for your data source.
 
-* `account_id` - (Optional, String) Account ID is optional, it will be inferred from the token used.
+* `account_id` - (Optional, String) Account ID is optional, if not provided value will be inferred from the token retrieved from the IBM Cloud API key.
 * `pages_size` - (Optional, String) Number of notes to return in the list.
 * `page_token` - (Optional, String) Token to provide to skip to a particular spot in the list.
 
