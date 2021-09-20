@@ -19,6 +19,7 @@ import (
 const (
 	isLBName                    = "name"
 	isLBStatus                  = "status"
+	isLBCrn                     = "crn"
 	isLBTags                    = "tags"
 	isLBType                    = "type"
 	isLBSubnets                 = "subnets"
@@ -81,6 +82,12 @@ func resourceIBMISLB() *schema.Resource {
 			isLBStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+
+			isLBCrn: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN for this Load Balancer",
 			},
 
 			isLBOperatingStatus: {
@@ -376,6 +383,7 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isLBType, "private")
 	}
 	d.Set(isLBStatus, *lb.ProvisioningStatus)
+	d.Set(isLBCrn, *lb.CRN)
 	d.Set(isLBOperatingStatus, *lb.OperatingStatus)
 	publicIpList := make([]string, 0)
 	if lb.PublicIps != nil {

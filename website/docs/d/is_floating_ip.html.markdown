@@ -28,6 +28,7 @@ Review the argument references that you can specify for your data source.
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
 - `address` - (String) The floating IP address that is created.
+- `crn` - (String) The CRN for this floating IP.
 - `id` - (String) The unique identifier of the floating IP.
 - `status` - (String) Provisioning status of the floating IP address.
 - `tags` - (String) The tags associated with VPC.

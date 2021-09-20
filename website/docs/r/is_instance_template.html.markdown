@@ -218,6 +218,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all arguments listed, you can access the following attribute references after your resource is created.
 
+- `crn` - (String) The CRN for this instance template.
 - `id` - (String) The ID of an instance template.
 
 ## Import

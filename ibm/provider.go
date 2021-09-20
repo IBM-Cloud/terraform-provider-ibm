@@ -185,6 +185,7 @@ func Provider() *schema.Provider {
 			"ibm_appid_idp_cloud_directory":      dataSourceIBMAppIDIDPCloudDirectory(),
 			"ibm_appid_idp_custom":               dataSourceIBMAppIDIDPCustom(),
 			"ibm_appid_idp_facebook":             dataSourceIBMAppIDIDPFacebook(),
+			"ibm_appid_idp_google":               dataSourceIBMAppIDIDPGoogle(),
 			"ibm_appid_idp_saml":                 dataSourceIBMAppIDIDPSAML(),
 			"ibm_appid_idp_saml_metadata":        dataSourceIBMAppIDIDPSAMLMetadata(),
 			"ibm_appid_languages":                dataSourceIBMAppIDLanguages(),
@@ -248,6 +249,7 @@ func Provider() *schema.Provider {
 			"ibm_container_vpc_worker_pool":          dataSourceIBMContainerVpcClusterWorkerPool(),
 			"ibm_container_worker_pool":              dataSourceIBMContainerWorkerPool(),
 			"ibm_cr_namespaces":                      dataIBMContainerRegistryNamespaces(),
+			"ibm_cloud_shell_account_settings":       dataSourceIBMCloudShellAccountSettings(),
 			"ibm_cos_bucket":                         dataSourceIBMCosBucket(),
 			"ibm_cos_bucket_object":                  dataSourceIBMCosBucketObject(),
 			"ibm_dns_domain_registration":            dataSourceIBMDNSDomainRegistration(),
@@ -446,6 +448,11 @@ func Provider() *schema.Provider {
 			"ibm_atracker_targets":   dataSourceIBMAtrackerTargets(),
 			"ibm_atracker_routes":    dataSourceIBMAtrackerRoutes(),
 			"ibm_atracker_endpoints": dataSourceIBMAtrackerEndpoints(),
+
+			//Security and Compliance Center
+			"ibm_scc_si_providers": dataSourceIBMSccSiProviders(),
+			"ibm_scc_si_note":      dataSourceIBMSccSiNote(),
+			"ibm_scc_si_notes":     dataSourceIBMSccSiNotes(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -468,6 +475,7 @@ func Provider() *schema.Provider {
 			"ibm_appid_idp_cloud_directory":      resourceIBMAppIDIDPCloudDirectory(),
 			"ibm_appid_idp_custom":               resourceIBMAppIDIDPCustom(),
 			"ibm_appid_idp_facebook":             resourceIBMAppIDIDPFacebook(),
+			"ibm_appid_idp_google":               resourceIBMAppIDIDPGoogle(),
 			"ibm_appid_idp_saml":                 resourceIBMAppIDIDPSAML(),
 			"ibm_appid_languages":                resourceIBMAppIDLanguages(),
 			"ibm_appid_mfa":                      resourceIBMAppIDMFA(),
@@ -510,6 +518,7 @@ func Provider() *schema.Provider {
 			"ibm_cis_waf_rule":                                   resourceIBMCISWAFRule(),
 			"ibm_cis_certificate_order":                          resourceIBMCISCertificateOrder(),
 			"ibm_cis_filter":                                     resourceIBMCISFilter(),
+			"ibm_cloud_shell_account_settings":                   resourceIBMCloudShellAccountSettings(),
 			"ibm_compute_autoscale_group":                        resourceIBMComputeAutoScaleGroup(),
 			"ibm_compute_autoscale_policy":                       resourceIBMComputeAutoScalePolicy(),
 			"ibm_compute_bare_metal":                             resourceIBMComputeBareMetal(),
@@ -719,6 +728,9 @@ func Provider() *schema.Provider {
 			// Atracker
 			"ibm_atracker_target": resourceIBMAtrackerTarget(),
 			"ibm_atracker_route":  resourceIBMAtrackerRoute(),
+
+			//Security and Compliance Center
+			"ibm_scc_si_note": resourceIBMSccSiNote(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -827,6 +839,7 @@ func Validator() ValidatorDict {
 				"ibm_atracker_target":                     resourceIBMAtrackerTargetValidator(),
 				"ibm_atracker_route":                      resourceIBMAtrackerRouteValidator(),
 				"ibm_satellite_endpoint":                  resourceIbmSatelliteEndpointValidator(),
+				"ibm_scc_si_note":                         resourceIBMSccSiNoteValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),
@@ -835,6 +848,7 @@ func Validator() ValidatorDict {
 				"ibm_dl_routers":              datasourceIBMDLRoutersValidator(),
 				"ibm_is_vpc":                  dataSourceIBMISVpcValidator(),
 				"ibm_is_volume":               dataSourceIBMISVolumeValidator(),
+				"ibm_scc_si_notes":            dataSourceIBMSccSiNotesValidator(),
 				"ibm_secrets_manager_secret":  datasourceIBMSecretsManagerSecretValidator(),
 				"ibm_secrets_manager_secrets": datasourceIBMSecretsManagerSecretsValidator(),
 			},

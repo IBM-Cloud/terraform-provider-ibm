@@ -92,6 +92,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `created_at` - (Timestamp) The created date and time of the endpoint gateway.
+- `crn` - (String) The CRN for this endpoint gateway.
 - `health_state` - (String) The health state of the endpoint gateway.
 - `id` - (String) The unique identifier of the VPE Gateway. The ID is composed of `<gateway_id>`.
 - `ips`  (List) The endpoint gateway resource group.

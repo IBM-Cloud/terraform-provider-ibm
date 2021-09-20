@@ -33,13 +33,11 @@ import (
 
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
-	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv1"
-	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
-	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
@@ -376,21 +374,21 @@ func flattenVpcZones(list []containerv2.ZoneResp) []map[string]interface{} {
 	}
 	return zones
 }
-func flattenConditions(list []iamuumv2.Condition) []map[string]interface{} {
+func flattenConditions(list []iamaccessgroupsv2.RuleConditions) []map[string]interface{} {
 	conditions := make([]map[string]interface{}, len(list))
 	for i, cond := range list {
 		l := map[string]interface{}{
 			"claim":    cond.Claim,
 			"operator": cond.Operator,
-			"value":    strings.ReplaceAll(cond.Value, "\"", ""),
+			"value":    strings.ReplaceAll(*cond.Value, "\"", ""),
 		}
 		conditions[i] = l
 	}
 	return conditions
 }
-func flattenAccessGroupRules(list []iamuumv2.CreateRuleResponse) []map[string]interface{} {
-	rules := make([]map[string]interface{}, len(list))
-	for i, item := range list {
+func flattenAccessGroupRules(list *iamaccessgroupsv2.RulesList) []map[string]interface{} {
+	rules := make([]map[string]interface{}, len(list.Rules))
+	for i, item := range list.Rules {
 		l := map[string]interface{}{
 			"name":              item.Name,
 			"expiration":        item.Expiration,
@@ -1281,14 +1279,22 @@ func contains(s []int, e int) bool {
 	}
 	return false
 }
+func StringContains(s []string, str string) bool {
+	for _, a := range s {
+		if a == str {
+			return true
+		}
+	}
+	return false
+}
 
-func flattenMembersData(list []models.AccessGroupMemberV2, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) ([]string, []string) {
+func flattenMembersData(list *iamaccessgroupsv2.GroupMembersList, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) ([]string, []string) {
 	var ibmid []string
 	var serviceid []string
-	for _, m := range list {
-		if m.Type == iamuumv2.AccessGroupMemberUser {
+	for _, m := range list.Members {
+		if *m.Type == "user" {
 			for _, user := range users {
-				if user.IamID == m.ID {
+				if user.IamID == *m.IamID {
 					ibmid = append(ibmid, user.Email)
 					break
 				}
@@ -1296,7 +1302,7 @@ func flattenMembersData(list []models.AccessGroupMemberV2, users []usermanagemen
 		} else {
 
 			for _, srid := range serviceids {
-				if *srid.IamID == m.ID {
+				if *srid.IamID == *m.IamID {
 					serviceid = append(serviceid, *srid.ID)
 					break
 				}
@@ -1308,23 +1314,21 @@ func flattenMembersData(list []models.AccessGroupMemberV2, users []usermanagemen
 	return ibmid, serviceid
 }
 
-func flattenAccessGroupMembers(list []models.AccessGroupMemberV2, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) []map[string]interface{} {
+func flattenAccessGroupMembers(list []iamaccessgroupsv2.ListGroupMembersResponseMember, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, m := range list {
 		var value, vtype string
-		if m.Type == iamuumv2.AccessGroupMemberUser {
-			vtype = iamuumv2.AccessGroupMemberUser
+		vtype = *m.Type
+		if *m.Type == "user" {
 			for _, user := range users {
-				if user.IamID == m.ID {
+				if user.IamID == *m.IamID {
 					value = user.Email
 					break
 				}
 			}
 		} else {
-
-			vtype = iamuumv1.AccessGroupMemberService
 			for _, srid := range serviceids {
-				if *srid.IamID == m.ID {
+				if *srid.IamID == *m.IamID {
 					value = *srid.ID
 					break
 				}
@@ -1390,6 +1394,8 @@ func flattenConnectionStrings(cs []CsEntry) []map[string]interface{} {
 			"scheme":       csEntry.Scheme,
 			"path":         csEntry.Path,
 			"database":     csEntry.Database,
+			"bundlename":   csEntry.BundleName,
+			"bundlebase64": csEntry.BundleBase64,
 		}
 		hosts := csEntry.Hosts
 		hostsList := make([]map[string]interface{}, len(hosts), len(hosts))
@@ -2041,6 +2047,34 @@ func resourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
 			if !volPrototypeFound && !volumeIdFound && !volIdnterpolated {
 				return fmt.Errorf("InstanceTemplate - volume_attachments[%d]: Volume details missing. Provide either 'volume' or 'volume_prototype'.", volAttIdx)
 			}
+		}
+	}
+
+	return nil
+}
+
+func resourceVolumeCapacityValidate(diff *schema.ResourceDiff) error {
+	if diff.Id() != "" && diff.HasChange(isVolumeCapacity) {
+		o, n := diff.GetChange(isVolumeCapacity)
+		old := int64(o.(int))
+		new := int64(n.(int))
+		if new < old {
+			return fmt.Errorf("'%s' attribute has a constraint, it supports only expansion and can't be changed from %d to %d.", isVolumeCapacity, old, new)
+		}
+	}
+	if profileOk, ok := diff.GetOk(isVolumeProfileName); ok {
+		profile := profileOk.(string)
+		var capacity int64
+		if capacityOk, ok := diff.GetOk(isVolumeCapacity); ok {
+			capacity = int64(capacityOk.(int))
+		}
+		if capacity == int64(0) {
+			capacity = int64(100)
+		}
+		if profile == "5iops-tier" && capacity > 9600 {
+			return fmt.Errorf("'%s' storage block supports capacity up to %d.", profile, 9600)
+		} else if profile == "10iops-tier" && capacity > 4800 {
+			return fmt.Errorf("'%s' storage block supports capacity up to %d.", profile, 4800)
 		}
 	}
 

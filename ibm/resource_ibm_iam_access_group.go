@@ -5,11 +5,6 @@ package ibm
 
 import (
 	"fmt"
-
-	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
-	"github.com/IBM-Cloud/bluemix-go/models"
-
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -51,19 +46,9 @@ func resourceIBMIAMAccessGroup() *schema.Resource {
 }
 
 func resourceIBMIAMAccessGroupCreate(d *schema.ResourceData, meta interface{}) error {
-	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
+	iamAccessGroupsClient, err := meta.(ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return err
-	}
-
-	request := models.AccessGroupV2{
-		AccessGroup: models.AccessGroup{
-			Name: d.Get("name").(string),
-		},
-	}
-
-	if des, ok := d.GetOk("description"); ok {
-		request.Description = des.(string)
 	}
 
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
@@ -71,28 +56,34 @@ func resourceIBMIAMAccessGroupCreate(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	agrp, err := iamuumClient.AccessGroup().Create(request, userDetails.userAccount)
-	if err != nil {
-		return fmt.Errorf("Error creating access group: %s", err)
+	name := d.Get("name").(string)
+	creatAccessGroupOptions := iamAccessGroupsClient.NewCreateAccessGroupOptions(userDetails.userAccount, name)
+	if des, ok := d.GetOk("description"); ok {
+		description := des.(string)
+		creatAccessGroupOptions.Description = &description
+	}
+	agrp, detailedResponse, err := iamAccessGroupsClient.CreateAccessGroup(creatAccessGroupOptions)
+	if err != nil || agrp == nil {
+		return fmt.Errorf("Error creating access group: %s. API Response: %s", err, detailedResponse)
 	}
 
-	d.SetId(agrp.ID)
+	d.SetId(*agrp.ID)
 
 	return resourceIBMIAMAccessGroupRead(d, meta)
 }
 
 func resourceIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
-	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
+	iamAccessGroupsClient, err := meta.(ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return err
 	}
 	agrpID := d.Id()
-
-	agrp, version, err := iamuumClient.AccessGroup().Get(agrpID)
-	if err != nil {
-		return fmt.Errorf("Error retrieving access group: %s", err)
+	getAccessGroupOptions := iamAccessGroupsClient.NewGetAccessGroupOptions(agrpID)
+	agrp, detailedResponse, err := iamAccessGroupsClient.GetAccessGroup(getAccessGroupOptions)
+	if err != nil || agrp == nil {
+		return fmt.Errorf("Error retrieving access group: %s. API Response: %s", err, detailedResponse)
 	}
-
+	version := detailedResponse.GetHeaders().Get("etag")
 	d.Set("name", agrp.Name)
 	d.Set("description", agrp.Description)
 	d.Set("version", version)
@@ -101,30 +92,32 @@ func resourceIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceIBMIAMAccessGroupUpdate(d *schema.ResourceData, meta interface{}) error {
-
-	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
+	iamAccessGroupsClient, err := meta.(ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return err
 	}
 	agrpID := d.Id()
 
 	hasChange := false
-	updateReq := iamuumv2.AccessGroupUpdateRequest{}
+	version := d.Get("version").(string)
+	updateAccessGroupOptions := iamAccessGroupsClient.NewUpdateAccessGroupOptions(agrpID, version)
 
 	if d.HasChange("name") {
-		updateReq.Name = d.Get("name").(string)
+		name := d.Get("name").(string)
+		updateAccessGroupOptions.Name = &name
 		hasChange = true
 	}
 
 	if d.HasChange("description") {
-		updateReq.Description = d.Get("description").(string)
+		description := d.Get("description").(string)
+		updateAccessGroupOptions.Description = &description
 		hasChange = true
 	}
 
 	if hasChange {
-		_, err = iamuumClient.AccessGroup().Update(agrpID, updateReq, d.Get("version").(string))
-		if err != nil {
-			return fmt.Errorf("Error updating access group: %s", err)
+		agrp, detailedResponse, err := iamAccessGroupsClient.UpdateAccessGroup(updateAccessGroupOptions)
+		if err != nil || agrp == nil {
+			return fmt.Errorf("Error updating access group: %s. API Response: %s", err, detailedResponse)
 		}
 	}
 
@@ -133,16 +126,18 @@ func resourceIBMIAMAccessGroupUpdate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMIAMAccessGroupDelete(d *schema.ResourceData, meta interface{}) error {
-	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
+	iamAccessGroupsClient, err := meta.(ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return err
 	}
 
 	agID := d.Id()
-
-	err = iamuumClient.AccessGroup().Delete(agID, true)
+	force := true
+	deleteAccessGroupOptions := iamAccessGroupsClient.NewDeleteAccessGroupOptions(agID)
+	deleteAccessGroupOptions.SetForce(force)
+	detailedResponse, err := iamAccessGroupsClient.DeleteAccessGroup(deleteAccessGroupOptions)
 	if err != nil {
-		return fmt.Errorf("Error deleting access group: %s", err)
+		return fmt.Errorf("Error deleting access group: %s, API Response: %s", err, detailedResponse)
 	}
 
 	d.SetId("")
@@ -151,21 +146,19 @@ func resourceIBMIAMAccessGroupDelete(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMIAMAccessGroupExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
+	iamAccessGroupsClient, err := meta.(ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return false, err
 	}
 	agID := d.Id()
-
-	agrp, _, err := iamuumClient.AccessGroup().Get(agID)
-	if err != nil {
-		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
-				return false, nil
-			}
+	getAccessGroupOptions := iamAccessGroupsClient.NewGetAccessGroupOptions(agID)
+	agrp, detailedResponse, err := iamAccessGroupsClient.GetAccessGroup(getAccessGroupOptions)
+	if err != nil || agrp == nil {
+		if detailedResponse != nil && detailedResponse.StatusCode == 404 {
+			return false, nil
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("Error communicating with the API: %s, API Response: %s", err, detailedResponse)
 	}
 
-	return agrp.ID == agID, nil
+	return *agrp.ID == agID, nil
 }

@@ -27,13 +27,15 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	attName := fmt.Sprintf("tf-volatt-%d", acctest.RandIntRange(10, 100))
 	autoDelete := true
 	volName := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	capacity1 := int64(20)
+	capacity2 := int64(22)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMISInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISInstanceVolumeAttachmentConfig(vpcname, subnetname, sshname, publicKey, name, attName, volName, autoDelete),
+				Config: testAccCheckIBMISInstanceVolumeAttachmentConfig(vpcname, subnetname, sshname, publicKey, name, attName, volName, autoDelete, capacity1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceVolumeAttachmentExists("ibm_is_instance_volume_attachment.testacc_att", instanceVolAtt),
 					resource.TestCheckResourceAttr(
@@ -41,7 +43,19 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttr(
 						"ibm_is_instance_volume_attachment.testacc_att", "delete_volume_on_instance_delete", fmt.Sprintf("%t", autoDelete)),
 					resource.TestCheckResourceAttr(
-						"ibm_is_instance_volume_attachment.testacc_att", "capacity", "20"),
+						"ibm_is_instance_volume_attachment.testacc_att", "capacity", fmt.Sprintf("%d", capacity1)),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceVolumeAttachmentConfig(vpcname, subnetname, sshname, publicKey, name, attName, volName, autoDelete, capacity2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceVolumeAttachmentExists("ibm_is_instance_volume_attachment.testacc_att", instanceVolAtt),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_volume_attachment.testacc_att", "name", attName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_volume_attachment.testacc_att", "delete_volume_on_instance_delete", fmt.Sprintf("%t", autoDelete)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_volume_attachment.testacc_att", "capacity", fmt.Sprintf("%d", capacity2)),
 				),
 			},
 		},
@@ -94,7 +108,7 @@ func testAccCheckIBMISInstanceVolumeAttachmentExists(n string, instanceVolAtt st
 	}
 }
 
-func testAccCheckIBMISInstanceVolumeAttachmentConfig(vpcname, subnetname, sshname, publicKey, name, attName, volName string, autoDelete bool) string {
+func testAccCheckIBMISInstanceVolumeAttachmentConfig(vpcname, subnetname, sshname, publicKey, name, attName, volName string, autoDelete bool, capacity int64) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
@@ -132,11 +146,11 @@ func testAccCheckIBMISInstanceVolumeAttachmentConfig(vpcname, subnetname, sshnam
 	
 		name 			= "%s"
 		profile 		= "general-purpose"
-		capacity	 	= "20"
+		capacity	 	= %d
 	
 		delete_volume_on_instance_delete = %t
 		volume_name = "%s"
 	  }
 	 
-	  `, vpcname, subnetname, ISZoneName, sshname, publicKey, name, isImage, instanceProfileName, ISZoneName, attName, autoDelete, volName)
+	  `, vpcname, subnetname, ISZoneName, sshname, publicKey, name, isImage, instanceProfileName, ISZoneName, attName, capacity, autoDelete, volName)
 }
