@@ -218,11 +218,11 @@ func testAccCheckIBMEventStreamsSchemaDestroy(s *terraform.State) error {
 
 var (
 	schemaID = "tf-schema"
-	id       = "crn:v1:staging:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:c822a30e-bfff-4867-85ec-b805eeab1835:schema:myschema"
+	id       = "crn:v1:staging:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:c822a30e-bfff-4867-85ec-b805eeab1835:schema:tf-schema"
 )
 
 func TestGetUniqueSchemaID(t *testing.T) {
-	gotID := getUniqueSchemaID(instanceCRN, id)
+	gotID := getUniqueSchemaID(instanceCRN, schemaID)
 	assert.Equal(t, id, gotID)
 }
 
