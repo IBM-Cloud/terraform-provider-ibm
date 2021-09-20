@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-subcategory: "Security and Compliance Center (SCC)"
+subcategory: "Security and Compliance Center"
 page_title: "IBM : ibm_scc_si_provider"
 description: |-
   Get information about scc_si_provider

@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-subcategory: "Security and Compliance Center (SCC)"
+subcategory: "Security and Compliance Center"
 page_title: "IBM : ibm_scc_si_note"
 description: |-
   Get information about scc_si_note
@@ -23,7 +23,7 @@ data "ibm_scc_si_note" "scc_si_note" {
 
 Review the argument reference that you can specify for your data source.
 
-* `account_id` - (Optional, String) Account ID is optional, it will be inferred from the token used.
+* `account_id` - (Optional, String) Account ID is optional, if not provided value will be inferred from the token retrieved from the IBM Cloud API key.
 * `note_id` - (Required, Forces new resource, String) Second part of note `name`: providers/{provider_id}/notes/{note_id}.
 * `provider_id` - (Required, Forces new resource, String) Part of the parent. This field contains the provider ID. For example: providers/{provider_id}.
 
