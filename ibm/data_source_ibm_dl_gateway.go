@@ -187,6 +187,11 @@ func dataSourceIBMDLGateway() *schema.Resource {
 				Computed:    true,
 				Description: "Reason for completion notice rejection",
 			},
+			dlConnectionMode: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Type of services this Gateway is attached to. Mode transit means this Gateway will be attached to Transit Gateway Service and direct means this Gateway will be attached to vpc or classic connection",
+			},
 			dlCreatedAt: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -463,6 +468,10 @@ func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error 
 
 			if instance.AuthenticationKey != nil {
 				d.Set(dlAuthenticationKey, *instance.AuthenticationKey.Crn)
+			}
+
+			if instance.ConnectionMode != nil {
+				d.Set(dlConnectionMode, *instance.ConnectionMode)
 			}
 
 		}

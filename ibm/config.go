@@ -56,11 +56,14 @@ import (
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
+	iamaccessgroups "github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
+	ibmcloudshellv1 "github.com/IBM/platform-services-go-sdk/ibmcloudshellv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
+	"github.com/IBM/scc-go-sdk/findingsv1"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
@@ -79,7 +82,6 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/hpcs"
-	"github.com/IBM-Cloud/bluemix-go/api/iamuum/iamuumv2"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/catalog"
@@ -197,7 +199,7 @@ type ClientSession interface {
 	GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error)
 	ICDAPI() (icdv4.ICDServiceAPI, error)
 	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
-	IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error)
+	IAMAccessGroupsV2() (*iamaccessgroups.IamAccessGroupsV2, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
 	ResourceCatalogAPI() (catalog.ResourceCatalogAPI, error)
 	ResourceManagementAPIv2() (managementv2.ResourceManagementAPIv2, error)
@@ -243,6 +245,7 @@ type ClientSession interface {
 	CisRangeAppClientSession() (*cisrangeappv1.RangeApplicationsV1, error)
 	CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1, error)
 	IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
+	IBMCloudShellV1() (*ibmcloudshellv1.IBMCloudShellV1, error)
 	ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error)
 	CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error)
 	EnterpriseManagementV1() (*enterprisemanagementv1.EnterpriseManagementV1, error)
@@ -253,6 +256,7 @@ type ClientSession interface {
 	SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error)
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
+	FindingsV1() (*findingsv1.FindingsV1, error)
 	PostureManagementV1()   (*posturemanagementv1.PostureManagementV1, error)
 }
 
@@ -304,8 +308,8 @@ type clientSession struct {
 	globalTaggingConfigErrV1  error
 	globalTaggingServiceAPIV1 globaltaggingv1.GlobalTaggingV1
 
-	iamUUMConfigErrV2  error
-	iamUUMServiceAPIV2 iamuumv2.IAMUUMServiceAPIv2
+	ibmCloudShellClient    *ibmcloudshellv1.IBMCloudShellV1
+	ibmCloudShellClientErr error
 
 	userManagementErr error
 	userManagementAPI usermanagementv2.UserManagementAPI
@@ -486,6 +490,10 @@ type clientSession struct {
 	iamPolicyManagementErr error
 	iamPolicyManagementAPI *iampolicymanagement.IamPolicyManagementV1
 
+	//IAM Access Groups
+	iamAccessGroupsErr error
+	iamAccessGroupsAPI *iamaccessgroups.IamAccessGroupsV2
+
 	// CIS Filters options
 	cisFiltersClient *cisfiltersv1.FiltersV1
 	cisFiltersErr    error
@@ -497,8 +505,11 @@ type clientSession struct {
 	//Satellite link service
 	satelliteLinkClient    *satellitelinkv1.SatelliteLinkV1
 	satelliteLinkClientErr error
+	// Security and Compliance Center (SCC)
+	findingsClient    *findingsv1.FindingsV1
+	findingsClientErr error
 
-	//Compliance posture
+	//Security and Compliance Center (SCC) Compliance posture
 	postureManagementClientErr  error
 	postureManagementClient     *posturemanagementv1.PostureManagementV1
 
@@ -593,9 +604,14 @@ func (sess clientSession) IAMPolicyManagementV1API() (*iampolicymanagement.IamPo
 	return sess.iamPolicyManagementAPI, sess.iamPolicyManagementErr
 }
 
-// IAMUUMAPIV2 provides IAM UUM APIs ...
-func (sess clientSession) IAMUUMAPIV2() (iamuumv2.IAMUUMServiceAPIv2, error) {
-	return sess.iamUUMServiceAPIV2, sess.iamUUMConfigErrV2
+// IAMAccessGroupsV2 provides IAM AG APIs ...
+func (sess clientSession) IAMAccessGroupsV2() (*iamaccessgroups.IamAccessGroupsV2, error) {
+	return sess.iamAccessGroupsAPI, sess.iamAccessGroupsErr
+}
+
+// IBM Cloud Shell
+func (session clientSession) IBMCloudShellV1() (*ibmcloudshellv1.IBMCloudShellV1, error) {
+	return session.ibmCloudShellClient, session.ibmCloudShellClientErr
 }
 
 // IcdAPI provides IBM Cloud Databases APIs ...
@@ -920,7 +936,15 @@ func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
 	return session.atrackerClient, session.atrackerClientErr
 }
 
-// Posture Management
+// Security and Compliance center Findings API
+func (session clientSession) FindingsV1() (*findingsv1.FindingsV1, error) {
+	if session.findingsClientErr != nil {
+		return session.findingsClient, session.findingsClientErr
+	}
+	return session.findingsClient.Clone(), nil
+}
+
+// Security and Compliance center Posture Management
 func (session clientSession) PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error) {
 	if session.postureManagementClientErr != nil {
 		return session.postureManagementClient, session.postureManagementClientErr
@@ -959,7 +983,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.globalTaggingConfigErr = errEmptyBluemixCredentials
 		session.globalTaggingConfigErrV1 = errEmptyBluemixCredentials
 		session.hpcsEndpointErr = errEmptyBluemixCredentials
-		session.iamUUMConfigErrV2 = errEmptyBluemixCredentials
+		session.iamAccessGroupsErr = errEmptyBluemixCredentials
 		session.icdConfigErr = errEmptyBluemixCredentials
 		session.resourceCatalogConfigErr = errEmptyBluemixCredentials
 		session.resourceManagerErr = errEmptyBluemixCredentials
@@ -1255,6 +1279,36 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.atrackerClientErr = fmt.Errorf("Error occurred while configuring Activity Tracker API service: %q", err)
 	}
 
+	// Construct an "options" struct for creating the service client.
+	var findingsClientURL string
+	if c.Visibility == "public" {
+		findingsClientURL, err = findingsv1.GetServiceURLForRegion(c.Region)
+	} else {
+		session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service: `%v` visibility not supported", c.Visibility)
+	}
+	if err != nil {
+		findingsClientURL = findingsv1.DefaultServiceURL
+	}
+
+	findingsClientOptions := &findingsv1.FindingsV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_SCC_FINDINGS_API_ENDPOINT"}, findingsClientURL),
+		AccountID:     core.StringPtr(userConfig.userAccount),
+	}
+
+	// Construct the service client.
+	session.findingsClient, err = findingsv1.NewFindingsV1(findingsClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.findingsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.findingsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service: %q", err)
+	}
+
 	// Construct the service client.
 	session.catalogManagementClient, err = catalogmanagementv1.NewCatalogManagementV1(catalogManagementClientOptions)
 	if err == nil {
@@ -1433,12 +1487,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.globalTaggingServiceAPIV1 = *globalTaggingAPIV1
 		session.globalTaggingServiceAPIV1.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
-
-	iamuumv2, err := iamuumv2.New(sess.BluemixSession)
-	if err != nil {
-		session.iamUUMConfigErrV2 = fmt.Errorf("Error occured while configuring Bluemix IAMUUM Service: %q", err)
-	}
-	session.iamUUMServiceAPIV2 = iamuumv2
 
 	icdAPI, err := icdv4.New(sess.BluemixSession)
 	if err != nil {
@@ -2052,6 +2100,28 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.iamPolicyManagementAPI = iamPolicyManagementClient
 
+	// ag
+	iamAccessGroupsURL := iamaccessgroups.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			iamAccessGroupsURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+		} else {
+			iamAccessGroupsURL = contructEndpoint("private.iam", cloudEndpoint)
+		}
+	}
+	iamAccessGroupsOptions := &iamaccessgroups.IamAccessGroupsV2Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamAccessGroupsURL),
+	}
+	iamAccessGroupsClient, err := iamaccessgroups.NewIamAccessGroupsV2(iamAccessGroupsOptions)
+	if err != nil {
+		session.iamAccessGroupsErr = fmt.Errorf("Error occured while configuring IAM Access Group service: %q", err)
+	}
+	if iamAccessGroupsClient != nil && iamAccessGroupsClient.Service != nil {
+		iamAccessGroupsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+	session.iamAccessGroupsAPI = iamAccessGroupsClient
+
 	rmURL := resourcemanager.DefaultServiceURL
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
@@ -2080,6 +2150,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 		resourceManagerClient.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 	session.resourceManagerAPI = resourceManagerClient
+
+	ibmCloudShellClientOptions := &ibmcloudshellv1.IBMCloudShellV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_CLOUD_SHELL_API_ENDPOINT"}, ibmcloudshellv1.DefaultServiceURL),
+	}
+	session.ibmCloudShellClient, err = ibmcloudshellv1.NewIBMCloudShellV1(ibmCloudShellClientOptions)
+	if err == nil {
+		session.ibmCloudShellClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.ibmCloudShellClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.ibmCloudShellClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Shell service: %q", err)
+	}
 
 	enterpriseURL := enterprisemanagementv1.DefaultServiceURL
 	if c.Visibility == "private" {

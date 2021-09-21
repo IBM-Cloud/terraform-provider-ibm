@@ -49,6 +49,12 @@ func dataSourceIBMISVolume() *schema.Resource {
 				Description: "Volume encryption key info",
 			},
 
+			isVolumeEncryptionType: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Volume encryption type info",
+			},
+
 			isVolumeCapacity: {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -200,6 +206,9 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 		d.Set(isVolumeZone, *vol.Zone.Name)
 		if vol.EncryptionKey != nil {
 			d.Set(isVolumeEncryptionKey, vol.EncryptionKey.CRN)
+		}
+		if vol.Encryption != nil {
+			d.Set(isVolumeEncryptionType, vol.Encryption)
 		}
 		if vol.SourceSnapshot != nil {
 			d.Set(isVolumeSourceSnapshot, *vol.SourceSnapshot.ID)

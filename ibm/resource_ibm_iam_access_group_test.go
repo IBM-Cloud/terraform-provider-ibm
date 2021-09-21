@@ -7,17 +7,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
-
-	"strings"
-
+	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMIAMAccessGroup_Basic(t *testing.T) {
-	var conf models.AccessGroupV2
+	var conf iamaccessgroupsv2.Group
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	updateName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
@@ -56,7 +53,7 @@ func TestAccIBMIAMAccessGroup_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroup_import(t *testing.T) {
-	var conf models.AccessGroupV2
+	var conf iamaccessgroupsv2.Group
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_access_group.accgroup"
 
@@ -83,7 +80,7 @@ func TestAccIBMIAMAccessGroup_import(t *testing.T) {
 }
 
 func testAccCheckIBMIAMAccessGroupDestroy(s *terraform.State) error {
-	accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPIV2()
+	accClient, err := testAccProvider.Meta().(ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return err
 	}
@@ -95,11 +92,14 @@ func testAccCheckIBMIAMAccessGroupDestroy(s *terraform.State) error {
 		agID := rs.Primary.ID
 
 		// Try to find the key
-		_, _, err := accClient.AccessGroup().Get(agID)
+		getAccessGroupOptions := &iamaccessgroupsv2.GetAccessGroupOptions{
+			AccessGroupID: &agID,
+		}
+		_, detailResponse, _ := accClient.GetAccessGroup(getAccessGroupOptions)
 
 		if err == nil {
 			return fmt.Errorf("Access group still exists: %s", rs.Primary.ID)
-		} else if !strings.Contains(err.Error(), "404") {
+		} else if detailResponse.StatusCode != 404 {
 			return fmt.Errorf("Error waiting for access group (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}
@@ -107,7 +107,7 @@ func testAccCheckIBMIAMAccessGroupDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMAccessGroupExists(n string, obj models.AccessGroupV2) resource.TestCheckFunc {
+func testAccCheckIBMIAMAccessGroupExists(n string, obj iamaccessgroupsv2.Group) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -115,13 +115,15 @@ func testAccCheckIBMIAMAccessGroupExists(n string, obj models.AccessGroupV2) res
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPIV2()
+		accClient, err := testAccProvider.Meta().(ClientSession).IAMAccessGroupsV2()
 		if err != nil {
 			return err
 		}
 		agID := rs.Primary.ID
-
-		accgroup, _, err := accClient.AccessGroup().Get(agID)
+		getAccessGroupOptions := &iamaccessgroupsv2.GetAccessGroupOptions{
+			AccessGroupID: &agID,
+		}
+		accgroup, _, err := accClient.GetAccessGroup(getAccessGroupOptions)
 
 		if err != nil {
 			return err

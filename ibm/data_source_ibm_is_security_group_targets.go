@@ -36,6 +36,12 @@ func dataSourceIBMISSecurityGroupTargets() *schema.Resource {
 							Description: "security group target identifier",
 						},
 
+						"crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this target",
+						},
+
 						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -101,6 +107,7 @@ func dataSourceIBMISSecurityGroupTargetsRead(d *schema.ResourceData, meta interf
 		tr := map[string]interface{}{
 			"name":   *securityGroupTargetReference.Name,
 			"target": *securityGroupTargetReference.ID,
+			"crn":    securityGroupTargetReference.CRN,
 			// "resource_type": *securityGroupTargetReference.ResourceType,
 		}
 		if securityGroupTargetReference.Deleted != nil {

@@ -26,6 +26,11 @@ func dataSourceIBMISEndpointGateway() *schema.Resource {
 				Computed:    true,
 				Description: "Endpoint gateway resource type",
 			},
+			isVirtualEndpointGatewayCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN for this Endpoint gateway",
+			},
 			isVirtualEndpointGatewayResourceGroupID: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -134,6 +139,7 @@ func dataSourceIBMISEndpointGatewayRead(
 		if *result.Name == name {
 			d.SetId(*result.ID)
 			d.Set(isVirtualEndpointGatewayName, result.Name)
+			d.Set(isVirtualEndpointGatewayCRN, result.CRN)
 			d.Set(isVirtualEndpointGatewayHealthState, result.HealthState)
 			d.Set(isVirtualEndpointGatewayCreatedAt, result.CreatedAt.String())
 			d.Set(isVirtualEndpointGatewayLifecycleState, result.LifecycleState)

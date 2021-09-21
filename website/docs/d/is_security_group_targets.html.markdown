@@ -31,6 +31,7 @@ In addition to all argument reference list, you can access the following attribu
 - `targets` - (List) Collection of security group target references
 
   Nested scheme for `targets`:
+  - `crn` - (String) The CRN for this target
   - `target` - (String) The unique identifier for this load balancer/network interface
   - `name` - (String) The user-defined name of the target
   - `resource_type` - (String) The resource type

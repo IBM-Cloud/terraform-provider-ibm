@@ -311,6 +311,7 @@ func resourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
+			d.Set(isSecurityGroupRuleDirection, *rule.Direction)
 			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
 			icmpProtocol := map[string]interface{}{}
@@ -343,6 +344,7 @@ func resourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
+			d.Set(isSecurityGroupRuleDirection, *rule.Direction)
 			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
 			remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
@@ -364,6 +366,7 @@ func resourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 			d.Set(isSecurityGroupRuleID, *rule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *rule.ID)
 			d.SetId(tfID)
+			d.Set(isSecurityGroupRuleDirection, *rule.Direction)
 			d.Set(isSecurityGroupRuleIPVersion, *rule.IPVersion)
 			d.Set(isSecurityGroupRuleProtocol, *rule.Protocol)
 			tcpProtocol := map[string]interface{}{}

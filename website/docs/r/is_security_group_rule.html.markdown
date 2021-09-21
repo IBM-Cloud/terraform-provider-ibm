@@ -91,7 +91,7 @@ If any of the `icmp` , `tcp`, or `udp` is not specified it creates a rule with p
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The ID of the security group rule. The ID is composed of `<security_group_id>/<security_group_rule_id>`.
+- `id` - (String) The ID of the security group rule. The ID is composed of `<security_group_id>.<security_group_rule_id>`.
 - `rule_id` - (String) The unique identifier of the rule.
 
 
@@ -101,7 +101,7 @@ The `ibm_is_security_group_rule` resource can be imported by using security grou
 **Example**
 
 ```
-$ terraform import ibm_is_security_group_rule.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+$ terraform import ibm_is_security_group_rule.example d7bec597-4726-451f-8a63-e62e6f19c32c.cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
 ```
 
 
