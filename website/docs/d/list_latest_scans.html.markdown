@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_list_latest_scans"
 description: |-
   Get information about list_latest_scans
-subcategory: "Security and Compliance Center (SCC)"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_list_latest_scans

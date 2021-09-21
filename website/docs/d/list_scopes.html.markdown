@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_list_scopes"
 description: |-
   Get information about list_scopes
-subcategory: "Security and Compliance Center (SCC)"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_list_scopes

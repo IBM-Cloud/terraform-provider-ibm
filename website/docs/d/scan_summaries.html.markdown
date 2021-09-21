@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scan_summaries"
 description: |-
   Get information about scan_summaries
-subcategory: "Security and Compliance Center (SCC)"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scan_summaries
