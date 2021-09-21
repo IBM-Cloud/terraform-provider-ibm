@@ -470,7 +470,6 @@ func dataSourceSummariesListFirstToMap(firstItem posturemanagementv1.SummariesLi
 	return firstMap
 }
 
-
 func dataSourceSummariesListFlattenLast(result posturemanagementv1.SummariesListLast) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceSummariesListLastToMap(result)
@@ -489,7 +488,6 @@ func dataSourceSummariesListLastToMap(lastItem posturemanagementv1.SummariesList
 	return lastMap
 }
 
-
 func dataSourceSummariesListFlattenPrevious(result posturemanagementv1.SummariesListPrevious) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceSummariesListPreviousToMap(result)
@@ -507,7 +505,6 @@ func dataSourceSummariesListPreviousToMap(previousItem posturemanagementv1.Summa
 
 	return previousMap
 }
-
 
 func dataSourceSummariesListFlattenSummaries(result []posturemanagementv1.SummaryItem) (summaries []map[string]interface{}) {
 	for _, summariesItem := range result {
@@ -619,8 +616,6 @@ func dataSourceSummariesListProfileValidationResultToMap(validationResultItem po
 	return validationResultMap
 }
 
-
-
 func dataSourceSummariesListSummariesGroupProfilesToMap(groupProfilesItem posturemanagementv1.GroupProfileResult) (groupProfilesMap map[string]interface{}) {
 	groupProfilesMap = map[string]interface{}{}
 
@@ -687,7 +682,6 @@ func dataSourceSummariesListGroupProfilesValidationResultToMap(validationResultI
 	return validationResultMap
 }
 
-
 func dataSourceSummariesListGroupProfilesProfilesToMap(profilesItem posturemanagementv1.ProfilesResult) (profilesMap map[string]interface{}) {
 	profilesMap = map[string]interface{}{}
 
@@ -732,10 +726,6 @@ func dataSourceSummariesListProfilesValidationResultToMap(validationResultItem p
 	return validationResultMap
 }
 
-
-
-
-
 func dataSourceSummariesListGetNext(next interface{}) int64 {
 	if reflect.ValueOf(next).IsNil() {
 		return 0
@@ -749,15 +739,15 @@ func dataSourceSummariesListGetNext(next interface{}) int64 {
 	q := u.Query()
 	var page string
 
-	if (q.Get("start") != "") {
+	if q.Get("start") != "" {
 		page = q.Get("start")
-	} else if (q.Get("offset") != "") {
+	} else if q.Get("offset") != "" {
 		page = q.Get("offset")
 	}
 
 	convertedVal, err := strconv.ParseInt(page, 10, 64)
 	if err != nil {
-		return 0;
+		return 0
 	}
 	return convertedVal
 }

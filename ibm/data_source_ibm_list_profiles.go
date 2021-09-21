@@ -160,12 +160,12 @@ func dataSourceIBMListProfiles() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
+													Type:     schema.TypeString,
+													Computed: true,
 												},
 												"version": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
+													Type:     schema.TypeString,
+													Computed: true,
 												},
 											},
 										},
@@ -177,12 +177,12 @@ func dataSourceIBMListProfiles() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
+													Type:     schema.TypeString,
+													Computed: true,
 												},
 												"version": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
+													Type:     schema.TypeString,
+													Computed: true,
 												},
 											},
 										},
@@ -194,12 +194,12 @@ func dataSourceIBMListProfiles() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"domain_member": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
+													Type:     schema.TypeString,
+													Computed: true,
 												},
 												"standalone": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
+													Type:     schema.TypeString,
+													Computed: true,
 												},
 											},
 										},
@@ -393,7 +393,6 @@ func dataSourceProfilesListFirstToMap(firstItem posturemanagementv1.ProfilesList
 	return firstMap
 }
 
-
 func dataSourceProfilesListFlattenLast(result posturemanagementv1.ProfilesListLast) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceProfilesListLastToMap(result)
@@ -412,7 +411,6 @@ func dataSourceProfilesListLastToMap(lastItem posturemanagementv1.ProfilesListLa
 	return lastMap
 }
 
-
 func dataSourceProfilesListFlattenPrevious(result posturemanagementv1.ProfilesListPrevious) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceProfilesListPreviousToMap(result)
@@ -430,7 +428,6 @@ func dataSourceProfilesListPreviousToMap(previousItem posturemanagementv1.Profil
 
 	return previousMap
 }
-
 
 func dataSourceProfilesListFlattenProfiles(result []posturemanagementv1.ProfileItem) (profiles []map[string]interface{}) {
 	for _, profilesItem := range result {
@@ -535,8 +532,6 @@ func dataSourceProfilesListProfilesApplicabilityCriteriaToMap(applicabilityCrite
 	return applicabilityCriteriaMap
 }
 
-
-
 func dataSourceProfilesListGetNext(next interface{}) int64 {
 	if reflect.ValueOf(next).IsNil() {
 		return 0
@@ -550,15 +545,15 @@ func dataSourceProfilesListGetNext(next interface{}) int64 {
 	q := u.Query()
 	var page string
 
-	if (q.Get("start") != "") {
+	if q.Get("start") != "" {
 		page = q.Get("start")
-	} else if (q.Get("offset") != "") {
+	} else if q.Get("offset") != "" {
 		page = q.Get("offset")
 	}
 
 	convertedVal, err := strconv.ParseInt(page, 10, 64)
 	if err != nil {
-		return 0;
+		return 0
 	}
 	return convertedVal
 }

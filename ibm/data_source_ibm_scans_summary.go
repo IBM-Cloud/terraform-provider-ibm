@@ -204,12 +204,12 @@ func dataSourceIBMScansSummary() *schema.Resource {
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"name": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
+																Type:     schema.TypeString,
+																Computed: true,
 															},
 															"version": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
+																Type:     schema.TypeString,
+																Computed: true,
 															},
 														},
 													},
@@ -221,12 +221,12 @@ func dataSourceIBMScansSummary() *schema.Resource {
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"name": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
+																Type:     schema.TypeString,
+																Computed: true,
 															},
 															"version": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
+																Type:     schema.TypeString,
+																Computed: true,
 															},
 														},
 													},
@@ -238,12 +238,12 @@ func dataSourceIBMScansSummary() *schema.Resource {
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"domain_member": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
+																Type:     schema.TypeString,
+																Computed: true,
 															},
 															"standalone": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
+																Type:     schema.TypeString,
+																Computed: true,
 															},
 														},
 													},
@@ -479,7 +479,6 @@ func dataSourceSummaryGoalsResourceResultToMap(resourceResultItem posturemanagem
 	return resourceResultMap
 }
 
-
 func dataSourceSummaryGoalsGoalApplicabilityCriteriaToMap(goalApplicabilityCriteriaItem posturemanagementv1.GoalApplicabilityCriteria) (goalApplicabilityCriteriaMap map[string]interface{}) {
 	goalApplicabilityCriteriaMap = map[string]interface{}{}
 
@@ -526,7 +525,6 @@ func dataSourceSummaryGoalsGoalApplicabilityCriteriaToMap(goalApplicabilityCrite
 	return goalApplicabilityCriteriaMap
 }
 
-
 func dataSourceSummaryControlsResourceStatisticsToMap(resourceStatisticsItem posturemanagementv1.ResourceStatistics) (resourceStatisticsMap map[string]interface{}) {
 	resourceStatisticsMap = map[string]interface{}{}
 
@@ -545,5 +543,3 @@ func dataSourceSummaryControlsResourceStatisticsToMap(resourceStatisticsItem pos
 
 	return resourceStatisticsMap
 }
-
-

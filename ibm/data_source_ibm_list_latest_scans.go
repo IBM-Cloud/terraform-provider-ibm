@@ -312,7 +312,6 @@ func dataSourceScansListFirstToMap(firstItem posturemanagementv1.ScansListFirst)
 	return firstMap
 }
 
-
 func dataSourceScansListFlattenLast(result posturemanagementv1.ScansListLast) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceScansListLastToMap(result)
@@ -331,7 +330,6 @@ func dataSourceScansListLastToMap(lastItem posturemanagementv1.ScansListLast) (l
 	return lastMap
 }
 
-
 func dataSourceScansListFlattenPrevious(result posturemanagementv1.ScansListPrevious) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceScansListPreviousToMap(result)
@@ -349,7 +347,6 @@ func dataSourceScansListPreviousToMap(previousItem posturemanagementv1.ScansList
 
 	return previousMap
 }
-
 
 func dataSourceScansListFlattenLatestScans(result []posturemanagementv1.ScanItem) (latestScans []map[string]interface{}) {
 	for _, latestScansItem := range result {
@@ -445,8 +442,6 @@ func dataSourceScansListLatestScansResultToMap(resultItem posturemanagementv1.Sc
 	return resultMap
 }
 
-
-
 func dataSourceScansListGetNext(next interface{}) int64 {
 	if reflect.ValueOf(next).IsNil() {
 		return 0
@@ -460,15 +455,15 @@ func dataSourceScansListGetNext(next interface{}) int64 {
 	q := u.Query()
 	var page string
 
-	if (q.Get("start") != "") {
+	if q.Get("start") != "" {
 		page = q.Get("start")
-	} else if (q.Get("offset") != "") {
+	} else if q.Get("offset") != "" {
 		page = q.Get("offset")
 	}
 
 	convertedVal, err := strconv.ParseInt(page, 10, 64)
 	if err != nil {
-		return 0;
+		return 0
 	}
 	return convertedVal
 }

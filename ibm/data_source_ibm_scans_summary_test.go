@@ -35,4 +35,3 @@ func testAccCheckIBMScansSummaryDataSourceConfigBasic() string {
 		}
 	`)
 }
-

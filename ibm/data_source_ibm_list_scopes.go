@@ -270,5 +270,3 @@ func dataSourceScopesListScopesScansToMap(scansItem posturemanagementv1.Scan) (s
 
 	return scansMap
 }
-
-

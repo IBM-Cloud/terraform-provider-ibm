@@ -32,4 +32,3 @@ func testAccCheckIBMListProfilesDataSourceConfigBasic() string {
 		}
 	`)
 }
-

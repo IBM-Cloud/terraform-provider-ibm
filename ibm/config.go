@@ -257,7 +257,7 @@ type ClientSession interface {
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	FindingsV1() (*findingsv1.FindingsV1, error)
-	PostureManagementV1()   (*posturemanagementv1.PostureManagementV1, error)
+	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
 }
 
 type clientSession struct {
@@ -510,9 +510,8 @@ type clientSession struct {
 	findingsClientErr error
 
 	//Security and Compliance Center (SCC) Compliance posture
-	postureManagementClientErr  error
-	postureManagementClient     *posturemanagementv1.PostureManagementV1
-
+	postureManagementClientErr error
+	postureManagementClient    *posturemanagementv1.PostureManagementV1
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -2285,8 +2284,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct an "options" struct for creating the service client.
 	postureManagementClientOptions := &posturemanagementv1.PostureManagementV1Options{
 		Authenticator: authenticator,
-		URL: envFallBack([]string{"IBMCLOUD_COMPLIANCE_API_ENDPOINT"}, posturemanagementv1.DefaultServiceURL),
-		AccountID: core.StringPtr(userConfig.userAccount),
+		URL:           envFallBack([]string{"IBMCLOUD_COMPLIANCE_API_ENDPOINT"}, posturemanagementv1.DefaultServiceURL),
+		AccountID:     core.StringPtr(userConfig.userAccount),
 	}
 
 	// Construct the service client.
@@ -2296,7 +2295,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.postureManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.postureManagementClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": { fmt.Sprintf("terraform-provider-ibm/%s", version.Version) },
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
 		session.postureManagementClientErr = fmt.Errorf("Error occurred while configuring Posture Management service: %q", err)
