@@ -1030,6 +1030,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.satelliteClientErr = errEmptyBluemixCredentials
 		session.iamPolicyManagementErr = errEmptyBluemixCredentials
 		session.satelliteLinkClientErr = errEmptyBluemixCredentials
+		session.esSchemaRegistryErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -2282,7 +2283,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.esSchemaRegistryClient, err = schemaregistryv1.NewSchemaregistryV1(esSchemaRegistryV1Options)
 	if err != nil {
-		session.esSchemaRegistryErr = fmt.Errorf("Error occured while configuring event streams schema registry: %q", err)
+		session.esSchemaRegistryClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.esSchemaRegistryClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+		session.esSchemaRegistryErr = fmt.Errorf("Error occured while configuring Event Streams schema registry: %q", err)
 	}
 
 	return session, nil

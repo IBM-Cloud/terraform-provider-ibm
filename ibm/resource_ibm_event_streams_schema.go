@@ -34,7 +34,6 @@ func resourceIBMEventStreamsSchema() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The API endpoint for interacting with an Event Streams REST API",
-				ForceNew:    true,
 			},
 			"schema": &schema.Schema{
 				Type:     schema.TypeString,
@@ -192,9 +191,9 @@ func resourceIBMEventStreamsSchemaCreate(context context.Context, d *schema.Reso
 	}
 
 	schemaMetadata, response, err := schemaregistryClient.CreateSchemaWithContext(context, createSchemaOptions)
-	if err != nil {
-		log.Printf("[DEBUG] CreateSchemaWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateSchemaWithContext failed %s\n%s", err, response))
+	if err != nil || schemaMetadata == nil {
+		log.Printf("[DEBUG] CreateSchemaWithContext failed with error: %s and response: \n%s", err, response)
+		return diag.FromErr(fmt.Errorf("CreateSchemaWithContext failed with eror: %s and response: \n%s", err, response))
 	}
 	uniqueID := getUniqueSchemaID(instanceCRN, *schemaMetadata.ID)
 	d.SetId(uniqueID)
@@ -220,24 +219,21 @@ func resourceIBMEventStreamsSchemaRead(context context.Context, d *schema.Resour
 	getSchemaOptions.SetID(schemaID)
 
 	avroSchema, response, err := schemaregistryClient.GetLatestSchemaWithContext(context, getSchemaOptions)
-	if err != nil {
+	if err != nil || avroSchema == nil {
+		log.Printf("[DEBUG] GetSchemaWithContext failed with error: %s and response: \n%s", err, response)
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetSchemaWithContext failed %v\n%s", err, response)
-		d.SetId("")
 		return diag.FromErr(fmt.Errorf("GetSchemaWithContext failed %s\n%s", err, response))
 	}
 
 	s, err := json.Marshal(avroSchema)
 	if err != nil {
-		d.SetId("")
 		return diag.FromErr(fmt.Errorf("error marshalling the created schema: %s", err))
 	}
 
 	if err = d.Set("schema", string(s)); err != nil {
-		d.SetId("")
 		return diag.FromErr(fmt.Errorf("error setting the schema: %s", err))
 	}
 	d.Set("resource_instance_id", instanceCRN)
@@ -268,10 +264,10 @@ func resourceIBMEventStreamsSchemaUpdate(context context.Context, d *schema.Reso
 			json.Unmarshal([]byte(s.(string)), &schema)
 			updateSchemaOptions.Schema = schema
 		}
-		_, response, err := schemaregistryClient.UpdateSchemaWithContext(context, updateSchemaOptions)
-		if err != nil {
-			log.Printf("[DEBUG] UpdateSchemaWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateSchemaWithContext failed %s\n%s", err, response))
+		schemaMetadata, response, err := schemaregistryClient.UpdateSchemaWithContext(context, updateSchemaOptions)
+		if err != nil || schemaMetadata == nil {
+			log.Printf("[DEBUG] UpdateSchemaWithContext failed with error: %s\n and response: %s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateSchemaWithContext failed with error: %s and response: \n%s", err, response))
 		}
 	}
 
@@ -306,7 +302,7 @@ func resourceIBMEventStreamsSchemaDelete(context context.Context, d *schema.Reso
 }
 
 func getInstanceURL(d *schema.ResourceData, meta interface{}) (string, string, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		log.Printf("[DEBUG] getInstanceURL ResourceControllerAPI err %s", err)
 		return "", "", err
@@ -320,19 +316,19 @@ func getInstanceURL(d *schema.ResourceData, meta interface{}) (string, string, e
 		}
 		instanceCRN = getInstanceCRN(schemaID)
 	}
-	rcAPI := rsConClient.ResourceServiceInstance()
-	instance, err := rcAPI.GetInstance(instanceCRN)
-	if err != nil {
-		log.Printf("[DEBUG]getInstanceURL err %s", err)
+	getResourceInstanceOptions := rsConClient.NewGetResourceInstanceOptions(instanceCRN)
+	instance, response, err := rsConClient.GetResourceInstance(getResourceInstanceOptions)
+	if err != nil || instance == nil {
+		log.Printf("[DEBUG]getInstanceURL GetResourceInstance failed with error: %s and response:\n%s", err, response)
 		return "", "", err
 	}
 	if instance.Extensions == nil {
-		log.Printf("[DEBUG]instance %s extension is nil", instance.ID)
-		return "", "", fmt.Errorf("getInstanceURL instance %s extension is nil", instance.ID)
+		log.Printf("[DEBUG]instance %s extension is nil", *instance.ID)
+		return "", "", fmt.Errorf("getInstanceURL instance %s extension is nil", *instance.ID)
 	}
 
 	adminURL := instance.Extensions["kafka_http_url"].(string)
-	planID := instance.ServicePlanID
+	planID := *instance.ResourcePlanID
 	valid := strings.Contains(planID, "enterprise")
 	if !valid {
 		return "", "", fmt.Errorf("schema registry is not supported by the Event Streams %s plan, enterprise plan is expected",

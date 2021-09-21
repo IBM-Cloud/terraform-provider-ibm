@@ -5,7 +5,6 @@ package ibm
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -32,13 +31,7 @@ func dataSourceIBMEventStreamsSchema() *schema.Resource {
 			"schema_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "The ID to be assigned to schema, which must be unique.",
-			},
-			"schema": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The schema in JSON format",
 			},
 		},
 	}
@@ -64,20 +57,10 @@ func dataSourceIBMEventStreamsSchemaRead(context context.Context, d *schema.Reso
 	getLatestSchemaOptions.SetID(schemaID)
 
 	schema, response, err := schemaregistryClient.GetLatestSchemaWithContext(context, getLatestSchemaOptions)
-	if err != nil {
-		log.Printf("[DEBUG] GetLatestSchemaWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetLatestSchemaWithContext failed %s\n%s", err, response))
+	if err != nil || schema == nil {
+		log.Printf("[DEBUG] GetLatestSchemaWithContext failed with error: %s and response:\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetLatestSchemaWithContext failed with error: %s\n and response:%s", err, response))
 	}
-
-	avroSchemaString, err := json.Marshal(schema)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("[DEBUG] marshalling avroSchema failed %s", err))
-	}
-
-	if err = d.Set("schema", string(avroSchemaString)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting the schema: %s", err))
-	}
-
 	uniqueID := getUniqueSchemaID(instanceCRN, schemaID)
 
 	d.SetId(uniqueID)

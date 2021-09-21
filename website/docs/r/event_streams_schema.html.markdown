@@ -99,3 +99,23 @@ In addition to the above argument reference list, the following attribute refere
 
 - `id` - (String) The ID of the schema in CRN format. For example, `crn:v1:bluemix:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:cb5a0252-8b8d-4390-b017-80b743d32839:schema:my-es-schema.
 - `kafka_http_url` - (String) The API endpoint for interacting with an Event Streams REST API.
+
+## Import
+
+The `ibm_event_streams_schema` resource can be imported by using `CRN`. The three colon-separated parameters of the `CRN` are:
+  - instance CRN  = CRN of the Event Streams instance
+  - resource type = schema
+  - schema ID = ID of the schema
+  
+**Syntax**
+
+```
+$ terraform import ibm_event_streams_schema.es_schema <crn>
+
+```
+
+**Example**
+
+```
+$ terraform import ibm_event_streams_schema.es_schema crn:v1:bluemix:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:cb5a0252-8b8d-4390-b017-80b743d32839:schema:my-es-schema
+```
