@@ -62,12 +62,12 @@ func dataSourceIBMAppIDMFAChannelRead(ctx context.Context, d *schema.ResourceDat
 
 	tenantID := d.Get("tenant_id").(string)
 
-	ch, _, err := appIDClient.ListChannelsWithContext(ctx, &appid.ListChannelsOptions{
+	ch, resp, err := appIDClient.ListChannelsWithContext(ctx, &appid.ListChannelsOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error getting AppID MFA channels: %s", err)
+		return diag.Errorf("Error getting AppID MFA channels: %s\n%s", err, resp)
 	}
 
 	for _, channel := range ch.Channels {

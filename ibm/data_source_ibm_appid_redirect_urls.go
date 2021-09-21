@@ -38,11 +38,11 @@ func dataSourceIBMAppIDRedirectURLsRead(ctx context.Context, d *schema.ResourceD
 
 	tenantID := d.Get("tenant_id").(string)
 
-	urls, _, err := appidClient.GetRedirectUrisWithContext(ctx, &appid.GetRedirectUrisOptions{
+	urls, resp, err := appidClient.GetRedirectUrisWithContext(ctx, &appid.GetRedirectUrisOptions{
 		TenantID: &tenantID,
 	})
 	if err != nil {
-		return diag.Errorf("Error loading Cloud Directory AppID redirect urls: %s", err)
+		return diag.Errorf("Error loading Cloud Directory AppID redirect urls: %s\n%s", err, resp)
 	}
 
 	if err := d.Set("urls", urls.RedirectUris); err != nil {

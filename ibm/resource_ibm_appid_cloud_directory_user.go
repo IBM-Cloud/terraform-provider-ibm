@@ -198,8 +198,7 @@ func resourceIBMAppIDCloudDirectoryUserRead(ctx context.Context, d *schema.Resou
 	})
 
 	if err != nil {
-		log.Printf("[DEBUG] Error getting AppID user attributes: %s\n%s", err, resp)
-		return diag.Errorf("Error getting AppID user attributes: %s", err)
+		return diag.Errorf("Error getting AppID user attributes: %s\n%s", err, resp)
 	}
 
 	if attr.Sub != nil {
@@ -240,10 +239,10 @@ func resourceIBMAppIDCloudDirectoryUserCreate(ctx context.Context, d *schema.Res
 		input.LockedUntil = core.Int64Ptr(int64(lockedUntil.(int)))
 	}
 
-	user, _, err := appIDClient.StartSignUpWithContext(ctx, input)
+	user, resp, err := appIDClient.StartSignUpWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error creating AppID Cloud Directory user: %s", err)
+		return diag.Errorf("Error creating AppID Cloud Directory user: %s\n%s", err, resp)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", tenantID, *user.ID))
@@ -260,13 +259,13 @@ func resourceIBMAppIDCloudDirectoryUserDelete(ctx context.Context, d *schema.Res
 	tenantID := d.Get("tenant_id").(string)
 	userID := d.Get("user_id").(string)
 
-	_, err = appIDClient.DeleteCloudDirectoryUserWithContext(ctx, &appid.DeleteCloudDirectoryUserOptions{
+	resp, err := appIDClient.DeleteCloudDirectoryUserWithContext(ctx, &appid.DeleteCloudDirectoryUserOptions{
 		TenantID: &tenantID,
 		UserID:   &userID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error deleting AppID Cloud Directory user: %s", err)
+		return diag.Errorf("Error deleting AppID Cloud Directory user: %s\n%s", err, resp)
 	}
 
 	d.SetId("")
@@ -304,23 +303,23 @@ func resourceIBMAppIDCloudDirectoryUserUpdate(ctx context.Context, d *schema.Res
 		input.LockedUntil = core.Int64Ptr(int64(lockedUntil.(int)))
 	}
 
-	_, _, err = appIDClient.UpdateCloudDirectoryUserWithContext(ctx, input)
+	_, resp, err := appIDClient.UpdateCloudDirectoryUserWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error updating AppID Cloud Directory user: %s", err)
+		return diag.Errorf("Error updating AppID Cloud Directory user: %s\n%s", err, resp)
 	}
 
 	if d.HasChanges("password") {
 		password = d.Get("password").(string)
 
-		_, _, err = appIDClient.ChangePasswordWithContext(ctx, &appid.ChangePasswordOptions{
+		_, resp, err = appIDClient.ChangePasswordWithContext(ctx, &appid.ChangePasswordOptions{
 			TenantID:    &tenantID,
 			UUID:        &userID,
 			NewPassword: &password,
 		})
 
 		if err != nil {
-			return diag.Errorf("Error updating AppID Cloud Directory user: %s", err)
+			return diag.Errorf("Error updating AppID Cloud Directory user: %s\n%s", err, resp)
 		}
 	}
 

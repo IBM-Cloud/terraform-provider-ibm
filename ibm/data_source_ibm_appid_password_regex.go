@@ -45,12 +45,12 @@ func dataSourceIBMAppIDPasswordRegexRead(ctx context.Context, d *schema.Resource
 
 	tenantID := d.Get("tenant_id").(string)
 
-	pw, _, err := appIDClient.GetCloudDirectoryPasswordRegexWithContext(ctx, &appid.GetCloudDirectoryPasswordRegexOptions{
+	pw, resp, err := appIDClient.GetCloudDirectoryPasswordRegexWithContext(ctx, &appid.GetCloudDirectoryPasswordRegexOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error loading AppID Cloud Directory password regex: %s", err)
+		return diag.Errorf("Error loading AppID Cloud Directory password regex: %s\n%s", err, resp)
 	}
 
 	if pw.Base64EncodedRegex != nil {

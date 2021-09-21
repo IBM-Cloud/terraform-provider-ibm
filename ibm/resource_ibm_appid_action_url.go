@@ -73,7 +73,7 @@ func resourceIBMAppIDActionURLRead(ctx context.Context, d *schema.ResourceData, 
 			return nil
 		}
 
-		return diag.Errorf("Error getting AppID actionURL: %s", err)
+		return diag.Errorf("Error getting AppID actionURL: %s\n%s", err, resp)
 	}
 
 	if cfg.ActionURL != nil {
@@ -103,10 +103,10 @@ func resourceIBMAppIDActionURLCreate(ctx context.Context, d *schema.ResourceData
 		ActionURL: &actionURL,
 	}
 
-	_, _, err = appIDClient.SetCloudDirectoryActionWithContext(ctx, input)
+	_, resp, err := appIDClient.SetCloudDirectoryActionWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error setting AppID Cloud Directory action URL: %s", err)
+		return diag.Errorf("Error setting AppID Cloud Directory action URL: %s\n%s", err, resp)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", tenantID, action))
@@ -124,13 +124,13 @@ func resourceIBMAppIDActionURLDelete(ctx context.Context, d *schema.ResourceData
 	tenantID := d.Get("tenant_id").(string)
 	action := d.Get("action").(string)
 
-	_, err = appIDClient.DeleteActionURLWithContext(ctx, &appid.DeleteActionURLOptions{
+	resp, err := appIDClient.DeleteActionURLWithContext(ctx, &appid.DeleteActionURLOptions{
 		TenantID: &tenantID,
 		Action:   &action,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error deleting AppID Cloud Directory action URL: %s", err)
+		return diag.Errorf("Error deleting AppID Cloud Directory action URL: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

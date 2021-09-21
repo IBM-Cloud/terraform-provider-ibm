@@ -87,10 +87,10 @@ func resourceIBMAppIDRoleCreate(ctx context.Context, d *schema.ResourceData, met
 
 	input.Access = expandAppIDRoleAccess(d.Get("access").(*schema.Set).List())
 
-	role, _, err := appIDClient.CreateRoleWithContext(ctx, input)
+	role, resp, err := appIDClient.CreateRoleWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error creating AppID role: %s", err)
+		return diag.Errorf("Error creating AppID role: %s\n%s", err, resp)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", tenantID, *role.ID))
@@ -115,13 +115,13 @@ func resourceIBMAppIDRoleRead(ctx context.Context, d *schema.ResourceData, meta 
 	tenantID := idParts[0]
 	roleID := idParts[1]
 
-	role, _, err := appIDClient.GetRoleWithContext(ctx, &appid.GetRoleOptions{
+	role, resp, err := appIDClient.GetRoleWithContext(ctx, &appid.GetRoleOptions{
 		RoleID:   &roleID,
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error loading AppID role: %s", err)
+		return diag.Errorf("Error loading AppID role: %s\n%s", err, resp)
 	}
 
 	d.Set("name", *role.Name)
@@ -157,13 +157,13 @@ func resourceIBMAppIDRoleDelete(ctx context.Context, d *schema.ResourceData, met
 		return diag.Errorf("Incorrect ID %s: ID should be a combination of tenantID/roleID", d.Id())
 	}
 
-	_, err = appIDClient.DeleteRoleWithContext(ctx, &appid.DeleteRoleOptions{
+	resp, err := appIDClient.DeleteRoleWithContext(ctx, &appid.DeleteRoleOptions{
 		TenantID: &tenantID,
 		RoleID:   &roleID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error deleting AppID role: %s", err)
+		return diag.Errorf("Error deleting AppID role: %s\n%s", err, resp)
 	}
 
 	d.SetId("")
@@ -201,10 +201,10 @@ func resourceIBMAppIDRoleUpdate(ctx context.Context, d *schema.ResourceData, met
 
 	input.Access = expandAppIDRoleAccess(d.Get("access").(*schema.Set).List())
 
-	_, _, err = appIDClient.UpdateRoleWithContext(ctx, input)
+	_, resp, err := appIDClient.UpdateRoleWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error updating AppID role: %s", err)
+		return diag.Errorf("Error updating AppID role: %s\n%s", err, resp)
 	}
 
 	return dataSourceIBMAppIDRoleRead(ctx, d, meta)
