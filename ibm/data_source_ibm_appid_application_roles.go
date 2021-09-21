@@ -55,13 +55,13 @@ func dataSourceIBMAppIDApplicationRolesRead(ctx context.Context, d *schema.Resou
 	tenantID := d.Get("tenant_id").(string)
 	clientID := d.Get("client_id").(string)
 
-	roles, _, err := appIDClient.GetApplicationRolesWithContext(ctx, &appid.GetApplicationRolesOptions{
+	roles, resp, err := appIDClient.GetApplicationRolesWithContext(ctx, &appid.GetApplicationRolesOptions{
 		TenantID: &tenantID,
 		ClientID: &clientID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error getting AppID application roles: %s", err)
+		return diag.Errorf("Error getting AppID application roles: %s\n%s", err, resp)
 	}
 
 	if err := d.Set("roles", flattenAppIDApplicationRoles(roles.Roles)); err != nil {

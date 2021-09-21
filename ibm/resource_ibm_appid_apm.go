@@ -138,7 +138,7 @@ func resourceIBMAppIDAPMRead(ctx context.Context, d *schema.ResourceData, meta i
 			return nil
 		}
 
-		return diag.Errorf("Error getting AppID APM configuration: %s", err)
+		return diag.Errorf("Error getting AppID APM configuration: %s\n%s", err, resp)
 	}
 
 	if apm.AdvancedPasswordManagement != nil {
@@ -193,10 +193,10 @@ func resourceIBMAppIDAPMCreate(ctx context.Context, d *schema.ResourceData, meta
 		},
 	}
 
-	_, _, err = appIDClient.SetCloudDirectoryAdvancedPasswordManagementWithContext(ctx, config)
+	_, resp, err := appIDClient.SetCloudDirectoryAdvancedPasswordManagementWithContext(ctx, config)
 
 	if err != nil {
-		return diag.Errorf("Error updating AppID APM configuration: %s", err)
+		return diag.Errorf("Error updating AppID APM configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId(tenantID)
@@ -282,13 +282,13 @@ func resourceIBMAppIDAPMDelete(ctx context.Context, d *schema.ResourceData, meta
 	tenantID := d.Get("tenant_id").(string)
 	config := getDefaultAppIDAPMConfig()
 
-	_, _, err = appIDClient.SetCloudDirectoryAdvancedPasswordManagementWithContext(ctx, &appid.SetCloudDirectoryAdvancedPasswordManagementOptions{
+	_, resp, err := appIDClient.SetCloudDirectoryAdvancedPasswordManagementWithContext(ctx, &appid.SetCloudDirectoryAdvancedPasswordManagementOptions{
 		TenantID:                   &tenantID,
 		AdvancedPasswordManagement: config,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error resetting AppID APM configuration: %s", err)
+		return diag.Errorf("Error resetting AppID APM configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

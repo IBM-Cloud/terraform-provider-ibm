@@ -130,7 +130,7 @@ func resourceIBMAppIDIDPSAMLRead(ctx context.Context, d *schema.ResourceData, me
 			return nil
 		}
 
-		return diag.Errorf("Error loading AppID SAML IDP: %s", err)
+		return diag.Errorf("Error loading AppID SAML IDP: %s\n%s", err, resp)
 	}
 
 	d.Set("is_active", *saml.IsActive)
@@ -167,10 +167,10 @@ func resourceIBMAppIDIDPSAMLCreate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	_, _, err = appIDClient.SetSAMLIDPWithContext(ctx, config)
+	_, resp, err := appIDClient.SetSAMLIDPWithContext(ctx, config)
 
 	if err != nil {
-		return diag.Errorf("Error applying SAML IDP configuration: %s", err)
+		return diag.Errorf("Error applying SAML IDP configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId(tenantID)
@@ -260,10 +260,10 @@ func resourceIBMAppIDIDPSAMLDelete(ctx context.Context, d *schema.ResourceData, 
 	tenantID := d.Get("tenant_id").(string)
 	config := appIDIDPSAMLConfigDefaults(tenantID)
 
-	_, _, err = appIDClient.SetSAMLIDPWithContext(ctx, config)
+	_, resp, err := appIDClient.SetSAMLIDPWithContext(ctx, config)
 
 	if err != nil {
-		return diag.Errorf("Error resetting SAML IDP configuration: %s", err)
+		return diag.Errorf("Error resetting SAML IDP configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

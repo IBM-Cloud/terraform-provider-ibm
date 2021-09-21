@@ -107,12 +107,12 @@ func dataSourceIBMAppIDAPMRead(ctx context.Context, d *schema.ResourceData, meta
 
 	tenantID := d.Get("tenant_id").(string)
 
-	apm, _, err := appIDClient.GetCloudDirectoryAdvancedPasswordManagementWithContext(ctx, &appid.GetCloudDirectoryAdvancedPasswordManagementOptions{
+	apm, resp, err := appIDClient.GetCloudDirectoryAdvancedPasswordManagementWithContext(ctx, &appid.GetCloudDirectoryAdvancedPasswordManagementOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error getting AppID APM configuration: %s", err)
+		return diag.Errorf("Error getting AppID APM configuration: %s\n%s", err, resp)
 	}
 
 	if apm.AdvancedPasswordManagement != nil {

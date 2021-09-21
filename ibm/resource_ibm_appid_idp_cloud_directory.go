@@ -95,7 +95,7 @@ func resourceIBMAppIDIDPCloudDirectoryRead(ctx context.Context, d *schema.Resour
 			return nil
 		}
 
-		return diag.Errorf("Error loading AppID Cloud Directory IDP: %s", err)
+		return diag.Errorf("Error loading AppID Cloud Directory IDP: %s\n%s", err, resp)
 	}
 
 	d.Set("is_active", *config.IsActive)
@@ -163,11 +163,10 @@ func resourceIBMAppIDIDPCloudDirectoryCreate(ctx context.Context, d *schema.Reso
 		config.Config.Interactions.IdentityConfirmation.Methods = expandStringList(methods.([]interface{}))
 	}
 
-	log.Printf("[DEBUG] Applying Cloud Directory IDP config: %+v", config)
-	_, _, err = appIDClient.SetCloudDirectoryIDPWithContext(ctx, config)
+	_, resp, err := appIDClient.SetCloudDirectoryIDPWithContext(ctx, config)
 
 	if err != nil {
-		return diag.Errorf("Error applying AppID Cloud Directory IDP configuration: %s", err)
+		return diag.Errorf("Error applying AppID Cloud Directory IDP configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId(tenantID)
@@ -190,10 +189,10 @@ func resourceIBMAppIDIDPCloudDirectoryDelete(ctx context.Context, d *schema.Reso
 	tenantID := d.Get("tenant_id").(string)
 	config := ibmAppIDIDPCloudDirectoryDefaults(tenantID)
 
-	_, _, err = appIDClient.SetCloudDirectoryIDPWithContext(ctx, config)
+	_, resp, err := appIDClient.SetCloudDirectoryIDPWithContext(ctx, config)
 
 	if err != nil {
-		return diag.Errorf("Error resetting AppID Cloud Directory IDP configuration: %s", err)
+		return diag.Errorf("Error resetting AppID Cloud Directory IDP configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

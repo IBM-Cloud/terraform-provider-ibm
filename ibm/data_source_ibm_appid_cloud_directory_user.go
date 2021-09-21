@@ -105,13 +105,13 @@ func dataSourceIBMAppIDCloudDirectoryUserRead(ctx context.Context, d *schema.Res
 	tenantID := d.Get("tenant_id").(string)
 	userID := d.Get("user_id").(string)
 
-	user, _, err := appIDClient.GetCloudDirectoryUserWithContext(ctx, &appid.GetCloudDirectoryUserOptions{
+	user, resp, err := appIDClient.GetCloudDirectoryUserWithContext(ctx, &appid.GetCloudDirectoryUserOptions{
 		TenantID: &tenantID,
 		UserID:   &userID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error getting AppID Cloud Directory user: %s", err)
+		return diag.Errorf("Error getting AppID Cloud Directory user: %s\n%s", err, resp)
 	}
 
 	d.Set("tenant_id", tenantID)

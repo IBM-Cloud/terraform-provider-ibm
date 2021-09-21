@@ -38,12 +38,12 @@ func dataSourceIBMAppIDIDPCustomRead(ctx context.Context, d *schema.ResourceData
 
 	tenantID := d.Get("tenant_id").(string)
 
-	config, _, err := appIDClient.GetCustomIDPWithContext(ctx, &appid.GetCustomIDPOptions{
+	config, resp, err := appIDClient.GetCustomIDPWithContext(ctx, &appid.GetCustomIDPOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error loading AppID custom IDP: %s", err)
+		return diag.Errorf("Error loading AppID custom IDP: %s\n%s", err, resp)
 	}
 
 	d.Set("is_active", *config.IsActive)

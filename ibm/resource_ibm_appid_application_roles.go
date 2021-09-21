@@ -63,10 +63,10 @@ func resourceIBMAppIDApplicationRolesCreate(ctx context.Context, d *schema.Resou
 		},
 	}
 
-	_, _, err = appIDClient.PutApplicationsRolesWithContext(ctx, roleOpts)
+	_, resp, err := appIDClient.PutApplicationsRolesWithContext(ctx, roleOpts)
 
 	if err != nil {
-		return diag.Errorf("Error setting application roles: %s", err)
+		return diag.Errorf("Error setting application roles: %s\n%s", err, resp)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", tenantID, clientID))
@@ -103,7 +103,7 @@ func resourceIBMAppIDApplicationRolesRead(ctx context.Context, d *schema.Resourc
 			return nil
 		}
 
-		return diag.Errorf("Error getting AppID application roles: %s", err)
+		return diag.Errorf("Error getting AppID application roles: %s\n%s", err, resp)
 	}
 
 	var appRoles []interface{}
@@ -143,10 +143,10 @@ func resourceIBMAppIDApplicationRolesUpdate(ctx context.Context, d *schema.Resou
 		},
 	}
 
-	_, _, err = appIDClient.PutApplicationsRolesWithContext(ctx, roleOpts)
+	_, resp, err := appIDClient.PutApplicationsRolesWithContext(ctx, roleOpts)
 
 	if err != nil {
-		return diag.Errorf("Error setting application roles: %s", err)
+		return diag.Errorf("Error updating application roles: %s\n%s", err, resp)
 	}
 
 	return resourceIBMAppIDApplicationRolesRead(ctx, d, meta)
@@ -170,10 +170,10 @@ func resourceIBMAppIDApplicationRolesDelete(ctx context.Context, d *schema.Resou
 		},
 	}
 
-	_, _, err = appIDClient.PutApplicationsRolesWithContext(ctx, roleOpts)
+	_, resp, err := appIDClient.PutApplicationsRolesWithContext(ctx, roleOpts)
 
 	if err != nil {
-		return diag.Errorf("Error clearing application roles: %s", err)
+		return diag.Errorf("Error clearing application roles: %s\n%s", err, resp)
 	}
 
 	d.SetId("")
