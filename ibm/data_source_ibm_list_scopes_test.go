@@ -18,7 +18,7 @@ func TestAccIBMListScopesDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMListScopesDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_list_scopes.list_scopes", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scopes.list_scopes", "id"),
 				),
 			},
 		},
@@ -27,8 +27,8 @@ func TestAccIBMListScopesDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMListScopesDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_list_scopes" "list_scopes" {
-			scope_id = "1"
+		data "ibm_scc_posture_scopes" "list_scopes" {
+			scope_id = "17630"
 		}
 	`)
 }

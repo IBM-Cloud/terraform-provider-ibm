@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_list_scopes"
+page_title: "IBM : ibm_scc_posture_scopes"
 description: |-
   Get information about list_scopes
 subcategory: "Security and Compliance Center"
 ---
 
-# ibm_list_scopes
+# ibm_scc_posture_scopes
 
 Provides a read-only data source for list_scopes. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_list_scopes" "list_scopes" {
+data "ibm_scc_posture_scopes" "list_scopes" {
 	scope_id = "1"
 }
 ```

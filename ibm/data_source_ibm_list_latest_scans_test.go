@@ -18,7 +18,7 @@ func TestAccIBMListLatestScansDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMListLatestScansDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_list_latest_scans.list_latest_scans", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_latest_scans.list_latest_scans", "id"),
 				),
 			},
 		},
@@ -27,8 +27,8 @@ func TestAccIBMListLatestScansDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMListLatestScansDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_list_latest_scans" "list_latest_scans" {
-			scan_id = "262"
+		data "ibm_scc_posture_latest_scans" "list_latest_scans" {
+			scan_id = "53059"
 		}
 	`)
 }

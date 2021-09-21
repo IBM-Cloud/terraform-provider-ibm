@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_list_profiles"
+page_title: "IBM : ibm_scc_posture_profiles"
 description: |-
   Get information about list_profiles
 subcategory: "Security and Compliance Center"
 ---
 
-# ibm_list_profiles
+# ibm_scc_posture_profiles
 
 Provides a read-only data source for list_profiles. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_list_profiles" "list_profiles" {
+data "ibm_scc_posture_profiles" "list_profiles" {
 	profile_id = "3045"
 }
 ```

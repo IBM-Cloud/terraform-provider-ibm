@@ -18,7 +18,7 @@ func TestAccIBMListProfilesDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMListProfilesDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_list_profiles.list_profiles", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profiles.list_profiles", "id"),
 				),
 			},
 		},
@@ -27,8 +27,8 @@ func TestAccIBMListProfilesDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMListProfilesDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_list_profiles" "list_profiles" {
-			profile_id = "3045"
+		data "ibm_scc_posture_profiles" "list_profiles" {
+			profile_id = "1065"
 		}
 	`)
 }

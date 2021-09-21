@@ -18,9 +18,9 @@ func TestAccIBMScansSummaryDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMScansSummaryDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_scans_summary.scans_summary", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scans_summary.scans_summary", "scan_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scans_summary.scans_summary", "profile_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scan_summary.scans_summary", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scan_summary.scans_summary", "scan_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scan_summary.scans_summary", "profile_id"),
 				),
 			},
 		},
@@ -29,9 +29,9 @@ func TestAccIBMScansSummaryDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMScansSummaryDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_scans_summary" "scans_summary" {
-			scan_id = "scan_id"
-			profile_id = "profile_id"
+		data "ibm_scc_posture_scan_summary" "scans_summary" {
+			scan_id = "52797"
+			profile_id = "48"
 		}
 	`)
 }

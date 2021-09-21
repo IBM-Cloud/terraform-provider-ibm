@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_scans_summary"
+page_title: "IBM : ibm_scc_posture_scan_summary"
 description: |-
   Get information about scans_summary
 subcategory: "Security and Compliance Center"
 ---
 
-# ibm_scans_summary
+# ibm_scc_posture_scan_summary
 
 Provides a read-only data source for scans_summary. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_scans_summary" "scans_summary" {
+data "ibm_scc_posture_scan_summary" "scans_summary" {
 	profile_id = "profile_id"
 	scan_id = "scan_id"
 }
