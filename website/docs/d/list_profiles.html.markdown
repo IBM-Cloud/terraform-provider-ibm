@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_list_profiles"
 description: |-
   Get information about list_profiles
-subcategory: "Posture Management"
+subcategory: "Security and Compliance Center (SCC)"
 ---
 
 # ibm_list_profiles

@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scans_summary"
 description: |-
   Get information about scans_summary
-subcategory: "Posture Management"
+subcategory: "Security and Compliance Center (SCC)"
 ---
 
 # ibm_scans_summary
