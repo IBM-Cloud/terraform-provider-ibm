@@ -133,10 +133,32 @@ Review the argument references that you can specify for your resource.
 - `delete_volume_on_attachment_delete` - (Optional, Bool) If set to **true**, when deleting the attachment, the volume will also be deleted. By default it is **true**
 - `delete_volume_on_instance_delete` - (Optional, Bool) If set to **true**, when deleting the instance, the volume will also be deleted. By default it is **false**
 - `encryption_key` - (Optional, String) The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource. If this property is not provided but the image is encrypted, the image's encryption_key will be used. Otherwise, the encryption type for the volume will be `provider_managed`.
-- `instance` - (Required, String) The ID of the instance.
-- `iops` - (Optional, Integer) The bandwidth for the new volume.
+- `instance` - (Required, String) The id of the instance.
+- `iops` - (Optional, Integer) The bandwidth for the new volume.  This value is required for `custom` storage profiles only.
+**NOTE**
+  - `iops` value can be upgraded and downgraged if volume is attached to an running virtual server instance. Stopped instances will be started on update of volume.
+  - This table shows how storage size affects the `iops` ranges:
+
+            |   Size range (GB)  |   IOPS range   |
+            |--------------------|----------------|
+            |    10  -     39    |  100  -   1000 |
+            |    40  -     79    |  100  -   2000 |
+            |    80  -     99    |  100  -   4000 |
+            |   100  -    499    |  100  -   6000 |
+            |   500  -    999    |  100  -  10000 |
+            |  1000  -   1999    |  100  -  20000 |
+            |  2000  -   3999    |  100  -  40000 |
+            |  4000  -   1999    |  100  -  40000 |
+            |  8000  -   1999    |  100  -  48000 |
+            | 10000  -  16000    |  100  -  48000 |
+
 - `name` - (Required, String) The name of the volume attachment.
 - `profile` - (Optional, String) The globally unique name for this volume profile.
+
+  **NOTE**
+    - tiered profiles [`general-purpose`, `5iops-tier`, `10iops-tier`] can be upgraded and downgraded into each other.
+    - Can be applied only if volume is attached to an running virtual server instance.
+    - Stopped instances will be started on update of volume.
 - `snapshot` - (Optional, String) The unique identifier for this snapshot from which to clone the new volume. 
 
   **NOTE**

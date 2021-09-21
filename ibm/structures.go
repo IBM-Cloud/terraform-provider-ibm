@@ -2057,7 +2057,8 @@ func resourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
 	return nil
 }
 
-func resourceVolumeCapacityValidate(diff *schema.ResourceDiff) error {
+func resourceVolumeValidate(diff *schema.ResourceDiff) error {
+
 	if diff.Id() != "" && diff.HasChange(isVolumeCapacity) {
 		o, n := diff.GetChange(isVolumeCapacity)
 		old := int64(o.(int))
@@ -2066,22 +2067,115 @@ func resourceVolumeCapacityValidate(diff *schema.ResourceDiff) error {
 			return fmt.Errorf("'%s' attribute has a constraint, it supports only expansion and can't be changed from %d to %d.", isVolumeCapacity, old, new)
 		}
 	}
+
+	profile := ""
+	var capacity, iops int64
 	if profileOk, ok := diff.GetOk(isVolumeProfileName); ok {
-		profile := profileOk.(string)
-		var capacity int64
-		if capacityOk, ok := diff.GetOk(isVolumeCapacity); ok {
-			capacity = int64(capacityOk.(int))
-		}
-		if capacity == int64(0) {
-			capacity = int64(100)
-		}
-		if profile == "5iops-tier" && capacity > 9600 {
-			return fmt.Errorf("'%s' storage block supports capacity up to %d.", profile, 9600)
-		} else if profile == "10iops-tier" && capacity > 4800 {
-			return fmt.Errorf("'%s' storage block supports capacity up to %d.", profile, 4800)
+		profile = profileOk.(string)
+	}
+	if capacityOk, ok := diff.GetOk(isVolumeCapacity); ok {
+		capacity = int64(capacityOk.(int))
+	}
+
+	if capacity == int64(0) {
+		capacity = int64(100)
+	}
+	if profile == "5iops-tier" && capacity > 9600 {
+		return fmt.Errorf("'%s' storage block supports capacity up to %d.", profile, 9600)
+	} else if profile == "10iops-tier" && capacity > 4800 {
+		return fmt.Errorf("'%s' storage block supports capacity up to %d.", profile, 4800)
+	}
+
+	if iopsOk, ok := diff.GetOk(isVolumeIops); ok {
+		iops = int64(iopsOk.(int))
+	}
+
+	if diff.HasChange(isVolumeProfileName) {
+		oldProfile, newProfile := diff.GetChange(isVolumeProfileName)
+		if oldProfile.(string) == "custom" || newProfile.(string) == "custom" {
+			diff.ForceNew(isVolumeProfileName)
 		}
 	}
 
+	if profile != "custom" {
+		if iops != 0 && diff.NewValueKnown(isVolumeIops) && diff.HasChange(isVolumeIops) {
+			return fmt.Errorf("VolumeError : iops is applicable for only custom volume profiles")
+		}
+	} else {
+		if capacity == 0 {
+			capacity = int64(100)
+		}
+		if capacity >= 10 && capacity <= 39 {
+			min := int64(100)
+			max := int64(1000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 40 && capacity <= 79 {
+			min := int64(100)
+			max := int64(2000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 80 && capacity <= 99 {
+			min := int64(100)
+			max := int64(4000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 100 && capacity <= 499 {
+			min := int64(100)
+			max := int64(6000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 500 && capacity <= 999 {
+			min := int64(100)
+			max := int64(10000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 1000 && capacity <= 1999 {
+			min := int64(100)
+			max := int64(20000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 2000 && capacity <= 3999 {
+			min := int64(200)
+			max := int64(40000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 4000 && capacity <= 7999 {
+			min := int64(300)
+			max := int64(40000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 8000 && capacity <= 9999 {
+			min := int64(500)
+			max := int64(48000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 10000 && capacity <= 16000 {
+			min := int64(1000)
+			max := int64(48000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+	}
 	return nil
 }
 
