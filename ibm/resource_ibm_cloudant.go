@@ -19,6 +19,7 @@ import (
 
 	"github.com/IBM/cloudant-go-sdk/cloudantv1"
 	"github.com/IBM/go-sdk-core/v5/core"
+	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
 func resourceIBMCloudant() *schema.Resource {
@@ -373,14 +374,35 @@ func getCloudantClient(d *schema.ResourceData, meta interface{}) (*cloudantv1.Cl
 		return nil, fmt.Errorf("Missing endpoints.public in extensions")
 	}
 
+	var authenticator core.Authenticator
 	token := session.Config.IAMAccessToken
-	token = strings.Replace(token, "Bearer ", "", -1)
+
+	if token != "" {
+		token = strings.Replace(token, "Bearer ", "", -1)
+		authenticator = &core.BearerTokenAuthenticator{
+			BearerToken: token,
+		}
+	} else {
+		apiKey := session.Config.BluemixAPIKey
+		region := session.Config.Region
+		visibility := session.Config.Visibility
+		iamURL := iamidentity.DefaultServiceURL
+		if visibility == "private" || visibility == "public-and-private" {
+			if region == "us-south" || region == "us-east" {
+				iamURL = contructEndpoint(fmt.Sprintf("private.%s.iam", region), cloudEndpoint)
+			} else {
+				iamURL = contructEndpoint("private.iam", cloudEndpoint)
+			}
+		}
+		authenticator = &core.IamAuthenticator{
+			ApiKey: apiKey,
+			URL:    envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
+		}
+	}
 
 	client, err := cloudantv1.NewCloudantV1(&cloudantv1.CloudantV1Options{
-		Authenticator: &core.BearerTokenAuthenticator{
-			BearerToken: token,
-		},
-		URL: endpoint,
+		Authenticator: authenticator,
+		URL:           endpoint,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error occured while configuring Cloudant service: %q", err)
