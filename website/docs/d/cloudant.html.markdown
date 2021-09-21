@@ -29,9 +29,9 @@ resource "ibm_resource_instance" "cloudant" {
 
 The following arguments are supported:
 
-* `name` (Required, String) The name of the IBM Cloudant resource instance.
 * `id` (Optional, String) The unique identifier of the Cloudant resource.
 * `location` (Optional, String) The location or the environment in which instance exists.
+* `name` (Required, String) The name of the IBM Cloudant resource instance.
 * `resource_group_id` (Optional, String) The id of the resource group in which the instance is present. If not provided it takes the default resource group.
 
 ## Attribute Reference

@@ -39,7 +39,7 @@ resource "ibm_cloudant" "cloudant" {
 
 ## Timeouts
 
-ibm_cloudant provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html#operation-timeouts) 
+ibm_cloudant provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html#operation-timeouts)
 configuration options:
 
 * `create` - (Default 10 minutes) The creation of the IBM Cloudant instance is considered failed if no response received.
@@ -50,16 +50,13 @@ configuration options:
 
 The following arguments are supported:
 
-* `location` - (Required, Forces new resource, String) Target location or environment to create the resource instance.
-* `name` - (Required, String) A name for the resource instance.
-* `plan` - (Required, String) The plan type of the service.
 * `capacity` - (Optional, Number) A number of blocks of throughput units. For more details please read about [`blocks`](https://cloud.ibm.com/apidocs/cloudant#putcapacitythroughputconfiguration) parameter.
   * Constraints: The default value is `1`. Capacity modification is not supported for `lite` plan.
-* `cors_config` - (Optional, Block List) Configuration for CORS. (see [below for nested arguments](#nestedblock--cors_config)) 
+* `cors_config` - (Optional, Block List) Configuration for CORS. (see [below for nested arguments](#nestedblock--cors_config))
   * Constraints: The minimum length is `1` item. Can conflict with `enable_cors` if it is set to `false`. In this case the CORS customization is not allowed.
-  * `origins` - (Required, List of String) An array of strings that contain allowed origin domains. You have to specify the full URL including the protocol. It is recommended that only the HTTPS protocol is used. Subdomains count as separate domains, so you have to specify all subdomains used.
-  * `allow_credentials` - (Optional, Boolean) Boolean value to allow authentication credentials. If set to true, browser requests must be done by using withCredentials = true. 
+  * `allow_credentials` - (Optional, Boolean) Boolean value to allow authentication credentials. If set to true, browser requests must be done by using withCredentials = true.
     * Constraints: The default value is `true`.
+  * `origins` - (Required, List of String) An array of strings that contain allowed origin domains. You have to specify the full URL including the protocol. It is recommended that only the HTTPS protocol is used. Subdomains count as separate domains, so you have to specify all subdomains used.
 * `enable_cors` - (Optional, Boolean) Boolean value to turn CORS on and off.
   * Constraints: The default value is `true`. If it is set to `false`, then customizing `cors_config` is not allowed.
 * `environment_crn` - (Optional, Forces new resource, String) CRN of the IBM Cloudant Dedicated Hardware plan instance.
@@ -68,7 +65,10 @@ The following arguments are supported:
   * Constraints: The default value is `false`.
 * `legacy_credentials` - (Optional, Forces new resource, Boolean) Use both legacy credentials and IAM for authentication.
   * Constraints: The default value is `false`.
+* `location` - (Required, Forces new resource, String) Target location or environment to create the resource instance.
+* `name` - (Required, String) A name for the resource instance.
 * `parameters` - (Optional, Forces new resource, Map) Arbitrary parameters to pass. Must be a JSON object.
+* `plan` - (Required, String) The plan type of the service.
 * `resource_group_id` - (Optional, Forces new resource, String) The resource group id.
 * `service_endpoints` - (Optional, String) Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.
 * `tags` - (Optional, Set of String) Tags associated with the instance.
