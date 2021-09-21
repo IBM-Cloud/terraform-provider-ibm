@@ -6,6 +6,7 @@ package ibm
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/IBM-Cloud/bluemix-go/api/functions"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -121,13 +122,13 @@ func resourceIBMFunctionNamespaceRead(d *schema.ResourceData, meta interface{}) 
 	}
 	instance, err := functionNamespaceAPI.Namespaces().GetNamespace(getOptions)
 	if err != nil {
-		d.SetId("")
-		return nil
+		if strings.Contains(err.Error(), "404") {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error getting namesapce (IAM): %s", err)
 	}
 
-	if instance.ID != nil {
-		d.SetId(*instance.ID)
-	}
 	if instance.Name != nil {
 		d.Set(funcNamespaceName, *instance.Name)
 	}
@@ -204,8 +205,10 @@ func resourceIBMFunctionNamespaceExists(d *schema.ResourceData, meta interface{}
 	}
 	_, err = nsClient.Namespaces().GetNamespace(getOptions)
 	if err != nil {
-		d.SetId("")
-		return false, fmt.Errorf("Error Getting Namesapce (IAM): %s", err)
+		if strings.Contains(err.Error(), "404") {
+			return false, nil
+		}
+		return false, fmt.Errorf("Error getting existing namesapce (IAM): %s", err)
 	}
 
 	return true, nil

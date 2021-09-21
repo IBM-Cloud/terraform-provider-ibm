@@ -101,8 +101,8 @@ The `ibm_resource_key` provides the following [Timeouts](https://www.terraform.i
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
- - `name` - (Required, Forces new resource, String)  A descriptive name used to identify a resource key.
- - `parameters` (Optional, Map) Arbitrary parameters to pass to the resource in JSON format. If you want to create service credentials by using the private service endpoint, include the `service-endpoints =  "private"` parameter.
+- `name` - (Required, Forces new resource, String)  A descriptive name used to identify a resource key.
+- `parameters` (Optional, Map) Arbitrary parameters to pass to the resource in JSON format. If you want to create service credentials by using the private service endpoint, include the `service-endpoints =  "private"` parameter.
 - `role` - (Required, Forces new resource, String) The name of the user role. Valid roles are `Writer`, `Reader`, `Manager`, `Administrator`, `Operator`, `Viewer`, and `Editor`.
 - `resource_instance_id` - (Optional, Forces new resource, String) The ID of the resource instance associated with the resource key. **Note** Conflicts with `resource_alias_id`.
 - `resource_alias_id` - (Optional, Forces new resource, String) The ID of the resource alias associated with the resource key. **Note** Conflicts with `resource_instance_id`.

@@ -728,6 +728,9 @@ func resourceIBMResourceInstanceDelete(d *schema.ResourceData, meta interface{})
 
 	resp, error := rsConClient.DeleteResourceInstance(&resourceInstanceDelete)
 	if error != nil {
+		if resp != nil && resp.StatusCode == 410 {
+			return nil
+		}
 		return fmt.Errorf("Error deleting resource instance: %s with resp code: %s", error, resp)
 	}
 

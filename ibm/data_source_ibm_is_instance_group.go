@@ -40,6 +40,12 @@ func dataSourceIBMISInstanceGroup() *schema.Resource {
 				Description: "Resource group ID",
 			},
 
+			"crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN for this instance group",
+			},
+
 			"subnets": {
 				Type:        schema.TypeList,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -116,6 +122,7 @@ func dataSourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) 
 			d.Set("instance_template", *instanceGroup.InstanceTemplate.ID)
 			d.Set("membership_count", *instanceGroup.MembershipCount)
 			d.Set("resource_group", *instanceGroup.ResourceGroup.ID)
+			d.Set("crn", *instanceGroup.CRN)
 			d.SetId(*instanceGroup.ID)
 			if instanceGroup.ApplicationPort != nil {
 				d.Set("application_port", *instanceGroup.ApplicationPort)

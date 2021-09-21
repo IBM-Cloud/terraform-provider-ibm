@@ -14,6 +14,7 @@ import (
 
 const (
 	isInstanceTemplateBootVolume                   = "boot_volume"
+	isInstanceTemplateCRN                          = "crn"
 	isInstanceTemplateVolAttVolAutoDelete          = "auto_delete"
 	isInstanceTemplateVolAttVol                    = "volume"
 	isInstanceTemplateVolAttachmentName            = "name"
@@ -107,6 +108,30 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 				Description:      "SSH key Ids for the instance template",
 			},
 
+			isPlacementTargetDedicatedHost: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{isPlacementTargetDedicatedHostGroup, isPlacementTargetPlacementGroup},
+				Description:   "Unique Identifier of the Dedicated Host where the instance will be placed",
+			},
+
+			isPlacementTargetDedicatedHostGroup: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{isPlacementTargetDedicatedHost, isPlacementTargetPlacementGroup},
+				Description:   "Unique Identifier of the Dedicated Host Group where the instance will be placed",
+			},
+
+			isPlacementTargetPlacementGroup: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{isPlacementTargetDedicatedHost, isPlacementTargetDedicatedHostGroup},
+				Description:   "Unique Identifier of the Placement Group for restricting the placement of the instance",
+			},
+
 			isInstanceTemplateVolumeAttachments: {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -119,9 +144,10 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 							Description: "If set to true, when deleting the instance the volume will also be deleted.",
 						},
 						isInstanceTemplateVolAttachmentName: {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The user-defined name for this volume attachment.",
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: InvokeValidator("ibm_is_instance_template", isInstanceTemplateVolAttachmentName),
+							Description:  "The user-defined name for this volume attachment.",
 						},
 						isInstanceTemplateVolAttVol: {
 							Type:        schema.TypeString,
@@ -292,47 +318,6 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 				},
 			},
 
-			isPlacementTargetDedicatedHost: {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{isPlacementTargetDedicatedHostGroup},
-				Description:   "Unique Identifier of the Dedicated Host where the instance will be placed",
-			},
-
-			isPlacementTargetDedicatedHostGroup: {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{isPlacementTargetDedicatedHost},
-				Description:   "Unique Identifier of the Dedicated Host Group where the instance will be placed",
-			},
-
-			isInstanceTemplatePlacementTarget: {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The placement restrictions to use for the virtual server instance.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The unique identifier for this dedicated host.",
-						},
-						"crn": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The CRN for this dedicated host.",
-						},
-						"href": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for this dedicated host.",
-						},
-					},
-				},
-			},
-
 			isInstanceTemplateResourceGroup: {
 				Type:        schema.TypeString,
 				ForceNew:    true,
@@ -340,8 +325,50 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 				Computed:    true,
 				Description: "Instance template resource group",
 			},
+
+			isInstanceTemplatePlacementTarget: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The placement restrictions for the virtual server instance.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this placement target.",
+						},
+						"crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this placement target.",
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this placement target.",
+						},
+					},
+				},
+			},
 		},
 	}
+}
+
+func resourceIBMISInstanceTemplateValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isInstanceTemplateVolAttachmentName,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Required:                   true,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	ibmISInstanceTemplateValidator := ResourceValidator{ResourceName: "ibm_is_instance_template", Schema: validateSchema}
+	return &ibmISInstanceTemplateValidator
 }
 
 func resourceIBMisInstanceTemplateCreate(d *schema.ResourceData, meta interface{}) error {
@@ -432,6 +459,14 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			ID: &dHostGrpIdStr,
 		}
 		instanceproto.PlacementTarget = dHostGrpPlaementTarget
+	}
+
+	if placementGroupInf, ok := d.GetOk(isPlacementTargetPlacementGroup); ok {
+		placementGrpStr := placementGroupInf.(string)
+		placementGrp := &vpcv1.InstancePlacementTargetPrototypePlacementGroupIdentity{
+			ID: &placementGrpStr,
+		}
+		instanceproto.PlacementTarget = placementGrp
 	}
 
 	// BOOT VOLUME ATTACHMENT for instance template
@@ -668,6 +703,7 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 	}
 	instance := instanceIntf.(*vpcv1.InstanceTemplate)
 	d.Set(isInstanceTemplateName, *instance.Name)
+	d.Set(isInstanceTemplateCRN, *instance.CRN)
 	if instance.Profile != nil {
 		instanceProfileIntf := instance.Profile
 		identity := instanceProfileIntf.(*vpcv1.InstanceProfileIdentity)

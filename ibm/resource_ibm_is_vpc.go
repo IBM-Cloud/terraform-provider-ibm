@@ -27,7 +27,9 @@ const (
 	isVPCDefaultRoutingTable        = "default_routing_table"
 	isVPCName                       = "name"
 	isVPCDefaultNetworkACLName      = "default_network_acl_name"
+	isVPCDefaultNetworkACLCRN       = "default_network_acl_crn"
 	isVPCDefaultSecurityGroupName   = "default_security_group_name"
+	isVPCDefaultSecurityGroupCRN    = "default_security_group_crn"
 	isVPCDefaultRoutingTableName    = "default_routing_table_name"
 	isVPCResourceGroup              = "resource_group"
 	isVPCStatus                     = "status"
@@ -134,6 +136,18 @@ func resourceIBMISVPC() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCDefaultSecurityGroupName),
 				Description:  "Default security group name",
+			},
+
+			isVPCDefaultSecurityGroupCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default security group CRN",
+			},
+
+			isVPCDefaultNetworkACLCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default Network ACL CRN",
 			},
 
 			isVPCDefaultRoutingTableName: {
@@ -561,6 +575,7 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		log.Printf("[DEBUG] vpc default network acl is not null :%s", *vpc.DefaultNetworkACL.ID)
 		d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID)
 		d.Set(isVPCDefaultNetworkACLName, *vpc.DefaultNetworkACL.Name)
+		d.Set(isVPCDefaultNetworkACLCRN, vpc.DefaultNetworkACL.CRN)
 	} else {
 		log.Printf("[DEBUG] vpc default network acl is  null")
 		d.Set(isVPCDefaultNetworkACL, nil)
@@ -568,6 +583,7 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if vpc.DefaultSecurityGroup != nil {
 		d.Set(isVPCDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
 		d.Set(isVPCDefaultSecurityGroupName, *vpc.DefaultSecurityGroup.Name)
+		d.Set(isVPCDefaultSecurityGroupCRN, vpc.DefaultSecurityGroup.CRN)
 	} else {
 		d.Set(isVPCDefaultSecurityGroup, nil)
 	}

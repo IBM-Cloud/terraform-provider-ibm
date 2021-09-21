@@ -19,6 +19,7 @@ import (
 const (
 	isVirtualEndpointGatewayName               = "name"
 	isVirtualEndpointGatewayResourceType       = "resource_type"
+	isVirtualEndpointGatewayCRN                = "crn"
 	isVirtualEndpointGatewayResourceGroupID    = "resource_group"
 	isVirtualEndpointGatewayCreatedAt          = "created_at"
 	isVirtualEndpointGatewayIPs                = "ips"
@@ -72,6 +73,11 @@ func resourceIBMISEndpointGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Endpoint gateway resource type",
+			},
+			isVirtualEndpointGatewayCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN for this Endpoint gateway",
 			},
 			isVirtualEndpointGatewayResourceGroupID: {
 				Type:        schema.TypeString,
@@ -336,6 +342,7 @@ func resourceIBMisVirtualEndpointGatewayRead(d *schema.ResourceData, meta interf
 	d.Set(isVirtualEndpointGatewayCreatedAt, result.CreatedAt.String())
 	d.Set(isVirtualEndpointGatewayLifecycleState, result.LifecycleState)
 	d.Set(isVirtualEndpointGatewayResourceType, result.ResourceType)
+	d.Set(isVirtualEndpointGatewayCRN, result.CRN)
 	d.Set(isVirtualEndpointGatewayIPs, flattenIPs(result.Ips))
 	d.Set(isVirtualEndpointGatewayResourceGroupID, result.ResourceGroup.ID)
 	d.Set(isVirtualEndpointGatewayTarget,

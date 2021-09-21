@@ -51,6 +51,18 @@ func dataSourceIBMISVPC() *schema.Resource {
 				Description: "Default security group name",
 			},
 
+			isVPCDefaultSecurityGroupCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default security group CRN",
+			},
+
+			isVPCDefaultNetworkACLCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default Network ACL CRN",
+			},
+
 			isVPCDefaultRoutingTableName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -316,6 +328,7 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			if vpc.DefaultNetworkACL != nil {
 				d.Set(isVPCDefaultNetworkACLName, *vpc.DefaultNetworkACL.Name)
 				d.Set(isVPCDefaultNetworkACL, *vpc.DefaultNetworkACL.ID)
+				d.Set(isVPCDefaultNetworkACLCRN, vpc.DefaultNetworkACL.CRN)
 			} else {
 				d.Set(isVPCDefaultNetworkACL, nil)
 			}
@@ -326,6 +339,7 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			if vpc.DefaultSecurityGroup != nil {
 				d.Set(isVPCDefaultSecurityGroupName, *vpc.DefaultSecurityGroup.Name)
 				d.Set(isVPCDefaultSecurityGroup, *vpc.DefaultSecurityGroup.ID)
+				d.Set(isVPCDefaultSecurityGroupCRN, vpc.DefaultSecurityGroup.CRN)
 			} else {
 				d.Set(isVPCDefaultSecurityGroup, nil)
 			}

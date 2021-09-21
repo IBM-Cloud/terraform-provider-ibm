@@ -108,6 +108,16 @@ In addition to all argument reference list, you can access the following attribu
   - `subnet` - (String) The ID of the subnet that is used in the more network interface.
   - `security_groups` (List)A list of security groups that were created for the interface.
 - `password` - (String) The password that you can use to access your instance.
+- `placement_target`- (List) The placement restrictions for the virtual server instance.
+
+  Nested scheme for `placement_target`: 
+  - `crn` - (String) The CRN for this placement target resource.
+  - `deleted` - (String) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
+    - `more_info` -  (String) Link to documentation about deleted resources. 
+  - `href` - (String) The URL for this placement target resource.
+  - `id` - (String) The unique identifier for this placement target resource.
+  - `name` - (String) The unique user-defined name for this placement target resource. If unspecified, the name will be a hyphenated list of randomly-selected words.
+  - `resource_type` - (String) The type of resource referenced.
 - `primary_network_interface`- (List) A list of primary network interfaces that were created for the instance. 
 
   Nested scheme for `primary_network_interface`:

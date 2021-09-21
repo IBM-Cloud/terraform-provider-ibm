@@ -54,7 +54,7 @@ func resourceApplicationChromeCreate(d *schema.ResourceData, meta interface{}) e
 
 	if err != nil {
 		d.SetId("")
-		return fmt.Errorf("Error configuring chrome web platform: %s with responce code  %d", err, response.StatusCode)
+		return fmt.Errorf("Error configuring chrome web platform: %s with response code  %d", err, response.StatusCode)
 	}
 	d.SetId(guid)
 
@@ -86,7 +86,7 @@ func resourceApplicationChromeRead(d *schema.ResourceData, meta interface{}) err
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error fetching chrome web platform configuration: %s with responce code  %d", err, response.StatusCode)
+		return fmt.Errorf("Error fetching chrome web platform configuration: %s with response code  %d", err, response.StatusCode)
 	}
 
 	d.SetId(guid)
@@ -114,7 +114,7 @@ func resourceApplicationChromeDelete(d *schema.ResourceData, meta interface{}) e
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error deleting chrome web platform configuration: %s with responce code  %d", err, response.StatusCode)
+		return fmt.Errorf("Error deleting chrome web platform configuration: %s with response code  %d", err, response.StatusCode)
 	}
 
 	d.SetId("")

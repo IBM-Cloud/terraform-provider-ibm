@@ -14,6 +14,7 @@ Enterprise Management
 Event Streams
 Functions
 Global Tagging
+IBM Cloud Shell
 Hyper Protect Crypto Service (HPCS)
 Identity & Access Management (IAM)
 Internet services
@@ -26,6 +27,7 @@ Resource management
 Satellite
 Schematics
 Secrets Manager
+Security and Compliance Center (SCC)
 Transit Gateway
 VPC infrastructure
 

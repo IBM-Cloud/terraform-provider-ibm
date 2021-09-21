@@ -14,8 +14,6 @@ If you want to use this resource to update a cluster, make sure that you review 
 
 If you want to create a VPC cluster, make sure to include the VPC infrastructure generation in the `provider` block of your  Terraform configuration file. If you do not set this value, the generation is automatically set to 2. For more information, about how to configure the `provider` block, see [Overview of required input parameters for each resource category](https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform?topic=ibm-cloud-provider-for-terraform-provider-reference#required-parameters). 
 
-You cannot create a free cluster in IBM Cloud Schematics.
-
 To create a worker pool or add worker nodes and zones to a worker pool, use the `ibm_container_worker_pool` and `ibm_container_worker_pool_zone` resources. 
 
 For step-by-step instructions for how to create an IBM Cloud Kubernetes Service or Red Hat OpenShift on IBM Cloud cluster, see [Creating single and multizone Kubernetes and OpenShift clusters](https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform?topic=ibm-cloud-provider-for-terraform-tutorial-tf-clusters). 

@@ -12,6 +12,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv1"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -544,7 +545,7 @@ func resourceIBMIAMGetUsers(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	iamuumClient, err := meta.(ClientSession).IAMUUMAPIV2()
+	iamAccessGroupsClient, err := meta.(ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return err
 	}
@@ -599,15 +600,18 @@ func resourceIBMIAMGetUsers(d *schema.ResourceData, meta interface{}) error {
 			userPolicies = append(userPolicies, p)
 		}
 
-		// Get AccessGroups associated with user
-		retreivedGroups, err := iamuumClient.AccessGroup().List(accountID, user.IamID)
+		listAccessGroupOptions := &iamaccessgroupsv2.ListAccessGroupsOptions{
+			AccountID: &accountID,
+			IamID:     &user.IamID,
+		}
+		retreivedGroups, _, err := iamAccessGroupsClient.ListAccessGroups(listAccessGroupOptions)
 		if err != nil {
 			return fmt.Errorf("Error retrieving access groups: %s", err)
 		}
 
-		accGroupList := make([]map[string]interface{}, 0, len(retreivedGroups))
+		accGroupList := make([]map[string]interface{}, 0, len(retreivedGroups.Groups))
 		//Get the policies for each access group
-		for _, grpData := range retreivedGroups {
+		for _, grpData := range retreivedGroups.Groups {
 			policyList, _, err := iamPolicyManagementClient.ListPolicies(&iampolicymanagementv1.ListPoliciesOptions{
 				AccountID:     core.StringPtr(accountID),
 				AccessGroupID: core.StringPtr(user.IamID),
