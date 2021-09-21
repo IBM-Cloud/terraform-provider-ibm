@@ -2282,11 +2282,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 		Authenticator: authenticator,
 	}
 	session.esSchemaRegistryClient, err = schemaregistryv1.NewSchemaregistryV1(esSchemaRegistryV1Options)
-	if err != nil {
+	if err == nil {
 		session.esSchemaRegistryClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.esSchemaRegistryClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	} else {
 		session.esSchemaRegistryErr = fmt.Errorf("Error occured while configuring Event Streams schema registry: %q", err)
 	}
 
