@@ -65,10 +65,7 @@ Nested scheme for **profiles**:
 		Nested scheme for **os_details**:
 			* `name` - (Optional, String)
 			* `version` - (Optional, String)
-		* `additional_details` - (Optional, List) Any additional details about the profile.
-		Nested scheme for **additional_details**:
-			* `domain_member` - (Optional, String)
-			* `standalone` - (Optional, String)
+		* `additional_details` - (Optional, Map) Any additional details about the profile.
 		* `environment_category_description` - (Optional, Map) The type of environment that your scope is targeted to.
 		* `environment_description` - (Optional, Map) The environment that your scope is targeted to.
 		* `resource_category_description` - (Optional, Map) The type of resource that your scope is targeted to.

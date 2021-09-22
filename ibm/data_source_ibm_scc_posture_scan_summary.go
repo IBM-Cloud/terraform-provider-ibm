@@ -232,20 +232,11 @@ func dataSourceIBMSccPostureScansSummary() *schema.Resource {
 													},
 												},
 												"additional_details": &schema.Schema{
-													Type:        schema.TypeList,
+													Type:        schema.TypeMap,
 													Computed:    true,
 													Description: "Any additional details about the profile.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"domain_member": &schema.Schema{
-																Type:     schema.TypeString,
-																Computed: true,
-															},
-															"standalone": &schema.Schema{
-																Type:     schema.TypeString,
-																Computed: true,
-															},
-														},
+													Elem: &schema.Schema{
+														Type: schema.TypeString,
 													},
 												},
 												"environment_category_description": &schema.Schema{
