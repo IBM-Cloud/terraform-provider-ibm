@@ -96,6 +96,7 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -255,6 +256,7 @@ type ClientSession interface {
 	SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error)
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
+	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	FindingsV1() (*findingsv1.FindingsV1, error)
 }
 
@@ -503,6 +505,10 @@ type clientSession struct {
 	//Satellite link service
 	satelliteLinkClient    *satellitelinkv1.SatelliteLinkV1
 	satelliteLinkClientErr error
+
+	esSchemaRegistryClient *schemaregistryv1.SchemaregistryV1
+	esSchemaRegistryErr    error
+
 	// Security and Compliance Center (SCC)
 	findingsClient    *findingsv1.FindingsV1
 	findingsClientErr error
@@ -929,6 +935,10 @@ func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
 	return session.atrackerClient, session.atrackerClientErr
 }
 
+func (session clientSession) ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error) {
+	return session.esSchemaRegistryClient, session.esSchemaRegistryErr
+}
+
 // Security and Compliance center Findings API
 func (session clientSession) FindingsV1() (*findingsv1.FindingsV1, error) {
 	if session.findingsClientErr != nil {
@@ -1020,6 +1030,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.satelliteClientErr = errEmptyBluemixCredentials
 		session.iamPolicyManagementErr = errEmptyBluemixCredentials
 		session.satelliteLinkClientErr = errEmptyBluemixCredentials
+		session.esSchemaRegistryErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -2265,6 +2276,19 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.satelliteLinkClientErr = fmt.Errorf("Error occurred while configuring Satellite Link service: %q", err)
+	}
+
+	esSchemaRegistryV1Options := &schemaregistryv1.SchemaregistryV1Options{
+		Authenticator: authenticator,
+	}
+	session.esSchemaRegistryClient, err = schemaregistryv1.NewSchemaregistryV1(esSchemaRegistryV1Options)
+	if err == nil {
+		session.esSchemaRegistryClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.esSchemaRegistryClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.esSchemaRegistryErr = fmt.Errorf("Error occured while configuring Event Streams schema registry: %q", err)
 	}
 
 	return session, nil
