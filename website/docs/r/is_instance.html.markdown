@@ -315,6 +315,7 @@ In addition to all argument reference list, you can access the following attribu
   - `name` - (String) The name of the boot volume.
   - `profile` - (String) The profile of the volume.
   - `size`- (Integer) The capacity of the volume in gigabytes.
+- `crn` - (String) The CRN of the instance.
 - `disks` - (List of Strings) The collection of the instance's disks. Nested `disks` blocks have the following structure:
 
   Nested scheme for `disks`:

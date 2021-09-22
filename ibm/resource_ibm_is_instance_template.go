@@ -276,6 +276,12 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 				Description: "User data given for the instance",
 			},
 
+			isInstanceTemplateCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN for the instance",
+			},
+
 			isInstanceTemplateImage: {
 				Type:        schema.TypeString,
 				ForceNew:    true,

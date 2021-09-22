@@ -34,6 +34,7 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `capacity` - (String) The capacity of the volume in gigabytes.
+- `crn` - (String) The crn of this volume.
 - `encryption_key` - (String) The key to use for encrypting this volume.
 - `encryption_type` - (String) The type of ecryption used in the volume [**provider_managed**, **user_managed**].
 - `iops` - (String) The bandwidth for the volume.

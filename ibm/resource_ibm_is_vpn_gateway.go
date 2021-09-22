@@ -20,6 +20,7 @@ const (
 	isVPNGatewayName              = "name"
 	isVPNGatewayResourceGroup     = "resource_group"
 	isVPNGatewayMode              = "mode"
+	isVPNGatewayCRN               = "crn"
 	isVPNGatewayTags              = "tags"
 	isVPNGatewaySubnet            = "subnet"
 	isVPNGatewayStatus            = "status"
@@ -132,6 +133,12 @@ func resourceIBMISVPNGateway() *schema.Resource {
 			},
 
 			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			isVPNGatewayCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The crn of the resource",
@@ -391,6 +398,7 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(ResourceControllerURL, controller+"/vpc/network/vpngateways")
 	d.Set(ResourceName, *vpnGateway.Name)
 	d.Set(ResourceCRN, *vpnGateway.CRN)
+	d.Set(isVPNGatewayCRN, *vpnGateway.CRN)
 	d.Set(ResourceStatus, *vpnGateway.Status)
 	if vpnGateway.ResourceGroup != nil {
 		d.Set(ResourceGroupName, *vpnGateway.ResourceGroup.Name)

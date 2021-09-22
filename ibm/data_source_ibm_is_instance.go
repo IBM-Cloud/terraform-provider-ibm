@@ -386,6 +386,12 @@ func dataSourceIBMISInstance() *schema.Resource {
 				Description: "The crn of the resource",
 			},
 
+			IsInstanceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
 			ResourceStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -786,6 +792,7 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			d.Set(ResourceControllerURL, controller+"/vpc-ext/compute/vs")
 			d.Set(ResourceName, instance.Name)
 			d.Set(ResourceCRN, instance.CRN)
+			d.Set(IsInstanceCRN, instance.CRN)
 			d.Set(ResourceStatus, instance.Status)
 			if instance.ResourceGroup != nil {
 				d.Set(isInstanceResourceGroup, instance.ResourceGroup.ID)
