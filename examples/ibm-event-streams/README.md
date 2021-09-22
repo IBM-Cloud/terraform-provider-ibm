@@ -4,7 +4,7 @@ This example shows 3 usage scenarios.
 
 #### Scenario 1: Create an Event Streams service instance and topic.
 
-```hcl
+```terraform
 resource "ibm_resource_instance" "es_instance_1" {
   name              = "terraform-integration-1"
   service           = "messagehub"
@@ -45,7 +45,7 @@ resource "ibm_event_streams_topic" "es_topic_1" {
 
 #### Scenario 2: Create a topic on an existing Event Streams instance.
 
-```hcl
+```terraform
 data "ibm_resource_instance" "es_instance_2" {
   name              = "terraform-integration-2"
   resource_group_id = data.ibm_resource_group.group.id
@@ -66,7 +66,7 @@ resource "ibm_event_streams_topic" "es_topic_2" {
 
 #### Scenario 3: Create a kafka consumer application connecting to an existing Event Streams instance and its topics.
 
-```hcl
+```terraform
 data "ibm_resource_instance" "es_instance_3" {
   name              = "terraform-integration-3"
   resource_group_id = data.ibm_resource_group.group.id
@@ -84,9 +84,35 @@ resource "kafka_consumer_app" "es_kafka_app" {
 }
 ```
 
+#### Scenario 4: Create a schema on an existing Event Streams Enterprise instance
+
+```terraform
+data "ibm_resource_instance" "es_instance_4" {
+  name              = "terraform-integration-4"
+  resource_group_id = data.ibm_resource_group.group.id
+}
+
+resource "ibm_event_streams_schema" "es_schema" {
+  resource_instance_id = data.ibm_resource_instance.es_instance_4.id
+  schema_id = "tf_schema"
+  schema = <<SCHEMA
+   {
+           "type": "record",
+           "name": "record_name",
+           "fields" : [
+             {"name": "value_1", "type": "long"},
+             {"name": "value_2", "type": "string"}
+           ]
+         }
+  SCHEMA
+}
+```
+
 ## Dependencies
 
 - The owner of the `ibmcloud_api_key` has permission to create Event Streams instance under specified resource group and has Manager role to the created instance in order to create topic.
+
+- The schema registry is available only for Event Streams Enterprise plan service instances.
 
 ## Configuration
 

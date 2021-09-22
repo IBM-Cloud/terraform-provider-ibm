@@ -30,4 +30,3 @@ Secrets Manager
 Security and Compliance Center
 Transit Gateway
 VPC infrastructure
-
