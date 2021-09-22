@@ -50,6 +50,7 @@ func resourceIBMAppIDCloudDirectoryUser() *schema.Resource {
 				Description: "Cloud Directory user display name",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 			},
 			"user_name": {
 				Description: "Optional username",
