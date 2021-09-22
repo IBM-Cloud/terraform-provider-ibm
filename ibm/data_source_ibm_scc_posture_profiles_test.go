@@ -28,7 +28,6 @@ func TestAccIBMSccPostureProfilesDataSourceBasic(t *testing.T) {
 func testAccCheckIBMSccPostureProfilesDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_scc_posture_profiles" "list_profiles" {
-			profile_id = "1065"
 		}
 	`)
 }

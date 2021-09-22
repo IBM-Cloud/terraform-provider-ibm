@@ -2306,18 +2306,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct an "options" struct for creating the service client.
-	var findingsClientURL string
+	var postureManagementClientURL string
 	if c.Visibility == "public" {
-		findingsClientURL, err = findingsv1.GetServiceURLForRegion(c.Region)
+		postureManagementClientURL, err = posturemanagementv1.GetServiceURLForRegion(c.Region)
 	} else {
 		session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service: `%v` visibility not supported", c.Visibility)
 	}
 	if err != nil {
-		findingsClientURL = findingsv1.DefaultServiceURL
+		postureManagementClientURL = posturemanagementv1.DefaultServiceURL
 	}
 	postureManagementClientOptions := &posturemanagementv1.PostureManagementV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_COMPLIANCE_API_ENDPOINT"}, posturemanagementv1.DefaultServiceURL),
+		URL:           envFallBack([]string{"IBMCLOUD_COMPLIANCE_API_ENDPOINT"}, postureManagementClientURL),
 		AccountID:     core.StringPtr(userConfig.userAccount),
 	}
 

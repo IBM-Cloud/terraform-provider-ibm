@@ -28,7 +28,6 @@ func TestAccIBMSccPostureScopesDataSourceBasic(t *testing.T) {
 func testAccCheckIBMSccPostureScopesDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_scc_posture_scopes" "list_scopes" {
-			scope_id = "17630"
 		}
 	`)
 }

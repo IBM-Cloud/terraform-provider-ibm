@@ -28,7 +28,6 @@ func TestAccIBMSccPostureLatestScansDataSourceBasic(t *testing.T) {
 func testAccCheckIBMSccPostureLatestScansDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_scc_posture_latest_scans" "list_latest_scans" {
-			scan_id = "53059"
 		}
 	`)
 }

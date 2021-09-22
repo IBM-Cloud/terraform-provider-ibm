@@ -16,7 +16,7 @@ func TestAccIBMSccPostureScanSummariesDataSourceBasic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMSccPostureScanSummariesDataSourceConfigBasic(),
+				Config: testAccCheckIBMSccPostureScanSummariesDataSourceConfigBasic(scc_posture_profile_id, scc_posture_scope_id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scan_summaries.scan_summaries", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scan_summaries.scan_summaries", "profile_id"),
@@ -27,12 +27,11 @@ func TestAccIBMSccPostureScanSummariesDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMSccPostureScanSummariesDataSourceConfigBasic() string {
+func testAccCheckIBMSccPostureScanSummariesDataSourceConfigBasic(profileId string, scopeId string) string {
 	return fmt.Sprintf(`
 		data "ibm_scc_posture_scan_summaries" "scan_summaries" {
-			profile_id = "425"
-			scope_id = "17630"
-			scan_id = "53059"
+			profile_id = "%s"
+			scope_id = "%s"
 		}
-	`)
+	`, profileId, scopeId)
 }
