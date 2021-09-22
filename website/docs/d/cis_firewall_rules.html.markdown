@@ -27,14 +27,17 @@ The following arguments are supported:
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
 - `id` - (String) The Firewall rules ID. It is a combination of <`firewall_rule_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":"
-- `cis_firewallrules_list` - (List of Firewall Rules)
-  - `paused` - (Boolean). Whether this firewall rules is currently disabled.
+- `firewall_rules` - (List of Firewall Rules)
+  - `action` - (String) Create a firewall rules using these actions `log`, `allow`, `challenge`, `js_challenge`, `block` 
+      The firewall action to perform, "log" action is only available for enterprise plan instances.
+  - `filter` - (Map) An existing filter.
   - `description` - (String) The information about this firewall rules to help identify the purpose of it.
-  - `action` - (String). Create a firewall rules using these actions `log`, `allow`, `challenge`, `js_challenge`, `block` 
-The firewall action to perform, "log" action is only available for enterprise plan instances.
+  - `paused` - (Boolean)  Whether this firewall rules is currently disabled.
+  
+- `filter` - (Map) Filter. 
    
    Nested scheme for `filter_id`:
-    - `paused` - (Boolean). Whether this filter is currently disabled.
+    - `paused` - (Boolean) Whether this filter is currently disabled.
     - `description` - (String) The information about this filter to help identify the purpose of it.
     - `expression` - (String) The expresson of the filter.
 
