@@ -41,16 +41,13 @@ Review the argument references that you can specify for your resource.
 
 - `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance where you want to create the firewall rules.
 - `domain_id` - (Required, String) The ID of the domain where you want to apply the firewall rules.
-- `filter_id` - (Required, String) The type of filter id from which you want to create firewall rules.
 - `action` - (Required, String) Create a firewall rules using these actions `log`, `allow`, `challenge`, `js_challenge`, `block` 
 The firewall action to perform, "log" action is only available for enterprise plan instances.
-- `priority` - (Optional, String) Create a firewall rules with priority.
-
-
-  Nested scheme for `filter_id`:	
-  - `expression` - (Required, String) The expression of filter.
-  - `paused` - (Optional, Bool) Whether this filter is currently disabled.
-  - `description` - (Optional, String) The information about this filter to help identify the purpose of it.  
+- `description` - (Optional, String) The information about this filter to help identify the purpose of it. 
+- `filter_id` - (Required, String) The type of filter id from which you want to create firewall rules.
+- `priority` - (Optional, Int) Create a firewall rules with priority.
+- `paused` - (Optional, Bool) Whether this filter is currently disabled.
+ 
   
 ## Attribute reference
 In addition to all arguments above, the following attributes are exported:
@@ -72,13 +69,13 @@ The Domain ID and CRN will be located on the **Overview** page of the Internet S
 **Syntax**
 
 ```
-$ terraform import ibm_cis_firewall_rules.myorg <firewall_rules_id>:<domain-id>:<crn>
+$ terraform import ibm_cis_firewall_rules.firewall_rules <firewall_rules_id>:<domain-id>:<crn>
 ```
 
 **Example**
 
 ```
-$ terraform import ibm_cis_firewall_rules.myorg
+$ terraform import ibm_cis_firewall_rules.firewall_rules
 d72c91492cc24d8286fb713d406abe91:0b30801280dc2dacac1c3960c33b9ccb:crn:v1:bluemix:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:9054ad06-3485-421a-9300-fe3fb4b79e1d::
 ```
 
