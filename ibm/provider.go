@@ -455,11 +455,11 @@ func Provider() *schema.Provider {
 			"ibm_scc_si_notes":     dataSourceIBMSccSiNotes(),
 
 			// Compliance Posture Management
-			"ibm_scc_posture_scopes":         dataSourceIBMListScopes(),
-			"ibm_scc_posture_latest_scans":   dataSourceIBMListLatestScans(),
-			"ibm_scc_posture_profiles":       dataSourceIBMListProfiles(),
-			"ibm_scc_posture_scan_summary":   dataSourceIBMScansSummary(),
-			"ibm_scc_posture_scan_summaries": dataSourceIBMScanSummaries(),
+			"ibm_scc_posture_scopes":         dataSourceIBMSccPostureScopes(),
+			"ibm_scc_posture_latest_scans":   dataSourceIBMSccPostureLatestScans(),
+			"ibm_scc_posture_profiles":       dataSourceIBMSccPostureProfiles(),
+			"ibm_scc_posture_scan_summary":   dataSourceIBMSccPostureScansSummary(),
+			"ibm_scc_posture_scan_summaries": dataSourceIBMSccPostureScanSummaries(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{

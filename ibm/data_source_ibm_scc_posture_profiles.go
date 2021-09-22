@@ -19,9 +19,9 @@ import (
 	"github.com/IBM/scc-go-sdk/posturemanagementv1"
 )
 
-func dataSourceIBMListProfiles() *schema.Resource {
+func dataSourceIBMSccPostureProfiles() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMListProfilesRead,
+		ReadContext: dataSourceIBMSccPostureProfilesRead,
 
 		Schema: map[string]*schema.Schema{
 			"profile_id": &schema.Schema{
@@ -284,7 +284,7 @@ func dataSourceIBMListProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceIBMListProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMSccPostureProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	postureManagementClient, err := meta.(ClientSession).PostureManagementV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -336,7 +336,7 @@ func dataSourceIBMListProfilesRead(context context.Context, d *schema.ResourceDa
 		}
 		d.SetId(profileID)
 	} else {
-		d.SetId(dataSourceIBMListProfilesID(d))
+		d.SetId(dataSourceIBMSccPostureProfilesID(d))
 	}
 
 	if profilesList.First != nil {
@@ -370,8 +370,8 @@ func dataSourceIBMListProfilesRead(context context.Context, d *schema.ResourceDa
 	return nil
 }
 
-// dataSourceIBMListProfilesID returns a reasonable ID for the list.
-func dataSourceIBMListProfilesID(d *schema.ResourceData) string {
+// dataSourceIBMSccPostureProfilesID returns a reasonable ID for the list.
+func dataSourceIBMSccPostureProfilesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 

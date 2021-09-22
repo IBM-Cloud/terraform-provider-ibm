@@ -10,13 +10,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMListLatestScansDataSourceBasic(t *testing.T) {
+func TestAccIBMSccPostureLatestScansDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMListLatestScansDataSourceConfigBasic(),
+				Config: testAccCheckIBMSccPostureLatestScansDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_latest_scans.list_latest_scans", "id"),
 				),
@@ -25,7 +25,7 @@ func TestAccIBMListLatestScansDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMListLatestScansDataSourceConfigBasic() string {
+func testAccCheckIBMSccPostureLatestScansDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_scc_posture_latest_scans" "list_latest_scans" {
 			scan_id = "53059"

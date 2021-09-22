@@ -15,9 +15,9 @@ import (
 	"github.com/IBM/scc-go-sdk/posturemanagementv1"
 )
 
-func dataSourceIBMListScopes() *schema.Resource {
+func dataSourceIBMSccPostureScopes() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMListScopesRead,
+		ReadContext: dataSourceIBMSccPostureScopesRead,
 
 		Schema: map[string]*schema.Schema{
 			"scope_id": &schema.Schema{
@@ -135,7 +135,7 @@ func dataSourceIBMListScopes() *schema.Resource {
 	}
 }
 
-func dataSourceIBMListScopesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMSccPostureScopesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	postureManagementClient, err := meta.(ClientSession).PostureManagementV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -173,7 +173,7 @@ func dataSourceIBMListScopesRead(context context.Context, d *schema.ResourceData
 		}
 		d.SetId(scopeID)
 	} else {
-		d.SetId(dataSourceIBMListScopesID(d))
+		d.SetId(dataSourceIBMSccPostureScopesID(d))
 	}
 
 	if scopesList.Scopes != nil {
@@ -186,8 +186,8 @@ func dataSourceIBMListScopesRead(context context.Context, d *schema.ResourceData
 	return nil
 }
 
-// dataSourceIBMListScopesID returns a reasonable ID for the list.
-func dataSourceIBMListScopesID(d *schema.ResourceData) string {
+// dataSourceIBMSccPostureScopesID returns a reasonable ID for the list.
+func dataSourceIBMSccPostureScopesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 

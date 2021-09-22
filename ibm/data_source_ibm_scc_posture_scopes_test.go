@@ -10,13 +10,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMListScopesDataSourceBasic(t *testing.T) {
+func TestAccIBMSccPostureScopesDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMListScopesDataSourceConfigBasic(),
+				Config: testAccCheckIBMSccPostureScopesDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scopes.list_scopes", "id"),
 				),
@@ -25,7 +25,7 @@ func TestAccIBMListScopesDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMListScopesDataSourceConfigBasic() string {
+func testAccCheckIBMSccPostureScopesDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_scc_posture_scopes" "list_scopes" {
 			scope_id = "17630"

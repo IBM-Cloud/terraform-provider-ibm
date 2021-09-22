@@ -19,9 +19,9 @@ import (
 	"github.com/IBM/scc-go-sdk/posturemanagementv1"
 )
 
-func dataSourceIBMListLatestScans() *schema.Resource {
+func dataSourceIBMSccPostureLatestScans() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMListLatestScansRead,
+		ReadContext: dataSourceIBMSccPostureLatestScansRead,
 
 		Schema: map[string]*schema.Schema{
 			"scan_id": &schema.Schema{
@@ -203,7 +203,7 @@ func dataSourceIBMListLatestScans() *schema.Resource {
 	}
 }
 
-func dataSourceIBMListLatestScansRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMSccPostureLatestScansRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	postureManagementClient, err := meta.(ClientSession).PostureManagementV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -255,7 +255,7 @@ func dataSourceIBMListLatestScansRead(context context.Context, d *schema.Resourc
 		}
 		d.SetId(scanID)
 	} else {
-		d.SetId(dataSourceIBMListLatestScansID(d))
+		d.SetId(dataSourceIBMSccPostureLatestScansID(d))
 	}
 
 	if scansList.First != nil {
@@ -289,8 +289,8 @@ func dataSourceIBMListLatestScansRead(context context.Context, d *schema.Resourc
 	return nil
 }
 
-// dataSourceIBMListLatestScansID returns a reasonable ID for the list.
-func dataSourceIBMListLatestScansID(d *schema.ResourceData) string {
+// dataSourceIBMSccPostureLatestScansID returns a reasonable ID for the list.
+func dataSourceIBMSccPostureLatestScansID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 

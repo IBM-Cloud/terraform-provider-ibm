@@ -15,9 +15,9 @@ import (
 	"github.com/IBM/scc-go-sdk/posturemanagementv1"
 )
 
-func dataSourceIBMScansSummary() *schema.Resource {
+func dataSourceIBMSccPostureScansSummary() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMScansSummaryRead,
+		ReadContext: dataSourceIBMSccPostureScansSummaryRead,
 
 		Schema: map[string]*schema.Schema{
 			"scan_id": &schema.Schema{
@@ -330,7 +330,7 @@ func dataSourceIBMScansSummary() *schema.Resource {
 	}
 }
 
-func dataSourceIBMScansSummaryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMSccPostureScansSummaryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	postureManagementClient, err := meta.(ClientSession).PostureManagementV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -347,7 +347,7 @@ func dataSourceIBMScansSummaryRead(context context.Context, d *schema.ResourceDa
 		return diag.FromErr(fmt.Errorf("ScansSummaryWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(dataSourceIBMScansSummaryID(d))
+	d.SetId(dataSourceIBMSccPostureScansSummaryID(d))
 	if err = d.Set("discover_id", summary.DiscoverID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting discover_id: %s", err))
 	}
@@ -368,8 +368,8 @@ func dataSourceIBMScansSummaryRead(context context.Context, d *schema.ResourceDa
 	return nil
 }
 
-// dataSourceIBMScansSummaryID returns a reasonable ID for the list.
-func dataSourceIBMScansSummaryID(d *schema.ResourceData) string {
+// dataSourceIBMSccPostureScansSummaryID returns a reasonable ID for the list.
+func dataSourceIBMSccPostureScansSummaryID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 

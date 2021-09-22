@@ -19,9 +19,9 @@ import (
 	"github.com/IBM/scc-go-sdk/posturemanagementv1"
 )
 
-func dataSourceIBMScanSummaries() *schema.Resource {
+func dataSourceIBMSccPostureScanSummaries() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMScanSummariesRead,
+		ReadContext: dataSourceIBMSccPostureScanSummariesRead,
 
 		Schema: map[string]*schema.Schema{
 			"profile_id": &schema.Schema{
@@ -358,7 +358,7 @@ func dataSourceIBMScanSummaries() *schema.Resource {
 	}
 }
 
-func dataSourceIBMScanSummariesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMSccPostureScanSummariesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	postureManagementClient, err := meta.(ClientSession).PostureManagementV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -413,7 +413,7 @@ func dataSourceIBMScanSummariesRead(context context.Context, d *schema.ResourceD
 		}
 		d.SetId(scanID)
 	} else {
-		d.SetId(dataSourceIBMScanSummariesID(d))
+		d.SetId(dataSourceIBMSccPostureScanSummariesID(d))
 	}
 
 	if summariesList.First != nil {
@@ -447,8 +447,8 @@ func dataSourceIBMScanSummariesRead(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-// dataSourceIBMScanSummariesID returns a reasonable ID for the list.
-func dataSourceIBMScanSummariesID(d *schema.ResourceData) string {
+// dataSourceIBMSccPostureScanSummariesID returns a reasonable ID for the list.
+func dataSourceIBMSccPostureScanSummariesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 

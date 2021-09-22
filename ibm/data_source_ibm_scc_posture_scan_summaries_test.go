@@ -10,13 +10,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMScanSummariesDataSourceBasic(t *testing.T) {
+func TestAccIBMSccPostureScanSummariesDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMScanSummariesDataSourceConfigBasic(),
+				Config: testAccCheckIBMSccPostureScanSummariesDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scan_summaries.scan_summaries", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scan_summaries.scan_summaries", "profile_id"),
@@ -27,7 +27,7 @@ func TestAccIBMScanSummariesDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMScanSummariesDataSourceConfigBasic() string {
+func testAccCheckIBMSccPostureScanSummariesDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_scc_posture_scan_summaries" "scan_summaries" {
 			profile_id = "425"

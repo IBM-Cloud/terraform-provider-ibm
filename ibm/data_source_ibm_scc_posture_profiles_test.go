@@ -10,13 +10,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMListProfilesDataSourceBasic(t *testing.T) {
+func TestAccIBMSccPostureProfilesDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMListProfilesDataSourceConfigBasic(),
+				Config: testAccCheckIBMSccPostureProfilesDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profiles.list_profiles", "id"),
 				),
@@ -25,7 +25,7 @@ func TestAccIBMListProfilesDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMListProfilesDataSourceConfigBasic() string {
+func testAccCheckIBMSccPostureProfilesDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_scc_posture_profiles" "list_profiles" {
 			profile_id = "1065"
