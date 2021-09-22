@@ -198,6 +198,7 @@ func Provider() *schema.Provider {
 			"ibm_appid_roles":                    dataSourceIBMAppIDRoles(),
 			"ibm_appid_theme_color":              dataSourceIBMAppIDThemeColor(),
 			"ibm_appid_theme_text":               dataSourceIBMAppIDThemeText(),
+			"ibm_appid_user_roles":               dataSourceIBMAppIDUserRoles(),
 
 			"ibm_function_action":                    dataSourceIBMFunctionAction(),
 			"ibm_function_package":                   dataSourceIBMFunctionPackage(),
@@ -497,6 +498,7 @@ func Provider() *schema.Provider {
 			"ibm_appid_role":                     resourceIBMAppIDRole(),
 			"ibm_appid_theme_color":              resourceIBMAppIDThemeColor(),
 			"ibm_appid_theme_text":               resourceIBMAppIDThemeText(),
+			"ibm_appid_user_roles":               resourceIBMAppIDUserRoles(),
 
 			"ibm_function_action":                                resourceIBMFunctionAction(),
 			"ibm_function_package":                               resourceIBMFunctionPackage(),

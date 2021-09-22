@@ -25,6 +25,7 @@ func TestAccIBMAppIDCloudDirectoryUserDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_appid_cloud_directory_user.user", "active", "false"),
 					resource.TestCheckResourceAttr("data.ibm_appid_cloud_directory_user.user", "locked_until", strconv.Itoa(int(lockedUntil))),
 					resource.TestCheckResourceAttrSet("data.ibm_appid_cloud_directory_user.user", "user_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_appid_cloud_directory_user.user", "subject"),
 					resource.TestCheckResourceAttr("data.ibm_appid_cloud_directory_user.user", "display_name", "Test TF User"),
 					resource.TestCheckResourceAttr("data.ibm_appid_cloud_directory_user.user", "status", "PENDING"),
 					resource.TestCheckResourceAttr("data.ibm_appid_cloud_directory_user.user", "email.#", "1"),

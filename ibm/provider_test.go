@@ -13,6 +13,7 @@ import (
 )
 
 var appIDTenantID string
+var appIDTestUserEmail string
 var cfOrganization string
 var cfSpace string
 var cisDomainStatic string
@@ -120,6 +121,11 @@ func init() {
 	appIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
 	if appIDTenantID == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_APPID_TENANT_ID for testing AppID resources, AppID tests will fail if this is not set")
+	}
+
+	appIDTestUserEmail = os.Getenv("IBM_APPID_TEST_USER_EMAIL")
+	if appIDTestUserEmail == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_APPID_TEST_USER_EMAIL for testing AppID user resources, the tests will fail if this is not set")
 	}
 
 	cfOrganization = os.Getenv("IBM_ORG")
