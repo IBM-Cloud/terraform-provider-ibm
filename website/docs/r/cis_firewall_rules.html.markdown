@@ -41,18 +41,18 @@ Review the argument references that you can specify for your resource.
 
 - `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance where you want to create the firewall rules.
 - `domain_id` - (Required, String) The ID of the domain where you want to apply the firewall rules.
-- `action` - (Required, String) Create a firewall rules using these actions `log`, `allow`, `challenge`, `js_challenge`, `block` 
-The firewall action to perform, "log" action is only available for enterprise plan instances.
-- `description` - (Optional, String) The information about this filter to help identify the purpose of it. 
+- `action` - (Required, String) Create firewall rules by using these log, allow, challenge, js_challenge, block actions.
+The firewall action to perform, log action is only available for the Enterprise plan instances.
+- `description` - (Optional, String) The information about these firewall rules helps identify its purpose. 
 - `filter_id` - (Required, String) The type of filter id from which you want to create firewall rules.
 - `priority` - (Optional, Int) Create a firewall rules with priority.
-- `paused` - (Optional, Bool) Whether this filter is currently disabled.
+- `paused` - (Optional, Bool) Whether this firewall rules is currently disabled.
  
   
 ## Attribute reference
 In addition to all arguments above, the following attributes are exported:
 
-- `filter_id` - (String) The filter id.
+- `filter_id` - (String) The filter ID.
 - `id` - (String) The ID of the firewall rules. The ID is composed of `<filter_id>,<domain_ID>,<cis_crn>`. Attributes are concatenated with `:`.
 
 ## Import

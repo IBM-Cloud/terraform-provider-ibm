@@ -28,8 +28,8 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `firewall_rules` - (List of Firewall Rules)
-  - `action` - (String) Create a firewall rules using these actions `log`, `allow`, `challenge`, `js_challenge`, `block` The firewall action to perform, "log" action is only available for enterprise plan instances.
-  - `description` - (String) The information about this firewall rules to help identify the purpose of it.
+  - `action` - (String) Create firewall rules by using log, allow, challenge, js_challenge, block actions. The firewall action to perform, log action is only available for the Enterprise plan instances.
+  - `description` - (String) The information about these firewall rules helps identify its purpose.
   - `filter` - (Map) An existing filter which contains expression, paused and description.
   - `id` - (String) The Firewall rules ID. It is a combination of <`firewall_rule_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":"
   - `paused` - (Boolean)  Whether this firewall rules is currently disabled.
