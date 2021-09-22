@@ -28,6 +28,8 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `firewall_rules` - (List of Firewall Rules)
+
+ Nested schema for `firewall_rules`:
   - `action` - (String) Create firewall rules by using log, allow, challenge, js_challenge, block actions. The firewall action to perform, log action is only available for the Enterprise plan instances.
   - `description` - (String) The information about these firewall rules helps identify its purpose.
   - `filter` - (Map) An existing filter which contains expression, paused and description.
