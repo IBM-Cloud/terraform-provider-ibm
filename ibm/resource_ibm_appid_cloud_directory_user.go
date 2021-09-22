@@ -16,7 +16,7 @@ import (
 
 func resourceIBMAppIDCloudDirectoryUser() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manage AppID Cloud Directory user",
+		Description:   "Manage AppID Cloud Directory user",
 		CreateContext: resourceIBMAppIDCloudDirectoryUserCreate,
 		ReadContext:   resourceIBMAppIDCloudDirectoryUserRead,
 		DeleteContext: resourceIBMAppIDCloudDirectoryUserDelete,
@@ -51,6 +51,11 @@ func resourceIBMAppIDCloudDirectoryUser() *schema.Resource {
 			},
 			"user_id": {
 				Description: "Cloud Directory user ID",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"subject": {
+				Description: "The user's identifier ('subject' in identity token)",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -185,6 +190,20 @@ func resourceIBMAppIDCloudDirectoryUserRead(ctx context.Context, d *schema.Resou
 		if err := d.Set("meta", flattenAppIDUserMetadata(user.Meta)); err != nil {
 			return diag.Errorf("Error setting AppID user metadata: %s", err)
 		}
+	}
+
+	attr, resp, err := appIDClient.CloudDirectoryGetUserinfoWithContext(ctx, &appid.CloudDirectoryGetUserinfoOptions{
+		TenantID: &tenantID,
+		UserID:   &userID,
+	})
+
+	if err != nil {
+		log.Printf("[DEBUG] Error getting AppID user attributes: %s\n%s", err, resp)
+		return diag.Errorf("Error getting AppID user attributes: %s", err)
+	}
+
+	if attr.Sub != nil {
+		d.Set("subject", *attr.Sub)
 	}
 
 	return nil

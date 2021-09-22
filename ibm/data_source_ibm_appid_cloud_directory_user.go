@@ -6,6 +6,7 @@ import (
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
 )
 
 func dataSourceIBMAppIDCloudDirectoryUser() *schema.Resource {
@@ -31,6 +32,11 @@ func dataSourceIBMAppIDCloudDirectoryUser() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Cloud Directory user ID",
+			},
+			"subject": {
+				Description: "The user's identifier ('subject' in identity token)",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"display_name": {
 				Type:        schema.TypeString,
@@ -140,6 +146,20 @@ func dataSourceIBMAppIDCloudDirectoryUserRead(ctx context.Context, d *schema.Res
 		if err := d.Set("meta", flattenAppIDUserMetadata(user.Meta)); err != nil {
 			return diag.Errorf("Error setting AppID user metadata: %s", err)
 		}
+	}
+
+	attr, resp, err := appIDClient.CloudDirectoryGetUserinfoWithContext(ctx, &appid.CloudDirectoryGetUserinfoOptions{
+		TenantID: &tenantID,
+		UserID:   &userID,
+	})
+
+	if err != nil {
+		log.Printf("[DEBUG] Error getting AppID user attributes: %s\n%s", err, resp)
+		return diag.Errorf("Error getting AppID user attributes: %s", err)
+	}
+
+	if attr.Sub != nil {
+		d.Set("subject", *attr.Sub)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", tenantID, *user.ID))
