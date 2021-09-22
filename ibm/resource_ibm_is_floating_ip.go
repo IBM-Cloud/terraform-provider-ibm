@@ -53,7 +53,12 @@ func resourceIBMISFloatingIP() *schema.Resource {
 			),
 			customdiff.Sequence(
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+
 					if diff.HasChange(isFloatingIPTarget) {
+						if !diff.NewValueKnown(isFloatingIPTarget) {
+							diff.ForceNew(isFloatingIPTarget)
+							return nil
+						}
 						old, new := diff.GetChange(isFloatingIPTarget)
 						sess, err := vpcClient(v)
 						if err != nil {
@@ -63,6 +68,7 @@ func resourceIBMISFloatingIP() *schema.Resource {
 							diff.ForceNew(isFloatingIPTarget)
 						}
 					}
+
 					return nil
 				},
 			),
@@ -100,9 +106,7 @@ func resourceIBMISFloatingIP() *schema.Resource {
 
 			isFloatingIPTarget: {
 				Type:          schema.TypeString,
-				ForceNew:      false,
 				Optional:      true,
-				Computed:      true,
 				ConflictsWith: []string{isFloatingIPZone},
 				Description:   "Target info",
 			},
