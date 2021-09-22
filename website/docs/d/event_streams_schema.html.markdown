@@ -8,9 +8,9 @@ description: |-
 
 # ibm_event_streams_schema
 
-Retrieve information about the Event Streams schema data sources. For more information, see documentation on Event Streams [schema registry](https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-ES_schema_registry)
+Retrieve information about the Event Streams schema data sources. For more information, about Event Streams schema, see [Event Streams Schema Registry](https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-ES_schema_registry).
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_resource_instance" "es_instance" {
@@ -24,13 +24,13 @@ data "ibm_event_streams_schema" "es_schema" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 Following are the argument parameters that you can specify for your data source:
 
-- `schema_id` - (Required, string) The ID of a schema.
-- `resource_instance_id` - (Required, string) The ID or CRN of the Event Streams service instance.
+- `schema_id` - (Required, String) The schema ID.
+- `resource_instance_id` - (Required, String) The ID or CRN of the Event Streams service instance.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to the argument reference list, the following attribute reference can be accessed after data source is created:
 

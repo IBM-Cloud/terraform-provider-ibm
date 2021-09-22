@@ -31,7 +31,7 @@ func dataSourceIBMEventStreamsSchema() *schema.Resource {
 			"schema_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The ID to be assigned to schema, which must be unique.",
+				Description: "The unique ID to be assigned to the schema.",
 			},
 		},
 	}

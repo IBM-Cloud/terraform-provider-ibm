@@ -8,7 +8,7 @@ description: |-
 
 # ibm_event_streams_schema
 
-Create, update or delete the Event Streams schemas. The schema operations can only be performed on an Event Streams Enterprise plan service instances. For more information, about Event Streams schemas, see [Event Streams Schema Registry](https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-ES_schema_registry)
+Create, update or delete the Event Streams schemas. The schema operations can only be performed on an Event Streams Enterprise plan service instances. For more information, about Event Streams schema, see [Event Streams Schema Registry](https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-ES_schema_registry).
 
 ## Example usage
 
@@ -91,7 +91,7 @@ Review the argument reference that you can specify for your resource.
 
 - `schema` - (Required, String) The schema in JSON format.
 - `resource_instance_id` - (Required, String) The ID or the CRN of the Event Streams service instance.
-- `schema_id` - (Optional, String) The ID to be assigned to schema, which must be unique. If this value is not specified, a generated UUID is assigned.
+- `schema_id` - (Optional, String) The unique ID to be assigned to schema. If this value is not specified, a generated `UUID` is assigned.
 
 ## Attribute reference
 
