@@ -18,6 +18,7 @@ import (
 
 const (
 	isInstanceName                    = "name"
+	IsInstanceCRN                     = "crn"
 	isInstanceKeys                    = "keys"
 	isInstanceTags                    = "tags"
 	isInstanceNetworkInterfaces       = "network_interfaces"
@@ -156,6 +157,11 @@ func resourceIBMISInstance() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "VPC id",
+			},
+			IsInstanceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Crn for this Instance",
 			},
 
 			isInstanceSourceTemplate: {
@@ -1639,6 +1645,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/compute/vs")
 	d.Set(ResourceName, *instance.Name)
 	d.Set(ResourceCRN, *instance.CRN)
+	d.Set(IsInstanceCRN, *instance.CRN)
 	d.Set(ResourceStatus, *instance.Status)
 	if instance.ResourceGroup != nil {
 		d.Set(isInstanceResourceGroup, *instance.ResourceGroup.ID)

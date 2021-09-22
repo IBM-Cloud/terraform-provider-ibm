@@ -18,6 +18,7 @@ import (
 
 const (
 	isFloatingIPAddress       = "address"
+	isFloatingIPCRN           = "crn"
 	isFloatingIPName          = "name"
 	isFloatingIPStatus        = "status"
 	isFloatingIPZone          = "zone"
@@ -137,6 +138,12 @@ func resourceIBMISFloatingIP() *schema.Resource {
 			},
 
 			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			isFloatingIPCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The crn of the resource",
@@ -307,6 +314,7 @@ func fipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/floatingIPs")
 	d.Set(ResourceName, *floatingip.Name)
+	d.Set(isFloatingIPCRN, *floatingip.CRN)
 	d.Set(ResourceCRN, *floatingip.CRN)
 	d.Set(ResourceStatus, *floatingip.Status)
 	if floatingip.ResourceGroup != nil {

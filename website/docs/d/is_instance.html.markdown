@@ -73,6 +73,7 @@ In addition to all argument reference list, you can access the following attribu
   - `device` - (String) The name of the device that is associated with the boot volume.
   - `volume_id` - (String) The ID of the volume that is associated with the boot volume attachment.
   - `volume_crn` - (String) The CRN of the volume that is associated with the boot volume attachment.
+- `crn` - (String) The CRN of the instance.
 - `disks` - (List) Collection of the instance's disks. Nested `disks` blocks has the following structure:
 
   Nested scheme for `disks`:

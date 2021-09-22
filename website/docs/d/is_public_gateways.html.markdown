@@ -23,6 +23,7 @@ Review the attribute references that you can access after you retrieve your data
 - `public_gateways` - (List) List of all Public Gateways in the IBM Cloud infrastructure region.
 
   Nested scheme for `public_gateways`:
+  - `crn` - (String) The CRN for this public gateway.
   - `id` - (String) The ID of the public gateway.
   - `status` - (String) The status of the public gateway.
   - `vpc` - (String) The VPC ID of the public gateway.
