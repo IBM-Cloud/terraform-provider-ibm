@@ -16,6 +16,7 @@ import (
 
 func resourceIBMAppIDCloudDirectoryUser() *schema.Resource {
 	return &schema.Resource{
+		Description: "Manage AppID Cloud Directory user",
 		CreateContext: resourceIBMAppIDCloudDirectoryUserCreate,
 		ReadContext:   resourceIBMAppIDCloudDirectoryUserRead,
 		DeleteContext: resourceIBMAppIDCloudDirectoryUserDelete,
@@ -33,6 +34,13 @@ func resourceIBMAppIDCloudDirectoryUser() *schema.Resource {
 			"active": {
 				Description: "Determines if the user account is active or not",
 				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+			},
+			"create_profile": {
+				Description: "A boolean indication if a profile should be created for the Cloud Directory user",
+				Type:        schema.TypeBool,
+				ForceNew:    true,
 				Optional:    true,
 				Default:     true,
 			},
@@ -193,14 +201,16 @@ func resourceIBMAppIDCloudDirectoryUserCreate(ctx context.Context, d *schema.Res
 	password := d.Get("password").(string)
 	status := d.Get("status").(string)
 	active := d.Get("active").(bool)
+	createProfile := d.Get("create_profile").(bool)
 	emails := d.Get("email").(*schema.Set)
 
-	input := &appid.CreateCloudDirectoryUserOptions{
-		TenantID: &tenantID,
-		Active:   &active,
-		Emails:   expandAppIDUserEmails(emails.List()),
-		Password: &password,
-		Status:   &status,
+	input := &appid.StartSignUpOptions{
+		TenantID:            &tenantID,
+		Active:              &active,
+		Emails:              expandAppIDUserEmails(emails.List()),
+		Password:            &password,
+		Status:              &status,
+		ShouldCreateProfile: &createProfile,
 	}
 
 	if displayName, ok := d.GetOk("display_name"); ok {
@@ -211,7 +221,7 @@ func resourceIBMAppIDCloudDirectoryUserCreate(ctx context.Context, d *schema.Res
 		input.LockedUntil = core.Int64Ptr(int64(lockedUntil.(int)))
 	}
 
-	user, _, err := appIDClient.CreateCloudDirectoryUserWithContext(ctx, input)
+	user, _, err := appIDClient.StartSignUpWithContext(ctx, input)
 
 	if err != nil {
 		return diag.Errorf("Error creating AppID Cloud Directory user: %s", err)
