@@ -337,6 +337,8 @@ func Provider() *schema.Provider {
 			"ibm_is_zones":                           dataSourceIBMISZones(),
 			"ibm_is_operating_system":                dataSourceIBMISOperatingSystem(),
 			"ibm_is_operating_systems":               dataSourceIBMISOperatingSystems(),
+			"ibm_is_network_acls":                    dataSourceIBMIsNetworkAcls(),
+			"ibm_is_network_acl":                     dataSourceIBMIsNetworkACL(),
 			"ibm_is_network_acl_rule":                dataSourceIBMISNetworkACLRule(),
 			"ibm_is_network_acl_rules":               dataSourceIBMISNetworkACLRules(),
 			"ibm_lbaas":                              dataSourceIBMLbaas(),
