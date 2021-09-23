@@ -37,6 +37,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20210903091337-e7648c203ed5 h1:bqcjvy0tnQjaNxFpg84aJiGF+jBnlEjC9zc2rmy8z+c=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20210903091337-e7648c203ed5/go.mod h1:q0fXFSbum/16D8Mgn1ROSfSyX4BmvBCm/hHdcXz0wCU=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20210922131713-7a9d25e2f1dd h1:mAku/r+LpGN4gJJAig22SQ443GoF1aVo/NQfv6MzwqQ=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20210922131713-7a9d25e2f1dd/go.mod h1:q0fXFSbum/16D8Mgn1ROSfSyX4BmvBCm/hHdcXz0wCU=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20210705152127-41ca00fc9a62 h1:MOkcr6qQGk4tY542ZJ1DggVh2WUP72EEyLB79llFVH8=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20210705152127-41ca00fc9a62/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
