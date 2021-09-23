@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
+	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -302,11 +303,6 @@ func resourceIBMEventStreamsSchemaDelete(context context.Context, d *schema.Reso
 }
 
 func getInstanceURL(d *schema.ResourceData, meta interface{}) (string, string, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
-	if err != nil {
-		log.Printf("[DEBUG] getInstanceURL ResourceControllerAPI err %s", err)
-		return "", "", err
-	}
 	instanceCRN := d.Get("resource_instance_id").(string)
 	if len(instanceCRN) == 0 {
 		schemaID := d.Id()
@@ -316,15 +312,10 @@ func getInstanceURL(d *schema.ResourceData, meta interface{}) (string, string, e
 		}
 		instanceCRN = getInstanceCRN(schemaID)
 	}
-	getResourceInstanceOptions := rsConClient.NewGetResourceInstanceOptions(instanceCRN)
-	instance, response, err := rsConClient.GetResourceInstance(getResourceInstanceOptions)
-	if err != nil || instance == nil {
-		log.Printf("[DEBUG]getInstanceURL GetResourceInstance failed with error: %s and response:\n%s", err, response)
+
+	instance, err := getInstanceDetails(instanceCRN, meta)
+	if err != nil {
 		return "", "", err
-	}
-	if instance.Extensions == nil {
-		log.Printf("[DEBUG]instance %s extension is nil", *instance.ID)
-		return "", "", fmt.Errorf("getInstanceURL instance %s extension is nil", *instance.ID)
 	}
 
 	adminURL := instance.Extensions["kafka_http_url"].(string)
@@ -337,6 +328,27 @@ func getInstanceURL(d *schema.ResourceData, meta interface{}) (string, string, e
 	d.Set("kafka_http_url", adminURL)
 	log.Printf("[INFO]getInstanceURL kafka_http_url is set to %s", adminURL)
 	return adminURL, instanceCRN, nil
+}
+
+func getInstanceDetails(crn string, meta interface{}) (*resourcecontrollerv2.ResourceInstance, error) {
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	if err != nil {
+		log.Printf("[DEBUG] getInstanceURL ResourceControllerAPI err %s", err)
+		return nil, err
+	}
+
+	getResourceInstanceOptions := rsConClient.NewGetResourceInstanceOptions(crn)
+	instance, response, err := rsConClient.GetResourceInstance(getResourceInstanceOptions)
+	if err != nil || instance == nil {
+		log.Printf("[DEBUG]getInstanceDetails GetResourceInstance failed with error: %s and response:\n%s", err, response)
+		return nil, err
+	}
+	if instance.Extensions == nil {
+		log.Printf("[DEBUG]instance %s extension is nil", *instance.ID)
+		return nil, fmt.Errorf("getInstanceDetails instance %s extension is nil", *instance.ID)
+	}
+
+	return instance, nil
 }
 
 func getUniqueSchemaID(instanceCRN string, schemaID string) string {
