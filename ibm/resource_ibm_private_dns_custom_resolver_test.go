@@ -17,7 +17,6 @@ func TestAccIBMPrivateDNSCustomResolver_Basic(t *testing.T) {
 	var resultprivatedns string
 	name := fmt.Sprintf("testpdnscustomresolver%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
 	description := "new test CR - TF"
-	subnet_crn := "crn:v1:staging:public:is:us-south-2:a/01652b251c3ae2787110a995d8db0135::subnet:0726-b6f3cb83-48f0-4c55-9023-202fe4570c83"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -25,12 +24,11 @@ func TestAccIBMPrivateDNSCustomResolver_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPrivateDNSCustomResolverDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPrivateDNSCustomResolverBasic(name, description, subnet_crn),
+				Config: testAccCheckIBMPrivateDNSCustomResolverBasic(name, description),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPrivateDNSCustomResolverExists("ibm_dns_custom_resolver.test", resultprivatedns),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "name", name),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "description", description),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "locations.0.subnet_crn", subnet_crn),
 				),
 			},
 		},
@@ -41,19 +39,17 @@ func TestAccIBMPrivateDNSCustomResolverImport(t *testing.T) {
 	var resultprivatedns string
 	name := fmt.Sprintf("testpdnscustomresolver%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
 	description := "new test CR - TF"
-	subnet_crn := "crn:v1:staging:public:is:us-south-2:a/01652b251c3ae2787110a995d8db0135::subnet:0726-b6f3cb83-48f0-4c55-9023-202fe4570c83"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMPrivateDNSCustomResolverDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPrivateDNSCustomResolverBasic(name, description, subnet_crn),
+				Config: testAccCheckIBMPrivateDNSCustomResolverBasic(name, description),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPrivateDNSCustomResolverExists("ibm_dns_custom_resolver.test", resultprivatedns),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "name", name),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "description", description),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "locations.0.subnet_crn", subnet_crn),
 				),
 			},
 			{
@@ -67,22 +63,43 @@ func TestAccIBMPrivateDNSCustomResolverImport(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPrivateDNSCustomResolverBasic(name, description, subnet_crn string) string {
+func testAccCheckIBMPrivateDNSCustomResolverBasic(name, description string) string {
 	return fmt.Sprintf(`
 
+	data "ibm_resource_group" "rg" {
+		is_default=true
+	}
+	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
+		name = "test-pdns-custom-resolver-vpc"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "test-pdns-cr-subnet" {
+		name                     = "test-pdns-cr-subnet"
+		vpc                      = ibm_is_vpc.test-pdns-cr-vpc.id
+		zone            = "us-south-1"
+		ipv4_cidr_block = "10.240.25.0/24"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_resource_instance" "test-pdns-cr-instance" {
+		name = "test-pdns-cr-instance"
+		resource_group_id = data.ibm_resource_group.rg.id
+		location = "global"
+		service = "dns-svcs"
+		plan = "standard-dns"
+	}
 	resource "ibm_dns_custom_resolver" "test" {
 		name        = "%s"
-		instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
+		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
 		description = "%s"
 		enabled = true
 	}
 	resource "ibm_dns_custom_resolver_location" "test" {
-		instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
+		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
 		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
-		subnet_crn  = "%s"
+		subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet.crn
 		enabled     = true
 	}
-	  `, name, description, subnet_crn)
+	  `, name, description)
 }
 
 func testAccCheckIBMPrivateDNSCustomResolverDestroy(s *terraform.State) error {

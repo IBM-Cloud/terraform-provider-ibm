@@ -30,6 +30,10 @@ resource "ibm_dns_custom_resolver" "test" {
   name        = "testCR-TF"
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   description = "testdescription-CR"
+  locations {
+     subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-6c3a997d-72b2-47f6-8788-6bd95e1bdb03"
+     enabled     = true
+   }
 }
 ```
 
@@ -39,6 +43,7 @@ Review the argument reference that you can specify for your resource.
 - `instance_id` - (Required, String) The GUID of the private DNS service instance.
 - `name`- (Required, String) The name of the custom resolver.
 - `description` - (Optional, String) Descriptive text of the custom resolver.
+- `locations`- (Optional, Set) The list of locations where this custom resolver is deployed. There is no update for location argument in resolver resource.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your resource is created. 
