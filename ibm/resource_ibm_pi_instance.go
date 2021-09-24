@@ -31,6 +31,7 @@ const (
 	activeTimeOut  = 2 * time.Minute
 	// power service instance capabilities
 	CUSTOM_VIRTUAL_CORES = "custom-virtualcores"
+	PIInstanceNetwork    = "pi_network"
 )
 
 func resourceIBMPIInstance() *schema.Resource {
@@ -94,10 +95,12 @@ func resourceIBMPIInstance() *schema.Resource {
 			},
 			helpers.PIInstanceNetworkIds: {
 				Type:             schema.TypeList,
-				Required:         true,
+				Optional:         true,
 				Elem:             &schema.Schema{Type: schema.TypeString},
 				Description:      "List of Networks that have been configured for the account",
 				DiffSuppressFunc: applyOnce,
+				Deprecated:       "Use pi_network instead",
+				ConflictsWith:    []string{PIInstanceNetwork},
 			},
 
 			helpers.PIInstanceVolumeIds: {
@@ -129,10 +132,48 @@ func resourceIBMPIInstance() *schema.Resource {
 				ValidateFunc: validateAllowedStringValue([]string{"vSCSI"}),
 				Description:  "Storage Connectivity Group for server deployment",
 			},
-
+			PIInstanceNetwork: {
+				Type: schema.TypeList,
+				// TODO: Once pi_network_ids is removed this will be a required field
+				Optional:         true,
+				ConflictsWith:    []string{helpers.PIInstanceNetworkIds},
+				Computed:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "List of one or more networks to attach to the instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ip_address": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"mac_address": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"network_id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"network_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"external_ip": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"addresses": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Deprecated: "Use pi_network instead",
+				Type:       schema.TypeList,
+				Computed:   true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ip": {
@@ -306,7 +347,22 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	mem := d.Get(helpers.PIInstanceMemory).(float64)
 	procs := d.Get(helpers.PIInstanceProcessors).(float64)
 	systype := d.Get(helpers.PIInstanceSystemType).(string)
-	networks := expandStringList(d.Get(helpers.PIInstanceNetworkIds).([]interface{}))
+
+	var pvmNetworks []*models.PVMInstanceAddNetwork
+	// Either pi_network_ids or pi_network is provided
+	// TODO: Once pi_network_ids is removed pi_network will be a required field
+	if v, ok := d.GetOk(helpers.PIInstanceNetworkIds); ok {
+		networks := expandStringList(v.([]interface{}))
+		pvmNetworks = buildPVMNetworks(networks)
+	}
+	if v, ok := d.GetOk(PIInstanceNetwork); ok {
+		networksMap := v.([]interface{})
+		pvmNetworks = expandPVMNetworks(networksMap)
+	}
+	if len(pvmNetworks) <= 0 {
+		return fmt.Errorf("one of pi_network_ids or pi_network must be configured")
+	}
+
 	var volids []string
 	if v, ok := d.GetOk(helpers.PIInstanceVolumeIds); ok {
 		volids = expandStringList((v.(*schema.Set)).List())
@@ -366,7 +422,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		UserData:                userData,
 		ReplicantNamingScheme:   ptrToString(replicationNamingScheme),
 		ReplicantAffinityPolicy: ptrToString(replicationpolicy),
-		Networks:                buildPVMNetworks(networks),
+		Networks:                pvmNetworks,
 		Migratable:              &migratable,
 	}
 	if len(volids) > 0 {
@@ -451,52 +507,56 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	if powervmdata.Migratable != nil {
 		d.Set("pi_migratable", powervmdata.Migratable)
 	}
-	if &powervmdata.Minproc != nil {
-		d.Set("min_processors", powervmdata.Minproc)
-	}
-	if &powervmdata.Progress != nil {
-		d.Set(helpers.PIInstanceProgress, powervmdata.Progress)
-	}
-	if &powervmdata.StorageType != nil {
+	d.Set("min_processors", powervmdata.Minproc)
+	d.Set(helpers.PIInstanceProgress, powervmdata.Progress)
+	if powervmdata.StorageType != nil {
 		d.Set(helpers.PIInstanceStorageType, powervmdata.StorageType)
 	}
 	d.Set(helpers.PICloudInstanceId, powerinstanceid)
-	if powervmdata.PvmInstanceID != nil {
-		d.Set("instance_id", powervmdata.PvmInstanceID)
-	}
+	d.Set("instance_id", powervmdata.PvmInstanceID)
 	d.Set(helpers.PIInstanceName, powervmdata.ServerName)
 	d.Set(helpers.PIInstanceImageName, powervmdata.ImageID)
-	var networks []string
-	networks = make([]string, 0)
-	if powervmdata.Networks != nil {
-		for _, n := range powervmdata.Networks {
-			if n != nil {
-				networks = append(networks, n.NetworkID)
+	if _, ok := d.GetOk(helpers.PIInstanceNetworkIds); ok {
+		var networks []string
+		networks = make([]string, 0)
+		if powervmdata.Networks != nil {
+			for _, n := range powervmdata.Networks {
+				if n != nil {
+					networks = append(networks, n.NetworkID)
+				}
 			}
-
 		}
+		d.Set(helpers.PIInstanceNetworkIds, networks)
+	} else {
+		networksMap := []map[string]interface{}{}
+		if powervmdata.Networks != nil {
+			for _, n := range powervmdata.Networks {
+				if n != nil {
+					v := map[string]interface{}{
+						"ip_address":   n.IPAddress,
+						"mac_address":  n.MacAddress,
+						"network_id":   n.NetworkID,
+						"network_name": n.NetworkName,
+						"type":         n.Type,
+						"external_ip":  n.ExternalIP,
+					}
+					networksMap = append(networksMap, v)
+				}
+			}
+		}
+		d.Set(PIInstanceNetwork, networksMap)
 	}
-	d.Set(helpers.PIInstanceNetworkIds, networks)
+
 	if powervmdata.VolumeIds != nil {
 		d.Set(helpers.PIInstanceVolumeIds, powervmdata.VolumeIds)
 	}
 	d.Set(helpers.PIInstanceSystemType, powervmdata.SysType)
-	if &powervmdata.Minmem != nil {
-		d.Set("min_memory", powervmdata.Minmem)
-	}
-	if &powervmdata.Maxproc != nil {
-		d.Set("max_processors", powervmdata.Maxproc)
-	}
-	if &powervmdata.Maxmem != nil {
-		d.Set("max_memory", powervmdata.Maxmem)
-	}
-	if &powervmdata.PinPolicy != nil {
-		d.Set("pin_policy", powervmdata.PinPolicy)
-	}
-	if &powervmdata.OperatingSystem != nil {
-		d.Set("operating_system", powervmdata.OperatingSystem)
-	}
-	if &powervmdata.OsType != nil {
+	d.Set("min_memory", powervmdata.Minmem)
+	d.Set("max_processors", powervmdata.Maxproc)
+	d.Set("max_memory", powervmdata.Maxmem)
+	d.Set("pin_policy", powervmdata.PinPolicy)
+	d.Set("operating_system", powervmdata.OperatingSystem)
+	if powervmdata.OsType != nil {
 		d.Set("os_type", powervmdata.OsType)
 	}
 
@@ -506,24 +566,12 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 			log.Printf("Now entering the powervm address space....")
 
 			p := make(map[string]interface{})
-			if &pvmip.IP != nil {
-				p["ip"] = pvmip.IP
-			}
-			if &pvmip.NetworkName != nil {
-				p["network_name"] = pvmip.NetworkName
-			}
-			if &pvmip.NetworkID != nil {
-				p["network_id"] = pvmip.NetworkID
-			}
-			if &pvmip.MacAddress != nil {
-				p["macaddress"] = pvmip.MacAddress
-			}
-			if &pvmip.Type != nil {
-				p["type"] = pvmip.Type
-			}
-			if &pvmip.ExternalIP != nil {
-				p["external_ip"] = pvmip.ExternalIP
-			}
+			p["ip"] = pvmip.IP
+			p["network_name"] = pvmip.NetworkName
+			p["network_id"] = pvmip.NetworkID
+			p["macaddress"] = pvmip.MacAddress
+			p["type"] = pvmip.Type
+			p["external_ip"] = pvmip.ExternalIP
 			pvmaddress[i] = p
 		}
 		d.Set("addresses", pvmaddress)
@@ -677,7 +725,7 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 				migratable := m.(bool)
 				body.Migratable = &migratable
 			}
-			if cores_enabled == true {
+			if cores_enabled {
 				log.Printf("support for %s is enabled", CUSTOM_VIRTUAL_CORES)
 				body.VirtualCores = &models.VirtualCores{Assigned: &assignedVirtualCores}
 			} else {
@@ -979,6 +1027,19 @@ func buildPVMNetworks(networks []string) []*models.PVMInstanceAddNetwork {
 		}
 		pvmNetworks = append(pvmNetworks, pvmInstanceNetwork)
 
+	}
+	return pvmNetworks
+}
+
+func expandPVMNetworks(networks []interface{}) []*models.PVMInstanceAddNetwork {
+	pvmNetworks := make([]*models.PVMInstanceAddNetwork, 0, len(networks))
+	for _, v := range networks {
+		network := v.(map[string]interface{})
+		pvmInstanceNetwork := &models.PVMInstanceAddNetwork{
+			IPAddress: network["ip_address"].(string),
+			NetworkID: ptrToString(network["network_id"].(string)),
+		}
+		pvmNetworks = append(pvmNetworks, pvmInstanceNetwork)
 	}
 	return pvmNetworks
 }
