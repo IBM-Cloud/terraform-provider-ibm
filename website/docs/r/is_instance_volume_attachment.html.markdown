@@ -86,18 +86,41 @@ resource "ibm_is_instance_volume_attachment" "testacc_att2" {
 }
 
 ```
-## Example usage (restoring using snapshot)
+## Example usage (creating new volume)
 
 ```terraform
 resource "ibm_is_instance_volume_attachment" "testacc_att3" {
   instance = ibm_is_instance.testacc_instance.id
 
-  name = "test-col-att-3"
+  name                                = "test-col-att-3"
+  iops                                = 100
+  capacity                            = 50
+  delete_volume_on_attachment_delete  = true
+  delete_volume_on_instance_delete    = true
+  volume_name                         = "testvol3"
+
+  //User can configure timeouts
+  timeouts {
+    create = "15m"
+    update = "15m"
+    delete = "15m"
+  }
+}
+
+```
+
+## Example usage (restoring using snapshot)
+
+```terraform
+resource "ibm_is_instance_volume_attachment" "testacc_att4" {
+  instance = ibm_is_instance.testacc_instance.id
+
+  name = "test-col-att-4"
   profile = "general-purpose"
   snapshot = xxxx-xx-x-xxxxx
   delete_volume_on_attachment_delete = true
   delete_volume_on_instance_delete = true
-  volume_name = "testvol3"
+  volume_name = "testvol4"
 
   //User can configure timeouts
   timeouts {
@@ -154,8 +177,11 @@ Review the argument references that you can specify for your resource.
 
 - `name` - (Required, String) The name of the volume attachment.
 - `profile` - (Optional, String) The globally unique name for this volume profile.
-
+  
   **NOTE**
+    - one of [**general-purpose**, **5iops-tier**, **10iops-tier**, **custom**]
+    - if `iops` is not present, `general-purpose` is taken as the volume profile.
+    - if `iops` is present, `custom` is taken as the volume profile.
     - tiered profiles [`general-purpose`, `5iops-tier`, `10iops-tier`] can be upgraded and downgraded into each other.
     - Can be applied only if volume is attached to an running virtual server instance.
     - Stopped instances will be started on update of volume.
