@@ -20,12 +20,14 @@ resource "ibm_pi_instance" "test-instance" {
     pi_instance_name      = "test-vm"
     pi_proc_type          = "shared"
     pi_image_id           = "${data.ibm_pi_image.powerimages.id}"
-    pi_network_ids        = [data.ibm_pi_public_network.dsnetwork.id]
     pi_key_pair_name      = ibm_pi_key.key.key_id
     pi_sys_type           = "s922"
     pi_cloud_instance_id  = "51e1879c-bcbe-4ee1-a008-49cdba0eaf60"
     pi_pin_policy         = "none"
     pi_health_status      = "WARNING"
+    pi_network {
+      network_id = data.ibm_pi_public_network.dsnetwork.id
+    }
 }
 ```
 
@@ -62,7 +64,8 @@ Review the argument references that you can specify for your resource.
 - `pi_key_pair_name` - (Required, String) The name of the SSH key that you want to use to access your Power Systems Virtual Server instance. The SSH key must be uploaded to IBM Cloud.
 - `pi_memory` - (Required, Float) The amount of memory that you want to assign to your instance in gigabytes.
 - `pi_migratable`- (Optional, Bool) Indicates the VM is migrated or not.
-- `pi_network_ids` - (Required, String) The list of network IDs that you want to assign to the instance. 
+- `pi_network_ids` - (Required, List of String) The list of network IDs that you want to assign to the instance. This attribute is **Deprecated** use `pi_network` instead.
+- `pi_network` - (Required, List of Map) List of one or more networks to attach to the instance. The `pi_network` object structure is documented below.
 - `pi_pin_policy` - (Optional, String) Select the pinning policy for your Power Systems Virtual Server instance. Supported values are `soft`, `hard`, and `none`.    **Note** You can choose to soft pin (`soft`) or hard pin (`hard`) a virtual server to the physical host where it runs. When you soft pin an instance for high availability, the instance automatically migrates back to the original host once the host is back to its operating state. If the instance has a licensing restriction with the host, the hard pin option restricts the movement of the instance during remote restart, automated remote restart, DRO, and live partition migration. The default pinning policy is `none`. 
 - `pi_processors` - (Required, Float) The number of vCPUs to assign to the VM as visible within the guest Operating System. 
 - `pi_proc_type` - (Required, String) The type of processor mode in which the VM will run with `shared` or `dedicated`.
@@ -74,13 +77,16 @@ Review the argument references that you can specify for your resource.
 - `pi_sys_type` - (Required, String) The type of system on which to create the VM (s922/e880/any). 
 - `pi_user_data` - (Optional, String) The base64 encoded form of the user data `cloud-init` to pass to the instance during creation. 
 - `pi_virtual_cores_assigned`  - (Optional, Integer) Specify the number of virtual cores to be assigned.
-- `pi_volume_ids` - (Required, String) The list of volume IDs that you want to attach to the instance during creation.
+- `pi_volume_ids` - (Required, List of String) The list of volume IDs that you want to attach to the instance during creation.
 
+The `pi_network` block supports:
+  - `network_id` - (String) The network ID to assign to the instance.
+  - `ip_address` - (String) The ip address to be used of this network.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `addresses` - Map of strings - A list of addresses that are assigned to the instance.
+- `addresses` - Map of strings - A list of addresses that are assigned to the instance. This attribute is **Deprecated** use `pi_network` instead.
 
   Nested scheme for `addresses`:
   - `ip` - (String) The IP address of the instance.
@@ -102,6 +108,15 @@ In addition to all argument reference list, you can access the following attribu
 - `status` - (String) The status of the instance.
 - `pin_policy`  - (String) The pinning policy of the instance.
 - `progress` - (Float) - Specifies the overall progress of the instance deployment process in percentage.
+- `pi_network` - (List of Map) - A list of networks that are assigned to the instance.
+
+  Nested scheme for `pi_network`:
+  - `ip_address` - (String) The IP address of the network.
+  - `mac_address` - (String) The MAC address of the network.
+  - `network_id` - (String) The ID of the network.
+  - `network_name` - (String) The name of the network.
+  - `type` - (String) The type of network.
+  - `external_ip` - (String) The external IP address of the network.
 
 ## Import
 
