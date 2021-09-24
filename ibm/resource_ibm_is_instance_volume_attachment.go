@@ -311,6 +311,10 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 		instanceVolAttproto.Name = &namestr
 	}
 
+	isInstanceKey := "instance_key_" + instanceId
+	ibmMutexKV.Lock(isInstanceKey)
+	defer ibmMutexKV.Unlock(isInstanceKey)
+
 	instanceVolAtt, response, err := sess.CreateInstanceVolumeAttachment(instanceVolAttproto)
 	if err != nil {
 		log.Printf("[DEBUG] Instance volume attachment create err %s\n%s", err, response)
@@ -525,14 +529,24 @@ func instanceVolAttDelete(d *schema.ResourceData, meta interface{}, instanceId, 
 	if err != nil {
 		return err
 	}
+
 	deleteInstanceVolAttOptions := &vpcv1.DeleteInstanceVolumeAttachmentOptions{
 		InstanceID: &instanceId,
 		ID:         &id,
 	}
+
+	isInstanceKey := "instance_key_" + instanceId
+	ibmMutexKV.Lock(isInstanceKey)
+	defer ibmMutexKV.Unlock(isInstanceKey)
+
 	_, err = instanceC.DeleteInstanceVolumeAttachment(deleteInstanceVolAttOptions)
-	_, err = isWaitForInstanceVolumeDetached(instanceC, d, instanceId, id)
 	if err != nil {
 		return fmt.Errorf("Error while deleting volume attachment (%s) from instance (%s) : %q", id, instanceId, err)
+	}
+	_, err = isWaitForInstanceVolumeDetached(instanceC, d, instanceId, id)
+
+	if err != nil {
+		return fmt.Errorf("Error while deleting volume attachment (%s) from instance (%s) on wait : %q", id, instanceId, err)
 	}
 	if volDelete {
 		deleteVolumeOptions := &vpcv1.DeleteVolumeOptions{
@@ -555,6 +569,7 @@ func resourceIBMisInstanceVolumeAttachmentDelete(d *schema.ResourceData, meta in
 	if err != nil {
 		return err
 	}
+
 	volDelete := false
 	if volDeleteOk, ok := d.GetOk(isInstanceVolumeDeleteOnAttachmentDelete); ok {
 		volDelete = volDeleteOk.(bool)
@@ -563,6 +578,7 @@ func resourceIBMisInstanceVolumeAttachmentDelete(d *schema.ResourceData, meta in
 	if volIdOk, ok := d.GetOk(isInstanceVolAttVol); ok {
 		volId = volIdOk.(string)
 	}
+
 	err = instanceVolAttDelete(d, meta, instanceId, id, volId, volDelete)
 	if err != nil {
 		return err
