@@ -11,7 +11,7 @@ subcategory: "Security and Compliance Center"
 Review information of Security and Compliance Center posture scan summary.
 https://test.cloud.ibm.com/docs/security-compliance?topic=security-compliance-results
 
-## Example Usage
+## Example usage
 
 ```hcl
 data "ibm_scc_posture_scan_summary" "scans_summary" {
@@ -20,14 +20,14 @@ data "ibm_scc_posture_scan_summary" "scans_summary" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
 * `profile_id` - (Required, String) The profile ID. This can be obtained from the Security and Compliance Center console by clicking on the profile name. The URL contains the ID.
 * `scan_id` - (Required, Forces new resource, String) The Scan ID.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
