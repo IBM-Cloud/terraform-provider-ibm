@@ -69,7 +69,7 @@ Nested scheme for **controls**:
 			Nested scheme for **software_details**:
 				* `name` - (Optional, String) The name of the operating system software.
 				* `version` - (Optional, String) The version of the operating system software.
-			* `os_details` - (Optional, List) The operating system that the profile applies to.
+			* `os_details` - (Optional, List) The Operating System that the profile applies to.
 			Nested scheme for **os_details**:
 				* `name` - (Optional, String) The name of the operating system.
 				* `version` - (Optional, String) The version of the operating system.
