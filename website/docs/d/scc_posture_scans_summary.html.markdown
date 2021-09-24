@@ -8,8 +8,7 @@ subcategory: "Security and Compliance Center"
 
 # ibm_scc_posture_scan_summary
 
-Review information of Security and Compliance Center posture scan summary.
-https://test.cloud.ibm.com/docs/security-compliance?topic=security-compliance-results
+Review information of Security and Compliance Center posture scan summary see [viewing evaluation results](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-results).
 
 ## Example usage
 
@@ -85,10 +84,7 @@ Nested scheme for **controls**:
 		* `resource_fail_count` - (Optional, Integer) The resource count of fail controls.
 		* `resource_unable_to_perform_count` - (Optional, Integer) The number of resources that were unable to be scanned against a control.
 		* `resource_not_applicable_count` - (Optional, Integer) The resource count of not applicable(NA) controls.
-
 * `discover_id` - (Optional, String) The scan discovery ID.
-
 * `profile_name` - (Optional, String) The scan profile name.
-
 * `scope_id` - (Optional, String) The scan summary scope ID.
 

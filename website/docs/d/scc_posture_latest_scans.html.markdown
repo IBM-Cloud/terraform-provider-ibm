@@ -8,7 +8,7 @@ subcategory: "Security and Compliance Center"
 
 # ibm_scc_posture_latest_scans
 
-Review information about the security and compliance center posture latest scans. For more information, about latest scans, see https://test.cloud.ibm.com/docs/security-compliance?topic=security-compliance-results.
+Review information about the security and compliance center posture latest scans. For more information, about latest scans, see [viewing evaluation results](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-results).
 
 ## Example usage
 

@@ -8,8 +8,7 @@ subcategory: "Security and Compliance Center"
 
 # ibm_scc_posture_scan_summaries
 
-Review information of Security and Compliance Center scan summaries.
-https://test.cloud.ibm.com/docs/security-compliance?topic=security-compliance-results
+Review information of Security and Compliance Center scan summaries see [viewing evaluation results](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-results).
 
 ## Example usage
 
@@ -37,15 +36,12 @@ In addition to all argument references listed, you can access the following attr
 * `first` - (Optional, List) The URL of the first scan summary.
 Nested scheme for **first**:
 	* `href` - (Optional, String) The URL of the first scan summary.
-
 * `last` - (Optional, List) The URL of the last scan summary.
 Nested scheme for **last**:
 	* `href` - (Optional, String) The URL of the last scan summary.
-
 * `previous` - (Optional, List) The URL of the previous scan summary.
 Nested scheme for **previous**:
 	* `href` - (Optional, String) The URL of the previous scan summary.
-
 * `summaries` - (Optional, List) Summaries.
 Nested scheme for **summaries**:
 	* `scan_id` - (Optional, String) The ID of the scan.
@@ -57,7 +53,7 @@ Nested scheme for **summaries**:
 	* `end_time` - (Optional, String) The date and time the scan completed.
 	* `status` - (Optional, String) The status of the collector as it completes a scan. 
 	  * Constraints:
-		* Supported values are **pending**, **discovery_started**, **discovery_completed**, **error_in_discovery**, **gateway_aborted**, **controller_aborted**, **not_accepted**, **waiting_for_refine**, **validation_started**, **validation_completed**, **sent_to_collector**, **discovery_in_progress**, **validation_in_progress**, **error_in_validation**, **discovery_result_posted_with_error**, **discovery_result_posted_no_error**, **validation_result_posted_with_error**, **validation_result_posted_no_error**, **fact_collection_started**, **fact_collection_in_progress**, **fact_collection_completed**, **error_in_fact_collection**, **fact_validation_started**, **fact_validation_in_progress**, **fact_validation_completed**, **error_in_fact_validation**, **abort_task_request_received**, **error_in_abort_task_request**, **abort_task_request_completed**, **user_aborted**, **abort_task_request_failed**, **remediation_started**, **remediation_in_progress**, **error_in_remediation**, **remediation_completed**, **inventory_started**, **inventory_in_progress**, **inventory_completed**, **error_in_inventory**, **inventory_completed_with_error**
+		* Supported values are: **pending**, **discovery_started**, **discovery_completed**, **error_in_discovery**, **gateway_aborted**, **controller_aborted**, **not_accepted**, **waiting_for_refine**, **validation_started**, **validation_completed**, **sent_to_collector**, **discovery_in_progress**, **validation_in_progress**, **error_in_validation**, **discovery_result_posted_with_error**, **discovery_result_posted_no_error**, **validation_result_posted_with_error**, **validation_result_posted_no_error**, **fact_collection_started**, **fact_collection_in_progress**, **fact_collection_completed**, **error_in_fact_collection**, **fact_validation_started**, **fact_validation_in_progress**, **fact_validation_completed**, **error_in_fact_validation**, **abort_task_request_received**, **error_in_abort_task_request**, **abort_task_request_completed**, **user_aborted**, **abort_task_request_failed**, **remediation_started**, **remediation_in_progress**, **error_in_remediation**, **remediation_completed**, **inventory_started**, **inventory_in_progress**, **inventory_completed**, **error_in_inventory**, **inventory_completed_with_error**
 	* `profile` - (Optional, List) The result of a profile.
 	Nested scheme for **profile**:
 		* `profile_id` - (Optional, String) The ID of the profile.

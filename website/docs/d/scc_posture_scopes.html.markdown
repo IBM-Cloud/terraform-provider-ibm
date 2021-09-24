@@ -8,8 +8,7 @@ subcategory: "Security and Compliance Center"
 
 # ibm_scc_posture_scopes
 
-Review information of Security and Compliance Center posture scopes see.
-https://test.cloud.ibm.com/docs/security-compliance?topic=security-compliance-scopes
+Review information of Security and Compliance Center posture scopes see [Managing Scopes](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-scopes).
 
 ## Example usage
 

@@ -8,7 +8,7 @@ subcategory: "Security and Compliance Center"
 
 # ibm_scc_posture_profiles
 
-Review information about the security and compliance center posture latest scans. For more information, about profiles see https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles.
+Review information about the security and compliance center posture latest scans. For more information, about profiles see [What is a profile?](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).
 
 ## Example usage
 
