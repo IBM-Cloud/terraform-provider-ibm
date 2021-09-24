@@ -13,7 +13,7 @@ https://test.cloud.ibm.com/docs/security-compliance?topic=security-compliance-re
 
 ## Example usage
 
-```hcl
+```terraform
 data "ibm_scc_posture_scan_summary" "scans_summary" {
 	profile_id = "profile_id"
 	scan_id = "scan_id"
@@ -67,12 +67,12 @@ Nested scheme for **controls**:
 			* `resource_type` - (Optional, List) The resource type that the profile applies to.
 			* `software_details` - (Optional, List) The software that the profile applies to.
 			Nested scheme for **software_details**:
-				* `name` - (Optional, String) The name of the operating system software.
-				* `version` - (Optional, String) The version of the operating system software.
+				* `name` - (Optional, String) The name of the Operating System software.
+				* `version` - (Optional, String) The version of the Operating System software.
 			* `os_details` - (Optional, List) The Operating System that the profile applies to.
 			Nested scheme for **os_details**:
-				* `name` - (Optional, String) The name of the operating system.
-				* `version` - (Optional, String) The version of the operating system.
+				* `name` - (Optional, String) The name of the Operating System.
+				* `version` - (Optional, String) The version of the Operating System.
 			* `additional_details` - (Optional, Map) Any additional details about the profile.
 			* `environment_category_description` - (Optional, Map) The type of environment that your scope is targeted to.
 			* `environment_description` - (Optional, Map) The environment that your scope is targeted to.
