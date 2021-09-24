@@ -452,6 +452,26 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	if d.HasChange(isInstanceVolumeAttVolumeReferenceName) {
+		newname := d.Get(isInstanceVolumeAttVolumeReferenceName).(string)
+		volid := d.Get(isInstanceVolAttVol).(string)
+		voloptions := &vpcv1.UpdateVolumeOptions{
+			ID: &volid,
+		}
+		volumePatchModel := &vpcv1.VolumePatch{
+			Name: &newname,
+		}
+		volumePatch, err := volumePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for VolumePatch: %s", err)
+		}
+		voloptions.VolumePatch = volumePatch
+		_, response, err := instanceC.UpdateVolume(voloptions)
+		if err != nil {
+			return fmt.Errorf("Error updating volume name : %s\n%s", err, response)
+		}
+	}
+
 	// profile/iops update
 
 	volId := ""
