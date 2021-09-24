@@ -78,7 +78,7 @@ func resourceIBMAppIDTokenConfig() *schema.Resource {
 						"destination_claim": {
 							Description: "Optional: Defines the custom attribute that can override the current claim in token.",
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 						},
 					},
 				},
