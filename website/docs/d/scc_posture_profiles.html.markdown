@@ -45,25 +45,25 @@ Nested scheme for **previous**:
 Nested scheme for **profiles**:
 	* `applicability_criteria` - (Optional, List) The criteria that defines how a profile applies.
 	Nested scheme for **applicability_criteria**:
+		* `additional_details` - (Optional, Map) Any additional details about the profile.
 		* `environment` - (Optional, List) A list of environments that a profile can be applied to.
 		* `environment_category` - (Optional, List) The type of environment that a profile is able to be applied to.
-		* `resource` - (Optional, List) A list of resources that a profile can be used with.
-		* `resource_category` - (Optional, List) The type of resource that a profile is able to be applied to.
-		* `resource_type` - (Optional, List) The resource type that the profile applies to.
-		* `software_details` - (Optional, List) The software that the profile applies to.
-		Nested scheme for **software_details**:
-			* `name` - (Optional, String)
-			* `version` - (Optional, String)
+		* `environment_category_description` - (Optional, Map) The type of environment that your scope is targeted to.
+		* `environment_description` - (Optional, Map) The environment that your scope is targeted to.
 		* `os_details` - (Optional, List) The Operating System that the profile applies to.
 		Nested scheme for **os_details**:
 			* `name` - (Optional, String)
 			* `version` - (Optional, String)
-		* `additional_details` - (Optional, Map) Any additional details about the profile.
-		* `environment_category_description` - (Optional, Map) The type of environment that your scope is targeted to.
-		* `environment_description` - (Optional, Map) The environment that your scope is targeted to.
-		* `resource_category_description` - (Optional, Map) The type of resource that your scope is targeted to.
-		* `resource_type_description` - (Optional, Map) A further classification of the type of resource that your scope is targeted to.
+		* `resource` - (Optional, List) A list of resources that a profile can be used with.
+  		* `resource_category` - (Optional, List) The type of resource that a profile is able to be applied to.
+  		* `resource_category_description` - (Optional, Map) The type of resource that your scope is targeted to.
 		* `resource_description` - (Optional, Map) The resource that is scanned as part of your scope.
+		* `resource_type` - (Optional, List) The resource type that the profile applies to.
+		* `resource_type_description` - (Optional, Map) A further classification of the type of resource that your scope is targeted to.
+		* `software_details` - (Optional, List) The software that the profile applies to. 
+		Nested scheme for **software_details**:
+	  		* `name` - (Optional, String)
+	  		* `version` - (Optional, String)
 	* `base_profile` - (Optional, String) The base profile that the controls are pulled from.
 	* `created_by` - (Optional, String) The user who created the profile.
 	* `created_time` - (Optional, String) The time that the profile was created in UTC.
