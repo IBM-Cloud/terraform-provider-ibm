@@ -2755,6 +2755,24 @@ func flattenSatelliteWorkerPools(list []kubernetesserviceapiv1.GetWorkerPoolResp
 	return workerPools
 }
 
+func flattenSatelliteHosts(hostList []kubernetesserviceapiv1.MultishiftQueueNode) []map[string]interface{} {
+	hosts := make([]map[string]interface{}, len(hostList))
+	for i, host := range hostList {
+		l := map[string]interface{}{
+			"host_id":      *host.ID,
+			"host_name":    *host.Name,
+			"status":       *host.Health.Status,
+			"ip_address":   *host.Assignment.IpAddress,
+			"cluster_name": *host.Assignment.ClusterName,
+			"zone":         *host.Assignment.Zone,
+			"host_labels":  *&host.Labels,
+		}
+		hosts[i] = l
+	}
+
+	return hosts
+}
+
 func flattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {
 	mapped := make([]string, len(hostLabels))
 	idx := 0
