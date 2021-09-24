@@ -8,11 +8,12 @@ subcategory: "Security and Compliance Center"
 
 # ibm_scc_posture_scan_summaries
 
-Provides a read-only data source for scan_summaries. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Review information of Security and Compliance Center scan summaries.
+https://test.cloud.ibm.com/docs/security-compliance?topic=security-compliance-results
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_scc_posture_scan_summaries" "scan_summaries" {
 	profile_id = "profile_id"
 	scan_id = "262"
@@ -20,20 +21,20 @@ data "ibm_scc_posture_scan_summaries" "scan_summaries" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
-* `profile_id` - (Required, String) The profile ID. This can be obtained from the Security and Compliance Center UI by clicking on the profile name. The URL contains the ID.
-* `scan_id` - (Optional, String) The ID of the scan.
-* `scope_id` - (Required, String) The scope ID. This can be obtained from the Security and Compliance Center UI by clicking on the scope name. The URL contains the ID.
+* `profile_id` - (Required, String) The profile ID. This can be obtained from the Security and Compliance Center console by clicking on the profile name. The URL contains the ID.
+* `scan_id` - (Optional, String) The scan ID of the scan.
+* `scope_id` - (Required, String) The scope ID. This can be obtained from the Security and Compliance Center console by clicking on the scope name. The URL contains the ID.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the scan_summaries.
-* `first` - (Optional, List) he URL of the first scan summary.
+* `first` - (Optional, List) The URL of the first scan summary.
 Nested scheme for **first**:
 	* `href` - (Optional, String) The URL of the first scan summary.
 
@@ -54,14 +55,16 @@ Nested scheme for **summaries**:
 	* `report_run_by` - (Optional, String) The entity that ran the report.
 	* `start_time` - (Optional, String) The date and time the scan was run.
 	* `end_time` - (Optional, String) The date and time the scan completed.
-	* `status` - (Optional, String) The status of the collector as it completes a scan.
-	  * Constraints: Allowable values are: pending, discovery_started, discovery_completed, error_in_discovery, gateway_aborted, controller_aborted, not_accepted, waiting_for_refine, validation_started, validation_completed, sent_to_collector, discovery_in_progress, validation_in_progress, error_in_validation, discovery_result_posted_with_error, discovery_result_posted_no_error, validation_result_posted_with_error, validation_result_posted_no_error, fact_collection_started, fact_collection_in_progress, fact_collection_completed, error_in_fact_collection, fact_validation_started, fact_validation_in_progress, fact_validation_completed, error_in_fact_validation, abort_task_request_received, error_in_abort_task_request, abort_task_request_completed, user_aborted, abort_task_request_failed, remediation_started, remediation_in_progress, error_in_remediation, remediation_completed, inventory_started, inventory_in_progress, inventory_completed, error_in_inventory, inventory_completed_with_error
+	* `status` - (Optional, String) The status of the collector as it completes a scan. 
+	  * Constraints:
+		* Supported values are **pending**, **discovery_started**, **discovery_completed**, **error_in_discovery**, **gateway_aborted**, **controller_aborted**, **not_accepted**, **waiting_for_refine**, **validation_started**, **validation_completed**, **sent_to_collector**, **discovery_in_progress**, **validation_in_progress**, **error_in_validation**, **discovery_result_posted_with_error**, **discovery_result_posted_no_error**, **validation_result_posted_with_error**, **validation_result_posted_no_error**, **fact_collection_started**, **fact_collection_in_progress**, **fact_collection_completed**, **error_in_fact_collection**, **fact_validation_started**, **fact_validation_in_progress**, **fact_validation_completed**, **error_in_fact_validation**, **abort_task_request_received**, **error_in_abort_task_request**, **abort_task_request_completed**, **user_aborted**, **abort_task_request_failed**, **remediation_started**, **remediation_in_progress**, **error_in_remediation**, **remediation_completed**, **inventory_started**, **inventory_in_progress**, **inventory_completed**, **error_in_inventory**, **inventory_completed_with_error**
 	* `profile` - (Optional, List) The result of a profile.
 	Nested scheme for **profile**:
 		* `profile_id` - (Optional, String) The ID of the profile.
 		* `profile_name` - (Optional, String) The name of the profile.
 		* `profile_type` - (Optional, String) The type of profile. To learn more about profile types, check out the [docs] (https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).
-		  * Constraints: Allowable values are: standard, authored, custom, standard_cv, temmplategroup, standard_certificate
+		  * Constraints: 
+			* Supported values are: **standard**, **authored**, **custom**, **standard_cv**, **templategroup**, **standard_certificate**
 		* `validation_result` - (Optional, List) The result of a scan.
 		Nested scheme for **validation_result**:
 			* `goals_pass_count` - (Optional, Integer) The number of goals that passed the scan.
@@ -79,7 +82,8 @@ Nested scheme for **summaries**:
 		* `group_profile_id` - (Optional, String) The group ID of profile.
 		* `group_profile_name` - (Optional, String) The group name of the profile.
 		* `profile_type` - (Optional, String) The type of profile. To learn more about profile types, check out the [docs] (https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).
-		  * Constraints: Allowable values are: standard, authored, custom, standard_cv, temmplategroup, standard_certificate
+		  * Constraints:
+			* Supported values are **standard**, **authored**, **custom**, **standard_cv**, **templategroup**, **standard_certificate**
 		* `validation_result` - (Optional, List) The result of a scan.
 		Nested scheme for **validation_result**:
 			* `goals_pass_count` - (Optional, Integer) The number of goals that passed the scan.
@@ -97,7 +101,8 @@ Nested scheme for **summaries**:
 			* `profile_id` - (Optional, String) The ID of the profile.
 			* `profile_name` - (Optional, String) The name of the profile.
 			* `profile_type` - (Optional, String) The type of profile. To learn more about profile types, check out the [docs] (https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).
-			  * Constraints: Allowable values are: standard, authored, custom, standard_cv, temmplategroup, standard_certificate
+			  * Constraints: 
+				* Supported values are: **standard**, **authored**, **custom**, **standard_cv**, **templategroup**, **standard_certificate**
 			* `validation_result` - (Optional, List) The result of a scan.
 			Nested scheme for **validation_result**:
 				* `controls_pass_count` - (Optional, Integer) The number of controls that passed the scan.

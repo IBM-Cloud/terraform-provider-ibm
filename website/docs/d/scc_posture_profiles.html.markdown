@@ -8,23 +8,23 @@ subcategory: "Security and Compliance Center"
 
 # ibm_scc_posture_profiles
 
-Provides a read-only data source for list_profiles. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Review information about the security and compliance center posture latest scans. For more information, about profiles see https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_scc_posture_profiles" "list_profiles" {
 	profile_id = "3045"
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
 * `profile_id` - (Optional, String) An auto-generated unique identifying number of the profile.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
@@ -43,25 +43,18 @@ Nested scheme for **previous**:
 
 * `profiles` - (Optional, List) Profiles.
 Nested scheme for **profiles**:
-	* `name` - (Optional, String) The name of the profile.
-	* `description` - (Optional, String) A description of the profile.
-	* `version` - (Optional, Integer) The version of the profile.
-	  * Constraints: The minimum value is `1`.
-	* `created_by` - (Optional, String) The user who created the profile.
-	* `modified_by` - (Optional, String) The user who last modified the profile.
-	* `reason_for_delete` - (Optional, String) A reason that you want to delete a profile.
 	* `applicability_criteria` - (Optional, List) The criteria that defines how a profile applies.
 	Nested scheme for **applicability_criteria**:
 		* `environment` - (Optional, List) A list of environments that a profile can be applied to.
-		* `resource` - (Optional, List) A list of resources that a profile can be used with.
 		* `environment_category` - (Optional, List) The type of environment that a profile is able to be applied to.
+		* `resource` - (Optional, List) A list of resources that a profile can be used with.
 		* `resource_category` - (Optional, List) The type of resource that a profile is able to be applied to.
 		* `resource_type` - (Optional, List) The resource type that the profile applies to.
 		* `software_details` - (Optional, List) The software that the profile applies to.
 		Nested scheme for **software_details**:
 			* `name` - (Optional, String)
 			* `version` - (Optional, String)
-		* `os_details` - (Optional, List) The operatoring system that the profile applies to.
+		* `os_details` - (Optional, List) The Operating System that the profile applies to.
 		Nested scheme for **os_details**:
 			* `name` - (Optional, String)
 			* `version` - (Optional, String)
@@ -71,11 +64,18 @@ Nested scheme for **profiles**:
 		* `resource_category_description` - (Optional, Map) The type of resource that your scope is targeted to.
 		* `resource_type_description` - (Optional, Map) A further classification of the type of resource that your scope is targeted to.
 		* `resource_description` - (Optional, Map) The resource that is scanned as part of your scope.
-	* `profile_id` - (Optional, String) An auto-generated unique identifying number of the profile.
 	* `base_profile` - (Optional, String) The base profile that the controls are pulled from.
-	* `profile_type` - (Optional, String) The type of profile.
-	  * Constraints: Allowable values are: predefined, custom, template_group
+	* `created_by` - (Optional, String) The user who created the profile.
 	* `created_time` - (Optional, String) The time that the profile was created in UTC.
-	* `modified_time` - (Optional, String) The time that the profile was most recently modified in UTC.
+	* `description` - (Optional, String) A description of the profile.
 	* `enabled` - (Optional, Boolean) The profile status. If the profile is enabled, the value is true. If the profile is disabled, the value is false.
-
+	* `modified_by` - (Optional, String) The user who last modified the profile.
+	* `modified_time` - (Optional, String) The time that the profile was most recently modified in UTC.
+	* `name` - (Optional, String) The name of the profile.
+	* `profile_id` - (Optional, String) An auto-generated unique identifying number of the profile.
+	* `profile_type` - (Optional, String) The type of profile.
+	  * Constraints: Allowable values are: **predefined**, **custom**, **template_group**
+	* `reason_for_delete` - (Optional, String) A reason that you want to delete a profile.
+	* `version` - (Optional, Integer) The version of the profile.
+		* Constraints: The minimum value is `1`.
+	

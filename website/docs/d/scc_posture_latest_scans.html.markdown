@@ -8,27 +8,28 @@ subcategory: "Security and Compliance Center"
 
 # ibm_scc_posture_latest_scans
 
-Provides a read-only data source for list_latest_scans. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Review information about the security and compliance center posture latest scans. For more information, about latest scans, see https://test.cloud.ibm.com/docs/security-compliance?topic=security-compliance-results
+.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_scc_posture_latest_scans" "list_latest_scans" {
 	scan_id = "262"
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
 * `scan_id` - (Optional, String) The ID of the scan.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the list_latest_scans.
+* `id` - The unique identifier of the `list_latest_scans`.
 * `first` - (Optional, List) The URL of the first page of scans.
 Nested scheme for **first**:
 	* `href` - (Optional, String) The URL of the first page of scans.
@@ -46,7 +47,7 @@ Nested scheme for **latest_scans**:
 	* `profile_id` - (Optional, String) The ID of the profile.
 	* `profile_name` - (Optional, String) The name of the profile.
 	* `profile_type` - (Optional, String) The type of profile. To learn more about profile types, check out the [docs] (https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).
-	  * Constraints: Allowable values are: standard, authored, custom, standard_cv, temmplategroup, standard_certificate
+	  * Constraints: Allowable values are: **standard**, **authored**, **custom**, **standard_cv**, **temmplategroup**, **standard_certificate**
 	* `group_profile_id` - (Optional, String) The group ID of profile.
 	* `group_profile_name` - (Optional, String) The group name of the profile.
 	* `report_run_by` - (Optional, String) The entity that ran the report.
