@@ -9,11 +9,11 @@ subcategory: "Cloud Databases"
 # ibm_cloudant
 
 Provides a resource for IBM Cloudant. This allows an IBM Cloudant service instance to be created, updated, or deleted.
-For more information, about how to use this service, see the official [Cloudant documentation](https://cloud.ibm.com/docs/Cloudant?topic=Cloudant-getting-started-with-cloudant).
+For more information, about Cloudant, see the official [Getting started with IBM Cloudant](https://cloud.ibm.com/docs/Cloudant?topic=Cloudant-getting-started-with-cloudant) page.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_cloudant" "cloudant" {
   name     = "cloudant-service-name"
   location = "us-south"
@@ -46,54 +46,51 @@ configuration options:
 * `delete` - (Default 10 minutes) The update of the IBM Cloudant instance is considered failed if no response received.
 * `update` - (Default 10 minutes) The deletion of the IBM Cloudant instance is considered failed if no response received.
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument reference that you can specify for your resource:
 
-* `capacity` - (Optional, Number) A number of blocks of throughput units. For more details please read about [`blocks`](https://cloud.ibm.com/apidocs/cloudant#putcapacitythroughputconfiguration) parameter.
-  * Constraints: The default value is `1`. Capacity modification is not supported for `lite` plan.
-* `cors_config` - (Optional, Block List) Configuration for CORS. (see [below for nested arguments](#nestedblock--cors_config))
-  * Constraints: The minimum length is `1` item. Can conflict with `enable_cors` if it is set to `false`. In this case the CORS customization is not allowed.
-  * `allow_credentials` - (Optional, Boolean) Boolean value to allow authentication credentials. If set to true, browser requests must be done by using withCredentials = true.
-    * Constraints: The default value is `true`.
-  * `origins` - (Required, List of String) An array of strings that contain allowed origin domains. You have to specify the full URL including the protocol. It is recommended that only the HTTPS protocol is used. Subdomains count as separate domains, so you have to specify all subdomains used.
-* `enable_cors` - (Optional, Boolean) Boolean value to turn CORS on and off.
-  * Constraints: The default value is `true`. If it is set to `false`, then customizing `cors_config` is not allowed.
+* `capacity` - (Optional, Number) A number of blocks of throughput units. For more information, about throughput capacity, see [`blocks`](https://cloud.ibm.com/apidocs/cloudant#putcapacitythroughputconfiguration) parameter. The default value is `1`. Capacity modification is not supported for `lite` plan.
+* `cors_config` - (Optional, Block List) Configuration for CORS.
+
+  Nested scheme for `cors_config`:
+    * Constraints: The minimum length is **1** item.
+    * `allow_credentials` - (Optional, Boolean) Boolean value to allow authentication credentials. If set to **true**, browser requests must be done by setting `XmlHttpRequest.withCredentials = true` on the request object. The default value is `true`.
+    * `origins` - (Required, List of String) An array of strings that contain allowed origin domains. You have to specify the full URL including the protocol. It is recommended that only the HTTPS protocol is used. Subdomains count as separate domains, so you have to specify all subdomains used.
+    * `enable_cors` - (Optional, Boolean) Boolean value to enable CORS. The supported values are **true** and **false**. The default value is `true`. If it is set to `false`, then customizing `cors_config` is not allowed.
 * `environment_crn` - (Optional, Forces new resource, String) CRN of the IBM Cloudant Dedicated Hardware plan instance.
 * `id` - (Optional, String) The unique identifier of the new Cloudant resource.
-* `include_data_events` - (Optional, Boolean) Include `data` event types in events sent to IBM Cloud Activity Tracker with LogDNA for the IBM Cloudant instance. By default emitted events are only of `management` type.
-  * Constraints: The default value is `false`.
-* `legacy_credentials` - (Optional, Forces new resource, Boolean) Use both legacy credentials and IAM for authentication.
-  * Constraints: The default value is `false`.
+* `include_data_events` - (Optional, Boolean) Include `data` event types in events sent to IBM Cloud Activity Tracker with LogDNA for the IBM Cloudant instance. The default value is **false** and emitted events are only of the `management` type.
+* `legacy_credentials` - (Optional, Forces new resource, Boolean) Use both legacy credentials and IAM for authentication. The default value is **false**.
 * `location` - (Required, Forces new resource, String) Target location or environment to create the resource instance.
 * `name` - (Required, String) A name for the resource instance.
 * `parameters` - (Optional, Forces new resource, Map) Arbitrary parameters to pass. Must be a JSON object.
 * `plan` - (Required, String) The plan type of the service.
-* `resource_group_id` - (Optional, Forces new resource, String) The resource group id.
+* `resource_group_id` - (Optional, Forces new resource, String) The resource group ID.
 * `service_endpoints` - (Optional, String) Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.
 * `tags` - (Optional, Set of String) Tags associated with the instance.
 
-## Attribute Reference
+## Attribute reference
 
-In addition to all arguments above, you can access the following attribute references after your resource is created.:
+In addition to all arguments above, you can access the following attribute references after your resource is created.
 
 * `account_id` - (String) An alpha-numeric value identifying the account ID.
 * `allow_cleanup` - (Boolean) A boolean that dictates if the resource instance should be deleted (cleaned up) during the processing of a region instance delete call.
 * `created_at` - (String) The date when the instance was created.
 * `created_by` - (String) The subject who created the instance.
-* `crn` - (String) CRN of resource instance.
-* `dashboard_url` - (String) Dashboard URL to access resource.
+* `crn` - (String) CRN of the resource instance.
+* `dashboard_url` - (String) The dashboard URL to access resource.
 * `deleted_at` - (String) The date when the instance was deleted.
 * `deleted_by` - (String) The subject who deleted the instance.
 * `extensions` - (Map) The extended metadata as a map associated with the resource instance.
-* `guid` - (String) Guid of resource instance.
+* `guid` - (String) The `GUID` of resource instance.
 * `last_operation` - (Map) The status of the last operation requested on the instance.
 * `locked` - (Boolean) A boolean that dictates if the resource instance should be deleted (cleaned up) during the processing of a region instance delete call.
 * `plan_history` - (List of Object) The plan history of the instance.
 * `resource_aliases_url` - (String) The relative path to the resource aliases for the instance.
 * `resource_bindings_url` - (String) The relative path to the resource bindings for the instance.
 * `resource_controller_url` - (String) The URL of the IBM Cloud dashboard that can be used to explore and view details about the resource.
-* `resource_crn` - (String) The crn of the resource.
+* `resource_crn` - (String) The CRN of the resource.
 * `resource_group_crn` - (String) The long ID (full CRN) of the resource group.
 * `resource_group_name` - (String) The resource group name in which resource is provisioned.
 * `resource_id` - (String) The unique ID of the offering.
@@ -107,11 +104,11 @@ In addition to all arguments above, you can access the following attribute refer
 * `scheduled_reclaim_by` - (String) The subject who initiated the instance reclamation.
 * `service` - (String) The service type of the instance.
 * `state` - (String) The current state of the instance.
-* `status` - (String) Status of resource instance.
-* `sub_type` - (String) The sub-type of instance, e.g. cfaas .
+* `status` - (String) Status of the resource instance.
+* `sub_type` - (String) The sub-type of an instance. For example, **cfaas**.
 * `target_crn` - (String) The full deployment CRN as defined in the global catalog.
 * `throughput` - (Map of Number) Schema for detailed information about throughput capacity with breakdown by specific throughput requests classes.
-* `type` - (String) The type of the instance, e.g. service_instance.
+* `type` - (String) The type of the instance. For example, **service_instance**.
 * `update_at` - (String) The date when the instance was last updated.
 * `update_by` - (String) The subject who updated the instance.
 
@@ -121,11 +118,11 @@ You can import the `ibm_cloudant` resource by using `crn`.
 
 ### Syntax
 
-```hcl-terraform
+```
 $ terraform import ibm_cloudant.mycloudant <crn>
 ```
 
 ### Example
-```hcl
+```
 $ terraform import ibm_cloudant.mycloudant "crn:v1:bluemix:public:cloudantnosqldb:us-south:a/abc123abc123abc123abc1:abc123ab-1234-1234-abc1-abc123abc123::"
 ```
