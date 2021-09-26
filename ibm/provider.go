@@ -313,6 +313,7 @@ func Provider() *schema.Provider {
 			"ibm_is_public_gateway":                  dataSourceIBMISPublicGateway(),
 			"ibm_is_public_gateways":                 dataSourceIBMISPublicGateways(),
 			"ibm_is_region":                          dataSourceIBMISRegion(),
+			"ibm_is_regions":                         dataSourceIBMISRegions(),
 			"ibm_is_ssh_key":                         dataSourceIBMISSSHKey(),
 			"ibm_is_subnet":                          dataSourceIBMISSubnet(),
 			"ibm_is_subnets":                         dataSourceIBMISSubnets(),
