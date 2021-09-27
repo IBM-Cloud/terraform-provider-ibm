@@ -111,6 +111,11 @@ var account_to_be_imported string
 //Security and Compliance Center, SI
 var scc_si_account string
 
+//Security and Compliance Center, Posture Management
+var scc_posture_scope_id string
+var scc_posture_scan_id string
+var scc_posture_profile_id string
+
 func init() {
 	appIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
 	if appIDTenantID == "" {
@@ -589,6 +594,21 @@ func init() {
 	scc_si_account = os.Getenv("SCC_SI_ACCOUNT")
 	if scc_si_account == "" {
 		fmt.Println("[INFO] Set the environment variable SCC_SI_ACCOUNT for testing SCC SI resources resource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_scope_id = os.Getenv("SCC_POSTURE_SCOPE_ID")
+	if scc_posture_scope_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_SCOPE_ID for testing SCC Posture resources or datasource resource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_scan_id = os.Getenv("SCC_POSTURE_SCAN_ID")
+	if scc_posture_scan_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_SCAN_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_profile_id = os.Getenv("SCC_POSTURE_PROFILE_ID")
+	if scc_posture_profile_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_PROFILE_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
 	}
 
 	cloudShellAccountID = os.Getenv("IBM_CLOUD_SHELL_ACCOUNT_ID")

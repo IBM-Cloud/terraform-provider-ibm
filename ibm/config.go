@@ -97,6 +97,7 @@ import (
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
+	"github.com/IBM/scc-go-sdk/posturemanagementv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -258,6 +259,7 @@ type ClientSession interface {
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	FindingsV1() (*findingsv1.FindingsV1, error)
+	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
 }
 
 type clientSession struct {
@@ -512,6 +514,10 @@ type clientSession struct {
 	// Security and Compliance Center (SCC)
 	findingsClient    *findingsv1.FindingsV1
 	findingsClientErr error
+
+	//Security and Compliance Center (SCC) Compliance posture
+	postureManagementClientErr error
+	postureManagementClient    *posturemanagementv1.PostureManagementV1
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -945,6 +951,14 @@ func (session clientSession) FindingsV1() (*findingsv1.FindingsV1, error) {
 		return session.findingsClient, session.findingsClientErr
 	}
 	return session.findingsClient.Clone(), nil
+}
+
+// Security and Compliance center Posture Management
+func (session clientSession) PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error) {
+	if session.postureManagementClientErr != nil {
+		return session.postureManagementClient, session.postureManagementClientErr
+	}
+	return session.postureManagementClient.Clone(), nil
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -2291,6 +2305,34 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.esSchemaRegistryErr = fmt.Errorf("Error occured while configuring Event Streams schema registry: %q", err)
 	}
 
+	// Construct an "options" struct for creating the service client.
+	var postureManagementClientURL string
+	if c.Visibility == "public" {
+		postureManagementClientURL, err = posturemanagementv1.GetServiceURLForRegion(c.Region)
+	} else {
+		session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service: `%v` visibility not supported", c.Visibility)
+	}
+	if err != nil {
+		postureManagementClientURL = posturemanagementv1.DefaultServiceURL
+	}
+	postureManagementClientOptions := &posturemanagementv1.PostureManagementV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_COMPLIANCE_API_ENDPOINT"}, postureManagementClientURL),
+		AccountID:     core.StringPtr(userConfig.userAccount),
+	}
+
+	// Construct the service client.
+	session.postureManagementClient, err = posturemanagementv1.NewPostureManagementV1(postureManagementClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.postureManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.postureManagementClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.postureManagementClientErr = fmt.Errorf("Error occurred while configuring Posture Management service: %q", err)
+	}
 	return session, nil
 }
 
