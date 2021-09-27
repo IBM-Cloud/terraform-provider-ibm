@@ -14,7 +14,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
-func TestAccIBMIamTrustedProfilesLinkBasic(t *testing.T) {
+func TestAccIBMIamTrustedProfileLinkBasic(t *testing.T) {
 	var conf iamidentityv1.ProfileLink
 	profileID := fmt.Sprintf("tf_profile_id_%d", acctest.RandIntRange(10, 100))
 	crType := fmt.Sprintf("tf_cr_type_%d", acctest.RandIntRange(10, 100))
@@ -22,21 +22,21 @@ func TestAccIBMIamTrustedProfilesLinkBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMIamTrustedProfilesLinkDestroy,
+		CheckDestroy: testAccCheckIBMIamTrustedProfileLinkDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfilesLinkConfigBasic(profileID, crType),
+				Config: testAccCheckIBMIamTrustedProfileLinkConfigBasic(profileID, crType),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIamTrustedProfilesLinkExists("ibm_iam_trusted_profiles_link.iam_trusted_profiles_link", conf),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profiles_link.iam_trusted_profiles_link", "profile_id", profileID),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profiles_link.iam_trusted_profiles_link", "cr_type", crType),
+					testAccCheckIBMIamTrustedProfileLinkExists("ibm_iam_trusted_profile_link.iam_trusted_profile_link", conf),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_link.iam_trusted_profile_link", "profile_id", profileID),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_link.iam_trusted_profile_link", "cr_type", crType),
 				),
 			},
 		},
 	})
 }
 
-func TestAccIBMIamTrustedProfilesLinkAllArgs(t *testing.T) {
+func TestAccIBMIamTrustedProfileLinkAllArgs(t *testing.T) {
 	var conf iamidentityv1.ProfileLink
 	profileID := fmt.Sprintf("tf_profile_id_%d", acctest.RandIntRange(10, 100))
 	crType := fmt.Sprintf("tf_cr_type_%d", acctest.RandIntRange(10, 100))
@@ -45,19 +45,19 @@ func TestAccIBMIamTrustedProfilesLinkAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMIamTrustedProfilesLinkDestroy,
+		CheckDestroy: testAccCheckIBMIamTrustedProfileLinkDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfilesLinkConfig(profileID, crType, name),
+				Config: testAccCheckIBMIamTrustedProfileLinkConfig(profileID, crType, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIamTrustedProfilesLinkExists("ibm_iam_trusted_profiles_link.iam_trusted_profiles_link", conf),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profiles_link.iam_trusted_profiles_link", "profile_id", profileID),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profiles_link.iam_trusted_profiles_link", "cr_type", crType),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profiles_link.iam_trusted_profiles_link", "name", name),
+					testAccCheckIBMIamTrustedProfileLinkExists("ibm_iam_trusted_profile_link.iam_trusted_profile_link", conf),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_link.iam_trusted_profile_link", "profile_id", profileID),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_link.iam_trusted_profile_link", "cr_type", crType),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_link.iam_trusted_profile_link", "name", name),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_iam_trusted_profiles_link.iam_trusted_profiles_link",
+				ResourceName:      "ibm_iam_trusted_profile_link.iam_trusted_profile_link",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -65,10 +65,10 @@ func TestAccIBMIamTrustedProfilesLinkAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIamTrustedProfilesLinkConfigBasic(profileID string, crType string) string {
+func testAccCheckIBMIamTrustedProfileLinkConfigBasic(profileID string, crType string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_iam_trusted_profiles_link" "iam_trusted_profiles_link" {
+		resource "ibm_iam_trusted_profile_link" "iam_trusted_profile_link" {
 			profile_id = "%s"
 			cr_type = "%s"
 			link {
@@ -80,10 +80,10 @@ func testAccCheckIBMIamTrustedProfilesLinkConfigBasic(profileID string, crType s
 	`, profileID, crType)
 }
 
-func testAccCheckIBMIamTrustedProfilesLinkConfig(profileID string, crType string, name string) string {
+func testAccCheckIBMIamTrustedProfileLinkConfig(profileID string, crType string, name string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_iam_trusted_profiles_link" "iam_trusted_profiles_link" {
+		resource "ibm_iam_trusted_profile_link" "iam_trusted_profile_link" {
 			profile_id = "%s"
 			cr_type = "%s"
 			link {
@@ -96,7 +96,7 @@ func testAccCheckIBMIamTrustedProfilesLinkConfig(profileID string, crType string
 	`, profileID, crType, name)
 }
 
-func testAccCheckIBMIamTrustedProfilesLinkExists(n string, obj iamidentityv1.ProfileLink) resource.TestCheckFunc {
+func testAccCheckIBMIamTrustedProfileLinkExists(n string, obj iamidentityv1.ProfileLink) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -129,13 +129,13 @@ func testAccCheckIBMIamTrustedProfilesLinkExists(n string, obj iamidentityv1.Pro
 	}
 }
 
-func testAccCheckIBMIamTrustedProfilesLinkDestroy(s *terraform.State) error {
+func testAccCheckIBMIamTrustedProfileLinkDestroy(s *terraform.State) error {
 	iamIdentityClient, err := testAccProvider.Meta().(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_iam_trusted_profiles_link" {
+		if rs.Type != "ibm_iam_trusted_profile_link" {
 			continue
 		}
 
@@ -153,9 +153,9 @@ func testAccCheckIBMIamTrustedProfilesLinkDestroy(s *terraform.State) error {
 		_, response, err := iamIdentityClient.GetLink(getLinkOptions)
 
 		if err == nil {
-			return fmt.Errorf("iam_trusted_profiles_link still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("iam_trusted_profile_link still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for iam_trusted_profiles_link (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for iam_trusted_profile_link (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

@@ -15,11 +15,11 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
-func resourceIBMIamTrustedProfilesLink() *schema.Resource {
+func resourceIBMIamTrustedProfileLink() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMIamTrustedProfilesLinkCreate,
-		ReadContext:   resourceIBMIamTrustedProfilesLinkRead,
-		DeleteContext: resourceIBMIamTrustedProfilesLinkDelete,
+		CreateContext: resourceIBMIamTrustedProfileLinkCreate,
+		ReadContext:   resourceIBMIamTrustedProfileLinkRead,
+		DeleteContext: resourceIBMIamTrustedProfileLinkDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -62,11 +62,6 @@ func resourceIBMIamTrustedProfilesLink() *schema.Resource {
 					},
 				},
 			},
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The unique identifier of the link.",
-			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -92,7 +87,7 @@ func resourceIBMIamTrustedProfilesLink() *schema.Resource {
 	}
 }
 
-func resourceIBMIamTrustedProfilesLinkCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamTrustedProfileLinkCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -102,7 +97,7 @@ func resourceIBMIamTrustedProfilesLinkCreate(context context.Context, d *schema.
 
 	createLinkOptions.SetProfileID(d.Get("profile_id").(string))
 	createLinkOptions.SetCrType(d.Get("cr_type").(string))
-	link := resourceIBMIamTrustedProfilesLinkMapToCreateProfileLinkRequestLink(d.Get("link.0").(map[string]interface{}))
+	link := resourceIBMIamTrustedProfileLinkMapToCreateProfileLinkRequestLink(d.Get("link.0").(map[string]interface{}))
 	createLinkOptions.SetLink(&link)
 	if _, ok := d.GetOk("name"); ok {
 		createLinkOptions.SetName(d.Get("name").(string))
@@ -116,10 +111,10 @@ func resourceIBMIamTrustedProfilesLinkCreate(context context.Context, d *schema.
 
 	d.SetId(*profileLink.ID)
 
-	return resourceIBMIamTrustedProfilesLinkRead(context, d, meta)
+	return resourceIBMIamTrustedProfileLinkRead(context, d, meta)
 }
 
-func resourceIBMIamTrustedProfilesLinkMapToCreateProfileLinkRequestLink(createProfileLinkRequestLinkMap map[string]interface{}) iamidentityv1.CreateProfileLinkRequestLink {
+func resourceIBMIamTrustedProfileLinkMapToCreateProfileLinkRequestLink(createProfileLinkRequestLinkMap map[string]interface{}) iamidentityv1.CreateProfileLinkRequestLink {
 	createProfileLinkRequestLink := iamidentityv1.CreateProfileLinkRequestLink{}
 
 	createProfileLinkRequestLink.CRN = core.StringPtr(createProfileLinkRequestLinkMap["crn"].(string))
@@ -131,7 +126,7 @@ func resourceIBMIamTrustedProfilesLinkMapToCreateProfileLinkRequestLink(createPr
 	return createProfileLinkRequestLink
 }
 
-func resourceIBMIamTrustedProfilesLinkRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamTrustedProfileLinkRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -158,7 +153,7 @@ func resourceIBMIamTrustedProfilesLinkRead(context context.Context, d *schema.Re
 	if err = d.Set("cr_type", profileLink.CrType); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting cr_type: %s", err))
 	}
-	linkMap := resourceIBMIamTrustedProfilesLinkCreateProfileLinkRequestLinkToMap(*profileLink.Link)
+	linkMap := resourceIBMIamTrustedProfileLinkCreateProfileLinkRequestLinkToMap(*profileLink.Link)
 	if err = d.Set("link", []map[string]interface{}{linkMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting link: %s", err))
 	}
@@ -178,7 +173,7 @@ func resourceIBMIamTrustedProfilesLinkRead(context context.Context, d *schema.Re
 	return nil
 }
 
-func resourceIBMIamTrustedProfilesLinkCreateProfileLinkRequestLinkToMap(createProfileLinkRequestLink iamidentityv1.ProfileLinkLink) map[string]interface{} {
+func resourceIBMIamTrustedProfileLinkCreateProfileLinkRequestLinkToMap(createProfileLinkRequestLink iamidentityv1.ProfileLinkLink) map[string]interface{} {
 	createProfileLinkRequestLinkMap := map[string]interface{}{}
 
 	createProfileLinkRequestLinkMap["crn"] = createProfileLinkRequestLink.CRN
@@ -190,7 +185,7 @@ func resourceIBMIamTrustedProfilesLinkCreateProfileLinkRequestLinkToMap(createPr
 	return createProfileLinkRequestLinkMap
 }
 
-func resourceIBMIamTrustedProfilesLinkDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamTrustedProfileLinkDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)

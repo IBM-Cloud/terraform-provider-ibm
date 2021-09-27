@@ -15,12 +15,17 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
-func resourceIBMIamTrustedProfilesClaimRule() *schema.Resource {
+const (
+	iamClaimRuleType     = "type"
+	iamClaimRuleOperator = "operator"
+)
+
+func resourceIBMIamTrustedProfileClaimRule() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMIamTrustedProfilesClaimRuleCreate,
-		ReadContext:   resourceIBMIamTrustedProfilesClaimRuleRead,
-		UpdateContext: resourceIBMIamTrustedProfilesClaimRuleUpdate,
-		DeleteContext: resourceIBMIamTrustedProfilesClaimRuleDelete,
+		CreateContext: resourceIBMIamTrustedProfileClaimRuleCreate,
+		ReadContext:   resourceIBMIamTrustedProfileClaimRuleRead,
+		UpdateContext: resourceIBMIamTrustedProfileClaimRuleUpdate,
+		DeleteContext: resourceIBMIamTrustedProfileClaimRuleDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -31,9 +36,10 @@ func resourceIBMIamTrustedProfilesClaimRule() *schema.Resource {
 				Description: "ID of the trusted profile to create a claim rule.",
 			},
 			"type": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Type of the calim rule, either 'Profile-SAML' or 'Profile-CR'.",
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "Type of the calim rule, either 'Profile-SAML' or 'Profile-CR'.",
+				ValidateFunc: InvokeValidator("ibm_iam_trusted_profile_claim_rule", iamClaimRuleType),
 			},
 			"conditions": &schema.Schema{
 				Type:        schema.TypeList,
@@ -47,9 +53,10 @@ func resourceIBMIamTrustedProfilesClaimRule() *schema.Resource {
 							Description: "The claim to evaluate against.",
 						},
 						"operator": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The operation to perform on the claim. valid values are EQUALS, NOT_EQUALS, EQUALS_IGNORE_CASE, NOT_EQUALS_IGNORE_CASE, CONTAINS, IN.",
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "The operation to perform on the claim. valid values are EQUALS, NOT_EQUALS, EQUALS_IGNORE_CASE, NOT_EQUALS_IGNORE_CASE, CONTAINS, IN.",
+							ValidateFunc: InvokeValidator("ibm_iam_trusted_profile_claim_rule", iamClaimRuleOperator),
 						},
 						"value": &schema.Schema{
 							Type:        schema.TypeString,
@@ -58,11 +65,6 @@ func resourceIBMIamTrustedProfilesClaimRule() *schema.Resource {
 						},
 					},
 				},
-			},
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The unique identifier of the claim rule.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -103,7 +105,7 @@ func resourceIBMIamTrustedProfilesClaimRule() *schema.Resource {
 	}
 }
 
-func resourceIBMIamTrustedProfilesClaimRuleCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamTrustedProfileClaimRuleCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -116,7 +118,7 @@ func resourceIBMIamTrustedProfilesClaimRuleCreate(context context.Context, d *sc
 	var conditions []iamidentityv1.ProfileClaimRuleConditions
 	for _, e := range d.Get("conditions").([]interface{}) {
 		value := e.(map[string]interface{})
-		conditionsItem := resourceIBMIamTrustedProfilesClaimRuleMapToProfileClaimRuleConditions(value)
+		conditionsItem := resourceIBMIamTrustedProfileClaimRuleMapToProfileClaimRuleConditions(value)
 		conditions = append(conditions, conditionsItem)
 	}
 	createClaimRuleOptions.SetConditions(conditions)
@@ -142,10 +144,10 @@ func resourceIBMIamTrustedProfilesClaimRuleCreate(context context.Context, d *sc
 
 	d.SetId(*profileClaimRule.ID)
 
-	return resourceIBMIamTrustedProfilesClaimRuleRead(context, d, meta)
+	return resourceIBMIamTrustedProfileClaimRuleRead(context, d, meta)
 }
 
-func resourceIBMIamTrustedProfilesClaimRuleMapToProfileClaimRuleConditions(profileClaimRuleConditionsMap map[string]interface{}) iamidentityv1.ProfileClaimRuleConditions {
+func resourceIBMIamTrustedProfileClaimRuleMapToProfileClaimRuleConditions(profileClaimRuleConditionsMap map[string]interface{}) iamidentityv1.ProfileClaimRuleConditions {
 	profileClaimRuleConditions := iamidentityv1.ProfileClaimRuleConditions{}
 
 	profileClaimRuleConditions.Claim = core.StringPtr(profileClaimRuleConditionsMap["claim"].(string))
@@ -155,7 +157,7 @@ func resourceIBMIamTrustedProfilesClaimRuleMapToProfileClaimRuleConditions(profi
 	return profileClaimRuleConditions
 }
 
-func resourceIBMIamTrustedProfilesClaimRuleMapToResponseContext(responseContextMap map[string]interface{}) iamidentityv1.ResponseContext {
+func resourceIBMIamTrustedProfileClaimRuleMapToResponseContext(responseContextMap map[string]interface{}) iamidentityv1.ResponseContext {
 	responseContext := iamidentityv1.ResponseContext{}
 
 	if responseContextMap["transaction_id"] != nil {
@@ -195,7 +197,7 @@ func resourceIBMIamTrustedProfilesClaimRuleMapToResponseContext(responseContextM
 	return responseContext
 }
 
-func resourceIBMIamTrustedProfilesClaimRuleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamTrustedProfileClaimRuleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -225,7 +227,7 @@ func resourceIBMIamTrustedProfilesClaimRuleRead(context context.Context, d *sche
 	}
 	conditions := []map[string]interface{}{}
 	for _, conditionsItem := range profileClaimRule.Conditions {
-		conditionsItemMap := resourceIBMIamTrustedProfilesClaimRuleProfileClaimRuleConditionsToMap(conditionsItem)
+		conditionsItemMap := resourceIBMIamTrustedProfileClaimRuleProfileClaimRuleConditionsToMap(conditionsItem)
 		conditions = append(conditions, conditionsItemMap)
 	}
 	if err = d.Set("conditions", conditions); err != nil {
@@ -256,7 +258,7 @@ func resourceIBMIamTrustedProfilesClaimRuleRead(context context.Context, d *sche
 	return nil
 }
 
-func resourceIBMIamTrustedProfilesClaimRuleProfileClaimRuleConditionsToMap(profileClaimRuleConditions iamidentityv1.ProfileClaimRuleConditions) map[string]interface{} {
+func resourceIBMIamTrustedProfileClaimRuleProfileClaimRuleConditionsToMap(profileClaimRuleConditions iamidentityv1.ProfileClaimRuleConditions) map[string]interface{} {
 	profileClaimRuleConditionsMap := map[string]interface{}{}
 
 	profileClaimRuleConditionsMap["claim"] = profileClaimRuleConditions.Claim
@@ -266,7 +268,7 @@ func resourceIBMIamTrustedProfilesClaimRuleProfileClaimRuleConditionsToMap(profi
 	return profileClaimRuleConditionsMap
 }
 
-func resourceIBMIamTrustedProfilesClaimRuleResponseContextToMap(responseContext iamidentityv1.ResponseContext) map[string]interface{} {
+func resourceIBMIamTrustedProfileClaimRuleResponseContextToMap(responseContext iamidentityv1.ResponseContext) map[string]interface{} {
 	responseContextMap := map[string]interface{}{}
 
 	if responseContext.TransactionID != nil {
@@ -306,7 +308,7 @@ func resourceIBMIamTrustedProfilesClaimRuleResponseContextToMap(responseContext 
 	return responseContextMap
 }
 
-func resourceIBMIamTrustedProfilesClaimRuleUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamTrustedProfileClaimRuleUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -321,7 +323,7 @@ func resourceIBMIamTrustedProfilesClaimRuleUpdate(context context.Context, d *sc
 	var conditions []iamidentityv1.ProfileClaimRuleConditions
 	for _, e := range d.Get("conditions").([]interface{}) {
 		value := e.(map[string]interface{})
-		conditionsItem := resourceIBMIamTrustedProfilesClaimRuleMapToProfileClaimRuleConditions(value)
+		conditionsItem := resourceIBMIamTrustedProfileClaimRuleMapToProfileClaimRuleConditions(value)
 		conditions = append(conditions, conditionsItem)
 	}
 	updateClaimRuleOptions.SetConditions(conditions)
@@ -345,10 +347,10 @@ func resourceIBMIamTrustedProfilesClaimRuleUpdate(context context.Context, d *sc
 		return diag.FromErr(fmt.Errorf("UpdateClaimRule failed %s\n%s", err, response))
 	}
 
-	return resourceIBMIamTrustedProfilesClaimRuleRead(context, d, meta)
+	return resourceIBMIamTrustedProfileClaimRuleRead(context, d, meta)
 }
 
-func resourceIBMIamTrustedProfilesClaimRuleDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamTrustedProfileClaimRuleDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)

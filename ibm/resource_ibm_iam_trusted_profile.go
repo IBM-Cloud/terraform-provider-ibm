@@ -14,12 +14,12 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
-func resourceIBMIamTrustedProfiles() *schema.Resource {
+func resourceIBMIamTrustedProfile() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMIamTrustedProfilesCreate,
-		ReadContext:   resourceIBMIamTrustedProfilesRead,
-		UpdateContext: resourceIBMIamTrustedProfilesUpdate,
-		DeleteContext: resourceIBMIamTrustedProfilesDelete,
+		CreateContext: resourceIBMIamTrustedProfileCreate,
+		ReadContext:   resourceIBMIamTrustedProfileRead,
+		UpdateContext: resourceIBMIamTrustedProfileUpdate,
+		DeleteContext: resourceIBMIamTrustedProfileDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -37,11 +37,6 @@ func resourceIBMIamTrustedProfiles() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The optional description of the trusted profile. The 'description' property is only available if a description was provided during creation of trusted profile.",
-			},
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "the unique identifier of the trusted profile. Example:'Profile-94497d0d-2ac3-41bf-a993-a49d1b14627c'.",
 			},
 			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
@@ -122,7 +117,7 @@ func resourceIBMIamTrustedProfiles() *schema.Resource {
 	}
 }
 
-func resourceIBMIamTrustedProfilesCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamTrustedProfileCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -144,10 +139,10 @@ func resourceIBMIamTrustedProfilesCreate(context context.Context, d *schema.Reso
 
 	d.SetId(*trustedProfile.ID)
 
-	return resourceIBMIamTrustedProfilesRead(context, d, meta)
+	return resourceIBMIamTrustedProfileRead(context, d, meta)
 }
 
-func resourceIBMIamTrustedProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -203,7 +198,7 @@ func resourceIBMIamTrustedProfilesRead(context context.Context, d *schema.Resour
 	if trustedProfile.History != nil {
 		history := []map[string]interface{}{}
 		for _, historyItem := range trustedProfile.History {
-			historyItemMap := resourceIBMIamTrustedProfilesEnityHistoryRecordToMap(historyItem)
+			historyItemMap := resourceIBMIamTrustedProfileEnityHistoryRecordToMap(historyItem)
 			history = append(history, historyItemMap)
 		}
 		if err = d.Set("history", history); err != nil {
@@ -214,7 +209,7 @@ func resourceIBMIamTrustedProfilesRead(context context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceIBMIamTrustedProfilesResponseContextToMap(responseContext iamidentityv1.ResponseContext) map[string]interface{} {
+func resourceIBMIamTrustedProfileResponseContextToMap(responseContext iamidentityv1.ResponseContext) map[string]interface{} {
 	responseContextMap := map[string]interface{}{}
 
 	if responseContext.TransactionID != nil {
@@ -254,7 +249,7 @@ func resourceIBMIamTrustedProfilesResponseContextToMap(responseContext iamidenti
 	return responseContextMap
 }
 
-func resourceIBMIamTrustedProfilesEnityHistoryRecordToMap(enityHistoryRecord iamidentityv1.EnityHistoryRecord) map[string]interface{} {
+func resourceIBMIamTrustedProfileEnityHistoryRecordToMap(enityHistoryRecord iamidentityv1.EnityHistoryRecord) map[string]interface{} {
 	enityHistoryRecordMap := map[string]interface{}{}
 
 	enityHistoryRecordMap["timestamp"] = enityHistoryRecord.Timestamp
@@ -267,7 +262,7 @@ func resourceIBMIamTrustedProfilesEnityHistoryRecordToMap(enityHistoryRecord iam
 	return enityHistoryRecordMap
 }
 
-func resourceIBMIamTrustedProfilesUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamTrustedProfileUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -288,10 +283,10 @@ func resourceIBMIamTrustedProfilesUpdate(context context.Context, d *schema.Reso
 		return diag.FromErr(fmt.Errorf("UpdateProfile failed %s\n%s", err, response))
 	}
 
-	return resourceIBMIamTrustedProfilesRead(context, d, meta)
+	return resourceIBMIamTrustedProfileRead(context, d, meta)
 }
 
-func resourceIBMIamTrustedProfilesDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamTrustedProfileDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)

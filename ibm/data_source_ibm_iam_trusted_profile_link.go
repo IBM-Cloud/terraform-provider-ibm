@@ -14,9 +14,9 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
-func dataSourceIBMIamTrustedProfilesLink() *schema.Resource {
+func dataSourceIBMIamTrustedProfileLink() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMIamTrustedProfilesLinkRead,
+		ReadContext: dataSourceIBMIamTrustedProfileLinkRead,
 
 		Schema: map[string]*schema.Schema{
 			"profile_id": &schema.Schema{
@@ -28,11 +28,6 @@ func dataSourceIBMIamTrustedProfilesLink() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "ID of the link.",
-			},
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "the unique identifier of the claim rule.",
 			},
 			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
@@ -86,7 +81,7 @@ func dataSourceIBMIamTrustedProfilesLink() *schema.Resource {
 	}
 }
 
-func dataSourceIBMIamTrustedProfilesLinkRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMIamTrustedProfileLinkRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)
