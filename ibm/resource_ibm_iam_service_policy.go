@@ -149,6 +149,12 @@ func resourceIBMIAMServicePolicy() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
+
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Description of the Policy",
+			},
 		},
 	}
 }
@@ -216,6 +222,11 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 		policyOptions.Roles,
 		[]iampolicymanagementv1.PolicyResource{policyResources},
 	)
+
+	if desc, ok := d.GetOk("description"); ok {
+		des := desc.(string)
+		createPolicyOptions.Description = &des
+	}
 
 	servicePolicy, res, err := iamPolicyManagementClient.CreatePolicy(createPolicyOptions)
 	if err != nil {
@@ -326,13 +337,16 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 			d.Set("account_management", true)
 		}
 	}
+	if servicePolicy.Description != nil {
+		d.Set("description", *servicePolicy.Description)
+	}
 
 	return nil
 }
 
 func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") {
+	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") || d.HasChange("description") {
 
 		parts, err := idParts(d.Id())
 		if err != nil {
@@ -414,6 +428,11 @@ func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{})
 			createPolicyOptions.Roles,
 			[]iampolicymanagementv1.PolicyResource{policyResources},
 		)
+
+		if desc, ok := d.GetOk("description"); ok {
+			des := desc.(string)
+			updatePolicyOptions.Description = &des
+		}
 
 		_, _, err = iamPolicyManagementClient.UpdatePolicy(updatePolicyOptions)
 		if err != nil {

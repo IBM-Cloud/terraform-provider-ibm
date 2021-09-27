@@ -98,6 +98,12 @@ func resourceIBMIAMAuthorizationPolicy() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Description of the Policy",
+			},
 		},
 	}
 }
@@ -210,6 +216,12 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 		roles,
 		[]iampolicymanagementv1.PolicyResource{*policyResource},
 	)
+
+	if description, ok := d.GetOk("description"); ok {
+		des := description.(string)
+		createPolicyOptions.Description = &des
+	}
+
 	authPolicy, resp, err := iampapClient.CreatePolicy(createPolicyOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error creating authorization policy: %s %s", err, resp)
@@ -238,6 +250,9 @@ func resourceIBMIAMAuthorizationPolicyRead(d *schema.ResourceData, meta interfac
 	roles := make([]string, len(authorizationPolicy.Roles))
 	for i, role := range authorizationPolicy.Roles {
 		roles[i] = *role.DisplayName
+	}
+	if authorizationPolicy.Description != nil {
+		d.Set("description", *authorizationPolicy.Description)
 	}
 	d.Set("roles", roles)
 	source := authorizationPolicy.Subjects[0]

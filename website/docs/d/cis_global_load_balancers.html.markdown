@@ -50,4 +50,5 @@ In addition to all argument reference list, you can access the following attribu
 	- `region` - (String) A region code. Multiple entries is not allowed with the same region.
 	- `pool_ids` - (String) A list of pool IDs in failover priority to use in the given region.
 - `session_affinity` - (String) Associates all requests coming from an end-user with a single origin. IBM will set a cookie on the initial response to the client, such that consequent requests with the cookie in the request will go to the same origin, as long as it is available.
+- `steering_policy` - (String) Steering Policy which allows off,geo,random,dynamic_latency.
 - `ttl` - (String) Time to live (TTL) of the DNS entry for the IP address returned by this Load Balancer.P.

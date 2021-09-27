@@ -7,8 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"strings"
-
+	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -87,7 +86,7 @@ func TestAccIBMIAMAccessGroupMember_import(t *testing.T) {
 }
 
 func testAccCheckIBMIAMAccessGroupMemberDestroy(s *terraform.State) error {
-	accClient, err := testAccProvider.Meta().(ClientSession).IAMUUMAPIV2()
+	accClient, err := testAccProvider.Meta().(ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return err
 	}
@@ -104,9 +103,12 @@ func testAccCheckIBMIAMAccessGroupMemberDestroy(s *terraform.State) error {
 		grpID := parts[0]
 
 		// Try to find the members
-		_, err = accClient.AccessGroupMember().List(grpID)
+		listAccessGroupMembersOptions := &iamaccessgroupsv2.ListAccessGroupMembersOptions{
+			AccessGroupID: &grpID,
+		}
+		_, detailResponse, err := accClient.ListAccessGroupMembers(listAccessGroupMembersOptions)
 
-		if err != nil && !strings.Contains(err.Error(), "404") {
+		if err != nil && detailResponse.StatusCode != 404 {
 			return fmt.Errorf("Error waiting for access group members (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}

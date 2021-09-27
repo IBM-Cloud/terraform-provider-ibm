@@ -71,6 +71,11 @@ func dataSourceIBMCISGlbs() *schema.Resource {
 							Computed:    true,
 							Description: "TTL value",
 						},
+						cisGLBSteeringPolicy: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Steering policy info",
+						},
 						cisGLBProxied: {
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -178,6 +183,7 @@ func dataSourceCISGlbsRead(d *schema.ResourceData, meta interface{}) error {
 		glbOutput[cisGLBDesc] = *glbObj.Description
 		glbOutput[cisGLBFallbackPoolID] = convertCisToTfTwoVar(*glbObj.FallbackPool, crn)
 		glbOutput[cisGLBTTL] = *glbObj.TTL
+		glbOutput[cisGLBSteeringPolicy] = *glbObj.SteeringPolicy
 		glbOutput[cisGLBProxied] = *glbObj.Proxied
 		glbOutput[cisGLBEnabled] = *glbObj.Enabled
 		glbOutput[cisGLBSessionAffinity] = *glbObj.SessionAffinity

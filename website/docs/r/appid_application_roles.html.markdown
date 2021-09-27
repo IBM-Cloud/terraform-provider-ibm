@@ -3,7 +3,7 @@ subcategory: "AppID Management"
 layout: "ibm"
 page_title: "IBM: AppID Application Roles"
 description: |-
-Provides AppID Application Roles resource.
+    Provides AppID Application Roles resource.
 ---
 
 # ibm_appid_application_roles

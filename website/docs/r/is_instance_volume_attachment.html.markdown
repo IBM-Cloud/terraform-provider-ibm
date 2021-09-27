@@ -7,8 +7,8 @@ description: |-
   Manages IBM Cloud infrastructure instance volume attachment.
 ---
 
-# ibm_is_vpc_route
-Create, update, or delete a Volume attachment on an instance. For more information, about VPC virtual server instances, see [Managing virtual server instances](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-virtual-server-instances).
+# ibm_is_instance_volume_attachment
+Create, update, or delete a volume attachment on an existing instance. For more information, about VPC virtual server instances, see [Managing virtual server instances](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-virtual-server-instances).
 
 ## Example usage (using capacity)
 
@@ -118,37 +118,63 @@ The `ibm_is_instance_volume_attachment` resource provides the following [[Timeou
 - **update**: The update of the instance volume attachment or the attachment of a volume to an instance is considered failed when no response is received for 10 minutes.
 - **delete**: The deletion of the instance volume attachment is considered failed when no response is received for 10 minutes.
 
-
-
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `capacity` - (Optional, Integer) The capacity of the volume in gigabytes. **NOTE** The specified minimum and maximum capacity values for creating or updating volumes may expand in the future. Accepted value is in [10-2000].
-  - If this property is not provided or less than the minimum_capacity, minimum_capacity of the snapshot will be used as the capacity for the volume.
+- `capacity` - (Optional, Integer) The capacity of the volume in gigabytes. 
 
-- `delete_volume_on_attachment_delete` - (Optional, Bool) If set to true, when deleting the attachment, the volume will also be deleted. By default it is **true**
-- `delete_volume_on_instance_delete` - (Optional, Bool) If set to true, when deleting the instance, the volume will also be deleted. By default it is **false**
+  **NOTE** 
+    - The specified minimum and maximum capacity values for creating or updating volumes may expand in the future. Accepted value is in [10-16000].
+    - If unspecified, the capacity will be the source snapshot's `minimum_capacity` when `snapshot` is provided.
+    - Supports only expansion on update (must not be less than the current volume capacity)
+    - Can be updated only if volume is attached to an running virtual server instance.
+    - Stopped instance will be started on update of capacity of the volume.
+
+- `delete_volume_on_attachment_delete` - (Optional, Bool) If set to **true**, when deleting the attachment, the volume will also be deleted. By default it is **true**
+- `delete_volume_on_instance_delete` - (Optional, Bool) If set to **true**, when deleting the instance, the volume will also be deleted. By default it is **false**
 - `encryption_key` - (Optional, String) The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource. If this property is not provided but the image is encrypted, the image's encryption_key will be used. Otherwise, the encryption type for the volume will be `provider_managed`.
 - `instance` - (Required, String) The id of the instance.
-- `iops` - (Optional, Integer) The bandwidth for the new volume
+- `iops` - (Optional, Integer) The bandwidth for the new volume.  This value is required for `custom` storage profiles only.
+**NOTE**
+  - `iops` value can be upgraded and downgraged if volume is attached to an running virtual server instance. Stopped instances will be started on update of volume.
+  - This table shows how storage size affects the `iops` ranges:
+
+            |   Size range (GB)  |   IOPS range   |
+            |--------------------|----------------|
+            |    10  -     39    |  100  -   1000 |
+            |    40  -     79    |  100  -   2000 |
+            |    80  -     99    |  100  -   4000 |
+            |   100  -    499    |  100  -   6000 |
+            |   500  -    999    |  100  -  10000 |
+            |  1000  -   1999    |  100  -  20000 |
+            |  2000  -   3999    |  100  -  40000 |
+            |  4000  -   1999    |  100  -  40000 |
+            |  8000  -   1999    |  100  -  48000 |
+            | 10000  -  16000    |  100  -  48000 |
+
 - `name` - (Required, String) The name of the volume attachment.
-- `profile` - (Optional, String) The globally unique name for this volume profile
+- `profile` - (Optional, String) The globally unique name for this volume profile.
+
+  **NOTE**
+    - tiered profiles [`general-purpose`, `5iops-tier`, `10iops-tier`] can be upgraded and downgraded into each other.
+    - Can be applied only if volume is attached to an running virtual server instance.
+    - Stopped instances will be started on update of volume.
 - `snapshot` - (Optional, String) The unique identifier for this snapshot from which to clone the new volume. 
 
   **NOTE**
   - one of `capacity` or `snapshot` must be present for volume creation
   - if `capacity` is not present or less than `minimum_capacity` of the snapshot, `minimum_cpacity` is taken as the volume capacity.
 - `volume` - (Optional, String) The unique identifier for the existing volume
-- `volume_name` - (Optional, String) he unique user-defined name for this new volume.                     
-           
+- `volume_name` - (Optional, String) The unique user-defined name for this new volume.
+
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `device`-  (String) A unique identifier for the device which is exposed to the instance operating system.
 - `href` - (String) The URL for this volume attachment.
 - `id` - (String) The ID of the instance volume attachment. The ID is composed of `<instance_id>/<volume_attachment_id>`.
-- `status` - (String) The status of this volume attachment [ attached, attaching, deleting, detaching ].
-- `type` - (String) The type of volume attachment [ boot, data ].
+- `status` - (String) The status of this volume attachment. Supported values are **attached**, **attaching**, **deleting**, **detaching**.
+- `type` - (String) The type of volume attachment. Supported values are **boot**, **data**.
 - `volume_attachment_id` - (String) The unique identifier for this volume attachment.
 - `volume_crn` - (String) The CRN for this volume.
 - `volume_deleted` - (String) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.

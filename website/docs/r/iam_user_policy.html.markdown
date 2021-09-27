@@ -19,6 +19,7 @@ Create, update, or delete an IAM user policy. To assign a policy to one user, th
 resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
   roles  = ["Viewer"]
+  description = "IAM User Policy"
 }
 
 ```
@@ -140,6 +141,7 @@ resource "ibm_iam_user_policy" "policy" {
 Review the argument references that you can specify for your resource. 
 
 - `account_management` - (Optional, Bool) Gives access to all account management services if set to **true**. Default value **false**. If you set this option, do not set `resources` at the same time. **Note** Conflicts with `resources` and `resource_attributes`.
+- `description`  (Optional, String) The description of the IAM User Policy.
 - `ibm_id` - (Required, Forces new resource, String) The IBM ID or Email address of the user.
 - `roles` - (Required, List)  A comma separated list of roles. Valid roles are `Writer`, `Reader`, `Manager`, `Administrator`, `Operator`, `Viewer`, and `Editor`. For more information, about supported service specific roles, see  [IAM roles and actions](https://cloud.ibm.com/docs/account?topic=account-iam-service-roles-actions)
 - `resources` - (Optional, List) A nested block describes the resource of this policy. **Note** Conflicts with `account_management` and `resource_attributes`.

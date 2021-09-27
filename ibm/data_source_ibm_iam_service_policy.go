@@ -90,6 +90,11 @@ func dataSourceIBMIAMServicePolicy() *schema.Resource {
 								},
 							},
 						},
+						"description": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Description of the Policy",
+						},
 					},
 				},
 			},
@@ -163,6 +168,9 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 		} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
 			iamID := v.(string)
 			p["id"] = fmt.Sprintf("%s/%s", iamID, *policy.ID)
+		}
+		if policy.Description != nil {
+			p["description"] = policy.Description
 		}
 		servicePolicies = append(servicePolicies, p)
 	}

@@ -67,6 +67,41 @@ func TestAccIBMISVPC_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISVPC_basic_apm(t *testing.T) {
+	var vpc string
+	name := fmt.Sprintf("terraformvpcuat-%d", acctest.RandIntRange(10, 100))
+	apm1 := "auto"
+	apm2 := "manual"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMISVPCDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVPCConfig2(name, apm1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCExists("ibm_is_vpc.testacc_vpc1", vpc),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc1", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc1", "address_prefix_management", apm1),
+				),
+			},
+			{
+				Config: testAccCheckIBMISVPCConfig2(name, apm2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCExists("ibm_is_vpc.testacc_vpc1", vpc),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc1", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc1", "address_prefix_management", apm2),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISVPC_securityGroups(t *testing.T) {
 	var vpc string
 	vpcname := fmt.Sprintf("terraformvpcuat-%d", acctest.RandIntRange(10, 100))
@@ -137,33 +172,40 @@ func testAccCheckIBMISVPCExists(n, vpcID string) resource.TestCheckFunc {
 
 func testAccCheckIBMISVPCConfig(name string) string {
 	return fmt.Sprintf(`
-resource "ibm_is_vpc" "testacc_vpc" {
-	name = "%s"
-	default_network_acl_name = "dnwacln"
-    default_security_group_name = "dsgn"
-    default_routing_table_name = "drtn"
-	tags = ["Tag1", "tag2"]
-}`, name)
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+		default_network_acl_name = "dnwacln"
+		default_security_group_name = "dsgn"
+		default_routing_table_name = "drtn"
+		tags = ["Tag1", "tag2"]
+	}`, name)
 
 }
 
 func testAccCheckIBMISVPCConfigUpdate(name string) string {
 	return fmt.Sprintf(`
-resource "ibm_is_vpc" "testacc_vpc" {
-	name = "%s"
-	tags = ["tag1"]
-}`, name)
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+		tags = ["tag1"]
+	}`, name)
 
 }
 
 func testAccCheckIBMISVPCConfig1(name string, apm string) string {
 	return fmt.Sprintf(`
-resource "ibm_is_vpc" "testacc_vpc1" {
-	name = "%s"
-	address_prefix_management = "%s"
-	tags = ["Tag1", "tag2"]
-}`, name, apm)
+	resource "ibm_is_vpc" "testacc_vpc1" {
+		name = "%s"
+		address_prefix_management = "%s"
+		tags = ["Tag1", "tag2"]
+	}`, name, apm)
 
+}
+func testAccCheckIBMISVPCConfig2(name string, apm string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc1" {
+		name = "%s"
+		address_prefix_management = "%s"
+	}`, name, apm)
 }
 
 func testAccCheckIBMISVPCSgConfig(vpcname string, sgname string) string {

@@ -17,9 +17,17 @@ func dataSourceIBMISImage() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Image name",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"identifier", "name"},
+				Description:  "Image name",
+			},
+
+			"identifier": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"identifier", "name"},
+				Description:  "Image id",
 			},
 
 			"visibility": {
@@ -77,19 +85,27 @@ func dataSourceIBMISImage() *schema.Resource {
 func dataSourceIBMISImageRead(d *schema.ResourceData, meta interface{}) error {
 
 	name := d.Get("name").(string)
+	identifier := d.Get("identifier").(string)
 	var visibility string
 	if v, ok := d.GetOk("visibility"); ok {
 		visibility = v.(string)
 	}
-
-	err := imageGet(d, meta, name, visibility)
-	if err != nil {
-		return err
+	if name != "" {
+		err := imageGetByName(d, meta, name, visibility)
+		if err != nil {
+			return err
+		}
+	} else if identifier != "" {
+		err := imageGetById(d, meta, identifier)
+		if err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
 
-func imageGet(d *schema.ResourceData, meta interface{}, name, visibility string) error {
+func imageGetByName(d *schema.ResourceData, meta interface{}, name, visibility string) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -144,4 +160,46 @@ func imageGet(d *schema.ResourceData, meta interface{}, name, visibility string)
 	}
 
 	return fmt.Errorf("No image found with name  %s", name)
+}
+func imageGetById(d *schema.ResourceData, meta interface{}, identifier string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	getImageOptions := &vpcv1.GetImageOptions{
+		ID: &identifier,
+	}
+
+	image, response, err := sess.GetImage(getImageOptions)
+	if err != nil {
+		if response.StatusCode == 404 {
+			return fmt.Errorf("No image found with id  %s", identifier)
+		}
+		return fmt.Errorf("Error Fetching Images %s\n%s", err, response)
+	}
+
+	d.SetId(*image.ID)
+	d.Set("status", *image.Status)
+	if *image.Status == "deprecated" {
+		fmt.Printf("[WARN] Given image %s is deprecated and soon will be obsolete.", name)
+	}
+	d.Set("name", *image.Name)
+	d.Set("visibility", *image.Visibility)
+	d.Set("os", *image.OperatingSystem.Name)
+	d.Set("architecture", *image.OperatingSystem.Architecture)
+	d.Set("crn", *image.CRN)
+	if image.Encryption != nil {
+		d.Set("encryption", *image.Encryption)
+	}
+	if image.EncryptionKey != nil {
+		d.Set("encryption_key", *image.EncryptionKey.CRN)
+	}
+	if image.File != nil && image.File.Checksums != nil {
+		d.Set(isImageCheckSum, *image.File.Checksums.Sha256)
+	}
+	if image.SourceVolume != nil {
+		d.Set("source_volume", *image.SourceVolume.ID)
+	}
+	return nil
 }

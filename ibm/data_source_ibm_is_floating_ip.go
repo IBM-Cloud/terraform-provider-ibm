@@ -17,6 +17,7 @@ const (
 	floatingIPZone    = "zone"
 	floatingIPTarget  = "target"
 	floatingIPTags    = "tags"
+	floatingIPCRN     = "crn"
 )
 
 func dataSourceIBMISFloatingIP() *schema.Resource {
@@ -53,6 +54,12 @@ func dataSourceIBMISFloatingIP() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Target info",
+			},
+
+			floatingIPCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Floating IP crn",
 			},
 
 			floatingIPTags: {
@@ -106,6 +113,8 @@ func floatingIPGet(d *schema.ResourceData, meta interface{}, name string) error 
 			d.Set(floatingIPAddress, *ip.Address)
 			d.Set(floatingIPStatus, *ip.Status)
 			d.Set(floatingIPZone, *ip.Zone.Name)
+
+			d.Set(floatingIPCRN, *ip.CRN)
 
 			target, ok := ip.Target.(*vpcv1.FloatingIPTarget)
 			if ok {

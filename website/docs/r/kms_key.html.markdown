@@ -97,15 +97,12 @@ resource "ibm_kms_key" "key" {
 ```
 
 **Deprecated** :
-1) Support for creating Policies along with the Key will be deprecated after 30 days.
+1) Support for creating Policies along with the Key will be deprecated in future releases.
 2) A new resource for creating Key pollicies has been released which can be used to create policies for existing key.
-<<<<<<< HEAD
-3) Use either "ibm_kms_key" or "ibm_kms_key_policy" to manage key policies but not both together.
-=======
 3) Use either "ibm_kms_key" or "ibm_kms_key_policies" to manage key policies but not both together.
 4) If both the resources have been utilised to create policies then add licycle ignore block to "ibm_kms_key" resource to avoid any changes kms_key_policies resource to the policies.
 
-## Licycle Ignore Block Example
+## Lifecycle Ignore Block Example
 
 ```
 resource "ibm_kms_key" "kms_tf_test_key1" {
@@ -124,7 +121,6 @@ resource "ibm_kms_key" "kms_tf_test_key1" {
     ]
   }
   ```
->>>>>>> Polices
 
 ## Example usage to provision KMS and import a key
 

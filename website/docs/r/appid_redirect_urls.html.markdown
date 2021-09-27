@@ -3,7 +3,7 @@ subcategory: "AppID Management"
 layout: "ibm"
 page_title: "IBM: AppID Cloud Directory Redirect URLs"
 description: |-
-Provides AppID Cloud Directory Redirect URLs resource.
+    Provides AppID Cloud Directory Redirect URLs resource.
 ---
 
 # ibm_appid_redirect_urls

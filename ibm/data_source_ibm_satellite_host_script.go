@@ -9,8 +9,11 @@ import (
 	"log"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	homedir "github.com/mitchellh/go-homedir"
 )
@@ -75,12 +78,27 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 		return err
 	}
 
+	var locData *kubernetesserviceapiv1.MultishiftGetController
+	var response *core.DetailedResponse
 	getSatLocOptions := &kubernetesserviceapiv1.GetSatelliteLocationOptions{
 		Controller: &location,
 	}
 
-	locData, response, err := satClient.GetSatelliteLocation(getSatLocOptions)
-	if err != nil {
+	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+		locData, response, err = satClient.GetSatelliteLocation(getSatLocOptions)
+		if err != nil || locData == nil {
+			if response != nil && response.StatusCode == 404 {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if isResourceTimeoutError(err) {
+		locData, response, err = satClient.GetSatelliteLocation(getSatLocOptions)
+	}
+	if err != nil || locData == nil {
 		return fmt.Errorf("Error getting Satellite location (%s): %s\n%s", location, err, response)
 	}
 

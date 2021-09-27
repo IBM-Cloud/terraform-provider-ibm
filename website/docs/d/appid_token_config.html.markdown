@@ -3,7 +3,7 @@ subcategory: "AppID Management"
 layout: "ibm"
 page_title: "IBM: AppID Token Configuration"
 description: |-
-Retrieves AppID Token Configuration.
+        Retrieves AppID Token Configuration.
 ---
 
 # ibm_appid_token_config

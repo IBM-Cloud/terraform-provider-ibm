@@ -3,7 +3,7 @@ subcategory: "AppID Management"
 layout: "ibm"
 page_title: "IBM: AppID Application Scopes"
 description: |-
-Provides AppID Application Scopes resource.
+    Provides AppID Application Scopes resource.
 ---
 
 # ibm_appid_application_scopes

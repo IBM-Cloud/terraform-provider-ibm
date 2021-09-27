@@ -43,6 +43,7 @@ In addition to all argument reference list, you can access the following attribu
 - `policies` - (List) A nested block describes IAM Policies assigned to user.
 
   Nested scheme for `policies`:
+  - `description`  (String) The description of the IAM User Policy.
   - `id` - (String) The unique identifier of the IAM user policy. The ID is composed of `<ibm_id>/<user_policy_id>`.
   - `roles`-  (String) The roles that are assigned to the policy.	-
   

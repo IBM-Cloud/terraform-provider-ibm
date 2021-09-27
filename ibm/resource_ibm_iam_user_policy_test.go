@@ -27,6 +27,7 @@ func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {
 					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "tags.#", "1"),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "description", "IAM User Policy Creation for test scenario"),
 				),
 			},
 			resource.TestStep{
@@ -34,6 +35,7 @@ func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "tags.#", "2"),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "description", "IAM User Policy Update for test scenario"),
 				),
 			},
 		},
@@ -312,6 +314,7 @@ func testAccCheckIBMIAMUserPolicyBasic() string {
 			ibm_id = "%s"
 			roles  = ["Viewer"]
 			tags   = ["tag1"]
+			description = "IAM User Policy Creation for test scenario"
 	  	}
 
 	`, IAMUser)
@@ -324,6 +327,7 @@ func testAccCheckIBMIAMUserPolicyUpdateRole() string {
 			ibm_id = "%s"
 			roles  = ["Viewer", "Manager"]
 			tags   = ["tag1", "tag2"]
+			description = "IAM User Policy Update for test scenario"
 	  	}
 	`, IAMUser)
 }

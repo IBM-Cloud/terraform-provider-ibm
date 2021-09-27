@@ -35,6 +35,12 @@ func dataSourceIBMISSecurityGroupTarget() *schema.Resource {
 				Description: "Security group target name",
 			},
 
+			"crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN for this security group target",
+			},
+
 			"resource_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -90,6 +96,7 @@ func dataSourceIBMISSecurityGroupTargetRead(d *schema.ResourceData, meta interfa
 		securityGroupTargetReference := securityGroupTargetReferenceIntf.(*vpcv1.SecurityGroupTargetReference)
 		if *securityGroupTargetReference.Name == name {
 			d.Set("target", *securityGroupTargetReference.ID)
+			d.Set("crn", securityGroupTargetReference.CRN)
 			// d.Set("resource_type", *securityGroupTargetReference.ResourceType)
 			if securityGroupTargetReference.Deleted != nil {
 				d.Set("more_info", *securityGroupTargetReference.Deleted.MoreInfo)

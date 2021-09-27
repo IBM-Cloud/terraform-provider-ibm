@@ -19,6 +19,7 @@ import (
 const (
 	isVirtualEndpointGatewayName               = "name"
 	isVirtualEndpointGatewayResourceType       = "resource_type"
+	isVirtualEndpointGatewayCRN                = "crn"
 	isVirtualEndpointGatewayResourceGroupID    = "resource_group"
 	isVirtualEndpointGatewayCreatedAt          = "created_at"
 	isVirtualEndpointGatewayIPs                = "ips"
@@ -72,6 +73,11 @@ func resourceIBMISEndpointGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Endpoint gateway resource type",
+			},
+			isVirtualEndpointGatewayCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN for this Endpoint gateway",
 			},
 			isVirtualEndpointGatewayResourceGroupID: {
 				Type:        schema.TypeString,
@@ -162,9 +168,10 @@ func resourceIBMISEndpointGateway() *schema.Resource {
 							Description: "The target crn",
 						},
 						isVirtualEndpointGatewayTargetResourceType: {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The target resource type",
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: InvokeValidator("ibm_is_virtual_endpoint_gateway", isVirtualEndpointGatewayTargetResourceType),
+							Description:  "The target resource type",
 						},
 					},
 				},
@@ -198,6 +205,13 @@ func resourceIBMISEndpointGatewayValidator() *ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isVirtualEndpointGatewayTargetResourceType,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Required:                   true,
+			AllowedValues:              "provider_cloud_service, provider_infrastructure_service"})
 
 	ibmEndpointGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_is_virtual_endpoint_gateway", Schema: validateSchema}
 	return &ibmEndpointGatewayResourceValidator
@@ -328,6 +342,7 @@ func resourceIBMisVirtualEndpointGatewayRead(d *schema.ResourceData, meta interf
 	d.Set(isVirtualEndpointGatewayCreatedAt, result.CreatedAt.String())
 	d.Set(isVirtualEndpointGatewayLifecycleState, result.LifecycleState)
 	d.Set(isVirtualEndpointGatewayResourceType, result.ResourceType)
+	d.Set(isVirtualEndpointGatewayCRN, result.CRN)
 	d.Set(isVirtualEndpointGatewayIPs, flattenIPs(result.Ips))
 	d.Set(isVirtualEndpointGatewayResourceGroupID, result.ResourceGroup.ID)
 	d.Set(isVirtualEndpointGatewayTarget,

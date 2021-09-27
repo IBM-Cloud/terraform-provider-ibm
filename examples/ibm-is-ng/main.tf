@@ -658,3 +658,16 @@ data "ibm_is_operating_system" "os"{
 
 data "ibm_is_operating_systems" "oslist"{
 }
+
+resource "ibm_is_placement_group" "is_placement_group" {
+  strategy = "%s"
+  name = "%s"
+  resource_group = data.ibm_resource_group.default.id
+}
+
+data "ibm_is_placement_group" "is_placement_group" {
+  name = ibm_is_placement_group.is_placement_group.name
+}
+
+data "ibm_is_placement_groups" "is_placement_groups" {
+}

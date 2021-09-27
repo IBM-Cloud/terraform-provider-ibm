@@ -56,6 +56,12 @@ func dataSourceIBMISLB() *schema.Resource {
 				Description: "Load Balancer status",
 			},
 
+			isLBCrn: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN for this Load Balancer",
+			},
+
 			isLBOperatingStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -279,6 +285,7 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				d.Set(isLBType, "private")
 			}
 			d.Set(isLBStatus, *lb.ProvisioningStatus)
+			d.Set(isLBCrn, *lb.CRN)
 			d.Set(isLBOperatingStatus, *lb.OperatingStatus)
 			publicIpList := make([]string, 0)
 			if lb.PublicIps != nil {

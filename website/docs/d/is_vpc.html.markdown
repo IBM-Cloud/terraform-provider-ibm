@@ -40,8 +40,10 @@ In addition to all argument reference list, you can access the following attribu
 	- `address` - (String) The IP address of the cloud service endpoint.
 	- `zone_name` - (String) The zone where the cloud service endpoint is located.
 - `default_network_acl` - (String) The ID of the default network ACL.
+- `default_network_acl_crn` - (String)  The CRN of the default network ACL.
 - `default_network_acl_name` - (String)  The name of the default network ACL.
 - `default_security_group`-  (String) The unique identifier of the VPC default security group.
+- `default_security_group_crn` - (String) The CRN of the default security group.
 - `default_security_group_name` - (String) The name of the default security group.
 - `default_routing_table`-  (String) The unique identifier of the VPC default routing table.
 - `default_routing_table_name` - (String) The name of the default routing table.
