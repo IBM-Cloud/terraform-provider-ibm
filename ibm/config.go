@@ -35,6 +35,7 @@ import (
 	dns "github.com/IBM/networking-go-sdk/dnssvcsv1"
 	cisedgefunctionv1 "github.com/IBM/networking-go-sdk/edgefunctionsapiv1"
 	cisfiltersv1 "github.com/IBM/networking-go-sdk/filtersv1"
+	cisfirewallrulesv1 "github.com/IBM/networking-go-sdk/firewallrulesv1"
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
 	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
 	cisglbv1 "github.com/IBM/networking-go-sdk/globalloadbalancerv1"
@@ -256,6 +257,7 @@ type ClientSession interface {
 	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
 	SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error)
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
+	CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	FindingsV1() (*findingsv1.FindingsV1, error)
@@ -499,6 +501,10 @@ type clientSession struct {
 	// CIS Filters options
 	cisFiltersClient *cisfiltersv1.FiltersV1
 	cisFiltersErr    error
+
+	// CIS FirewallRules options
+	cisFirewallRulesClient *cisfirewallrulesv1.FirewallRulesV1
+	cisFirewallRulesErr    error
 
 	//Atracker
 	atrackerClient    *atrackerv1.AtrackerV1
@@ -934,6 +940,14 @@ func (sess clientSession) CisFiltersSession() (*cisfiltersv1.FiltersV1, error) {
 		return sess.cisFiltersClient, sess.cisFiltersErr
 	}
 	return sess.cisFiltersClient.Clone(), nil
+}
+
+// CIS FirewallRules
+func (sess clientSession) CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error) {
+	if sess.cisFirewallRulesErr != nil {
+		return sess.cisFirewallRulesClient, sess.cisFirewallRulesErr
+	}
+	return sess.cisFirewallRulesClient.Clone(), nil
 }
 
 // Activity Tracker API
@@ -2065,6 +2079,21 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisFiltersClient != nil && session.cisFiltersClient.Service != nil {
 		session.cisFiltersClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	}
+
+	// IBM Network CIS Firewall rules
+	cisFirewallrulesOpt := &cisfirewallrulesv1.FirewallRulesV1Options{
+		URL:           cisEndPoint,
+		Authenticator: authenticator,
+	}
+	session.cisFirewallRulesClient, session.cisFirewallRulesErr = cisfirewallrulesv1.NewFirewallRulesV1(cisFirewallrulesOpt)
+	if session.cisFirewallRulesErr != nil {
+		session.cisFirewallRulesErr =
+			fmt.Errorf("Error occured while configuring CIS Firewall rules : %s",
+				session.cisFirewallRulesErr)
+	}
+	if session.cisFirewallRulesClient != nil && session.cisFirewallRulesClient.Service != nil {
+		session.cisFirewallRulesClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 	}
 
 	// iamIdenityURL := fmt.Sprintf("https://%s.iam.cloud.ibm.com/v1", c.Region)
