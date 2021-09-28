@@ -194,7 +194,6 @@ type ClientSession interface {
 	ContainerAPI() (containerv1.ContainerServiceAPI, error)
 	VpcContainerAPI() (containerv2.ContainerServiceAPI, error)
 	ContainerRegistryV1() (*containerregistryv1.ContainerRegistryV1, error)
-	CisAPI() (cisv1.CisServiceAPI, error)
 	FunctionClient() (*whisk.Client, error)
 	GlobalSearchAPI() (globalsearchv2.GlobalSearchServiceAPI, error)
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
@@ -573,11 +572,6 @@ func (session clientSession) ContainerRegistryV1() (*containerregistryv1.Contain
 // SchematicsAPI provides schematics Service APIs ...
 func (sess clientSession) SchematicsV1() (*schematicsv1.SchematicsV1, error) {
 	return sess.schematicsClient, sess.schematicsClientErr
-}
-
-// CisAPI provides Cloud Internet Services APIs ...
-func (sess clientSession) CisAPI() (cisv1.CisServiceAPI, error) {
-	return sess.cisServiceAPI, sess.cisConfigErr
 }
 
 // FunctionClient ...
@@ -1468,12 +1462,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cosConfigErr = fmt.Errorf("Error occured while configuring COS config service: %q", err)
 	}
 	session.cosConfigAPI = cosconfigclient
-
-	cisAPI, err := cisv1.New(sess.BluemixSession)
-	if err != nil {
-		session.cisConfigErr = fmt.Errorf("Error occured while configuring Cloud Internet Services: %q", err)
-	}
-	session.cisServiceAPI = cisAPI
 
 	globalSearchAPI, err := globalsearchv2.New(sess.BluemixSession)
 	if err != nil {
