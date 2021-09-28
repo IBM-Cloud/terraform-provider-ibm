@@ -5,7 +5,6 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -99,59 +98,6 @@ func TestAccIBMCisHealthcheck_CreateAfterManualDestroy(t *testing.T) {
 			},
 			{
 				Config: testAccCheckCisHealthcheckConfigCisDSBasic("test", cisDomainStatic),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCisHealthcheckExists(name, &monitorTwo),
-					func(state *terraform.State) error {
-						if monitorOne == monitorTwo {
-							return fmt.Errorf("load balancer monitor id is unchanged even after we thought we deleted it ( %s )",
-								monitorTwo)
-						}
-						return nil
-					},
-				),
-			},
-		},
-	})
-}
-
-func TestAccIBMCisHealthcheck_CreateAfterCisRIManualDestroy(t *testing.T) {
-	t.Skip()
-	var monitorOne, monitorTwo string
-	name := "ibm_cis_healthcheck.health_check"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckCisMonitorDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckCisHealthcheckConfigCisRIBasic("test", cisDomainTest),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCisHealthcheckExists(name, &monitorOne),
-					testAccCisMonitorManuallyDelete(&monitorOne),
-					func(state *terraform.State) error {
-						cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
-						if err != nil {
-							return err
-						}
-						for _, r := range state.RootModule().Resources {
-							if r.Type == "ibm_cis_domain" {
-								log.Printf("[WARN] Manually removing domain")
-								zoneID, cisID, _ := convertTftoCisTwoVar(r.Primary.ID)
-								_ = cisClient.Zones().DeleteZone(cisID, zoneID)
-								cisPtr := &cisID
-								log.Printf("[WARN]  Manually removing Cis Instance")
-								_ = testAccCisInstanceManuallyDeleteUnwrapped(state, cisPtr)
-							}
-
-						}
-						return nil
-					},
-				),
-				ExpectNonEmptyPlan: true,
-			},
-			{
-				Config: testAccCheckCisHealthcheckConfigCisRIBasic("test", cisDomainTest),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisHealthcheckExists(name, &monitorTwo),
 					func(state *terraform.State) error {

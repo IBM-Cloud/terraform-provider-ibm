@@ -35,8 +35,6 @@ dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/IBM-Cloud/bluemix-go v0.0.0-20210903091337-e7648c203ed5 h1:bqcjvy0tnQjaNxFpg84aJiGF+jBnlEjC9zc2rmy8z+c=
-github.com/IBM-Cloud/bluemix-go v0.0.0-20210903091337-e7648c203ed5/go.mod h1:q0fXFSbum/16D8Mgn1ROSfSyX4BmvBCm/hHdcXz0wCU=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20210922131713-7a9d25e2f1dd h1:mAku/r+LpGN4gJJAig22SQ443GoF1aVo/NQfv6MzwqQ=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20210922131713-7a9d25e2f1dd/go.mod h1:q0fXFSbum/16D8Mgn1ROSfSyX4BmvBCm/hHdcXz0wCU=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20210705152127-41ca00fc9a62 h1:MOkcr6qQGk4tY542ZJ1DggVh2WUP72EEyLB79llFVH8=
@@ -83,8 +81,8 @@ github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20210723145459-a232c3f3ac91 h1:8ICDvg7YM+
 github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20210723145459-a232c3f3ac91/go.mod h1:M2JyuyeWHPtgGNeezr6YqVRuaav2MpY8Ha4QrEYvMoI=
 github.com/IBM/keyprotect-go-client v0.7.0 h1:JstSHD14Lp6ihwQseyPuGcs1AjOBjAmcisP0dTBA6A0=
 github.com/IBM/keyprotect-go-client v0.7.0/go.mod h1:SVr2ylV/fhSQPDiUjWirN9fsyWFCNNbt8GIT8hPJVjE=
-github.com/IBM/networking-go-sdk v0.20.0 h1:DSqjcNNyWSOiett7aM0sTbPhNgcnLgC8cc+VQ5ZJFXA=
-github.com/IBM/networking-go-sdk v0.20.0/go.mod h1:nViqUm1Bv+ke8dyOhjQ6e+2U1XeqZX2y4bQbR8Od3Hc=
+github.com/IBM/networking-go-sdk v0.22.0 h1:qOvb7sBj8cVbddqUmn4XRCmARSly069okcnR7cDOXrE=
+github.com/IBM/networking-go-sdk v0.22.0/go.mod h1:nViqUm1Bv+ke8dyOhjQ6e+2U1XeqZX2y4bQbR8Od3Hc=
 github.com/IBM/platform-services-go-sdk v0.19.3 h1:lB8Xsnhwt82z2i2AI4GBb2Tdxn3TuveAsjwk7p6R/sY=
 github.com/IBM/platform-services-go-sdk v0.19.3/go.mod h1:E9HQN/MKeVqo3IRmfcCMw9/yq/QHmRvb/4FzxXQsfOk=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:NPUhkoOCRuv3OFWt19PmwjXGGTKlvmbuPg9fUrBUNe4=

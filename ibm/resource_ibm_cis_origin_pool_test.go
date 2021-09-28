@@ -130,61 +130,6 @@ func TestAccIBMCisPool_CreateAfterManualDestroy(t *testing.T) {
 	})
 }
 
-func TestAccIBMCisPool_CreateAfterCisRIManualDestroy(t *testing.T) {
-	//t.Parallel()
-	t.Skip()
-	var poolOne, poolTwo string
-	testName := "test"
-	name := "ibm_cis_origin_pool.origin_pool"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckCisPoolDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckCisPoolConfigCisRIBasic(testName, cisDomainTest),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCisPoolExists(name, &poolOne),
-					testAccCisPoolManuallyDelete(&poolOne),
-					func(state *terraform.State) error {
-						cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
-						if err != nil {
-							return err
-						}
-						for _, r := range state.RootModule().Resources {
-							if r.Type == "ibm_cis_domain" {
-								log.Printf("[WARN] Removing domain")
-								zoneID, cisID, _ := convertTftoCisTwoVar(r.Primary.ID)
-								_ = cisClient.Zones().DeleteZone(cisID, zoneID)
-								cisPtr := &cisID
-								log.Printf("[WARN] Removing Cis Instance")
-								_ = testAccCisInstanceManuallyDeleteUnwrapped(state, cisPtr)
-							}
-
-						}
-						return nil
-					},
-				),
-				ExpectNonEmptyPlan: true,
-			},
-			{
-				Config: testAccCheckCisPoolConfigCisRIBasic(testName, cisDomainTest),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCisPoolExists(name, &poolTwo),
-					func(state *terraform.State) error {
-						if poolOne == poolTwo {
-							return fmt.Errorf("id is unchanged even after we thought we deleted it ( %s )",
-								poolTwo)
-						}
-						return nil
-					},
-				),
-			},
-		},
-	})
-}
-
 func testAccCheckCisPoolDestroy(s *terraform.State) error {
 	cisClient, err := testAccProvider.Meta().(ClientSession).CisGLBPoolClientSession()
 	if err != nil {

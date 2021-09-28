@@ -182,54 +182,6 @@ func TestAccIBMCisDNSRecord_CreateAfterManualDestroy(t *testing.T) {
 	})
 }
 
-func TestAccIBMCisDNSRecord_CreateAfterManualCisRIDestroy(t *testing.T) {
-	t.Skip()
-	testName := "test_acc"
-	var afterCreate, afterRecreate string
-	name := "ibm_cis_dns_record.test_acc"
-
-	afterCreate = "hello"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckCis(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMCisDNSRecordDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMCisDNSRecordConfigCisRIBasic(testName, cisDomainTest),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMCisDNSRecordExists(name, &afterCreate),
-					testAccIBMCisManuallyDeleteDNSRecord(&afterCreate),
-					func(state *terraform.State) error {
-						cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
-						if err != nil {
-							return err
-						}
-						for _, r := range state.RootModule().Resources {
-							if r.Type == "ibm_cis_domain" {
-								zoneID, cisID, _ := convertTftoCisTwoVar(r.Primary.ID)
-								_ = cisClient.Zones().DeleteZone(cisID, zoneID)
-								cisPtr := &cisID
-								_ = testAccCisInstanceManuallyDelete(cisPtr)
-							}
-
-						}
-						return nil
-					},
-				),
-				ExpectNonEmptyPlan: true,
-			},
-			{
-				Config: testAccCheckIBMCisDNSRecordConfigCisRIBasic(testName, cisDomainTest),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMCisDNSRecordExists(name, &afterRecreate),
-					testAccCheckIBMCisDNSRecordRecreated(&afterCreate, &afterRecreate),
-				),
-			},
-		},
-	})
-}
-
 func testAccIBMCisManuallyDeleteDNSRecord(tfRecordID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		cisClient, err := testAccProvider.Meta().(ClientSession).CisDNSRecordClientSession()
