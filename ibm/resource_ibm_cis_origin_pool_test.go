@@ -243,24 +243,6 @@ func testAccCheckCisPoolConfigCisDSUpdate(resourceID string, cisDomainStatic str
 	  `, resourceID)
 }
 
-func testAccCheckCisPoolConfigCisRIBasic(resourceID string, cisDomain string) string {
-	return testAccCheckCisDomainConfigCisRIbasic(resourceID, cisDomain) + fmt.Sprintf(`
-	resource "ibm_cis_origin_pool" "origin_pool" {
-		cis_id        = ibm_cis.cis.id
-		name          = "my-tf-pool-basic-%[1]s"
-		check_regions = ["WEU"]
-		description   = "tfacc-fully-specified"
-		origins {
-		  name    = "example-1"
-		  address = "www.google.com"
-		  enabled = true
-		  weight  = 1
-		}
-		enabled = false
-	  }
-	`, resourceID)
-}
-
 func testAccCheckCisPoolConfigFullySpecified(resourceID string, cisDomainStatic string) string {
 	return testAccCheckCisHealthcheckConfigCisDSBasic(resourceID, cisDomainStatic) + fmt.Sprintf(`
 	resource "ibm_cis_origin_pool" "origin_pool" {

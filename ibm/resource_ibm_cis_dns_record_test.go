@@ -278,18 +278,6 @@ func testAccCheckIBMCisDNSRecordConfigCisDSBasic(resourceID string, cisDomain st
 	  `, resourceID)
 }
 
-func testAccCheckIBMCisDNSRecordConfigCisRIBasic(resourceID string, cisDomain string) string {
-	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
-	resource "ibm_cis_dns_record" "%[1]s" {
-		cis_id    = ibm_cis.cis.id
-		domain_id = ibm_cis_domain.cis_domain.domain_id
-		name    = "%[1]s"
-		content = "192.168.0.10"
-		type    = "A"
-	  }
-`, resourceID)
-}
-
 func testAccCheckIBMCisDNSRecordConfigPTR(resourceID string, cisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_dns_record" "%[1]s" {

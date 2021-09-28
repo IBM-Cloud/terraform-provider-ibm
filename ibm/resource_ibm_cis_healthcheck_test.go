@@ -188,16 +188,6 @@ func testAccCheckCisHealthcheckConfigCisDSBasic(resourceID string, cisDomain str
 	`)
 }
 
-func testAccCheckCisHealthcheckConfigCisRIBasic(resourceID string, cisDomain string) string {
-	return testAccCheckCisDomainConfigCisRIbasic(resourceID, cisDomain) + fmt.Sprintf(`
-	resource "ibm_cis_healthcheck" "health_check" {
-		cis_id         = ibm_cis.cis.id
-		expected_body  = "alive"
-		expected_codes = "2xx"
-	  }
-	`)
-}
-
 func testAccCheckCisHealthcheckConfigFullySpecified(resourceID string, cisDomain string) string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_healthcheck" "health_check" {
