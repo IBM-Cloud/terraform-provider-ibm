@@ -58,6 +58,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `address` - (String) The floating IP address that was created. 
+- `crn` - (String) The CRN for this floating IP. 
 - `id` - (String) The unique identifier of the floating IP address. 
 - `status` - (String) The provisioning status of the floating IP address.
 

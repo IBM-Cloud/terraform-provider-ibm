@@ -18,6 +18,7 @@ import (
 
 const (
 	isInstanceName                    = "name"
+	IsInstanceCRN                     = "crn"
 	isInstanceKeys                    = "keys"
 	isInstanceTags                    = "tags"
 	isInstanceNetworkInterfaces       = "network_interfaces"
@@ -157,6 +158,11 @@ func resourceIBMISInstance() *schema.Resource {
 				Computed:    true,
 				Description: "VPC id",
 			},
+			IsInstanceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Crn for this Instance",
+			},
 
 			isInstanceSourceTemplate: {
 				Type:          schema.TypeString,
@@ -225,10 +231,11 @@ func resourceIBMISInstance() *schema.Resource {
 			},
 
 			isEnableCleanDelete: {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				Description: "Enables stopping of instance before deleting and waits till deletion is complete",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				Default:          true,
+				DiffSuppressFunc: suppressEnableCleanDelete,
+				Description:      "Enables stopping of instance before deleting and waits till deletion is complete",
 			},
 
 			isInstanceVolumeAttachments: {
@@ -355,10 +362,11 @@ func resourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstanceUserData: {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Optional:    true,
-				Description: "User data given for the instance",
+				Type:             schema.TypeString,
+				ForceNew:         true,
+				DiffSuppressFunc: suppressUserData,
+				Optional:         true,
+				Description:      "User data given for the instance",
 			},
 
 			isInstanceImage: {
@@ -1639,6 +1647,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/compute/vs")
 	d.Set(ResourceName, *instance.Name)
 	d.Set(ResourceCRN, *instance.CRN)
+	d.Set(IsInstanceCRN, *instance.CRN)
 	d.Set(ResourceStatus, *instance.Status)
 	if instance.ResourceGroup != nil {
 		d.Set(isInstanceResourceGroup, *instance.ResourceGroup.ID)
@@ -2311,6 +2320,22 @@ func resourceIbmIsInstanceInstanceDiskToMap(instanceDisk vpcv1.InstanceDisk) map
 	instanceDiskMap["size"] = intValue(instanceDisk.Size)
 
 	return instanceDiskMap
+}
+
+func suppressEnableCleanDelete(k, old, new string, d *schema.ResourceData) bool {
+	// During import
+	if old == "" && !d.IsNewResource() {
+		return true
+	}
+	return false
+}
+
+func suppressUserData(k, old, new string, d *schema.ResourceData) bool {
+	// During import
+	if old == "" && !d.IsNewResource() {
+		return true
+	}
+	return false
 }
 
 func resourceIbmIsInstanceInstancePlacementToMap(instancePlacement vpcv1.InstancePlacementTarget) map[string]interface{} {

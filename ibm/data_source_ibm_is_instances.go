@@ -104,6 +104,11 @@ func dataSourceIBMISInstances() *schema.Resource {
 							Computed:    true,
 							Description: "Instance name",
 						},
+						"crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The crn for this Instance",
+						},
 						"memory": {
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -595,6 +600,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		id := *instance.ID
 		l := map[string]interface{}{}
 		l["id"] = id
+		l["crn"] = *instance.CRN
 		l["name"] = *instance.Name
 		l["memory"] = *instance.Memory
 		l["status"] = *instance.Status

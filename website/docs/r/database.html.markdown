@@ -147,9 +147,110 @@ resource "ibm_database" "autoscale" {
     }
 }
 ```
+### Sample cassandra database instance
+Cassandra takes more time than expected. It is always advisible to extend timeouts using timeouts block
 
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "cassandra" {
+  resource_group_id            = data.ibm_resource_group.test_acc.id
+  name                         = "test"
+  service                      = "databases-for-cassandra"
+  plan                         = "enterprise"
+  location                     = "us-south"
+  adminpassword                = "password12"
+  members_memory_allocation_mb = 36864
+  members_disk_allocation_mb   = 61440
+  users {
+    name     = "user123"
+    password = "password12"
+  }
+  whitelist {
+    address     = "172.168.1.2/32"
+    description = "desc1"
+  }
+
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+```
+### Sample enterprise mongo database instance
+* Enterprise MongoDB takes more time than expected. It is always advisible to extend timeouts using timeouts block.
+* Please make sure your resources meet minimum requirements of scaling. Please refer [docs](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pricing#scaling-per-member) for more info.
+* `serive_endpoints` cannot be updated on this instance.
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "mongodb" {
+  resource_group_id            = data.ibm_resource_group.test_acc.id
+  name                         = "test"
+  service                      = "databases-for-mongodb"
+  plan                         = "enterprise"
+  location                     = "us-south"
+  adminpassword                = "password12"
+  members_disk_allocation_mb   = 61440
+  members_memory_allocation_mb = 43008
+  tags                         = ["one:two"]
+  users {
+    name     = "user123"
+    password = "password12"
+  }
+  whitelist {
+    address     = "172.168.1.2/32"
+    description = "desc1"
+  }
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+```
+### Sample EDB instance
+EDB takes more time than expected. It is always advisible to extend timeouts using timeouts block
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "edb" {
+  resource_group_id            = data.ibm_resource_group.test_acc.id
+  name                         = "test"
+  service                      = "databases-for-enterprisedb"
+  plan                         = "standard"
+  location                     = "us-south"
+  adminpassword                = "password12"
+  members_memory_allocation_mb = 3072
+  members_disk_allocation_mb   = 61440
+  tags                         = ["one:two"]
+  users {
+    name     = "user123"
+    password = "password12"
+  }
+  whitelist {
+    address     = "172.168.1.2/32"
+    description = "desc1"
+  }
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+```
 
 **provider.tf**
+Please make sure to target right region in the provider block, If database is created in region other than `us-south`
 
 ```terraform
 provider "ibm" {
@@ -223,13 +324,13 @@ Review the argument reference that you can specify for your resource.
 
   ~> **Note:** `members_memory_allocation_mb`, `members_disk_allocation_mb`, `members_cpu_allocation_count` conflicts with `node_count`,`node_cpu_allocation_count`, `node_disk_allocation_mb`, `node_memory_allocation_mb` Either members or node arguments has to be provided
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
-- `plan` - (Required, String) The name of the service plan that you choose for your instance. Supported values are `standard`.
+- `plan` - (Required, String) The name of the service plan that you choose for your instance. All databases use `standard`. `enterprise` is supported only for cassandra (`databases-for-cassandra`) and mongodb(`databases-for-mongodb`)
 * `plan_validation` - (Optional, bool) Enable or disable validating the database parameters for elasticsearch and postgres (more coming soon) during the plan phase. If not specified defaults to true.
 - `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
 - `point_in_time_recovery_time` - (Optional, String) The timestamp in UTC format that you want to restore to. To retrieve the timestamp, run the `ibmcloud cdb postgresql earliest-pitr-timestamp <deployment name or CRN>` command. For more information, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-pitr).
 - `remote_leader_id` - (Optional, String) A CRN of the leader database to make the replica(read-only) deployment. The leader database is created by a database deployment with the same service ID. A read-only replica is set up to replicate all of your data from the leader deployment to the replica deployment by using asynchronous replication. For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
 - `resource_group_id` - (Optional, Forces new resource, String)  The ID of the resource group where you want to create the instance. To retrieve this value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
-- `service` - (Required, String) The type of {{site.data.keyword.databases-for}} that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`, and `databases-for-mongodb`.
+- `service` - (Required, String) The type of {{site.data.keyword.databases-for}} that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-cassandra` and `databases-for-enterprisedb`.
 - `service_endpoints` - (Optional, String) Specify whether you want to enable the public, private, or both service endpoints. Supported values are `public`, `private`, or `public-and-private`. The default is `public`.
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance.
 - `version` - (Optional, Forces new resource, String) The version of the database to be provisioned. If omitted, the database is created with the most recent major and minor version.

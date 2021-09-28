@@ -76,6 +76,11 @@ func resourceIBMISInstanceGroup() *schema.Resource {
 				Computed:    true,
 				Description: "Resource group ID",
 			},
+			"crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN of this instance group",
+			},
 
 			"subnets": {
 				Type:        schema.TypeList,
@@ -392,6 +397,7 @@ func resourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) er
 
 	d.Set("status", *instanceGroup.Status)
 	d.Set("vpc", *instanceGroup.VPC.ID)
+	d.Set("crn", *instanceGroup.CRN)
 	tags, err := GetTagsUsingCRN(meta, *instanceGroup.CRN)
 	if err != nil {
 		log.Printf(

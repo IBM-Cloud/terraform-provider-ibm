@@ -278,6 +278,10 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `network_interaces`:
   - `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on the interface. If **false**, IP spoofing is prevented on the interface. If **true**, IP spoofing is allowed on the interface.
+    **NOTE**:
+      - `allow_ip_spoofing` requires **IP spoofing operator** access under VPC infrastructure Services. As the **IP spoofing operator**, you can enable or disable the IP spoofing check on virtual server instances.
+      - Use this only if you have **IP spoofing operator** access.
+
   - `name` - (Optional, String) The name of the network interface.
   - `primary_ipv4_address` - (Optional, Forces new resource, String) The IPV4 address of the interface.
   - `subnet` - (Required, String) The ID of the subnet.
@@ -286,6 +290,10 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `primary_network_interface`:
   - `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on the interface. If **false**, IP spoofing is prevented on the interface. If **true**, IP spoofing is allowed on the interface.
+    **NOTE**:
+      - `allow_ip_spoofing` requires **IP spoofing operator** access under VPC infrastructure Services. As the **IP spoofing operator**, you can enable or disable the IP spoofing check on virtual server instances.
+      - Use this only if you have **IP spoofing operator** access.
+
   - `name` - (Optional, String) The name of the network interface.
   - `port_speed` - (Deprecated, Integer) Speed of the network interface.
   - `primary_ipv4_address` - (Optional, Forces new resource, String) The IPV4 address of the interface.
@@ -315,6 +323,7 @@ In addition to all argument reference list, you can access the following attribu
   - `name` - (String) The name of the boot volume.
   - `profile` - (String) The profile of the volume.
   - `size`- (Integer) The capacity of the volume in gigabytes.
+- `crn` - (String) The CRN of the instance.
 - `disks` - (List of Strings) The collection of the instance's disks. Nested `disks` blocks have the following structure:
 
   Nested scheme for `disks`:
@@ -346,7 +355,7 @@ In addition to all argument reference list, you can access the following attribu
 - `network_interfaces`- (List of Strings) A list of more network interfaces that are attached to the instance.
 
   Nested scheme for `network_interfaces`:
-  - `allow_ip_spoofing` - (String) Indicates whether IP spoofing is allowed on the interface.
+  - `allow_ip_spoofing` - (Bool) Indicates whether IP spoofing is allowed on the interface.
   - `id` - (String) The ID of the network interface.
   - `name` - (String) The name of the network interface.
   - `subnet` - (String) The ID of the subnet.
@@ -355,7 +364,7 @@ In addition to all argument reference list, you can access the following attribu
 - `primary_network_interface`- (List of Strings) A list of primary network interfaces that are attached to the instance.
 
   Nested scheme for `primary_network_interface`:
-  - `allow_ip_spoofing` - (String) Indicates whether IP spoofing is allowed on the interface.
+  - `allow_ip_spoofing` - (Bool) Indicates whether IP spoofing is allowed on the interface.
   - `id` - (String) The ID of the primary network interface.
   - `name` - (String) The name of the primary network interface.
   - `subnet` - (String) The ID of the subnet that the primary network interface is attached to.

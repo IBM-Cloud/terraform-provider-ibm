@@ -14,6 +14,7 @@ import (
 
 const (
 	isInstanceTemplateBootVolume                   = "boot_volume"
+	isInstanceTemplateCRN                          = "crn"
 	isInstanceTemplateVolAttVolAutoDelete          = "auto_delete"
 	isInstanceTemplateVolAttVol                    = "volume"
 	isInstanceTemplateVolAttachmentName            = "name"
@@ -273,6 +274,12 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 				ForceNew:    true,
 				Optional:    true,
 				Description: "User data given for the instance",
+			},
+
+			isInstanceTemplateCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN for the instance",
 			},
 
 			isInstanceTemplateImage: {
@@ -702,6 +709,7 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 	}
 	instance := instanceIntf.(*vpcv1.InstanceTemplate)
 	d.Set(isInstanceTemplateName, *instance.Name)
+	d.Set(isInstanceTemplateCRN, *instance.CRN)
 	if instance.Profile != nil {
 		instanceProfileIntf := instance.Profile
 		identity := instanceProfileIntf.(*vpcv1.InstanceProfileIdentity)

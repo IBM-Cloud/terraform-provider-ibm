@@ -69,6 +69,12 @@ func dataSourceIBMISSSHKey() *schema.Resource {
 				Description: "The crn of the resource",
 			},
 
+			IsKeyCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
 			ResourceGroupName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -133,6 +139,7 @@ func keyGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			d.Set(ResourceControllerURL, controller+"/vpc/compute/sshKeys")
 			d.Set(ResourceName, *key.Name)
 			d.Set(ResourceCRN, *key.CRN)
+			d.Set(IsKeyCRN, *key.CRN)
 			if key.ResourceGroup != nil {
 				d.Set(ResourceGroupName, *key.ResourceGroup.ID)
 			}

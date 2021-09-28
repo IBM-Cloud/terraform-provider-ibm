@@ -26,6 +26,30 @@ resource "ibm_tg_connection" "test_tg_cross_connection"{
                 network_account_id = var.network_account_id
 }
 
+# Create a transit gateway gre_tunnel connection
+resource "ibm_tg_connection" "test_tg_gre_connection"{
+                gateway = "${ibm_tg_gateway.new_tg_gw.id}"
+                network_type = var.network_type
+                name= var.vc_name
+                # ID of the classic connection 
+                base_connection_id = "ibm_tg_connection.classic_connection.id"
+                remote_bgp_asn = "65010"
+                local_gateway_ip = "192.168.100.1"
+                local_tunnel_ip = "192.168.101.1"
+                remote_gateway_ip = "10.242.63.12"
+                remote_tunnel_ip = "192.168.101.2"
+                zone = "us-south"
+}
+
+# Create a transit gateway directlink connection
+resource "ibm_tg_connection" "test_tg_dl_connection"{
+                gateway = "${ibm_tg_gateway.new_tg_gw.id}"
+                network_type = var.network_type
+                name= var.vc_name
+                # directlink gateway crn
+                network_id = var.network_id
+}
+
 # Retrieves specified Transit Gateway
 data "ibm_tg_gateway" "tg_gateway" {
         name= ibm_tg_gateway.new_tg_gw.name

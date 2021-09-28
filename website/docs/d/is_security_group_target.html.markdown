@@ -30,6 +30,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
+- `crn` - (String) The CRN for this target.
 - `id` - (String) The unique identifier of the security group target. The ID is composed of <`security_group_id`>/<`target_id`>.
 - `name` - (String) The user defined name of the target.
 - `resource_type` - (String) The resource type.

@@ -241,6 +241,12 @@ func testAccCheckIBMDatabaseInstanceElasticsearchBasic(databaseResourceGroup str
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
+
+		timeouts {
+			create = "120m"
+			update = "120m"
+			delete = "15m"
+		}
 	}
 				`, databaseResourceGroup, name)
 }
@@ -277,6 +283,12 @@ func testAccCheckIBMDatabaseInstanceElasticsearchFullyspecified(databaseResource
 		  address     = "172.168.1.1/32"
 		  description = "desc"
 		}
+
+		timeouts {
+			create = "120m"
+			update = "120m"
+			delete = "15m"
+		}
 	}
 	  
 				`, databaseResourceGroup, name)
@@ -298,6 +310,12 @@ func testAccCheckIBMDatabaseInstanceElasticsearchReduced(databaseResourceGroup s
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 18432
+
+		timeouts {
+			create = "120m"
+			update = "120m"
+			delete = "15m"
+		}
 	}
 				`, databaseResourceGroup, name)
 }
@@ -328,6 +346,12 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeBasic(databaseResourceGroup
 		whitelist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
+		}
+
+		timeouts {
+			create = "120m"
+			update = "120m"
+			delete = "15m"
 		}
 	}
 				`, databaseResourceGroup, name)
@@ -367,6 +391,12 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeFullyspecified(databaseReso
 		  address     = "172.168.1.1/32"
 		  description = "desc"
 		}
+
+		timeouts {
+			create = "120m"
+			update = "120m"
+			delete = "15m"
+		}
 	}
 	  
 				`, databaseResourceGroup, name)
@@ -390,6 +420,12 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeReduced(databaseResourceGro
 		node_memory_allocation_mb    = 1024
 		node_disk_allocation_mb      = 6144
         node_cpu_allocation_count    = 3
+
+		timeouts {
+			create = "120m"
+			update = "120m"
+			delete = "15m"
+		}
 	}
 				`, databaseResourceGroup, name)
 }
@@ -412,6 +448,12 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeScaleOut(databaseResourceGr
 		node_memory_allocation_mb    = 1024
 		node_disk_allocation_mb      = 6144
         node_cpu_allocation_count    = 3
+
+		timeouts {
+			create = "120m"
+			update = "120m"
+			delete = "15m"
+		}
 	}
 				`, databaseResourceGroup, name)
 }
@@ -429,6 +471,12 @@ func testAccCheckIBMDatabaseInstanceElasticsearchImport(databaseResourceGroup st
 		service           = "databases-for-elasticsearch"
 		plan              = "standard"
 		location          = "us-south"
+
+		timeouts {
+			create = "120m"
+			update = "120m"
+			delete = "15m"
+		}
 	}
 
 				`, databaseResourceGroup, name)
