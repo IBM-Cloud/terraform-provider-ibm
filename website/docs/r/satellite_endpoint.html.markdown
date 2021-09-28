@@ -1,19 +1,19 @@
 ---
 subcategory: "Satellite"
 layout: "ibm"
-page_title: "IBM : satellite_endpoint"
+page_title: "IBM : ibm_satellite_endpoint"
 description: |-
   Manages satellite endpoint.
 ---
 
 # ibm\_satellite_endpoint
 
-Provides a resource for satellite_endpoint. This allows satellite_endpoint to be created, updated and deleted.
+Provides a resource for ibm_satellite_endpoint. This allows ibm_satellite_endpoint to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "satellite_endpoint" "satellite_endpoint" {
+resource "ibm_satellite_endpoint" "satellite_endpoint" {
   location = "location_id"
   connection_type = "cloud"
   display_name = "My endpoint"
@@ -71,7 +71,7 @@ In addition to all arguments above, the following attributes are exported:
 * `client_port` - The port which Satellite Link server listen on for the on-location, or the port which the connector server listen on for the on-cloud endpoint destiantion.
 * `created_at` - The time when the Endpoint is created.
 * `endpoint_id` - The Endpoint ID.
-* `id` - The unique identifier of the satellite_endpoint.
+* `id` - The unique identifier of the ibm_satellite_endpoint.
 * `last_change` - The last time modify the Endpoint configurations.
 * `performance` - The last performance data of the endpoint.
 * `sources` - sources
@@ -81,7 +81,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-You can import the `satellite_endpoint` resource by using `endpoint_id`.
+You can import the `ibm_satellite_endpoint` resource by using `endpoint_id`.
 The `endpoint_id` property can be formed from `location`, and `endpoint_id` in the following format:
 
 ```
@@ -91,5 +91,5 @@ The `endpoint_id` property can be formed from `location`, and `endpoint_id` in t
 * `endpoint_id`: A string. The Endpoint ID.
 
 ```
-$ terraform import satellite_endpoint.satellite_endpoint <location>/<endpoint_id>
+$ terraform import ibm_satellite_endpoint.satellite_endpoint <location>/<endpoint_id>
 ```
