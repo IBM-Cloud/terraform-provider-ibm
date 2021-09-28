@@ -121,19 +121,6 @@ func testAccCheckIBMIamTrustedProfileClaimRuleConfig(profileID string, typeVar s
 				operator = "operator"
 				value = "value"
 			}
-			context {
-				transaction_id = "transaction_id"
-				operation = "operation"
-				user_agent = "user_agent"
-				url = "url"
-				instance_id = "instance_id"
-				thread_id = "thread_id"
-				host = "host"
-				start_time = "start_time"
-				end_time = "end_time"
-				elapsed_time = "elapsed_time"
-				cluster_name = "cluster_name"
-			}
 			name = "%s"
 			realm_name = "%s"
 			cr_type = "%s"

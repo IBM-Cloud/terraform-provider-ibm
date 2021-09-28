@@ -8,7 +8,7 @@ subcategory: "IAM Identity Services"
 
 # ibm_iam_trusted_profile
 
-Retrieve information about IAM trusted profile as a read-only data source. For more information, about trusted profile, see [Create a trusted profile](https://cloud.ibm.com/apidocs/iam-identity-token-api#create-profile)
+Create, update and delete an IAM trusted profile resource. For more information, about trusted profile, see [Create a trusted profile](https://cloud.ibm.com/apidocs/iam-identity-token-api#create-profile)
 
 ## Example usage
 
@@ -51,7 +51,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `iam_id` - (Required, String) The `iam_id` of this trusted profile.
 
-* `id` - (Required, String) The unique identifier of the trusted profile. For example:'Profile-94497d0d-2ac3-41bf-a993-a49d1b14627c'.
+* `id` - (Required, String) The unique identifier of the trusted profile. For example:`Profile-94497d0d-2ac3-41bf-a993-a49d1b14627c`.
 
 * `ims_account_id` - (Optional, Integer) IMS acount ID of the trusted profile.
 
