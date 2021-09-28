@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -176,7 +177,7 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "The user provided datacenter options",
 				Optional:      true,
-				ConflictsWith: []string{"datacenter", "public_vlan_id", "private_vlan_id", "placement_group_name", "placement_group_id"},
+				ConflictsWith: []string{"datacenter", "public_vlan_id", "private_vlan_id", "placement_group_name", "placement_group_id", "reserved_capacity_id", "reserved_capacity_name"},
 				Elem:          &schema.Schema{Type: schema.TypeMap},
 			},
 
@@ -185,7 +186,7 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Description:   "The placement group name",
 				Optional:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"datacenter_choice", "dedicated_acct_host_only", "dedicated_host_name", "dedicated_host_id", "placement_group_id"},
+				ConflictsWith: []string{"datacenter_choice", "dedicated_acct_host_only", "dedicated_host_name", "dedicated_host_id", "placement_group_id", "reserved_capacity_id", "reserved_capacity_name"},
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					_, ok := d.GetOk("placement_group_id")
 					return new == "" && ok
@@ -197,10 +198,44 @@ func resourceIBMComputeVmInstance() *schema.Resource {
 				Description:   "The placement group id",
 				Optional:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"datacenter_choice", "dedicated_acct_host_only", "dedicated_host_name", "dedicated_host_id", "placement_group_name"},
+				ConflictsWith: []string{"datacenter_choice", "dedicated_acct_host_only", "dedicated_host_name", "dedicated_host_id", "placement_group_name", "reserved_capacity_id", "reserved_capacity_name"},
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					_, ok := d.GetOk("placement_group_name")
 					return new == "0" && ok
+				},
+			},
+
+			"reserved_instance_primary_disk": {
+				Type:        schema.TypeInt,
+				Description: "The primary disk of reserved instance",
+				Optional:    true,
+				ForceNew:    true,
+			},
+
+			"reserved_capacity_id": {
+				Type:          schema.TypeInt,
+				Description:   "The reserved group id",
+				Optional:      true,
+				ForceNew:      true,
+				RequiredWith:  []string{"reserved_instance_primary_disk"},
+				ConflictsWith: []string{"datacenter_choice", "dedicated_acct_host_only", "dedicated_host_name", "dedicated_host_id", "placement_group_name", "placement_group_id", "reserved_capacity_name", "flavor_key_name", "cores", "memory"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					_, ok := d.GetOk("reserved_capacity_name")
+					return new == "0" && ok
+				},
+			},
+
+			"reserved_capacity_name": {
+				Type:        schema.TypeString,
+				Description: "The reserved group id",
+				Optional:    true,
+				//Computed:      true,
+				ForceNew:      true,
+				RequiredWith:  []string{"reserved_instance_primary_disk"},
+				ConflictsWith: []string{"datacenter_choice", "dedicated_acct_host_only", "dedicated_host_name", "dedicated_host_id", "placement_group_name", "placement_group_id", "reserved_capacity_id", "flavor_key_name", "cores", "memory"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					_, ok := d.GetOk("reserved_capacity_id")
+					return new == "" && ok
 				},
 			},
 
@@ -714,6 +749,76 @@ func getVirtualGuestTemplateFromResourceData(d *schema.ResourceData, meta interf
 			PostInstallScriptUri:   sl.String(d.Get("post_install_script_uri").(string)),
 		}
 
+		if reservedGroupID, ok := d.GetOk("reserved_capacity_id"); ok {
+			if *opts.HourlyBillingFlag || *opts.LocalDiskFlag {
+				return vms, fmt.Errorf("Unable to provision a reserved instance with a hourly_billing false or local_disk true")
+			}
+			grpID := reservedGroupID.(int)
+			opts.ReservedCapacityGroup = &datatypes.Virtual_ReservedCapacityGroup{
+				Id: sl.Int(grpID),
+			}
+			service := services.GetVirtualReservedCapacityGroupService(meta.(ClientSession).SoftLayerSession())
+			grp, err := service.Id(grpID).Mask("id,instances[id, billingItem[id, item[id,keyName]]]").GetObject()
+			if err != nil {
+				return vms, fmt.Errorf("Error looking up reserved capacity: %s", err)
+			}
+			capacityFlavor := *grp.Instances[0].BillingItem.Item.KeyName
+			primaryDisks := d.Get("reserved_instance_primary_disk").(int)
+
+			re := regexp.MustCompile("_\\d_YEAR_TERM")
+
+			split := re.Split(capacityFlavor, -1)
+
+			flavorComponenet := datatypes.Virtual_Guest_SupplementalCreateObjectOptions{
+				FlavorKeyName: sl.String(fmt.Sprintf("%sX%s", split[0], strconv.Itoa(primaryDisks))),
+			}
+			opts.SupplementalCreateObjectOptions = &flavorComponenet
+
+		}
+
+		if reservedGroupName, ok := d.GetOk("reserved_capacity_name"); ok {
+			if *opts.HourlyBillingFlag || *opts.LocalDiskFlag {
+				return vms, fmt.Errorf("Unable to provision a reserved instance with a hourly_billing false or local_disk true")
+			}
+			grpName := reservedGroupName.(string)
+			service := services.GetAccountService(meta.(ClientSession).SoftLayerSession())
+			groups, err := service.
+				Mask("id,name,instances[id,billingItem[id,item[id,keyName]]]").
+				Filter(filter.Path("reservedCapacityGroups.name").Eq(grpName).Build()).
+				GetReservedCapacityGroups()
+
+			if err != nil {
+				return vms, fmt.Errorf("Error looking up reserved capacity '%s': %s", grpName, err)
+			}
+			grps := []datatypes.Virtual_ReservedCapacityGroup{}
+			for _, g := range groups {
+				if grpName == *g.Name {
+					grps = append(grps, g)
+
+				}
+			}
+			if len(grps) == 0 {
+				return vms, fmt.Errorf("Error looking up reserved capacity '%s'", grpName)
+			}
+			grp := grps[0]
+
+			opts.ReservedCapacityGroup = &datatypes.Virtual_ReservedCapacityGroup{
+				Id: grp.Id,
+			}
+			capacityFlavor := *grp.Instances[0].BillingItem.Item.KeyName
+			primaryDisks := d.Get("reserved_instance_primary_disk").(int)
+
+			re := regexp.MustCompile("_\\d_YEAR_TERM")
+
+			split := re.Split(capacityFlavor, -1)
+
+			flavorComponenet := datatypes.Virtual_Guest_SupplementalCreateObjectOptions{
+				FlavorKeyName: sl.String(fmt.Sprintf("%sX%s", split[0], strconv.Itoa(primaryDisks))),
+			}
+			opts.SupplementalCreateObjectOptions = &flavorComponenet
+
+		}
+
 		if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
 			grpID := placementGroupID.(int)
 			service := services.GetVirtualPlacementGroupService(meta.(ClientSession).SoftLayerSession())
@@ -1096,6 +1201,9 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 			"notes,userData[value],tagReferences[id,tag[name]]," +
 			"datacenter[id,name,longName]," +
 			"sshKeys,status[keyName,name]," +
+			"reservedCapacityGroup[id,name]," +
+			"dedicatedHost[id,name]," +
+			"placementGroup[id,name]," +
 			"primaryNetworkComponent[networkVlan[id],subnets," +
 			"primaryVersion6IpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]," +
 			"primaryIpAddressRecord[subnet,guestNetworkComponentBinding[ipAddressId]]," +
@@ -1133,6 +1241,11 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	keyName, ok := sl.GrabOk(result, "BillingItem.OrderItem.Preset.KeyName")
 	if ok {
 		d.Set("flavor_key_name", keyName)
+		if result.ReservedCapacityGroup != nil {
+			diskSize := strings.Split(keyName.(string), "X")
+			size, _ := strconv.Atoi(diskSize[len(diskSize)-1])
+			d.Set("reserved_instance_primary_disk", size)
+		}
 	}
 
 	if result.BlockDeviceTemplateGroup != nil {
@@ -1155,6 +1268,10 @@ func resourceIBMComputeVmInstanceRead(d *schema.ResourceData, meta interface{}) 
 	if result.PlacementGroup != nil {
 		d.Set("placement_group_id", *result.PlacementGroup.Id)
 		d.Set("placement_group_name", *result.PlacementGroup.Name)
+	}
+	if result.ReservedCapacityGroup != nil {
+		d.Set("reserved_capacity_id", *result.ReservedCapacityGroup.Id)
+		d.Set("reserved_capacity_name", *result.ReservedCapacityGroup.Name)
 	}
 
 	d.Set(
@@ -2072,6 +2189,9 @@ func placeOrder(d *schema.ResourceData, meta interface{}, name string, publicVla
 		template.VirtualGuests[0] = opts
 		if opts.DedicatedHost != nil {
 			template.HostId = opts.DedicatedHost.Id
+		}
+		if opts.ReservedCapacityGroup != nil {
+			template.ReservedCapacityId = opts.ReservedCapacityGroup.Id
 		}
 		guestOrders = append(guestOrders, template)
 
