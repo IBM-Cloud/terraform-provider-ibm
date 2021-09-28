@@ -8,7 +8,7 @@ subcategory: "IAM Identity Services"
 
 # ibm_iam_trusted_profile
 
-Provides a read-only data source for iam_trusted_profile. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information about trusted profile, see https://cloud.ibm.com/apidocs/iam-identity-token-api#create-profile
+Retrieve information about IAM trusted profile as a read-only data source. For more information, about trusted profile, see [Create a trusted profile](https://cloud.ibm.com/apidocs/iam-identity-token-api#create-profile)
 
 ## Example usage
 
@@ -34,7 +34,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `created_at` - (Optional, String) If set contains a date time string of the creation date in ISO format.
 
-* `crn` - (Required, String) Cloud Resource Name of the item. For example: 'crn:v1:bluemix:public:iam-identity:us-south:a/myaccount::profile:Profile-94497d0d-2ac3-41bf-a993-a49d1b14627c'.
+* `crn` - (Required, String) Cloud Resource Name of the item. For example: `crn:v1:bluemix:public:iam-identity:us-south:a/myaccount::profile:Profile-94497d0d-2ac3-41bf-a993-a49d1b14627c`.
 
 * `description` - (Optional, String) The optional description of the trusted profile. The 'description' property is only available if a description was provided during a create of a trusted profile.
 

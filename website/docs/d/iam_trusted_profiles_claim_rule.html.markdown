@@ -8,7 +8,7 @@ subcategory: "IAM Identity Services"
 
 # ibm_iam_trusted_profile_claim_rule
 
-Provides a read-only data source for iam_trusted_profile_claim_rule. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information about trusted profile claim rules, see https://cloud.ibm.com/apidocs/iam-identity-token-api#create-claim-rule
+Retrieve information about IAM trusted profile claim rule as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information, about trusted profile claim rules, see [Create claim rule for a trusted profile](https://cloud.ibm.com/apidocs/iam-identity-token-api#create-claim-rule)
 
 ## Example usage
 
@@ -34,10 +34,10 @@ In addition to all argument references listed, you can access the following attr
 * `conditions` - (Required, List) Conditions of this claim rule.
     Nested scheme for **conditions**:
 	* `claim` - (Required, String) The claim to evaluate against.
-	* `operator` - (Required, String) The operation to perform on the claim. Supported values are EQUALS, NOT_EQUALS, EQUALS_IGNORE_CASE, NOT_EQUALS_IGNORE_CASE, CONTAINS, IN.
+	* `operator` - (Required, String) The operation to perform on the claim. Supported values are **EQUALS, NOT_EQUALS, EQUALS_IGNORE_CASE, NOT_EQUALS_IGNORE_CASE, CONTAINS, IN**.
 	* `value` - (Required, String) The stringified JSON value that the claim is compared to using the operator.
 
-* `cr_type` - (Optional, String) The compute resource type. The compute resource type not required if type is set as Profile-SAML. Valid values are VSI, IKS_SA, ROKS_SA
+* `cr_type` - (Optional, String) The compute resource type. The compute resource type not required if type is set as Profile-SAML. Valid values are **VSI, IKS_SA, ROKS_SA**
 
 * `created_at` - (Required, String) If set contains a date time string of the creation date in ISO format.
 
@@ -53,5 +53,5 @@ In addition to all argument references listed, you can access the following attr
 
 * `realm_name` - (Optional, String) The realm name of the Identity Provider(Idp) this claim rule applies to.
 
-* `type` - (Required, String) Type of the Calim rule. Supported values are 'Profile-SAML' or 'Profile-CR'.
+* `type` - (Required, String) Type of the Calim rule. Supported values are **Profile-SAML** or **Profile-CR**.
 
