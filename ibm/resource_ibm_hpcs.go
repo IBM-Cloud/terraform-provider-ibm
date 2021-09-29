@@ -709,6 +709,9 @@ func expandHSMConfig(d *schema.ResourceData, meta interface{}) tkesdk.HsmConfig 
 		}
 		hsmConfig.Admins = admins
 	}
+	if f, ok := d.GetOk("failover_units"); ok {
+		hsmConfig.FailoverUnits = f.(int)
+	}
 	return hsmConfig
 }
 func resourceIBMHPCSDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
