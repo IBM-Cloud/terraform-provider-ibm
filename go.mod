@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20211005115032-00ba77f0db57
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20210705152127-41ca00fc9a62
-	github.com/IBM-Cloud/power-go-client v1.0.74
+	github.com/IBM-Cloud/power-go-client v1.0.76
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.1.0
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
@@ -34,7 +34,6 @@ require (
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/strfmt v0.20.2
-	github.com/go-openapi/validate v0.20.1 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/go-cmp v0.5.6

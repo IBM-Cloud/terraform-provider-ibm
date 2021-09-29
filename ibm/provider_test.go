@@ -88,6 +88,8 @@ var iksSa string
 // For Power Colo
 
 var pi_image string
+var pi_image_bucket_name string
+var pi_image_bucket_file_name string
 var pi_key_name string
 var pi_volume_name string
 var pi_network_name string
@@ -461,6 +463,16 @@ func init() {
 	if pi_image == "" {
 		pi_image = "c93dc4c6-e85a-4da2-9ea6-f24576256122"
 		fmt.Println("[INFO] Set the environment variable PI_IMAGE for testing ibm_pi_image resource else it is set to default value '7200-03-03'")
+	}
+	pi_image_bucket_name = os.Getenv("PI_IMAGE_BUCKET_NAME")
+	if pi_image_bucket_name == "" {
+		pi_image_bucket_name = "images-public-bucket"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_NAME for testing ibm_pi_image resource else it is set to default value 'images-public-bucket'")
+	}
+	pi_image_bucket_file_name = os.Getenv("PI_IMAGE_BUCKET_FILE_NAME")
+	if pi_image_bucket_file_name == "" {
+		pi_image_bucket_file_name = "rhel.ova.gz"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_FILE_NAME for testing ibm_pi_image resource else it is set to default value 'rhel.ova.gz'")
 	}
 
 	pi_key_name = os.Getenv("PI_KEY_NAME")
