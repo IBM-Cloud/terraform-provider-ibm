@@ -68,6 +68,11 @@ func resourceIBMIamTrustedProfileLink() *schema.Resource {
 				ForceNew:    true,
 				Description: "Optional name of the Link.",
 			},
+			"link_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Unique identifier of this link.",
+			},
 			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -159,6 +164,9 @@ func resourceIBMIamTrustedProfileLinkRead(context context.Context, d *schema.Res
 	}
 	if err = d.Set("name", profileLink.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	}
+	if err = d.Set("link_id", profileLink.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
 	}
 	if err = d.Set("entity_tag", profileLink.EntityTag); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting entity_tag: %s", err))

@@ -35,11 +35,16 @@ func resourceIBMIamTrustedProfileClaimRule() *schema.Resource {
 				ForceNew:    true,
 				Description: "ID of the trusted profile to create a claim rule.",
 			},
-			"type": &schema.Schema{
+			"rule_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Unique identifier of this claim rule.",
+			},
+			iamClaimRuleType: &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Type of the calim rule, either 'Profile-SAML' or 'Profile-CR'.",
-				ValidateFunc: InvokeValidator("ibm_iam_trusted_profile_claim_rule", iamClaimRuleType),
+				ValidateFunc: validateAllowedStringValue([]string{"Profile-SAML", "Profile-CR"}),
 			},
 			"conditions": &schema.Schema{
 				Type:        schema.TypeList,
@@ -52,11 +57,11 @@ func resourceIBMIamTrustedProfileClaimRule() *schema.Resource {
 							Required:    true,
 							Description: "The claim to evaluate against.",
 						},
-						"operator": &schema.Schema{
+						iamClaimRuleOperator: &schema.Schema{
 							Type:         schema.TypeString,
 							Required:     true,
 							Description:  "The operation to perform on the claim. valid values are EQUALS, NOT_EQUALS, EQUALS_IGNORE_CASE, NOT_EQUALS_IGNORE_CASE, CONTAINS, IN.",
-							ValidateFunc: InvokeValidator("ibm_iam_trusted_profile_claim_rule", iamClaimRuleOperator),
+							ValidateFunc: validateAllowedStringValue([]string{"EQUALS", "NOT_EQUALS", "EQUALS_IGNORE_CASE", "NOT_EQUALS_IGNORE_CASE", "CONTAINS", "IN"}),
 						},
 						"value": &schema.Schema{
 							Type:        schema.TypeString,
@@ -221,7 +226,6 @@ func resourceIBMIamTrustedProfileClaimRuleRead(context context.Context, d *schem
 	if err = d.Set("profile_id", getClaimRuleOptions.ProfileID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting profile_id: %s", err))
 	}
-	// TODO: handle argument of type ResponseContext
 	if err = d.Set("type", profileClaimRule.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 	}
@@ -235,6 +239,9 @@ func resourceIBMIamTrustedProfileClaimRuleRead(context context.Context, d *schem
 	}
 	if err = d.Set("name", profileClaimRule.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	}
+	if err = d.Set("rule_id", profileClaimRule.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting rule_id: %s", err))
 	}
 	if err = d.Set("realm_name", profileClaimRule.RealmName); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting realm_name: %s", err))

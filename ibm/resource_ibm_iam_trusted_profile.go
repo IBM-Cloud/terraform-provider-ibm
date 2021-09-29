@@ -38,6 +38,11 @@ func resourceIBMIamTrustedProfile() *schema.Resource {
 				Optional:    true,
 				Description: "The optional description of the trusted profile. The 'description' property is only available if a description was provided during creation of trusted profile.",
 			},
+			"profile_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Unique identifier of this trusted profile.",
+			},
 			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -171,7 +176,7 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 	if err = d.Set("description", trustedProfile.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
-	if err = d.Set("id", trustedProfile.ID); err != nil {
+	if err = d.Set("profile_id", trustedProfile.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
 	}
 	if err = d.Set("entity_tag", trustedProfile.EntityTag); err != nil {
