@@ -1384,11 +1384,15 @@ func (c *Config) ClientSession() (interface{}, error) {
 		Authenticator: authenticator,
 	}
 	vpcclient, err := vpc.NewVpcV1(vpcoptions)
-	if err != nil {
-		session.vpcErr = fmt.Errorf("Error occured while configuring vpc service: %q", err)
-	}
-	if vpcclient != nil && vpcclient.Service != nil {
+	if err == nil {
+		// Enable retries for API calls
 		vpcclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		vpcclient.Service.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.vpcErr = fmt.Errorf("Error occured while configuring vpc service: %q", err)
 	}
 	session.vpcAPI = vpcclient
 
