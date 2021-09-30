@@ -2322,7 +2322,7 @@ func resourceIbmIsInstanceInstanceDiskToMap(instanceDisk vpcv1.InstanceDisk) map
 
 func suppressEnableCleanDelete(k, old, new string, d *schema.ResourceData) bool {
 	// During import
-	if old == "" && !d.IsNewResource() {
+	if old == "" && d.Id() != "" {
 		return true
 	}
 	return false
@@ -2330,7 +2330,7 @@ func suppressEnableCleanDelete(k, old, new string, d *schema.ResourceData) bool 
 
 func suppressUserData(k, old, new string, d *schema.ResourceData) bool {
 	// During import
-	if old == "" && !d.IsNewResource() {
+	if old == "" && d.Id() != "" {
 		return true
 	}
 	return false
