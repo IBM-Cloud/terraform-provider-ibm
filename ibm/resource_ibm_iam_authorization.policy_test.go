@@ -109,6 +109,25 @@ func TestAccIBMIAMAuthorizationPolicy_ResourceType(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMIAMAuthorizationPolicyDelegatorRole(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicyDelegatorRole(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "databases-for-redis"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "kms"),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckIBMIAMAuthorizationPolicyDestroy(s *terraform.State) error {
 	iamPolicyManagementClient, err := testAccProvider.Meta().(ClientSession).IAMPolicyManagementV1API()
@@ -211,6 +230,15 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceType() string {
 		source_resource_type = "load-balancer"
 		target_service_name  = "cloudcerts"
 		roles                = ["Reader"]
+	  }
+	`
+}
+func testAccCheckIBMIAMAuthorizationPolicyDelegatorRole() string {
+	return `
+	resource "ibm_iam_authorization_policy" "policy" {
+		source_service_name         = "databases-for-redis"
+		target_service_name         = "kms"
+		roles                       = ["Reader", "AuthorizationDelegator"]
 	  }
 	`
 }
