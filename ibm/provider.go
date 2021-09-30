@@ -162,6 +162,12 @@ func Provider() *schema.Provider {
 				Description:  "Visibility of the provider if it is private or public.",
 				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_VISIBILITY", "IBMCLOUD_VISIBILITY"}, "public"),
 			},
+			"endpoints_file_path": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Path of the file that contains private and public regional endpoints mapping",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_ENDPOINTS_FILE_PATH", "IBMCLOUD_ENDPOINTS_FILE_PATH"}, nil),
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -927,6 +933,10 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if v, ok := d.GetOk("visibility"); ok {
 		visibility = v.(string)
 	}
+	var file string
+	if f, ok := d.GetOk("endpoints_file_path"); ok {
+		file = f.(string)
+	}
 
 	resourceGrp := d.Get("resource_group").(string)
 	region := d.Get("region").(string)
@@ -961,6 +971,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		IAMRefreshToken:      iamRefreshToken,
 		Zone:                 zone,
 		Visibility:           visibility,
+		EndpointsFile:        file,
 		//PowerServiceInstance: powerServiceInstance,
 	}
 
