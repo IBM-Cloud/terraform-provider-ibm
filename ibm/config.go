@@ -54,6 +54,7 @@ import (
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	"github.com/IBM/platform-services-go-sdk/atrackerv1"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
+	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	iamaccessgroups "github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
@@ -258,6 +259,7 @@ type ClientSession interface {
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	FindingsV1() (*findingsv1.FindingsV1, error)
+	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
 }
 
 type clientSession struct {
@@ -512,6 +514,10 @@ type clientSession struct {
 	// Security and Compliance Center (SCC)
 	findingsClient    *findingsv1.FindingsV1
 	findingsClientErr error
+
+	// context Based Restrictions (CBR)
+	contextBasedRestrictionsClient    *contextbasedrestrictionsv1.ContextBasedRestrictionsV1
+	contextBasedRestrictionsClientErr error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -945,6 +951,11 @@ func (session clientSession) FindingsV1() (*findingsv1.FindingsV1, error) {
 		return session.findingsClient, session.findingsClientErr
 	}
 	return session.findingsClient.Clone(), nil
+}
+
+// Context Based Restrictions
+func (session clientSession) ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error) {
+	return session.contextBasedRestrictionsClient, session.contextBasedRestrictionsClientErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -2289,6 +2300,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.esSchemaRegistryErr = fmt.Errorf("Error occured while configuring Event Streams schema registry: %q", err)
+	}
+
+	// Construct an "options" struct for creating the service client.
+	contextBasedRestrictionsClientOptions := &contextbasedrestrictionsv1.Options{
+		Authenticator: authenticator,
+	}
+
+	// Construct the service client.
+	session.contextBasedRestrictionsClient, err = contextbasedrestrictionsv1.NewContextBasedRestrictionsV1(contextBasedRestrictionsClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.contextBasedRestrictionsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.contextBasedRestrictionsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.contextBasedRestrictionsClientErr = fmt.Errorf("Error occurred while configuring Context Based Restrictions service: %q", err)
 	}
 
 	return session, nil

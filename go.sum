@@ -71,6 +71,8 @@ github.com/IBM/go-sdk-core/v5 v5.5.1 h1:Hb4xB1BL8L6uCnskIqSCxF9wLfOmj4+sVzM5vFtu
 github.com/IBM/go-sdk-core/v5 v5.5.1/go.mod h1:Sn+z+qTDREQvCr+UFa22TqqfXNxx3o723y8GsfLV8e0=
 github.com/IBM/go-sdk-core/v5 v5.6.3 h1:xj44tzfBnjGJXKthMeaIn9wcYH+z4dXTuhntsBp+NdQ=
 github.com/IBM/go-sdk-core/v5 v5.6.3/go.mod h1:tt/B9rxLkRtglE7pvqLuYikgCXaZFL3btdruJaoUeek=
+github.com/IBM/go-sdk-core/v5 v5.6.5 h1:zXlt5x/udqZTD617SKUQzPDON4x5y0+22vNxsdCGYpg=
+github.com/IBM/go-sdk-core/v5 v5.6.5/go.mod h1:tt/B9rxLkRtglE7pvqLuYikgCXaZFL3btdruJaoUeek=
 github.com/IBM/ibm-cos-sdk-go v1.3.1/go.mod h1:YLBAYobEA8bD27P7xpMwSQeNQu6W3DNBtBComXrRzRY=
 github.com/IBM/ibm-cos-sdk-go v1.7.0 h1:3DZULY/D5WzjlIm+Iaj6h0surEjQs65EZk1YAe8+rj0=
 github.com/IBM/ibm-cos-sdk-go v1.7.0/go.mod h1:Oi8AC5WNDhmUJgbo1GL2FtBdo0nRgbzE/1HmCL1SERU=
@@ -82,8 +84,8 @@ github.com/IBM/keyprotect-go-client v0.7.0 h1:JstSHD14Lp6ihwQseyPuGcs1AjOBjAmcis
 github.com/IBM/keyprotect-go-client v0.7.0/go.mod h1:SVr2ylV/fhSQPDiUjWirN9fsyWFCNNbt8GIT8hPJVjE=
 github.com/IBM/networking-go-sdk v0.20.0 h1:DSqjcNNyWSOiett7aM0sTbPhNgcnLgC8cc+VQ5ZJFXA=
 github.com/IBM/networking-go-sdk v0.20.0/go.mod h1:nViqUm1Bv+ke8dyOhjQ6e+2U1XeqZX2y4bQbR8Od3Hc=
-github.com/IBM/platform-services-go-sdk v0.19.3 h1:lB8Xsnhwt82z2i2AI4GBb2Tdxn3TuveAsjwk7p6R/sY=
-github.com/IBM/platform-services-go-sdk v0.19.3/go.mod h1:E9HQN/MKeVqo3IRmfcCMw9/yq/QHmRvb/4FzxXQsfOk=
+github.com/IBM/platform-services-go-sdk v0.21.0 h1:dSeQAeUKmGmo07D8wlKgxFZmxoVEL7K0wSKdZ6CzjEI=
+github.com/IBM/platform-services-go-sdk v0.21.0/go.mod h1:+tbWaxjpyidPLB06h6onKiE2XnotcO7jaXhq6MNmPZU=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:NPUhkoOCRuv3OFWt19PmwjXGGTKlvmbuPg9fUrBUNe4=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5/go.mod h1:b07XHUVh0XYnQE9s2mqgjYST1h9buaQNqN4EcKhOsX0=
 github.com/IBM/scc-go-sdk v1.2.0 h1:fYh9Mviiul/96/fFSsLnsXD87smHrkmoOUq8FwYNsr8=
@@ -296,6 +298,8 @@ github.com/go-openapi/strfmt v0.19.11/go.mod h1:UukAYgTaQfqJuAFlNxxMWNvMYiwiXtLs
 github.com/go-openapi/strfmt v0.20.0/go.mod h1:UukAYgTaQfqJuAFlNxxMWNvMYiwiXtLsF2VwmoFtbtc=
 github.com/go-openapi/strfmt v0.20.1 h1:1VgxvehFne1mbChGeCmZ5pc0LxUf6yaACVSIYAR91Xc=
 github.com/go-openapi/strfmt v0.20.1/go.mod h1:43urheQI9dNtE5lTZQfuFJvjYJKPrxicATpEfZwHUNk=
+github.com/go-openapi/strfmt v0.20.2 h1:6XZL+fF4VZYFxKQGLAUB358hOrRh/wS51uWEtlONADE=
+github.com/go-openapi/strfmt v0.20.2/go.mod h1:43urheQI9dNtE5lTZQfuFJvjYJKPrxicATpEfZwHUNk=
 github.com/go-openapi/swag v0.17.0/go.mod h1:AByQ+nYG6gQg71GINrmuDXCPWdL640yX49/kXLo40Tg=
 github.com/go-openapi/swag v0.18.0/go.mod h1:AByQ+nYG6gQg71GINrmuDXCPWdL640yX49/kXLo40Tg=
 github.com/go-openapi/swag v0.19.2/go.mod h1:POnQmlKehdgb5mhVOsnJFsivZCEZ/vjK9gh66Z9tfKk=
@@ -415,6 +419,8 @@ github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+
 github.com/google/uuid v1.1.2/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.2.0 h1:qJYtXnJRWmpe7m/3XlyhrsLrEURqHRM2kxzoxXqyUDs=
 github.com/google/uuid v1.2.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
+github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
 github.com/googleapis/gax-go/v2 v2.0.5 h1:sjZBwGj9Jlw33ImPtvFviGYvseOtDM7hkSKB7+Tv3SM=
 github.com/googleapis/gax-go/v2 v2.0.5/go.mod h1:DWXyrwAJ9X0FpwwEdw+IPEYBICEFu5mhpdKc/us6bOk=
