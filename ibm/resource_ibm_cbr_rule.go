@@ -491,7 +491,7 @@ func resourceIBMCbrRuleDelete(context context.Context, d *schema.ResourceData, m
 
 	deleteRuleOptions.SetRuleID(d.Id())
 
-	deleteRuleOptions.SetIfMatch(d.Get("version").(string))
+	//deleteRuleOptions.SetIfMatch(d.Get("version").(string))
 
 	response, err := contextBasedRestrictionsClient.DeleteRuleWithContext(context, deleteRuleOptions)
 	if err != nil {
