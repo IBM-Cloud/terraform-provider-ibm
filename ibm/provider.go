@@ -465,6 +465,10 @@ func Provider() *schema.Provider {
 			"ibm_scc_posture_profiles":       dataSourceIBMSccPostureProfiles(),
 			"ibm_scc_posture_scan_summary":   dataSourceIBMSccPostureScansSummary(),
 			"ibm_scc_posture_scan_summaries": dataSourceIBMSccPostureScanSummaries(),
+
+			// Added for Context Based Restrictions
+			"ibm_cbr_zone": dataSourceIBMCbrZone(),
+			"ibm_cbr_rule": dataSourceIBMCbrRule(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -747,6 +751,10 @@ func Provider() *schema.Provider {
 
 			//Security and Compliance Center
 			"ibm_scc_si_note": resourceIBMSccSiNote(),
+
+			// Added for Context Based Restrictions
+			"ibm_cbr_zone": resourceIBMCbrZone(),
+			"ibm_cbr_rule": resourceIBMCbrRule(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -857,6 +865,8 @@ func Validator() ValidatorDict {
 				"ibm_atracker_route":                      resourceIBMAtrackerRouteValidator(),
 				"ibm_satellite_endpoint":                  resourceIbmSatelliteEndpointValidator(),
 				"ibm_scc_si_note":                         resourceIBMSccSiNoteValidator(),
+				"ibm_cbr_zone":                            resourceIBMCbrZoneValidator(),
+				"ibm_cbr_rule":                            resourceIBMCbrRuleValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),

@@ -13,13 +13,13 @@ require (
 	github.com/IBM/container-registry-go-sdk v0.0.13
 	github.com/IBM/eventstreams-go-sdk v1.2.0
 	github.com/IBM/go-sdk-core/v4 v4.10.0
-	github.com/IBM/go-sdk-core/v5 v5.6.3
+	github.com/IBM/go-sdk-core/v5 v5.6.5
 	github.com/IBM/ibm-cos-sdk-go v1.7.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20210723145459-a232c3f3ac91
 	github.com/IBM/keyprotect-go-client v0.7.0
 	github.com/IBM/networking-go-sdk v0.22.0
-	github.com/IBM/platform-services-go-sdk v0.19.3
+	github.com/IBM/platform-services-go-sdk v0.21.0
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk v1.2.0
 	github.com/IBM/schematics-go-sdk v0.0.2
@@ -38,7 +38,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.1+incompatible
 	github.com/google/go-cmp v0.5.6
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/google/uuid v1.2.0
+	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/hashicorp/go-version v1.3.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.7.0
