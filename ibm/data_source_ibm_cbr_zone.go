@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -255,7 +256,7 @@ func dataSourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func dataSourceZoneFlattenAddresses(result []contextbasedrestrictionsv1.Address) (addresses []map[string]interface{}) {
+func dataSourceZoneFlattenAddresses(result []contextbasedrestrictionsv1.AddressIntf) (addresses []map[string]interface{}) {
 	for _, addressesItem := range result {
 		addresses = append(addresses, dataSourceZoneAddressesToMap(addressesItem))
 	}
@@ -263,20 +264,30 @@ func dataSourceZoneFlattenAddresses(result []contextbasedrestrictionsv1.Address)
 	return addresses
 }
 
-func dataSourceZoneAddressesToMap(addressesItem contextbasedrestrictionsv1.Address) (addressesMap map[string]interface{}) {
-	addressesMap = map[string]interface{}{}
+func dataSourceZoneAddressesToMap(addressesItem contextbasedrestrictionsv1.AddressIntf) (addressesMap map[string]interface{}) {
+	//addressesMap = map[string]interface{}{}
+	//
+	//if addressesItem.Type != nil {
+	//	addressesMap["type"] = addressesItem.Type
+	//}
+	//if addressesItem.Value != nil {
+	//	addressesMap["value"] = addressesItem.Value
+	//}
+	//if addressesItem.Ref != nil {
+	//	refList := []map[string]interface{}{}
+	//	refMap := dataSourceZoneAddressesRefToMap(*addressesItem.Ref)
+	//	refList = append(refList, refMap)
+	//	addressesMap["ref"] = refList
+	//}
 
-	if addressesItem.Type != nil {
-		addressesMap["type"] = addressesItem.Type
+	buf, err := json.Marshal(addressesItem)
+
+	if err == nil {
+		err = json.Unmarshal(buf, &addressesMap)
 	}
-	if addressesItem.Value != nil {
-		addressesMap["value"] = addressesItem.Value
-	}
-	if addressesItem.Ref != nil {
-		refList := []map[string]interface{}{}
-		refMap := dataSourceZoneAddressesRefToMap(*addressesItem.Ref)
-		refList = append(refList, refMap)
-		addressesMap["ref"] = refList
+
+	if err != nil {
+		panic(err)
 	}
 
 	return addressesMap
@@ -301,7 +312,7 @@ func dataSourceZoneAddressesRefToMap(refItem contextbasedrestrictionsv1.ServiceR
 	return refMap
 }
 
-func dataSourceZoneFlattenExcluded(result []contextbasedrestrictionsv1.Address) (excluded []map[string]interface{}) {
+func dataSourceZoneFlattenExcluded(result []contextbasedrestrictionsv1.AddressIntf) (excluded []map[string]interface{}) {
 	for _, excludedItem := range result {
 		excluded = append(excluded, dataSourceZoneExcludedToMap(excludedItem))
 	}
@@ -309,20 +320,30 @@ func dataSourceZoneFlattenExcluded(result []contextbasedrestrictionsv1.Address) 
 	return excluded
 }
 
-func dataSourceZoneExcludedToMap(excludedItem contextbasedrestrictionsv1.Address) (excludedMap map[string]interface{}) {
-	excludedMap = map[string]interface{}{}
+func dataSourceZoneExcludedToMap(excludedItem contextbasedrestrictionsv1.AddressIntf) (excludedMap map[string]interface{}) {
+	//excludedMap = map[string]interface{}{}
+	//
+	//if excludedItem.Type != nil {
+	//	excludedMap["type"] = excludedItem.Type
+	//}
+	//if excludedItem.Value != nil {
+	//	excludedMap["value"] = excludedItem.Value
+	//}
+	//if excludedItem.Ref != nil {
+	//	refList := []map[string]interface{}{}
+	//	refMap := dataSourceZoneExcludedRefToMap(*excludedItem.Ref)
+	//	refList = append(refList, refMap)
+	//	excludedMap["ref"] = refList
+	//}
 
-	if excludedItem.Type != nil {
-		excludedMap["type"] = excludedItem.Type
+	buf, err := json.Marshal(excludedItem)
+
+	if err == nil {
+		err = json.Unmarshal(buf, &excludedMap)
 	}
-	if excludedItem.Value != nil {
-		excludedMap["value"] = excludedItem.Value
-	}
-	if excludedItem.Ref != nil {
-		refList := []map[string]interface{}{}
-		refMap := dataSourceZoneExcludedRefToMap(*excludedItem.Ref)
-		refList = append(refList, refMap)
-		excludedMap["ref"] = refList
+
+	if err != nil {
+		panic(err)
 	}
 
 	return excludedMap

@@ -289,7 +289,7 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 	return resourceIBMCbrZoneRead(context, d, meta)
 }
 
-func resourceIBMCbrZoneMapToAddress(addressMap map[string]interface{}) contextbasedrestrictionsv1.AddressIntf {
+func resourceIBMCbrZoneMapToAddress(addressMap map[string]interface{}) contextbasedrestrictionsv1.Address {
 	address := contextbasedrestrictionsv1.Address{}
 
 	if addressMap["type"] != nil {
@@ -302,7 +302,7 @@ func resourceIBMCbrZoneMapToAddress(addressMap map[string]interface{}) contextba
 		// TODO: handle Ref of type ServiceRefValue -- not primitive type, not list
 	}
 
-	return &address
+	return address
 }
 
 func resourceIBMCbrZoneMapToServiceRefValue(serviceRefValueMap map[string]interface{}) contextbasedrestrictionsv1.ServiceRefValue {
@@ -581,7 +581,7 @@ func resourceIBMCbrZoneDelete(context context.Context, d *schema.ResourceData, m
 
 	deleteZoneOptions.SetZoneID(d.Id())
 
-	deleteZoneOptions.SetIfMatch(d.Get("version").(string))
+	//deleteZoneOptions.SetIfMatch(d.Get("version").(string))
 
 	response, err := contextBasedRestrictionsClient.DeleteZoneWithContext(context, deleteZoneOptions)
 	if err != nil {
