@@ -130,8 +130,15 @@ func resourceIBMIamTrustedProfileCreate(context context.Context, d *schema.Resou
 
 	createProfileOptions := &iamidentityv1.CreateProfileOptions{}
 
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	accountID := userDetails.userAccount
+
 	createProfileOptions.SetName(d.Get("name").(string))
-	createProfileOptions.SetAccountID(d.Get("account_id").(string))
+	createProfileOptions.SetAccountID(accountID)
 	if _, ok := d.GetOk("description"); ok {
 		createProfileOptions.SetDescription(d.Get("description").(string))
 	}
@@ -163,8 +170,8 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetProfileWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetProfileWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] GetProfile failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetProfile failed %s\n%s", err, response))
 	}
 
 	if err = d.Set("name", trustedProfile.Name); err != nil {

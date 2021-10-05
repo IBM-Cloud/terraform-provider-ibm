@@ -82,7 +82,7 @@ func testAccCheckIBMIamTrustedProfileDataSourceConfigBasic(trustedProfileName st
 		}
 
 		data "ibm_iam_trusted_profile" "iam_trusted_profile" {
-			profile-id = "profile-id"
+			profile_id = "profile-id"
 		}
 	`, trustedProfileName, trustedProfileAccountID)
 }
@@ -96,7 +96,7 @@ func testAccCheckIBMIamTrustedProfileDataSourceConfig(trustedProfileName string,
 		}
 
 		data "ibm_iam_trusted_profile" "iam_trusted_profile" {
-			profile-id = "profile-id"
+			profile_id = "profile-id"
 		}
 	`, trustedProfileName, trustedProfileAccountID, trustedProfileDescription)
 }

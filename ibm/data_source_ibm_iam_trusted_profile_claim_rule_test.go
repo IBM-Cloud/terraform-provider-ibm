@@ -81,8 +81,8 @@ func testAccCheckIBMIamTrustedProfileClaimRuleDataSourceConfigBasic(profileClaim
 		}
 
 		data "ibm_iam_trusted_profile_claim_rule" "iam_trusted_profile_claim_rule" {
-			profile-id = ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule.profile_id
-			rule-id = "rule-id"
+			profile_id = ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule.profile_id
+			rule_id = "rule-id"
 		}
 	`, profileClaimRuleProfileID, profileClaimRuleType)
 }
@@ -117,8 +117,8 @@ func testAccCheckIBMIamTrustedProfileClaimRuleDataSourceConfig(profileClaimRuleP
 		}
 
 		data "ibm_iam_trusted_profile_claim_rule" "iam_trusted_profile_claim_rule" {
-			profile-id = ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule.profile_id
-			rule-id = "rule-id"
+			profile_id = ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule.profile_id
+			rule_id = "rule-id"
 		}
 	`, profileClaimRuleProfileID, profileClaimRuleType, profileClaimRuleName, profileClaimRuleRealmName, profileClaimRuleCrType, profileClaimRuleExpiration)
 }

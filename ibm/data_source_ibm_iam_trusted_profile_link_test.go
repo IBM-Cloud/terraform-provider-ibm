@@ -76,8 +76,8 @@ func testAccCheckIBMIamTrustedProfileLinkDataSourceConfigBasic(profileLinkProfil
 		}
 
 		data "ibm_iam_trusted_profile_link" "iam_trusted_profile_link" {
-			profile-id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.profile_id
-			link-id = "link-id"
+			profile_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.profile_id
+			link_id = "link-id"
 		}
 	`, profileLinkProfileID, profileLinkCrType)
 }
@@ -96,8 +96,8 @@ func testAccCheckIBMIamTrustedProfileLinkDataSourceConfig(profileLinkProfileID s
 		}
 
 		data "ibm_iam_trusted_profile_link" "iam_trusted_profile_link" {
-			profile-id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.profile_id
-			link-id = "link-id"
+			profile_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.profile_id
+			link_id = "link-id"
 		}
 	`, profileLinkProfileID, profileLinkCrType, profileLinkName)
 }

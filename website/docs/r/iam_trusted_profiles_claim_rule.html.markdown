@@ -41,22 +41,6 @@ Nested scheme for **conditions**:
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the `iam_trusted_profiles_claim_rule`.
-* `created_at` - (Required, String) If set contains a date time string of the creation date in ISO format.
-* `entity_tag` - (Required, String) The version of the claim rule.
-* `modified_at` - (Optional, String) If set contains a date time string of the last modification date in ISO format.
-
-## Import
-
-You can import the `ibm_iam_trusted_profiles_claim_rule` resource by using `id`.
-The `id` property can be formed from `profile-id`, and `rule-id` in the following format:
-
-```
-<profile-id>/<rule-id>
-```
-* `profile-id`: A string. ID of the trusted profile to create a claim rule.
-* `rule-id`: A string. ID of the claim rule to delete.
-
-# Syntax
-```
-$ terraform import ibm_iam_trusted_profiles_claim_rule.iam_trusted_profiles_claim_rule <profile-id>/<rule-id>
-```
+* `created_at` - (String) If set contains a date time string of the creation date in ISO format.
+* `entity_tag` - (String) The version of the claim rule.
+* `modified_at` - (String) If set contains a date time string of the last modification date in ISO format.
