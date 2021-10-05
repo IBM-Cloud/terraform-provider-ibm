@@ -92,10 +92,10 @@ func dataSourceIBMIamTrustedProfileLinkRead(context context.Context, d *schema.R
 	getLinkOptions.SetProfileID(d.Get("profile_id").(string))
 	getLinkOptions.SetLinkID(d.Get("link_id").(string))
 
-	profileLink, response, err := iamIdentityClient.GetLinkWithContext(context, getLinkOptions)
+	profileLink, response, err := iamIdentityClient.GetLink(getLinkOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetLinkWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetLinkWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] GetLink failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetLink failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *getLinkOptions.ProfileID, *getLinkOptions.LinkID))

@@ -50,7 +50,6 @@ func TestAccIBMIamTrustedProfileDataSourceAllArgs(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile.iam_trusted_profile", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile.iam_trusted_profile", "profile_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile.iam_trusted_profile", "context.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile.iam_trusted_profile", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile.iam_trusted_profile", "entity_tag"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile.iam_trusted_profile", "crn"),

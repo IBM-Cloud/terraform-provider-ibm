@@ -130,20 +130,14 @@ func dataSourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resou
 
 	getProfileOptions.SetProfileID(d.Get("profile_id").(string))
 
-	trustedProfile, response, err := iamIdentityClient.GetProfileWithContext(context, getProfileOptions)
+	trustedProfile, response, err := iamIdentityClient.GetProfile(getProfileOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetProfileWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetProfileWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] GetProfile failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetProfile failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s", *getProfileOptions.ProfileID))
+	d.SetId(*trustedProfile.ID)
 
-	if trustedProfile.Context != nil {
-		err = d.Set("context", dataSourceTrustedProfileFlattenContext(*trustedProfile.Context))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting context %s", err))
-		}
-	}
 	if err = d.Set("id", trustedProfile.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
 	}
@@ -186,54 +180,6 @@ func dataSourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resou
 	}
 
 	return nil
-}
-
-func dataSourceTrustedProfileFlattenContext(result iamidentityv1.ResponseContext) (finalList []map[string]interface{}) {
-	finalList = []map[string]interface{}{}
-	finalMap := dataSourceTrustedProfileContextToMap(result)
-	finalList = append(finalList, finalMap)
-
-	return finalList
-}
-
-func dataSourceTrustedProfileContextToMap(contextItem iamidentityv1.ResponseContext) (contextMap map[string]interface{}) {
-	contextMap = map[string]interface{}{}
-
-	if contextItem.TransactionID != nil {
-		contextMap["transaction_id"] = contextItem.TransactionID
-	}
-	if contextItem.Operation != nil {
-		contextMap["operation"] = contextItem.Operation
-	}
-	if contextItem.UserAgent != nil {
-		contextMap["user_agent"] = contextItem.UserAgent
-	}
-	if contextItem.URL != nil {
-		contextMap["url"] = contextItem.URL
-	}
-	if contextItem.InstanceID != nil {
-		contextMap["instance_id"] = contextItem.InstanceID
-	}
-	if contextItem.ThreadID != nil {
-		contextMap["thread_id"] = contextItem.ThreadID
-	}
-	if contextItem.Host != nil {
-		contextMap["host"] = contextItem.Host
-	}
-	if contextItem.StartTime != nil {
-		contextMap["start_time"] = contextItem.StartTime
-	}
-	if contextItem.EndTime != nil {
-		contextMap["end_time"] = contextItem.EndTime
-	}
-	if contextItem.ElapsedTime != nil {
-		contextMap["elapsed_time"] = contextItem.ElapsedTime
-	}
-	if contextItem.ClusterName != nil {
-		contextMap["cluster_name"] = contextItem.ClusterName
-	}
-
-	return contextMap
 }
 
 func dataSourceTrustedProfileFlattenHistory(result []iamidentityv1.EnityHistoryRecord) (history []map[string]interface{}) {
