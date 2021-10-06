@@ -30,7 +30,7 @@ func resourceIBMIamTrustedProfile() *schema.Resource {
 			},
 			"account_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
+				Computed:    true,
 				Description: "The account ID of the trusted profile.",
 			},
 			"description": &schema.Schema{

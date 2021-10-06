@@ -6,7 +6,6 @@ provider "ibm" {
 resource "ibm_iam_trusted_profile" "iam_trusted_profile_instance" {
   name = "name"
   description = "description"
-  account_id = "account_id"
 }
 
 // Create iam_trusted_profile data source

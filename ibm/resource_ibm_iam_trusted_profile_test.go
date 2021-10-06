@@ -17,7 +17,6 @@ import (
 func TestAccIBMIamTrustedProfileBasic(t *testing.T) {
 	var conf iamidentityv1.TrustedProfile
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	accountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -26,18 +25,16 @@ func TestAccIBMIamTrustedProfileBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIamTrustedProfileDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileConfigBasic(name, accountID),
+				Config: testAccCheckIBMIamTrustedProfileConfigBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIamTrustedProfileExists("ibm_iam_trusted_profile.iam_trusted_profile", conf),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "account_id", accountID),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileConfigBasic(nameUpdate, accountID),
+				Config: testAccCheckIBMIamTrustedProfileConfigBasic(nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "account_id", accountID),
 				),
 			},
 		},
@@ -47,7 +44,6 @@ func TestAccIBMIamTrustedProfileBasic(t *testing.T) {
 func TestAccIBMIamTrustedProfileAllArgs(t *testing.T) {
 	var conf iamidentityv1.TrustedProfile
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	accountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
@@ -58,19 +54,17 @@ func TestAccIBMIamTrustedProfileAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIamTrustedProfileDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileConfig(name, accountID, description),
+				Config: testAccCheckIBMIamTrustedProfileConfig(name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIamTrustedProfileExists("ibm_iam_trusted_profile.iam_trusted_profile", conf),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "account_id", accountID),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "description", description),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileConfig(nameUpdate, accountID, descriptionUpdate),
+				Config: testAccCheckIBMIamTrustedProfileConfig(nameUpdate, descriptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "account_id", accountID),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "description", descriptionUpdate),
 				),
 			},
@@ -83,25 +77,23 @@ func TestAccIBMIamTrustedProfileAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIamTrustedProfileConfigBasic(name string, accountID string) string {
+func testAccCheckIBMIamTrustedProfileConfigBasic(name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
 			name = "%s"
-			account_id = "%s"
 		}
-	`, name, accountID)
+	`, name)
 }
 
-func testAccCheckIBMIamTrustedProfileConfig(name string, accountID string, description string) string {
+func testAccCheckIBMIamTrustedProfileConfig(name string, description string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
 			name = "%s"
-			account_id = "%s"
 			description = "%s"
 		}
-	`, name, accountID, description)
+	`, name, description)
 }
 
 func testAccCheckIBMIamTrustedProfileExists(n string, obj iamidentityv1.TrustedProfile) resource.TestCheckFunc {
