@@ -835,6 +835,7 @@ func Validator() ValidatorDict {
 				"ibm_is_lb_listener_policy_rule":          resourceIBMISLBListenerPolicyRuleValidator(),
 				"ibm_is_lb_listener_policy":               resourceIBMISLBListenerPolicyValidator(),
 				"ibm_is_lb_listener":                      resourceIBMISLBListenerValidator(),
+				"ibm_is_lb_pool_member":                   resourceIBMISLBPoolMemberValidator(),
 				"ibm_is_lb_pool":                          resourceIBMISLBPoolValidator(),
 				"ibm_is_lb":                               resourceIBMISLBValidator(),
 				"ibm_is_network_acl":                      resourceIBMISNetworkACLValidator(),

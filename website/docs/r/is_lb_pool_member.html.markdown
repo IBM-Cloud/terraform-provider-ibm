@@ -55,7 +55,7 @@ Review the argument references that you can specify for your resource.
 - `port`- (Required, Integer) The port number of the application running in the server member.
 - `target_address` - (Required, String) The IP address of the pool member.
 - `target_id` - (Required, String) The unique identifier for the virtual server instance pool member. Required for network load balancer.
-- `weight` - (Optional, Integer) Weight of the server member. This option takes effect only when the load-balancing algorithm of its belonging pool is `weighted_round_robin`.
+- `weight` - (Optional, Integer) Weight of the server member. This option takes effect only when the load-balancing algorithm of its belonging pool is `weighted_round_robin`, Minimum allowed weight is `0` and Maximum allowed weight is `100`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
