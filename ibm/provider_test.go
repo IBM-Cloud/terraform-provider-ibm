@@ -13,6 +13,7 @@ import (
 )
 
 var appIDTenantID string
+var appIDTestUserEmail string
 var cfOrganization string
 var cfSpace string
 var cisDomainStatic string
@@ -120,6 +121,11 @@ func init() {
 	appIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
 	if appIDTenantID == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_APPID_TENANT_ID for testing AppID resources, AppID tests will fail if this is not set")
+	}
+
+	appIDTestUserEmail = os.Getenv("IBM_APPID_TEST_USER_EMAIL")
+	if appIDTestUserEmail == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_APPID_TEST_USER_EMAIL for testing AppID user resources, the tests will fail if this is not set")
 	}
 
 	cfOrganization = os.Getenv("IBM_ORG")
@@ -363,7 +369,7 @@ func init() {
 	isImage = os.Getenv("IS_IMAGE")
 	if isImage == "" {
 		//isImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
-		isImage = "r134-9573cb89-984e-45a4-bfc5-df611bbb8e7d" // for next gen infrastructure
+		isImage = "r006-13938c0a-89e4-4370-b59b-55cd1402562d" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00'")
 	}
 

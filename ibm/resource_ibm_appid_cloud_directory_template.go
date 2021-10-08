@@ -98,7 +98,7 @@ func resourceIBMAppIDCloudDirectoryTemplateRead(ctx context.Context, d *schema.R
 			return nil
 		}
 
-		return diag.Errorf("Error loading AppID Cloud Directory template: %s", err)
+		return diag.Errorf("Error loading AppID Cloud Directory template: %s\n%s", err, resp)
 	}
 
 	if template.Subject != nil {
@@ -151,10 +151,10 @@ func resourceIBMAppIDCloudDirectoryTemplateCreate(ctx context.Context, d *schema
 		input.PlainTextBody = helpers.String(textBody.(string))
 	}
 
-	_, _, err = appIDClient.UpdateTemplateWithContext(ctx, input)
+	_, resp, err := appIDClient.UpdateTemplateWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error updating AppID Cloud Directory email template: %s", err)
+		return diag.Errorf("Error updating AppID Cloud Directory email template: %s\n%s", err, resp)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", tenantID, templateName, language))
@@ -173,14 +173,14 @@ func resourceIBMAppIDCloudDirectoryTemplateDelete(ctx context.Context, d *schema
 	templateName := d.Get("template_name").(string)
 	language := d.Get("language").(string)
 
-	_, err = appIDClient.DeleteTemplateWithContext(ctx, &appid.DeleteTemplateOptions{
+	resp, err := appIDClient.DeleteTemplateWithContext(ctx, &appid.DeleteTemplateOptions{
 		TenantID:     &tenantID,
 		TemplateName: &templateName,
 		Language:     &language,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error deleting AppID Cloud Directory email template: %s", err)
+		return diag.Errorf("Error deleting AppID Cloud Directory email template: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

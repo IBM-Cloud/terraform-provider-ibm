@@ -66,13 +66,13 @@ func dataSourceIBMAppIDApplicationRead(ctx context.Context, d *schema.ResourceDa
 	tenantID := d.Get("tenant_id").(string)
 	clientID := d.Get("client_id").(string)
 
-	app, _, err := appIDClient.GetApplicationWithContext(ctx, &appid.GetApplicationOptions{
+	app, resp, err := appIDClient.GetApplicationWithContext(ctx, &appid.GetApplicationOptions{
 		TenantID: &tenantID,
 		ClientID: &clientID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error getting AppID application: %s", err)
+		return diag.Errorf("Error getting AppID application: %s\n%s", err, resp)
 	}
 
 	if app.Name != nil {

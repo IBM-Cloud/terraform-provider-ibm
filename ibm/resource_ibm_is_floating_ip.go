@@ -61,15 +61,16 @@ func resourceIBMISFloatingIP() *schema.Resource {
 							return nil
 						}
 						old, new := diff.GetChange(isFloatingIPTarget)
-						sess, err := vpcClient(v)
-						if err != nil {
-							return err
-						}
-						if checkIfZoneChanged(old.(string), new.(string), sess) {
-							diff.ForceNew(isFloatingIPTarget)
+						if old != "" || new != "" {
+							sess, err := vpcClient(v)
+							if err != nil {
+								return err
+							}
+							if checkIfZoneChanged(old.(string), new.(string), diff.Get(isFloatingIPZone).(string), sess) {
+								diff.ForceNew(isFloatingIPTarget)
+							}
 						}
 					}
-
 					return nil
 				},
 			),
@@ -108,6 +109,7 @@ func resourceIBMISFloatingIP() *schema.Resource {
 			isFloatingIPTarget: {
 				Type:          schema.TypeString,
 				Optional:      true,
+				Computed:      true,
 				ConflictsWith: []string{isFloatingIPZone},
 				Description:   "Target info",
 			},
@@ -322,8 +324,8 @@ func fipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(ResourceCRN, *floatingip.CRN)
 	d.Set(ResourceStatus, *floatingip.Status)
 	if floatingip.ResourceGroup != nil {
-		d.Set(ResourceGroupName, *floatingip.ResourceGroup.Name)
-		d.Set(isFloatingIPResourceGroup, *floatingip.ResourceGroup.ID)
+		d.Set(ResourceGroupName, floatingip.ResourceGroup.Name)
+		d.Set(isFloatingIPResourceGroup, floatingip.ResourceGroup.ID)
 	}
 	return nil
 }
@@ -524,7 +526,7 @@ func isInstanceFloatingIPRefreshFunc(floatingipC *vpcv1.VpcV1, id string) resour
 	}
 }
 
-func checkIfZoneChanged(oldNic, newNic string, floatingipC *vpcv1.VpcV1) bool {
+func checkIfZoneChanged(oldNic, newNic, currentZone string, floatingipC *vpcv1.VpcV1) bool {
 	var oldZone, newZone string
 	listInstancesOptions := &vpcv1.ListInstancesOptions{}
 	start := ""
@@ -556,6 +558,9 @@ func checkIfZoneChanged(oldNic, newNic string, floatingipC *vpcv1.VpcV1) bool {
 		}
 	}
 	if newZone != oldZone {
+		if oldZone == "" && newZone == currentZone {
+			return false
+		}
 		return true
 	}
 	return false

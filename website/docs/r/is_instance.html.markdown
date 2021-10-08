@@ -337,7 +337,6 @@ In addition to all argument reference list, you can access the following attribu
 - `gpu`- (List of Strings) A list of GPUs that are assigned to the instance.
 
   Nested scheme for `gpu`:
-  - `cores`- (Integer) The number of cores of the GPU.
   - `count`- (Integer) The count of the GPU.
   - `manufacture` - (String) The manufacturer of the GPU.
   - `memory`- (Integer) The amount of memory of the GPU in gigabytes.

@@ -81,7 +81,7 @@ func resourceIBMAppIDIDPGoogleRead(ctx context.Context, d *schema.ResourceData, 
 			return nil
 		}
 
-		return diag.Errorf("Error loading AppID Google IDP: %s", err)
+		return diag.Errorf("Error loading AppID Google IDP: %s\n%s", err, resp)
 	}
 
 	d.Set("is_active", *gg.IsActive)
@@ -122,10 +122,10 @@ func resourceIBMAppIDIDPGoogleCreate(ctx context.Context, d *schema.ResourceData
 		config.IDP.Config = expandAppIDGoogleIDPConfig(d.Get("config").([]interface{}))
 	}
 
-	_, _, err = appIDClient.SetGoogleIDPWithContext(ctx, config)
+	_, resp, err := appIDClient.SetGoogleIDPWithContext(ctx, config)
 
 	if err != nil {
-		return diag.Errorf("Error applying AppID Google IDP configuration: %s", err)
+		return diag.Errorf("Error applying AppID Google IDP configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId(tenantID)
@@ -143,10 +143,10 @@ func resourceIBMAppIDIDPGoogleDelete(ctx context.Context, d *schema.ResourceData
 	tenantID := d.Get("tenant_id").(string)
 	config := appIDGoogleIDPConfigDefaults(tenantID)
 
-	_, _, err = appIDClient.SetGoogleIDPWithContext(ctx, config)
+	_, resp, err := appIDClient.SetGoogleIDPWithContext(ctx, config)
 
 	if err != nil {
-		return diag.Errorf("Error resetting AppID Google IDP configuration: %s", err)
+		return diag.Errorf("Error resetting AppID Google IDP configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

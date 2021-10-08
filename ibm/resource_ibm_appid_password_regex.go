@@ -66,7 +66,7 @@ func resourceIBMAppIDPasswordRegexRead(ctx context.Context, d *schema.ResourceDa
 			return nil
 		}
 
-		return diag.Errorf("Error loading AppID Cloud Directory password regex: %s", err)
+		return diag.Errorf("Error loading AppID Cloud Directory password regex: %s\n%s", err, resp)
 	}
 
 	if pw.Base64EncodedRegex != nil {
@@ -105,10 +105,10 @@ func resourceIBMAppIDPasswordRegexCreate(ctx context.Context, d *schema.Resource
 		input.ErrorMessage = helpers.String(msg.(string))
 	}
 
-	_, _, err = appIDClient.SetCloudDirectoryPasswordRegexWithContext(ctx, input)
+	_, resp, err := appIDClient.SetCloudDirectoryPasswordRegexWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error setting AppID Cloud Directory password regex: %s", err)
+		return diag.Errorf("Error setting AppID Cloud Directory password regex: %s\n%s", err, resp)
 	}
 
 	d.SetId(tenantID)
@@ -134,10 +134,10 @@ func resourceIBMAppIDPasswordRegexDelete(ctx context.Context, d *schema.Resource
 		Base64EncodedRegex: helpers.String(""),
 	}
 
-	_, _, err = appIDClient.SetCloudDirectoryPasswordRegexWithContext(ctx, input)
+	_, resp, err := appIDClient.SetCloudDirectoryPasswordRegexWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error resetting AppID Cloud Directory password regex: %s", err)
+		return diag.Errorf("Error resetting AppID Cloud Directory password regex: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

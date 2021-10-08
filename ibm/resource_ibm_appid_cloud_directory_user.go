@@ -16,6 +16,7 @@ import (
 
 func resourceIBMAppIDCloudDirectoryUser() *schema.Resource {
 	return &schema.Resource{
+		Description:   "Manage AppID Cloud Directory user",
 		CreateContext: resourceIBMAppIDCloudDirectoryUserCreate,
 		ReadContext:   resourceIBMAppIDCloudDirectoryUserRead,
 		DeleteContext: resourceIBMAppIDCloudDirectoryUserDelete,
@@ -36,6 +37,13 @@ func resourceIBMAppIDCloudDirectoryUser() *schema.Resource {
 				Optional:    true,
 				Default:     true,
 			},
+			"create_profile": {
+				Description: "A boolean indication if a profile should be created for the Cloud Directory user",
+				Type:        schema.TypeBool,
+				ForceNew:    true,
+				Optional:    true,
+				Default:     true,
+			},
 			"locked_until": {
 				Description: "Integer (epoch time in milliseconds), determines till when the user account will be locked",
 				Type:        schema.TypeInt,
@@ -46,10 +54,16 @@ func resourceIBMAppIDCloudDirectoryUser() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"subject": {
+				Description: "The user's identifier ('subject' in identity token)",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"display_name": {
 				Description: "Cloud Directory user display name",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 			},
 			"user_name": {
 				Description: "Optional username",
@@ -178,6 +192,19 @@ func resourceIBMAppIDCloudDirectoryUserRead(ctx context.Context, d *schema.Resou
 		}
 	}
 
+	attr, resp, err := appIDClient.CloudDirectoryGetUserinfoWithContext(ctx, &appid.CloudDirectoryGetUserinfoOptions{
+		TenantID: &tenantID,
+		UserID:   &userID,
+	})
+
+	if err != nil {
+		return diag.Errorf("Error getting AppID user attributes: %s\n%s", err, resp)
+	}
+
+	if attr.Sub != nil {
+		d.Set("subject", *attr.Sub)
+	}
+
 	return nil
 }
 
@@ -192,14 +219,16 @@ func resourceIBMAppIDCloudDirectoryUserCreate(ctx context.Context, d *schema.Res
 	password := d.Get("password").(string)
 	status := d.Get("status").(string)
 	active := d.Get("active").(bool)
+	createProfile := d.Get("create_profile").(bool)
 	emails := d.Get("email").(*schema.Set)
 
-	input := &appid.CreateCloudDirectoryUserOptions{
-		TenantID: &tenantID,
-		Active:   &active,
-		Emails:   expandAppIDUserEmails(emails.List()),
-		Password: &password,
-		Status:   &status,
+	input := &appid.StartSignUpOptions{
+		TenantID:            &tenantID,
+		Active:              &active,
+		Emails:              expandAppIDUserEmails(emails.List()),
+		Password:            &password,
+		Status:              &status,
+		ShouldCreateProfile: &createProfile,
 	}
 
 	if displayName, ok := d.GetOk("display_name"); ok {
@@ -210,10 +239,10 @@ func resourceIBMAppIDCloudDirectoryUserCreate(ctx context.Context, d *schema.Res
 		input.LockedUntil = core.Int64Ptr(int64(lockedUntil.(int)))
 	}
 
-	user, _, err := appIDClient.CreateCloudDirectoryUserWithContext(ctx, input)
+	user, resp, err := appIDClient.StartSignUpWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error creating AppID Cloud Directory user: %s", err)
+		return diag.Errorf("Error creating AppID Cloud Directory user: %s\n%s", err, resp)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", tenantID, *user.ID))
@@ -230,13 +259,13 @@ func resourceIBMAppIDCloudDirectoryUserDelete(ctx context.Context, d *schema.Res
 	tenantID := d.Get("tenant_id").(string)
 	userID := d.Get("user_id").(string)
 
-	_, err = appIDClient.DeleteCloudDirectoryUserWithContext(ctx, &appid.DeleteCloudDirectoryUserOptions{
+	resp, err := appIDClient.DeleteCloudDirectoryUserWithContext(ctx, &appid.DeleteCloudDirectoryUserOptions{
 		TenantID: &tenantID,
 		UserID:   &userID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error deleting AppID Cloud Directory user: %s", err)
+		return diag.Errorf("Error deleting AppID Cloud Directory user: %s\n%s", err, resp)
 	}
 
 	d.SetId("")
@@ -274,23 +303,23 @@ func resourceIBMAppIDCloudDirectoryUserUpdate(ctx context.Context, d *schema.Res
 		input.LockedUntil = core.Int64Ptr(int64(lockedUntil.(int)))
 	}
 
-	_, _, err = appIDClient.UpdateCloudDirectoryUserWithContext(ctx, input)
+	_, resp, err := appIDClient.UpdateCloudDirectoryUserWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error updating AppID Cloud Directory user: %s", err)
+		return diag.Errorf("Error updating AppID Cloud Directory user: %s\n%s", err, resp)
 	}
 
 	if d.HasChanges("password") {
 		password = d.Get("password").(string)
 
-		_, _, err = appIDClient.ChangePasswordWithContext(ctx, &appid.ChangePasswordOptions{
+		_, resp, err = appIDClient.ChangePasswordWithContext(ctx, &appid.ChangePasswordOptions{
 			TenantID:    &tenantID,
 			UUID:        &userID,
 			NewPassword: &password,
 		})
 
 		if err != nil {
-			return diag.Errorf("Error updating AppID Cloud Directory user: %s", err)
+			return diag.Errorf("Error updating AppID Cloud Directory user: %s\n%s", err, resp)
 		}
 	}
 

@@ -44,13 +44,13 @@ func dataSourceIBMAppIDActionURLRead(ctx context.Context, d *schema.ResourceData
 	tenantID := d.Get("tenant_id").(string)
 	action := d.Get("action").(string)
 
-	resp, _, err := appIDClient.GetCloudDirectoryActionURLWithContext(ctx, &appid.GetCloudDirectoryActionURLOptions{
+	resp, rawResp, err := appIDClient.GetCloudDirectoryActionURLWithContext(ctx, &appid.GetCloudDirectoryActionURLOptions{
 		TenantID: &tenantID,
 		Action:   &action,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error getting AppID actionURL: %s", err)
+		return diag.Errorf("Error getting AppID actionURL: %s\n%s", err, rawResp)
 	}
 
 	if resp.ActionURL != nil {

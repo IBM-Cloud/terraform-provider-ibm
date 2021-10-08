@@ -74,12 +74,12 @@ func dataSourceIBMAppIDRolesRead(ctx context.Context, d *schema.ResourceData, me
 
 	tenantID := d.Get("tenant_id").(string)
 
-	roles, _, err := appIDClient.ListRolesWithContext(ctx, &appid.ListRolesOptions{
+	roles, resp, err := appIDClient.ListRolesWithContext(ctx, &appid.ListRolesOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error listing AppID roles: %s", err)
+		return diag.Errorf("Error listing AppID roles: %s\n%s", err, resp)
 	}
 
 	roleList := make([]interface{}, len(roles.Roles))

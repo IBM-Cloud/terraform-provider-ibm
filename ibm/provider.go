@@ -162,6 +162,12 @@ func Provider() *schema.Provider {
 				Description:  "Visibility of the provider if it is private or public.",
 				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_VISIBILITY", "IBMCLOUD_VISIBILITY"}, "public"),
 			},
+			"endpoints_file_path": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Path of the file that contains private and public regional endpoints mapping",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_ENDPOINTS_FILE_PATH", "IBMCLOUD_ENDPOINTS_FILE_PATH"}, nil),
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -198,6 +204,7 @@ func Provider() *schema.Provider {
 			"ibm_appid_roles":                    dataSourceIBMAppIDRoles(),
 			"ibm_appid_theme_color":              dataSourceIBMAppIDThemeColor(),
 			"ibm_appid_theme_text":               dataSourceIBMAppIDThemeText(),
+			"ibm_appid_user_roles":               dataSourceIBMAppIDUserRoles(),
 
 			"ibm_function_action":                    dataSourceIBMFunctionAction(),
 			"ibm_function_package":                   dataSourceIBMFunctionPackage(),
@@ -233,6 +240,7 @@ func Provider() *schema.Provider {
 			"ibm_compute_bare_metal":                 dataSourceIBMComputeBareMetal(),
 			"ibm_compute_image_template":             dataSourceIBMComputeImageTemplate(),
 			"ibm_compute_placement_group":            dataSourceIBMComputePlacementGroup(),
+			"ibm_compute_reserved_capacity":          dataSourceIBMComputeReservedCapacity(),
 			"ibm_compute_ssh_key":                    dataSourceIBMComputeSSHKey(),
 			"ibm_compute_vm_instance":                dataSourceIBMComputeVmInstance(),
 			"ibm_container_addons":                   datasourceIBMContainerAddOns(),
@@ -500,6 +508,7 @@ func Provider() *schema.Provider {
 			"ibm_appid_role":                     resourceIBMAppIDRole(),
 			"ibm_appid_theme_color":              resourceIBMAppIDThemeColor(),
 			"ibm_appid_theme_text":               resourceIBMAppIDThemeText(),
+			"ibm_appid_user_roles":               resourceIBMAppIDUserRoles(),
 
 			"ibm_function_action":                                resourceIBMFunctionAction(),
 			"ibm_function_package":                               resourceIBMFunctionPackage(),
@@ -542,6 +551,7 @@ func Provider() *schema.Provider {
 			"ibm_compute_dedicated_host":                         resourceIBMComputeDedicatedHost(),
 			"ibm_compute_monitor":                                resourceIBMComputeMonitor(),
 			"ibm_compute_placement_group":                        resourceIBMComputePlacementGroup(),
+			"ibm_compute_reserved_capacity":                      resourceIBMComputeReservedCapacity(),
 			"ibm_compute_provisioning_hook":                      resourceIBMComputeProvisioningHook(),
 			"ibm_compute_ssh_key":                                resourceIBMComputeSSHKey(),
 			"ibm_compute_ssl_certificate":                        resourceIBMComputeSSLCertificate(),
@@ -931,6 +941,10 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if v, ok := d.GetOk("visibility"); ok {
 		visibility = v.(string)
 	}
+	var file string
+	if f, ok := d.GetOk("endpoints_file_path"); ok {
+		file = f.(string)
+	}
 
 	resourceGrp := d.Get("resource_group").(string)
 	region := d.Get("region").(string)
@@ -965,6 +979,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		IAMRefreshToken:      iamRefreshToken,
 		Zone:                 zone,
 		Visibility:           visibility,
+		EndpointsFile:        file,
 		//PowerServiceInstance: powerServiceInstance,
 	}
 

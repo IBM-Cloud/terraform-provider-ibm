@@ -34,12 +34,12 @@ func dataSourceIBMAppIDThemeColorRead(ctx context.Context, d *schema.ResourceDat
 
 	tenantID := d.Get("tenant_id").(string)
 
-	colors, _, err := appIDClient.GetThemeColorWithContext(ctx, &appid.GetThemeColorOptions{
+	colors, resp, err := appIDClient.GetThemeColorWithContext(ctx, &appid.GetThemeColorOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error getting AppID theme colors: %s", err)
+		return diag.Errorf("Error getting AppID theme colors: %s\n%s", err, resp)
 	}
 
 	if colors.HeaderColor != nil {

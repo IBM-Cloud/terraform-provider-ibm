@@ -55,7 +55,7 @@ func resourceIBMAppIDThemeTextRead(ctx context.Context, d *schema.ResourceData, 
 			return nil
 		}
 
-		return diag.Errorf("Error getting AppID theme text: %s", err)
+		return diag.Errorf("Error getting AppID theme text: %s\n%s", err, resp)
 	}
 
 	if text.TabTitle != nil {
@@ -86,10 +86,10 @@ func resourceIBMAppIDThemeTextCreate(ctx context.Context, d *schema.ResourceData
 		Footnote: helpers.String(d.Get("footnote").(string)),
 	}
 
-	_, err = appIDClient.PostThemeTextWithContext(ctx, input)
+	resp, err := appIDClient.PostThemeTextWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error setting AppID theme text: %s", err)
+		return diag.Errorf("Error setting AppID theme text: %s\n%s", err, resp)
 	}
 
 	d.SetId(tenantID)
@@ -116,10 +116,10 @@ func resourceIBMAppIDThemeTextDelete(ctx context.Context, d *schema.ResourceData
 		Footnote: helpers.String("Powered by App ID"),
 	}
 
-	_, err = appIDClient.PostThemeTextWithContext(ctx, input)
+	resp, err := appIDClient.PostThemeTextWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error resetting AppID theme text: %s", err)
+		return diag.Errorf("Error resetting AppID theme text: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

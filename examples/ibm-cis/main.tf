@@ -29,6 +29,7 @@ resource "ibm_cis_domain_settings" "web_domain" {
   waf             = "on"
   ssl             = "full"
   min_tls_version = "1.2"
+  brotli					= "on"
 }
 
 #Adding valid Domain for IBM CIS instance

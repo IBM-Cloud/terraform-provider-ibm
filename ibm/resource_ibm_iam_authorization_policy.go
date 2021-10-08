@@ -10,6 +10,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 
+	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -322,25 +323,18 @@ func resourceIBMIAMAuthorizationPolicyExists(d *schema.ResourceData, meta interf
 
 func getAuthorizationRolesByName(roleNames []string, sourceServiceName string, targetServiceName string, meta interface{}) ([]iampolicymanagementv1.PolicyRole, error) {
 
-	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
+	iamClient, err := meta.(ClientSession).IAMAPI()
 	if err != nil {
 		return []iampolicymanagementv1.PolicyRole{}, err
 	}
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	iamRepo := iamClient.ServiceRoles()
+	roles, err := iamRepo.ListAuthorizationRoles(sourceServiceName, targetServiceName)
+	convertedRoles := convertRoleModels(roles)
 	if err != nil {
 		return []iampolicymanagementv1.PolicyRole{}, err
 	}
-	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
-		AccountID:   &userDetails.userAccount,
-		ServiceName: &targetServiceName,
-	}
-	roleList, resp, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
-	if err != nil || roleList == nil {
-		return []iampolicymanagementv1.PolicyRole{}, fmt.Errorf("[ERROR] Error in listing roles %s, %s", err, resp)
-	}
-	serviceRoles := roleList.ServiceRoles
-	convertedRoles := convertRoleModels(serviceRoles)
-	filteredRoles, err := getRolesFromRoleNames(roleNames, convertedRoles)
+	filteredRoles := []iampolicymanagementv1.PolicyRole{}
+	filteredRoles, err = getRolesFromRoleNames(roleNames, convertedRoles)
 	if err != nil {
 		return []iampolicymanagementv1.PolicyRole{}, err
 	}
@@ -348,12 +342,12 @@ func getAuthorizationRolesByName(roleNames []string, sourceServiceName string, t
 }
 
 // ConvertRoleModels will transform role models returned from "/v1/roles" to the model used by policy
-func convertRoleModels(serviceRoles []iampolicymanagementv1.Role) []iampolicymanagementv1.PolicyRole {
-	results := make([]iampolicymanagementv1.PolicyRole, len(serviceRoles))
-	for i, r := range serviceRoles {
+func convertRoleModels(roles []models.PolicyRole) []iampolicymanagementv1.PolicyRole {
+	results := make([]iampolicymanagementv1.PolicyRole, len(roles))
+	for i, r := range roles {
 		results[i] = iampolicymanagementv1.PolicyRole{
-			RoleID:      r.CRN,
-			DisplayName: r.DisplayName,
+			RoleID:      core.StringPtr(r.ID.String()),
+			DisplayName: core.StringPtr(r.DisplayName),
 		}
 	}
 	return results

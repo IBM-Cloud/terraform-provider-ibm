@@ -59,12 +59,12 @@ func dataSourceIBMAppIDIDPGoogleRead(ctx context.Context, d *schema.ResourceData
 
 	tenantID := d.Get("tenant_id").(string)
 
-	gg, _, err := appIDClient.GetGoogleIDPWithContext(ctx, &appid.GetGoogleIDPOptions{
+	gg, resp, err := appIDClient.GetGoogleIDPWithContext(ctx, &appid.GetGoogleIDPOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error loading AppID Google IDP: %s", err)
+		return diag.Errorf("Error loading AppID Google IDP: %s\n%s", err, resp)
 	}
 
 	d.Set("is_active", *gg.IsActive)

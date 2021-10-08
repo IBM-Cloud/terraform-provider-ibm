@@ -83,7 +83,7 @@ func testAccCheckIBMAppIDTokenConfig(tenantID string) string {
 				source = "appid_custom"
 				source_claim = "employeeId"
 				destination_claim = "employeeId"
-			}			
+			}
 		}
 
 		data "ibm_appid_token_config" "test_config" {

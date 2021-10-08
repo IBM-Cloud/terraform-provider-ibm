@@ -70,12 +70,12 @@ func dataSourceIBMAppIDIDPCloudDirectoryRead(ctx context.Context, d *schema.Reso
 
 	tenantID := d.Get("tenant_id").(string)
 
-	config, _, err := appIDClient.GetCloudDirectoryIDPWithContext(ctx, &appid.GetCloudDirectoryIDPOptions{
+	config, resp, err := appIDClient.GetCloudDirectoryIDPWithContext(ctx, &appid.GetCloudDirectoryIDPOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error loading AppID Cloud Directory IDP: %s", err)
+		return diag.Errorf("Error loading AppID Cloud Directory IDP: %s\n%s", err, resp)
 	}
 
 	d.Set("is_active", *config.IsActive)

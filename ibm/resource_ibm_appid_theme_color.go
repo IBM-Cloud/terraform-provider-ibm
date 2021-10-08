@@ -56,7 +56,7 @@ func resourceIBMAppIDThemeColorRead(ctx context.Context, d *schema.ResourceData,
 			return nil
 		}
 
-		return diag.Errorf("Error getting AppID theme colors: %s", err)
+		return diag.Errorf("Error getting AppID theme colors: %s\n%s", err, resp)
 	}
 
 	if colors.HeaderColor != nil {
@@ -82,10 +82,10 @@ func resourceIBMAppIDThemeColorCreate(ctx context.Context, d *schema.ResourceDat
 		HeaderColor: helpers.String(d.Get("header_color").(string)),
 	}
 
-	_, err = appIDClient.PostThemeColorWithContext(ctx, input)
+	resp, err := appIDClient.PostThemeColorWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error setting AppID theme color: %s", err)
+		return diag.Errorf("Error setting AppID theme color: %s\n%s", err, resp)
 	}
 
 	d.SetId(tenantID)
@@ -111,10 +111,10 @@ func resourceIBMAppIDThemeColorDelete(ctx context.Context, d *schema.ResourceDat
 		HeaderColor: helpers.String(defaultHeaderColor),
 	}
 
-	_, err = appIDClient.PostThemeColorWithContext(ctx, input)
+	resp, err := appIDClient.PostThemeColorWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error resetting AppID theme color: %s", err)
+		return diag.Errorf("Error resetting AppID theme color: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

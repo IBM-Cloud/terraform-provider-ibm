@@ -57,7 +57,7 @@ func resourceIBMAppIDLanguagesRead(ctx context.Context, d *schema.ResourceData, 
 			return nil
 		}
 
-		return diag.Errorf("Error getting AppID languages: %s", err)
+		return diag.Errorf("Error getting AppID languages: %s\n%s", err, resp)
 	}
 
 	d.Set("languages", langs.Languages)
@@ -81,10 +81,10 @@ func resourceIBMAppIDLanguagesCreate(ctx context.Context, d *schema.ResourceData
 		Languages: languages,
 	}
 
-	_, err = appIDClient.UpdateLocalizationWithContext(ctx, input)
+	resp, err := appIDClient.UpdateLocalizationWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error updating AppID languages: %s", err)
+		return diag.Errorf("Error updating AppID languages: %s\n%s", err, resp)
 	}
 
 	d.SetId(tenantID)
@@ -106,10 +106,10 @@ func resourceIBMAppIDLanguagesDelete(ctx context.Context, d *schema.ResourceData
 		Languages: []string{"en"}, // AppID default
 	}
 
-	_, err = appIDClient.UpdateLocalizationWithContext(ctx, input)
+	resp, err := appIDClient.UpdateLocalizationWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error resetting AppID languages: %s", err)
+		return diag.Errorf("Error resetting AppID languages: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

@@ -44,13 +44,13 @@ func dataSourceIBMAppIDApplicationScopesRead(ctx context.Context, d *schema.Reso
 	tenantID := d.Get("tenant_id").(string)
 	clientID := d.Get("client_id").(string)
 
-	scopes, _, err := appIDClient.GetApplicationScopesWithContext(ctx, &appid.GetApplicationScopesOptions{
+	scopes, resp, err := appIDClient.GetApplicationScopesWithContext(ctx, &appid.GetApplicationScopesOptions{
 		TenantID: &tenantID,
 		ClientID: &clientID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error getting AppID application scopes: %s", err)
+		return diag.Errorf("Error getting AppID application scopes: %s\n%s", err, resp)
 	}
 
 	if err := d.Set("scopes", scopes.Scopes); err != nil {

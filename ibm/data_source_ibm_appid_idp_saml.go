@@ -102,12 +102,12 @@ func dataSourceIBMAppIDIDPSAMLRead(ctx context.Context, d *schema.ResourceData, 
 
 	tenantID := d.Get("tenant_id").(string)
 
-	saml, _, err := appIDClient.GetSAMLIDPWithContext(ctx, &appid.GetSAMLIDPOptions{
+	saml, resp, err := appIDClient.GetSAMLIDPWithContext(ctx, &appid.GetSAMLIDPOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error loading SAML IDP: %s", err)
+		return diag.Errorf("Error loading SAML IDP: %s\n%s", err, resp)
 	}
 
 	d.Set("is_active", *saml.IsActive)

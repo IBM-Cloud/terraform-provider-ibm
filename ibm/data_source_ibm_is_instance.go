@@ -302,15 +302,9 @@ func dataSourceIBMISInstance() *schema.Resource {
 			isInstanceGpu: {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Deprecated:  "This field is deprecated",
 				Description: "Instance GPU",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						isInstanceGpuCores: {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Instance GPU Cores",
-						},
 						isInstanceGpuCount: {
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -555,8 +549,17 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			}
 
 			d.Set(isInstanceMemory, *instance.Memory)
+
 			gpuList := make([]map[string]interface{}, 0)
-			d.Set(isInstanceGpu, gpuList)
+			if instance.Gpu != nil {
+				currentGpu := map[string]interface{}{}
+				currentGpu[isInstanceGpuManufacturer] = instance.Gpu.Manufacturer
+				currentGpu[isInstanceGpuModel] = instance.Gpu.Model
+				currentGpu[isInstanceGpuCount] = instance.Gpu.Count
+				currentGpu[isInstanceGpuMemory] = instance.Gpu.Memory
+				gpuList = append(gpuList, currentGpu)
+				d.Set(isInstanceGpu, gpuList)
+			}
 
 			if instance.Disks != nil {
 				d.Set(isInstanceDisks, dataSourceInstanceFlattenDisks(instance.Disks))

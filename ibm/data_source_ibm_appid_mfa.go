@@ -34,12 +34,12 @@ func dataSourceIBMAppIDMFARead(ctx context.Context, d *schema.ResourceData, meta
 
 	tenantID := d.Get("tenant_id").(string)
 
-	mfa, _, err := appIDClient.GetMFAConfigWithContext(ctx, &appid.GetMFAConfigOptions{
+	mfa, resp, err := appIDClient.GetMFAConfigWithContext(ctx, &appid.GetMFAConfigOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error getting IBM AppID MFA configuration: %s", err)
+		return diag.Errorf("Error getting IBM AppID MFA configuration: %s\n%s", err, resp)
 	}
 
 	if mfa.IsActive != nil {
