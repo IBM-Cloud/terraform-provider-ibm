@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_iam_trusted_profile"
 description: |-
   Get information about iam_trusted_profile
-subcategory: "IAM Identity Services"
+subcategory: "Identity & Access Management (IAM)"
 ---
 
 # ibm_iam_trusted_profile

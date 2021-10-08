@@ -86,33 +86,33 @@ func resourceIBMIamTrustedProfile() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"timestamp": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Timestamp when the action was triggered.",
 						},
 						"iam_id": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "IAM ID of the identity which triggered the action.",
 						},
 						"iam_id_account": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Account of the identity which triggered the action.",
 						},
 						"action": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Action of the history entry.",
 						},
 						"params": &schema.Schema{
 							Type:        schema.TypeList,
-							Required:    true,
+							Computed:    true,
 							Description: "Params of the history entry.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"message": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Message which summarizes the executed action.",
 						},
 					},
@@ -207,8 +207,8 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 	if err = d.Set("ims_user_id", intValue(trustedProfile.ImsUserID)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting ims_user_id: %s", err))
 	}
+	history := []map[string]interface{}{}
 	if trustedProfile.History != nil {
-		history := []map[string]interface{}{}
 		for _, historyItem := range trustedProfile.History {
 			historyItemMap := resourceIBMIamTrustedProfileEnityHistoryRecordToMap(historyItem)
 			history = append(history, historyItemMap)
