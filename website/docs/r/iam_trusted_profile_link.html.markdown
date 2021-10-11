@@ -13,10 +13,18 @@ Create, update, and delete an IAM trusted profile link. For more information, ab
 ## Example usage
 
 ```terraform
+resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
+  name = "test"
+}
 resource "ibm_iam_trusted_profile_link" "iam_trusted_profile_link" {
-  cr_type = "cr_type"
-  link = { "crn" : "crn", "namespace" : "namespace" }
-  profile_id = "profile_id"
+  profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
+  cr_type = "IKS_SA"
+  link {
+    crn = "crn:v1:bluemix:public:containers-kubernetes:us-south:a/acc_id:cluster_id::"
+    namespace = "namespace"
+    name = "name"
+  }
+  name = "name"
 }
 ```
 
@@ -37,7 +45,17 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the `iam_trusted_profile_link`.
+* `id` -  Id is combination of `profile_id`/ `link_id`.
 * `created_at` - (String) If set contains a date time string of the creation date in ISO format.
 * `entity_tag` - (String) The version of the claim rule.
+* `link_id` - The unique identifier of the `iam_trusted_profile_link`.
 * `modified_at` - (String) If set contains a date time string of the last modification date in ISO format.
+
+## Import
+
+The  `ibm_iam_trusted_profile_link` resource can be imported by using profile ID and trusted profile link ID 
+**Syntax**
+
+```
+$ terraform import ibm_iam_trusted_profile_link.example <profile_id>/<link_id>
+```

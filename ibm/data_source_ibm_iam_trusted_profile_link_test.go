@@ -12,15 +12,15 @@ import (
 )
 
 func TestAccIBMIamTrustedProfileLinkDataSourceBasic(t *testing.T) {
-	profileLinkProfileID := fmt.Sprintf("tf_profile_id_%d", acctest.RandIntRange(10, 100))
-	profileLinkCrType := fmt.Sprintf("tf_cr_type_%d", acctest.RandIntRange(10, 100))
+	profileLinkProfileName := fmt.Sprintf("tf_profile_%d", acctest.RandIntRange(10, 100))
+	profileLinkCrType := "IKS_SA"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileLinkDataSourceConfigBasic(profileLinkProfileID, profileLinkCrType),
+				Config: testAccCheckIBMIamTrustedProfileLinkDataSourceConfigBasic(profileLinkProfileName, profileLinkCrType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_link.iam_trusted_profile_link", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_link.iam_trusted_profile_link", "profile_id"),
@@ -37,8 +37,8 @@ func TestAccIBMIamTrustedProfileLinkDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMIamTrustedProfileLinkDataSourceAllArgs(t *testing.T) {
-	profileLinkProfileID := fmt.Sprintf("tf_profile_id_%d", acctest.RandIntRange(10, 100))
-	profileLinkCrType := fmt.Sprintf("tf_cr_type_%d", acctest.RandIntRange(10, 100))
+	profileLinkProfileName := fmt.Sprintf("tf_profile_%d", acctest.RandIntRange(10, 100))
+	profileLinkCrType := "IKS_SA"
 	profileLinkName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -46,7 +46,7 @@ func TestAccIBMIamTrustedProfileLinkDataSourceAllArgs(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileLinkDataSourceConfig(profileLinkProfileID, profileLinkCrType, profileLinkName),
+				Config: testAccCheckIBMIamTrustedProfileLinkDataSourceConfig(profileLinkProfileName, profileLinkCrType, profileLinkName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_link.iam_trusted_profile_link", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_link.iam_trusted_profile_link", "profile_id"),
@@ -63,13 +63,16 @@ func TestAccIBMIamTrustedProfileLinkDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIamTrustedProfileLinkDataSourceConfigBasic(profileLinkProfileID string, profileLinkCrType string) string {
+func testAccCheckIBMIamTrustedProfileLinkDataSourceConfigBasic(profileLinkProfileName string, profileLinkCrType string) string {
 	return fmt.Sprintf(`
+		resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
+			name = "%s"
+		}
 		resource "ibm_iam_trusted_profile_link" "iam_trusted_profile_link" {
-			profile_id = "%s"
+			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 			cr_type = "%s"
 			link {
-				crn = "crn"
+				crn = "crn:v1:bluemix:public:containers-kubernetes:us-south:a/4448261269a14562b839e0a3019ed980:c2047t5d0hfu7oe0emm0::"
 				namespace = "namespace"
 				name = "name"
 			}
@@ -77,18 +80,21 @@ func testAccCheckIBMIamTrustedProfileLinkDataSourceConfigBasic(profileLinkProfil
 
 		data "ibm_iam_trusted_profile_link" "iam_trusted_profile_link" {
 			profile_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.profile_id
-			link_id = "link-id"
+			link_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.link_id
 		}
-	`, profileLinkProfileID, profileLinkCrType)
+	`, profileLinkProfileName, profileLinkCrType)
 }
 
-func testAccCheckIBMIamTrustedProfileLinkDataSourceConfig(profileLinkProfileID string, profileLinkCrType string, profileLinkName string) string {
+func testAccCheckIBMIamTrustedProfileLinkDataSourceConfig(profileLinkProfileName string, profileLinkCrType string, profileLinkName string) string {
 	return fmt.Sprintf(`
+		resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
+			name = "%s"
+		}
 		resource "ibm_iam_trusted_profile_link" "iam_trusted_profile_link" {
-			profile_id = "%s"
+			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 			cr_type = "%s"
 			link {
-				crn = "crn"
+				crn = "crn:v1:bluemix:public:containers-kubernetes:us-south:a/4448261269a14562b839e0a3019ed980:c2047t5d0hfu7oe0emm0::"
 				namespace = "namespace"
 				name = "name"
 			}
@@ -97,7 +103,7 @@ func testAccCheckIBMIamTrustedProfileLinkDataSourceConfig(profileLinkProfileID s
 
 		data "ibm_iam_trusted_profile_link" "iam_trusted_profile_link" {
 			profile_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.profile_id
-			link_id = "link-id"
+			link_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.link_id
 		}
-	`, profileLinkProfileID, profileLinkCrType, profileLinkName)
+	`, profileLinkProfileName, profileLinkCrType, profileLinkName)
 }

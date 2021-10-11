@@ -16,8 +16,8 @@ import (
 
 func TestAccIBMIamTrustedProfileLinkBasic(t *testing.T) {
 	var conf iamidentityv1.ProfileLink
-	profileID := fmt.Sprintf("tf_profile_id_%d", acctest.RandIntRange(10, 100))
-	crType := fmt.Sprintf("tf_cr_type_%d", acctest.RandIntRange(10, 100))
+	profileName := fmt.Sprintf("tf_profile_%d", acctest.RandIntRange(10, 100))
+	crType := "IKS_SA"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -25,10 +25,9 @@ func TestAccIBMIamTrustedProfileLinkBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIamTrustedProfileLinkDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileLinkConfigBasic(profileID, crType),
+				Config: testAccCheckIBMIamTrustedProfileLinkConfigBasic(profileName, crType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIamTrustedProfileLinkExists("ibm_iam_trusted_profile_link.iam_trusted_profile_link", conf),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_link.iam_trusted_profile_link", "profile_id", profileID),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_link.iam_trusted_profile_link", "cr_type", crType),
 				),
 			},
@@ -38,8 +37,8 @@ func TestAccIBMIamTrustedProfileLinkBasic(t *testing.T) {
 
 func TestAccIBMIamTrustedProfileLinkAllArgs(t *testing.T) {
 	var conf iamidentityv1.ProfileLink
-	profileID := fmt.Sprintf("tf_profile_id_%d", acctest.RandIntRange(10, 100))
-	crType := fmt.Sprintf("tf_cr_type_%d", acctest.RandIntRange(10, 100))
+	profileName := fmt.Sprintf("tf_profile_%d", acctest.RandIntRange(10, 100))
+	crType := "IKS_SA"
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -48,10 +47,9 @@ func TestAccIBMIamTrustedProfileLinkAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIamTrustedProfileLinkDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileLinkConfig(profileID, crType, name),
+				Config: testAccCheckIBMIamTrustedProfileLinkConfig(profileName, crType, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIamTrustedProfileLinkExists("ibm_iam_trusted_profile_link.iam_trusted_profile_link", conf),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_link.iam_trusted_profile_link", "profile_id", profileID),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_link.iam_trusted_profile_link", "cr_type", crType),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_link.iam_trusted_profile_link", "name", name),
 				),
@@ -65,35 +63,39 @@ func TestAccIBMIamTrustedProfileLinkAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIamTrustedProfileLinkConfigBasic(profileID string, crType string) string {
+func testAccCheckIBMIamTrustedProfileLinkConfigBasic(profileName string, crType string) string {
 	return fmt.Sprintf(`
-
+		resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
+			name = "%s"
+		}
 		resource "ibm_iam_trusted_profile_link" "iam_trusted_profile_link" {
-			profile_id = "%s"
+			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 			cr_type = "%s"
 			link {
-				crn = "crn"
+				crn = "crn:v1:bluemix:public:containers-kubernetes:us-south:a/4448261269a14562b839e0a3019ed980:c2047t5d0hfu7oe0emm0::"
 				namespace = "namespace"
 				name = "name"
 			}
 		}
-	`, profileID, crType)
+	`, profileName, crType)
 }
 
-func testAccCheckIBMIamTrustedProfileLinkConfig(profileID string, crType string, name string) string {
+func testAccCheckIBMIamTrustedProfileLinkConfig(profileName string, crType string, name string) string {
 	return fmt.Sprintf(`
-
+		resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
+			name = "%s"
+		}
 		resource "ibm_iam_trusted_profile_link" "iam_trusted_profile_link" {
-			profile_id = "%s"
+			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 			cr_type = "%s"
 			link {
-				crn = "crn"
+				crn = "crn:v1:bluemix:public:containers-kubernetes:us-south:a/4448261269a14562b839e0a3019ed980:c2047t5d0hfu7oe0emm0::"
 				namespace = "namespace"
 				name = "name"
 			}
 			name = "%s"
 		}
-	`, profileID, crType, name)
+	`, profileName, crType, name)
 }
 
 func testAccCheckIBMIamTrustedProfileLinkExists(n string, obj iamidentityv1.ProfileLink) resource.TestCheckFunc {

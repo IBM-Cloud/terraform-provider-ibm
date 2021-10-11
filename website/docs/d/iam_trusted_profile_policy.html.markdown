@@ -35,7 +35,7 @@ data "ibm_iam_trusted_profile_policy" "policy" {
 Review the argument references that you can specify for your data source.
 
 - `profile_id` - (Required, String) The UUID of the trusted profile.
-- `iam_id` - (Optional, String) IAM ID of the trusted profile. One of the `profile_id` or `iam_id` is required argument. You can use to get cross account trusted profile policy.
+- `iam_id` - (Optional, String) IAM ID of the trusted profile. One of the `profile_id` or `iam_id` is required argument.
 - `sort`- Optional -  (String) The single field sort query for policies.
 
 ## Attribute reference

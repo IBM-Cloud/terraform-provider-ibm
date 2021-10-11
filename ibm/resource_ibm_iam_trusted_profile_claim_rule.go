@@ -117,8 +117,8 @@ func resourceIBMIamTrustedProfileClaimRuleCreate(context context.Context, d *sch
 	}
 
 	createClaimRuleOptions := &iamidentityv1.CreateClaimRuleOptions{}
-
-	createClaimRuleOptions.SetProfileID(d.Get("profile_id").(string))
+	profile := d.Get("profile_id").(string)
+	createClaimRuleOptions.SetProfileID(profile)
 	createClaimRuleOptions.SetType(d.Get("type").(string))
 	var conditions []iamidentityv1.ProfileClaimRuleConditions
 	for _, e := range d.Get("conditions").([]interface{}) {
@@ -147,7 +147,7 @@ func resourceIBMIamTrustedProfileClaimRuleCreate(context context.Context, d *sch
 		return diag.FromErr(fmt.Errorf("CreateClaimRule failed %s\n%s", err, response))
 	}
 
-	d.SetId(*profileClaimRule.ID)
+	d.SetId(fmt.Sprintf("%s/%s", profile, *profileClaimRule.ID))
 
 	return resourceIBMIamTrustedProfileClaimRuleRead(context, d, meta)
 }
@@ -207,11 +207,14 @@ func resourceIBMIamTrustedProfileClaimRuleRead(context context.Context, d *schem
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Invalid ID %s", err))
+	}
 	getClaimRuleOptions := &iamidentityv1.GetClaimRuleOptions{}
 
-	getClaimRuleOptions.SetRuleID(d.Id())
-	getClaimRuleOptions.SetProfileID(d.Get("profile_id").(string))
+	getClaimRuleOptions.SetRuleID(parts[1])
+	getClaimRuleOptions.SetProfileID(parts[0])
 
 	profileClaimRule, response, err := iamIdentityClient.GetClaimRule(getClaimRuleOptions)
 	if err != nil {
@@ -320,12 +323,15 @@ func resourceIBMIamTrustedProfileClaimRuleUpdate(context context.Context, d *sch
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Invalid ID %s", err))
+	}
 	updateClaimRuleOptions := &iamidentityv1.UpdateClaimRuleOptions{}
 
 	updateClaimRuleOptions.SetIfMatch("*")
-	updateClaimRuleOptions.SetRuleID(d.Get("rule_id").(string))
-	updateClaimRuleOptions.SetProfileID(d.Get("profile_id").(string))
+	updateClaimRuleOptions.SetRuleID(parts[1])
+	updateClaimRuleOptions.SetProfileID(parts[0])
 	updateClaimRuleOptions.SetType(d.Get("type").(string))
 	var conditions []iamidentityv1.ProfileClaimRuleConditions
 	for _, e := range d.Get("conditions").([]interface{}) {
@@ -362,11 +368,15 @@ func resourceIBMIamTrustedProfileClaimRuleDelete(context context.Context, d *sch
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Invalid ID %s", err))
+	}
 
 	deleteClaimRuleOptions := &iamidentityv1.DeleteClaimRuleOptions{}
 
-	deleteClaimRuleOptions.SetProfileID(d.Get("profile_id").(string))
-	deleteClaimRuleOptions.SetRuleID(d.Id())
+	deleteClaimRuleOptions.SetProfileID(parts[0])
+	deleteClaimRuleOptions.SetRuleID(parts[1])
 
 	response, err := iamIdentityClient.DeleteClaimRule(deleteClaimRuleOptions)
 	if err != nil {
