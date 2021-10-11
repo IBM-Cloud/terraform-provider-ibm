@@ -35,7 +35,7 @@ require (
 	github.com/go-openapi/strfmt v0.20.2
 	github.com/go-openapi/validate v0.20.1 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
-	github.com/golang-jwt/jwt v3.2.1+incompatible
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/go-cmp v0.5.6
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.2.0
@@ -54,3 +54,5 @@ require (
 )
 
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
+
+replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
