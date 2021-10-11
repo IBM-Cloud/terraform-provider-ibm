@@ -40,12 +40,19 @@ func testAccCheckIbmDnsCrForwardingRulesDataSourceConfig(forwardingRuleDescripti
 		name = "test-pdns-custom-resolver-vpc"
 		resource_group = data.ibm_resource_group.rg.id
 	}
-	resource "ibm_is_subnet" "test-pdns-cr-subnet" {
-		name                     = "test-pdns-cr-subnet"
-		vpc                      = ibm_is_vpc.test-pdns-cr-vpc.id
-		zone            = "us-south-1"
-		ipv4_cidr_block = "10.240.25.0/24"
-		resource_group = data.ibm_resource_group.rg.id
+	resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
+		name                    = "test-pdns-cr-subnet1"
+		vpc                     = ibm_is_vpc.test-pdns-cr-vpc.id
+		zone            		= "us-south-1"
+		ipv4_cidr_block 		= "10.240.0.0/24"
+		resource_group 			= data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
+		name                    = "test-pdns-cr-subnet2"
+		vpc                     = ibm_is_vpc.test-pdns-cr-vpc.id
+		zone            		= "us-south-1"
+		ipv4_cidr_block 		= "10.240.64.0/24"
+		resource_group 			= data.ibm_resource_group.rg.id
 	}
 	resource "ibm_resource_instance" "test-pdns-cr-instance" {
 		name = "test-pdns-cr-instance"
@@ -55,16 +62,17 @@ func testAccCheckIbmDnsCrForwardingRulesDataSourceConfig(forwardingRuleDescripti
 		plan = "standard-dns"
 	}
 	resource "ibm_dns_custom_resolver" "test" {
-		name        = "test-custom-resolver"
+		name        = "test-pdns-customresolver"
 		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
-		description = "test-custom-resolver-description"
-		enabled = true
-	}
-	resource "ibm_dns_custom_resolver_location" "test" {
-		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
-		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
-		subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet.crn
-		enabled     = true
+		description = "test-pdns-cr-instance"
+		locations {
+			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet1.crn
+			enabled     = true
+		}
+		locations {
+			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet2.crn
+			enabled     = true
+		
 	}
 	resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
 		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
@@ -73,7 +81,7 @@ func testAccCheckIbmDnsCrForwardingRulesDataSourceConfig(forwardingRuleDescripti
 		type = "%s"
 		match = "%s"
 		forward_to = ["168.20.22.122"]
-	}
+	}		
 	data "ibm_dns_custom_resolver_forwarding_rules" "dns_custom_resolver_forwarding_rules" {
 		instance_id = ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule.instance_id
 		resolver_id = ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule.resolver_id

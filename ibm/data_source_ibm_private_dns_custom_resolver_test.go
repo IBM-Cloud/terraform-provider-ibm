@@ -44,12 +44,19 @@ func testAccCheckIBMPrivateDNSCustomResolverDataSourceConfig(crname, crdescripti
 		name = "test-pdns-custom-resolver-vpc"
 		resource_group = data.ibm_resource_group.rg.id
 	}
-	resource "ibm_is_subnet" "test-pdns-cr-subnet" {
-		name                     = "test-pdns-cr-subnet"
-		vpc                      = ibm_is_vpc.test-pdns-cr-vpc.id
-		zone            = "us-south-1"
-		ipv4_cidr_block = "10.240.25.0/24"
-		resource_group = data.ibm_resource_group.rg.id
+	resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
+		name                    = "test-pdns-cr-subnet1"
+		vpc                     = ibm_is_vpc.test-pdns-cr-vpc.id
+		zone            		= "us-south-1"
+		ipv4_cidr_block 		= "10.240.0.0/24"
+		resource_group 			= data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
+		name                    = "test-pdns-cr-subnet2"
+		vpc                     = ibm_is_vpc.test-pdns-cr-vpc.id
+		zone            		= "us-south-1"
+		ipv4_cidr_block 		= "10.240.64.0/24"
+		resource_group 			= data.ibm_resource_group.rg.id
 	}
 	resource "ibm_resource_instance" "test-pdns-cr-instance" {
 		name = "test-pdns-cr-instance"
@@ -59,15 +66,18 @@ func testAccCheckIBMPrivateDNSCustomResolverDataSourceConfig(crname, crdescripti
 		plan = "standard-dns"
 	}
 	resource "ibm_dns_custom_resolver" "test" {
-		name                      = "%s"
-		instance_id               = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
-		description               = "%s"
+		name        = "%s"
+		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
+		description = "%s"
 		locations {
-		  subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet.crn
-		  enabled     = true
+			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet1.crn
+			enabled     = true
 		}
+		locations {
+			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet2.crn
+			enabled     = true
+		
 	}
-
 	data "ibm_dns_custom_resolvers" "test-cr" {
 		instance_id = ibm_dns_custom_resolver.test.instance_id
 	}`, crname, crdescription)
