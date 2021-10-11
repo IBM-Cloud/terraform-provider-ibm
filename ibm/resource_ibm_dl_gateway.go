@@ -95,7 +95,6 @@ func resourceIBMDLGateway() *schema.Resource {
 			dlBgpAsn: {
 				Type:        schema.TypeInt,
 				Required:    true,
-				ForceNew:    true,
 				Description: "BGP ASN",
 			},
 			dlBgpBaseCidr: {
@@ -263,7 +262,6 @@ func resourceIBMDLGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "BGP customer edge router CIDR",
 			},
 			dlLoaRejectReason: {
@@ -277,7 +275,6 @@ func resourceIBMDLGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "BGP IBM CIDR",
 			},
 			dlResourceGroup: {

@@ -35,14 +35,12 @@ func resourceIBMDLProviderGateway() *schema.Resource {
 			dlBgpAsn: {
 				Type:        schema.TypeInt,
 				Required:    true,
-				ForceNew:    true,
 				Description: "BGP ASN",
 			},
 			dlBgpCerCidr: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "BGP customer edge router CIDR",
 			},
 			dlBgpIbmAsn: {
@@ -54,7 +52,6 @@ func resourceIBMDLProviderGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "BGP IBM CIDR",
 			},
 			dlBgpStatus: {
