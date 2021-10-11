@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMPrivateDNSCRLocations_Basic(t *testing.T) {
+func TestAccIBMPrivateDNSCustomResolverLocations_Basic(t *testing.T) {
 	name := fmt.Sprintf("testpdnscustomresolver%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
 	description := "new test CR Locations - TF"
 	resource.Test(t, resource.TestCase{
@@ -28,7 +28,7 @@ func TestAccIBMPrivateDNSCRLocations_Basic(t *testing.T) {
 	})
 }
 
-func TestAccIBMPrivateDNSCRLocations_Import(t *testing.T) {
+func TestAccIBMPrivateDNSCustomResolverLocations_Import(t *testing.T) {
 	name := fmt.Sprintf("testpdnscustomresolver%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
 	description := "new test CR Locations - TF"
 	resource.Test(t, resource.TestCase{
