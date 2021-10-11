@@ -99,9 +99,6 @@ func dataSourceIBMIamTrustedProfileLinkRead(context context.Context, d *schema.R
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *getLinkOptions.ProfileID, *getLinkOptions.LinkID))
-	if err = d.Set("id", profileLink.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
-	}
 	if err = d.Set("entity_tag", profileLink.EntityTag); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting entity_tag: %s", err))
 	}

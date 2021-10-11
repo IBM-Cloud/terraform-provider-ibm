@@ -30,14 +30,13 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the `iam_trusted_profile_link`.
 * `cr_type` - (String) The compute resource type. Supported values are **VSI, IKS_SA, ROKS_SA**.
 
 * `created_at` - (String) If set contains a date time string of the creation date in ISO format.
 
 * `entity_tag` - (String) The version of the claim rule.
 
-* `id` - (String) The unique identifier of the claim rule.
+* `id` - (String) Id is combination of `profile_id`/ `link_id`.
 
 * `link` - (List) 
     Nested scheme for **link**:

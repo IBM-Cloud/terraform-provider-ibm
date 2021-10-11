@@ -138,9 +138,6 @@ func dataSourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resou
 
 	d.SetId(*trustedProfile.ID)
 
-	if err = d.Set("id", trustedProfile.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
-	}
 	if err = d.Set("entity_tag", trustedProfile.EntityTag); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting entity_tag: %s", err))
 	}
@@ -172,11 +169,9 @@ func dataSourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("Error setting ims_user_id: %s", err))
 	}
 
-	if trustedProfile.History != nil {
-		err = d.Set("history", dataSourceTrustedProfileFlattenHistory(trustedProfile.History))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting history %s", err))
-		}
+	err = d.Set("history", dataSourceTrustedProfileFlattenHistory(trustedProfile.History))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting history %s", err))
 	}
 
 	return nil

@@ -99,8 +99,8 @@ func resourceIBMIamTrustedProfileLinkCreate(context context.Context, d *schema.R
 	}
 
 	createLinkOptions := &iamidentityv1.CreateLinkOptions{}
-
-	createLinkOptions.SetProfileID(d.Get("profile_id").(string))
+	profile := d.Get("profile_id").(string)
+	createLinkOptions.SetProfileID(profile)
 	createLinkOptions.SetCrType(d.Get("cr_type").(string))
 	link := resourceIBMIamTrustedProfileLinkMapToCreateProfileLinkRequestLink(d.Get("link.0").(map[string]interface{}))
 	createLinkOptions.SetLink(&link)
@@ -114,7 +114,7 @@ func resourceIBMIamTrustedProfileLinkCreate(context context.Context, d *schema.R
 		return diag.FromErr(fmt.Errorf("CreateLink failed %s\n%s", err, response))
 	}
 
-	d.SetId(*profileLink.ID)
+	d.SetId(fmt.Sprintf("%s/%s", profile, *profileLink.ID))
 
 	return resourceIBMIamTrustedProfileLinkRead(context, d, meta)
 }
@@ -136,11 +136,14 @@ func resourceIBMIamTrustedProfileLinkRead(context context.Context, d *schema.Res
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Invalid ID %s", err))
+	}
 	getLinkOptions := &iamidentityv1.GetLinkOptions{}
 
-	getLinkOptions.SetProfileID(d.Get("profile_id").(string))
-	getLinkOptions.SetLinkID(d.Id())
+	getLinkOptions.SetProfileID(parts[0])
+	getLinkOptions.SetLinkID(parts[1])
 
 	profileLink, response, err := iamIdentityClient.GetLink(getLinkOptions)
 	if err != nil {
@@ -198,11 +201,15 @@ func resourceIBMIamTrustedProfileLinkDelete(context context.Context, d *schema.R
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	parts, err := idParts(d.Id())
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Invalid ID %s", err))
+	}
 
 	deleteLinkOptions := &iamidentityv1.DeleteLinkOptions{}
 
-	deleteLinkOptions.SetProfileID(d.Get("profile_id").(string))
-	deleteLinkOptions.SetLinkID(d.Id())
+	deleteLinkOptions.SetProfileID(parts[0])
+	deleteLinkOptions.SetLinkID(parts[1])
 
 	response, err := iamIdentityClient.DeleteLink(deleteLinkOptions)
 	if err != nil {

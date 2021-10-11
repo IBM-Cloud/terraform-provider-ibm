@@ -213,9 +213,9 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 			historyItemMap := resourceIBMIamTrustedProfileEnityHistoryRecordToMap(historyItem)
 			history = append(history, historyItemMap)
 		}
-		if err = d.Set("history", history); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting history: %s", err))
-		}
+	}
+	if err = d.Set("history", history); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting history: %s", err))
 	}
 
 	return nil

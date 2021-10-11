@@ -113,8 +113,7 @@ func dataSourceIBMIamTrustedProfileClaimRuleRead(context context.Context, d *sch
 		log.Printf("[DEBUG] GetClaimRule failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetClaimRule failed %s\n%s", err, response))
 	}
-
-	d.SetId(*profileClaimRule.ID)
+	d.SetId(fmt.Sprintf("%s/%s", *getClaimRuleOptions.ProfileID, *profileClaimRule.ID))
 	if err = d.Set("id", profileClaimRule.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
 	}

@@ -30,7 +30,6 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the `iam_trusted_profile_claim_rule`.
 * `conditions` - (List) Conditions of this claim rule.
     Nested scheme for **conditions**:
 	* `claim` - (String) The claim to evaluate against.
@@ -45,7 +44,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `expiration` - (Integer) The session expiration in seconds.
 
-* `id` - (String) the unique identifier of The claim rule.
+* `id` - (String) Id is combination of `profile_id`/ `rule_id`.
 
 * `modified_at` - (String) If set contains a date time string of the last modification date in ISO format.
 

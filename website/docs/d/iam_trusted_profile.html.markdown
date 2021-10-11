@@ -28,8 +28,6 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the `iam_trusted_profile`.
-
 * `account_id` - (String) ID of the account that this trusted profile belong to.
 
 * `created_at` - (String) If set contains a date time string of the creation date in ISO format.
