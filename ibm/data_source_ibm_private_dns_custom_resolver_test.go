@@ -37,12 +37,33 @@ func testAccCheckIBMPrivateDNSCustomResolverDataSourceConfig(crname, crdescripti
 	// status filter defaults to empty
 	return fmt.Sprintf(`
 
+	data "ibm_resource_group" "rg" {
+		is_default=true
+	}
+	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
+		name = "test-pdns-custom-resolver-vpc"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "test-pdns-cr-subnet" {
+		name                     = "test-pdns-cr-subnet"
+		vpc                      = ibm_is_vpc.test-pdns-cr-vpc.id
+		zone            = "us-south-1"
+		ipv4_cidr_block = "10.240.25.0/24"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_resource_instance" "test-pdns-cr-instance" {
+		name = "test-pdns-cr-instance"
+		resource_group_id = data.ibm_resource_group.rg.id
+		location = "global"
+		service = "dns-svcs"
+		plan = "standard-dns"
+	}
 	resource "ibm_dns_custom_resolver" "test" {
 		name                      = "%s"
 		instance_id               = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
 		description               = "%s"
 		locations {
-		  subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-6c3a997d-72b2-47f6-8788-6bd95e1bdb03"
+		  subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet.crn
 		  enabled     = true
 		}
 	}

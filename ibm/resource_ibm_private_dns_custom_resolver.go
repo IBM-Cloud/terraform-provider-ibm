@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/IBM/networking-go-sdk/dnssvcsv1"
@@ -36,6 +37,7 @@ const (
 	pdnsCustomResolverCritical  = "CRITICAL"
 	pdnsCustomResolverDegraded  = "DEGRADED"
 	pdnsCustomResolverHealthy   = "HEALTHY"
+	pdnsCRHighAvailability      = "high_availability"
 )
 
 func resouceIBMPrivateDNSCustomResolver() *schema.Resource {
@@ -81,6 +83,12 @@ func resouceIBMPrivateDNSCustomResolver() *schema.Resource {
 				Default:     true,
 				Description: "Whether the custom resolver is enabled",
 			},
+			pdnsCRHighAvailability: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Whether High Availability is enabled in custom resolver",
+			},
 			pdnsCRHealth: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -89,7 +97,7 @@ func resouceIBMPrivateDNSCustomResolver() *schema.Resource {
 			pdnsCustomResolverLocations: {
 				Type:             schema.TypeSet,
 				Description:      "Locations on which the custom resolver will be running",
-				Required:         true,
+				Optional:         true,
 				DiffSuppressFunc: applyOnce,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -155,27 +163,41 @@ func resouceIBMPrivateDNSCustomResolverCreate(context context.Context, d *schema
 		crDescription = des.(string)
 	}
 
-	crLocations := d.Get(pdnsCustomResolverLocations).(*schema.Set)
 	customResolverOption := sess.NewCreateCustomResolverOptions(crn)
 	customResolverOption.SetName(crName)
 	customResolverOption.SetDescription(crDescription)
-	customResolverOption.SetLocations(expandPdnsCRLocations(crLocations))
+
+	crLocationCreate := false
+	if _, ok := d.GetOk(pdnsCustomResolverLocations); ok {
+		crLocationCreate = true
+		crLocations := d.Get(pdnsCustomResolverLocations).(*schema.Set)
+
+		customResolverOption.SetLocations(expandPdnsCRLocations(crLocations))
+		if highval, ok := d.GetOkExists(pdnsCRHighAvailability); ok {
+			cr_highaval := highval.(bool)
+			if cr_highaval && crLocations.Len() <= 1 {
+				return diag.FromErr(fmt.Errorf("High Availability is enabled by Default, Please add two or more Locations"))
+			}
+		}
+	} else {
+		return diag.FromErr(fmt.Errorf("High Availability is enabled by Default, Please add two or more locations"))
+	}
 
 	result, resp, err := sess.CreateCustomResolverWithContext(context, customResolverOption)
 	if err != nil || result == nil {
-		return diag.FromErr(fmt.Errorf("Error reading the  custom resolver %s:%s", err, resp))
+		return diag.FromErr(fmt.Errorf("Error reading the custom resolver %s:%s", err, resp))
 	}
 
 	d.SetId(convertCisToTfTwoVar(*result.ID, crn))
 	d.Set(pdnsCRId, *result.ID)
-
-	_, err = waitForPDNSCustomResolverHealthy(d, meta)
-	if err != nil {
-		return diag.FromErr(err)
+	if crLocationCreate {
+		_, err = waitForPDNSCustomResolverHealthy(d, meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		return resouceIBMPrivateDNSCustomResolverUpdate(context, d, meta)
 	}
-
-	// Enable Custrom Resolver
-	return resouceIBMPrivateDNSCustomResolverUpdate(context, d, meta)
+	return resouceIBMPrivateDNSCustomResolverRead(context, d, meta)
 }
 
 func resouceIBMPrivateDNSCustomResolverRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -341,7 +363,15 @@ func waitForPDNSCustomResolverHealthy(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return nil, err
 	}
-	customResolverID, crn, _ := convertTftoCisTwoVar(d.Id())
+
+	var customResolverID, crn string
+	g := strings.SplitN(d.Id(), ":", -1)
+	if len(g) > 2 {
+		_, customResolverID, crn, _ = convertTfToCisThreeVar(d.Id())
+	} else {
+		customResolverID, crn, _ = convertTftoCisTwoVar(d.Id())
+	}
+
 	opt := sess.NewGetCustomResolverOptions(crn, customResolverID)
 
 	stateConf := &resource.StateChangeConf{

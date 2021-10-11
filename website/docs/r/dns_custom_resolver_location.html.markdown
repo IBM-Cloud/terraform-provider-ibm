@@ -30,17 +30,20 @@ resource "ibm_dns_custom_resolver" "test" {
   name        = "testCR-TF"
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   description = "testdescription-CR"
-  locations {
-    subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-6c3a997d-72b2-47f6-8788-6bd95e1bdb03"
-    enabled     = true
-  }
 }
 
-resource "ibm_dns_custom_resolver_location" "test" {
+resource "ibm_dns_custom_resolver_location" "loc1" {
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
-  subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-03d54d71-b438-4d20-b943-76d3d2a1a590"
-  enabled     = false
+  subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-a094c4e8-02cd-4b04-858d-7f31205b93b9"
+  enabled     = true
+}
+
+resource "ibm_dns_custom_resolver_location" "loc2" {
+  instance_id = ibm_resource_instance.test-pdns-instance.guid
+  resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
+  subnet_crn  = "crn:v1:staging:public:is:us-south-2:a/01652b251c3ae2787110a995d8db0135::subnet:0726-b6f3cb83-48f0-4c55-9023-202fe4570c83"
+  enabled     = true
 }
 
 ```

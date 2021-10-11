@@ -82,19 +82,37 @@ func resourceIBMPrivateDNSLocationCreate(context context.Context, d *schema.Reso
 	resolverID := d.Get(pdnsResolverID).(string)
 
 	opt := sess.NewAddCustomResolverLocationOptions(instanceID, resolverID)
-
 	if subnetcrn, ok := d.GetOk(pdnsCRLocationSubnetCRN); ok {
 		opt.SetSubnetCrn(subnetcrn.(string))
 	}
+	customResolverEnable := false
 	if enable, ok := d.GetOkExists(pdnsCRLocationEnable); ok {
 		opt.SetEnabled(enable.(bool))
+		if enable.(bool) {
+			customResolverEnable = true
+		}
 	}
 	result, resp, err := sess.AddCustomResolverLocationWithContext(context, opt)
 
 	if err != nil || result == nil {
 		return diag.FromErr(fmt.Errorf("Error creating the custom resolver location %s:%s", err, resp))
 	}
-	d.SetId(convertCisToTfThreeVar(*result.ID, resolverID, instanceID))
+
+	if customResolverEnable {
+		d.SetId(convertCisToTfThreeVar(*result.ID, resolverID, instanceID))
+		_, err = waitForPDNSCustomResolverHealthy(d, meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		//Enable Custom Resolver
+		optCr := sess.NewUpdateCustomResolverOptions(instanceID, resolverID)
+		optCr.SetEnabled(true)
+		resultCr, respCr, errCr := sess.UpdateCustomResolverWithContext(context, optCr)
+		if errCr != nil || resultCr == nil {
+			return diag.FromErr(fmt.Errorf("Error updating the  custom resolver %s:%s", errCr, respCr))
+		}
+	}
+
 	return resourceIBMPrivateDNSLocationRead(context, d, meta)
 }
 
@@ -130,6 +148,12 @@ func resourceIBMPrivateDNSLocationDelete(context context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 	locationID, resolverID, instanceID, err := convertTfToCisThreeVar(d.Id())
+	updatelocation := sess.NewUpdateCustomResolverLocationOptions(instanceID, resolverID, locationID)
+	updatelocation.SetEnabled(false)
+	result, resp, err := sess.UpdateCustomResolverLocationWithContext(context, updatelocation)
+	if err != nil || result == nil {
+		return diag.FromErr(fmt.Errorf("Error updating the custom resolver location %s:%s", err, resp))
+	}
 	deleteCRlocation := sess.NewDeleteCustomResolverLocationOptions(instanceID, resolverID, locationID)
 	resp, errDel := sess.DeleteCustomResolverLocationWithContext(context, deleteCRlocation)
 	if errDel != nil {
