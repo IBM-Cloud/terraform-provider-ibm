@@ -52,6 +52,7 @@ data "ibm_resource_group" "rg" {
 		locations {
 			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet2.crn
 			enabled     = true
+		}
 		
 	}
 	resource "ibm_dns_custom_resolver_location" "test" {

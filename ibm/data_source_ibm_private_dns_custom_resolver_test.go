@@ -38,11 +38,11 @@ func testAccCheckIBMPrivateDNSCustomResolverDataSourceConfig(crname, crdescripti
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "rg" {
-		is_default=true
+		is_default	= true
 	}
 	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
-		name = "test-pdns-custom-resolver-vpc"
-		resource_group = data.ibm_resource_group.rg.id
+		name			= "test-pdns-custom-resolver-vpc-d"
+		resource_group	= data.ibm_resource_group.rg.id
 	}
 	resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
 		name                    = "test-pdns-cr-subnet1"
@@ -59,11 +59,11 @@ func testAccCheckIBMPrivateDNSCustomResolverDataSourceConfig(crname, crdescripti
 		resource_group 			= data.ibm_resource_group.rg.id
 	}
 	resource "ibm_resource_instance" "test-pdns-cr-instance" {
-		name = "test-pdns-cr-instance"
-		resource_group_id = data.ibm_resource_group.rg.id
-		location = "global"
-		service = "dns-svcs"
-		plan = "standard-dns"
+		name				= "test-pdns-cr-instance"
+		resource_group_id	= data.ibm_resource_group.rg.id
+		location 			= "global"
+		service 			= "dns-svcs"
+		plan 				= "standard-dns"
 	}
 	resource "ibm_dns_custom_resolver" "test" {
 		name        = "%s"
@@ -76,6 +76,7 @@ func testAccCheckIBMPrivateDNSCustomResolverDataSourceConfig(crname, crdescripti
 		locations {
 			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet2.crn
 			enabled     = true
+		}
 		
 	}
 	data "ibm_dns_custom_resolvers" "test-cr" {

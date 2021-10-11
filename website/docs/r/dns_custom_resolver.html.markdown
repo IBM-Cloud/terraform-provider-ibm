@@ -54,6 +54,7 @@ Provides a private DNS custom resolver resource. This allows DNS custom resolver
 		locations {
 			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet2.crn
 			enabled     = true
+		}
 		
 	}
 ```
