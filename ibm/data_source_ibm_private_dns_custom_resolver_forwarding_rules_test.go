@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMDNSCustomResolverForwardingRulesDataSource_basic(t *testing.T) {
+func TestAccIBMPrivateDNSCustomResolverForwardingRulesDataSource_basic(t *testing.T) {
 	forwardingRuleDescription := "test forward rule"
 	forwardingRuleType := "zone"
 	forwardingRuleMatch := "test.example.com"
