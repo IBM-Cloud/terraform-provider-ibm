@@ -14,37 +14,51 @@ Provides a private DNS custom resolver locations resource. This allows DNS custo
 ## Example usage
 
 ```terraform
-data "ibm_resource_group" "rg" {
-  name = "default"
-}
 
-resource "ibm_resource_instance" "test-pdns-instance" {
-  name              = "test-pdns"
-  resource_group_id = data.ibm_resource_group.rg.id
-  location          = "global"
-  service           = "dns-svcs"
-  plan              = "standard-dns"
-}
-
-resource "ibm_dns_custom_resolver" "test" {
-  name        = "testCR-TF"
-  instance_id = ibm_resource_instance.test-pdns-instance.guid
-  description = "testdescription-CR"
-}
-
-resource "ibm_dns_custom_resolver_location" "loc1" {
-  instance_id = ibm_resource_instance.test-pdns-instance.guid
-  resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
-  subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-a094c4e8-02cd-4b04-858d-7f31205b93b9"
-  enabled     = true
-}
-
-resource "ibm_dns_custom_resolver_location" "loc2" {
-  instance_id = ibm_resource_instance.test-pdns-instance.guid
-  resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
-  subnet_crn  = "crn:v1:staging:public:is:us-south-2:a/01652b251c3ae2787110a995d8db0135::subnet:0726-b6f3cb83-48f0-4c55-9023-202fe4570c83"
-  enabled     = true
-}
+  data "ibm_resource_group" "rg" {
+		is_default=true
+	}
+	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
+		name = "test-pdns-custom-resolver-vpc"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
+		name                = "test-pdns-cr-subnet1"
+		vpc                 = ibm_is_vpc.test-pdns-cr-vpc.id
+		zone            		= "us-south-1"
+		ipv4_cidr_block 		= "10.240.0.0/24"
+		resource_group 			= data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
+		name                = "test-pdns-cr-subnet2"
+		vpc                 = ibm_is_vpc.test-pdns-cr-vpc.id
+		zone            		= "us-south-1"
+		ipv4_cidr_block 		= "10.240.64.0/24"
+		resource_group 			= data.ibm_resource_group.rg.id
+	}
+	resource "ibm_resource_instance" "test-pdns-cr-instance" {
+		name = "test-pdns-cr-instance"
+		resource_group_id = data.ibm_resource_group.rg.id
+		location = "global"
+		service = "dns-svcs"
+		plan = "standard-dns"
+	}
+	resource "ibm_dns_custom_resolver" "test" {
+		name        = "test-custom-resolver"
+		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
+		description = "%s"
+		high_availability = false
+		locations {
+			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet1.crn
+			enabled     = true
+		}
+	}
+	resource "ibm_dns_custom_resolver_location" "test" {
+		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
+		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
+		subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet2.crn
+		enabled     = true
+	}
 
 ```
 
