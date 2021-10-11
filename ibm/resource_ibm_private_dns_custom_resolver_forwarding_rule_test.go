@@ -11,7 +11,6 @@ import (
 )
 
 func TestAccIBMPrivateDNSCustomResolverForwardingRuleBasic(t *testing.T) {
-	subnet_crn := "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-03d54d71-b438-4d20-b943-76d3d2a1a590"
 	typeVar := "zone"
 	match := "test.example.com"
 
@@ -20,7 +19,7 @@ func TestAccIBMPrivateDNSCustomResolverForwardingRuleBasic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmDnsCrForwardingRuleConfig(subnet_crn, typeVar, match),
+				Config: testAccCheckIbmDnsCrForwardingRuleConfig(typeVar, match),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule", "type", typeVar),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule", "match", match),
@@ -30,28 +29,49 @@ func TestAccIBMPrivateDNSCustomResolverForwardingRuleBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmDnsCrForwardingRuleConfig(subnet_crn, typeVar, match string) string {
+func testAccCheckIbmDnsCrForwardingRuleConfig(typeVar, match string) string {
 	return fmt.Sprintf(`
 		
+	data "ibm_resource_group" "rg" {
+		is_default=true
+	}
+	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
+		name = "test-pdns-custom-resolver-vpc"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "test-pdns-cr-subnet" {
+		name                     = "test-pdns-cr-subnet"
+		vpc                      = ibm_is_vpc.test-pdns-cr-vpc.id
+		zone            = "us-south-1"
+		ipv4_cidr_block = "10.240.25.0/24"
+		resource_group = data.ibm_resource_group.rg.id
+	}
+	resource "ibm_resource_instance" "test-pdns-cr-instance" {
+		name = "test-pdns-cr-instance"
+		resource_group_id = data.ibm_resource_group.rg.id
+		location = "global"
+		service = "dns-svcs"
+		plan = "standard-dns"
+	}
 	resource "ibm_dns_custom_resolver" "test" {
-		name                      = "testCR-TF-New"
-		instance_id               = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
-		description               = "new test CR TF"
-		locations {
-		  subnet_crn = "%s"
-		  enabled     = true
-		}
-		
+		name        = "test-custom-resolver"
+		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
+		description = "test-custom-resolver-description"
+		enabled = true
+	}
+	resource "ibm_dns_custom_resolver_location" "test" {
+		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
+		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
+		subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet.crn
+		enabled     = true
 	}
 	resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
-		instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
+		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
 		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 		description = "Test Fw Rule"
 		type = "%s"
 		match = "%s"
 		forward_to = ["168.20.22.122"]
-	}
-	
-		
-	`, subnet_crn, typeVar, match)
+	}		
+	`, typeVar, match)
 }
