@@ -29,9 +29,9 @@ resource ibm_dl_provider_gateway test_dl_provider_gateway {
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
 
-- `bgp_asn`- (Required, Forces new resource, Integer) The BGP ASN of the gateway to be created. For example, `64999`.
-- `bgp_cer_cidr` - (Optional, Forces new resource, String) The BGP customer edge router CIDR. Specify a value within bgp_base_cidr. If bgp_base_cidr is `169.254.0.0/16`, this parameter can exclude and a CIDR is selected automatically. For example, `10.254.30.78/30`.
-- `bgp_ibm_cidr` - (Optional, Forces new resource, String) The IBM BGP CIDR. Specify a value within bgp_base_cidr. If bgp_base_cidr is `169.254.0.0/16`, this parameter can exclude and a CIDR is selected automatically. For example, `10.254.30.77/30`.
+- `bgp_asn`- (Required, Integer) The BGP ASN of the gateway to be created. For example, `64999`.
+- `bgp_cer_cidr` - (Optional, String) The BGP customer edge router CIDR. Specify a value within bgp_base_cidr. If bgp_base_cidr is `169.254.0.0/16`, this parameter can exclude and a CIDR is selected automatically. For example, `10.254.30.78/30`.
+- `bgp_ibm_cidr` - (Optional, String) The IBM BGP CIDR. Specify a value within bgp_base_cidr. If bgp_base_cidr is `169.254.0.0/16`, this parameter can exclude and a CIDR is selected automatically. For example, `10.254.30.77/30`.
 - `customer_account_id` - (Required, Forces new resource, String) The customer IBM Cloud account ID for the new gateway. A gateway object contains the pending create request to be available in the specified account.
 - `name` - (Required, String) The unique user-defined name for this gateway. Example: `myGateway`.
 - `port` - (Required, Forces new resource, String) The gateway port for type to connect gateway.
