@@ -287,6 +287,7 @@ func resourceIBMComputeReservedCapacityExists(d *schema.ResourceData, meta inter
 }
 
 func resourceIBMComputeReservedCapacityDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	log.Println("[WARN]: `terraform destroy` does not remove the reserved capacity but only clears the state file. We cannot cancel reserved capacity")
 	d.SetId("")
 	return nil
 }

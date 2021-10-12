@@ -15,6 +15,10 @@ Create, or update reserved capacity for your Virtual Server Instance. With reser
 
 For more information, see [IBM Cloud Classic Infrastructure (SoftLayer) API docs](https://sldn.softlayer.com/reference/datatypes/SoftLayer_Virtual_ReservedCapacityGroup).
 
+
+terraform destroy does not remove the reserved capacity but only clears the state file. We cannot cancel reserved capacity. For more information see [FAQS](https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-faqs-reserved-capacity-and-instances#what-happens-if-i-don-t-need-my-reserved-virtual-server-instances-anymore-)
+
+
 ## Example usage
 
 ```terraform

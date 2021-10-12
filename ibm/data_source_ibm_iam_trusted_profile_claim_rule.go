@@ -114,9 +114,6 @@ func dataSourceIBMIamTrustedProfileClaimRuleRead(context context.Context, d *sch
 		return diag.FromErr(fmt.Errorf("GetClaimRule failed %s\n%s", err, response))
 	}
 	d.SetId(fmt.Sprintf("%s/%s", *getClaimRuleOptions.ProfileID, *profileClaimRule.ID))
-	if err = d.Set("id", profileClaimRule.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
-	}
 	if err = d.Set("entity_tag", profileClaimRule.EntityTag); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting entity_tag: %s", err))
 	}

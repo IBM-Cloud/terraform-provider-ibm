@@ -14,7 +14,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
-func TestAccIBMIamTrustedProfileLinkBasic(t *testing.T) {
+func TestAccIBMIAMTrustedProfileLinkBasic(t *testing.T) {
 	var conf iamidentityv1.ProfileLink
 	profileName := fmt.Sprintf("tf_profile_%d", acctest.RandIntRange(10, 100))
 	crType := "IKS_SA"
@@ -35,7 +35,7 @@ func TestAccIBMIamTrustedProfileLinkBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMIamTrustedProfileLinkAllArgs(t *testing.T) {
+func TestAccIBMIAMTrustedProfileLinkAllArgs(t *testing.T) {
 	var conf iamidentityv1.ProfileLink
 	profileName := fmt.Sprintf("tf_profile_%d", acctest.RandIntRange(10, 100))
 	crType := "IKS_SA"
@@ -72,12 +72,12 @@ func testAccCheckIBMIamTrustedProfileLinkConfigBasic(profileName string, crType 
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 			cr_type = "%s"
 			link {
-				crn = "crn:v1:bluemix:public:containers-kubernetes:us-south:a/4448261269a14562b839e0a3019ed980:c2047t5d0hfu7oe0emm0::"
+				crn = "%s"
 				namespace = "namespace"
 				name = "name"
 			}
 		}
-	`, profileName, crType)
+	`, profileName, crType, iksSa)
 }
 
 func testAccCheckIBMIamTrustedProfileLinkConfig(profileName string, crType string, name string) string {
@@ -89,13 +89,13 @@ func testAccCheckIBMIamTrustedProfileLinkConfig(profileName string, crType strin
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 			cr_type = "%s"
 			link {
-				crn = "crn:v1:bluemix:public:containers-kubernetes:us-south:a/4448261269a14562b839e0a3019ed980:c2047t5d0hfu7oe0emm0::"
+				crn = "%s"
 				namespace = "namespace"
 				name = "name"
 			}
 			name = "%s"
 		}
-	`, profileName, crType, name)
+	`, profileName, crType, iksSa, name)
 }
 
 func testAccCheckIBMIamTrustedProfileLinkExists(n string, obj iamidentityv1.ProfileLink) resource.TestCheckFunc {

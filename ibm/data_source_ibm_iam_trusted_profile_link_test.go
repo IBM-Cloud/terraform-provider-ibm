@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMIamTrustedProfileLinkDataSourceBasic(t *testing.T) {
+func TestAccIBMIAMTrustedProfileLinkDataSourceBasic(t *testing.T) {
 	profileLinkProfileName := fmt.Sprintf("tf_profile_%d", acctest.RandIntRange(10, 100))
 	profileLinkCrType := "IKS_SA"
 
@@ -36,7 +36,7 @@ func TestAccIBMIamTrustedProfileLinkDataSourceBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMIamTrustedProfileLinkDataSourceAllArgs(t *testing.T) {
+func TestAccIBMIAMTrustedProfileLinkDataSourceAllArgs(t *testing.T) {
 	profileLinkProfileName := fmt.Sprintf("tf_profile_%d", acctest.RandIntRange(10, 100))
 	profileLinkCrType := "IKS_SA"
 	profileLinkName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -72,7 +72,7 @@ func testAccCheckIBMIamTrustedProfileLinkDataSourceConfigBasic(profileLinkProfil
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 			cr_type = "%s"
 			link {
-				crn = "crn:v1:bluemix:public:containers-kubernetes:us-south:a/4448261269a14562b839e0a3019ed980:c2047t5d0hfu7oe0emm0::"
+				crn = "%s"
 				namespace = "namespace"
 				name = "name"
 			}
@@ -82,7 +82,7 @@ func testAccCheckIBMIamTrustedProfileLinkDataSourceConfigBasic(profileLinkProfil
 			profile_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.profile_id
 			link_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.link_id
 		}
-	`, profileLinkProfileName, profileLinkCrType)
+	`, profileLinkProfileName, profileLinkCrType, iksSa)
 }
 
 func testAccCheckIBMIamTrustedProfileLinkDataSourceConfig(profileLinkProfileName string, profileLinkCrType string, profileLinkName string) string {
@@ -94,7 +94,7 @@ func testAccCheckIBMIamTrustedProfileLinkDataSourceConfig(profileLinkProfileName
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 			cr_type = "%s"
 			link {
-				crn = "crn:v1:bluemix:public:containers-kubernetes:us-south:a/4448261269a14562b839e0a3019ed980:c2047t5d0hfu7oe0emm0::"
+				crn = "%s"
 				namespace = "namespace"
 				name = "name"
 			}
@@ -105,5 +105,5 @@ func testAccCheckIBMIamTrustedProfileLinkDataSourceConfig(profileLinkProfileName
 			profile_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.profile_id
 			link_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.link_id
 		}
-	`, profileLinkProfileName, profileLinkCrType, profileLinkName)
+	`, profileLinkProfileName, profileLinkCrType, iksSa, profileLinkName)
 }

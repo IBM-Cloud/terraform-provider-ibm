@@ -14,72 +14,42 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
-func TestAccIBMIamTrustedProfileClaimRuleBasic(t *testing.T) {
+func TestAccIBMIAMTrustedProfileClaimRuleBasic(t *testing.T) {
 	var conf iamidentityv1.ProfileClaimRule
 	profileName := fmt.Sprintf("tf_profile_%d", acctest.RandIntRange(10, 100))
-	typeVar := "Profile-SAML"
-	typeVarUpdate := "Profile-CR"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckIAMTrustedProfile(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIamTrustedProfileClaimRuleDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileClaimRuleConfigBasic(profileName, typeVar),
+				Config: testAccCheckIBMIamTrustedProfileClaimRuleConfigBasic(profileName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIamTrustedProfileClaimRuleExists("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", conf),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "type", typeVar),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileClaimRuleConfigBasic(profileName, typeVarUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "type", typeVarUpdate),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "type", "Profile-SAML"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccIBMIamTrustedProfileClaimRuleAllArgs(t *testing.T) {
+func TestAccIBMIAMTrustedProfileClaimRuleAllArgs(t *testing.T) {
 	var conf iamidentityv1.ProfileClaimRule
 	profileName := fmt.Sprintf("tf_profile_%d", acctest.RandIntRange(10, 100))
-	typeVar := "Profile-SAML"
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	realmName := fmt.Sprintf("tf_realm_name_%d", acctest.RandIntRange(10, 100))
-	crType := "VSI"
-	expiration := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
-	typeVarUpdate := "Profile-CR"
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	realmNameUpdate := fmt.Sprintf("tf_realm_name_%d", acctest.RandIntRange(10, 100))
-	crTypeUpdate := "IKS_SA"
-	expirationUpdate := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
-
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckIAMTrustedProfile(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMIamTrustedProfileClaimRuleDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileClaimRuleConfig(profileName, typeVar, name, realmName, crType, expiration),
+				Config: testAccCheckIBMIamTrustedProfileClaimRuleConfig(profileName, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIamTrustedProfileClaimRuleExists("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", conf),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "type", typeVar),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "type", "Profile-CR"),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "realm_name", realmName),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "cr_type", crType),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "expiration", expiration),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileClaimRuleConfig(profileName, typeVarUpdate, nameUpdate, realmNameUpdate, crTypeUpdate, expirationUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "type", typeVarUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "realm_name", realmNameUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "cr_type", crTypeUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "expiration", expirationUpdate),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "cr_type", "IKS_SA"),
 				),
 			},
 			resource.TestStep{
@@ -91,42 +61,43 @@ func TestAccIBMIamTrustedProfileClaimRuleAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIamTrustedProfileClaimRuleConfigBasic(profileName string, typeVar string) string {
+func testAccCheckIBMIamTrustedProfileClaimRuleConfigBasic(profileName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
 			name = "%s"
 		}
 		resource "ibm_iam_trusted_profile_claim_rule" "iam_trusted_profile_claim_rule" {
-			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
-			type = "%s"
+			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id 
+			type = "Profile-SAML"
+			name = "%[1]s"
+			realm_name = "%s"
+			expiration = 43200
 			conditions {
-				claim = "claim"
-				operator = "CONTAINS"
-				value = "value"
+				claim = "blueGroups"
+				operator = "NOT_EQUALS_IGNORE_CASE"
+				value = "\"cloud-docs-dev\""
 			}
 		}
-	`, profileName, typeVar)
+	`, profileName, realmName)
 }
 
-func testAccCheckIBMIamTrustedProfileClaimRuleConfig(profileName string, typeVar string, name string, realmName string, crType string, expiration string) string {
+func testAccCheckIBMIamTrustedProfileClaimRuleConfig(profileName string, name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
 			name = "%s"
 		}
 		resource "ibm_iam_trusted_profile_claim_rule" "iam_trusted_profile_claim_rule" {
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
-			type = "%s"
+			type = "Profile-CR"
 			conditions {
-				claim = "claim"
+				claim = "blueGroups"
 				operator = "CONTAINS"
-				value = "value"
+				value = "\"cloud-docs-dev\""
 			}
 			name = "%s"
-			realm_name = "%s"
-			cr_type = "%s"
-			expiration = %s
+			cr_type = "IKS_SA"
 		}
-	`, profileName, typeVar, name, realmName, crType, expiration)
+	`, profileName, name)
 }
 
 func testAccCheckIBMIamTrustedProfileClaimRuleExists(n string, obj iamidentityv1.ProfileClaimRule) resource.TestCheckFunc {
