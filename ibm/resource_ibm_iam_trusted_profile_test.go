@@ -14,7 +14,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
-func TestAccIBMIamTrustedProfileBasic(t *testing.T) {
+func TestAccIBMIAMTrustedProfileBasic(t *testing.T) {
 	var conf iamidentityv1.TrustedProfile
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -41,7 +41,7 @@ func TestAccIBMIamTrustedProfileBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMIamTrustedProfileAllArgs(t *testing.T) {
+func TestAccIBMIAMTrustedProfileAllArgs(t *testing.T) {
 	var conf iamidentityv1.TrustedProfile
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
