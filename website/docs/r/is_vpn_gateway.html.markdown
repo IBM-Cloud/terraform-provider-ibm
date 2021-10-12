@@ -43,6 +43,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `created_at` -  (String) The Second IP address assigned to this VPN gateway.
+- `crn` - (String) The CRN for this VPN gateway.
 - `id` - (String) The unique identifier of the VPN gateway.
 - `members` - (List) Collection of VPN gateway members.
 

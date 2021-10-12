@@ -5,10 +5,9 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
-	"github.com/IBM/go-sdk-core/v4/core"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -114,59 +113,6 @@ func TestAccIBMCisHealthcheck_CreateAfterManualDestroy(t *testing.T) {
 	})
 }
 
-func TestAccIBMCisHealthcheck_CreateAfterCisRIManualDestroy(t *testing.T) {
-	t.Skip()
-	var monitorOne, monitorTwo string
-	name := "ibm_cis_healthcheck.health_check"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckCisMonitorDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckCisHealthcheckConfigCisRIBasic("test", cisDomainTest),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCisHealthcheckExists(name, &monitorOne),
-					testAccCisMonitorManuallyDelete(&monitorOne),
-					func(state *terraform.State) error {
-						cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
-						if err != nil {
-							return err
-						}
-						for _, r := range state.RootModule().Resources {
-							if r.Type == "ibm_cis_domain" {
-								log.Printf("[WARN] Manually removing domain")
-								zoneID, cisID, _ := convertTftoCisTwoVar(r.Primary.ID)
-								_ = cisClient.Zones().DeleteZone(cisID, zoneID)
-								cisPtr := &cisID
-								log.Printf("[WARN]  Manually removing Cis Instance")
-								_ = testAccCisInstanceManuallyDeleteUnwrapped(state, cisPtr)
-							}
-
-						}
-						return nil
-					},
-				),
-				ExpectNonEmptyPlan: true,
-			},
-			{
-				Config: testAccCheckCisHealthcheckConfigCisRIBasic("test", cisDomainTest),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCisHealthcheckExists(name, &monitorTwo),
-					func(state *terraform.State) error {
-						if monitorOne == monitorTwo {
-							return fmt.Errorf("load balancer monitor id is unchanged even after we thought we deleted it ( %s )",
-								monitorTwo)
-						}
-						return nil
-					},
-				),
-			},
-		},
-	})
-}
-
 func testAccCisMonitorManuallyDelete(tfMonitorID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		cisClient, err := testAccProvider.Meta().(ClientSession).CisGLBHealthCheckClientSession()
@@ -236,16 +182,6 @@ func testAccCheckCisHealthcheckConfigCisDSBasic(resourceID string, cisDomain str
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_healthcheck" "health_check" {
 		cis_id         = data.ibm_cis.cis.id
-		expected_body  = "alive"
-		expected_codes = "2xx"
-	  }
-	`)
-}
-
-func testAccCheckCisHealthcheckConfigCisRIBasic(resourceID string, cisDomain string) string {
-	return testAccCheckCisDomainConfigCisRIbasic(resourceID, cisDomain) + fmt.Sprintf(`
-	resource "ibm_cis_healthcheck" "health_check" {
-		cis_id         = ibm_cis.cis.id
 		expected_body  = "alive"
 		expected_codes = "2xx"
 	  }

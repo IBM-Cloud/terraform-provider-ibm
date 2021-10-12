@@ -13,8 +13,19 @@ import (
 	"time"
 
 	kp "github.com/IBM/keyprotect-go-client"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+func suppressKMSInstanceIDDiff(k, old, new string, d *schema.ResourceData) bool {
+	// TF currently uses GUID. So just check when instance crn is passed as input it has same GUID in it.
+	crnData := strings.Split(new, ":")
+	if len(crnData) > 3 {
+		instanceID := crnData[len(crnData)-3]
+		return instanceID == old
+	}
+	return false
+}
 
 func resourceIBMKmskey() *schema.Resource {
 	return &schema.Resource{
@@ -31,10 +42,11 @@ func resourceIBMKmskey() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Key protect or hpcs instance GUID",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "Key protect or hpcs instance GUID or CRN",
+				DiffSuppressFunc: suppressKMSInstanceIDDiff,
 			},
 			"key_ring_id": {
 				Type:        schema.TypeString,
@@ -216,6 +228,11 @@ func resourceIBMKmskey() *schema.Resource {
 					},
 				},
 			},
+			"instance_crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Key protect or hpcs instance CRN",
+			},
 			ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -254,59 +271,33 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	rContollerClient, err := meta.(ClientSession).ResourceControllerAPIV2()
-	if err != nil {
-		return err
+	instanceID := d.Get("instance_id").(string)
+	CrnInstanceID := strings.Split(instanceID, ":")
+	if len(CrnInstanceID) > 3 {
+		instanceID = CrnInstanceID[len(CrnInstanceID)-3]
 	}
 
-	instanceID := d.Get("instance_id").(string)
 	endpointType := d.Get("endpoint_type").(string)
 
-	rContollerApi := rContollerClient.ResourceServiceInstanceV2()
-
-	instanceData, err := rContollerApi.GetInstance(instanceID)
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
-	instanceCRN := instanceData.Crn.String()
-	crnData := strings.Split(instanceCRN, ":")
-
-	var hpcsEndpointURL string
-
-	if crnData[4] == "hs-crypto" {
-		hpcsEndpointAPI, err := meta.(ClientSession).HpcsEndpointAPI()
-		if err != nil {
-			return err
-		}
-
-		resp, err := hpcsEndpointAPI.Endpoint().GetAPIEndpoint(instanceID)
-		if err != nil {
-			return err
-		}
-
-		if endpointType == "private" {
-			hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
-		} else {
-			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
-		}
-
-		u, err := url.Parse(hpcsEndpointURL)
-		if err != nil {
-			return fmt.Errorf("Error Parsing hpcs EndpointURL")
-		}
-		kpAPI.URL = u
-	} else if crnData[4] == "kms" {
-		if endpointType == "private" {
-			URL, _ := updatePrivateURL(kpAPI.Config.BaseURL)
-			u, err := url.Parse(URL)
-			if err != nil {
-				return fmt.Errorf("Error Parsing kms EndpointURL")
-			}
-			kpAPI.URL = u
-		}
-	} else {
-		return fmt.Errorf("Invalid or unsupported service Instance")
+	resourceInstanceGet := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
 	}
+
+	instanceData, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
+	if err != nil || instanceData == nil {
+		return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
+	}
+	extensions := instanceData.Extensions
+	URL, err := KmsEndpointURL(kpAPI, endpointType, extensions)
+	if err != nil {
+		return err
+	}
+	kpAPI.URL = URL
+
 	kpAPI.Config.InstanceID = instanceID
 
 	kpAPI.Config.KeyRing = d.Get("key_ring_id").(string)
@@ -384,50 +375,30 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	crn := d.Id()
 	crnData := strings.Split(crn, ":")
+	instanceCRN := fmt.Sprintf("%s::", strings.Split(crn, ":key:")[0])
 	endpointType := d.Get("endpoint_type").(string)
 	instanceID := crnData[len(crnData)-3]
 	keyid := crnData[len(crnData)-1]
 
-	var instanceType string
-	var hpcsEndpointURL string
-
-	if crnData[4] == "hs-crypto" {
-		instanceType = "hs-crypto"
-		hpcsEndpointAPI, err := meta.(ClientSession).HpcsEndpointAPI()
-		if err != nil {
-			return err
-		}
-
-		resp, err := hpcsEndpointAPI.Endpoint().GetAPIEndpoint(instanceID)
-		if err != nil {
-			return err
-		}
-
-		if endpointType == "private" {
-			hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
-		} else {
-			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
-		}
-
-		u, err := url.Parse(hpcsEndpointURL)
-		if err != nil {
-			return fmt.Errorf("Error Parsing hpcs EndpointURL")
-
-		}
-		kpAPI.URL = u
-	} else if crnData[4] == "kms" {
-		instanceType = "kms"
-		if endpointType == "private" {
-			URL, _ := updatePrivateURL(kpAPI.Config.BaseURL)
-			u, err := url.Parse(URL)
-			if err != nil {
-				return fmt.Errorf("Error Parsing kms EndpointURL")
-			}
-			kpAPI.URL = u
-		}
-	} else {
-		return fmt.Errorf("Invalid or unsupported service Instance")
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return err
 	}
+	resourceInstanceGet := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+
+	instanceData, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
+	if err != nil || instanceData == nil {
+		return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
+	}
+	extensions := instanceData.Extensions
+
+	URL, err := KmsEndpointURL(kpAPI, endpointType, extensions)
+	if err != nil {
+		return err
+	}
+	kpAPI.URL = URL
 
 	kpAPI.Config.InstanceID = instanceID
 	// keyid := d.Id()
@@ -439,6 +410,9 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		}
 		return fmt.Errorf("Get Key failed with error while reading policies: %s", err)
+	} else if key.State == 5 { //Refers to Deleted state of the Key
+		d.SetId("")
+		return nil
 	}
 
 	policies, err := kpAPI.GetPolicies(context.Background(), keyid)
@@ -451,6 +425,7 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("policies", flattenKeyPolicies(policies))
 	}
 	d.Set("instance_id", instanceID)
+	d.Set("instance_crn", instanceCRN)
 	d.Set("key_id", keyid)
 	d.Set("standard_key", key.Extractable)
 	d.Set("payload", key.Payload)
@@ -458,12 +433,12 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("iv_value", key.IV)
 	d.Set("key_name", key.Name)
 	d.Set("crn", key.CRN)
-	if strings.Contains((kpAPI.URL).String(), "private") {
+	if strings.Contains((kpAPI.URL).String(), "private") || strings.Contains(kpAPI.Config.BaseURL, "private") {
 		d.Set("endpoint_type", "private")
 	} else {
 		d.Set("endpoint_type", "public")
 	}
-	d.Set("type", instanceType)
+	d.Set("type", crnData[4])
 	d.Set("force_delete", d.Get("force_delete").(bool))
 	d.Set("key_ring_id", key.KeyRingID)
 	if key.Expiration != nil {
@@ -501,65 +476,31 @@ func resourceIBMKmsKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 
-		rContollerClient, err := meta.(ClientSession).ResourceControllerAPIV2()
-		if err != nil {
-			return err
-		}
-
-		instanceID := d.Get("instance_id").(string)
-		endpointType := d.Get("endpoint_type").(string)
-
-		rContollerApi := rContollerClient.ResourceServiceInstanceV2()
-
-		instanceData, err := rContollerApi.GetInstance(instanceID)
-		if err != nil {
-			return err
-		}
-		instanceCRN := instanceData.Crn.String()
-		crnData := strings.Split(instanceCRN, ":")
-
-		var hpcsEndpointURL string
-
-		if crnData[4] == "hs-crypto" {
-			hpcsEndpointAPI, err := meta.(ClientSession).HpcsEndpointAPI()
-			if err != nil {
-				return err
-			}
-
-			resp, err := hpcsEndpointAPI.Endpoint().GetAPIEndpoint(instanceID)
-			if err != nil {
-				return err
-			}
-
-			if endpointType == "private" {
-				hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
-			} else {
-				hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
-			}
-
-			u, err := url.Parse(hpcsEndpointURL)
-			if err != nil {
-				return fmt.Errorf("Error Parsing hpcs EndpointURL")
-			}
-			kpAPI.URL = u
-		} else if crnData[4] == "kms" {
-			if endpointType == "private" {
-				URL, _ := updatePrivateURL(kpAPI.Config.BaseURL)
-				u, err := url.Parse(URL)
-				if err != nil {
-					return fmt.Errorf("Error Parsing kms EndpointURL")
-				}
-				kpAPI.URL = u
-			}
-		} else {
-			return fmt.Errorf("Invalid or unsupported service Instance")
-		}
-
-		kpAPI.Config.InstanceID = instanceID
-
 		crn := d.Id()
-		crnData = strings.Split(crn, ":")
+		crnData := strings.Split(crn, ":")
+		endpointType := d.Get("endpoint_type").(string)
+		instanceID := crnData[len(crnData)-3]
 		key_id := crnData[len(crnData)-1]
+
+		rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+		if err != nil {
+			return err
+		}
+		resourceInstanceGet := rc.GetResourceInstanceOptions{
+			ID: &instanceID,
+		}
+
+		instanceData, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
+		if err != nil || instanceData == nil {
+			return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
+		}
+		extensions := instanceData.Extensions
+		URL, err := KmsEndpointURL(kpAPI, endpointType, extensions)
+		if err != nil {
+			return err
+		}
+		kpAPI.URL = URL
+		kpAPI.Config.InstanceID = instanceID
 
 		err = handlePolicies(d, kpAPI, meta, key_id)
 		if err != nil {
@@ -580,44 +521,26 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	endpointType := d.Get("endpoint_type").(string)
 	instanceID := crnData[len(crnData)-3]
 	keyid := crnData[len(crnData)-1]
-	kpAPI.Config.InstanceID = instanceID
 
-	var hpcsEndpointURL string
-
-	if crnData[4] == "hs-crypto" {
-		hpcsEndpointAPI, err := meta.(ClientSession).HpcsEndpointAPI()
-		if err != nil {
-			return err
-		}
-
-		resp, err := hpcsEndpointAPI.Endpoint().GetAPIEndpoint(instanceID)
-		if err != nil {
-			return err
-		}
-
-		if endpointType == "private" {
-			hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
-		} else {
-			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
-		}
-
-		u, err := url.Parse(hpcsEndpointURL)
-		if err != nil {
-			return fmt.Errorf("Error Parsing hpcs EndpointURL")
-		}
-		kpAPI.URL = u
-	} else if crnData[4] == "kms" {
-		if endpointType == "private" {
-			URL, _ := updatePrivateURL(kpAPI.Config.BaseURL)
-			u, err := url.Parse(URL)
-			if err != nil {
-				return fmt.Errorf("Error Parsing kms EndpointURL")
-			}
-			kpAPI.URL = u
-		}
-	} else {
-		return fmt.Errorf("Invalid or unsupported service Instance")
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return err
 	}
+	resourceInstanceGet := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+
+	instanceData, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
+	if err != nil || instanceData == nil {
+		return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
+	}
+	extensions := instanceData.Extensions
+	URL, err := KmsEndpointURL(kpAPI, endpointType, extensions)
+	if err != nil {
+		return err
+	}
+	kpAPI.URL = URL
+	kpAPI.Config.InstanceID = instanceID
 
 	force := d.Get("force_delete").(bool)
 	f := kp.ForceOpt{
@@ -645,45 +568,26 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 	endpointType := d.Get("endpoint_type").(string)
 	instanceID := crnData[len(crnData)-3]
 	keyid := crnData[len(crnData)-1]
-	kpAPI.Config.InstanceID = instanceID
 
-	var hpcsEndpointURL string
-
-	if crnData[4] == "hs-crypto" {
-		hpcsEndpointAPI, err := meta.(ClientSession).HpcsEndpointAPI()
-		if err != nil {
-			return false, err
-		}
-
-		resp, err := hpcsEndpointAPI.Endpoint().GetAPIEndpoint(instanceID)
-		if err != nil {
-			return false, err
-		}
-
-		if endpointType == "private" {
-			hpcsEndpointURL = "https://" + resp.Kms.Private + "/api/v2/keys"
-		} else {
-			hpcsEndpointURL = "https://" + resp.Kms.Public + "/api/v2/keys"
-		}
-
-		u, err := url.Parse(hpcsEndpointURL)
-		if err != nil {
-			return false, fmt.Errorf("Error Parsing hpcs EndpointURL")
-
-		}
-		kpAPI.URL = u
-	} else if crnData[4] == "kms" {
-		if endpointType == "private" {
-			URL, _ := updatePrivateURL(kpAPI.Config.BaseURL)
-			u, err := url.Parse(URL)
-			if err != nil {
-				return false, fmt.Errorf("Error Parsing kms EndpointURL")
-			}
-			kpAPI.URL = u
-		}
-	} else {
-		return false, fmt.Errorf("Invalid or unsupported service Instance")
+	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return false, err
 	}
+	resourceInstanceGet := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+
+	instanceData, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
+	if err != nil || instanceData == nil {
+		return false, fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
+	}
+	extensions := instanceData.Extensions
+	URL, err := KmsEndpointURL(kpAPI, endpointType, extensions)
+	if err != nil {
+		return false, err
+	}
+	kpAPI.URL = URL
+	kpAPI.Config.InstanceID = instanceID
 
 	_, err = kpAPI.GetKey(context.Background(), keyid)
 	if err != nil {
@@ -727,4 +631,21 @@ func handlePolicies(d *schema.ResourceData, kpAPI *kp.Client, meta interface{}, 
 		}
 	}
 	return nil
+}
+
+//Construct KMS URL
+func KmsEndpointURL(kpAPI *kp.Client, endpointType string, extensions map[string]interface{}) (*url.URL, error) {
+
+	exturl := extensions["endpoints"].(map[string]interface{})["public"]
+	if endpointType == "private" || strings.Contains(kpAPI.Config.BaseURL, "private") {
+		exturl = extensions["endpoints"].(map[string]interface{})["private"]
+	}
+	endpointURL := fmt.Sprintf("%s/api/v2/keys", exturl.(string))
+
+	url1 := envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, endpointURL)
+	u, err := url.Parse(url1)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error Parsing KMS EndpointURL")
+	}
+	return u, nil
 }

@@ -1,3 +1,97 @@
+## 1.33.1 (Oct1, 2021)
+ENHANCEMENTS
+
+* Ability to provide IP address for provisioning Power Systems using ibm_pi_instance resource ([3102](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3102))
+
+
+BUGFIXES
+
+* Regression: ibm_is_instance 1.33.0 no longer creates user_data ([3163](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3163))
+* Regression: "AuthorizationDelegator" no longer works in 1.30.0 ([3013](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3013))
+* Fix: ibm_database datasource returns nil for connectionstrings ([3166](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3166))
+* Fix: appid token config destination_claim should be optional ([3143](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3143))
+* Dereferencing of rg id, name and target update in floating ip ([3164](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3164))
+* DocFix: Security and compliance doc updates ([3155](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3155))
+
+# 1.33.0 (Sep28, 2021)
+FEATURES:
+
+* Support IBM Cloud Shell
+    - **Resources**
+        - ibm_cloud_shell_account_settings
+    - **DataSources**
+        - ibm_cloud_shell_account_settings
+
+* Support Security and Compliance Center
+    - **Resources**
+        - ibm_scc_si_note
+    - **DataSources**
+        - ibm_scc_si_note
+        - ibm_scc_si_notes
+        - ibm_scc_si_providers
+        - ibm_scc_posture_scopes
+        - ibm_scc_posture_latest_scans
+        - ibm_scc_posture_profiles
+        - ibm_scc_posture_scan_summary
+        -ibm_scc_posture_scan_summaries
+
+* Support Event Streams Schema
+    - **Resources**
+        - ibm_event_streams_schema
+    - **DataSources**
+        - ibm_event_streams_schema
+
+* Support AppID
+    - **Resources**
+        - ibm_appid_idp_google
+        - ibm_appid_mfa_channel
+    - **DataSources**
+        - ibm_appid_idp_google
+        - ibm_appid_mfa_channel
+
+* Support Cloudant database
+    - **Resources**
+        - ibm_cloudant
+    - **DataSources**
+        - ibm_cloudant
+
+* Support CIS Firewall Rules
+    - **Resources**
+        - ibm_cis_firewall_rules
+    - **DataSources**
+        - ibm_cis_firewall_rule
+
+**DeprecationMessage**: Resource ibm_is_security_group_network_interface_attachment is deprecated. Use ibm_is_security_group_target to attach a network interface to a security group
+
+ENHANCEMENTS
+
+* Feature: add support for Transit Gateway DLaaS ([3105](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3105))
+* Added changes for adjustable iops, capacity and volume profile ([3068](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3068))
+
+
+BUGFIXES
+
+* suppressing the change in wait_before_delete on import of is_instance which showed update in place ([3075](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3075))
+
+* ibm_is_instance_volume_attachment - Multiple volume creation and attachment failure ([3077](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3077))
+
+* data "ibm_container_cluster_config" results in intermittent authentication as 'system:anonymous ([2811](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2811))
+
+* Added missing crn to is resources ([3130](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3130))
+
+* Added a document update regarding allow_ip_spoofing on network interfaces for VSIs ([3145](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3145))
+
+* Changing an ibm_is_instance causes the associated ibm_is_floating_ip to fail ([3110](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3110))
+
+* Updated security group target APIs ([2896](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2896))
+
+* Failure modifying volume_name in ibm_is_instance_volume_attachment ([3089](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3089))
+
+* DocFix: Satellite Link and Endpoint resources ([3152](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3152))
+
+* Added zones parameter to immutable list and added hosts parameter to satellite location data source ([3137](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3137))
+
+
 ## 1.32.1 (Sep20, 2021)
 ENHANCEMENTS
 

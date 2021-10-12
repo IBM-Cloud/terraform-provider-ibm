@@ -10,6 +10,8 @@ description: |-
 
 Create, update, or delete an IBM Cloud AppID Management Services Cloud Directory user resource.
 
+Note: depending on your AppID Cloud Directory settings, new user creation may trigger user verification email.
+
 ## Example usage
 
 ```terraform
@@ -35,6 +37,7 @@ Review the argument references that you can specify for your resource.
 
 - `tenant_id` - (Required, String) The AppID instance GUID
 - `active` - (Optional, Boolean) Determines if the user account is active or not (Default: true)
+- `create_profile` - (Optional, Boolean) A boolean indication if a profile should be created for the Cloud Directory user
 - `locked_until` - (Optional, Integer) Epoch time in milliseconds, determines till when the user account will be locked
 - `display_name` - (Optional, String) Optional user's display name, defaults to user's email
 - `user_name` - (Optional, String) Username
@@ -50,6 +53,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute references after your resource is created
 
 - `user_id` - (String) User identifier
+- `subject` - (String) The user's identifier ('subject' in identity token)
 - `meta` - (List of Object) User metadata
 
   Nested scheme for `meta`:

@@ -18,6 +18,7 @@ import (
 
 const (
 	isInstanceName                    = "name"
+	IsInstanceCRN                     = "crn"
 	isInstanceKeys                    = "keys"
 	isInstanceTags                    = "tags"
 	isInstanceNetworkInterfaces       = "network_interfaces"
@@ -156,6 +157,11 @@ func resourceIBMISInstance() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "VPC id",
+			},
+			IsInstanceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Crn for this Instance",
 			},
 
 			isInstanceSourceTemplate: {
@@ -458,30 +464,30 @@ func resourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstanceGpu: {
-				Type:       schema.TypeList,
-				Computed:   true,
-				Deprecated: "This field is deprecated",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The virtual server instance GPU configuration",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						isInstanceGpuCores: {
-							Type:     schema.TypeInt,
-							Computed: true,
-						},
 						isInstanceGpuCount: {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The number of GPUs assigned to the instance",
 						},
 						isInstanceGpuMemory: {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The overall amount of GPU memory in GiB (gibibytes)",
 						},
 						isInstanceGpuManufacturer: {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The GPU manufacturer",
 						},
 						isInstanceGpuModel: {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The GPU model",
 						},
 					},
 				},
@@ -1491,16 +1497,14 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 
 	d.Set(isInstanceMemory, *instance.Memory)
 	gpuList := make([]map[string]interface{}, 0)
-	// if instance.Gpu != nil {
-	// 	currentGpu := map[string]interface{}{}
-	// 	currentGpu[isInstanceGpuManufacturer] = instance.Gpu.Manufacturer
-	// 	currentGpu[isInstanceGpuModel] = instance.Gpu.Model
-	// 	currentGpu[isInstanceGpuCores] = instance.Gpu.Cores
-	// 	currentGpu[isInstanceGpuCount] = instance.Gpu.Count
-	// 	currentGpu[isInstanceGpuMemory] = instance.Gpu.Memory
-	// 	gpuList = append(gpuList, currentGpu)
-
-	// }
+	if instance.Gpu != nil {
+		currentGpu := map[string]interface{}{}
+		currentGpu[isInstanceGpuManufacturer] = instance.Gpu.Manufacturer
+		currentGpu[isInstanceGpuModel] = instance.Gpu.Model
+		currentGpu[isInstanceGpuCount] = instance.Gpu.Count
+		currentGpu[isInstanceGpuMemory] = instance.Gpu.Memory
+		gpuList = append(gpuList, currentGpu)
+	}
 	d.Set(isInstanceGpu, gpuList)
 
 	if instance.PrimaryNetworkInterface != nil {
@@ -1641,6 +1645,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/compute/vs")
 	d.Set(ResourceName, *instance.Name)
 	d.Set(ResourceCRN, *instance.CRN)
+	d.Set(IsInstanceCRN, *instance.CRN)
 	d.Set(ResourceStatus, *instance.Status)
 	if instance.ResourceGroup != nil {
 		d.Set(isInstanceResourceGroup, *instance.ResourceGroup.ID)
@@ -1746,11 +1751,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		if len(add) > 0 {
 			networkID := d.Get("primary_network_interface.0.id").(string)
 			for i := range add {
-				createsgnicoptions := &vpcv1.AddSecurityGroupNetworkInterfaceOptions{
+				createsgnicoptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{
 					SecurityGroupID: &add[i],
 					ID:              &networkID,
 				}
-				_, response, err := instanceC.AddSecurityGroupNetworkInterface(createsgnicoptions)
+				_, response, err := instanceC.CreateSecurityGroupTargetBinding(createsgnicoptions)
 				if err != nil {
 					return fmt.Errorf("Error while creating security group %q for primary network interface of instance %s\n%s: %q", add[i], d.Id(), err, response)
 				}
@@ -1764,11 +1769,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		if len(remove) > 0 {
 			networkID := d.Get("primary_network_interface.0.id").(string)
 			for i := range remove {
-				deletesgnicoptions := &vpcv1.RemoveSecurityGroupNetworkInterfaceOptions{
+				deletesgnicoptions := &vpcv1.DeleteSecurityGroupTargetBindingOptions{
 					SecurityGroupID: &remove[i],
 					ID:              &networkID,
 				}
-				response, err := instanceC.RemoveSecurityGroupNetworkInterface(deletesgnicoptions)
+				response, err := instanceC.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
 				if err != nil {
 					return fmt.Errorf("Error while removing security group %q for primary network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
 				}
@@ -1825,11 +1830,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
 					networkID := d.Get(networkIDKey).(string)
 					for i := range add {
-						createsgnicoptions := &vpcv1.AddSecurityGroupNetworkInterfaceOptions{
+						createsgnicoptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{
 							SecurityGroupID: &add[i],
 							ID:              &networkID,
 						}
-						_, response, err := instanceC.AddSecurityGroupNetworkInterface(createsgnicoptions)
+						_, response, err := instanceC.CreateSecurityGroupTargetBinding(createsgnicoptions)
 						if err != nil {
 							return fmt.Errorf("Error while creating security group %q for network interface of instance %s\n%s: %q", add[i], d.Id(), err, response)
 						}
@@ -1844,11 +1849,11 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
 					networkID := d.Get(networkIDKey).(string)
 					for i := range remove {
-						deletesgnicoptions := &vpcv1.RemoveSecurityGroupNetworkInterfaceOptions{
+						deletesgnicoptions := &vpcv1.DeleteSecurityGroupTargetBindingOptions{
 							SecurityGroupID: &remove[i],
 							ID:              &networkID,
 						}
-						response, err := instanceC.RemoveSecurityGroupNetworkInterface(deletesgnicoptions)
+						response, err := instanceC.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
 						if err != nil {
 							return fmt.Errorf("Error while removing security group %q for network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
 						}
@@ -2317,7 +2322,7 @@ func resourceIbmIsInstanceInstanceDiskToMap(instanceDisk vpcv1.InstanceDisk) map
 
 func suppressEnableCleanDelete(k, old, new string, d *schema.ResourceData) bool {
 	// During import
-	if old == "" && !d.IsNewResource() {
+	if old == "" && d.Id() != "" {
 		return true
 	}
 	return false
@@ -2325,7 +2330,7 @@ func suppressEnableCleanDelete(k, old, new string, d *schema.ResourceData) bool 
 
 func suppressUserData(k, old, new string, d *schema.ResourceData) bool {
 	// During import
-	if old == "" && !d.IsNewResource() {
+	if old == "" && d.Id() != "" {
 		return true
 	}
 	return false

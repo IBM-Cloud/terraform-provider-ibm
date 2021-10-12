@@ -154,6 +154,16 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
+						"bundlename": {
+							Description: "Cassandra Bundle Name",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"bundlebase64": {
+							Description: "Cassandra base64 encoding",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
 						"password": {
 							Description: "Password",
 							Type:        schema.TypeString,

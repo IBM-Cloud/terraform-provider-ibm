@@ -16,6 +16,7 @@ import (
 
 const (
 	isKeyName          = "name"
+	IsKeyCRN           = "crn"
 	isKeyPublicKey     = "public_key"
 	isKeyType          = "type"
 	isKeyFingerprint   = "fingerprint"
@@ -102,6 +103,12 @@ func resourceIBMISSSHKey() *schema.Resource {
 			},
 
 			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			IsKeyCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The crn of the resource",
@@ -237,6 +244,7 @@ func keyGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/compute/sshKeys")
 	d.Set(ResourceName, *key.Name)
 	d.Set(ResourceCRN, *key.CRN)
+	d.Set(IsKeyCRN, *key.CRN)
 	if key.ResourceGroup != nil {
 		d.Set(ResourceGroupName, *key.ResourceGroup.Name)
 		d.Set(isKeyResourceGroup, *key.ResourceGroup.ID)

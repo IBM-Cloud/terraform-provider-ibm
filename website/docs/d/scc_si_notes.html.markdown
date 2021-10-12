@@ -1,14 +1,14 @@
 ---
 layout: "ibm"
 subcategory: "Security and Compliance Center"
-page_title: "IBM : ibm_scc_si_note"
+page_title: "IBM : ibm_scc_si_notes"
 description: |-
-  Get information about scc_si_note
+  Get information about scc_si_notes
 ---
 
-# ibm_scc_si_note
+# ibm_scc_si_notes
 
-Provides a read-only data source for scc_si_note. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for scc_si_notes. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 

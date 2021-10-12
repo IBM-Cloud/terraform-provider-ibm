@@ -38,12 +38,12 @@ func dataSourceIBMAppIDLanguagesRead(ctx context.Context, d *schema.ResourceData
 
 	tenantID := d.Get("tenant_id").(string)
 
-	langs, _, err := appIDClient.GetLocalizationWithContext(ctx, &appid.GetLocalizationOptions{
+	langs, resp, err := appIDClient.GetLocalizationWithContext(ctx, &appid.GetLocalizationOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error getting AppID languages: %s", err)
+		return diag.Errorf("Error getting AppID languages: %s\n%s", err, resp)
 	}
 
 	d.Set("languages", langs.Languages)

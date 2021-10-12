@@ -671,3 +671,7 @@ data "ibm_is_placement_group" "is_placement_group" {
 
 data "ibm_is_placement_groups" "is_placement_groups" {
 }
+
+## List regions 
+data "ibm_is_regions" "regions" {
+}

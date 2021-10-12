@@ -35,12 +35,12 @@ func dataSourceIBMAppIDIDPSAMLMetadataRead(ctx context.Context, d *schema.Resour
 
 	tenantID := d.Get("tenant_id").(string)
 
-	metadata, _, err := appidClient.GetSAMLMetadataWithContext(ctx, &appid.GetSAMLMetadataOptions{
+	metadata, resp, err := appidClient.GetSAMLMetadataWithContext(ctx, &appid.GetSAMLMetadataOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error loading AppID SAML metadata: %s", err)
+		return diag.Errorf("Error loading AppID SAML metadata: %s\n%s", err, resp)
 	}
 
 	if err := d.Set("metadata", metadata); err != nil {

@@ -104,6 +104,11 @@ func dataSourceIBMISInstances() *schema.Resource {
 							Computed:    true,
 							Description: "Instance name",
 						},
+						"crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The crn for this Instance",
+						},
 						"memory": {
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -371,6 +376,37 @@ func dataSourceIBMISInstances() *schema.Resource {
 							Computed:    true,
 							Description: "Instance Image",
 						},
+
+						isInstanceGpu: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Instance GPU",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isInstanceGpuCount: {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Instance GPU Count",
+									},
+									isInstanceGpuMemory: {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Instance GPU Memory",
+									},
+									isInstanceGpuManufacturer: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Instance GPU Manufacturer",
+									},
+									isInstanceGpuModel: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Instance GPU Model",
+									},
+								},
+							},
+						},
+
 						isInstanceDisks: &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -595,6 +631,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		id := *instance.ID
 		l := map[string]interface{}{}
 		l["id"] = id
+		l["crn"] = *instance.CRN
 		l["name"] = *instance.Name
 		l["memory"] = *instance.Memory
 		l["status"] = *instance.Status
@@ -718,6 +755,17 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			cpuList = append(cpuList, currentCPU)
 		}
 		l["vcpu"] = cpuList
+
+		gpuList := make([]map[string]interface{}, 0)
+		if instance.Gpu != nil {
+			currentGpu := map[string]interface{}{}
+			currentGpu[isInstanceGpuManufacturer] = instance.Gpu.Manufacturer
+			currentGpu[isInstanceGpuModel] = instance.Gpu.Model
+			currentGpu[isInstanceGpuCount] = instance.Gpu.Count
+			currentGpu[isInstanceGpuMemory] = instance.Gpu.Memory
+			gpuList = append(gpuList, currentGpu)
+			l[isInstanceGpu] = gpuList
+		}
 
 		l["zone"] = *instance.Zone.Name
 		if instance.Image != nil {

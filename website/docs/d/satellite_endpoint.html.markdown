@@ -1,19 +1,19 @@
 ---
 subcategory: "Satellite"
 layout: "ibm"
-page_title: "IBM : satellite_endpoint"
+page_title: "IBM : ibm_satellite_endpoint"
 description: |-
-  Get information about satellite_endpoint
+  Get information about ibm_satellite_endpoint
 ---
 
 # ibm\_satellite_endpoint
 
-Provides a read-only data source for satellite_endpoint. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for ibm_satellite_endpoint. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "satellite_endpoint" "satellite_endpoint" {
+data "ibm_satellite_endpoint" "satellite_endpoint" {
 	location = "location_id"
 	endpoint_id = "endpoint_id"
 }
@@ -52,7 +52,7 @@ In addition to all arguments above, the following attributes are exported:
 		* `key` - The private key of the connector. Nested `key` blocks have the following structure:
 			* `filename` - The name of the key.
 * `display_name` - The display name of the endpoint. Endpoint names must start with a letter and end with an alphanumeric character, can contain letters, numbers, and hyphen (-), and must be 63 characters or fewer.
-* `id` - The unique identifier of the satellite_endpoint.
+* `id` - The unique identifier of the ibm_satellite_endpoint.
 * `last_change` - The last time modify the Endpoint configurations.
 * `performance` - The last performance data of the endpoint. Nested `performance` blocks have the following structure:
 	* `connection` - Concurrent connections number of moment when probe read the data.

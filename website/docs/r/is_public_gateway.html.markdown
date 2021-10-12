@@ -52,6 +52,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `crn` - (String) The crn for the public gateway.
 - `id` - (String) The unique identifier that was assigned to your public gateway.
 - `status` - (String) The provisioning status of your public gateway.
 

@@ -45,11 +45,11 @@ func resourceIBMAppIDRedirectURLsRead(ctx context.Context, d *schema.ResourceDat
 
 	tenantID := d.Id()
 
-	urls, _, err := appIDClient.GetRedirectUrisWithContext(ctx, &appid.GetRedirectUrisOptions{
+	urls, resp, err := appIDClient.GetRedirectUrisWithContext(ctx, &appid.GetRedirectUrisOptions{
 		TenantID: &tenantID,
 	})
 	if err != nil {
-		return diag.Errorf("Error loading AppID Cloud Directory redirect urls: %s", err)
+		return diag.Errorf("Error loading AppID Cloud Directory redirect urls: %s\n%s", err, resp)
 	}
 
 	if err := d.Set("urls", urls.RedirectUris); err != nil {
@@ -72,7 +72,7 @@ func resourceIBMAppIDRedirectURLsCreate(ctx context.Context, d *schema.ResourceD
 	urls := d.Get("urls")
 
 	redirectURLs := expandStringList(urls.([]interface{}))
-	_, err = appIDClient.UpdateRedirectUrisWithContext(ctx, &appid.UpdateRedirectUrisOptions{
+	resp, err := appIDClient.UpdateRedirectUrisWithContext(ctx, &appid.UpdateRedirectUrisOptions{
 		TenantID: &tenantID,
 		RedirectUrisArray: &appid.RedirectURIConfig{
 			RedirectUris: redirectURLs,
@@ -80,7 +80,7 @@ func resourceIBMAppIDRedirectURLsCreate(ctx context.Context, d *schema.ResourceD
 	})
 
 	if err != nil {
-		return diag.Errorf("Error updating AppID Cloud Directory redirect URLs: %s", err)
+		return diag.Errorf("Error updating AppID Cloud Directory redirect URLs: %s\n%s", err, resp)
 	}
 
 	d.SetId(tenantID)
@@ -98,7 +98,7 @@ func resourceIBMAppIDRedirectURLsUpdate(ctx context.Context, d *schema.ResourceD
 	urls := d.Get("urls")
 
 	redirectURLs := expandStringList(urls.([]interface{}))
-	_, err = appIDClient.UpdateRedirectUrisWithContext(ctx, &appid.UpdateRedirectUrisOptions{
+	resp, err := appIDClient.UpdateRedirectUrisWithContext(ctx, &appid.UpdateRedirectUrisOptions{
 		TenantID: &tenantID,
 		RedirectUrisArray: &appid.RedirectURIConfig{
 			RedirectUris: redirectURLs,
@@ -106,7 +106,7 @@ func resourceIBMAppIDRedirectURLsUpdate(ctx context.Context, d *schema.ResourceD
 	})
 
 	if err != nil {
-		return diag.Errorf("Error updating AppID Cloud Directory redirect URLs: %s", err)
+		return diag.Errorf("Error updating AppID Cloud Directory redirect URLs: %s\n%s", err, resp)
 	}
 
 	return resourceIBMAppIDRedirectURLsRead(ctx, d, meta)
@@ -121,7 +121,7 @@ func resourceIBMAppIDRedirectURLsDelete(ctx context.Context, d *schema.ResourceD
 
 	tenantID := d.Get("tenant_id").(string)
 
-	_, err = appIDClient.UpdateRedirectUrisWithContext(ctx, &appid.UpdateRedirectUrisOptions{
+	resp, err := appIDClient.UpdateRedirectUrisWithContext(ctx, &appid.UpdateRedirectUrisOptions{
 		TenantID: &tenantID,
 		RedirectUrisArray: &appid.RedirectURIConfig{
 			RedirectUris: []string{},
@@ -129,7 +129,7 @@ func resourceIBMAppIDRedirectURLsDelete(ctx context.Context, d *schema.ResourceD
 	})
 
 	if err != nil {
-		return diag.Errorf("Error resetting AppID Cloud Directory redirect URLs: %s", err)
+		return diag.Errorf("Error resetting AppID Cloud Directory redirect URLs: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

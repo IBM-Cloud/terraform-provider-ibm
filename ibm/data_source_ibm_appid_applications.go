@@ -74,12 +74,12 @@ func dataSourceIBMAppIDApplicationsRead(ctx context.Context, d *schema.ResourceD
 
 	tenantID := d.Get("tenant_id").(string)
 
-	apps, _, err := appIDClient.ListApplicationsWithContext(ctx, &appid.ListApplicationsOptions{
+	apps, resp, err := appIDClient.ListApplicationsWithContext(ctx, &appid.ListApplicationsOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error listing AppID applications: %s", err)
+		return diag.Errorf("Error listing AppID applications: %s\n%s", err, resp)
 	}
 
 	applicationList := make([]interface{}, len(apps.Applications))

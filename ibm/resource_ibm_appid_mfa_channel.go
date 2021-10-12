@@ -72,12 +72,12 @@ func resourceIBMAppIDMFAChannelRead(ctx context.Context, d *schema.ResourceData,
 
 	tenantID := d.Id()
 
-	ch, _, err := appIDClient.ListChannelsWithContext(ctx, &appid.ListChannelsOptions{
+	ch, resp, err := appIDClient.ListChannelsWithContext(ctx, &appid.ListChannelsOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error getting AppID MFA channels: %s", err)
+		return diag.Errorf("Error getting AppID MFA channels: %s\n%s", err, resp)
 	}
 
 	for _, channel := range ch.Channels {
@@ -128,10 +128,10 @@ func resourceIBMAppIDMFAChannelCreate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	_, _, err = appIDClient.UpdateChannelWithContext(ctx, input)
+	_, resp, err := appIDClient.UpdateChannelWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error updating AppID MFA configuration: %s", err)
+		return diag.Errorf("Error updating AppID MFA configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId(tenantID)
@@ -161,10 +161,10 @@ func resourceIBMAppIDMFAChannelDelete(ctx context.Context, d *schema.ResourceDat
 		},
 	}
 
-	_, _, err = appIDClient.UpdateChannelWithContext(ctx, input)
+	_, resp, err := appIDClient.UpdateChannelWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error resetting AppID MFA configuration: %s", err)
+		return diag.Errorf("Error resetting AppID MFA configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

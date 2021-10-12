@@ -13,6 +13,7 @@ import (
 )
 
 var appIDTenantID string
+var appIDTestUserEmail string
 var cfOrganization string
 var cfSpace string
 var cisDomainStatic string
@@ -111,10 +112,20 @@ var account_to_be_imported string
 //Security and Compliance Center, SI
 var scc_si_account string
 
+//Security and Compliance Center, Posture Management
+var scc_posture_scope_id string
+var scc_posture_scan_id string
+var scc_posture_profile_id string
+
 func init() {
 	appIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
 	if appIDTenantID == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_APPID_TENANT_ID for testing AppID resources, AppID tests will fail if this is not set")
+	}
+
+	appIDTestUserEmail = os.Getenv("IBM_APPID_TEST_USER_EMAIL")
+	if appIDTestUserEmail == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_APPID_TEST_USER_EMAIL for testing AppID user resources, the tests will fail if this is not set")
 	}
 
 	cfOrganization = os.Getenv("IBM_ORG")
@@ -358,7 +369,7 @@ func init() {
 	isImage = os.Getenv("IS_IMAGE")
 	if isImage == "" {
 		//isImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
-		isImage = "r006-5b05b4fe-bcbc-4309-ad45-3354813227a0" // for next gen infrastructure
+		isImage = "r006-13938c0a-89e4-4370-b59b-55cd1402562d" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00'")
 	}
 
@@ -589,6 +600,21 @@ func init() {
 	scc_si_account = os.Getenv("SCC_SI_ACCOUNT")
 	if scc_si_account == "" {
 		fmt.Println("[INFO] Set the environment variable SCC_SI_ACCOUNT for testing SCC SI resources resource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_scope_id = os.Getenv("SCC_POSTURE_SCOPE_ID")
+	if scc_posture_scope_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_SCOPE_ID for testing SCC Posture resources or datasource resource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_scan_id = os.Getenv("SCC_POSTURE_SCAN_ID")
+	if scc_posture_scan_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_SCAN_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_profile_id = os.Getenv("SCC_POSTURE_PROFILE_ID")
+	if scc_posture_profile_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_PROFILE_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
 	}
 
 	cloudShellAccountID = os.Getenv("IBM_CLOUD_SHELL_ACCOUNT_ID")
