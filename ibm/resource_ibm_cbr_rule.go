@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -16,18 +17,18 @@ import (
 
 func resourceIBMCbrRule() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIBMCbrRuleCreate,
-		ReadContext:     resourceIBMCbrRuleRead,
-		UpdateContext:   resourceIBMCbrRuleUpdate,
-		DeleteContext:   resourceIBMCbrRuleDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMCbrRuleCreate,
+		ReadContext:   resourceIBMCbrRuleRead,
+		UpdateContext: resourceIBMCbrRuleUpdate,
+		DeleteContext: resourceIBMCbrRuleDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_cbr_rule", "description"),
-				Description: "The description of the rule.",
+				Description:  "The description of the rule.",
 			},
 			"contexts": &schema.Schema{
 				Type:        schema.TypeList,
@@ -115,10 +116,10 @@ func resourceIBMCbrRule() *schema.Resource {
 				},
 			},
 			"transaction_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_cbr_rule", "transaction_id"),
-				Description: "The UUID that is used to correlate and track transactions. If you omit this field, the service generates and sends a transaction ID in the response.**Note:** To help with debugging, we strongly recommend that you generate and supply a `Transaction-Id` with each request.",
+				Description:  "The UUID that is used to correlate and track transactions. If you omit this field, the service generates and sends a transaction ID in the response.**Note:** To help with debugging, we strongly recommend that you generate and supply a `Transaction-Id` with each request.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -166,7 +167,7 @@ func resourceIBMCbrRuleValidator() *ResourceValidator {
 			ValidateFunctionIdentifier: ValidateRegexpLen,
 			Type:                       TypeString,
 			Optional:                   true,
-			Regexp:                     `^[\\x20-\\xFE]*$`,
+			Regexp:                     `^[\x20-\xFE]*$`,
 			MinValueLength:             0,
 			MaxValueLength:             300,
 		},
@@ -175,7 +176,7 @@ func resourceIBMCbrRuleValidator() *ResourceValidator {
 			ValidateFunctionIdentifier: ValidateRegexpLen,
 			Type:                       TypeString,
 			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9\\-_]+$`,
+			Regexp:                     `^[a-zA-Z0-9\-_]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128,
 		},
@@ -247,7 +248,6 @@ func resourceIBMCbrRuleMapToRuleContextAttribute(ruleContextAttributeMap map[str
 
 	ruleContextAttribute.Name = core.StringPtr(ruleContextAttributeMap["name"].(string))
 	ruleContextAttribute.Value = core.StringPtr(ruleContextAttributeMap["value"].(string))
-
 	return ruleContextAttribute
 }
 
@@ -277,7 +277,7 @@ func resourceIBMCbrRuleMapToResourceAttribute(resourceAttributeMap map[string]in
 
 	resourceAttribute.Name = core.StringPtr(resourceAttributeMap["name"].(string))
 	resourceAttribute.Value = core.StringPtr(resourceAttributeMap["value"].(string))
-	if resourceAttributeMap["operator"] != nil {
+	if resourceAttributeMap["operator"] != nil && resourceAttributeMap["operator"] != "" {
 		resourceAttribute.Operator = core.StringPtr(resourceAttributeMap["operator"].(string))
 	}
 
@@ -289,7 +289,7 @@ func resourceIBMCbrRuleMapToResourceTagAttribute(resourceTagAttributeMap map[str
 
 	resourceTagAttribute.Name = core.StringPtr(resourceTagAttributeMap["name"].(string))
 	resourceTagAttribute.Value = core.StringPtr(resourceTagAttributeMap["value"].(string))
-	if resourceTagAttributeMap["operator"] != nil {
+	if resourceTagAttributeMap["operator"] != nil && resourceTagAttributeMap["operator"] != "" {
 		resourceTagAttribute.Operator = core.StringPtr(resourceTagAttributeMap["operator"].(string))
 	}
 
@@ -491,7 +491,7 @@ func resourceIBMCbrRuleDelete(context context.Context, d *schema.ResourceData, m
 
 	deleteRuleOptions.SetRuleID(d.Id())
 
-	deleteRuleOptions.SetIfMatch(d.Get("version").(string))
+	// deleteRuleOptions.SetIfMatch(d.Get("version").(string))
 
 	response, err := contextBasedRestrictionsClient.DeleteRuleWithContext(context, deleteRuleOptions)
 	if err != nil {

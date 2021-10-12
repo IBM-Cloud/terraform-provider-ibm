@@ -29,7 +29,7 @@ variable "cbr_zone_transaction_id" {
 variable "cbr_rule_description" {
   description = "The description of the rule."
   type        = string
-  default     = "this is an example of rule"
+  default     = "this is a terraform example of rule"
 }
 variable "cbr_rule_transaction_id" {
   description = "The UUID that is used to correlate and track transactions. If you omit this field, the service generates and sends a transaction ID in the response.**Note:** To help with debugging, we strongly recommend that you generate and supply a `Transaction-Id` with each request."
@@ -41,12 +41,12 @@ variable "cbr_rule_transaction_id" {
 variable "cbr_zone_zone_id" {
   description = "The ID of a zone."
   type        = string
-  default     = "zone_id"
+  default     = "559052eb8f43302824e7ae490c0281eb"
 }
 
 // Data source arguments for cbr_rule
 variable "cbr_rule_rule_id" {
   description = "The ID of a rule."
   type        = string
-  default     = "rule_id"
+  default     = "07bca38c06db1a6e125d9738c701f2c1"
 }

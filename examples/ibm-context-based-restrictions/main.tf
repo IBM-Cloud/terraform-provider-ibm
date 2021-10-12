@@ -4,28 +4,20 @@ provider "ibm" {
 
 // Provision cbr_zone resource instance
 resource "ibm_cbr_zone" "cbr_zone_instance" {
-  name = var.cbr_zone_name
-  account_id = var.cbr_zone_account_id
-  description = var.cbr_zone_description
+  name = "terraform example test zone"
+  account_id = "82cbc8dcd1ab4112b7272b410ac9965c"
+  description = "terraform example test zone"
   addresses {
     type = "ipAddress"
-    value = "value"
-    ref {
-      account_id = "account_id"
-      service_type = "service_type"
-      service_name = "service_name"
-      service_instance = "service_instance"
-    }
+    value = "169.23.56.234"
+  }
+  addresses {
+    type = "ipRange"
+    value = "169.23.22.0-169.23.22.255"
   }
   excluded {
-    type = "ipAddress"
-    value = "value"
-    ref {
-      account_id = "account_id"
-      service_type = "service_type"
-      service_name = "service_name"
-      service_instance = "service_instance"
-    }
+    type  = "ipAddress"
+    value = "169.23.22.10"
   }
   transaction_id = var.cbr_zone_transaction_id
 }
@@ -35,20 +27,22 @@ resource "ibm_cbr_rule" "cbr_rule_instance" {
   description = var.cbr_rule_description
   contexts {
     attributes {
-      name = "name"
-      value = "value"
+      name = "networkZoneId"
+      value = ibm_cbr_zone.cbr_zone_instance.id
     }
   }
   resources {
     attributes {
-      name = "name"
-      value = "value"
-      operator = "operator"
+      name = "accountId"
+      value = "82cbc8dcd1ab4112b7272b410ac9965c"
+    }
+    attributes {
+      name = "serviceName"
+      value = "network-policy-enabled"
     }
     tags {
-      name = "name"
-      value = "value"
-      operator = "operator"
+      name     = "tag_name"
+      value    = "tag_value"
     }
   }
   transaction_id = var.cbr_rule_transaction_id
@@ -58,6 +52,7 @@ resource "ibm_cbr_rule" "cbr_rule_instance" {
 data "ibm_cbr_zone" "cbr_zone_instance" {
   zone_id = var.cbr_zone_zone_id
 }
+
 
 // Create cbr_rule data source
 data "ibm_cbr_rule" "cbr_rule_instance" {

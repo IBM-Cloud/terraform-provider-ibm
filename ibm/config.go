@@ -1279,8 +1279,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.appidAPI = appIDClient
 
 	// Construct an "options" struct for creating Context Based Restrictions  service client.
+	cbrURL := contextbasedrestrictionsv1.DefaultServiceURL
 	contextBasedRestrictionsClientOptions := &contextbasedrestrictionsv1.Options{
 		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT"}, cbrURL),
 	}
 
 	// Construct the service client.

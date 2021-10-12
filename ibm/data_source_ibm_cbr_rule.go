@@ -223,7 +223,6 @@ func dataSourceRuleFlattenContexts(result []contextbasedrestrictionsv1.RuleConte
 func dataSourceRuleContextsToMap(contextsItem contextbasedrestrictionsv1.RuleContext) (contextsMap map[string]interface{}) {
 	contextsMap = map[string]interface{}{}
 
-	
 	if contextsItem.Attributes != nil {
 		attributesList := []map[string]interface{}{}
 		for _, attributesItem := range contextsItem.Attributes {
@@ -248,8 +247,6 @@ func dataSourceRuleContextsAttributesToMap(attributesItem contextbasedrestrictio
 	return attributesMap
 }
 
-
-
 func dataSourceRuleFlattenResources(result []contextbasedrestrictionsv1.Resource) (resources []map[string]interface{}) {
 	for _, resourcesItem := range result {
 		resources = append(resources, dataSourceRuleResourcesToMap(resourcesItem))
@@ -261,7 +258,6 @@ func dataSourceRuleFlattenResources(result []contextbasedrestrictionsv1.Resource
 func dataSourceRuleResourcesToMap(resourcesItem contextbasedrestrictionsv1.Resource) (resourcesMap map[string]interface{}) {
 	resourcesMap = map[string]interface{}{}
 
-	
 	if resourcesItem.Attributes != nil {
 		attributesList := []map[string]interface{}{}
 		for _, attributesItem := range resourcesItem.Attributes {
@@ -296,7 +292,6 @@ func dataSourceRuleResourcesAttributesToMap(attributesItem contextbasedrestricti
 	return attributesMap
 }
 
-
 func dataSourceRuleResourcesTagsToMap(tagsItem contextbasedrestrictionsv1.ResourceTagAttribute) (tagsMap map[string]interface{}) {
 	tagsMap = map[string]interface{}{}
 
@@ -312,5 +307,3 @@ func dataSourceRuleResourcesTagsToMap(tagsItem contextbasedrestrictionsv1.Resour
 
 	return tagsMap
 }
-
-

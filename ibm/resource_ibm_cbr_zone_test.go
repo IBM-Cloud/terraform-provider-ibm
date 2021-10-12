@@ -81,7 +81,7 @@ func testAccCheckIBMCbrZoneConfigBasic() string {
 
 		resource "ibm_cbr_zone" "cbr_zone" {
 		}
-	`, )
+	`)
 }
 
 func testAccCheckIBMCbrZoneConfig(name string, accountID string, description string, transactionID string) string {

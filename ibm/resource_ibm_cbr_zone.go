@@ -17,30 +17,30 @@ import (
 
 func resourceIBMCbrZone() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIBMCbrZoneCreate,
-		ReadContext:     resourceIBMCbrZoneRead,
-		UpdateContext:   resourceIBMCbrZoneUpdate,
-		DeleteContext:   resourceIBMCbrZoneDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMCbrZoneCreate,
+		ReadContext:   resourceIBMCbrZoneRead,
+		UpdateContext: resourceIBMCbrZoneUpdate,
+		DeleteContext: resourceIBMCbrZoneDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_cbr_zone", "name"),
-				Description: "The name of the zone.",
+				Description:  "The name of the zone.",
 			},
 			"account_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_cbr_zone", "account_id"),
-				Description: "The id of the account owning this zone.",
+				Description:  "The id of the account owning this zone.",
 			},
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_cbr_zone", "description"),
-				Description: "The description of the zone.",
+				Description:  "The description of the zone.",
 			},
 			"addresses": &schema.Schema{
 				Type:        schema.TypeList,
@@ -141,10 +141,10 @@ func resourceIBMCbrZone() *schema.Resource {
 				},
 			},
 			"transaction_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_cbr_zone", "transaction_id"),
-				Description: "The UUID that is used to correlate and track transactions. If you omit this field, the service generates and sends a transaction ID in the response.**Note:** To help with debugging, we strongly recommend that you generate and supply a `Transaction-Id` with each request.",
+				Description:  "The UUID that is used to correlate and track transactions. If you omit this field, the service generates and sends a transaction ID in the response.**Note:** To help with debugging, we strongly recommend that you generate and supply a `Transaction-Id` with each request.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -220,7 +220,7 @@ func resourceIBMCbrZoneValidator() *ResourceValidator {
 			ValidateFunctionIdentifier: ValidateRegexpLen,
 			Type:                       TypeString,
 			Optional:                   true,
-			Regexp:                     `^[\\x20-\\xFE]*$`,
+			Regexp:                     `^[\x20-\xFE]*$`,
 			MinValueLength:             0,
 			MaxValueLength:             300,
 		},
@@ -229,7 +229,7 @@ func resourceIBMCbrZoneValidator() *ResourceValidator {
 			ValidateFunctionIdentifier: ValidateRegexpLen,
 			Type:                       TypeString,
 			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9\\-_]+$`,
+			Regexp:                     `^[a-zA-Z0-9\-_]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128,
 		},
@@ -257,7 +257,7 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 		createZoneOptions.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("addresses"); ok {
-		var addresses []contextbasedrestrictionsv1.Address
+		var addresses []contextbasedrestrictionsv1.AddressIntf
 		for _, e := range d.Get("addresses").([]interface{}) {
 			value := e.(map[string]interface{})
 			addressesItem := resourceIBMCbrZoneMapToAddress(value)
@@ -266,7 +266,7 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 		createZoneOptions.SetAddresses(addresses)
 	}
 	if _, ok := d.GetOk("excluded"); ok {
-		var excluded []contextbasedrestrictionsv1.Address
+		var excluded []contextbasedrestrictionsv1.AddressIntf
 		for _, e := range d.Get("excluded").([]interface{}) {
 			value := e.(map[string]interface{})
 			excludedItem := resourceIBMCbrZoneMapToAddress(value)
@@ -540,7 +540,7 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 		replaceZoneOptions.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("addresses"); ok {
-		var addresses []contextbasedrestrictionsv1.Address
+		var addresses []contextbasedrestrictionsv1.AddressIntf
 		for _, e := range d.Get("addresses").([]interface{}) {
 			value := e.(map[string]interface{})
 			addressesItem := resourceIBMCbrZoneMapToAddress(value)
@@ -549,7 +549,7 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 		replaceZoneOptions.SetAddresses(addresses)
 	}
 	if _, ok := d.GetOk("excluded"); ok {
-		var excluded []contextbasedrestrictionsv1.Address
+		var excluded []contextbasedrestrictionsv1.AddressIntf
 		for _, e := range d.Get("excluded").([]interface{}) {
 			value := e.(map[string]interface{})
 			excludedItem := resourceIBMCbrZoneMapToAddress(value)
@@ -581,7 +581,7 @@ func resourceIBMCbrZoneDelete(context context.Context, d *schema.ResourceData, m
 
 	deleteZoneOptions.SetZoneID(d.Id())
 
-	deleteZoneOptions.SetIfMatch(d.Get("version").(string))
+	//deleteZoneOptions.SetIfMatch(d.Get("version").(string))
 
 	response, err := contextBasedRestrictionsClient.DeleteZoneWithContext(context, deleteZoneOptions)
 	if err != nil {

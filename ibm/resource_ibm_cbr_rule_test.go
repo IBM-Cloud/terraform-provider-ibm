@@ -73,7 +73,7 @@ func testAccCheckIBMCbrRuleConfigBasic() string {
 
 		resource "ibm_cbr_rule" "cbr_rule" {
 		}
-	`, )
+	`)
 }
 
 func testAccCheckIBMCbrRuleConfig(description string, transactionID string) string {
