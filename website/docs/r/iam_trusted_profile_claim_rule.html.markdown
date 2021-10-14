@@ -13,10 +13,38 @@ Create, update, or delete an IAM trusted profiles claim rule resource. For more 
 ## Example usage
 
 ```terraform
+resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
+  name = "profile"
+}
 resource "ibm_iam_trusted_profile_claim_rule" "iam_trusted_profile_claim_rule" {
-  conditions = { "claim" : "claim", "operator" : "operator", "value" : "value" }
-  profile_id = "profile_id"
-  type = "type"
+  profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
+  type       = "Profile-CR"
+  conditions {
+    claim    = "blueGroups"
+    operator = "CONTAINS"
+    value    = "\"cloud-docs-dev\""
+  }
+  name    = "rule"
+  cr_type = "IKS_SA"
+}
+
+```
+
+```terraform
+resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
+  name = "profile"
+}
+resource "ibm_iam_trusted_profile_claim_rule" "iam_trusted_profile_claim_rule" {
+  profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
+  type       = "Profile-SAML"
+  name       = "rule"
+  realm_name = var.realm_name
+  expiration = 43200
+  conditions {
+    claim    = "blueGroups"
+    operator = "NOT_EQUALS_IGNORE_CASE"
+    value    = "\"cloud-docs-dev\""
+  }
 }
 ```
 

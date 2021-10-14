@@ -14,8 +14,8 @@ Retrieve information about IAM trusted profile link as a read-only data source. 
 
 ```terraform
 data "ibm_iam_trusted_profile_link" "iam_trusted_profile_link" {
-	link_id = "link_id"
-	profile_id = "profile_id"
+	profile_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.profile_id
+	link_id    = ibm_iam_trusted_profile_link.iam_trusted_profile_link.link_id
 }
 ```
 

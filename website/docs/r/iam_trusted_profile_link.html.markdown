@@ -18,11 +18,11 @@ resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
 }
 resource "ibm_iam_trusted_profile_link" "iam_trusted_profile_link" {
   profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
-  cr_type = "IKS_SA"
+  cr_type    = "IKS_SA"
   link {
-    crn = "crn:v1:bluemix:public:containers-kubernetes:us-south:a/acc_id:cluster_id::"
+    crn       = "crn:v1:bluemix:public:containers-kubernetes:us-south:a/acc_id:cluster_id::"
     namespace = "namespace"
-    name = "name"
+    name      = "name"
   }
   name = "name"
 }

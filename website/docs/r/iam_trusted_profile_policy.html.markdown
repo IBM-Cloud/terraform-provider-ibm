@@ -21,9 +21,9 @@ resource "ibm_iam_trusted_profile" "profileID" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profileID.id
-  roles          = ["Viewer"]
-  description    = "IAM Trusted Profile Policy"
+  profile_id  = ibm_iam_trusted_profile.profileID.id
+  roles       = ["Viewer"]
+  description = "IAM Trusted Profile Policy"
 }
 
 ```
@@ -37,7 +37,7 @@ resource "ibm_iam_trusted_profile" "profileID" {
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
   profile_id = ibm_iam_trusted_profile.profileID.id
-  roles          = ["Viewer"]
+  roles      = ["Viewer"]
 
   resources {
     service = "cloud-object-storage"
@@ -61,7 +61,7 @@ resource "ibm_resource_instance" "instance" {
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
   profile_id = ibm_iam_trusted_profile.profileID.id
-  roles          = ["Manager", "Viewer", "Administrator"]
+  roles      = ["Manager", "Viewer", "Administrator"]
 
   resources {
     service              = "kms"
@@ -84,7 +84,7 @@ data "ibm_resource_group" "group" {
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
   profile_id = ibm_iam_trusted_profile.profileID.id
-  roles          = ["Viewer"]
+  roles      = ["Viewer"]
 
   resources {
     service           = "containers-kubernetes"
@@ -107,7 +107,7 @@ data "ibm_resource_group" "group" {
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
   profile_id = ibm_iam_trusted_profile.profileID.id
-  roles          = ["Administrator"]
+  roles      = ["Administrator"]
 
   resources {
     resource_type = "resource-group"
@@ -130,7 +130,7 @@ data "ibm_resource_group" "group" {
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
   profile_id = ibm_iam_trusted_profile.profileID.id
-  roles          = ["Administrator"]
+  roles      = ["Administrator"]
 
   resources {
     service = "is"
@@ -151,10 +151,10 @@ resource "ibm_iam_trusted_profile" "profileID" {
 }
 resource "ibm_iam_trusted_profile_policy" "policy" {
   profile_id = ibm_iam_trusted_profile.profileID.id
-  roles           = ["Viewer"]
+  roles      = ["Viewer"]
   resource_attributes {
-    name  = "resource"
-    value = "test123*"
+    name     = "resource"
+    value    = "test123*"
     operator = "stringMatch"
   }
   resource_attributes {
@@ -169,7 +169,7 @@ Review the argument references that you can specify for your resource.
 
 - `account_management` - (Optional, Bool) Gives access to all account management services if set to **true**. Default value is **false**. If you set this option, do not set `resources` at the same time.**Note** Conflicts with `resources` and `resource_attributes`.
 - `description`  (Optional, String) The description of the IAM Trusted Profile Policy.
-- `profile_id` - (Required, Forces new resource, String) The UUID of the trusted profile.
+- `profile_id` - (Optional, Forces new resource, String) The UUID of the trusted profile. Either `profile_id` or `iam_id` is required.
 - `iam_id` - (Optional,  Forces new resource, String) IAM ID of the truestedprofile. Either `profile_id` or `iam_id` is required.
 - `resources` - (List of Objects) Optional- A nested block describes the resource of this policy.**Note** Conflicts with `account_management` and `resource_attributes`.
 

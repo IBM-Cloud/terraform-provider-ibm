@@ -14,8 +14,8 @@ Retrieve information about an IAM trusted profile policy. For more information, 
 
 ```terraform
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = "Profile-d2fb9a20-422f-4acf-8161-230d3216d909"
-  roles          = ["Manager", "Viewer", "Administrator"]
+  profile_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.profile_id
+  roles      = ["Manager", "Viewer", "Administrator"]
 
   resources {
     service              = "kms"
@@ -34,8 +34,8 @@ data "ibm_iam_trusted_profile_policy" "policy" {
 
 Review the argument references that you can specify for your data source.
 
-- `profile_id` - (Required, String) The UUID of the trusted profile.
-- `iam_id` - (Optional, String) IAM ID of the trusted profile. One of the `profile_id` or `iam_id` is required argument.
+- `profile_id` - (Required, String) The UUID of the trusted profile. Either `profile_id` or `iam_id` is required.
+- `iam_id` - (Optional, String) IAM ID of the trusted profile. Either `profile_id` or `iam_id` is required.
 - `sort`- Optional -  (String) The single field sort query for policies.
 
 ## Attribute reference
