@@ -362,11 +362,10 @@ func resourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstanceUserData: {
-				Type:             schema.TypeString,
-				ForceNew:         true,
-				DiffSuppressFunc: suppressUserData,
-				Optional:         true,
-				Description:      "User data given for the instance",
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "User data given for the instance",
 			},
 
 			isInstanceImage: {
@@ -2321,14 +2320,6 @@ func resourceIbmIsInstanceInstanceDiskToMap(instanceDisk vpcv1.InstanceDisk) map
 }
 
 func suppressEnableCleanDelete(k, old, new string, d *schema.ResourceData) bool {
-	// During import
-	if old == "" && d.Id() != "" {
-		return true
-	}
-	return false
-}
-
-func suppressUserData(k, old, new string, d *schema.ResourceData) bool {
 	// During import
 	if old == "" && d.Id() != "" {
 		return true
