@@ -98,10 +98,11 @@ func resourceIBMISLBPoolMember() *schema.Resource {
 			},
 
 			isLBPoolMemberWeight: {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Load balcner pool member weight",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: InvokeValidator("ibm_is_lb_pool_member", isLBPoolMemberWeight),
+				Description:  "Load balcner pool member weight",
 			},
 
 			isLBPoolMemberProvisioningStatus: {
@@ -131,6 +132,22 @@ func resourceIBMISLBPoolMember() *schema.Resource {
 	}
 }
 
+func resourceIBMISLBPoolMemberValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isLBPoolMemberWeight,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			Optional:                   true,
+			MinValue:                   "0",
+			MaxValue:                   "100"})
+
+	ibmISLBResourceValidator := ResourceValidator{ResourceName: "ibm_is_lb_pool_member", Schema: validateSchema}
+	return &ibmISLBResourceValidator
+}
+
 func resourceIBMISLBPoolMemberCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("[DEBUG] LB Pool create")
@@ -144,7 +161,7 @@ func resourceIBMISLBPoolMemberCreate(d *schema.ResourceData, meta interface{}) e
 	port64 := int64(port)
 
 	var weight int64
-	if w, ok := d.GetOk(isLBPoolMemberWeight); ok {
+	if w, ok := d.GetOkExists(isLBPoolMemberWeight); ok {
 		weight = int64(w.(int))
 	}
 	isLBKey := "load_balancer_key_" + lbID
@@ -195,10 +212,8 @@ func lbpMemberCreate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID st
 		}
 		options.Target = target
 	}
+	options.Weight = &weight
 
-	if weight > int64(0) {
-		options.Weight = &weight
-	}
 	lbPoolMember, response, err := sess.CreateLoadBalancerPoolMember(options)
 	if err != nil {
 		return fmt.Errorf("[DEBUG] lbpool member create err: %s\n%s", err, response)

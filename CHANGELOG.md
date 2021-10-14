@@ -1,3 +1,32 @@
+# 1.34.0 (Oct12, 2021)
+
+**Note**
+This release replace github.com/dgrijalva/jwt-go dependency with github.com/golang-jwt/jwt to fix ([CVE-2020-26160] (https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3191))
+FEATURES:
+
+* Support IBM IAM Trusted Profile
+    - **Resources**
+        - ibm_iam_trusted_profile
+        - ibm_iam_trusted_profile_claim_rule
+        - ibm_iam_trusted_profile_link
+        - ibm_iam_trusted_profile_policy
+    - **DataSources**
+        - ibm_iam_trusted_profile
+        - ibm_iam_trusted_profile_claim_rule
+        - ibm_iam_trusted_profile_link
+        - ibm_iam_trusted_profile_policy
+
+* Support Classic Infrastructure Reserved Capacity
+    - **Resources**
+        - ibm_compute_reserved_capacity
+    - **DataSources**
+        - ibm_compute_reserved_capacity
+ENHANCEMENTS:
+
+* Support for reading the endpoints for supported IBM Cloud Services via file ([3071](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3071))
+
+* Support for provisioning Monthly based servers on reserved capacity ([3185](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3185))
+
 ## 1.33.1 (Oct1, 2021)
 ENHANCEMENTS
 

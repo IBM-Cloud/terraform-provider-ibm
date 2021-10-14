@@ -18,7 +18,7 @@ func TestAccIBMDLProviderGateway_basic(t *testing.T) {
 	var instance string
 	gatewayname := fmt.Sprintf("tf-gateway-name-%d", acctest.RandIntRange(10, 100))
 	//	newgatewayname := fmt.Sprintf("newgateway-name-%d", acctest.RandIntRange(10, 100))
-	custAccID := "3f455c4c574447adbc14bda52f80e62f"
+	custAccID := "3f455c4c574447adbc14bda52f80e62f" // bbsdldv1 account
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

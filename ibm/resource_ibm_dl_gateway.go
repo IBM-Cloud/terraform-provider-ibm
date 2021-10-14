@@ -126,7 +126,6 @@ func resourceIBMDLGateway() *schema.Resource {
 			dlBgpAsn: {
 				Type:        schema.TypeInt,
 				Required:    true,
-				ForceNew:    true,
 				Description: "BGP ASN",
 			},
 			dlBgpBaseCidr: {
@@ -294,7 +293,6 @@ func resourceIBMDLGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "BGP customer edge router CIDR",
 			},
 			dlLoaRejectReason: {
@@ -308,7 +306,6 @@ func resourceIBMDLGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "BGP IBM CIDR",
 			},
 			dlResourceGroup: {
@@ -952,6 +949,18 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 	if d.HasChange(dlSpeedMbps) {
 		speed := int64(d.Get(dlSpeedMbps).(int))
 		updateGatewayOptionsModel.SpeedMbps = &speed
+	}
+	if d.HasChange(dlBgpAsn) {
+		bgpAsn := int64(d.Get(dlBgpAsn).(int))
+		updateGatewayOptionsModel.BgpAsn = &bgpAsn
+	}
+	if d.HasChange(dlBgpCerCidr) {
+		bgpCerCidr := d.Get(dlBgpCerCidr).(string)
+		updateGatewayOptionsModel.BgpCerCidr = &bgpCerCidr
+	}
+	if d.HasChange(dlBgpIbmCidr) {
+		bgpIbmCidr := d.Get(dlBgpIbmCidr).(string)
+		updateGatewayOptionsModel.BgpIbmCidr = &bgpIbmCidr
 	}
 	/*
 		NOTE: Operational Status cannot be maintained in terraform. The status keeps changing automatically in server side.

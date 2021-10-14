@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMIamTrustedProfileDataSourceBasic(t *testing.T) {
+func TestAccIBMIAMTrustedProfileDataSourceBasic(t *testing.T) {
 	trustedProfileName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -35,7 +35,7 @@ func TestAccIBMIamTrustedProfileDataSourceBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMIamTrustedProfileDataSourceAllArgs(t *testing.T) {
+func TestAccIBMIAMTrustedProfileDataSourceAllArgs(t *testing.T) {
 	trustedProfileName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	trustedProfileDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
