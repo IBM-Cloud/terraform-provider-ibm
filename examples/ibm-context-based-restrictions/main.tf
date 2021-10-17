@@ -45,7 +45,6 @@ resource "ibm_cbr_rule" "cbr_rule_instance" {
       value    = "tag_value"
     }
   }
-  transaction_id = var.cbr_rule_transaction_id
 }
 
 // Create cbr_zone data source

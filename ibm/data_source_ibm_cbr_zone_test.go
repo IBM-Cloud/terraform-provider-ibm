@@ -43,16 +43,16 @@ func TestAccIBMCbrZoneDataSourceBasic(t *testing.T) {
 
 func TestAccIBMCbrZoneDataSourceAllArgs(t *testing.T) {
 	zoneName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	zoneAccountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
+	// zoneAccountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
+	zoneAccountID := fmt.Sprintf("7423cba651044c1abc3bffd6c692e3a5")
 	zoneDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	zoneTransactionID := fmt.Sprintf("tf_transaction_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCbrZoneDataSourceConfig(zoneName, zoneAccountID, zoneDescription, zoneTransactionID),
+				Config: testAccCheckIBMCbrZoneDataSourceConfig(zoneName, zoneAccountID, zoneDescription),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "zone_id"),
@@ -83,45 +83,39 @@ func TestAccIBMCbrZoneDataSourceAllArgs(t *testing.T) {
 func testAccCheckIBMCbrZoneDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_cbr_zone" "cbr_zone" {
+			name = "Test Zone Data Source Config Basic"
+			account_id = "7423cba651044c1abc3bffd6c692e3a5"
+			description = "Test Zone Data Source Config Basic"
+			addresses {
+				type = "ipRange"
+				value = "169.23.22.0-169.23.22.255"
+			}
 		}
 
 		data "ibm_cbr_zone" "cbr_zone" {
-			zone_id = "zone_id"
+			zone_id = ibm_cbr_zone.cbr_zone.id
 		}
 	`)
 }
 
-func testAccCheckIBMCbrZoneDataSourceConfig(zoneName string, zoneAccountID string, zoneDescription string, zoneTransactionID string) string {
+func testAccCheckIBMCbrZoneDataSourceConfig(zoneName string, zoneAccountID string, zoneDescription string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cbr_zone" "cbr_zone" {
 			name = "%s"
 			account_id = "%s"
 			description = "%s"
 			addresses {
-				type = "ipAddress"
-				value = "value"
-				ref {
-					account_id = "account_id"
-					service_type = "service_type"
-					service_name = "service_name"
-					service_instance = "service_instance"
-				}
+				type = "ipRange"
+				value = "169.23.22.0-169.23.22.255"
 			}
 			excluded {
 				type = "ipAddress"
-				value = "value"
-				ref {
-					account_id = "account_id"
-					service_type = "service_type"
-					service_name = "service_name"
-					service_instance = "service_instance"
-				}
+				value = "169.23.22.10"
 			}
-			transaction_id = "%s"
 		}
 
 		data "ibm_cbr_zone" "cbr_zone" {
-			zone_id = "zone_id"
+			zone_id = ibm_cbr_zone.cbr_zone.id
 		}
-	`, zoneName, zoneAccountID, zoneDescription, zoneTransactionID)
+	`, zoneName, zoneAccountID, zoneDescription)
 }

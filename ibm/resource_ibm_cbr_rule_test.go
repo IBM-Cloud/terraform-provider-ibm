@@ -35,9 +35,9 @@ func TestAccIBMCbrRuleBasic(t *testing.T) {
 func TestAccIBMCbrRuleAllArgs(t *testing.T) {
 	var conf contextbasedrestrictionsv1.Rule
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	transactionID := fmt.Sprintf("tf_transaction_id_%d", acctest.RandIntRange(10, 100))
+	// transactionID := fmt.Sprintf("tf_transaction_id_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	transactionIDUpdate := fmt.Sprintf("tf_transaction_id_%d", acctest.RandIntRange(10, 100))
+	// transactionIDUpdate := fmt.Sprintf("tf_transaction_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -45,18 +45,20 @@ func TestAccIBMCbrRuleAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCbrRuleDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCbrRuleConfig(description, transactionID),
+				// Config: testAccCheckIBMCbrRuleConfig(description, transactionID),
+				Config: testAccCheckIBMCbrRuleConfig(description),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCbrRuleExists("ibm_cbr_rule.cbr_rule", conf),
 					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "description", description),
-					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "transaction_id", transactionID),
+					// resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "transaction_id", transactionID),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCbrRuleConfig(descriptionUpdate, transactionIDUpdate),
+				// Config: testAccCheckIBMCbrRuleConfig(descriptionUpdate, transactionIDUpdate),
+				Config: testAccCheckIBMCbrRuleConfig(descriptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "description", descriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "transaction_id", transactionIDUpdate),
+					// resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "transaction_id", transactionIDUpdate),
 				),
 			},
 			resource.TestStep{
@@ -70,38 +72,59 @@ func TestAccIBMCbrRuleAllArgs(t *testing.T) {
 
 func testAccCheckIBMCbrRuleConfigBasic() string {
 	return fmt.Sprintf(`
-
 		resource "ibm_cbr_rule" "cbr_rule" {
+  			description = "test rule config basic"
+  			contexts {
+    			attributes {
+      				name = "networkZoneId"
+      				value = "322af80e125f6842cded8ba7a1008370"
+    			}
+  			}
+ 			 resources {
+    			attributes {
+      				name = "accountId"
+      				value = "7423cba651044c1abc3bffd6c692e3a5"
+    			}
+    			attributes {
+      				name = "serviceName"
+      				value = "user-management"
+    			}
+    			tags {
+      				name     = "tag_name"
+      				value    = "tag_value"
+    			}
+  			}
 		}
 	`)
 }
 
-func testAccCheckIBMCbrRuleConfig(description string, transactionID string) string {
+func testAccCheckIBMCbrRuleConfig(description string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_cbr_rule" "cbr_rule" {
 			description = "%s"
 			contexts {
-				attributes {
-					name = "name"
-					value = "value"
-				}
+    			attributes {
+      				name = "networkZoneId"
+      				value = "322af80e125f6842cded8ba7a1008370"
+    			}
 			}
 			resources {
-				attributes {
-					name = "name"
-					value = "value"
-					operator = "operator"
-				}
-				tags {
-					name = "name"
-					value = "value"
-					operator = "operator"
-				}
+    			attributes {
+      				name = "accountId"
+      				value = "7423cba651044c1abc3bffd6c692e3a5"
+    			}
+    			attributes {
+      				name = "serviceName"
+      				value = "user-management"
+    			}
+    			tags {
+      				name     = "tag_name"
+      				value    = "tag_value"
+    			}
 			}
-			transaction_id = "%s"
 		}
-	`, description, transactionID)
+	`, description)
 }
 
 func testAccCheckIBMCbrRuleExists(n string, obj contextbasedrestrictionsv1.Rule) resource.TestCheckFunc {

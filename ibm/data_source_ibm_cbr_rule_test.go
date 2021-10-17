@@ -69,10 +69,26 @@ func TestAccIBMCbrRuleDataSourceAllArgs(t *testing.T) {
 func testAccCheckIBMCbrRuleDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_cbr_rule" "cbr_rule" {
+ 			description = "Test Rule Data Source Config Basic"
+  			contexts {
+    			attributes {
+      				name = "networkZoneId"
+      				value = "322af80e125f6842cded8ba7a1008370"
+    			}
+  			}
+  			resources {
+    			attributes {
+      				name = "accountId"
+      				value = "7423cba651044c1abc3bffd6c692e3a5"
+    			}
+    			attributes {
+      				name = "serviceName"
+      				value = "iam-groups"
+    			}
+  			}
 		}
-
 		data "ibm_cbr_rule" "cbr_rule" {
-			rule_id = "rule_id"
+			rule_id = ibm_cbr_rule.cbr_rule.id
 		}
 	`)
 }
@@ -83,27 +99,28 @@ func testAccCheckIBMCbrRuleDataSourceConfig(ruleDescription string, ruleTransact
 			description = "%s"
 			contexts {
 				attributes {
-					name = "name"
-					value = "value"
+					name = "networkZoneId"
+      				value = "322af80e125f6842cded8ba7a1008370"
 				}
 			}
 			resources {
 				attributes {
-					name = "name"
-					value = "value"
-					operator = "operator"
+					name = "accountId"
+      				value = "7423cba651044c1abc3bffd6c692e3a5"
 				}
+    			attributes {
+      				name = "serviceName"
+      				value = "iam-groups"
+    			}
 				tags {
-					name = "name"
-					value = "value"
-					operator = "operator"
+					name = "tag_name"
+					value = "tag_value"
 				}
 			}
-			transaction_id = "%s"
 		}
 
 		data "ibm_cbr_rule" "cbr_rule" {
-			rule_id = "rule_id"
+			rule_id = ibm_cbr_rule.cbr_rule.id
 		}
-	`, ruleDescription, ruleTransactionID)
+	`, ruleDescription)
 }
