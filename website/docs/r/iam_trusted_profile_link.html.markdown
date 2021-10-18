@@ -36,7 +36,7 @@ Review the argument reference that you can specify for your resource.
 * `link` - (Required, Forces new resource, List) Link details.
   Nested scheme for **link**:
 	* `crn` - (Required, String) The CRN of the compute resource.
-	* `namespace` - (Required, String) The compute resource namespace, only required if `cr_type` is IKS_SA or ROKS_SA.
+	* `namespace` - (Optional, String) The compute resource namespace, only required if `cr_type` is IKS_SA or ROKS_SA.
 	* `name` - (Optional, String) Name of the compute resource, only required if `cr_type` is IKS_SA or ROKS_SA.
 * `name` - (Optional, Forces new resource, String) Optional name of the Link.
 * `profile_id` - (Required, Forces new resource, String) ID of the trusted profile.
