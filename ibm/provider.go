@@ -465,6 +465,14 @@ func Provider() *schema.Provider {
 			"ibm_scc_posture_profiles":       dataSourceIBMSccPostureProfiles(),
 			"ibm_scc_posture_scan_summary":   dataSourceIBMSccPostureScansSummary(),
 			"ibm_scc_posture_scan_summaries": dataSourceIBMSccPostureScanSummaries(),
+
+			// Added for Event Notifications
+			"ibm_en_destination":   dataSourceIBMEnDestination(),
+			"ibm_en_destinations":  dataSourceIBMEnDestinations(),
+			"ibm_en_topic":         dataSourceIBMEnTopic(),
+			"ibm_en_topics":        dataSourceIBMEnTopics(),
+			"ibm_en_subscription":  dataSourceIBMEnSubscription(),
+			"ibm_en_subscriptions": dataSourceIBMEnSubscriptions(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -747,6 +755,11 @@ func Provider() *schema.Provider {
 
 			//Security and Compliance Center
 			"ibm_scc_si_note": resourceIBMSccSiNote(),
+
+			// Added for Event Notifications
+			"ibm_en_destination":  resourceIBMEnDestination(),
+			"ibm_en_topic":        resourceIBMEnTopic(),
+			"ibm_en_subscription": resourceIBMEnSubscription(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -857,6 +870,9 @@ func Validator() ValidatorDict {
 				"ibm_atracker_route":                      resourceIBMAtrackerRouteValidator(),
 				"ibm_satellite_endpoint":                  resourceIbmSatelliteEndpointValidator(),
 				"ibm_scc_si_note":                         resourceIBMSccSiNoteValidator(),
+
+				// Added for Event Notifications
+				"ibm_en_destination": resourceIBMEnDestinationValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),

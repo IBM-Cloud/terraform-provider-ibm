@@ -100,6 +100,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/scc-go-sdk/posturemanagementv1"
+
+	"github.ibm.com/Notification-Hub/event-notifications-go-admin-sdk/eventnotificationsapiv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -212,6 +214,7 @@ type ClientSession interface {
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
 	PushServiceV1() (*pushservicev1.PushServiceV1, error)
+	EventNotificationsApiV1() (*eventnotificationsapiv1.EventNotificationsAPIV1, error)
 	AppConfigurationV1() (*appconfigurationv1.AppConfigurationV1, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
@@ -357,6 +360,9 @@ type clientSession struct {
 
 	pushServiceClient    *pushservicev1.PushServiceV1
 	pushServiceClientErr error
+
+	eventNotificationsApiClient    *eventnotificationsapiv1.EventNotificationsAPIV1
+	eventNotificationsApiClientErr error
 
 	appConfigurationClient    *appconfigurationv1.AppConfigurationV1
 	appConfigurationClientErr error
@@ -676,6 +682,10 @@ func (sess clientSession) APIGateway() (*apigateway.ApiGatewayControllerApiV1, e
 
 func (session clientSession) PushServiceV1() (*pushservicev1.PushServiceV1, error) {
 	return session.pushServiceClient, session.pushServiceClientErr
+}
+
+func (session clientSession) EventNotificationsApiV1() (*eventnotificationsapiv1.EventNotificationsAPIV1, error) {
+	return session.eventNotificationsApiClient, session.eventNotificationsApiClientErr
 }
 
 func (session clientSession) AppConfigurationV1() (*appconfigurationv1.AppConfigurationV1, error) {
@@ -1419,6 +1429,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 	} else {
 		session.pushServiceClientErr = fmt.Errorf("Error occured while configuring push notification service: %q", err)
 	}
+
+	if c.Visibility == "private" {
+		session.appConfigurationClientErr = fmt.Errorf("Event Notifications Service API doesnot support private endpoints")
+	}
+	enurl := fmt.Sprintf("https://%s.event-notifications.cloud.ibm.com/event-notifications", c.Region)
+	enClientOptions := &eventnotificationsapiv1.EventNotificationsAPIV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT"}, enurl),
+	}
+	// Construct the service client.
+	session.eventNotificationsApiClient, err = eventnotificationsapiv1.NewEventNotificationsAPIV1(enClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.eventNotificationsApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	} else {
+		session.eventNotificationsApiClientErr = fmt.Errorf("Error occurred while configuring Event Notifications API service: %q", err)
+	}
+
 	if c.Visibility == "private" {
 		session.appConfigurationClientErr = fmt.Errorf("App Configuration Service API doesnot support private endpoints")
 	}
@@ -1433,6 +1461,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	} else {
 		session.appConfigurationClientErr = fmt.Errorf("Error occurred while configuring App Configuration service: %q", err)
 	}
+
 	// Construct an "options" struct for creating the service client.
 	containerRegistryClientURL, err := containerregistryv1.GetServiceURLForRegion(c.Region)
 	if err != nil {
