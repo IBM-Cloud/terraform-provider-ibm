@@ -21,7 +21,7 @@ data "ibm_is_operating_system" "testacc_dsos"{
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
-- `name` - (Required, String) The global unique name of an operating system.
+- `name` - (Required, String) The global unique name of an Operating System.
 
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
