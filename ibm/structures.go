@@ -2004,6 +2004,43 @@ func resourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 	return nil
 }
 
+func resourceLBListenerPolicyCustomizeDiff(diff *schema.ResourceDiff) error {
+	policyActionIntf, _ := diff.GetOk(isLBListenerPolicyAction)
+	policyAction := policyActionIntf.(string)
+
+	if policyAction == "forward" {
+		_, policyTargetIDSet := diff.GetOk(isLBListenerPolicyTargetID)
+
+		if !policyTargetIDSet && diff.NewValueKnown(isLBListenerPolicyTargetID) {
+			return fmt.Errorf("Load balancer listener policy: When action is forward please specify target_id")
+		}
+	} else if policyAction == "redirect" {
+		_, httpsStatusCodeSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectStatusCode)
+		_, targetURLSet := diff.GetOk(isLBListenerPolicyTargetURL)
+
+		if !httpsStatusCodeSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectStatusCode) {
+			return fmt.Errorf("Load balancer listener policy: When action is redirect please specify target_http_status_code")
+		}
+
+		if !targetURLSet && diff.NewValueKnown(isLBListenerPolicyTargetURL) {
+			return fmt.Errorf("Load balancer listener policy: When action is redirect please specify target_url")
+		}
+	} else if policyAction == "https_redirect" {
+		_, listenerSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectListener)
+		_, httpsStatusSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectStatusCode)
+
+		if !listenerSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectListener) {
+			return fmt.Errorf("Load balancer listener policy: When action is https_redirect please specify target_https_redirect_listener")
+		}
+
+		if !httpsStatusSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectStatusCode) {
+			return fmt.Errorf("When action is https_redirect please specify target_https_redirect_status_code")
+		}
+	}
+
+	return nil
+}
+
 func resourceIBMISLBPoolCookieValidate(diff *schema.ResourceDiff) error {
 	_, sessionPersistenceTypeIntf := diff.GetChange(isLBPoolSessPersistenceType)
 	_, sessionPersistenceCookieNameIntf := diff.GetChange(isLBPoolSessPersistenceAppCookieName)

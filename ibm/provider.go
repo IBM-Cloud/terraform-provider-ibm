@@ -162,6 +162,12 @@ func Provider() *schema.Provider {
 				Description:  "Visibility of the provider if it is private or public.",
 				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_VISIBILITY", "IBMCLOUD_VISIBILITY"}, "public"),
 			},
+			"endpoints_file_path": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Path of the file that contains private and public regional endpoints mapping",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_ENDPOINTS_FILE_PATH", "IBMCLOUD_ENDPOINTS_FILE_PATH"}, nil),
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -234,6 +240,7 @@ func Provider() *schema.Provider {
 			"ibm_compute_bare_metal":                 dataSourceIBMComputeBareMetal(),
 			"ibm_compute_image_template":             dataSourceIBMComputeImageTemplate(),
 			"ibm_compute_placement_group":            dataSourceIBMComputePlacementGroup(),
+			"ibm_compute_reserved_capacity":          dataSourceIBMComputeReservedCapacity(),
 			"ibm_compute_ssh_key":                    dataSourceIBMComputeSSHKey(),
 			"ibm_compute_vm_instance":                dataSourceIBMComputeVmInstance(),
 			"ibm_container_addons":                   datasourceIBMContainerAddOns(),
@@ -273,6 +280,10 @@ func Provider() *schema.Provider {
 			"ibm_iam_service_id":                     dataSourceIBMIAMServiceID(),
 			"ibm_iam_service_policy":                 dataSourceIBMIAMServicePolicy(),
 			"ibm_iam_api_key":                        dataSourceIbmIamApiKey(),
+			"ibm_iam_trusted_profile":                dataSourceIBMIamTrustedProfile(),
+			"ibm_iam_trusted_profile_claim_rule":     dataSourceIBMIamTrustedProfileClaimRule(),
+			"ibm_iam_trusted_profile_link":           dataSourceIBMIamTrustedProfileLink(),
+			"ibm_iam_trusted_profile_policy":         dataSourceIBMIAMTrustedProfilePolicy(),
 			"ibm_is_dedicated_host":                  dataSourceIbmIsDedicatedHost(),
 			"ibm_is_dedicated_hosts":                 dataSourceIbmIsDedicatedHosts(),
 			"ibm_is_dedicated_host_profile":          dataSourceIbmIsDedicatedHostProfile(),
@@ -549,6 +560,7 @@ func Provider() *schema.Provider {
 			"ibm_compute_dedicated_host":                         resourceIBMComputeDedicatedHost(),
 			"ibm_compute_monitor":                                resourceIBMComputeMonitor(),
 			"ibm_compute_placement_group":                        resourceIBMComputePlacementGroup(),
+			"ibm_compute_reserved_capacity":                      resourceIBMComputeReservedCapacity(),
 			"ibm_compute_provisioning_hook":                      resourceIBMComputeProvisioningHook(),
 			"ibm_compute_ssh_key":                                resourceIBMComputeSSHKey(),
 			"ibm_compute_ssl_certificate":                        resourceIBMComputeSSLCertificate(),
@@ -596,6 +608,10 @@ func Provider() *schema.Provider {
 			"ibm_iam_service_policy":                             resourceIBMIAMServicePolicy(),
 			"ibm_iam_user_invite":                                resourceIBMUserInvite(),
 			"ibm_iam_api_key":                                    resourceIbmIamApiKey(),
+			"ibm_iam_trusted_profile":                            resourceIBMIamTrustedProfile(),
+			"ibm_iam_trusted_profile_claim_rule":                 resourceIBMIamTrustedProfileClaimRule(),
+			"ibm_iam_trusted_profile_link":                       resourceIBMIamTrustedProfileLink(),
+			"ibm_iam_trusted_profile_policy":                     resourceIBMIAMTrustedProfilePolicy(),
 			"ibm_ipsec_vpn":                                      resourceIBMIPSecVPN(),
 			"ibm_is_dedicated_host":                              resourceIbmIsDedicatedHost(),
 			"ibm_is_dedicated_host_group":                        resourceIbmIsDedicatedHostGroup(),
@@ -832,6 +848,7 @@ func Validator() ValidatorDict {
 				"ibm_is_lb_listener_policy_rule":          resourceIBMISLBListenerPolicyRuleValidator(),
 				"ibm_is_lb_listener_policy":               resourceIBMISLBListenerPolicyValidator(),
 				"ibm_is_lb_listener":                      resourceIBMISLBListenerValidator(),
+				"ibm_is_lb_pool_member":                   resourceIBMISLBPoolMemberValidator(),
 				"ibm_is_lb_pool":                          resourceIBMISLBPoolValidator(),
 				"ibm_is_lb":                               resourceIBMISLBValidator(),
 				"ibm_is_network_acl":                      resourceIBMISNetworkACLValidator(),
@@ -943,6 +960,10 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if v, ok := d.GetOk("visibility"); ok {
 		visibility = v.(string)
 	}
+	var file string
+	if f, ok := d.GetOk("endpoints_file_path"); ok {
+		file = f.(string)
+	}
 
 	resourceGrp := d.Get("resource_group").(string)
 	region := d.Get("region").(string)
@@ -977,6 +998,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		IAMRefreshToken:      iamRefreshToken,
 		Zone:                 zone,
 		Visibility:           visibility,
+		EndpointsFile:        file,
 		//PowerServiceInstance: powerServiceInstance,
 	}
 

@@ -21,6 +21,9 @@ resource "ibm_is_lb_listener" "testacc_lb_listener" {
   lb       = "8898e627-f61f-4ac8-be85-9db9d8bfd345"
   port     = "9080"
   protocol = "http"
+  https_redirect_listener="r134-8c58bfe1-db02-4790-95ce-fe5bb892d78f"
+  https_redirect_status_code=301
+  https_redirect_uri="/example?doc=get"
 }
 
 resource "ibm_is_lb_pool" "webapptier-lb-pool" {
@@ -46,6 +49,31 @@ resource "ibm_is_lb_pool_member" "webapptier-lb-pool-member-zone1" {
 }
 ```
 
+### Sample to create a load balancer listener policy for a `https_redirect` action.
+
+```terraform
+resource "ibm_is_lb" "lb2"{
+  name    = "mylb"
+  subnets = ["35860fed-c911-4936-8c94-f0d8577dbe5b"]
+}
+
+resource "ibm_is_lb_listener" "lb_listener1"{
+  lb       = ibm_is_lb.lb2.id
+  port     = "9086"
+  protocol = "https"
+  certificate_instance="crn:v1:staging:public:cloudcerts:us-south:a2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
+}
+
+resource "ibm_is_lb_listener" "lb_listener2"{
+  lb       = ibm_is_lb.lb2.id
+  port     = "9087"
+  protocol = "http"
+  https_redirect_listener = ibm_is_lb_listener.lb_listener1.listener_id
+  https_redirect_status_code = 301
+  https_redirect_uri = "/example?doc=geta" 
+}
+```
+
 ## Timeouts
 The `ibm_is_lb_listener` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
@@ -64,6 +92,9 @@ Review the argument references that you can specify for your resource.
 - `default_pool` - (Optional, String) The load balancer pool unique identifier.
 - `certificate_instance` - (Optional, String) The CRN of the certificate instance, it is applicable(mandatory) only to https protocol.
 - `connection_limit` - (Optional, Integer) The connection limit of the listener. Valid range is **1 to 15000**. Network load balancer do not support `connection_limit` argument.
+- `https_redirect_listener` - (Optional, String) ID of the listener that will be set as http redirect target.
+- `https_redirect_status_code` - (Optional, Integer) The HTTP status code to be returned in the redirect response, one of [301, 302, 303, 307, 308].
+- `https_redirect_uri` - (Optional, String) Target URI where traffic will be redirected.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
