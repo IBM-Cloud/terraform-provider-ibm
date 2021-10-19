@@ -2386,7 +2386,8 @@ func IgnoreSystemLabels(labels map[string]string) map[string]string {
 	for k, v := range labels {
 		if strings.HasPrefix(k, SystemIBMLabelPrefix) ||
 			strings.HasPrefix(k, KubernetesLabelPrefix) ||
-			strings.HasPrefix(k, K8sLabelPrefix) {
+			strings.HasPrefix(k, K8sLabelPrefix) &&
+			!strings.Contains(k, "node-local-dns-enabled") {
 			continue
 		}
 
