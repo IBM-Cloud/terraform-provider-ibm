@@ -179,7 +179,6 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 	lbID := d.Get(isLBListenerLBID).(string)
 	port := int64(d.Get(isLBListenerPort).(int))
 	protocol := d.Get(isLBListenerProtocol).(string)
-	acceptProxyProtocol := d.Get(isLBListenerAcceptProxyProtocol).(bool)
 	var defPool, certificateCRN string
 	if pool, ok := d.GetOk(isLBListenerDefaultPool); ok {
 		lbPool, err := getPoolId(pool.(string))
@@ -221,7 +220,7 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 	ibmMutexKV.Lock(isLBKey)
 	defer ibmMutexKV.Unlock(isLBKey)
 
-	err := lbListenerCreate(d, meta, lbID, protocol, defPool, certificateCRN, listener, uri, port, connLimit, httpStatusCode, acceptProxyProtocol)
+	err := lbListenerCreate(d, meta, lbID, protocol, defPool, certificateCRN, listener, uri, port, connLimit, httpStatusCode)
 	if err != nil {
 		return err
 	}
@@ -229,17 +228,23 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 	return resourceIBMISLBListenerRead(d, meta)
 }
 
-func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN, listener, uri string, port, connLimit, httpStatusCode int64, acceptProxyProtocol bool) error {
+func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN, listener, uri string, port, connLimit, httpStatusCode int64) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
+
 	options := &vpcv1.CreateLoadBalancerListenerOptions{
-		LoadBalancerID:      &lbID,
-		Port:                &port,
-		Protocol:            &protocol,
-		AcceptProxyProtocol: &acceptProxyProtocol,
+		LoadBalancerID: &lbID,
+		Port:           &port,
+		Protocol:       &protocol,
 	}
+
+	if app, ok := d.GetOk(isLBListenerAcceptProxyProtocol); ok {
+		acceptProxyProtocol := app.(bool)
+		options.AcceptProxyProtocol = &acceptProxyProtocol
+	}
+
 	if defPool != "" {
 		options.DefaultPool = &vpcv1.LoadBalancerPoolIdentity{
 			ID: &defPool,
