@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMPrivateDNSCustomResolverForwardingRuleBasic(t *testing.T) {
+func TestAccIBMPrivateDNSCustomResolverForwardingRule_basic(t *testing.T) {
 	typeVar := "zone"
 	match := "test.example.com"
 
@@ -32,50 +32,23 @@ func TestAccIBMPrivateDNSCustomResolverForwardingRuleBasic(t *testing.T) {
 func testAccCheckIbmDnsCrForwardingRuleConfig(typeVar, match string) string {
 	return fmt.Sprintf(`
 		
-	data "ibm_resource_group" "rg" {
-		is_default	= true
-	}
-	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
-		name			= "test-pdns-custom-resolver-fr-vpc-r"
-		resource_group	= data.ibm_resource_group.rg.id
-	}
-	resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
-		name                    = "test-pdns-cr-subnet1"
-		vpc                     = ibm_is_vpc.test-pdns-cr-vpc.id
-		zone            		= "us-south-1"
-		ipv4_cidr_block 		= "10.240.0.0/24"
-		resource_group 			= data.ibm_resource_group.rg.id
-	}
-	resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
-		name                    = "test-pdns-cr-subnet2"
-		vpc                     = ibm_is_vpc.test-pdns-cr-vpc.id
-		zone            		= "us-south-1"
-		ipv4_cidr_block 		= "10.240.64.0/24"
-		resource_group 			= data.ibm_resource_group.rg.id
-	}
-	resource "ibm_resource_instance" "test-pdns-cr-instance" {
-		name				= "test-pdns-cr-instance"
-		resource_group_id	= data.ibm_resource_group.rg.id
-		location			= "global"
-		service				= "dns-svcs"
-		plan				= "standard-dns"
-	}
 	resource "ibm_dns_custom_resolver" "test" {
-		name        = "test-pdns-customresolver"
-		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
-		description = "new test CR - TF"
-		locations {
-			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet1.crn
-			enabled     = true
+		name			= "testpdnscustomresolver"
+		instance_id		= "d515a480-a702-4837-9f40-6c0c285262fd"
+		description		= "new test CR Locations - TF"
+		high_availability =  true
+		enabled		= true
+		locations{
+			subnet_crn	= "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-a094c4e8-02cd-4b04-858d-7f31205b93b9"
+			enabled		= true
 		}
 		locations {
-			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet2.crn
-			enabled     = true
+			subnet_crn  = "crn:v1:staging:public:is:us-south-2:a/01652b251c3ae2787110a995d8db0135::subnet:0726-b6f3cb83-48f0-4c55-9023-202fe4570c83"
+			enabled     = false
 		}
-		
 	}
 	resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
-		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
+		instance_id = "d515a480-a702-4837-9f40-6c0c285262fd"
 		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 		description = "Test Fw Rule"
 		type = "%s"

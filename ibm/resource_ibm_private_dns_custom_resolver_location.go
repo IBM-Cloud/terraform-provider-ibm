@@ -12,12 +12,13 @@ import (
 )
 
 const (
-	ibmCRLocation           = "ibm_dns_custom_resolver_location"
-	pdnsResolverID          = "resolver_id"
-	pdnsCRLocationID        = "location_id"
-	pdnsCRLocationSubnetCRN = "subnet_crn"
-	pdnsCRLocationEnable    = "enabled"
-	pdnsCRLocationServerIP  = "dns_server_ip"
+	ibmCRLocation            = "ibm_dns_custom_resolver_location"
+	pdnsResolverID           = "resolver_id"
+	pdnsCRLocationID         = "location_id"
+	pdnsCRLocationSubnetCRN  = "subnet_crn"
+	pdnsCRLocationEnable     = "enabled"
+	pdnsCRLocationServerIP   = "dns_server_ip"
+	pdnsCustomReolverEnabled = "cr_enabled"
 )
 
 func resourceIBMPrivateDNSCRLocation() *schema.Resource {
@@ -70,6 +71,12 @@ func resourceIBMPrivateDNSCRLocation() *schema.Resource {
 				Computed:    true,
 				Description: "CRLocation Server IP",
 			},
+			pdnsCustomReolverEnabled: {
+				Type:             schema.TypeBool,
+				Optional:         true,
+				Default:          true,
+				DiffSuppressFunc: applyOnce,
+			},
 		},
 	}
 }
@@ -82,37 +89,39 @@ func resourceIBMPrivateDNSLocationCreate(context context.Context, d *schema.Reso
 	resolverID := d.Get(pdnsResolverID).(string)
 
 	opt := sess.NewAddCustomResolverLocationOptions(instanceID, resolverID)
+
 	if subnetcrn, ok := d.GetOk(pdnsCRLocationSubnetCRN); ok {
 		opt.SetSubnetCrn(subnetcrn.(string))
 	}
+
+	//Custom resolver enable flag
 	customResolverEnable := false
 	if enable, ok := d.GetOkExists(pdnsCRLocationEnable); ok {
 		opt.SetEnabled(enable.(bool))
-		if enable.(bool) {
-			customResolverEnable = true
-		}
 	}
 	result, resp, err := sess.AddCustomResolverLocationWithContext(context, opt)
 
 	if err != nil || result == nil {
 		return diag.FromErr(fmt.Errorf("Error creating the custom resolver location %s:%s", err, resp))
 	}
+	d.SetId(convertCisToTfThreeVar(*result.ID, resolverID, instanceID))
 
-	if customResolverEnable {
-		d.SetId(convertCisToTfThreeVar(*result.ID, resolverID, instanceID))
-		_, err = waitForPDNSCustomResolverHealthy(d, meta)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		//Enable Custom Resolver
-		optCr := sess.NewUpdateCustomResolverOptions(instanceID, resolverID)
-		optCr.SetEnabled(true)
-		resultCr, respCr, errCr := sess.UpdateCustomResolverWithContext(context, optCr)
-		if errCr != nil || resultCr == nil {
-			return diag.FromErr(fmt.Errorf("Error updating the  custom resolver %s:%s", errCr, respCr))
+	if cr_enable, ok := d.GetOkExists(pdnsCustomReolverEnabled); ok {
+		if cr_enable.(bool) {
+
+			customResolverEnable = true
+			_, err = waitForPDNSCustomResolverHealthy(d, meta)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			optCr := sess.NewUpdateCustomResolverOptions(instanceID, resolverID)
+			optCr.SetEnabled(customResolverEnable)
+			resultCr, respCr, errCr := sess.UpdateCustomResolverWithContext(context, optCr)
+			if errCr != nil || resultCr == nil {
+				return diag.FromErr(fmt.Errorf("Error updating the  custom resolver %s:%s", errCr, respCr))
+			}
 		}
 	}
-
 	return resourceIBMPrivateDNSLocationRead(context, d, meta)
 }
 
@@ -147,21 +156,53 @@ func resourceIBMPrivateDNSLocationDelete(context context.Context, d *schema.Reso
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	locationID, resolverID, instanceID, err := convertTfToCisThreeVar(d.Id())
+	delete_loc := true
+	if cr_enable, ok := d.GetOkExists(pdnsCustomReolverEnabled); ok {
+		if cr_enable.(bool) {
+			// Disable the Cutsom Resolver
+			optEnabled := sess.NewUpdateCustomResolverOptions(instanceID, resolverID)
+			optEnabled.SetEnabled(false)
+
+			result, resp, errEnabled := sess.UpdateCustomResolverWithContext(context, optEnabled)
+			if err != nil || result == nil {
+				return diag.FromErr(fmt.Errorf("Error Disable and Update the custom resolver %s:%s", errEnabled, resp))
+			}
+		} else {
+			// Disable the Cutsom Resolver Location
+			updatelocation := sess.NewUpdateCustomResolverLocationOptions(instanceID, resolverID, locationID)
+			updatelocation.SetEnabled(false)
+			result, resp, err := sess.UpdateCustomResolverLocationWithContext(context, updatelocation)
+			if err != nil || result == nil {
+				return diag.FromErr(fmt.Errorf("Error Disbale and updating the custom resolver location %s:%s", err, resp))
+			}
+			return nil
+		}
+	}
+	// Disable Cutsom Resolver Location before deleting
 	updatelocation := sess.NewUpdateCustomResolverLocationOptions(instanceID, resolverID, locationID)
 	updatelocation.SetEnabled(false)
 	result, resp, err := sess.UpdateCustomResolverLocationWithContext(context, updatelocation)
 	if err != nil || result == nil {
-		return diag.FromErr(fmt.Errorf("Error updating the custom resolver location %s:%s", err, resp))
+		return diag.FromErr(fmt.Errorf("Error Disbale and updating the custom resolver location %s:%s", err, resp))
 	}
-	deleteCRlocation := sess.NewDeleteCustomResolverLocationOptions(instanceID, resolverID, locationID)
-	resp, errDel := sess.DeleteCustomResolverLocationWithContext(context, deleteCRlocation)
-	if errDel != nil {
-		if resp != nil && resp.StatusCode == 404 {
-			return nil
+
+	if delete_loc {
+		opt := sess.NewGetCustomResolverOptions(instanceID, resolverID)
+		result, _, _ := sess.GetCustomResolverWithContext(context, opt)
+		if len(result.Locations) > 1 {
+			deleteCRlocation := sess.NewDeleteCustomResolverLocationOptions(instanceID, resolverID, locationID)
+			resp, errDel := sess.DeleteCustomResolverLocationWithContext(context, deleteCRlocation)
+			if errDel != nil {
+				if resp != nil && resp.StatusCode == 404 {
+					return nil
+				}
+				return diag.FromErr(fmt.Errorf("Error Deleting the custom resolver location %s:%s", errDel, resp))
+			}
 		}
-		return diag.FromErr(fmt.Errorf("Error deleting the custom resolver location %s:%s", errDel, resp))
 	}
+
 	d.SetId("")
 	return nil
 }

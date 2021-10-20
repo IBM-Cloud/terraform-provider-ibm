@@ -14,8 +14,8 @@ Provides a read-only data source for custom resolvers. You can then reference th
 ## Example usage
 
 ```terraform
-data "ibm_dns_custom_resolvers" "test-custom-resolver" {
-  instance_id = ibm_dns_custom_resolver.test.instance_id
+data "ibm_dns_custom_resolvers" "test-cr" {
+		instance_id	= ibm_dns_custom_resolver.test.instance_id
 }
 ```
 

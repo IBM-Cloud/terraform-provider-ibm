@@ -58,6 +58,7 @@ Provides a private DNS custom resolver locations resource. This allows DNS custo
 		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 		subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet2.crn
 		enabled     = true
+		cr_enabled	= true
 	}
 
 ```
@@ -70,6 +71,8 @@ Review the argument reference that you can specify for your resource.
 * `resolver_id` - (Required, String) The unique identifier of a custom resolver.
 * `subnet_crn` - (Required, String) The subnet CRN of the VPC.
 * `enabled` - (Optional, Bool) The custom resolver location will enable.
+* `cr_enabled` - (Optional, Bool) The custom resolver  will enable.
+
 
 
 ## Attribute reference
