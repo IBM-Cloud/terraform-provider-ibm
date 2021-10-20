@@ -1288,10 +1288,10 @@ func StringContains(s []string, str string) bool {
 	return false
 }
 
-func flattenMembersData(list *iamaccessgroupsv2.GroupMembersList, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) ([]string, []string) {
+func flattenMembersData(list []iamaccessgroupsv2.ListGroupMembersResponseMember, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) ([]string, []string) {
 	var ibmid []string
 	var serviceid []string
-	for _, m := range list.Members {
+	for _, m := range list {
 		if *m.Type == "user" {
 			for _, user := range users {
 				if user.IamID == *m.IamID {

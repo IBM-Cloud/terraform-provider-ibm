@@ -15,10 +15,7 @@ import (
 
 func dataSourceIBMIAMAccessGroup() *schema.Resource {
 	return &schema.Resource{
-		Read:     dataIBMIAMAccessGroupRead,
-		Exists:   resourceIBMIAMAccessGroupExists,
-		Importer: &schema.ResourceImporter{},
-
+		Read: dataIBMIAMAccessGroupRead,
 		Schema: map[string]*schema.Schema{
 			"access_group_name": {
 				Type:        schema.TypeString,
@@ -197,7 +194,7 @@ func dataIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			log.Printf("Error retrieving access group rules: %s. API Response: %s", err, detailedResponse)
 		}
-		ibmID, serviceID := flattenMembersData(members, res, allrecs)
+		ibmID, serviceID := flattenMembersData(members.Members, res, allrecs)
 
 		grpInstance := map[string]interface{}{
 			"id":              grp.ID,
