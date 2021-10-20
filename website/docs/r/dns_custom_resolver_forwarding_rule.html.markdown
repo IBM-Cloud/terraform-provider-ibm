@@ -45,6 +45,7 @@ data "ibm_resource_group" "rg" {
 		name        = "test-custom=resolver"
 		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
 		description = "new-TF-Custom-resolver"
+		high_availability = false
 		locations {
 			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet1.crn
 			enabled     = true
@@ -60,6 +61,7 @@ data "ibm_resource_group" "rg" {
 		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 		subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet2.crn
 		enabled     = true
+		cr_enabled	= true
 	}
 	resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
 		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid

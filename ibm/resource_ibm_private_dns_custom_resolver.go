@@ -167,22 +167,21 @@ func resouceIBMPrivateDNSCustomResolverCreate(context context.Context, d *schema
 	customResolverOption.SetName(crName)
 	customResolverOption.SetDescription(crDescription)
 
+	cr_highaval := d.Get(pdnsCRHighAvailability).(bool)
+
 	crLocationCreate := false
 	if _, ok := d.GetOk(pdnsCustomResolverLocations); ok {
 		crLocationCreate = true
 		crLocations := d.Get(pdnsCustomResolverLocations).(*schema.Set)
-
-		customResolverOption.SetLocations(expandPdnsCRLocations(crLocations))
-		if highval, ok := d.GetOkExists(pdnsCRHighAvailability); ok {
-			cr_highaval := highval.(bool)
-			if cr_highaval && crLocations.Len() <= 1 {
-				return diag.FromErr(fmt.Errorf("High Availability is enabled by Default, Please add two or more Locations"))
-			}
+		if cr_highaval && crLocations.Len() <= 1 {
+			return diag.FromErr(fmt.Errorf("To meet high availability status, configure custom resolvers with a minimum of two resolver locations. A maximum of four locations can be configured within the same subnet location."))
 		}
+		customResolverOption.SetLocations(expandPdnsCRLocations(crLocations))
 	} else {
-		return diag.FromErr(fmt.Errorf("High Availability is enabled by Default, Please add two or more locations"))
+		if cr_highaval {
+			return diag.FromErr(fmt.Errorf("To meet high availability status, configure custom resolvers with a minimum of two resolver locations. A maximum of four locations can be configured within the same subnet location."))
+		}
 	}
-
 	result, resp, err := sess.CreateCustomResolverWithContext(context, customResolverOption)
 	if err != nil || result == nil {
 		return diag.FromErr(fmt.Errorf("Error reading the custom resolver %s:%s", err, resp))
@@ -190,6 +189,7 @@ func resouceIBMPrivateDNSCustomResolverCreate(context context.Context, d *schema
 
 	d.SetId(convertCisToTfTwoVar(*result.ID, crn))
 	d.Set(pdnsCRId, *result.ID)
+
 	if crLocationCreate {
 		_, err = waitForPDNSCustomResolverHealthy(d, meta)
 		if err != nil {
@@ -273,6 +273,7 @@ func resouceIBMPrivateDNSCustomResolverUpdate(context context.Context, d *schema
 }
 
 func resouceIBMPrivateDNSCustomResolverDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
 	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -282,13 +283,12 @@ func resouceIBMPrivateDNSCustomResolverDelete(context context.Context, d *schema
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	// Disable Cutsom Resolver before deleting
 	optEnabled := sess.NewUpdateCustomResolverOptions(crn, customResolverID)
 	optEnabled.SetEnabled(false)
 	result, resp, errEnabled := sess.UpdateCustomResolverWithContext(context, optEnabled)
 	if err != nil || result == nil {
-		return diag.FromErr(fmt.Errorf("Error updating the  custom resolver to disable before deleting %s:%s", errEnabled, resp))
+		return diag.FromErr(fmt.Errorf("Error updating the custom resolver to disable before deleting %s:%s", errEnabled, resp))
 	}
 
 	opt := sess.NewDeleteCustomResolverOptions(crn, customResolverID)
@@ -298,7 +298,7 @@ func resouceIBMPrivateDNSCustomResolverDelete(context context.Context, d *schema
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("Error deleting the  custom resolver %s:%s", err, response))
+		return diag.FromErr(fmt.Errorf("Error deleting the custom resolver %s:%s", err, response))
 	}
 
 	d.SetId("")
@@ -365,18 +365,18 @@ func waitForPDNSCustomResolverHealthy(d *schema.ResourceData, meta interface{}) 
 	}
 
 	var customResolverID, crn string
+
 	g := strings.SplitN(d.Id(), ":", -1)
 	if len(g) > 2 {
 		_, customResolverID, crn, _ = convertTfToCisThreeVar(d.Id())
 	} else {
 		customResolverID, crn, _ = convertTftoCisTwoVar(d.Id())
 	}
-
 	opt := sess.NewGetCustomResolverOptions(crn, customResolverID)
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{pdnsCustomResolverCritical},
-		Target:  []string{pdnsCustomResolverDegraded, pdnsCustomResolverHealthy},
+		Pending: []string{pdnsCustomResolverCritical, "false"},
+		Target:  []string{pdnsCustomResolverDegraded, pdnsCustomResolverHealthy, "true"},
 		Refresh: func() (interface{}, string, error) {
 			res, detail, err := sess.GetCustomResolver(opt)
 			if err != nil {

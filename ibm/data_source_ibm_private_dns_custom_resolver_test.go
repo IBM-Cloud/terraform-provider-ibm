@@ -34,52 +34,19 @@ func TestAccIBMPrivateDNSCustomResolverDataSource_basic(t *testing.T) {
 }
 
 func testAccCheckIBMPrivateDNSCustomResolverDataSourceConfig(crname, crdescription string) string {
-	// status filter defaults to empty
 	return fmt.Sprintf(`
-
-	data "ibm_resource_group" "rg" {
-		is_default	= true
-	}
-	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
-		name			= "test-pdns-custom-resolver-vpc-d"
-		resource_group	= data.ibm_resource_group.rg.id
-	}
-	resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
-		name                    = "test-pdns-cr-subnet1"
-		vpc                     = ibm_is_vpc.test-pdns-cr-vpc.id
-		zone            		= "us-south-1"
-		ipv4_cidr_block 		= "10.240.0.0/24"
-		resource_group 			= data.ibm_resource_group.rg.id
-	}
-	resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
-		name                    = "test-pdns-cr-subnet2"
-		vpc                     = ibm_is_vpc.test-pdns-cr-vpc.id
-		zone            		= "us-south-1"
-		ipv4_cidr_block 		= "10.240.64.0/24"
-		resource_group 			= data.ibm_resource_group.rg.id
-	}
-	resource "ibm_resource_instance" "test-pdns-cr-instance" {
-		name				= "test-pdns-cr-instance"
-		resource_group_id	= data.ibm_resource_group.rg.id
-		location 			= "global"
-		service 			= "dns-svcs"
-		plan 				= "standard-dns"
-	}
 	resource "ibm_dns_custom_resolver" "test" {
-		name        = "%s"
-		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
-		description = "%s"
-		locations {
-			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet1.crn
-			enabled     = true
+		name		= "%s"
+		instance_id	= "d515a480-a702-4837-9f40-6c0c285262fd"
+		description	= "%s"
+		high_availability = false
+		locations{
+			subnet_crn	= "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-a094c4e8-02cd-4b04-858d-7f31205b93b9"
+			enabled		= true
 		}
-		locations {
-			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet2.crn
-			enabled     = true
-		}
-		
 	}
 	data "ibm_dns_custom_resolvers" "test-cr" {
-		instance_id = ibm_dns_custom_resolver.test.instance_id
+		depends_on  = [ibm_dns_custom_resolver.test]
+		instance_id	= ibm_dns_custom_resolver.test.instance_id
 	}`, crname, crdescription)
 }
