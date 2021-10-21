@@ -569,6 +569,7 @@ func Provider() *schema.Provider {
 			"ibm_compute_vm_instance":                            resourceIBMComputeVmInstance(),
 			"ibm_container_addons":                               resourceIBMContainerAddOns(),
 			"ibm_container_alb":                                  resourceIBMContainerALB(),
+			"ibm_container_alb_create":                           resourceIBMContainerAlbCreate(),
 			"ibm_container_api_key_reset":                        resourceIBMContainerAPIKeyReset(),
 			"ibm_container_vpc_alb":                              resourceIBMContainerVpcALB(),
 			"ibm_container_vpc_worker_pool":                      resourceIBMContainerVpcWorkerPool(),
