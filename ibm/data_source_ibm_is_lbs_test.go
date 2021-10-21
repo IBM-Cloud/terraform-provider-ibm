@@ -34,6 +34,7 @@ func TestAccIBMISLBSDatasource_basic(t *testing.T) {
 				Config: testDSCheckIBMISLBSDatasourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_lbs.test_lbs", "load_balancers.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lbs.test_lbs", "load_balancers.0.route_mode"),
 				),
 			},
 		},
