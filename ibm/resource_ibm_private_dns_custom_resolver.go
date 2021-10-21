@@ -182,6 +182,7 @@ func resouceIBMPrivateDNSCustomResolverCreate(context context.Context, d *schema
 			return diag.FromErr(fmt.Errorf("To meet high availability status, configure custom resolvers with a minimum of two resolver locations. A maximum of four locations can be configured within the same subnet location."))
 		}
 	}
+
 	result, resp, err := sess.CreateCustomResolverWithContext(context, customResolverOption)
 	if err != nil || result == nil {
 		return diag.FromErr(fmt.Errorf("Error reading the custom resolver %s:%s", err, resp))
@@ -220,7 +221,7 @@ func resouceIBMPrivateDNSCustomResolverRead(context context.Context, d *schema.R
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("Error reading the  custom resolver %s:%s", err, response))
+		return diag.FromErr(fmt.Errorf("Error reading the custom resolver %s:%s", err, response))
 	}
 	d.Set(pdnsInstanceID, crn)
 	d.Set(pdnsCRId, *result.ID)
@@ -264,7 +265,7 @@ func resouceIBMPrivateDNSCustomResolverUpdate(context context.Context, d *schema
 
 		result, resp, err := sess.UpdateCustomResolverWithContext(context, opt)
 		if err != nil || result == nil {
-			return diag.FromErr(fmt.Errorf("Error updating the  custom resolver %s:%s", err, resp))
+			return diag.FromErr(fmt.Errorf("Error updating the custom resolver %s:%s", err, resp))
 		}
 
 	}

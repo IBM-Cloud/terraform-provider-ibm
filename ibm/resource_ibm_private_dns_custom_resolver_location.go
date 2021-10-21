@@ -93,14 +93,19 @@ func resourceIBMPrivateDNSLocationCreate(context context.Context, d *schema.Reso
 	if subnetcrn, ok := d.GetOk(pdnsCRLocationSubnetCRN); ok {
 		opt.SetSubnetCrn(subnetcrn.(string))
 	}
-
-	//Custom resolver enable flag
-	customResolverEnable := false
 	if enable, ok := d.GetOkExists(pdnsCRLocationEnable); ok {
 		opt.SetEnabled(enable.(bool))
 	}
-	result, resp, err := sess.AddCustomResolverLocationWithContext(context, opt)
 
+	if _, ok := d.GetOkExists(pdnsCustomReolverEnabled); ok {
+		optCr := sess.NewUpdateCustomResolverOptions(instanceID, resolverID)
+		optCr.SetEnabled(false)
+		resultCr, respCr, errCr := sess.UpdateCustomResolverWithContext(context, optCr)
+		if errCr != nil || resultCr == nil {
+			return diag.FromErr(fmt.Errorf("Error updating the custom resolver with cr_enable false %s:%s", errCr, respCr))
+		}
+	}
+	result, resp, err := sess.AddCustomResolverLocationWithContext(context, opt)
 	if err != nil || result == nil {
 		return diag.FromErr(fmt.Errorf("Error creating the custom resolver location %s:%s", err, resp))
 	}
@@ -108,17 +113,15 @@ func resourceIBMPrivateDNSLocationCreate(context context.Context, d *schema.Reso
 
 	if cr_enable, ok := d.GetOkExists(pdnsCustomReolverEnabled); ok {
 		if cr_enable.(bool) {
-
-			customResolverEnable = true
 			_, err = waitForPDNSCustomResolverHealthy(d, meta)
 			if err != nil {
 				return diag.FromErr(err)
 			}
 			optCr := sess.NewUpdateCustomResolverOptions(instanceID, resolverID)
-			optCr.SetEnabled(customResolverEnable)
+			optCr.SetEnabled(cr_enable.(bool))
 			resultCr, respCr, errCr := sess.UpdateCustomResolverWithContext(context, optCr)
 			if errCr != nil || resultCr == nil {
-				return diag.FromErr(fmt.Errorf("Error updating the  custom resolver %s:%s", errCr, respCr))
+				return diag.FromErr(fmt.Errorf("Error updating the custom resolver %s:%s", errCr, respCr))
 			}
 		}
 	}
