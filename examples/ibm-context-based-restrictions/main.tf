@@ -19,7 +19,6 @@ resource "ibm_cbr_zone" "cbr_zone_instance" {
     type  = "ipAddress"
     value = "169.23.22.10"
   }
-  transaction_id = var.cbr_zone_transaction_id
 }
 
 // Provision cbr_rule resource instance
@@ -49,11 +48,11 @@ resource "ibm_cbr_rule" "cbr_rule_instance" {
 
 // Create cbr_zone data source
 data "ibm_cbr_zone" "cbr_zone_instance" {
-  zone_id = var.cbr_zone_zone_id
+  zone_id = ibm_cbr_zone.cbr_zone_instance.id
 }
 
 
 // Create cbr_rule data source
 data "ibm_cbr_rule" "cbr_rule_instance" {
-  rule_id = var.cbr_rule_rule_id
+  rule_id = ibm_cbr_rule.cbr_rule_instance.id
 }

@@ -259,7 +259,6 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("addresses"); ok {
 		var addresses []contextbasedrestrictionsv1.AddressIntf
 		for _, e := range d.Get("addresses").([]interface{}) {
-			log.Printf("------------- addresses in create as input: %+v\n", e)
 			value := e.(map[string]interface{})
 			addressesItem := resourceIBMCbrZoneMapToAddress(value)
 			addresses = append(addresses, addressesItem)
@@ -275,9 +274,9 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 		}
 		createZoneOptions.SetExcluded(excluded)
 	}
-	//if _, ok := d.GetOk("transaction_id"); ok {
-	//	createZoneOptions.SetTransactionID(d.Get("transaction_id").(string))
-	//}
+	if _, ok := d.GetOk("transaction_id"); ok {
+		createZoneOptions.SetTransactionID(d.Get("transaction_id").(string))
+	}
 
 	zone, response, err := contextBasedRestrictionsClient.CreateZoneWithContext(context, createZoneOptions)
 	if err != nil {
@@ -321,7 +320,6 @@ func resourceIBMCbrZoneMapToAddress(addressMap map[string]interface{}) contextba
 */
 func resourceIBMCbrZoneMapToAddress(addressMap map[string]interface{}) contextbasedrestrictionsv1.AddressIntf {
 	var address contextbasedrestrictionsv1.AddressIntf
-	//log.Printf("------------- ZoneMapToAddress: %+v\n", addressMap)
 	disc, ok := addressMap["type"]
 	if ok {
 		switch disc {
@@ -340,10 +338,9 @@ func resourceIBMCbrZoneMapToAddress(addressMap map[string]interface{}) contextba
 		case "serviceRef":
 			serviceRef := resourceIBMCbrZoneMapToAddressServiceRef(addressMap)
 			address = &serviceRef
-			//log.Printf("------------- serviceRefs: %+v\n", addressMap)
 		}
 	} else {
-		// appropriate error - unexpected value for type panic
+		log.Println("[DEBUG] 'type' field is missing from 'addresses'")
 	}
 
 	return address
@@ -431,6 +428,12 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 
 	getZoneOptions := &contextbasedrestrictionsv1.GetZoneOptions{}
 
+	var transactionIDFromInput string
+	if _, ok := d.GetOk("transaction_id"); ok {
+		transactionIDFromInput = d.Get("transaction_id").(string)
+		getZoneOptions.SetTransactionID(transactionIDFromInput)
+	}
+
 	getZoneOptions.SetZoneID(d.Id())
 
 	zone, response, err := contextBasedRestrictionsClient.GetZoneWithContext(context, getZoneOptions)
@@ -447,6 +450,13 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 	//	return diag.FromErr(fmt.Errorf("Error setting transaction_id: %s", err))
 	//}
 
+	transactionIDFromResponse := response.GetHeaders()["Transaction-Id"][0]
+	if transactionIDFromInput != "" {
+		if err = d.Set("transaction_id", transactionIDFromResponse); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting transaction_id: %s", err))
+		}
+	}
+
 	if err = d.Set("name", zone.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
@@ -462,7 +472,7 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 			addressesItemMap := resourceIBMCbrZoneAddressToMap(addressesItem)
 			addresses = append(addresses, addressesItemMap)
 		}
-		log.Printf("------------- addresses in read: %+v\n", addresses)
+
 		if err = d.Set("addresses", addresses); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting addresses: %s", err))
 		}
