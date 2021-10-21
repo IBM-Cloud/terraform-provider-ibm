@@ -49,8 +49,6 @@ Review the argument reference that you can specify for your resource.
 
   - `add_notification_payload` - (Optional, Boolean) Whether to add the notification payload to the email.
 
-  -- `recipient_selection` - (Optional, String) The recipient selection method. The default value is `only_destination`.
-
   - `reply_to` - (Optional, String) The email address to reply to.
 
   - `to` - (Optional, List) The phone number to send the SMS to.

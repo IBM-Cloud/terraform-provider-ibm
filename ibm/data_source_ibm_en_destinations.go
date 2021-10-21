@@ -4,19 +4,21 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	en "github.ibm.com/Notification-Hub/event-notifications-go-admin-sdk/eventnotificationsapiv1"
+	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
 func dataSourceIBMEnDestinations() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMEnDestinationsRead,
+		ReadContext: dataSourceIBMEnDestinationsRead,
 
 		Schema: map[string]*schema.Schema{
-			"instance_id": {
+			"instance_guid": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Unique identifier for IBM Cloud Event Notifications instance.",
@@ -25,16 +27,6 @@ func dataSourceIBMEnDestinations() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Filter the destinations by name or type.",
-			},
-			"offset": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "Current offset.",
-			},
-			"limit": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "limit to show destinations.",
 			},
 			"total_count": {
 				Type:        schema.TypeInt,
@@ -92,52 +84,59 @@ func dataSourceIBMEnDestinations() *schema.Resource {
 	}
 }
 
-func dataSourceIBMEnDestinationsRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMEnDestinationsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options := &en.ListDestinationsOptions{}
 
-	options.SetInstanceID(d.Get("instance_id").(string))
+	options.SetInstanceID(d.Get("instance_guid").(string))
 
-	if _, ok := d.GetOk("limit"); ok {
-		options.SetLimit(d.Get("limit").(int64))
-	}
-	if _, ok := d.GetOk("offset"); ok {
-		options.SetOffset(d.Get("offset").(int64))
-	}
 	if _, ok := d.GetOk("search_key"); ok {
 		options.SetSearch(d.Get("search_key").(string))
 	}
+	var destinationList *en.DestinationList
 
-	result, response, err := enClient.ListDestinations(options)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
+	finalList := []en.DestinationLisItem{}
+
+	var offset int64 = 0
+	var limit int64 = 100
+
+	options.SetLimit(limit)
+
+	for {
+		options.SetOffset(offset)
+
+		result, response, err := enClient.ListDestinationsWithContext(context, options)
+
+		destinationList = result
+
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("ListDestinationsWithContext failed %s\n%s", err, response))
 		}
-		return fmt.Errorf("ListDestinations failed %s\n%s", err, response)
+
+		offset = offset + limit
+
+		finalList = append(finalList, result.Destinations...)
+
+		if offset > *result.TotalCount {
+			break
+		}
 	}
+
+	destinationList.Destinations = finalList
 
 	d.SetId(fmt.Sprintf("destinations/%s", *options.InstanceID))
 
-	if err = d.Set("total_count", intValue(result.TotalCount)); err != nil {
-		return fmt.Errorf("error setting total_count: %s", err)
+	if err = d.Set("total_count", intValue(destinationList.TotalCount)); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting total_count: %s", err))
 	}
 
-	if err = d.Set("offset", intValue(result.Offset)); err != nil {
-		return fmt.Errorf("error setting offset: %s", err)
-	}
-
-	if err = d.Set("limit", intValue(result.Limit)); err != nil {
-		return fmt.Errorf("error setting limit: %s", err)
-	}
-
-	if result.Destinations != nil {
-		if err = d.Set("destinations", enFlattenDestinationsList(result.Destinations)); err != nil {
-			return fmt.Errorf("error setting destinations %s", err)
+	if destinationList.Destinations != nil {
+		if err = d.Set("destinations", enFlattenDestinationsList(destinationList.Destinations)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting destinations %s", err))
 		}
 	}
 

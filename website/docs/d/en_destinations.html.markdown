@@ -24,10 +24,6 @@ Review the argument reference that you can specify for your data source.
 
 - `instance_id` - (Required, Forces new resource, String) Unique identifier for IBM Cloud Event Notifications instance.
 
-- `limit` - (Optional, Integer) limit to show destinations.
-
-- `offset` - (Optional, Integer) Current offset.
-
 - `search_key` - (Optional, String) Filter the destinations by name or type.
 
 ## Attribute Reference
@@ -51,9 +47,5 @@ In addition to all argument references listed, you can access the following attr
   - `type` - (String) Destination type Email/SMS/Webhook.
 
   - `updated_at` - (String) Lats updated time.
-
-- `limit` - (Integer) limit to show destinations.
-
-- `offset` - (Integer) Current offset.
 
 - `total_count` - (Integer) Total number of destinations.

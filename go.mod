@@ -11,6 +11,7 @@ require (
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloudant-go-sdk v0.0.36
 	github.com/IBM/container-registry-go-sdk v0.0.13
+	github.com/IBM/event-notifications-go-admin-sdk v0.0.2
 	github.com/IBM/eventstreams-go-sdk v1.2.0
 	github.com/IBM/go-sdk-core/v4 v4.10.0
 	github.com/IBM/go-sdk-core/v5 v5.6.5
@@ -47,7 +48,6 @@ require (
 	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/softlayer/softlayer-go v1.0.3
-	github.ibm.com/Notification-Hub/event-notifications-go-admin-sdk v1.0.0
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	golang.org/x/sys v0.0.0-20211004093028-2c5d950f24ef // indirect
 	golang.org/x/tools v0.1.7 // indirect
@@ -57,5 +57,3 @@ require (
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
-
-replace github.ibm.com/Notification-Hub/event-notifications-go-admin-sdk v1.0.0 => ../event-notifications-go-admin-sdk

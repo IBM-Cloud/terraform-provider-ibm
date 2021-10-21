@@ -4,32 +4,24 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	en "github.ibm.com/Notification-Hub/event-notifications-go-admin-sdk/eventnotificationsapiv1"
+	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
 func dataSourceIBMEnSubscriptions() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMEnSubscriptionsRead,
+		ReadContext: dataSourceIBMEnSubscriptionsRead,
 
 		Schema: map[string]*schema.Schema{
-			"instance_id": {
+			"instance_guid": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Unique identifier for IBM Cloud Event Notifications instance.",
-			},
-			"offset": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "Current offset.",
-			},
-			"limit": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "limit to show subscriptions.",
 			},
 			"search_key": {
 				Type:        schema.TypeString,
@@ -99,47 +91,60 @@ func dataSourceIBMEnSubscriptions() *schema.Resource {
 	}
 }
 
-func dataSourceIBMEnSubscriptionsRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMEnSubscriptionsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options := &en.ListSubscriptionsOptions{}
 
-	options.SetInstanceID(d.Get("instance_id").(string))
+	options.SetInstanceID(d.Get("instance_guid").(string))
 
-	if _, ok := d.GetOk("limit"); ok {
-		options.SetLimit(d.Get("limit").(int64))
-	}
-	if _, ok := d.GetOk("offset"); ok {
-		options.SetOffset(d.Get("offset").(int64))
-	}
 	if _, ok := d.GetOk("search_key"); ok {
 		options.SetSearch(d.Get("search_key").(string))
 	}
+	var subscriptionList *en.SubscriptionList
 
-	result, response, err := enClient.ListSubscriptions(options)
-	if err != nil {
-		return fmt.Errorf("ListSubscriptions failed %s\n%s", err, response)
-	}
+	finalList := []en.SubscriptionListItem{}
 
-	d.SetId(fmt.Sprintf("subscriptions_%s", d.Get("instance_id").(string)))
+	var offset int64 = 0
+	var limit int64 = 100
 
-	if err = d.Set("total_count", intValue(result.TotalCount)); err != nil {
-		return fmt.Errorf("error setting total_count: %s", err)
-	}
-	if err = d.Set("offset", intValue(result.Offset)); err != nil {
-		return fmt.Errorf("error setting offset: %s", err)
-	}
-	if err = d.Set("limit", intValue(result.Limit)); err != nil {
-		return fmt.Errorf("error setting limit: %s", err)
-	}
+	options.SetLimit(limit)
 
-	if result.Subscriptions != nil {
-		err = d.Set("subscriptions", enFlattenSubscriptionList(result.Subscriptions))
+	for {
+		options.SetOffset(offset)
+
+		result, response, err := enClient.ListSubscriptionsWithContext(context, options)
+
+		subscriptionList = result
+
 		if err != nil {
-			return fmt.Errorf("error setting subscriptions %s", err)
+			return diag.FromErr(fmt.Errorf("ListSubscriptionsWithContext failed %s\n%s", err, response))
+		}
+
+		offset = offset + limit
+
+		finalList = append(finalList, result.Subscriptions...)
+
+		if offset > *result.TotalCount {
+			break
+		}
+	}
+
+	subscriptionList.Subscriptions = finalList
+
+	d.SetId(fmt.Sprintf("subscriptions_%s", d.Get("instance_guid").(string)))
+
+	if err = d.Set("total_count", intValue(subscriptionList.TotalCount)); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting total_count: %s", err))
+	}
+
+	if subscriptionList.Subscriptions != nil {
+		err = d.Set("subscriptions", enFlattenSubscriptionList(subscriptionList.Subscriptions))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error setting subscriptions %s", err))
 		}
 	}
 
@@ -186,6 +191,5 @@ func enSubscriptionListToMap(subscriptionsItem en.SubscriptionListItem) (subscri
 		subscriptionsMap["updated_at"] = subscriptionsItem.UpdatedAt.String()
 	}
 
-	fmt.Printf("Pajabjkd %+v", subscriptionsItem)
 	return subscriptionsMap
 }

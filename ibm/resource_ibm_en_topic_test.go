@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	en "github.ibm.com/Notification-Hub/event-notifications-go-admin-sdk/eventnotificationsapiv1"
+	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
 func TestAccIBMEnTopicAllArgs(t *testing.T) {
@@ -61,7 +61,7 @@ func testAccCheckIBMEnTopicConfig(instanceName, name, description string) string
 	}
 	
 	resource "ibm_en_topic" "en_topic_resource_1" {
-		instance_id = ibm_resource_instance.en_topic_resource.guid
+		instance_guid = ibm_resource_instance.en_topic_resource.guid
 		name        = "%s"
 		description = "%s"
 	}

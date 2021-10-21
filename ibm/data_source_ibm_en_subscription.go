@@ -4,19 +4,21 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	en "github.ibm.com/Notification-Hub/event-notifications-go-admin-sdk/eventnotificationsapiv1"
+	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
 func dataSourceIBMEnSubscription() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMEnSubscriptionRead,
+		ReadContext: dataSourceIBMEnSubscriptionRead,
 
 		Schema: map[string]*schema.Schema{
-			"instance_id": {
+			"instance_guid": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Unique identifier for IBM Cloud Event Notifications instance.",
@@ -111,68 +113,68 @@ func dataSourceIBMEnSubscription() *schema.Resource {
 	}
 }
 
-func dataSourceIBMEnSubscriptionRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMEnSubscriptionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	getSubscriptionOptions := &en.GetSubscriptionOptions{}
 
-	getSubscriptionOptions.SetInstanceID(d.Get("instance_id").(string))
+	getSubscriptionOptions.SetInstanceID(d.Get("instance_guid").(string))
 	getSubscriptionOptions.SetID(d.Get("subscription_id").(string))
 
-	result, response, err := enClient.GetSubscription(getSubscriptionOptions)
+	result, response, err := enClient.GetSubscriptionWithContext(context, getSubscriptionOptions)
 	if err != nil {
-		return fmt.Errorf("GetSubscription failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetSubscriptionWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *getSubscriptionOptions.InstanceID, *getSubscriptionOptions.ID))
 
 	if err = d.Set("name", result.Name); err != nil {
-		return fmt.Errorf("error setting name: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting name: %s", err))
 	}
 
 	if result.Description != nil {
 		if err = d.Set("description", result.Description); err != nil {
-			return fmt.Errorf("error setting description: %s", err)
+			return diag.FromErr(fmt.Errorf("error setting description: %s", err))
 		}
 	}
 	if err = d.Set("updated_at", result.UpdatedAt); err != nil {
-		return fmt.Errorf("error setting updated_at: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting updated_at: %s", err))
 	}
 
 	if result.DestinationType != nil {
 		if err = d.Set("destination_type", result.DestinationType); err != nil {
-			return fmt.Errorf("error setting destination_type: %s", err)
+			return diag.FromErr(fmt.Errorf("error setting destination_type: %s", err))
 		}
 	}
 
 	if err = d.Set("destination_id", result.DestinationID); err != nil {
-		return fmt.Errorf("error setting destination_id: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting destination_id: %s", err))
 	}
 
 	if err = d.Set("destination_name", result.DestinationName); err != nil {
-		return fmt.Errorf("error setting destination_name: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting destination_name: %s", err))
 	}
 
 	if err = d.Set("topic_id", result.TopicID); err != nil {
-		return fmt.Errorf("error setting topic_id: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting topic_id: %s", err))
 	}
 
 	if err = d.Set("topic_name", result.TopicName); err != nil {
-		return fmt.Errorf("error setting topic_name: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting topic_name: %s", err))
 	}
 
 	if result.Attributes != nil {
 		if err = d.Set("attributes", enSubscriptionFlattenAttributes(result.Attributes)); err != nil {
-			return fmt.Errorf("error setting attributes %s", err)
+			return diag.FromErr(fmt.Errorf("error setting attributes %s", err))
 		}
 	}
 
 	if result.From != nil {
 		if err = d.Set("from", result.From); err != nil {
-			return fmt.Errorf("error setting from %s", err)
+			return diag.FromErr(fmt.Errorf("error setting from %s", err))
 		}
 	}
 

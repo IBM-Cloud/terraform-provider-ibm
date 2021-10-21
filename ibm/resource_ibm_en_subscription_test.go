@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	en "github.ibm.com/Notification-Hub/event-notifications-go-admin-sdk/eventnotificationsapiv1"
+	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
 func TestAccIBMEnSubscriptionAllArgs(t *testing.T) {
@@ -35,7 +35,7 @@ func TestAccIBMEnSubscriptionAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "description"),
 					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "topic_id"),
 					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "updated_at"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "instance_id"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "instance_guid"),
 					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "destination_id"),
 					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "destination_type"),
 					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "subscription_id"),
@@ -70,13 +70,13 @@ func testAccCheckIBMEnSubscriptionConfig(instanceName, name, description string)
 	}
 	
 	resource "ibm_en_topic" "en_topic_resource_2" {
-		instance_id = ibm_resource_instance.en_subscription_resource.guid
+		instance_guid = ibm_resource_instance.en_subscription_resource.guid
 		name        = "tf_topic_name_0234"
 		description = "tf_topic_description_0235"
 	}
 	
 	resource "ibm_en_destination" "en_destination_resource_2" {
-		instance_id = ibm_resource_instance.en_subscription_resource.guid
+		instance_guid = ibm_resource_instance.en_subscription_resource.guid
 		name        = "tf_destination_name_02983"
 		type        = "webhook"
 		description = "tf_destinatios_description_0364"
@@ -91,7 +91,7 @@ func testAccCheckIBMEnSubscriptionConfig(instanceName, name, description string)
 	resource "ibm_en_subscription" "en_subscription_resource_1" {
 		name           = "%s"
 		description 	 = "%s"
-		instance_id    = ibm_resource_instance.en_subscription_resource.guid
+		instance_guid    = ibm_resource_instance.en_subscription_resource.guid
 		topic_id       = ibm_en_topic.en_topic_resource_2.topic_id
 		destination_id = ibm_en_destination.en_destination_resource_2.destination_id
 		attributes {

@@ -24,7 +24,7 @@ func TestAccIBMEnSubscriptionDataSourceAllArgs(t *testing.T) {
 				Config: testAccCheckIBMEnSubscriptionDataSourceConfig(instanceName, name, description),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_en_subscription.data_subscription_1", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_subscription.data_subscription_1", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_subscription.data_subscription_1", "instance_guid"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_subscription.data_subscription_1", "subscription_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_subscription.data_subscription_1", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_subscription.data_subscription_1", "description"),
@@ -50,13 +50,13 @@ func testAccCheckIBMEnSubscriptionDataSourceConfig(instanceName, name, descripti
 	}
 	
 	resource "ibm_en_topic" "en_topic_resource_4" {
-		instance_id = ibm_resource_instance.en_subscription_datasource.guid
+		instance_guid = ibm_resource_instance.en_subscription_datasource.guid
 		name        = "tf_topic_name_0664"
 		description = "tf_topic_description_0455"
 	}
 	
 	resource "ibm_en_destination" "en_destination_resource_4" {
-		instance_id = ibm_resource_instance.en_subscription_datasource.guid
+		instance_guid = ibm_resource_instance.en_subscription_datasource.guid
 		name        = "tf_destination_name_02944"
 		type        = "webhook"
 		description = "tf_destinatios_description_0364"
@@ -71,7 +71,7 @@ func testAccCheckIBMEnSubscriptionDataSourceConfig(instanceName, name, descripti
 	resource "ibm_en_subscription" "en_subscription_resource_4" {
 		name           = "%s"
 		description 	 = "%s"
-		instance_id    = ibm_resource_instance.en_subscription_datasource.guid
+		instance_guid    = ibm_resource_instance.en_subscription_datasource.guid
 		topic_id       = ibm_en_topic.en_topic_resource_4.topic_id
 		destination_id = ibm_en_destination.en_destination_resource_4.destination_id
 		attributes {
@@ -81,7 +81,7 @@ func testAccCheckIBMEnSubscriptionDataSourceConfig(instanceName, name, descripti
 	}
 
 	data "ibm_en_subscription" "data_subscription_1" {
-		instance_id     = ibm_resource_instance.en_subscription_datasource.guid
+		instance_guid     = ibm_resource_instance.en_subscription_datasource.guid
 		subscription_id = ibm_en_subscription.en_subscription_resource_4.subscription_id
 	}
 

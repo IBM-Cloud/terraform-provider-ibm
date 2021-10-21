@@ -4,24 +4,26 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/go-sdk-core/v5/core"
-	en "github.ibm.com/Notification-Hub/event-notifications-go-admin-sdk/eventnotificationsapiv1"
 )
 
 func resourceIBMEnSubscription() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMEnSubscriptionCreate,
-		Read:     resourceIBMEnSubscriptionRead,
-		Update:   resourceIBMEnSubscriptionUpdate,
-		Delete:   resourceIBMEnSubscriptionDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMEnSubscriptionCreate,
+		ReadContext:   resourceIBMEnSubscriptionRead,
+		UpdateContext: resourceIBMEnSubscriptionUpdate,
+		DeleteContext: resourceIBMEnSubscriptionDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"instance_id": {
+			"instance_guid": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -35,7 +37,6 @@ func resourceIBMEnSubscription() *schema.Resource {
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "",
 				Description: "Subscription description.",
 			},
 			"destination_id": {
@@ -59,12 +60,6 @@ func resourceIBMEnSubscription() *schema.Resource {
 							Optional:    true,
 							Description: "The phone number to send the SMS to in case of sms_ibm. The email id in case of smtp_ibm destination type.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"recipient_selection": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Default:     "only_destination",
-							Description: "The recipient selection method.",
 						},
 						"add_notification_payload": {
 							Type:        schema.TypeBool,
@@ -119,15 +114,15 @@ func resourceIBMEnSubscription() *schema.Resource {
 	}
 }
 
-func resourceIBMEnSubscriptionCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMEnSubscriptionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options := &en.CreateSubscriptionOptions{}
 
-	options.SetInstanceID(d.Get("instance_id").(string))
+	options.SetInstanceID(d.Get("instance_guid").(string))
 
 	options.SetName(d.Get("name").(string))
 	options.SetTopicID(d.Get("topic_id").(string))
@@ -140,107 +135,107 @@ func resourceIBMEnSubscriptionCreate(d *schema.ResourceData, meta interface{}) e
 	attributes, _ := attributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
 	options.SetAttributes(&attributes)
 
-	result, response, err := enClient.CreateSubscription(options)
+	result, response, err := enClient.CreateSubscriptionWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("CreateSubscription failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("CreateSubscriptionWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *result.ID))
 
-	return resourceIBMEnSubscriptionRead(d, meta)
+	return resourceIBMEnSubscriptionRead(context, d, meta)
 }
 
-func resourceIBMEnSubscriptionRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMEnSubscriptionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options := &en.GetSubscriptionOptions{}
 
 	parts, err := sepIdParts(d.Id(), "/")
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options.SetInstanceID(parts[0])
 	options.SetID(parts[1])
 
-	result, response, err := enClient.GetSubscription(options)
+	result, response, err := enClient.GetSubscriptionWithContext(context, options)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("GetSubscription failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetSubscriptionWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("instance_id", options.InstanceID); err != nil {
-		return fmt.Errorf("error setting instance_id: %s", err)
+	if err = d.Set("instance_guid", options.InstanceID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting instance_guid: %s", err))
 	}
 
 	if err = d.Set("subscription_id", result.ID); err != nil {
-		return fmt.Errorf("error setting instance_id: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting instance_guid: %s", err))
 	}
 
 	if err = d.Set("name", result.Name); err != nil {
-		return fmt.Errorf("error setting name: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting name: %s", err))
 	}
 
 	if result.Description != nil {
 		if err = d.Set("description", result.Description); err != nil {
-			return fmt.Errorf("error setting description: %s", err)
+			return diag.FromErr(fmt.Errorf("error setting description: %s", err))
 		}
 	}
 
 	if result.From != nil {
 		if err = d.Set("from", result.From); err != nil {
-			return fmt.Errorf("error setting from: %s", err)
+			return diag.FromErr(fmt.Errorf("error setting from: %s", err))
 		}
 	}
 
 	if err = d.Set("destination_id", result.DestinationID); err != nil {
-		return fmt.Errorf("error setting destination_id: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting destination_id: %s", err))
 	}
 
 	if err = d.Set("destination_type", result.DestinationType); err != nil {
-		return fmt.Errorf("error setting destination_type: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting destination_type: %s", err))
 	}
 
 	if result.DestinationName != nil {
 		if err = d.Set("destination_name", result.DestinationName); err != nil {
-			return fmt.Errorf("error setting destination_name: %s", err)
+			return diag.FromErr(fmt.Errorf("error setting destination_name: %s", err))
 		}
 	}
 
 	if err = d.Set("topic_id", result.TopicID); err != nil {
-		return fmt.Errorf("error setting topic_id: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting topic_id: %s", err))
 	}
 
 	if result.TopicName != nil {
 		if err = d.Set("topic_name", result.TopicName); err != nil {
-			return fmt.Errorf("error setting topic_name: %s", err)
+			return diag.FromErr(fmt.Errorf("error setting topic_name: %s", err))
 		}
 	}
 
 	if err = d.Set("updated_at", result.UpdatedAt); err != nil {
-		return fmt.Errorf("error setting updated_at: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting updated_at: %s", err))
 	}
 
 	return nil
 }
 
-func resourceIBMEnSubscriptionUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMEnSubscriptionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options := &en.UpdateSubscriptionOptions{}
 
 	parts, err := sepIdParts(d.Id(), "/")
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options.SetInstanceID(parts[0])
@@ -256,40 +251,40 @@ func resourceIBMEnSubscriptionUpdate(d *schema.ResourceData, meta interface{}) e
 		_, attributes := attributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
 		options.SetAttributes(&attributes)
 
-		_, response, err := enClient.UpdateSubscription(options)
+		_, response, err := enClient.UpdateSubscriptionWithContext(context, options)
 		if err != nil {
-			return fmt.Errorf("UpdateSubscription failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateSubscriptionWithContext failed %s\n%s", err, response))
 		}
 
-		return resourceIBMEnSubscriptionRead(d, meta)
+		return resourceIBMEnSubscriptionRead(context, d, meta)
 	}
 
 	return nil
 }
 
-func resourceIBMEnSubscriptionDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMEnSubscriptionDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options := &en.DeleteSubscriptionOptions{}
 
 	parts, err := sepIdParts(d.Id(), "/")
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options.SetInstanceID(parts[0])
 	options.SetID(parts[1])
 
-	response, err := enClient.DeleteSubscription(options)
+	response, err := enClient.DeleteSubscriptionWithContext(context, options)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("DeleteSubscription failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("DeleteSubscriptionWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")
@@ -318,11 +313,6 @@ func attributesMapToAttributes(attributeMap map[string]interface{}) (en.Subscrip
 	if attributeMap["reply_to"] != nil {
 		attributesCreate.ReplyTo = core.StringPtr(attributeMap["reply_to"].(string))
 		attributesUpdate.ReplyTo = core.StringPtr(attributeMap["reply_to"].(string))
-	}
-
-	if attributeMap["recipient_selection"] != nil {
-		attributesCreate.RecipientSelection = core.StringPtr(attributeMap["recipient_selection"].(string))
-		attributesUpdate.RecipientSelection = core.StringPtr(attributeMap["recipient_selection"].(string))
 	}
 
 	if attributeMap["signing_enabled"] != nil {

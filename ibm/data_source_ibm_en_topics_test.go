@@ -23,10 +23,8 @@ func TestAccIBMEnTopicsDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIBMEnTopicsDataSourceConfigBasic(instanceName, name, description),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_en_topics.en_topic_datasource_6", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_topics.en_topic_datasource_6", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_topics.en_topic_datasource_6", "instance_guid"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_topics.en_topic_datasource_6", "total_count"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_topics.en_topic_datasource_6", "offset"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_topics.en_topic_datasource_6", "limit"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_topics.en_topic_datasource_6", "topics.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_topics.en_topic_datasource_6", "topics.0.id"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_topics.en_topic_datasource_6", "topics.0.name"),
@@ -51,11 +49,11 @@ func testAccCheckIBMEnTopicsDataSourceConfigBasic(instanceName, name, descriptio
 	resource "ibm_en_topic" "en_topic_datasource_4" {
 		name        = "%s"
 		description = "%s"
-		instance_id = ibm_resource_instance.en_topic_datasource_1.guid
+		instance_guid = ibm_resource_instance.en_topic_datasource_1.guid
 	}
 	
 	data "ibm_en_topics" "en_topic_datasource_6" {
-		instance_id = ibm_resource_instance.en_topic_datasource_1.guid
+		instance_guid = ibm_resource_instance.en_topic_datasource_1.guid
 	}
 	`, instanceName, name, description)
 }

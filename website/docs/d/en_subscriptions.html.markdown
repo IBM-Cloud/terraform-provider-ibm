@@ -24,10 +24,6 @@ Review the argument reference that you can specify for your data source.
 
 - `instance_id` - (Required, Forces new resource, String) Unique identifier for IBM Cloud Event Notifications instance.
 
-- `limit` - (Optional, Integer) limit to show destinations.
-
-- `offset` - (Optional, Integer) Current offset.
-
 - `search_key` - (Optional, String) Filter the subscription by name.
 
 ## Attribute Reference
@@ -35,9 +31,6 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 - `id` - The unique identifier of the en_subscriptions.
-- `limit` - (Required, Integer) limit to show subscriptions.
-
-- `offset` - (Required, Integer) Current offset.
 
 - `subscriptions` - (Required, List) List of subscriptions.
 

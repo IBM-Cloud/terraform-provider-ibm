@@ -24,10 +24,8 @@ func TestAccIBMEnSubscriptionsDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIBMEnSubscriptionsDataSourceConfigBasic(instanceName, name, description),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_en_subscriptions.data_subscription_4", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_subscriptions.data_subscription_4", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_subscriptions.data_subscription_4", "instance_guid"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_subscriptions.data_subscription_4", "total_count"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_subscriptions.data_subscription_4", "offset"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_subscriptions.data_subscription_4", "limit"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_subscriptions.data_subscription_4", "subscriptions.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_subscriptions.data_subscription_4", "subscriptions.0.id"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_subscriptions.data_subscription_4", "subscriptions.0.name"),
@@ -52,13 +50,13 @@ func testAccCheckIBMEnSubscriptionsDataSourceConfigBasic(instanceName, name, des
 	}
 	
 	resource "ibm_en_topic" "en_topic_resource_6" {
-		instance_id = ibm_resource_instance.en_subscription_datasource_1.guid
+		instance_guid = ibm_resource_instance.en_subscription_datasource_1.guid
 		name        = "tf_topic_name_0664"
 		description = "tf_topic_description_0455"
 	}
 	
 	resource "ibm_en_destination" "en_destination_resource_6" {
-		instance_id = ibm_resource_instance.en_subscription_datasource_1.guid
+		instance_guid = ibm_resource_instance.en_subscription_datasource_1.guid
 		name        = "tf_destination_name_02944"
 		type        = "webhook"
 		description = "tf_destinatios_description_0364"
@@ -73,7 +71,7 @@ func testAccCheckIBMEnSubscriptionsDataSourceConfigBasic(instanceName, name, des
 	resource "ibm_en_subscription" "en_subscription_resource_6" {
 		name           = "%s"
 		description 	 = "%s"
-		instance_id    = ibm_resource_instance.en_subscription_datasource_1.guid
+		instance_guid    = ibm_resource_instance.en_subscription_datasource_1.guid
 		topic_id       = ibm_en_topic.en_topic_resource_6.topic_id
 		destination_id = ibm_en_destination.en_destination_resource_6.destination_id
 		attributes {
@@ -83,7 +81,7 @@ func testAccCheckIBMEnSubscriptionsDataSourceConfigBasic(instanceName, name, des
 	}
 
 	data "ibm_en_subscriptions" "data_subscription_4" {
-		instance_id     = ibm_en_subscription.en_subscription_resource_6.instance_id
+		instance_guid     = ibm_en_subscription.en_subscription_resource_6.instance_guid
 	}
 
 	`, instanceName, name, description)

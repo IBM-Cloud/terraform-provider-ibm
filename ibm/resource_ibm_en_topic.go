@@ -4,24 +4,26 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/go-sdk-core/v5/core"
-	en "github.ibm.com/Notification-Hub/event-notifications-go-admin-sdk/eventnotificationsapiv1"
 )
 
 func resourceIBMEnTopic() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMEnTopicCreate,
-		Read:     resourceIBMEnTopicRead,
-		Update:   resourceIBMEnTopicUpdate,
-		Delete:   resourceIBMEnTopicDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMEnTopicCreate,
+		ReadContext:   resourceIBMEnTopicRead,
+		UpdateContext: resourceIBMEnTopicUpdate,
+		DeleteContext: resourceIBMEnTopicDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"instance_id": {
+			"instance_guid": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -35,7 +37,6 @@ func resourceIBMEnTopic() *schema.Resource {
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "",
 				Description: "Description of the topic.",
 			},
 			"sources": {
@@ -146,15 +147,15 @@ func resourceIBMEnTopic() *schema.Resource {
 	}
 }
 
-func resourceIBMEnTopicCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMEnTopicCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options := &en.CreateTopicOptions{}
 
-	options.SetInstanceID(d.Get("instance_id").(string))
+	options.SetInstanceID(d.Get("instance_guid").(string))
 	options.SetName(d.Get("name").(string))
 
 	if _, ok := d.GetOk("description"); ok {
@@ -171,53 +172,53 @@ func resourceIBMEnTopicCreate(d *schema.ResourceData, meta interface{}) error {
 		options.SetSources(sources)
 	}
 
-	result, response, err := enClient.CreateTopic(options)
+	result, response, err := enClient.CreateTopicWithContext(context, options)
 
 	if err != nil {
-		return fmt.Errorf("CreateTopic failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("CreateTopicWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *result.ID))
 
-	return resourceIBMEnTopicRead(d, meta)
+	return resourceIBMEnTopicRead(context, d, meta)
 }
 
-func resourceIBMEnTopicRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMEnTopicRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options := &en.GetTopicOptions{}
 
 	parts, err := sepIdParts(d.Id(), "/")
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options.SetInstanceID(parts[0])
 	options.SetID(parts[1])
 	options.SetHeaders(map[string]string{"include": "subscriptions"})
 
-	result, response, err := enClient.GetTopic(options)
+	result, response, err := enClient.GetTopicWithContext(context, options)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
 
-		return fmt.Errorf("GetTopic failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetTopicWithContext failed %s\n%s", err, response))
 	}
 
-	d.Set("instance_id", options.InstanceID)
+	d.Set("instance_guid", options.InstanceID)
 	d.Set("topic_id", result.ID)
 
 	if err = d.Set("name", result.Name); err != nil {
-		return fmt.Errorf("error setting name: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting name: %s", err))
 	}
 
 	if err = d.Set("description", result.Description); err != nil {
-		return fmt.Errorf("error setting description: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting description: %s", err))
 	}
 
 	if result.Sources != nil {
@@ -227,20 +228,20 @@ func resourceIBMEnTopicRead(d *schema.ResourceData, meta interface{}) error {
 			sources = append(sources, sourcesItemMap)
 		}
 		if err = d.Set("sources", sources); err != nil {
-			return fmt.Errorf("error setting sources: %s", err)
+			return diag.FromErr(fmt.Errorf("error setting sources: %s", err))
 		}
 	}
 
 	if err = d.Set("updated_at", result.UpdatedAt); err != nil {
-		return fmt.Errorf("error setting updated_at: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting updated_at: %s", err))
 	}
 
 	if err = d.Set("source_count", intValue(result.SourceCount)); err != nil {
-		return fmt.Errorf("error setting source_count: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting source_count: %s", err))
 	}
 
 	if err = d.Set("subscription_count", intValue(result.SubscriptionCount)); err != nil {
-		return fmt.Errorf("error setting subscription_count: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting subscription_count: %s", err))
 	}
 
 	subscriptions := []map[string]interface{}{}
@@ -250,28 +251,28 @@ func resourceIBMEnTopicRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if err = d.Set("subscriptions", subscriptions); err != nil {
-		return fmt.Errorf("error setting subscriptions: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting subscriptions: %s", err))
 	}
 
 	return nil
 }
 
-func resourceIBMEnTopicUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMEnTopicUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options := &en.ReplaceTopicOptions{}
 
 	parts, err := sepIdParts(d.Id(), "/")
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options.SetInstanceID(parts[0])
 	options.SetID(parts[1])
-	options.SetInstanceID(d.Get("instance_id").(string))
+	options.SetInstanceID(d.Get("instance_guid").(string))
 
 	options.SetName(d.Get("name").(string))
 
@@ -289,37 +290,37 @@ func resourceIBMEnTopicUpdate(d *schema.ResourceData, meta interface{}) error {
 		options.SetSources(sources)
 	}
 
-	_, response, err := enClient.ReplaceTopic(options)
+	_, response, err := enClient.ReplaceTopicWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("ReplaceTopic failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("ReplaceTopicWithContext failed %s\n%s", err, response))
 	}
 
-	return resourceIBMEnTopicRead(d, meta)
+	return resourceIBMEnTopicRead(context, d, meta)
 }
 
-func resourceIBMEnTopicDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMEnTopicDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options := &en.DeleteTopicOptions{}
 
 	parts, err := sepIdParts(d.Id(), "/")
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	options.SetInstanceID(parts[0])
 	options.SetID(parts[1])
 
-	response, err := enClient.DeleteTopic(options)
+	response, err := enClient.DeleteTopicWithContext(context, options)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("DeleteTopic failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("DeleteTopicWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")

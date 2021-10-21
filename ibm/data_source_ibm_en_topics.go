@@ -4,19 +4,21 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.ibm.com/Notification-Hub/event-notifications-go-admin-sdk/eventnotificationsapiv1"
+	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
 func dataSourceIBMEnTopics() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMEnTopicsRead,
+		ReadContext: dataSourceIBMEnTopicsRead,
 
 		Schema: map[string]*schema.Schema{
-			"instance_id": {
+			"instance_guid": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Unique identifier for IBM Cloud Event Notifications instance.",
@@ -25,16 +27,6 @@ func dataSourceIBMEnTopics() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Number of topics.",
-			},
-			"offset": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Current offset.",
-			},
-			"limit": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "limit to show subscriptions.",
 			},
 			"search_key": {
 				Type:        schema.TypeString,
@@ -67,7 +59,7 @@ func dataSourceIBMEnTopics() *schema.Resource {
 							Computed:    true,
 							Description: "Number of sources.",
 						},
-						"sources": {
+						"sources_names": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "List of source names.",
@@ -87,56 +79,66 @@ func dataSourceIBMEnTopics() *schema.Resource {
 	}
 }
 
-func dataSourceIBMEnTopicsRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMEnTopicsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	options := &eventnotificationsapiv1.ListTopicsOptions{}
+	options := &en.ListTopicsOptions{}
 
-	options.SetInstanceID(d.Get("instance_id").(string))
+	options.SetInstanceID(d.Get("instance_guid").(string))
 
-	if _, ok := d.GetOk("limit"); ok {
-		options.SetLimit(d.Get("limit").(int64))
-	}
-	if _, ok := d.GetOk("offset"); ok {
-		options.SetOffset(d.Get("offset").(int64))
-	}
 	if _, ok := d.GetOk("search_key"); ok {
 		options.SetSearch(d.Get("search_key").(string))
 	}
+	var topicList *en.TopicList
 
-	result, response, err := enClient.ListTopics(options)
-	if err != nil {
-		return fmt.Errorf("ListTopics failed %s\n%s", err, response)
-	}
+	finalList := []en.TopicsListItem{}
 
-	d.SetId(fmt.Sprintf("topics_%s", d.Get("instance_id").(string)))
+	var offset int64 = 0
+	var limit int64 = 100
 
-	if err = d.Set("total_count", intValue(result.TotalCount)); err != nil {
-		return fmt.Errorf("error setting total_count: %s", err)
-	}
+	options.SetLimit(limit)
 
-	if err = d.Set("offset", intValue(result.Offset)); err != nil {
-		return fmt.Errorf("error setting offset: %s", err)
-	}
+	for {
+		options.SetOffset(offset)
 
-	if err = d.Set("limit", intValue(result.Limit)); err != nil {
-		return fmt.Errorf("error setting limit: %s", err)
-	}
+		result, response, err := enClient.ListTopicsWithContext(context, options)
 
-	if result.Topics != nil {
-		err = d.Set("topics", enTopicListFlatten(result.Topics))
+		topicList = result
+
 		if err != nil {
-			return fmt.Errorf("error setting topics %s", err)
+			return diag.FromErr(fmt.Errorf("ListTopicsWithContext failed %s\n%s", err, response))
+		}
+		offset = offset + limit
+
+		finalList = append(finalList, result.Topics...)
+
+		if offset > *result.TotalCount {
+			break
+		}
+	}
+
+	topicList.Topics = finalList
+
+	d.SetId(fmt.Sprintf("topics_%s", d.Get("instance_guid").(string)))
+
+	if err = d.Set("total_count", intValue(topicList.TotalCount)); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting total_count: %s", err))
+	}
+
+	if topicList.Topics != nil {
+		err = d.Set("topics", enTopicListFlatten(topicList.Topics))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error setting topics %s", err))
 		}
 	}
 
 	return nil
 }
 
-func enTopicListFlatten(result []eventnotificationsapiv1.TopicsListItem) (topics []map[string]interface{}) {
+func enTopicListFlatten(result []en.TopicsListItem) (topics []map[string]interface{}) {
 	for _, topicsItem := range result {
 		topics = append(topics, enTopicsToMap(topicsItem))
 	}
@@ -144,7 +146,7 @@ func enTopicListFlatten(result []eventnotificationsapiv1.TopicsListItem) (topics
 	return topics
 }
 
-func enTopicsToMap(topicsItem eventnotificationsapiv1.TopicsListItem) (topicsMap map[string]interface{}) {
+func enTopicsToMap(topicsItem en.TopicsListItem) (topicsMap map[string]interface{}) {
 	topicsMap = map[string]interface{}{}
 
 	if topicsItem.ID != nil {
@@ -163,8 +165,8 @@ func enTopicsToMap(topicsItem eventnotificationsapiv1.TopicsListItem) (topicsMap
 		topicsMap["source_count"] = topicsItem.SourceCount
 	}
 
-	if topicsItem.Sources != nil {
-		topicsMap["sources"] = topicsItem.Sources
+	if topicsItem.SourcesNames != nil {
+		topicsMap["sources_names"] = topicsItem.SourcesNames
 	}
 
 	if topicsItem.SubscriptionCount != nil {

@@ -23,7 +23,7 @@ func TestAccIBMEnDestinationDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIBMEnDestinationDataSourceConfigBasic(instanceName, name, description),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_en_destination.en_destination_data_6", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_destination.en_destination_data_6", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination.en_destination_data_6", "instance_guid"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_destination.en_destination_data_6", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_destination.en_destination_data_6", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_destination.en_destination_data_6", "type"),
@@ -46,7 +46,7 @@ func testAccCheckIBMEnDestinationDataSourceConfigBasic(instanceName, name, descr
 	}
 	
 	resource "ibm_en_destination" "en_destination_datasource_4" {
-		instance_id = ibm_resource_instance.en_destination_datasource2.guid
+		instance_guid = ibm_resource_instance.en_destination_datasource2.guid
 		name        = "%s"
 		type        = "webhook"
 		description = "%s"
@@ -59,7 +59,7 @@ func testAccCheckIBMEnDestinationDataSourceConfigBasic(instanceName, name, descr
 	}
 
 		data "ibm_en_destination" "en_destination_data_6" {
-			instance_id = ibm_resource_instance.en_destination_datasource2.guid
+			instance_guid = ibm_resource_instance.en_destination_datasource2.guid
 			destination_id = ibm_en_destination.en_destination_datasource_4.destination_id
 		}
 	`, instanceName, name, description)

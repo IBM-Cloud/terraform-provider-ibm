@@ -23,7 +23,7 @@ func TestAccIBMEnTopicDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIBMEnTopicDataSourceConfigBasic(instanceName, name, description),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_en_topic.en_topic_datasource_2", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_topic.en_topic_datasource_2", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_topic.en_topic_datasource_2", "instance_guid"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_topic.en_topic_datasource_2", "topic_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_topic.en_topic_datasource_2", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_topic.en_topic_datasource_2", "name"),
@@ -48,11 +48,11 @@ func testAccCheckIBMEnTopicDataSourceConfigBasic(instanceName, name, description
 	resource "ibm_en_topic" "en_topic_datasource_1" {
 		name        = "%s"
 		description = "%s"
-		instance_id = ibm_resource_instance.en_topic_datasource.guid
+		instance_guid = ibm_resource_instance.en_topic_datasource.guid
 	}
 	
 	data "ibm_en_topic" "en_topic_datasource_2" {
-		instance_id = ibm_resource_instance.en_topic_datasource.guid
+		instance_guid = ibm_resource_instance.en_topic_datasource.guid
 		topic_id    = ibm_en_topic.en_topic_datasource_1.topic_id
 	}
 	`, instanceName, name, description)

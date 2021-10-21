@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	en "github.ibm.com/Notification-Hub/event-notifications-go-admin-sdk/eventnotificationsapiv1"
+	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
 func TestAccIBMEnDestinationAllArgs(t *testing.T) {
@@ -63,7 +63,7 @@ func testAccCheckIBMEnDestinationConfig(instanceName, name, description string) 
 	}
 	
 	resource "ibm_en_destination" "en_destination_resource_1" {
-		instance_id = ibm_resource_instance.en_destination_resource.guid
+		instance_guid = ibm_resource_instance.en_destination_resource.guid
 		name        = "%s"
 		type        = "webhook"
 		description = "%s"
