@@ -15,7 +15,7 @@ The following example creates a volume with 10 IOPs tier.
 
 ```terraform
 resource "ibm_is_volume" "testacc_volume" {
-  name     = "test_volume"
+  name     = "test-volume"
   profile  = "10iops-tier"
   zone     = "us-south-1"
 }
@@ -25,7 +25,7 @@ The following example creates a custom volume.
 
 ```terraform
 resource "ibm_is_volume" "testacc_volume" {
-  name     = "test_volume"
+  name     = "test-volume"
   profile  = "custom"
   zone     = "us-south-1"
   iops     = 1000
