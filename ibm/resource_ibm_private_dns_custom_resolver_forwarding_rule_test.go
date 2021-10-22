@@ -34,7 +34,7 @@ func testAccCheckIbmDnsCrForwardingRuleConfig(typeVar, match string) string {
 		
 	resource "ibm_dns_custom_resolver" "test" {
 		name			= "testpdnscustomresolver"
-		instance_id		= "d515a480-a702-4837-9f40-6c0c285262fd"
+		instance_id		= "fca34054-1c73-497d-8304-41bba9b03acb"
 		description		= "new test CR Locations - TF"
 		high_availability =  true
 		enabled		= true
@@ -48,7 +48,7 @@ func testAccCheckIbmDnsCrForwardingRuleConfig(typeVar, match string) string {
 		}
 	}
 	resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
-		instance_id = "d515a480-a702-4837-9f40-6c0c285262fd"
+		instance_id = "fca34054-1c73-497d-8304-41bba9b03acb"
 		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 		description = "Test Fw Rule"
 		type = "%s"

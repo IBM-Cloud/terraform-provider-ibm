@@ -37,7 +37,7 @@ func testAccCheckIBMPrivateDNSCustomResolverDataSourceConfig(crname, crdescripti
 	return fmt.Sprintf(`
 	resource "ibm_dns_custom_resolver" "test" {
 		name		= "%s"
-		instance_id	= "d515a480-a702-4837-9f40-6c0c285262fd"
+		instance_id	= "fca34054-1c73-497d-8304-41bba9b03acb"
 		description	= "%s"
 		high_availability = false
 		locations{
