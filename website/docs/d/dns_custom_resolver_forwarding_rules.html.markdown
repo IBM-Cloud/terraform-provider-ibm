@@ -15,7 +15,7 @@ Provides a read-only data source for forwarding rules. You can then reference th
 
 data "ibm_dns_custom_resolver_forwarding_rules" "test-fr" {
 	instance_id	= ibm_dns_custom_resolver.test.instance_id
-	resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
+	resolver_id	= ibm_dns_custom_resolver.test.custom_resolver_id
 }
 ```
 

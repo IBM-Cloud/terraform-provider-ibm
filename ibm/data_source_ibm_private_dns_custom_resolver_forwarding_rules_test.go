@@ -35,7 +35,7 @@ func testAccCheckIbmDnsCrForwardingRulesDataSourceConfig(forwardingRuleDescripti
 	return fmt.Sprintf(`
 		resource "ibm_dns_custom_resolver" "test" {
 			name        = "CustomResolverFW"
-			instance_id =  "d515a480-a702-4837-9f40-6c0c285262fd"
+			instance_id = "fca34054-1c73-497d-8304-41bba9b03acb"
 			description = "FW rules"
 			high_availability = false
 			enabled = true
@@ -45,7 +45,7 @@ func testAccCheckIbmDnsCrForwardingRulesDataSourceConfig(forwardingRuleDescripti
 			}
 		}
 		resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
-			instance_id =  "d515a480-a702-4837-9f40-6c0c285262fd"
+			instance_id =  "fca34054-1c73-497d-8304-41bba9b03acb"
 			resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 			description = "%s"
 			type = "%s"

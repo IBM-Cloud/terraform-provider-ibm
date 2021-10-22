@@ -13,63 +13,56 @@ Provides a resource for ibm_dns_custom_resolver_forwarding_rule. This allows For
 ## Example usage
 
 ```terraform
-data "ibm_resource_group" "rg" {
-		is_default=true
+
+  	data "ibm_resource_group" "rg" {
+		is_default	= true
 	}
 	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
-		name = "test-pdns-custom-resolver-vpc"
-		resource_group = data.ibm_resource_group.rg.id
+		name			= "test-pdns-custom-resolver-vpc"
+		resource_group	= data.ibm_resource_group.rg.id
 	}
 	resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
-		name                    = "test-pdns-cr-subnet1"
-		vpc                     = ibm_is_vpc.test-pdns-cr-vpc.id
-		zone            		= "us-south-1"
-		ipv4_cidr_block 		= "10.240.0.0/24"
-		resource_group 			= data.ibm_resource_group.rg.id
+		name			= "test-pdns-cr-subnet1"
+		vpc				= ibm_is_vpc.test-pdns-cr-vpc.id
+		zone			= "us-south-1"
+		ipv4_cidr_block	= "10.240.0.0/24"
+		resource_group	= data.ibm_resource_group.rg.id
 	}
 	resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
-		name                    = "test-pdns-cr-subnet2"
-		vpc                     = ibm_is_vpc.test-pdns-cr-vpc.id
-		zone            		= "us-south-1"
-		ipv4_cidr_block 		= "10.240.64.0/24"
-		resource_group 			= data.ibm_resource_group.rg.id
+		name			= "test-pdns-cr-subnet2"
+		vpc				= ibm_is_vpc.test-pdns-cr-vpc.id
+		zone			= "us-south-1"
+		ipv4_cidr_block	= "10.240.64.0/24"
+		resource_group	= data.ibm_resource_group.rg.id
 	}
 	resource "ibm_resource_instance" "test-pdns-cr-instance" {
-		name = "test-pdns-cr-instance"
-		resource_group_id = data.ibm_resource_group.rg.id
-		location = "global"
-		service = "dns-svcs"
-		plan = "standard-dns"
+		name				= "test-pdns-cr-instance"
+		resource_group_id	= data.ibm_resource_group.rg.id
+		location			= "global"
+		service				= "dns-svcs"
+		plan				= "standard-dns"
 	}
 	resource "ibm_dns_custom_resolver" "test" {
-		name        = "test-custom=resolver"
+		name		= "test-customresolver"
 		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
-		description = "new-TF-Custom-resolver"
-		high_availability = false
+		description = "new test CR - TF"
+		enabled 	= true
 		locations {
-			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet1.crn
-			enabled     = true
+			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet1.crn
+			enabled		= true
 		}
 		locations {
-			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet2.crn
+			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet2.crn
 			enabled     = true
 		}
-		
-	}
-	resource "ibm_dns_custom_resolver_location" "test" {
-		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
-		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
-		subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet2.crn
-		enabled     = true
-		cr_enabled	= true
 	}
 	resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
-		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
-		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
-		description = "Test Fw Rule"
-		type = "zone"
-		match = "test.example.com"
-		forward_to = ["168.20.22.122"]
+		instance_id		= ibm_resource_instance.test-pdns-cr-instance.guid
+		resolver_id		= ibm_dns_custom_resolver.test.custom_resolver_id
+		description		= "Test Fw Rule"
+		type			= "zone"
+		match			= "test.example.com"
+		forward_to		= ["168.20.22.122"]
 	}
 ```
 

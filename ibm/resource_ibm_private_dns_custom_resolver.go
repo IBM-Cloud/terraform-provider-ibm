@@ -87,6 +87,7 @@ func resouceIBMPrivateDNSCustomResolver() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
+				ForceNew:    true,
 				Description: "Whether High Availability is enabled in custom resolver",
 			},
 			pdnsCRHealth: {
@@ -373,6 +374,7 @@ func waitForPDNSCustomResolverHealthy(d *schema.ResourceData, meta interface{}) 
 	} else {
 		customResolverID, crn, _ = convertTftoCisTwoVar(d.Id())
 	}
+
 	opt := sess.NewGetCustomResolverOptions(crn, customResolverID)
 
 	stateConf := &resource.StateChangeConf{
