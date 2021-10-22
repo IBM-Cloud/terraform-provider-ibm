@@ -26,7 +26,7 @@ resource "ibm_is_vpc_routing_table" "test_cr_route_table1" {
 }
 
 resource "ibm_is_subnet" "testacc_subnet" {
-  name            = "test_subnet"
+  name            = "test-subnet"
   vpc             = ibm_is_vpc.testacc_vpc.id
   zone            = "us-south-1"
   ipv4_cidr_block = "192.168.0.0/1"
