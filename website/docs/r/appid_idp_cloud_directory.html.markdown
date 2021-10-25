@@ -34,7 +34,7 @@ Review the argument references that you can specify for your resource.
 - `tenant_id` - (Required, String) The AppID instance GUID
 - `is_active` (Required, Boolean) Cloud Directory IDP activation
 - `identity_confirm_access_mode` (Optional, String) Allowed values: `FULL`, `RESTRICTIVE`, `OFF`
-- `identity_confirm_methods` (Optional, List of String) Example: `email`
+- `identity_confirm_methods` (Optional, List of String) Allowed value: `email`
 - `identity_field` (Optional, String) Allowed values: `email`, `userName`
 - `reset_password_enabled` (Optional, Boolean) Enable password resets
 - `reset_password_notification_enabled` (Optional, Boolean) Enable password reset notification emails
