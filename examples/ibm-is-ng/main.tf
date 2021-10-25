@@ -858,14 +858,17 @@ data "ibm_is_vpc_address_prefix" "example" {
   vpc = ibm_is_vpc.vpc1.id
   address_prefix = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.address_prefix
 }
+
 data "ibm_is_vpc_address_prefix" "example-1" {
   vpc_name = ibm_is_vpc.vpc1.name
   address_prefix = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.address_prefix
 }
+
 data "ibm_is_vpc_address_prefix" "example-2" {
   vpc = ibm_is_vpc.vpc1.id
   address_prefix_name = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.name
 }
+
 data "ibm_is_vpc_address_prefix" "example-3" {
   vpc_name = ibm_is_vpc.vpc1.name
   address_prefix_name = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.name
@@ -944,4 +947,25 @@ data "ibm_is_vpn_gateway_connection" "example-2" {
 data "ibm_is_vpn_gateway_connection" "example-3" {
   vpn_gateway_name = ibm_is_vpn_gateway.example.name
   vpn_gateway_connection_name = ibm_is_vpn_gateway_connection.example.name
+}
+data "ibm_is_ike_policies" "example" {
+}
+
+data "ibm_is_ipsec_policies" "example" {
+}
+
+data "ibm_is_ike_policy" "example" {
+  ike_policy = ibm_is_ike_policy.example.id
+}
+
+data "ibm_is_ipsec_policy" "example1" {
+  ipsec_policy = ibm_is_ipsec_policy.example.id
+}
+
+data "ibm_is_ike_policy" "example2" {
+  name = "my-ike-policy"
+}
+
+data "ibm_is_ipsec_policy" "example3" {
+  name = "my-ipsec-policy"
 }
