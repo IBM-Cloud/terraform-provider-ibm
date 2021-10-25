@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_appid_idp_custom
-Retrieve information about an IBM Cloud AppID Management Services Custom IDP.
+Retrieve information about an IBM Cloud AppID Management Services Custom IDP. For more information, see [AppID custom identity](https://cloud.ibm.com/docs/appid?topic=appid-custom-identity)
 
 ## Example usage
 

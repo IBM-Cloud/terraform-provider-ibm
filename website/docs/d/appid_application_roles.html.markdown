@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_appid_application_roles
-Retrieve IBM Cloud AppID Management Services application roles.
+Retrieve IBM Cloud AppID Management Services application roles. For more information, see [controlling access](https://cloud.ibm.com/docs/appid?topic=appid-access-control&interface=api)
 
 ## Example usage
 

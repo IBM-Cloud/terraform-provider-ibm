@@ -8,7 +8,7 @@ description: |-
 
 # ibm_appid_idp_saml
 
-Update or reset an IBM Cloud AppID Management Services SAML IDP configuration.
+Update or reset an IBM Cloud AppID Management Services SAML IDP configuration. For more information, see [SAML](https://cloud.ibm.com/docs/appid?topic=appid-enterprise)
 
 ## Example usage
 

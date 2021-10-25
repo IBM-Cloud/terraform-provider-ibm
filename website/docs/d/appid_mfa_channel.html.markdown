@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_appid_mfa_channel
-Retrieve an IBM Cloud AppID Management Services MFA channel configuration.
+Retrieve an IBM Cloud AppID Management Services MFA channel configuration. For more information, see [multifactor authentication](https://cloud.ibm.com/docs/appid?topic=appid-cd-mfa)
 
 ## Example usage
 

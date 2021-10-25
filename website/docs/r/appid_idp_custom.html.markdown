@@ -8,7 +8,7 @@ description: |-
 
 # ibm_appid_idp_custom
 
-Create, update, or delete an IBM Cloud AppID Management Services Custom IDP resource.
+Create, update, or delete an IBM Cloud AppID Management Services Custom IDP resource. For more information, see [AppID custom identity](https://cloud.ibm.com/docs/appid?topic=appid-custom-identity)
 
 ## Example usage
 

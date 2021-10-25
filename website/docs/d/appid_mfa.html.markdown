@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_appid_mfa
-Retrieve an IBM Cloud AppID Management Services MFA activation status.
+Retrieve an IBM Cloud AppID Management Services MFA activation status. For more information, see [multifactor authentication](https://cloud.ibm.com/docs/appid?topic=appid-cd-mfa)
 
 ## Example usage
 
