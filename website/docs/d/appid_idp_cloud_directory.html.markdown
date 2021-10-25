@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_appid_idp_cloud_directory
-Retrieve information about an IBM Cloud AppID Cloud Directory IDP.
+Retrieve information about an IBM Cloud AppID Cloud Directory IDP. For more information, see [configuring Cloud Directory](https://cloud.ibm.com/docs/appid?topic=appid-cloud-directory)
 
 ## Example usage
 

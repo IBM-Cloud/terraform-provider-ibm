@@ -8,7 +8,7 @@ description: |-
 
 # ibm_appid_cloud_directory_template
 
-Create, update, or reset an IBM Cloud AppID Management Services Cloud Directory email templates.
+Create, update, or reset an IBM Cloud AppID Management Services Cloud Directory email templates. For more information, see [customizing emails](https://cloud.ibm.com/docs/appid?topic=appid-cd-types)
 
 ## Example usage
 

@@ -8,7 +8,7 @@ description: |-
 
 # ibm_appid_apm
 
-Update or reset an IBM Cloud AppID Management Services APM configuration.
+Update or reset an IBM Cloud AppID Management Services APM configuration. For more information, see [defining password policies](https://cloud.ibm.com/docs/appid?topic=appid-cd-strength).
 
 ~> **WARNING:** This feature is only available for AppID graduated tier plans.
 

@@ -8,7 +8,7 @@ description: |-
 
 # ibm_appid_idp_cloud_directory
 
-Update or reset an IBM Cloud AppID Management Services Cloud Directory IDP configuration.
+Update or reset an IBM Cloud AppID Management Services Cloud Directory IDP configuration. For more information, see [configuring Cloud Directory](https://cloud.ibm.com/docs/appid?topic=appid-cloud-directory)
 
 ## Example usage
 
