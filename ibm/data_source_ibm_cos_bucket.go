@@ -45,7 +45,7 @@ func dataSourceIBMCosBucket() *schema.Resource {
 			"endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
+				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "direct"}),
 				Description:  "public or private",
 				Default:      "public",
 			},
@@ -254,9 +254,12 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	bucketType := d.Get("bucket_type").(string)
 	bucketRegion := d.Get("bucket_region").(string)
 	var endpointType = d.Get("endpoint_type").(string)
-	apiEndpoint, apiEndpointPrivate := selectCosApi(bucketLocationConvert(bucketType), bucketRegion)
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint := selectCosApi(bucketLocationConvert(bucketType), bucketRegion)
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
+	}
+	if endpointType == "direct" {
+		apiEndpoint = directApiEndpoint
 	}
 	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {

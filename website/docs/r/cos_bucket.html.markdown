@@ -196,7 +196,7 @@ Review the argument references that you can specify for your resource.
 
 - `bucket_name` - (Required, String) The name of the bucket.
 - `cross_region_location` - (Optional, String) Specify the cross-regional bucket location. Supported values are `us`, `eu`, and `ap`. If you use this parameter, do not set `single_site_location` or `region_location` at the same time.
-- `endpoint_type`- (Optional, String) The type of the endpoint either public or private to be used for buckets. Default value is `public`.
+- `endpoint_type`- (Optional, String) The type of the endpoint either `public` or `private` or `direct` to be used for buckets. Default value is `public`.
 - `resource_instance_id` - (Required, String) The ID of the IBM Cloud Object Storage service instance for which you want to create a bucket.
 - `region_location` - (Optional, String) The location of a regional bucket. Supported values are `au-syd`, `eu-de`, `eu-gb`, `jp-tok`, `us-east`, `us-south`, `ca-tor`, `jp-osa`, `br-sao`. If you set this parameter, do not set `single_site_location` or `cross_region_location` at the same time.
 - `single_site_location` - (Optional, String) The location for a single site bucket. Supported values are: `ams03`, `che01`, `hkg02`, `mel01`, `mex01`, `mil01`, `mon01`, `osl01`, `par01`, `sjc04`, `sao01`, `seo01`, `sng01`, and `tor01`. If you set this parameter, do not set `region_location` or `cross_region_location` at the same time.
