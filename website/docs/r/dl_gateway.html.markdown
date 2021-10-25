@@ -80,7 +80,8 @@ Review the argument reference that you can specify for your resource.
 
 ## Attribute reference
 In addition to all argument references list, you can access the following attribute references after your resource is created.
-
+- `bfd_status` - (String) Gateway BFD status
+- `bfd_status_updated_at` - (String) Date and time BFD status was updated at
 - `bgp_asn` - (String) The IBM BGP ASN.
 - `bgp_status` - (String) The gateway BGP status.
 - `completion_notice_reject_reason` - (String) The reason for completion notice rejection.
