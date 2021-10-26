@@ -54,8 +54,8 @@ github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f h1:4c1
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f/go.mod h1:d22kTYY7RYBWcQlZpqrSdshpB/lJ16viWS5Sbjtlc8s=
 github.com/IBM/cloudant-go-sdk v0.0.36 h1:h14ORyRs2pi2RtuqOGB+y9gWytRfQKnne2lMhl2MCws=
 github.com/IBM/cloudant-go-sdk v0.0.36/go.mod h1:04hA+Ok9aLYvnMEG4dMHTzU1W5b5tnl+Ddkdz4Z+xGs=
-github.com/IBM/container-registry-go-sdk v0.0.13 h1:nifb9L0dpMaECkZy7MsNvXaH8vxRW2ARBRbF8cV7S5g=
-github.com/IBM/container-registry-go-sdk v0.0.13/go.mod h1:GYi1VN59VaJWWq2xP06o9Vpi6+K8V5vtmji6WjMJf0w=
+github.com/IBM/container-registry-go-sdk v0.0.14 h1:UOA2SIQ0WKWOTFMScKJ3hXw61c6OaMx0tPaMACt5Mp0=
+github.com/IBM/container-registry-go-sdk v0.0.14/go.mod h1:KqSZFO4VIK9QAyF8O1JW6jkyzkfE/BNKUIo+OdzIDk4=
 github.com/IBM/event-notifications-go-admin-sdk v0.0.2 h1:53guiGbjLcrO26NhPv+Xf0Sbgn/DPlfPwek9s6YlIg8=
 github.com/IBM/event-notifications-go-admin-sdk v0.0.2/go.mod h1:VCtV/cAN8qSPeWEjIWeXOQGTq6LCWP9yZEk7wt3g0HM=
 github.com/IBM/eventstreams-go-sdk v1.2.0 h1:eP0afHArMGjwhGqvZAhhu/3EDKRch2JehpveqF1TUjs=
